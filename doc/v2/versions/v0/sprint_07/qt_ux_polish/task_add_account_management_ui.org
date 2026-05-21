@@ -4,6 +4,7 @@
 #+title: Add account management support to qt
 #+description: Qt UI for listing accounts, viewing account details, performing lock / reset actions.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :iam:qt:ux:accounts:qt_ux_polish:sprint_07:v0:
 #+owner: marco

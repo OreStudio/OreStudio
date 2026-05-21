@@ -4,6 +4,7 @@
 #+title: Sprint 05
 #+description: Implement the authentication bootstrap workflow; finish up domain-entity surfaces (currencies, accounts); expand the Claude Code skills layer.
 #+type: sprint
+#+version: 2
 #+level: s3
 #+filetags: :authentication:domain_entities:skills:v0:
 #+created: 2025-11-16

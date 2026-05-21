@@ -4,6 +4,7 @@
 #+title: Add currency editing support
 #+description: Allow currency rows to be edited from the Qt UI with validation and a save action.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :currencies:qt:ux:edit:currencies_ui:sprint_04:v0:
 #+owner: marco

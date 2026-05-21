@@ -4,6 +4,7 @@
 #+title: Session lifecycle follow-up
 #+description: Implement session cancellation (POSTPONED in sprint 05); add logout message; fix disconnect-related crashes; client heartbeat for disconnect detection.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :login:sessions:authentication:sprint_06:v0:
 #+created: 2025-12-04

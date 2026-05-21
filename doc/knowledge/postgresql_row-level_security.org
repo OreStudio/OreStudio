@@ -3,6 +3,7 @@
 :ROAM_ALIASES: RLS
 :END:
 #+title: PostgreSQL Row-Level Security
+#+version: 1
 #+author: Marco Craveiro
 #+startup: inlineimages
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil

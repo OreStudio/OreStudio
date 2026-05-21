@@ -4,6 +4,7 @@
 #+title: Persist instrument data on ORE trade import
 #+description: Update import structure to dispatch type-specific save requests for instrument data alongside trade creation.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ore:qt:trading:persistence:import:ore_import_pipeline:sprint_16:v0:
 #+owner: marco

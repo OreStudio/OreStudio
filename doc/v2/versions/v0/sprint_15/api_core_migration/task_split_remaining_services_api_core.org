@@ -4,6 +4,7 @@
 #+title: Split scheduler / assets / variability / synthetic / trading / reporting (Phase 2)
 #+description: Six more service libraries refactored into *.api + *.core. New ores.assets.api + ores.reporting.api + ores.scheduler.api modules added with their CMake configs; existing modules renamed to .core. All ten service libraries now follow the three-layer api / core / service pattern.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :architecture:refactor:api:core:scheduler:assets:variability:synthetic:trading:reporting:api_core_migration:sprint_15:v0:
 #+owner: marco

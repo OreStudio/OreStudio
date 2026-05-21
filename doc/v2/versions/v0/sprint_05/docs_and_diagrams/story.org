@@ -4,6 +4,7 @@
 #+title: Documentation and diagrams
 #+description: UML diagram updates, links to UML across docs, site-link fixes, doxygen tweaks.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :documentation:uml:plantuml:sprint_05:v0:
 #+created: 2025-12-01

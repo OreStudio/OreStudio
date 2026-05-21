@@ -4,6 +4,7 @@
 #+title: Set up vcpkg and CMake
 #+description: Configure a basic CMake build that resolves its dependencies through vcpkg.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :build:vcpkg:cmake:bootstrap:project_bootstrap:sprint_01:v0:
 #+owner: marco

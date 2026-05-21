@@ -4,6 +4,7 @@
 #+title: Credit and Equity golden roundtrip tests
 #+description: Golden file XML roundtrip tests for Credit + Equity instruments (CDS, Equity Options, Risk Participation Agreements, etc.); two new C++ test files.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ore:tests:golden:credit:equity:golden_roundtrip_tests:sprint_16:v0:
 #+owner: marco

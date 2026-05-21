@@ -4,6 +4,7 @@
 #+title: Prefix database entities with component
 #+description: All SQL tables/functions/triggers/rules follow {component}_{entity}_{suffix}: iam_, refdata_, assets_, telemetry_, geo_, variability_, utility_; entity suffixes _tbl, _fn, _trg, _rule, _idx, _uniq_idx, _gist_idx. C++ tablename constants updated.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :sql:naming:refactor:convention:database_naming_refactor:sprint_09:v0:
 #+owner: marco

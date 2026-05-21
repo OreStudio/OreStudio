@@ -4,6 +4,7 @@
 #+title: Books domain modelling analysis
 #+description: First-cut analysis of the entities needed to support books; FPML-anchored, iterated with LLMs.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :modelling:books:analysis:fpml:sprint_08:v0:
 #+created: 2026-05-19

@@ -4,6 +4,7 @@
 #+title: Sprint 09
 #+description: Data Quality subsystem + Data Librarian; connection management; database naming refactor; security module; CLI entity coverage; engineering hygiene.
 #+type: sprint
+#+version: 2
 #+level: s3
 #+filetags: :dq:librarian:connections:refdata:security:sprint_09:v0:
 #+created: 2026-05-19

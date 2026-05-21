@@ -4,6 +4,7 @@
 #+title: Event viewer review
 #+description: Dialog reshape; ring buffer for last N events; error highlighting; eventing coverage gaps for accounts/login/feature flags/roles/permissions; non-admin permission gaps.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :eventing:qt:review:observability_followup:sprint_08:v0:
 #+owner: marco

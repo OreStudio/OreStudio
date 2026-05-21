@@ -4,6 +4,7 @@
 #+title: Create a skill for PlantUML documentation
 #+description: First Claude Code skill: how to author and refresh PlantUML diagrams within the project.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :claude_code:skills:plantuml:claude_code_skills_intro:sprint_04:v0:
 #+owner: marco

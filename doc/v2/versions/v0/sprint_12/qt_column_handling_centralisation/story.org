@@ -4,6 +4,7 @@
 #+title: Qt column handling centralisation
 #+description: Centralise column metadata across all list windows behind a ColumnMetadata struct.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :qt:refactor:columns:ux:sprint_12:v0:
 #+created: 2026-05-19

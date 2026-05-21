@@ -4,6 +4,7 @@
 #+title: Complete Scheduler UI: Job Instances and Monitor
 #+description: Job Instances execution history + Scheduler Monitor live status views; new Qt UI components + NATS protocol definitions + backend handlers; real-time job lifecycle events; reactive UI.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :scheduler:qt:nats:job_instance:monitor:scheduler_ui_complete:sprint_16:v0:
 #+owner: marco

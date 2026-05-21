@@ -4,6 +4,7 @@
 #+title: Move App/AppVersion/ClientApp/ClientHost classes to compute
 #+description: Remove dependency on ores.qt.admin library from ores.qt.compute project; classes relocated to compute plugin.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:plugins:compute:refactor:qt_plugin_architecture:sprint_16:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: Address past review comments
 #+description: Clear backlog of review comments from PRs #389 and #387: header-state restoration, DataLibrarianWindow optimisation, bundle validation messages, dataset_protocol helpers extracted, ORE CMake dependency cleanup, doc pruning.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :review:qt:dq:ore:polish:engineering_hygiene:sprint_11:v0:
 #+owner: marco

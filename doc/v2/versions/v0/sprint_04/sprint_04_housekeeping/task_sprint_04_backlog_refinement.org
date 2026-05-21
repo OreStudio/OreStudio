@@ -4,6 +4,7 @@
 #+title: Sprint and product backlog refinement
 #+description: Curate sprint 04 backlog through the sprint and groom the product backlog as work surfaces new ideas.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :agile:backlog:sprint_04_housekeeping:sprint_04:v0:
 #+owner: marco

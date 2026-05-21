@@ -4,6 +4,7 @@
 #+title: Check Data Librarian can publish across tenants
 #+description: Add tenant_id to unique version indexes on 11 DQ metadata + asset + refdata tables; image_id resolution looks up by key in DQ images then by key in target-tenant assets; ImageCache::clear() before reload; connection-browser UI polish; permissions suggest shell command; ores_iam_generate_role_commands_fn SECURITY DEFINER.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :dq:librarian:tenancy:publishing:assets:validate_tenancy_across_surfaces:sprint_11:v0:
 #+owner: marco

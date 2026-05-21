@@ -4,6 +4,7 @@
 #+title: Refactor tenant lookup functions to accept const context
 #+description: resolve_tenant_id, lookup_by_code, lookup_by_hostname take const context& (they're read-only); eliminates unnecessary mutable copies.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :tenancy:cpp:refactor:const_correctness:per_request_tenant_context:sprint_11:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: Image cache reloads on new datasets
 #+description: When publishing images the image cache must reload; current behaviour leaves it stale.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:assets:bug_fix:image_cache_polish:sprint_10:v0:
 #+owner: marco

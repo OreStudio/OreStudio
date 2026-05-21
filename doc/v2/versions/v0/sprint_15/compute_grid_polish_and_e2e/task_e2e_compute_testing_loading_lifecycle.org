@@ -4,6 +4,7 @@
 #+title: E2E compute testing fixes and loading lifecycle refactor
 #+description: AbstractClientModel base class with dataLoaded() + loadError() signals wired to endLoading() via EntityListMdiWindow::connectModel(); applies_to_new on change reason domain + SQL; centralised change-reason prompting in DetailDialogBase; compute RLS for app + app_versions as system-owned global registries; UUID generation in ORE app seed; ReflectCPP consteval workaround; app_version multi-platform via ores_compute_app_version_platforms_tbl junction; AppVersionDetailDialog + WorkunitDetailDialog combo boxes.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :compute:qt:refactor:loading:rls:multi_platform:compute_grid_polish_and_e2e:sprint_15:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: Clean up data layers
 #+description: Restructure data population around explicit layers (Foundation, Data Governance, Data Catalogues, Production).
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :sql:data:layers:refactor:schema_polish:sprint_10:v0:
 #+owner: marco

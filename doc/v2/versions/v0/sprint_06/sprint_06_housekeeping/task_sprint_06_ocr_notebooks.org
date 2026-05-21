@@ -4,6 +4,7 @@
 #+title: OCR scan notebooks for this sprint
 #+description: Continue the notebook-scan thread; capture design sketches from sprint 06 design sessions.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :agile:ocr:notebook:sprint_06_housekeeping:sprint_06:v0:
 #+owner: marco

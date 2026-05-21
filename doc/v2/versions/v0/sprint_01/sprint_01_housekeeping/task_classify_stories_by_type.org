@@ -4,6 +4,7 @@
 #+title: Classify stories by type
 #+description: Apply consistent tag classification to every story in the sprint and reflect the classification in the sprint report.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :agile:classification:tagging:sprint_01_housekeeping:sprint_01:v0:
 #+owner: marco

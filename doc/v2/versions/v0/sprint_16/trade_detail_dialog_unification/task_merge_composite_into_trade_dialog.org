@@ -4,6 +4,7 @@
 #+title: Merge composite instrument family into TradeDetailDialog
 #+description: PR 5 of 6: CompositeInstrumentController + associated windows removed; composite instrument viewing + editing of details + legs within the trade interface; trim trade type code; instrument-loaded guard.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:trade:composite:instrument:trade_detail_dialog_unification:sprint_16:v0:
 #+owner: marco

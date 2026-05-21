@@ -2,6 +2,7 @@
 :ID: B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44
 :END:
 #+title: Git Recipes
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: showeverything

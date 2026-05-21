@@ -4,6 +4,7 @@
 #+title: Add database support for currency
 #+description: Create the first project database table and write currency reference data to it.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :currencies:sql:reference_data:currencies_end_to_end:sprint_01:v0:
 #+owner: marco

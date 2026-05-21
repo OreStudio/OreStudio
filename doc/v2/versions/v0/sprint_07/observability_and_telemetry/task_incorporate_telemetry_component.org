@@ -4,6 +4,7 @@
 #+title: Incorporate new telemetry component
 #+description: Wire the new ores.telemetry component into the existing logging path: trace IDs, span IDs, OpenTelemetry export.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :telemetry:observability:opentelemetry:observability_and_telemetry:sprint_07:v0:
 #+owner: marco

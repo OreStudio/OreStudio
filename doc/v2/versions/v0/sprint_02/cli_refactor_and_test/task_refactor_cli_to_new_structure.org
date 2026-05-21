@@ -4,6 +4,7 @@
 #+title: Refactor CLI to new structure
 #+description: Move CLI sources under the project's new module layout (=ores.cli=) and resolve commands through the new structure.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :cli:refactor:project_structure:cli_refactor_and_test:sprint_02:v0:
 #+owner: marco

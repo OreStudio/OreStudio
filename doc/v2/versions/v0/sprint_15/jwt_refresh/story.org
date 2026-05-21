@@ -4,6 +4,7 @@
 #+title: JWT refresh
 #+description: Configurable token lifetimes via system settings; iam.v1.auth.refresh NATS endpoint; reactive shell retry + proactive Qt timer; ores_iam_auth_events_tbl TimescaleDB hypertable for auth telemetry.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :iam:jwt:refresh:nats:telemetry:sprint_15:v0:
 #+created: 2026-05-20

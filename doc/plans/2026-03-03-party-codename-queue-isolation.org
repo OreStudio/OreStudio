@@ -2,6 +2,7 @@
 :ID: b4e2f931-7a1c-4d8e-9b3f-5c0d6a8e1f2b
 :END:
 #+title: Party Codename and Queue Isolation Design
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

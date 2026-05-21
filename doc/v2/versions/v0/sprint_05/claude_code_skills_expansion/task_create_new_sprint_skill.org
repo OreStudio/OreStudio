@@ -4,6 +4,7 @@
 #+title: Create a Claude Code skill to open a new sprint
 #+description: Skill that updates version strings, copies the backlog template, and creates the next sprint backlog file.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :claude_code:skills:agile:claude_code_skills_expansion:sprint_05:v0:
 #+owner: marco

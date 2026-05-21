@@ -4,6 +4,7 @@
 #+title: Connection browser: environments
 #+description: Split server_environment into environment + connection; unified tree with named environments; login quick-connect combo; duplicate action; inherited tags.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :connections:environments:qt:ux:sprint_13:v0:
 #+created: 2026-05-20

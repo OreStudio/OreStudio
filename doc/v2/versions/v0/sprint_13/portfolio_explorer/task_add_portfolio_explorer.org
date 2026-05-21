@@ -4,6 +4,7 @@
 #+title: Add portfolio explorer
 #+description: PortfolioBookTreeMdiWindow: hierarchical tree of portfolios + books for the session party; trade table on the right filtered by selection; breadcrumb path; trade count aggregation; UI settings persist (incl. splitter); stale indicators on book/portfolio/trade events; trade protocol gains optional book_id + portfolio_id filters with recursive CTE for subtrees; protocol 43.0; EntityListMdiWindow::initializeTableSettings grows optional QSplitter param; book_changed_event + portfolio_changed_event.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:portfolio:book:trade:explorer:protocol:eventing:portfolio_explorer:sprint_13:v0:
 #+owner: marco

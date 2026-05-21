@@ -2,6 +2,7 @@
 :ID: 2E53EE1A-6856-6904-7FEB-AC95C6722A63
 :END:
 #+title: ORE Studio Shell Recipes
+#+version: 1
 #+author: Marco Craveiro
 #+startup: inlineimages
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil

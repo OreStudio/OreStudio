@@ -4,6 +4,7 @@
 #+title: Add NOTICE logging support to sqlgen
 #+description: Upstream PR getml/sqlgen#120 + proposal #118 — Postgres notice processor hook.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :sqlgen:upstream:logging:postgres:sqlgen_improvements:sprint_11:v0:
 #+owner: marco

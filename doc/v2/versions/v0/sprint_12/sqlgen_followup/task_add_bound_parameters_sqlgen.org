@@ -4,6 +4,7 @@
 #+title: Add bound parameters to sqlgen
 #+description: Adopt native sqlgen bound-parameter support once vcpkg picks up the release.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :sqlgen:upstream:security:bound_params:sqlgen_followup:sprint_12:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: JWT RS256 in ores.security
 #+description: Move JWT handling from ores.http to ores.security; RS256 asymmetric signing for distributed service auth; jwt_claims grows tenant_id + party_id; protocol 49.0.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :iam:jwt:security:rs256:protocol:sprint_14:v0:
 #+created: 2026-05-20

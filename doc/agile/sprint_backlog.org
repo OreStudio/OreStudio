@@ -3,6 +3,7 @@
 :END:
 #+options: date:nil toc:t author:nil num:nil
 #+title: Sprint Backlog
+#+version: 1
 
 All work undertaken is captured into stories, and these are grouped into
 sprints. A sprint is made up of around eighty hours of work, at which point we

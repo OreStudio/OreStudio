@@ -4,6 +4,7 @@
 #+title: Fix Valgrind failing to run unit tests
 #+description: Diagnose and fix the cause of Valgrind crashing during the unit-test run.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ci:valgrind:bug_fix:build_quality:sprint_01:v0:
 #+owner: marco

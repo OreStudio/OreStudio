@@ -4,6 +4,7 @@
 #+title: Review HTTP service
 #+description: Validate swagger; write recipes covering the HTTP surface; document the OpenAPI generator.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :http:review:swagger:recipes:wt_and_http_review:sprint_08:v0:
 #+owner: marco

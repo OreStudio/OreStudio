@@ -4,6 +4,7 @@
 #+title: Add session support
 #+description: Domain type and lifecycle for client sessions on top of the cobalt-based server.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :login:sessions:client_server:login_and_sessions:sprint_03:v0:
 #+owner: marco

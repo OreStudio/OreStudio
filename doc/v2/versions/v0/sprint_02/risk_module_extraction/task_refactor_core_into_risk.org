@@ -4,6 +4,7 @@
 #+title: Refactor core into risk
 #+description: Refactor the contents of the renamed =risk= module so the structure reflects the new name.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :refactor:risk:risk_module_extraction:sprint_02:v0:
 #+owner: marco

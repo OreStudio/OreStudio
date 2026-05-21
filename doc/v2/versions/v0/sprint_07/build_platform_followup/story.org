@@ -4,6 +4,7 @@
 #+title: Build platform follow-up
 #+description: WSL setup, prebuilt Qt adoption, Windows clang build failures, BLOCKED warnings-on-windows-osx carry-over from sprint 04.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :build:windows:wsl:platform:sprint_07:v0:
 #+created: 2026-05-19

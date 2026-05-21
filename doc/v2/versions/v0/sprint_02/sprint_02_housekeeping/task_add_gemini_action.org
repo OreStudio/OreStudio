@@ -4,6 +4,7 @@
 #+title: Add Gemini action
 #+description: Wire a Gemini-based PR review action into GitHub Actions.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ci:github_actions:gemini:code_review:sprint_02_housekeeping:sprint_02:v0:
 #+owner: marco

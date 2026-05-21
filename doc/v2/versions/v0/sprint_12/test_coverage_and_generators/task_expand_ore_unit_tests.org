@@ -4,6 +4,7 @@
 #+title: Expand unit test coverage for ORE codegened types
 #+description: XML round-trip tests for 9 ORE domain types; file I/O round-trip tests; xsdcpp substitution-group support landed. Adds read_system_party path.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :tests:ore:xsdcpp:xml:test_coverage_and_generators:sprint_12:v0:
 #+owner: marco

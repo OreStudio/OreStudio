@@ -4,6 +4,7 @@
 #+title: ores.controller.core
 #+description: Service registry and lifecycle controller — tracks running services, instances, and health events.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :controller:core:component:
 #+created: 2026-05-19

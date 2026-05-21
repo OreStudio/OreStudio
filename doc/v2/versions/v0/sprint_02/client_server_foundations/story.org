@@ -4,6 +4,7 @@
 #+title: Client/server foundations
 #+description: Introduce a client/server split via a cobalt-based runtime, a comms library, and risk messaging — recording GRPC/0MQ pivots.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :client_server:cobalt:comms:messaging:sprint_02:v0:
 #+created: 2025-08-15

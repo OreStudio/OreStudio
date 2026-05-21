@@ -2,6 +2,7 @@
 :ID: b1450696-8c51-4cc5-8910-84912a411ab6
 :END:
 #+title: Domain Type Creator
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

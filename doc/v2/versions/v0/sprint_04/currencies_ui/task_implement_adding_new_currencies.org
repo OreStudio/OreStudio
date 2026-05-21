@@ -4,6 +4,7 @@
 #+title: Implement adding new currencies
 #+description: Add a new-currency dialog and wire it to the repository.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :currencies:qt:ux:add:currencies_ui:sprint_04:v0:
 #+owner: marco

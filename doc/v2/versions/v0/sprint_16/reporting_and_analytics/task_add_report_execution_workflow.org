@@ -4,6 +4,7 @@
 #+title: Add report execution workflow pipeline
 #+description: Report execution workflow definition + messaging protocol + report_execution_handler; concurrency checks; risk_report_config domain + repository; step handlers including gather market data, assemble bundle, prepare ORE package, submit compute, collect results; MsgPack + object storage for inter-step data; gzip compression.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :reporting:workflow:compute:marketdata:storage:reporting_and_analytics:sprint_16:v0:
 #+owner: marco

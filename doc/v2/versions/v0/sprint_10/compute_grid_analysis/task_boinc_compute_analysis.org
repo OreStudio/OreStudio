@@ -4,6 +4,7 @@
 #+title: BOINC-based compute grid analysis
 #+description: Design pass for a distributed compute grid: Postgres as central state machine, PGMQ for hot dispatch, TimescaleDB for telemetry. Entities sketched: hosts, apps + app_versions, workunits, results, batches + batch_dependencies, assimilated_data (hypertable).
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :compute:boinc:analysis:postgres:pgmq:compute_grid_analysis:sprint_10:v0:
 #+owner: marco

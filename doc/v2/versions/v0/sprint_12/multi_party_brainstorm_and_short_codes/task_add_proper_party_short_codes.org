@@ -4,6 +4,7 @@
 #+title: Add proper party short codes
 #+description: ores_utility_strip_corporate_suffix_fn + ores_utility_generate_short_code_fn for 4-8 char mnemonic codes; transliterated_name column across the stack; Qt models standardise on PaginationWidget + process_authenticated_request. Protocol bump to 32.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :party:short_codes:sql:qt:protocol:multi_party_brainstorm_and_short_codes:sprint_12:v0:
 #+owner: marco

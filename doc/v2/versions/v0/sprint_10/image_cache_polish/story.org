@@ -4,6 +4,7 @@
 #+title: Image cache polish
 #+description: Reload on new datasets; incremental loading via =modified_since=.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :qt:assets:images:protocol:sprint_10:v0:
 #+created: 2026-05-19

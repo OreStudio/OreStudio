@@ -2,6 +2,7 @@
 :ID: A8C7D341-5E92-4F8A-B9E2-1A3D6F8C2E5B
 :END:
 #+title: Unit Test Database Integration Guide
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

@@ -4,6 +4,7 @@
 #+title: Add ORES_PRESET to .env + start-client.sh
 #+description: init-environment.sh requires --preset and stores ORES_PRESET in .env (single source of truth); start-services.sh / stop-services.sh / status-services.sh source ORES_PRESET; new start-client.sh launches Qt client with preset + custom instance colors (named or hex) + display names; ores-prodigy.el registers services from ORES_PRESET in .env.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :dev_env:scripts:emacs:qt:bash:engineering_hygiene:sprint_15:v0:
 #+owner: marco

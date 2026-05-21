@@ -4,6 +4,7 @@
 #+title: Add database logging for tests
 #+description: ORES_TEST_LOG_DATABASE CMake option enables direct DB logging from unit tests; three-tier tenant lifecycle (terminate / deprovision / purge); skip_telemetry_guard prevents recursive logging.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :telemetry:tests:tenancy:lifecycle:telemetry_database_sink:sprint_11:v0:
 #+owner: marco

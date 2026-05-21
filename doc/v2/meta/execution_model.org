@@ -4,6 +4,7 @@
 #+title: Execution Model
 #+description: How LLMs and agents operate the information architecture during a working session.
 #+type: meta
+#+version: 2
 #+level: cross
 #+filetags: :meta:execution:llm:agents:
 #+created: 2026-05-18

@@ -2,6 +2,7 @@
 :ID: 0944e150-a70f-47e3-9219-4177d208c9f8
 :END:
 #+title: V2 Document Author Skill
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

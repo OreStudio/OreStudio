@@ -4,6 +4,7 @@
 #+title: Assorted fixes to currencies dialog (flag and history)
 #+description: Flag updates propagate after reload; flag changes visible in history; fix incorrect-version error on history revert.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:currencies:history:polish:qt_ux_polish:sprint_08:v0:
 #+owner: marco

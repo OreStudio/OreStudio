@@ -4,6 +4,7 @@
 #+title: Service lifecycle, menu restructure, GCC 15 fix, Qt plugin split
 #+description: Service diagnostics improvements; analytics plugin added; menu restructure (Identity / Pricing / Scheduler / Data Transfer top-level menus); GCC 15 incomplete-type errors fixed; xsd::vector copy assignment fix; service detail panel; report definitions list fills wizard page.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :controller:qt:plugins:menus:gcc15:fixes:service_lifecycle_controller:sprint_16:v0:
 #+owner: marco

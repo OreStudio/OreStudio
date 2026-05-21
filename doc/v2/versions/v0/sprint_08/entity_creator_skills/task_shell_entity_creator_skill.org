@@ -4,6 +4,7 @@
 #+title: Shell entity creator skill
 #+description: Skill for adding shell commands for a domain entity: list/add then history; register with REPL; recipe with runnable examples.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :skills:shell:scaffolding:entity_creator_skills:sprint_08:v0:
 #+owner: marco

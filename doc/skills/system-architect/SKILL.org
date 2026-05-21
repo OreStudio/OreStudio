@@ -2,6 +2,7 @@
 :ID: 37b88704-7a45-4347-a80a-9d9b4ee71bef
 :END:
 #+title: System Architect
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

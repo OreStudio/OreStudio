@@ -4,6 +4,7 @@
 #+title: HTTP entity creator skill
 #+description: Skill for adding REST endpoints for a domain entity in ores.http.server; coroutine handlers, OpenAPI metadata, JSON via rfl.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :skills:http:scaffolding:entity_creator_skills:sprint_08:v0:
 #+owner: marco

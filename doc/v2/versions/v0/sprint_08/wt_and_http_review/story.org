@@ -4,6 +4,7 @@
 #+title: Wt and HTTP review
 #+description: Validate the Wt application introduced in sprint 07; review and document the HTTP service (swagger, recipes).
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :wt:http:review:sprint_08:v0:
 #+created: 2026-05-19

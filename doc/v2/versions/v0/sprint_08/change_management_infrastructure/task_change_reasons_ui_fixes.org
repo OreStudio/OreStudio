@@ -4,6 +4,7 @@
 #+title: Change reasons UI fixes
 #+description: Polish the change-reason Qt dialogs based on first-pass review: mandatory reason selection, history visibility, save-dialog refactor, protocol bump to 21.1.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :change_management:qt:ux:change_management_infrastructure:sprint_08:v0:
 #+owner: marco

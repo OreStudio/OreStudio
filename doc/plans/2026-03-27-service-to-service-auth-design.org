@@ -1,4 +1,5 @@
 #+TITLE: Service-to-Service Authentication Design
+#+version: 1
 #+DATE: 2026-03-27
 #+AUTHOR: ORE Studio Team
 #+STATUS: DRAFT

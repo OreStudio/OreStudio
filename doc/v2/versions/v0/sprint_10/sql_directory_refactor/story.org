@@ -4,6 +4,7 @@
 #+title: SQL directory refactor
 #+description: Reorganise create/, drop/, populate/ into component-based subdirectories; safer teardown; admin object naming convention.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :sql:refactor:structure:teardown:sprint_10:v0:
 #+created: 2026-05-19

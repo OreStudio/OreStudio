@@ -4,6 +4,7 @@
 #+title: Add Nats-Session-Id header for per-session correlation
 #+description: Session-level trace ID enabling log aggregation across all requests within a session; nats_client supports + propagates session ID; sourced from IAM session record.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :nats:iam:session:correlation:observability:session_correlation_id:sprint_16:v0:
 #+owner: marco

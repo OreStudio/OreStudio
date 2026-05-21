@@ -4,6 +4,7 @@
 #+title: ores.qt.mktdata
 #+description: Qt plugin for market data UI — market series, fixings, observations, and currency market tiers.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :qt:marketdata:ui:component:
 #+created: 2026-05-20

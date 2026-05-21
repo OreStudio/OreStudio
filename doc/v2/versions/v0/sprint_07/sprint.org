@@ -4,6 +4,7 @@
 #+title: Sprint 07
 #+description: IAM rename, RBAC, currencies history polish, Qt UX polish, comms features, observability & telemetry components, Wt + HTTP introduction, build platform follow-up.
 #+type: sprint
+#+version: 2
 #+level: s3
 #+filetags: :iam:rbac:observability:wt:http:sprint_07:v0:
 #+created: 2026-05-19

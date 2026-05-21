@@ -4,6 +4,7 @@
 #+title: Code-generate ER diagram from SQL
 #+description: Python SQL parser produces PlantUML ER diagrams; convention-validation engine; Mustache template; orchestration script.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :codegen:er_diagram:plantuml:python:codegen_infrastructure:sprint_10:v0:
 #+owner: marco

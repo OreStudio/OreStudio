@@ -4,6 +4,7 @@
 #+title: ores.compute.api
 #+description: Domain types and NATS protocol schemas for the compute component.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :compute:api:component:
 #+created: 2026-05-19

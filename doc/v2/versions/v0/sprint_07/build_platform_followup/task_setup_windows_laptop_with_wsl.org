@@ -4,6 +4,7 @@
 #+title: Setup windows laptop with WSL
 #+description: Get a Windows dev laptop ready: WSL, vcpkg, project clone, full build + tests green.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :build:windows:wsl:setup:build_platform_followup:sprint_07:v0:
 #+owner: marco

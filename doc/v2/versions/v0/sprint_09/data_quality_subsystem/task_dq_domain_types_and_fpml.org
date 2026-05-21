@@ -4,6 +4,7 @@
 #+title: DQ domain types and FpML reference data
 #+description: 10 DQ domain types (data_domain, subject_area, catalog, coding_scheme_authority_type, coding_scheme, origin_dimension, nature_dimension, treatment_dimension, methodology, dataset) with JSON + table I/O; FpML non-ISO currencies / business centers / business processes integrated; faker-cxx generators; year_month_day reflector.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :dq:domain_types:fpml:faker:data_quality_subsystem:sprint_09:v0:
 #+owner: marco

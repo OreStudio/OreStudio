@@ -4,6 +4,7 @@
 #+title: Sprint 08
 #+description: Database/seeding overhaul, ISO countries, change-management infrastructure, Qt UX polish, Wt/HTTP review, comms substrate evolution, native pagination, entity-creator skills suite, books domain analysis.
 #+type: sprint
+#+version: 2
 #+level: s3
 #+filetags: :refdata:countries:change_management:qt:comms:skills:sprint_08:v0:
 #+created: 2026-05-19

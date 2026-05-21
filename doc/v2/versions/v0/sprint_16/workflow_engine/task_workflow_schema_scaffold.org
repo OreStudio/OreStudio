@@ -4,6 +4,7 @@
 #+title: Add ores.workflow SQL schema and C++ scaffold
 #+description: Foundational saga-pattern workflow orchestration component: SQL schema for workflow instances + steps; RLS policies; C++ domain entities + repositories; codegen template fixes for timestamptz handling.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :workflow:saga:sql:scaffold:workflow_engine:sprint_16:v0:
 #+owner: marco

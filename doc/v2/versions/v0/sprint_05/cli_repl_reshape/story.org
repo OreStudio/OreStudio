@@ -4,6 +4,7 @@
 #+title: CLI / REPL reshape
 #+description: Reorganise the CLI by entity; expand the shell REPL to cover every entity; rename client to repl; synchronous socket ops in REPL.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :cli:shell:repl:refactor:sprint_05:v0:
 #+created: 2025-11-25

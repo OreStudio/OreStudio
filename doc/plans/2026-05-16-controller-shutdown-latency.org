@@ -1,4 +1,5 @@
 #+TITLE: Controller Startup and Shutdown Latency Fix
+#+version: 1
 #+SUBTITLE: Move blocking DB writes off the io_context thread in process_supervisor
 #+DATE: 2026-05-16
 #+AUTHOR: ORE Studio Team

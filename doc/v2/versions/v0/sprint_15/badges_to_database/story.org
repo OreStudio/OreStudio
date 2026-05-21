@@ -4,6 +4,7 @@
 #+title: Badges to database (phase 1)
 #+description: DB-driven badge metadata so the same definitions can power Qt + Wt; codegen models for badge_severity + code_domain + badge_definition + badge_mapping junction; BadgeCache in Qt.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :badges:database:codegen:qt:wt:sprint_15:v0:
 #+created: 2026-05-20

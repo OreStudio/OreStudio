@@ -4,6 +4,7 @@
 #+title: Implement delete account
 #+description: Add a delete-account flow end-to-end: protocol message, repository bitemporal soft delete, CLI command.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :accounts:delete:protocol:authentication_bootstrap_followup:sprint_05:v0:
 #+owner: marco

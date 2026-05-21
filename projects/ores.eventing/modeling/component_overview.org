@@ -4,6 +4,7 @@
 #+title: ores.eventing
 #+description: In-process pub/sub event bus with PostgreSQL LISTEN/NOTIFY bridge for cross-service domain events.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :eventing:messaging:component:
 #+created: 2026-05-20

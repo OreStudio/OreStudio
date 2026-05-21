@@ -4,6 +4,7 @@
 #+title: Fix OSX build
 #+description: Replace GNU getopt with portable while/case parsing in recreate_database.sh + recreate_env.sh; BSD getopt incompatibility resolved.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :osx:ci:bash:bug_fix:infrastructure_cleanup:sprint_12:v0:
 #+owner: marco

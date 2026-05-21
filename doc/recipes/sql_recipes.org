@@ -2,6 +2,7 @@
 :ID: C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F
 :END:
 #+title: SQL Recipes
+#+version: 1
 #+author: Marco Craveiro
 #+startup: inlineimages
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil

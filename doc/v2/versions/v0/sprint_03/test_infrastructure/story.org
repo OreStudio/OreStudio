@@ -4,6 +4,7 @@
 #+title: Test infrastructure
 #+description: Separate test database, split test code, ctest suite-level tests, data generators.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :testing:ctest:test_infrastructure:sprint_03:v0:
 #+created: 2025-11-10

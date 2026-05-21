@@ -4,6 +4,7 @@
 #+title: Sprint 11
 #+description: Multi-tenant support end-to-end: RBAC + schema consolidation; tenancy foundation, codegen, and test isolation; per-request tenant context; sqlgen improvements; telemetry database sink; tenant validation across surfaces.
 #+type: sprint
+#+version: 2
 #+level: s3
 #+filetags: :tenancy:rbac:iam:sqlgen:telemetry:rls:sprint_11:v0:
 #+created: 2026-05-19

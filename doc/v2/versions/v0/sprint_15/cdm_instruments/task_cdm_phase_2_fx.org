@@ -4,6 +4,7 @@
 #+title: CDM Phase 2: FX instrument domain model
 #+description: FX instruments: FxForward, FxSwap, FxOption. SQL: ores_trading_fx_instruments_tbl (bought/sold currencies + amounts, value_date, settlement, option fields). Domain + repo + service + Qt UI (Model + MDI + Detail + History + Controller).
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :cdm:fx:trading:instrument:domain:qt:sql:cdm_instruments:sprint_15:v0:
 #+owner: marco

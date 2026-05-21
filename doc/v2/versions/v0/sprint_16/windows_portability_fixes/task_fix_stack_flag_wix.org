@@ -4,6 +4,7 @@
 #+title: Windows: Fix stack flag syntax for Clang and WiX 2GB lib limit
 #+description: Update CMake configurations to handle linker stack sizes across compiler drivers; restrict installation of internal static library to non-Windows to avoid 2GB size limitations.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :windows:cmake:clang:wix:linker:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

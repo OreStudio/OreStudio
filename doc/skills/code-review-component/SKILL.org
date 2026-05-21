@@ -2,6 +2,7 @@
 :ID: dadf4117-757a-4eef-a137-cc2ee8023c73
 :END:
 #+title: Code Review Component Skill
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

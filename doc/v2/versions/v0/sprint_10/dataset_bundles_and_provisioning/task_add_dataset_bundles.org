@@ -4,6 +4,7 @@
 #+title: Add dataset bundles
 #+description: dq_dataset_bundles_tbl + bundle_members + bundle_publications audit; PL/pgSQL: dq_list_bundles_fn, dq_list_bundle_datasets_fn, dq_preview_bundle_publication_fn, dq_populate_bundle_fn, dq_get_bundle_publication_history_fn; seed solvaris / base / crypto bundles.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :dq:bundles:sql:publication:dataset_bundles_and_provisioning:sprint_10:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: Fix uninitialised member UB and GLib dl-init suppression
 #+description: Broaden Valgrind suppression rule for call_init to allow intermediate stack frames; xsdcpp bool serialisation suppressions; regenerate domain files.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :windows:valgrind:glib:suppressions:ore:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

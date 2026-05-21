@@ -4,6 +4,7 @@
 #+title: Use a bar chart for sprint resourcing cost
 #+description: Produce a per-story resourcing bar chart from the sprint's clocktable for the sprint report.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :agile:reporting:instrumentation:sprint_01_housekeeping:sprint_01:v0:
 #+owner: marco

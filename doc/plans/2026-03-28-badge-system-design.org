@@ -2,6 +2,7 @@
 :ID: 7e4b1c93-2f8a-4d56-b3e7-9a0c5f812d6e
 :END:
 #+title: Database-Driven Badge System Design
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

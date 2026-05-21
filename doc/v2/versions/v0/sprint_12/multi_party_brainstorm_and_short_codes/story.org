@@ -4,6 +4,7 @@
 #+title: Multi-party brainstorm and short codes
 #+description: Brainstorm multi-party design; party pagination; mnemonic short-code generation; separate party identifiers into junction table; list UI polish.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :party:design:short_codes:pagination:qt:sprint_12:v0:
 #+created: 2026-05-19

@@ -4,6 +4,7 @@
 #+title: Use Fluent icons
 #+description: Switch the icon set to Microsoft's Fluent icons for a more polished, modern look.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:ux:icons:branding:ui_polish_and_branding:sprint_04:v0:
 #+owner: marco

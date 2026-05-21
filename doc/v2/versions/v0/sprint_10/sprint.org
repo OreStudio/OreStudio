@@ -4,6 +4,7 @@
 #+title: Sprint 10
 #+description: Codegen infrastructure; party schemes + FPML reference data; ORE XML codegen via xsdcpp; metadata/production schema split; dataset bundles; System Provisioner Wizard.
 #+type: sprint
+#+version: 2
 #+level: s3
 #+filetags: :codegen:dq:party:fpml:xsdcpp:bundles:wizard:sprint_10:v0:
 #+created: 2026-05-19

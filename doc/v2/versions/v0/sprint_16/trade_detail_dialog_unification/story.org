@@ -4,6 +4,7 @@
 #+title: Trade detail dialog unification
 #+description: Data-driven trade type metadata; merge all six instrument families (FX, swap/rates, bond/credit, equity/commodity, composite, scripted) into TradeDetailDialog; IInstrumentForm registry; form map + trade-type flags + create-mode instrument.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :qt:trade:instrument:refactor:ux:sprint_16:v0:
 #+created: 2026-05-20

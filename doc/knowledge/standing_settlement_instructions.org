@@ -3,6 +3,7 @@
 :ROAM_ALIASES: SSI
 :END:
 #+title: Standing Settlement Instructions
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 

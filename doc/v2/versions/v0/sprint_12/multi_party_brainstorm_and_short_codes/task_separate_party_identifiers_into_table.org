@@ -4,6 +4,7 @@
 #+title: Separate party identifiers into a dedicated table
 #+description: LEI not the primary code for parties; LEI + BIC + other schemes live in party_identifiers junction; party + counterparty detail dialogs gain identifier tabs.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :party:identifiers:refactor:sql:multi_party_brainstorm_and_short_codes:sprint_12:v0:
 #+owner: marco

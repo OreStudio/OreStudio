@@ -4,6 +4,7 @@
 #+title: Party isolation for books, portfolios, trades
 #+description: Strict RLS policies on books / portfolios / trades restrict visibility to the session party; session_data carries party context; update_session_party() + make_request_context() enforce party-level RLS; party shown in portfolio detail dialog; pre-populate party_id in create mode; parent-portfolio selectors in portfolio + book dialogs; FlagIconHelper centralises flag icon setup.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :rls:party:trading:sql:qt:party_isolation_books_portfolios_trades:sprint_13:v0:
 #+owner: marco

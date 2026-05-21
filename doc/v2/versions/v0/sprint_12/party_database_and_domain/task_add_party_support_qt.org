@@ -4,6 +4,7 @@
 #+title: Add party-related support to Qt
 #+description: Comprehensive Party UI: detail dialog, history dialog, MDI window, controller, client model. Configurable detail_fields in codegen; key-field handling for short_code. Existing party / counterparty / tenant screens regenerated.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :party:qt:codegen:ux:party_database_and_domain:sprint_12:v0:
 #+owner: marco

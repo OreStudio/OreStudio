@@ -4,6 +4,7 @@
 #+title: Create a history dialog for currencies
 #+description: A dialog that shows the bitemporal history of a selected currency row.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :currencies:qt:ux:history:temporal:currencies_ui:sprint_04:v0:
 #+owner: marco

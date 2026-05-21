@@ -4,6 +4,7 @@
 #+title: Check functionality in ores.wt
 #+description: Validate the Wt application end-to-end; raise bugs (theming, hard-coded currencies, password in log, dialog sizing, site logo).
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :wt:review:ux:wt_and_http_review:sprint_08:v0:
 #+owner: marco

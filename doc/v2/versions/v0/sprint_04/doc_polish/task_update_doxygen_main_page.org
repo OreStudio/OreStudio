@@ -4,6 +4,7 @@
 #+title: Update Doxygen main page
 #+description: Refresh the Doxygen main page so it links to the v2 entry points instead of the legacy ones.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :documentation:doxygen:doc_polish:sprint_04:v0:
 #+owner: marco

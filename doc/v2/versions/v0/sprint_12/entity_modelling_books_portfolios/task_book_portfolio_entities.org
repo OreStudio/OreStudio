@@ -4,6 +4,7 @@
 #+title: Book and Portfolio entities
 #+description: Portfolio = logical aggregation nodes (never hold trades). Book = operational ledger leaves (hold trades). Strict separation; legal ownership at Book level; trading vs banking book flag; Basel-friendly. Combined hierarchy rules documented.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :modelling:books:portfolios:analysis:basel:entity_modelling_books_portfolios:sprint_12:v0:
 #+owner: marco

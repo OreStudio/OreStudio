@@ -4,6 +4,7 @@
 #+title: Add exit confirmation dialog
 #+description: Prompt the user before quitting the application; avoid accidental data loss.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:ux:qt_ux_polish:sprint_07:v0:
 #+owner: marco

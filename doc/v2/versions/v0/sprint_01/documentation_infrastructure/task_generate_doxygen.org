@@ -4,6 +4,7 @@
 #+title: Generate Doxygen documentation and add it to the site
 #+description: Wire Doxygen into the build and publish its output as part of the project site.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :documentation:doxygen:api:documentation_infrastructure:sprint_01:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: ores.geo
 #+description: Geolocation service that maps IP addresses to country and city using MaxMind GeoLite2-City data in PostgreSQL.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :geo:geolocation:component:
 #+created: 2026-05-20

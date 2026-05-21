@@ -4,6 +4,7 @@
 #+title: Add ores.ore component for import/export
 #+description: Dedicated component for ORE (Open Source Risk Engine) import/export work; directory + CMake + stubs + arch docs updated.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ore:component:import_export:ore_xml_codegen:sprint_10:v0:
 #+owner: marco

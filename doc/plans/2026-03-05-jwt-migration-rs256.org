@@ -1,4 +1,5 @@
 #+TITLE: JWT Migration to ores.security + RS256
+#+version: 1
 #+DATE: 2026-03-05
 #+AUTHOR: ORE Studio Team
 #+STATUS: COMPLETED

@@ -4,6 +4,7 @@
 #+title: Risk module extraction
 #+description: Rename =core= to =risk= and refactor its contents to reflect the domain — the start of explicit domain modules.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :refactor:risk:core:domain_modules:sprint_02:v0:
 #+created: 2025-09-01

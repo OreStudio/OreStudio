@@ -4,6 +4,7 @@
 #+title: pgmq queue management and messaging UI
 #+description: Initial MQ subsystem on top of pgmq: protocol 0xB000-0xB013 messages; metrics hypertable; Qt monitor UI.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :mq:pgmq:protocol:qt:sprint_14:v0:
 #+created: 2026-05-20

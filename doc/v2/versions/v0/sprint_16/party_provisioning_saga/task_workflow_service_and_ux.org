@@ -4,6 +4,7 @@
 #+title: Workflow service + correlation IDs + PartyProvisionPage UX fixes
 #+description: ores.workflow.service microservice; standardised correlation ID logging via log_handler_entry; PartyProvisionPage UX improvements; rewrite PartyProvisioningWizard to remove party-creation logic; party-scoped report definition uniqueness.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :workflow:service:iam:refdata:qt:wizard:party_provisioning_saga:sprint_16:v0:
 #+owner: marco

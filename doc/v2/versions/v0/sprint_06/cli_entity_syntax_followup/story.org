@@ -4,6 +4,7 @@
 #+title: CLI entity syntax follow-up
 #+description: Clean up the snags left by sprint 05's entity-first CLI/REPL reshape; add top-level login and logout commands in the shell.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :cli:shell:repl:sprint_06:v0:
 #+created: 2025-12-13

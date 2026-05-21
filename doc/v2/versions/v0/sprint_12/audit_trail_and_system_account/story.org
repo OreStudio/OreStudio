@@ -4,6 +4,7 @@
 #+title: Audit trail and system account
 #+description: Standardise audit-trail terminology; system account (no login) for initial population; modified_by from session; generation-context KVP for FK + audit fields.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :audit:iam:system_account:generators:sprint_12:v0:
 #+created: 2026-05-19

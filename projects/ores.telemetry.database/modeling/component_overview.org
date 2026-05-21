@@ -4,6 +4,7 @@
 #+title: ores.telemetry.database
 #+description: Database persistence layer for telemetry log records.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :telemetry:database:component:
 #+created: 2026-05-19

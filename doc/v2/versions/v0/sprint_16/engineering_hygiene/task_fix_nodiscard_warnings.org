@@ -4,6 +4,7 @@
 #+title: Fix nodiscard warnings in ImportTradeDialog instrument saves
 #+description: Silence nodiscard warnings (with caveat about silent failures - explicit return-value checks for critical operations recommended).
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:nodiscard:warnings:polish:engineering_hygiene:sprint_16:v0:
 #+owner: marco

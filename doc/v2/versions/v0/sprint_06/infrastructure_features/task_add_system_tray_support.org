@@ -4,6 +4,7 @@
 #+title: Add system tray support
 #+description: Show ORE Studio in the system tray with minimise-to-tray behaviour for long-running sessions.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:ux:system_tray:infrastructure_features:sprint_06:v0:
 #+owner: marco

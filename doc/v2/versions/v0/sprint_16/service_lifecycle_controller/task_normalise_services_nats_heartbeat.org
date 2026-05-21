@@ -4,6 +4,7 @@
 #+title: Normalise all services to NATS-based hosting with unified heartbeat
 #+description: IAM + HTTP + Wt + compute wrapper migrated to ores.service unified infrastructure; signing_service_runner + wt_service_runner; on_shutdown callbacks; standard NATS telemetry heartbeats; service dashboard sole-source-of-truth from heartbeats; IAM roles + service accounts for http / wt / compute.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :service:nats:iam:http:wt:compute:heartbeat:service_lifecycle_controller:sprint_16:v0:
 #+owner: marco

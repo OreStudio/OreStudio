@@ -4,6 +4,7 @@
 #+title: Add account-party management and login support
 #+description: Multi-party login: select_party_request/response messages; login_response carries available parties; AccountDetailDialog Parties tab + AccountPartiesWidget; server-side get_account_parties_by_account / save_account_party / delete_account_party handlers; ores_iam_account_parties_system_party_id_fn auto-assigns system party to initial admin; protocol 37 → 38 (breaking); multi_party.org doc.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :iam:party:login:protocol:qt:doc:account_party_management:sprint_13:v0:
 #+owner: marco

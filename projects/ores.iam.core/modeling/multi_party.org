@@ -2,6 +2,7 @@
 :ID: AAD74D7C-4789-4E54-8B02-EC60231D78A5
 :END:
 #+title: Multi-Party Login Flow
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

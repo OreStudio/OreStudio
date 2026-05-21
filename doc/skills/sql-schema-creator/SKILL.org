@@ -2,6 +2,7 @@
 :ID: a08fc2a2-4e42-41ec-ac92-d1af50dc61cb
 :END:
 #+title: SQL Schema Creator
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

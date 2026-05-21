@@ -4,6 +4,7 @@
 #+title: Assorted fixes to feature flags dialog
 #+description: Real-time subscription, recency pulse, badge column, version + recorded_at columns; protocol bump to 20.0.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:feature_flags:ux:polish:qt_ux_polish:sprint_08:v0:
 #+owner: marco

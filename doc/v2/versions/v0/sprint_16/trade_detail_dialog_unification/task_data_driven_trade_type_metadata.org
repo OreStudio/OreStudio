@@ -4,6 +4,7 @@
 #+title: Data-driven trade type metadata
 #+description: Phase 1-3: schema updates to the trade types table; NATS protocol for trade types; product_type codified as a C++ enum; replace silent defaults with unknown sentinel.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :trading:sql:protocol:enum:refactor:trade_detail_dialog_unification:sprint_16:v0:
 #+owner: marco

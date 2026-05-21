@@ -4,6 +4,7 @@
 #+title: Fix save on connections causes exit
 #+description: Clicking Save asked the user to exit the application; saving repeatedly created duplicate folders.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:connections:bug_fix:qt_and_eventing_polish:sprint_12:v0:
 #+owner: marco

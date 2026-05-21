@@ -2,6 +2,7 @@
 :ID: A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D
 :END:
 #+title: ORE Studio Messaging Protocol Reference
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: overview

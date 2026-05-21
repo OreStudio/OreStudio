@@ -4,6 +4,7 @@
 #+title: Rename ores.risk to ores.refdata
 #+description: Pure rename: include paths, namespaces, CMake targets, header guards, HTTP routes file (risk_routes.cpp -> refdata_routes.cpp); diagrams + docs aligned.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :refactor:rename:refdata:database_naming_refactor:sprint_09:v0:
 #+owner: marco

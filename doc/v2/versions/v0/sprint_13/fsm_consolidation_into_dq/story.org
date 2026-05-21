@@ -4,6 +4,7 @@
 #+title: FSM consolidation into DQ
 #+description: Move the FSM framework from a stand-alone component into the DQ layer; FSM is metadata for data-quality lifecycles.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :fsm:dq:refactor:sql:sprint_13:v0:
 #+created: 2026-05-20

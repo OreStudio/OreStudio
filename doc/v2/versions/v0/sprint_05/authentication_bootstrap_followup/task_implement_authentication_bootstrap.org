@@ -4,6 +4,7 @@
 #+title: Implement authentication bootstrap workflow
 #+description: Implement the bootstrap workflow that creates the first admin account on a fresh database; POSTPONED in sprint 03.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :login:authentication:bootstrap:authentication_bootstrap_followup:sprint_05:v0:
 #+owner: marco

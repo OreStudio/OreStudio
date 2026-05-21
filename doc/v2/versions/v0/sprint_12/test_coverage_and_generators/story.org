@@ -4,6 +4,7 @@
 #+title: Test coverage and FK-aware generators
 #+description: Bring code coverage back over 50%; FK-aware generators; enable skipped tests; expand ORE-codegened type tests; fix accounts dialog off-by-one.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :tests:coverage:generators:qa:sprint_12:v0:
 #+created: 2026-05-19

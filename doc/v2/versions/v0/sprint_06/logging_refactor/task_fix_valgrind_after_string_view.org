@@ -4,6 +4,7 @@
 #+title: Fix valgrind leaks after string view changes to logging
 #+description: The string_view change introduced dangling-view leaks at log emission; fix the lifetime issues.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :logging:valgrind:memory:logging_refactor:sprint_06:v0:
 #+owner: marco

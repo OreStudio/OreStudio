@@ -2,6 +2,7 @@
 :ID: 89935F29-7C6C-1E84-EAD3-EC4BD20421F5
 :END:
 #+title: Claude Design Skill
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

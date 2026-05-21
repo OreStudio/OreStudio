@@ -4,6 +4,7 @@
 #+title: Replace MaxMind implementation
 #+description: Replace the MaxMind-licensed GeoIP backend with a permissively-licensed alternative for the geo lookups used in session tracking.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :geo:licensing:observability:observability_and_telemetry:sprint_07:v0:
 #+owner: marco

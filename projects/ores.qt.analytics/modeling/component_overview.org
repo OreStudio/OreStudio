@@ -4,6 +4,7 @@
 #+title: ores.qt.analytics
 #+description: Qt plugin for analytics pricing UI — model configurations, products, parameters, and pricing engine types.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :qt:analytics:ui:component:
 #+created: 2026-05-20

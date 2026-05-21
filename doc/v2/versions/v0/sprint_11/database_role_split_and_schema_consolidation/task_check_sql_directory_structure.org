@@ -4,6 +4,7 @@
 #+title: Check SQL directory structure
 #+description: Standardise SQL file names to [name]_[purpose].sql; consolidate change_control/ into dq/; remove ~45 orphaned refdata SQL files.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :sql:naming:structure:cleanup:database_role_split_and_schema_consolidation:sprint_11:v0:
 #+owner: marco

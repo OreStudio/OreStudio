@@ -4,6 +4,7 @@
 #+title: OCR scan notebooks for this sprint
 #+description: Continue notebook OCR thread.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :agile:ocr:sprint_11_housekeeping:sprint_11:v0:
 #+owner: marco

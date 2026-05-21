@@ -4,6 +4,7 @@
 #+title: Review telemetry work
 #+description: Database support for telemetry was missing; persist telemetry log entries with sender identity; fix self-referential telemetry events; UI fixes (event-viewer timestamps, accounts dialog sizing).
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :telemetry:review:qt:observability_followup:sprint_08:v0:
 #+owner: marco

@@ -2,6 +2,7 @@
 :ID: 7f3a1b2c-8d4e-4f5a-9b6c-1d2e3f4a5b6c
 :END:
 #+title: Secure Provenance Stamping
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

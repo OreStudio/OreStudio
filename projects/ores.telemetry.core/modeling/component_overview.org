@@ -4,6 +4,7 @@
 #+title: ores.telemetry.core
 #+description: Observability library — structured logging, distributed tracing, and JSON Lines log export.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :telemetry:core:component:
 #+created: 2026-05-19

@@ -4,6 +4,7 @@
 #+title: Build stabilisation
 #+description: Bring Windows and macOS builds to green; sort vcpkg binary caching; remove ImGui; suppress Valgrind noise.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :build:ci:windows:macos:vcpkg:sprint_02:v0:
 #+created: 2025-08-01

@@ -4,6 +4,7 @@
 #+title: Add missing entities to CLI
 #+description: list + delete commands for roles, permissions, countries, change_reasons, change_reason_categories; JSON and table output; lookup by UUID/code/name as appropriate.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :cli:entity_coverage:cli_entity_coverage:sprint_09:v0:
 #+owner: marco

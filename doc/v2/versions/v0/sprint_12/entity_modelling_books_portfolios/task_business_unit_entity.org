@@ -4,6 +4,7 @@
 #+title: Business unit entity
 #+description: Internal organisational units (desks, branches): unit_id, party_id, parent_business_unit_id, unit_name, unit_id_code, business_centre. Supports hierarchy.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :modelling:business_units:party:analysis:entity_modelling_books_portfolios:sprint_12:v0:
 #+owner: marco

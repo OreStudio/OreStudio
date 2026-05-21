@@ -4,6 +4,7 @@
 #+title: Import market.txt and fixings.txt in ORE import
 #+description: TradeController reads market.txt + fixings.txt alongside trade XML; ImportTradeDialog handles market data import in background thread before trade import.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ore:marketdata:fixings:qt:import:ore_import_supporting_files:sprint_16:v0:
 #+owner: marco

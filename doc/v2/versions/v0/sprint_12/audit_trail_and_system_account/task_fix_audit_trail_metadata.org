@@ -4,6 +4,7 @@
 #+title: Fix audit trail metadata for recorded_by and modified_by
 #+description: modified_by + performed_by soft FK to accounts; super-admin no longer 'modified by bootstrap'; tenant admin no longer 'recorded by onboarding'; performed_by visible in UI; terminology standardised.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :audit:iam:refactor:terminology:audit_trail_and_system_account:sprint_12:v0:
 #+owner: marco

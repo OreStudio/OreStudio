@@ -4,6 +4,7 @@
 #+title: ores.nats
 #+description: NATS messaging transport library providing request/reply, pub/sub, and domain-event patterns using JSON via rfl.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :nats:messaging:component:
 #+created: 2026-05-20

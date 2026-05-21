@@ -4,6 +4,7 @@
 #+title: FSM and trade support
 #+description: Generic FSM framework in Postgres; trade envelope schema (trades + identifiers + party roles); ORE envelope view; rename ores.trade → ores.trading.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :fsm:trade:postgres:refactor:modelling:sprint_12:v0:
 #+created: 2026-05-19

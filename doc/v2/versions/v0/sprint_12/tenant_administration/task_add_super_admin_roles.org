@@ -4,6 +4,7 @@
 #+title: Add roles for Super Admin
 #+description: Distinguish Super Admin from Tenant Admin via separate roles.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :iam:roles:super_admin:tenant_administration:sprint_12:v0:
 #+owner: marco

@@ -2,6 +2,7 @@
 :ID: c6adac80-f4e6-44e8-9525-3760cb98c41d
 :END:
 #+title: Qt Entity Creator
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

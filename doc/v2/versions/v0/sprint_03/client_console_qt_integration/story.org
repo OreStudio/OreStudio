@@ -4,6 +4,7 @@
 #+title: Client console and Qt integration
 #+description: Merge the client into the console, run the Qt GUI over the new socket layer, locking and Prodigy tag work.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :client:qt:ux:sprint_03:v0:
 #+created: 2025-11-15

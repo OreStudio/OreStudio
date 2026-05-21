@@ -4,6 +4,7 @@
 #+title: Add equity and FX exotic instrument mappers
 #+description: equity_instrument_mapper; FX mapping extended to exotics (barriers, digitals, accumulators); unified trade dispatch updates + round-trip fidelity tests.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ore:trading:equity:fx:mappers:exotics:ore_import_pipeline:sprint_16:v0:
 #+owner: marco

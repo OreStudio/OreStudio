@@ -4,6 +4,7 @@
 #+title: Detail dialogs modernisation
 #+description: Convert all detail dialogs to tabbed layout with a Provenance tab; remove the in-dialog toolbars.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :qt:ux:dialogs:refactor:sprint_13:v0:
 #+created: 2026-05-20

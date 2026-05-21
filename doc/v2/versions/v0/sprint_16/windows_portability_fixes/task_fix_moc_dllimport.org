@@ -4,6 +4,7 @@
 #+title: Fix Windows MOC dllimport conflict on AddItemDialog and TagSelectorWidget
 #+description: Remove ORES_QT_API export macro from AddItemDialog + TagSelectorWidget classes + their header includes.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :windows:qt:moc:dllimport:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

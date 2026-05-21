@@ -2,6 +2,7 @@
 :ID: 2003934B-ED05-D114-404B-08C0E0D844BB
 :END:
 #+title: ORE Claude Code Skill Catalogue
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

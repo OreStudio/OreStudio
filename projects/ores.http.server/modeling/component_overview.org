@@ -4,6 +4,7 @@
 #+title: ores.http.server
 #+description: HTTP server entrypoint — wires HTTP routes and runs the Boost.Asio event loop.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :http:server:component:
 #+created: 2026-05-19

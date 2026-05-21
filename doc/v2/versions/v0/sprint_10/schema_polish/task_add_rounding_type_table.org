@@ -4,6 +4,7 @@
 #+title: Add rounding type table
 #+description: Rounding values aligned with FpML RoundingDirectionEnum: Up, Down, Closest, Floor, Ceiling. Currency validates against this table.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :refdata:rounding:fpml:currency:schema_polish:sprint_10:v0:
 #+owner: marco

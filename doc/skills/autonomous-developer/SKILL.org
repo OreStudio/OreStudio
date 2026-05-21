@@ -2,6 +2,7 @@
 :ID: 8c4f5b9a-3d2e-4c89-a7f1-9e8d6f2b5a4c
 :END:
 #+title: Autonomous Developer
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

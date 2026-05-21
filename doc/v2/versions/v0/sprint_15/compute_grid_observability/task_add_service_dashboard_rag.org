@@ -4,6 +4,7 @@
 #+title: Add service dashboard with live RAG status
 #+description: TimescaleDB hypertable for service heartbeat samples; reusable header-only heartbeat publisher coroutine over NATS; Qt UI dashboard with RAG (red/amber/green) status indicators; integrated into all domain services.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :compute:dashboard:rag:qt:nats:timescale:compute_grid_observability:sprint_15:v0:
 #+owner: marco

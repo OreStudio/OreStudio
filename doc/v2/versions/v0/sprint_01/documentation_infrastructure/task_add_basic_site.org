@@ -4,6 +4,7 @@
 #+title: Add basic site
 #+description: Stand up a basic project site, generated from the org-mode sources.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :documentation:site:documentation_infrastructure:sprint_01:v0:
 #+owner: marco

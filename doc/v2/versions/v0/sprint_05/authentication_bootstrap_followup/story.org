@@ -4,6 +4,7 @@
 #+title: Authentication bootstrap follow-up
 #+description: Land the authentication bootstrap workflow that was POSTPONED in sprint 03, plus delete-account and feature-flag separation.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :login:accounts:authentication:sprint_05:v0:
 #+created: 2025-11-22

@@ -4,6 +4,7 @@
 #+title: How do I create a component overview?
 #+description: Use generate_v2_doc.sh to scaffold a component_overview.org and fill in each required section.
 #+type: recipe
+#+version: 2
 #+level: cross
 #+filetags: :codegen:component:documentation:recipe:
 #+created: 2026-05-20

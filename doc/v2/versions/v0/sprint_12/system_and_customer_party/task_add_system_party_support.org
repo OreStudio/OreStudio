@@ -4,6 +4,7 @@
 #+title: Add system party support
 #+description: System-party design lands: 'Internal' party type + 'WRLD' business centre; system tenant renamed 'Root Tenant'; system party renamed 'System Party'; tenant provisioner aligned; system parties excluded from operational root-party uniqueness.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :party:system_party:tenant:bootstrap:system_and_customer_party:sprint_12:v0:
 #+owner: marco

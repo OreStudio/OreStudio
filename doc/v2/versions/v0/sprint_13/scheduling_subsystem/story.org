@@ -4,6 +4,7 @@
 #+title: Scheduling subsystem
 #+description: ores.scheduler wrapping pg_cron with Quartz.NET-style fluent API; scheduler binary protocol (0x9000-0x9FFF, protocol 45.0); message queue infrastructure.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :scheduler:pg_cron:protocol:messaging:sprint_13:v0:
 #+created: 2026-05-20

@@ -1,4 +1,5 @@
 #+TITLE: Virtual Portfolio Design
+#+version: 1
 #+SUBTITLE: User-owned reporting overlays that aggregate real portfolios and books across the book tree
 #+DATE: 2026-05-17
 #+AUTHOR: ORE Studio Team

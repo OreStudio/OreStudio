@@ -4,6 +4,7 @@
 #+title: ores.qt.admin
 #+description: Qt plugin for IAM UI — accounts, roles, tenants, system settings, badge types, and tenant onboarding.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :qt:iam:ui:component:
 #+created: 2026-05-20

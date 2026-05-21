@@ -4,6 +4,7 @@
 #+title: Add basic widgets to display currencies
 #+description: Display currency reference data in the Qt UI via a model/view tree + list widget.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :currencies:qt:ux:currencies_end_to_end:sprint_01:v0:
 #+owner: marco

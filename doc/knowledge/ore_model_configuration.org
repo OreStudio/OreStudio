@@ -2,6 +2,7 @@
 :ID: A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C
 :END:
 #+title: ORE Model Configuration
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 

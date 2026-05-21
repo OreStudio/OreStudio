@@ -4,6 +4,7 @@
 #+title: Add calendar adjustment and market convention imports
 #+description: Mappers + domain models to import ORE XML calendar adjustments + financial conventions (Zero / Deposit / Swap / OIS / FRA / IBOR / Overnight / FX / CDS) into ORES refdata; normalisation for business day conventions, day counters, frequencies.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ore:refdata:calendar:conventions:mappers:ore_import_supporting_files:sprint_16:v0:
 #+owner: marco

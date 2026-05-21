@@ -4,6 +4,7 @@
 #+title: Document Types
 #+description: Every type of document, its frontmatter contract, folder, and structure.
 #+type: meta
+#+version: 2
 #+level: cross
 #+filetags: :meta:document_types:frontmatter:tags:
 #+created: 2026-05-18

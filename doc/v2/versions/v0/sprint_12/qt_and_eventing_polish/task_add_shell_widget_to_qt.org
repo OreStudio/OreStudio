@@ -4,6 +4,7 @@
 #+title: Add shell widget to ores.qt
 #+description: REPL widget inside Qt so super-admin can do bulk setup (tenants, accounts) without leaving the application.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:shell:repl:ux:qt_and_eventing_polish:sprint_12:v0:
 #+owner: marco

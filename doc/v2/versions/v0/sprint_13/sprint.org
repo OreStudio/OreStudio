@@ -4,6 +4,7 @@
 #+title: Sprint 13
 #+description: Trade + scheduling foundations: account-party + multi-party login; scheduling subsystem (pg_cron); message queue; batch operations; FSM merged into DQ; portfolio explorer; party isolation for books / portfolios / trades; tabbed dialogs; provenance fix.
 #+type: sprint
+#+version: 2
 #+level: s3
 #+filetags: :trade:scheduling:party:rls:qt:dq:fsm:sprint_13:v0:
 #+created: 2026-05-20

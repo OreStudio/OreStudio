@@ -4,6 +4,7 @@
 #+title: Replace feature_flags with unified system_settings
 #+description: 9-phase migration: new ores_variability_system_settings_tbl (bool / int / string / JSON value types) + domain + JSON/table I/O + entity/mapper/repository + service with typed accessors + NATS handler/protocol variability.v1.settings.* + eventing system_setting_changed_event; shell list-flags/add-flag → list-settings/save-setting; CLI add_system_setting_options + system_settings_parser; cross-module updates (iam_routes, iam auth, variability_routes, http.server, wt.service, Qt currency windows, TenantProvisioningWizard, event viewer); 29 + 5 + 4 legacy files removed; 14 Qt files renamed FeatureFlag* → SystemSetting*.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :variability:settings:refactor:protocol:sql:qt:shell:cli:system_settings_unification:sprint_15:v0:
 #+owner: marco

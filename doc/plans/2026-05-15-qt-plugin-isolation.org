@@ -1,4 +1,5 @@
 #+title: Qt Plugin Isolation: Cross-Plugin Symbol Dependencies
+#+version: 1
 #+STATUS: COMPLETE
 #+date: 2026-05-15
 #+author: Marco Craveiro

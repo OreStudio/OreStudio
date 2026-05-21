@@ -4,6 +4,7 @@
 #+title: Add generic object storage API + HTTP routes
 #+description: ores.storage component with S3-like PUT / GET / DELETE; replaces compute-specific storage endpoints; path traversal vulnerability fix in resolve_path.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :storage:http:security:compute:refactor:storage_api:sprint_16:v0:
 #+owner: marco

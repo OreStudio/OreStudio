@@ -2,6 +2,7 @@
 :ID: 8777ABEB-35B6-4216-B2BA-7E3E575A2986
 :END:
 #+title: PlantUML ER Modeler Skill
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

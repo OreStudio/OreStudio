@@ -4,6 +4,7 @@
 #+title: Per-type instrument tables
 #+description: Replace the generic instrument table with per-type tables for rates, FX, and equity instruments; full vertical slice (SQL, domain, repo, service, Qt).
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :trading:instruments:sql:refactor:typed:sprint_16:v0:
 #+created: 2026-05-20

@@ -2,6 +2,7 @@
 :ID: 57b7d4d9-aaa5-427d-8d16-0e82da9d3763
 :END:
 #+title: PR Shepherd Skill
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

@@ -4,6 +4,7 @@
 #+title: Add entity types for tenants
 #+description: C++ tenant + tenant_status + tenant_type + currency + rounding_type entities tenant-aware; primary key types handled (UUID / text); protocol bump 26.1; shell tenants command + bootstrap/login tenant awareness; principal parsing username@hostname.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :tenancy:cpp:codegen:protocol:shell:tenancy_codegen_and_entity_types:sprint_11:v0:
 #+owner: marco

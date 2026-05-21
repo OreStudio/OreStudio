@@ -4,6 +4,7 @@
 #+title: GLEIF data integration
 #+description: Add GLEIF LEI entities + relationships as datasets via codegen; central-bank LEIs; LEI-to-BIC mapping dataset.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :gleif:leis:datasets:refdata:sprint_12:v0:
 #+created: 2026-05-19

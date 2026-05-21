@@ -4,6 +4,7 @@
 #+title: Add NATS telemetry sampling
 #+description: nats.service that stores NATS samples for observability; question of renaming to messaging-service or moving to telemetry left open.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :nats:telemetry:observability:nats_migration:sprint_14:v0:
 #+owner: marco

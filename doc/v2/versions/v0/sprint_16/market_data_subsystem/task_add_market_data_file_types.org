@@ -4,6 +4,7 @@
 #+title: Add ORE market data file types
 #+description: Phase 1: market_datum + fixing structs; parser; serializer; comprehensive round-trip tests; both date formats supported in both file types; date parsing/formatting in ores.platform; comma-delimited file handling.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ore:marketdata:parser:serializer:platform:market_data_subsystem:sprint_16:v0:
 #+owner: marco

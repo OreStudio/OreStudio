@@ -4,6 +4,7 @@
 #+title: Currencies UI polish
 #+description: Tidy the currency surface: JSON parsing, merged create/update messages, delete-bug fix, open/close bug fix, XML import, pagination.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :currencies:qt:ux:sprint_05:v0:
 #+created: 2025-11-28

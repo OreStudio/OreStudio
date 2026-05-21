@@ -4,6 +4,7 @@
 #+title: HTTP recipes skill
 #+description: Mirror of the shell/cli recipes skill for HTTP endpoints: Emacs verb-mode requests, route source references.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :skills:http:recipes:entity_creator_skills:sprint_08:v0:
 #+owner: marco

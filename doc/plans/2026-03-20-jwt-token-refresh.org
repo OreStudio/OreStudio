@@ -1,4 +1,5 @@
 #+TITLE: JWT Token Refresh: Configurable Lifetimes, Proactive Renewal, Session Expiry
+#+version: 1
 #+DATE: 2026-03-20
 #+AUTHOR: ORE Studio Team
 #+STATUS: COMPLETED

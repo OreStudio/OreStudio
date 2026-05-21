@@ -4,6 +4,7 @@
 #+title: Fix issues with logging after string_view change
 #+description: Repair call sites and tests that broke under the string_view migration.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :logging:bug_fix:logging_refactor:sprint_06:v0:
 #+owner: marco

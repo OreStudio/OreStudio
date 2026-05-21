@@ -4,6 +4,7 @@
 #+title: ORE portfolio export: exporter + Qt Open Instrument + Export XML
 #+description: export_portfolio method in ores.ore exporter + Qt Open Instrument + Export to ORE XML actions in BookMdiWindow + TradeController; unit tests; review comments addressed (background thread serialisation, instrument data reuse).
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ore:export:qt:portfolio:xml:ore_portfolio_export:sprint_16:v0:
 #+owner: marco

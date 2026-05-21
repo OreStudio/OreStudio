@@ -4,6 +4,7 @@
 #+title: Reporting: domain types, messaging, repository
 #+description: C++ ores.reporting component: report_type / concurrency_policy / report_definition / report_instance domain types; 32 new message types for CRUD + history across the four entities; repository layer; codegen models.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :reporting:cpp:protocol:codegen:repository:reporting_subsystem:sprint_14:v0:
 #+owner: marco

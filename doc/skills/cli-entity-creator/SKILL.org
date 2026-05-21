@@ -2,6 +2,7 @@
 :ID: 809aae41-950c-4e0c-85b7-0d50bc4a775f
 :END:
 #+title: CLI Entity Creator
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

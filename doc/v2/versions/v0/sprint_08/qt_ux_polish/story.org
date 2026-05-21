@@ -4,6 +4,7 @@
 #+title: Qt UX polish
 #+description: Validation of features added during the holidays + assorted dialog fixes (currency, currencies, feature flags, accounts, log viewer).
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :qt:ux:polish:sprint_08:v0:
 #+created: 2026-05-19

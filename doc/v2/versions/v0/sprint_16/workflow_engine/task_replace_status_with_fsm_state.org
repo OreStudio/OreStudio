@@ -4,6 +4,7 @@
 #+title: Replace ad-hoc status strings with FSM state UUIDs
 #+description: Migrate workflow status management from hardcoded strings to database-driven FSM; NATS protocols + services for querying FSM transitions; workflow instance + step state_id FK; fsm_state_map utility.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :workflow:fsm:sql:refactor:workflow_engine:sprint_16:v0:
 #+owner: marco

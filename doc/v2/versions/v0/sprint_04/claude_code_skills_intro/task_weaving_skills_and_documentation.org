@@ -4,6 +4,7 @@
 #+title: Weaving skills and documentation together
 #+description: Analyse how skills and project docs should link and overlap; capture the convention.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :claude_code:skills:documentation:analysis:claude_code_skills_intro:sprint_04:v0:
 #+owner: marco

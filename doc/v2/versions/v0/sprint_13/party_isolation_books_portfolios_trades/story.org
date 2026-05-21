@@ -4,6 +4,7 @@
 #+title: Party isolation for books, portfolios, trades
 #+description: Extend party-level RLS to books / portfolios / trades; session_data carries party context; FlagIconHelper centralised.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :rls:party:trading:sql:qt:sprint_13:v0:
 #+created: 2026-05-20

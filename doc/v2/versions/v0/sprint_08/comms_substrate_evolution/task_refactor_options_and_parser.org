@@ -4,6 +4,7 @@
 #+title: Refactor options and parser
 #+description: Composable CLI configuration: common, server, client, compression configurations; standardise -h/-v/--verbose across binaries; add --log-include-pid.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :cli:refactor:options:comms_substrate_evolution:sprint_08:v0:
 #+owner: marco

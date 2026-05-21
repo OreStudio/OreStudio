@@ -4,6 +4,7 @@
 #+title: Sprint 16
 #+description: Final v0 sprint. ORE import end-to-end; workflow engine + saga orchestration; market data subsystem; service lifecycle controller; Qt plugin architecture; trade detail dialog unification; per-type instrument tables; reporting + analytics; asset class unification; massive Windows portability sweep.
 #+type: sprint
+#+version: 2
 #+level: s3
 #+filetags: :ore:workflow:marketdata:controller:plugins:trading:reporting:windows:sprint_16:v0:
 #+created: 2026-05-20

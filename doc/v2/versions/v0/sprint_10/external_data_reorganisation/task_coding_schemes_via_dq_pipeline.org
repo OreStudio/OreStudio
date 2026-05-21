@@ -4,6 +4,7 @@
 #+title: Move coding schemes through DQ artefact pipeline
 #+description: ISO + FpML coding schemes now flow through dq_coding_schemes_artefact_tbl with preview / upsert / insert_only / replace_all modes; party schemes (LEI, BIC, MIC) remain direct inserts.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :dq:coding_schemes:artefact:pipeline:external_data_reorganisation:sprint_10:v0:
 #+owner: marco

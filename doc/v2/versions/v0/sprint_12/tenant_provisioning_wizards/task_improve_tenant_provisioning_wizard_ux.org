@@ -4,6 +4,7 @@
 #+title: Improve tenant provisioning wizard UX
 #+description: Rename to evoke 'evaluation tenant provisioning'; move off main menu, access via tenants-dialog icon; capitalise tenant-type values; tenant code column narrower; default to evaluation; system-party name evokes 'tenant system party'; root party defaults to tenant name; password-match indicator.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :tenants:wizard:ux:qt:tenant_provisioning_wizards:sprint_12:v0:
 #+owner: marco

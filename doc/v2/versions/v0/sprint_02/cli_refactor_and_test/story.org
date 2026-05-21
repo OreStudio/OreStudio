@@ -4,6 +4,7 @@
 #+title: CLI refactor and test
 #+description: Restructure the CLI to follow the new project layout and add tests to the CLI parser.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :cli:refactor:testing:sprint_02:v0:
 #+created: 2025-09-01

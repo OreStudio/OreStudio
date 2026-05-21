@@ -2,6 +2,7 @@
 :ID: 2A167638-8B5A-4691-90CB-4A6B55785108
 :END:
 #+title: Icon Guidelines
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

@@ -4,6 +4,7 @@
 #+title: Update C++ standard
 #+description: Bump the C++ standard used across the build to the project's chosen target.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :build:cmake:cpp_standard:build_quality:sprint_01:v0:
 #+owner: marco

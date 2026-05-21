@@ -4,6 +4,7 @@
 #+title: Market data service layer
 #+description: Phase 5: ores.marketdata.service component with NATS messaging protocols + handlers + service logic for managing market series, observations, fixings; import service for ORE-formatted data files.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :marketdata:service:nats:protocol:market_data_subsystem:sprint_16:v0:
 #+owner: marco

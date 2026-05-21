@@ -4,6 +4,7 @@
 #+title: Add UI for roles and permission management
 #+description: Qt UI for listing roles, listing permissions, assigning roles to users, and granting permissions to roles.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :iam:rbac:qt:ux:roles_and_permissions:sprint_07:v0:
 #+owner: marco

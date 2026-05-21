@@ -4,6 +4,7 @@
 #+title: ORE import pipeline
 #+description: End-to-end ORE instrument import: dispatch pipeline; equity / FX exotic / commodity / scripted / composite mappers; remaining mappers + roundtrip tests; instrument data persistence; instrument-trade model refactor + portfolio export; server-side import via ores.ore.service.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :ore:import:trading:mappers:server:sprint_16:v0:
 #+created: 2026-05-20

@@ -4,6 +4,7 @@
 #+title: CLI entity coverage
 #+description: Add list/delete CLI commands for roles, permissions, countries, change reasons, change-reason categories; refactor parsers behind a generic helper.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :cli:refactor:entity_coverage:sprint_09:v0:
 #+created: 2026-05-19

@@ -4,6 +4,7 @@
 #+title: Enforce UTC-everywhere timestamp policy
 #+description: Canonical UTC API in ores.platform; UTC sessions enforced in DB; ISO 8601 UTC timestamps in wire protocols; clarify display-only formatting; db_timestamp alias; ore_log_parser inline Boost.Log timestamp parsing.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :platform:utc:timestamps:database:wire_format:utc_timestamp_policy:sprint_16:v0:
 #+owner: marco

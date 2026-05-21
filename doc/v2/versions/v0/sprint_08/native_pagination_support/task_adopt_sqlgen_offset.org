@@ -4,6 +4,7 @@
 #+title: Adopt sqlgen 0.6.0 native offset/limit
 #+description: Update vcpkg submodule to sqlgen 0.6.0; drop custom overlay ports and the single_connection aggregation hack; expand pagination to feature_flags, role, permission, image, tag, login_info repositories.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :sqlgen:pagination:vcpkg:native_pagination_support:sprint_08:v0:
 #+owner: marco

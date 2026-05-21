@@ -4,6 +4,7 @@
 #+title: Replace pgmq + pg_cron with custom tables and scheduler
 #+description: Remove pgmq + pg_cron extensions; custom ores_mq_* tables (party / tenant / system scope; task / channel queue types; native RLS); in-process scheduler_loop using boost::asio::steady_timer with sql_action_handler + mq_action_handler; ores_scheduler_job_instances_tbl TimescaleDB hypertable replaces cron.job_run_details; mq_service facade; protocol 48.0 (breaking).
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :mq:scheduler:refactor:sql:boost_asio:timescale:custom_mq_scheduler:sprint_14:v0:
 #+owner: marco

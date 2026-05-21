@@ -4,6 +4,7 @@
 #+title: Define type traits for message grouping
 #+description: Add type traits to group messages by component and concern; basis for cleaner dispatch tables.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :comms:refactor:traits:comms_features:sprint_07:v0:
 #+owner: marco

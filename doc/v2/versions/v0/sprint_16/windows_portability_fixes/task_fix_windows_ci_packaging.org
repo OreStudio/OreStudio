@@ -4,6 +4,7 @@
 #+title: Fix Windows CI packaging and stack overflow failures
 #+description: Handle large cabinet files in WiX; increase stack size for test executables to 8MB to prevent stack overflows during deep XML parsing recursion.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :windows:ci:wix:stack:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: Fix NATS cert SAN generation on Windows
 #+description: Replace process substitution with temporary file for OpenSSL SAN extension; ensure compatibility with MSYS2/Git Bash; cleanup on openssl failure.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :windows:nats:certs:openssl:san:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

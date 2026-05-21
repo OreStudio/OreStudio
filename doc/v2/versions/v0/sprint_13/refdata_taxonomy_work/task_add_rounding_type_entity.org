@@ -4,6 +4,7 @@
 #+title: Add rounding type entity
 #+description: rounding_type domain entity end-to-end: JSON model, repository, protocol, service, Qt UI (model + MDI + detail + history); CurrencyDetailDialog replaces free-text with combo box (server-populated, tooltips); Data menu restructured (top-level Currencies/Countries; Auxiliary Data submenu); Rounding Types toolbar entry from CurrencyDetail; description SQL enriched with 2-dp examples.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :refdata:rounding:qt:currency:menu:refdata_taxonomy_work:sprint_13:v0:
 #+owner: marco

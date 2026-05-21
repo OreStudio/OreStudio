@@ -4,6 +4,7 @@
 #+title: Counterparty dialog: 5-tab layout
 #+description: Tabs: General Info / Identifiers / Contacts / Hierarchy / Metadata. Inline sub-entity management; counterparty hierarchy tree; change-reason dialog on amend; eventing for counterparty + identifier + contact info; tenant_id fix on save handlers; reconnect crash fix.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :counterparty:qt:ux:eventing:advanced_counterparty_dialog:sprint_12:v0:
 #+owner: marco

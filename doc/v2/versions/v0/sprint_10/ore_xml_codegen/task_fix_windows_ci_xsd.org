@@ -4,6 +4,7 @@
 #+title: Fix Windows CI break due to XSD codegen
 #+description: MSVC C1128 on domain_xsd.hpp; add /bigobj to the ores.ore target for MSVC builds.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ore:windows:msvc:bug_fix:ore_xml_codegen:sprint_10:v0:
 #+owner: marco

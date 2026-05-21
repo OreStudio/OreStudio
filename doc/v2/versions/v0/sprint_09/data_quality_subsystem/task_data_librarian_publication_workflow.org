@@ -4,6 +4,7 @@
 #+title: Data Librarian publication workflow
 #+description: Multi-page publication wizard (upsert / insert_only / replace_all) with dependency resolution via Boost.Graph topological sort; stable dataset codes; publication history dialog; UI rename to 'methodology' and 'data passport'.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :dq:librarian:publication:boost_graph:data_quality_subsystem:sprint_09:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: Analyse caching at dialog level
 #+description: Design sketch for a shared caching component (ores.caching or workspace) using immer immutable data structures; subscription-aware; foreign-key navigation; baobab-style usage viz.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:caching:design:immer:workspace:caching_analysis:sprint_12:v0:
 #+owner: marco

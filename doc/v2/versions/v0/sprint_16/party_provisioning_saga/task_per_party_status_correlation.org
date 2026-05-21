@@ -4,6 +4,7 @@
 #+title: Per-party status trigger + correlation IDs + PartyProvisionPage
 #+description: Replace global party_setup_mode flag with per-party Inactive status; Nats-Correlation-Id header for distributed tracing; PartyProvisionPage replaces AccountSetupPage in tenant provisioning wizard.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :iam:workflow:correlation:qt:wizard:party_provisioning_saga:sprint_16:v0:
 #+owner: marco

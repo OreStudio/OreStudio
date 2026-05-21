@@ -4,6 +4,7 @@
 #+title: CTest shows only one test per test suite
 #+description: Resolve the CTest-only-shows-one-test-per-suite behaviour that was BLOCKED in sprint 03.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :testing:ctest:bug_fix:test_infrastructure_followup:sprint_04:v0:
 #+owner: marco

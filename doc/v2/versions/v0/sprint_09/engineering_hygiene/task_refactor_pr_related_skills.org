@@ -4,6 +4,7 @@
 #+title: Refactor PR-related skills into pr-manager
 #+description: Rename pr-summary -> pr-manager; consolidate the 5-step PR lifecycle; remove duplicated PR creation logic from autonomous developer skills.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :skills:pr:refactor:llm:engineering_hygiene:sprint_09:v0:
 #+owner: marco

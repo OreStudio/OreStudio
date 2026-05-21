@@ -4,6 +4,7 @@
 #+title: ores.workflow.core
 #+description: Workflow orchestration — workflow definitions, execution, and state tracking for multi-step operations.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :workflow:core:component:
 #+created: 2026-05-19

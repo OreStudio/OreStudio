@@ -4,6 +4,7 @@
 #+title: Entity Controller Pattern
 #+description: Four-layer Qt entity UI pattern: controller, list-window, detail-dialog, and table-model — and how they wire to NATS.
 #+type: knowledge
+#+version: 2
 #+level: cross
 #+filetags: :qt:ui:architecture:knowledge:
 #+created: 2026-05-20

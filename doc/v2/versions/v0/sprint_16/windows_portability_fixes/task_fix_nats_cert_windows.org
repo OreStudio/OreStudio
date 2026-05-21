@@ -4,6 +4,7 @@
 #+title: Fix NATS cert generation on Windows
 #+description: Use double-slash prefix for OpenSSL subject strings on MSYS2; later replaced with MSYS2_ARG_CONV_EXCL.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :windows:nats:certs:openssl:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

@@ -2,6 +2,7 @@
 :ID: b0b99088-d88e-4980-a4ee-7d6a9a8e96a5
 :END:
 #+title: Component Model Creator Skill
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

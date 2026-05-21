@@ -4,6 +4,7 @@
 #+title: Books, portfolios, business units modelling
 #+description: Business unit entity; book + portfolio entities; business-centre scheme entity; portfolio implementation; country link to currencies.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :modelling:books:portfolios:business_units:country:sprint_12:v0:
 #+created: 2026-05-19

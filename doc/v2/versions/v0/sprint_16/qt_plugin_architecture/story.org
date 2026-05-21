@@ -4,6 +4,7 @@
 #+title: Qt plugin architecture
 #+description: Extract ores.qt.api shared framework library; extract domain-specific plugins (admin, compute, refdata, party, mktdata, trading, workflow); move classes between plugins to satisfy ownership.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :qt:plugins:architecture:refactor:modularity:sprint_16:v0:
 #+created: 2026-05-20

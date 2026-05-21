@@ -1,4 +1,5 @@
 #+TITLE: Strict Service Table Isolation
+#+version: 1
 #+SUBTITLE: Mandatory role drops + zero cross-component DB access
 #+DATE: 2026-05-12
 #+AUTHOR: ORE Studio Team

@@ -1,4 +1,5 @@
 #+TITLE: Enum Table Tenancy Consolidation Plan
+#+version: 1
 #+AUTHOR: Claude
 #+DATE: 2026-02-02
 

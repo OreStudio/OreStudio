@@ -4,6 +4,7 @@
 #+title: API/core architecture migration
 #+description: Split all ten service libraries into *.api (contracts) and *.core (implementation): iam + compute first, then refdata, then scheduler / assets / variability / synthetic / trading / reporting.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :architecture:refactor:api:core:modularity:sprint_15:v0:
 #+created: 2026-05-20

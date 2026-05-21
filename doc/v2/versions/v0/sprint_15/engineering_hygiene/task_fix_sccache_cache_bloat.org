@@ -4,6 +4,7 @@
 #+title: Fix sccache cache bloat causing slow/cold builds
 #+description: GitHub Actions cache had hit 11.5 GB (over the 10 GB repo limit), causing LRU eviction of sccache entries and forcing cold full rebuilds (>2h CI). Root causes: per-PR sccache saves (12 entries × ~1 GB), sccache limit too small (1000M caused within-build eviction for 1,362 files), no cross-PR cache sharing meant Qt + sccache duplicated per PR.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ci:sccache:cache:performance:engineering_hygiene:sprint_15:v0:
 #+owner: marco

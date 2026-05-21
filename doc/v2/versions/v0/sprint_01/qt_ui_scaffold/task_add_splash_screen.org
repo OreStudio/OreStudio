@@ -4,6 +4,7 @@
 #+title: Add a splash screen to the application
 #+description: Show a brief splash with the project logo during application startup.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:ux:splash:qt_ui_scaffold:sprint_01:v0:
 #+owner: marco

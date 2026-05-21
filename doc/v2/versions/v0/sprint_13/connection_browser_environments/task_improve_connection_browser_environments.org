@@ -4,6 +4,7 @@
 #+title: Refactor connection browser with environments
 #+description: Split server_environment into environment (host + port) and connection (credentials, optionally linked to environment); migrate existing connections automatically; unified tree (folders + environments + connections); Duplicate action; environment-linked connections show inherited tags + resolved host/port; login dialog gets unified quick-connect combo (Manual / Environments / Connections headers); new Keyboard + Copy icons.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :connections:environments:qt:ux:refactor:sqlite:connection_browser_environments:sprint_13:v0:
 #+owner: marco

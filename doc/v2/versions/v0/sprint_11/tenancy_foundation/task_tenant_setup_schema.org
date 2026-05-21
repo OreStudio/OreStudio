@@ -4,6 +4,7 @@
 #+title: Initial tenant setup (schema)
 #+description: ores_iam_tenant_types_tbl + tenant_statuses + tenants (bitemporal); tenant_id on ~70 entity tables; unique indexes + tenant_id-indexes; ores_iam_validate_tenant_fn on all relevant INSERT triggers; SuperAdmin + TenantAdmin roles; system tenant UUID; session.tenant_id lookup.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :tenancy:sql:iam:schema:tenancy_foundation:sprint_11:v0:
 #+owner: marco

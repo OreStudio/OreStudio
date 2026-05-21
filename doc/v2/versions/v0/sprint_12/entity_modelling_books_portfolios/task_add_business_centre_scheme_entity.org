@@ -4,6 +4,7 @@
 #+title: Add business centre scheme entity
 #+description: FpML business-centre coding scheme (v9-4); 4-char codes (ISO country + location); 500+ entries; FK to country (nullable for index publication calendars).
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :fpml:business_centres:refdata:coding_scheme:entity_modelling_books_portfolios:sprint_12:v0:
 #+owner: marco

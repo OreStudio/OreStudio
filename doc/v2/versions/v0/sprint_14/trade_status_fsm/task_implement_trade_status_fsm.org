@@ -4,6 +4,7 @@
 #+title: Implement trade status state machine
 #+description: Trade status FSM (new / live / expired / cancelled) inside ores.dq integrated into ores.trading; activity_type taxonomy replaces lifecycle_events (categories: new activity, lifecycle event, misbooking, valuation change, cancellation; FpML + FSM mapping); ores_trading_trades_tbl grows activity_type_code + status_id; trade_status_service::resolve_status() enforces transitions; reflectcpp portfile bson fix; ores.refdata cross-tenant leak fix.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :trading:fsm:activity_type:fpml:domain:trade_status_fsm:sprint_14:v0:
 #+owner: marco

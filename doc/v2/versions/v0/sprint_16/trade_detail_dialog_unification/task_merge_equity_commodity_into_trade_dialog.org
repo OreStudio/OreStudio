@@ -4,6 +4,7 @@
 #+title: Merge equity + commodity instruments into TradeDetailDialog
 #+description: PR 4 of 6: equity + commodity standalone components removed; integrated into TradeDetailDialog; instrument_id linkage fix; tab visibility logic fix; reactive widget reads; sentinel value caveat.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:trade:equity:commodity:instrument:trade_detail_dialog_unification:sprint_16:v0:
 #+owner: marco

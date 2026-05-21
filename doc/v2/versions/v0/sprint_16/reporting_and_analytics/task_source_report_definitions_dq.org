@@ -4,6 +4,7 @@
 #+title: Source report definitions from DQ artefact table
 #+description: Replace hardcoded report definitions in party provisioning wizard with dynamic service-driven templates; new report_definition_template domain + NATS protocol + backend service; ores_dq_report_definitions_artefact_tbl + publish function; 28 standard ORE analytics report definitions seeded.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :reporting:dq:nats:wizard:sql:reporting_and_analytics:sprint_16:v0:
 #+owner: marco

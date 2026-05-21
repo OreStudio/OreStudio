@@ -2,6 +2,7 @@
 :ID: 0DFDAF4D-E299-98E4-25C3-5BB6500E5BA8
 :END:
 #+title: Sprint Backlog 02
+#+version: 1
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
 #+tags: { code(c) infra(i) analysis(n) agile(a) }

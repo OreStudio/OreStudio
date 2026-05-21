@@ -4,6 +4,7 @@
 #+title: SQL: Add missing party isolation RLS policies
 #+description: Final landing: missing RLS party isolation policies across IAM, Refdata, Scheduler, Trading modules; party context service in ores.database + ores.testing; validation_ignore.txt updated.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :rls:party:sql:refdata:iam:scheduler:trading:party_isolation_rls:sprint_16:v0:
 #+owner: marco

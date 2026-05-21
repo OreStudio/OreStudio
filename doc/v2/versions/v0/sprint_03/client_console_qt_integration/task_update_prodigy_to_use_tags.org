@@ -4,6 +4,7 @@
 #+title: Update prodigy to use tags
 #+description: Update the Prodigy launcher integration to discover commands via tags rather than hardcoded names.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :prodigy:launcher:emacs:client_console_qt_integration:sprint_03:v0:
 #+owner: marco

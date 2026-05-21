@@ -4,6 +4,7 @@
 #+title: NATS service discovery for HTTP base URL
 #+description: Qt client auto-discovers HTTP server's base URL after login via NATS; eliminates manual http_port; protocol types moved to ores.http shared utility lib.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :nats:http:discovery:qt:refactor:sprint_15:v0:
 #+created: 2026-05-20

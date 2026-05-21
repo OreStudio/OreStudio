@@ -4,6 +4,7 @@
 #+title: Cybernetic Levels
 #+description: Definitions of System 1–5, what each is responsible for, and how they interact.
 #+type: meta
+#+version: 2
 #+level: cross
 #+filetags: :meta:cybernetics:levels:
 #+created: 2026-05-18

@@ -4,6 +4,7 @@
 #+title: Add support for project planning
 #+description: Bring across the Dogen-style project-planning approach (Gantt-style milestones in org-mode) and a supporting skill.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :claude_code:skills:planning:agile:claude_code_skills_expansion:sprint_05:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: CDM Phase 4: Credit instrument domain model
 #+description: Credit instruments: CreditDefaultSwap, CDSIndex, SyntheticCDO. SQL: ores_trading_credit_instruments_tbl (reference_entity, currency, notional, spread, recovery_rate, tenor, dates, day_count, payment_frequency, optional fields for index + seniority + restructuring). Domain + repo + service + Qt UI.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :cdm:credit:trading:instrument:domain:qt:sql:cdm_instruments:sprint_15:v0:
 #+owner: marco

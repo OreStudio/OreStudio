@@ -4,6 +4,7 @@
 #+title: Create Data Quality infrastructure
 #+description: Stand up ores.dq with domain types backing the user-driven sample-data workflow: dataset, lineage, provenance, classification, temporal context, data passport, granularity options.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :dq:component:domain_types:data_quality_subsystem:sprint_09:v0:
 #+owner: marco

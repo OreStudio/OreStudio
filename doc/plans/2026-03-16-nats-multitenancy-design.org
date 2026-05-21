@@ -2,6 +2,7 @@
 :ID: 4e762126-2152-11f1-b1d1-40b0768014eb
 :END:
 #+title: NATS Multi-Tenancy and Multi-Party Design
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

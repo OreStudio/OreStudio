@@ -4,6 +4,7 @@
 #+title: Add party types lookup table
 #+description: ores_refdata_party_types_tbl with system + operational types; tenant provisioner auto-creates system party for new tenants; party creation validates type.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :party:refdata:tenant_provisioning:tenant_administration:sprint_12:v0:
 #+owner: marco

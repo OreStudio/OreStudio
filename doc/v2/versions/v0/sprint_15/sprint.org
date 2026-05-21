@@ -4,6 +4,7 @@
 #+title: Sprint 15
 #+description: Implement compute grid: BOINC-inspired distributed grid; telemetry + RAG dashboard; api/core architecture split across 10 services; JWT refresh; unified system_settings replacing feature_flags; CDM instrument domain models (rates, FX, bond, credit); ORE import bug fixes.
 #+type: sprint
+#+version: 2
 #+level: s3
 #+filetags: :compute:grid:boinc:cdm:jwt:settings:architecture:sprint_15:v0:
 #+created: 2026-05-20

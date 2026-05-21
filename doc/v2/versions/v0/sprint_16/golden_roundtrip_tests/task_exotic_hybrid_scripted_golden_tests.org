@@ -4,6 +4,7 @@
 #+title: Exotic, Hybrid, and Scripted golden roundtrip tests
 #+description: Golden file XML roundtrip tests for exotic + hybrid + scripted instruments; automatic golden file bootstrapping removed in favour of explicit opt-in.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ore:tests:golden:exotic:scripted:golden_roundtrip_tests:sprint_16:v0:
 #+owner: marco

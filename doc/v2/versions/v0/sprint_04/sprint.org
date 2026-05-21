@@ -4,6 +4,7 @@
 #+title: Sprint 04
 #+description: LLM-driven code review and follow-on refactors; complete the currencies UI; introduce the Claude Code skills layer.
 #+type: sprint
+#+version: 2
 #+level: s3
 #+filetags: :code_review:skills:currencies_ui:v0:
 #+created: 2025-11-07

@@ -4,6 +4,7 @@
 #+title: Native pagination support
 #+description: Adopt sqlgen 0.6.0 native offset/limit; drop the single-connection workaround and expand pagination coverage.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :sqlgen:pagination:refactor:sprint_08:v0:
 #+created: 2026-05-19

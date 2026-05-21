@@ -4,6 +4,7 @@
 #+title: Custom MQ tables and in-process scheduler
 #+description: Remove the pgmq + pg_cron external extensions; replace with custom ores_mq_* tables (party/tenant/system scope, task/channel queue types) and an in-process boost::asio scheduler loop.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :mq:scheduler:refactor:sql:boost_asio:sprint_14:v0:
 #+created: 2026-05-20

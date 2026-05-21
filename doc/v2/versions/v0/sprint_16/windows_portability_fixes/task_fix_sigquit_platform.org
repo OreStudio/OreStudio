@@ -4,6 +4,7 @@
 #+title: Fix Windows Clang build: replace SIGQUIT with platform shutdown_signals
 #+description: Use centralised ores::platform::process::shutdown_signals list in domain_service_runner_impl.hpp + signing_service_runner_impl.hpp.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :windows:clang:platform:signals:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

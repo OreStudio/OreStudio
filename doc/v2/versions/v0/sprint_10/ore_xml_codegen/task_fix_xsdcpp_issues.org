@@ -4,6 +4,7 @@
 #+title: Fix issues with xsdcpp when generating ORE code
 #+description: xs:group ref expansion (trade data types: SwapData, FxForwardData); xs:choice maxOccurs='unbounded' → xsd::vector<T> (LGM in InterestRateModels); domain regenerated; XML round-trip tests; ore_xsd_schema_gaps.md analysis.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ore:xsdcpp:bug_fix:xml:ore_xml_codegen:sprint_10:v0:
 #+owner: marco

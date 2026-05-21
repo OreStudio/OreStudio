@@ -4,6 +4,7 @@
 #+title: Move generators to api layer; split http.server
 #+description: Synthetic generators relocated from core to api layers across ores.trading + ores.reporting + ores.iam + ores.refdata + ores.compute (+ tests); auth_session_service relocated from ores.iam.core to ores.iam.api (in-memory, no core deps); domain-specific HTTP route handlers (iam, refdata, variability, assets) moved into their respective domain core modules; ores.http.server now exclusively manages generic server infrastructure (compute_routes only remaining domain-specific route); generator directories standardised to generators/ (plural); faker-cxx added as private dep on affected api libs.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :refactor:architecture:generators:http:faker:generators_http_server_refactor:sprint_15:v0:
 #+owner: marco

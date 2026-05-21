@@ -4,6 +4,7 @@
 #+title: Infrastructure features
 #+description: Event bus implementation; system tray support; past-timepoint faker for tests.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :infrastructure:eventing:qt:sprint_06:v0:
 #+created: 2025-12-15

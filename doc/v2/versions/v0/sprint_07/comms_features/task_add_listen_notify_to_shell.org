@@ -4,6 +4,7 @@
 #+title: Add listen/notify to shell
 #+description: Route Postgres LISTEN/NOTIFY events through the comms substrate to the shell so users see live state updates.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :comms:shell:postgres:eventing:comms_features:sprint_07:v0:
 #+owner: marco

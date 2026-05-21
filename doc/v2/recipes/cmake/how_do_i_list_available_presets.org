@@ -4,6 +4,7 @@
 #+title: How do I list available CMake presets?
 #+description: Run `cmake --list-presets` to see the configure presets defined in CMakePresets.json.
 #+type: recipe
+#+version: 2
 #+level: cross
 #+filetags: :cmake:build:presets:recipe:
 #+created: 2026-05-18

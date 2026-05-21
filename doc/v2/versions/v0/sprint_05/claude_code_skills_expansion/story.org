@@ -4,6 +4,7 @@
 #+title: Claude Code skills expansion
 #+description: Grow the skills layer: new-sprint skill, release-notes skill, project-planning skill.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :claude_code:skills:sprint_05:v0:
 #+created: 2025-11-17

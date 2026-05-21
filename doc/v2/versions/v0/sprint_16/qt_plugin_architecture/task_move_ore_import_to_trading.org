@@ -4,6 +4,7 @@
 #+title: Move OreImport* from compute to trading plugin
 #+description: ores.qt.trading build configuration updated to depend on ores.ore.api.lib; OreImport classes moved from compute to trading plugin.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:plugins:trading:compute:refactor:qt_plugin_architecture:sprint_16:v0:
 #+owner: marco

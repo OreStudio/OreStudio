@@ -4,6 +4,7 @@
 #+title: Remove bootstrap mode from context
 #+description: Bootstrap mode is a startup-only concern; remove the runtime context's awareness of it now that the workflow handles itself.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :context:bootstrap:refactor:bootstrap_polish:sprint_06:v0:
 #+owner: marco

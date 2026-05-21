@@ -4,6 +4,7 @@
 #+title: Use events in comms and accounts
 #+description: Emit events for connect, disconnect, retry, login, logout via the new event bus.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :eventing:comms:accounts:qt_and_eventing_polish:sprint_12:v0:
 #+owner: marco

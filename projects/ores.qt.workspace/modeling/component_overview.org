@@ -4,6 +4,7 @@
 #+title: ores.qt.workspace
 #+description: Qt plugin for workspace management UI — NATS-persisted workspaces that capture user session context.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :qt:workspace:ui:component:
 #+created: 2026-05-20

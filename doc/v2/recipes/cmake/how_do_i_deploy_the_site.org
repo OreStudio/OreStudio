@@ -4,6 +4,7 @@
 #+title: How do I deploy the site?
 #+description: Build the ORE Studio website locally with the `deploy_site` CMake target.
 #+type: recipe
+#+version: 2
 #+level: cross
 #+filetags: :cmake:build:site:website:emacs:recipe:
 #+created: 2026-05-18

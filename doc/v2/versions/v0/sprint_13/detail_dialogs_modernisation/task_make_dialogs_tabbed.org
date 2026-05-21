@@ -4,6 +4,7 @@
 #+title: Make all detail dialogs tabbed
 #+description: Tabbed layout standardised; Provenance tab consolidated; Country detail moves flag to General; Currency detail relocates icon button into General; Methodology + Treatment + Catalog + others have read-only change_commentary in Provenance; Methodology Implementation grew to 300px; My Sessions + My Account converted to MDI subwindows; business-centre flag label next to combo box.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:ux:dialogs:refactor:mdi:detail_dialogs_modernisation:sprint_13:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: Multi-threaded scenarios with comms
 #+description: Cover the comms stack under multi-threaded use; surface and fix races discovered along the way.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :comms:threading:testing:comms_robustness:sprint_06:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: Currencies UI
 #+description: Complete the currency-management surface in the Qt UI: export, edit, add, multi-select, history dialog, MDI behaviour.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :currencies:qt:ux:sprint_04:v0:
 #+created: 2025-11-25

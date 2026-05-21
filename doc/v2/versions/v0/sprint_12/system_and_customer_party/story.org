@@ -4,6 +4,7 @@
 #+title: System and customer party
 #+description: System-party design lands end-to-end; customer-party flag via optional dataset members in the publish-bundle wizard.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :party:system_party:customer:wizard:sprint_12:v0:
 #+created: 2026-05-19

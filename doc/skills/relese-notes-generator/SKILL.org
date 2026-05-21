@@ -2,6 +2,7 @@
 :ID: DD7857D9-068E-D724-5C63-A67BD5F1C009
 :END:
 #+title: Release Notes Generator
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

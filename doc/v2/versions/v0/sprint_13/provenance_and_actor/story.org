@@ -4,6 +4,7 @@
 #+title: Provenance and actor stamping
 #+description: Tighten performed_by + modified_by stamping; remove the current_user escape hatch; route actor through app.current_actor GUC.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :audit:iam:provenance:sql:sprint_13:v0:
 #+created: 2026-05-20

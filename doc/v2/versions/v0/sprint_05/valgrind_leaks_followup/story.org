@@ -4,6 +4,7 @@
 #+title: Valgrind leaks follow-up
 #+description: Resolve the BLOCKED OpenSSL leaks from sprint 03 plus sqlgen and comms-test leaks discovered since.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :valgrind:observability:bug_fix:sprint_05:v0:
 #+created: 2025-11-25

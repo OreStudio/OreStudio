@@ -2,6 +2,7 @@
 :ID: 460c89da-50d2-40c3-88b2-be52e430d170
 :END:
 #+title: Brainstorming Skill
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

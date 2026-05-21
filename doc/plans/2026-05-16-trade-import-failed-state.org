@@ -1,4 +1,5 @@
 #+TITLE: Data Import Session and Workflow Partial-Success
+#+version: 1
 #+SUBTITLE: Full ORE data import pipeline; pending trade staging; non-live marker for reference data; structured workflow failure reporting
 #+DATE: 2026-05-16
 #+AUTHOR: ORE Studio Team

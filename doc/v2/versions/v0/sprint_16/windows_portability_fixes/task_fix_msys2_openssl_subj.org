@@ -4,6 +4,7 @@
 #+title: Fix MSYS2 path mangling of openssl -subj on Windows
 #+description: Export MSYS_NO_PATHCONV + MSYS2_ARG_CONV_EXCL to prevent path conversion in generate_nats_certs.sh on Windows / Git Bash.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :windows:msys2:openssl:nats:certs:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

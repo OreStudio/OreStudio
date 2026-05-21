@@ -4,6 +4,7 @@
 #+title: Create ores.security module
 #+description: Extract shared security primitives from ores.iam and ores.connections into a new ores.security component; rename password_manager -> password_hasher, encryption_service -> encryption; apply RAII to OpenSSL cipher contexts.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :security:component:refactor:openssl:security_module:sprint_09:v0:
 #+owner: marco

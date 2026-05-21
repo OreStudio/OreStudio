@@ -4,6 +4,7 @@
 #+title: Add server-side ORE import via ores.ore.service
 #+description: ores.ore.api + ores.ore.service microservice; NATS orchestration; ores.storage component for file management; storage_transfer + http_client + archiver helpers; path traversal fix.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ore:service:nats:storage:security:ore_import_pipeline:sprint_16:v0:
 #+owner: marco

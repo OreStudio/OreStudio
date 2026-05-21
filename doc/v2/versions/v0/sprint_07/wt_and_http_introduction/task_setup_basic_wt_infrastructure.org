@@ -4,6 +4,7 @@
 #+title: Setup basic Wt infrastructure
 #+description: Pull Wt in as a peer-of-Qt UI toolkit so the same service can drive a web frontend.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :wt:web:infrastructure:wt_and_http_introduction:sprint_07:v0:
 #+owner: marco

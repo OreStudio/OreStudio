@@ -2,6 +2,7 @@
 :ID: 654d4a70-e63d-4c18-b5a5-886066e36314
 :END:
 #+title: CMake Runner Skill
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

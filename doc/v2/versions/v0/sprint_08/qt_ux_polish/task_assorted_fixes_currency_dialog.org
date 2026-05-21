@@ -4,6 +4,7 @@
 #+title: Assorted fixes to currency dialog
 #+description: Non-maximisable details, column trimming, revert-icon fix, attach-flag on creation; refactor reload logic into common entity code.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:currencies:ux:polish:qt_ux_polish:sprint_08:v0:
 #+owner: marco

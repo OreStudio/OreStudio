@@ -4,6 +4,7 @@
 #+title: Glossary
 #+description: Definitions of every load-bearing term in the ORE Studio information architecture.
 #+type: meta
+#+version: 2
 #+level: cross
 #+filetags: :meta:glossary:terminology:
 #+created: 2026-05-18

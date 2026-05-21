@@ -4,6 +4,7 @@
 #+title: Add messaging for risk
 #+description: Wire the risk module as the first consumer of the comms library — request/response over cobalt.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :client_server:risk:messaging:client_server_foundations:sprint_02:v0:
 #+owner: marco

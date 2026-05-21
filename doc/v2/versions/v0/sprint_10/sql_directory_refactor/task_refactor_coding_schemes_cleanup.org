@@ -4,6 +4,7 @@
 #+title: Refactor coding schemes and clean up ores.sql
 #+description: Schema/ renamed to create/; deprecated files removed; admin objects follow admin_*_fn/admin_*_view convention; database_name_service updated to the new function names.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :sql:refactor:coding_schemes:admin:sql_directory_refactor:sprint_10:v0:
 #+owner: marco

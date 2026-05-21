@@ -4,6 +4,7 @@
 #+title: Tenancy, login and tests
 #+description: BEFORE INSERT triggers populate tenant_id from session variable; ores_iam_validate_tenant_fn coalesces with current session tenant; ores_test_ddl/dml_user default tenant set to system tenant; database_helper::set_system_tenant_context().
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :tenancy:sql:iam:tests:tenancy_foundation:sprint_11:v0:
 #+owner: marco

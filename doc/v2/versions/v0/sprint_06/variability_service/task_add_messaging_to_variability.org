@@ -4,6 +4,7 @@
 #+title: Add messaging to variability
 #+description: Wire the variability service onto the comms layer so clients can list / toggle feature flags.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :variability:messaging:comms:variability_service:sprint_06:v0:
 #+owner: marco

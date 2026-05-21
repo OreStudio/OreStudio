@@ -2,6 +2,7 @@
 :ID: B7E4D1F3-9A2C-4B8E-C3D6-E5F8A1B2C4D7
 :END:
 #+title: ORE Studio Qt Plugin Refactor — Implementation Plan
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

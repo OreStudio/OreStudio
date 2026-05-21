@@ -2,6 +2,7 @@
 :ID: 2df8adaf-20c9-4757-9399-798eec6df828
 :END:
 #+title: Agile Product Owner
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

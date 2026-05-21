@@ -4,6 +4,7 @@
 #+title: Service accounts and audit
 #+description: Service / algorithm / LLM account types; performed_by audit field across 42 tables; telemetry async-sink deadlock fix; tenant-aware pool fail-fast.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :iam:audit:services:telemetry:sprint_11:v0:
 #+created: 2026-05-19

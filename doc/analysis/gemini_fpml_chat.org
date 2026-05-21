@@ -1980,6 +1980,7 @@ Would you like to move on to the Trade entity? This is the transactional record 
 ok this looks quite good. is this in line with a FPML model?
 
 #+TITLE: FpML Compliance and the Account/Book Structure
+#+version: 1
 
 Yes, this model is highly consistent with FpML 5.x and 6.x architectural principles. While FpML doesn't dictate how you build your private database tables, it defines the Data Structures and Relationships that your tables must support to be compliant.
 

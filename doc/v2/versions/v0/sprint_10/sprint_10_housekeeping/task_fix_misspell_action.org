@@ -4,6 +4,7 @@
 #+title: Fix issues with misspell action
 #+description: FPML and GLEIF data break the misspell action; configure folder ignores.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ci:misspell:bug_fix:sprint_10_housekeeping:sprint_10:v0:
 #+owner: marco

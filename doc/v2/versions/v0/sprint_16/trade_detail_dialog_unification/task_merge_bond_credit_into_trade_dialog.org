@@ -4,6 +4,7 @@
 #+title: Merge bond + credit instruments into TradeDetailDialog
 #+description: PR 3 of 6: standalone bond + credit controllers removed; functionality integrated into TradeDetailDialog; review highlighted regressions for new trade creation + CDO zero values.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:trade:bond:credit:instrument:trade_detail_dialog_unification:sprint_16:v0:
 #+owner: marco

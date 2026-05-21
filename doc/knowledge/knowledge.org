@@ -2,6 +2,7 @@
 :ID: 7474935C-95D1-3034-B833-83DCD9FB3A09
 :END:
 #+title: Knowledge
+#+version: 1
 #+author: Marco Craveiro
 #+startup: inlineimages
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil

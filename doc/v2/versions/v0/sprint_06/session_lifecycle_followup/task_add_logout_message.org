@@ -4,6 +4,7 @@
 #+title: Add a logout message
 #+description: Add a logout message type so the client can cleanly end its session, mirroring the existing login flow.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :sessions:protocol:logout:session_lifecycle_followup:sprint_06:v0:
 #+owner: marco

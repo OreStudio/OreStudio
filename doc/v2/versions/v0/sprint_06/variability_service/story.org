@@ -4,6 +4,7 @@
 #+title: Variability service
 #+description: Stand up a dedicated variability service for feature flags: messaging surface, support across the stack.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :variability:feature_flags:sprint_06:v0:
 #+created: 2025-12-08

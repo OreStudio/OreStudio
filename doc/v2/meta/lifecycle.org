@@ -4,6 +4,7 @@
 #+title: Lifecycle
 #+description: State transitions for every stateful document type, as TODO keyword changes on the Status headline.
 #+type: meta
+#+version: 2
 #+level: cross
 #+filetags: :meta:lifecycle:state:
 #+created: 2026-05-18

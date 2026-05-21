@@ -4,6 +4,7 @@
 #+title: Add generation context with KVP for audit trail fields
 #+description: generation_context decomposed into generation_engine + generation_environment + composing context; ~36 generators migrated to accept generation_context&; modified_by lookup via environment; strict ores_iam_validate_account_username_fn re-enabled; make_generation_context() factory in ores.testing.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :generators:audit:refactor:tests:context:audit_trail_and_system_account:sprint_12:v0:
 #+owner: marco

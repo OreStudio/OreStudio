@@ -4,6 +4,7 @@
 #+title: Add build-tool suffix to CMake presets
 #+description: Every preset names its build tool ({platform}-{compiler}-{buildtype}-{tool}); hidden ninja + make presets centralise generator settings (incl. disabling coloured Make output); Linux + macOS support both Ninja + Make; Windows on Ninja only; parallel-build auto-detection removed in favour of env / tool default; docs + skill files updated.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :cmake:build:presets:refactor:docs:cmake_preset_suffixes:sprint_14:v0:
 #+owner: marco

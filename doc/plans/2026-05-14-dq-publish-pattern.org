@@ -1,4 +1,5 @@
 #+TITLE: DQ Publish Pattern — Architecture and Decision
+#+version: 1
 #+SUBTITLE: Reconciling bulk artefact publishing with strict service table isolation
 #+DATE: 2026-05-14
 #+AUTHOR: ORE Studio Team

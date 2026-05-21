@@ -4,6 +4,7 @@
 #+title: GLEIF evaluation wizard and party hierarchy
 #+description: GLEIF-based evaluation-tenant onboarding wizard; party hierarchy graph visualisation.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :gleif:wizard:evaluation:party:hierarchy:viz:sprint_12:v0:
 #+created: 2026-05-19

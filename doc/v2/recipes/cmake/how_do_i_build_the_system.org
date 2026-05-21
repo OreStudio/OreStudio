@@ -4,6 +4,7 @@
 #+title: How do I build the system?
 #+description: Build ORE Studio with the build.sh wrapper or directly with `cmake --build --preset`.
 #+type: recipe
+#+version: 2
 #+level: cross
 #+filetags: :cmake:build:recipe:
 #+created: 2026-05-18

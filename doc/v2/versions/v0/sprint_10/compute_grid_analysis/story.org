@@ -4,6 +4,7 @@
 #+title: Compute grid analysis (BOINC-based)
 #+description: First-pass design for a BOINC-style distributed compute grid using Postgres + PGMQ + TimescaleDB.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :compute:distributed:boinc:analysis:sprint_10:v0:
 #+created: 2026-05-19

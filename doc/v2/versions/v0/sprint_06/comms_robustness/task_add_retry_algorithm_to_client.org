@@ -4,6 +4,7 @@
 #+title: Add retry algorithm to client
 #+description: Exponential-backoff retry on transient failures; surface a give-up event so the UI can react.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :comms:reliability:retry:comms_robustness:sprint_06:v0:
 #+owner: marco

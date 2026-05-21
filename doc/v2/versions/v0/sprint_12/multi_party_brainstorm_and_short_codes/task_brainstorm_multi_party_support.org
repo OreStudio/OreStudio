@@ -4,6 +4,7 @@
 #+title: Brainstorm multi-party support
 #+description: Party pagination implementation; party-level RLS isolation design; multi-party architecture document (companion to multi-tenancy doc); product-backlog updates for four-eyes / KYC / librarian lockdown.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :party:design:pagination:rls:brainstorm:multi_party_brainstorm_and_short_codes:sprint_12:v0:
 #+owner: marco

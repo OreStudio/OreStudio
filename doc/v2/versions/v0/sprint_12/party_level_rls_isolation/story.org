@@ -4,6 +4,7 @@
 #+title: Party-level RLS isolation
 #+description: Second RLS layer scoping data to a party subtree within a tenant; visible-party-set computation; party_counterparties as the first scoped junction.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :rls:party:security:sql:sprint_12:v0:
 #+created: 2026-05-19

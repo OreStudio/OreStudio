@@ -4,6 +4,7 @@
 #+title: Amend and delete reasons base infrastructure
 #+description: Domain + temporal tables for reason_categories, amendment_reasons, entity_reason_categories; populate scripts; Qt UI scaffolding.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :change_management:audit:iam:sql:change_management_infrastructure:sprint_08:v0:
 #+owner: marco

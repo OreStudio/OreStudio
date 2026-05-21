@@ -2,6 +2,7 @@
 :ID: 59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9
 :END:
 #+title: Component Creator
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

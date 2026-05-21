@@ -4,6 +4,7 @@
 #+title: Nats-Session-Id for session-level correlation
 #+description: Add Nats-Session-Id header for per-session log correlation; sourced from IAM session record.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :nats:iam:observability:correlation:session:sprint_16:v0:
 #+created: 2026-05-20

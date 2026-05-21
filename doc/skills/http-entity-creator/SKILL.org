@@ -2,6 +2,7 @@
 :ID: bdcc47d4-b050-409e-8c50-3d179843a274
 :END:
 #+title: HTTP Entity Creator
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

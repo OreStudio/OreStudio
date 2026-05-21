@@ -4,6 +4,7 @@
 :END:
 #+options: date:nil toc:t author:nil num:nil
 #+title: Version Zero
+#+version: 1
 #+property: Effort_ALL 1d 2d 5d 10d 20d 30d 35d 50d
 #+property: allocate_ALL dev
 #+columns: %50ITEM(Task) %Effort %allocate %BLOCKER %ORDERED

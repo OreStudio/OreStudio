@@ -4,6 +4,7 @@
 #+title: How do I create a new v2 doc?
 #+description: Use generate_v2_doc.sh to create any v2 document type with frontmatter, UUID, and skeleton sections pre-filled.
 #+type: recipe
+#+version: 2
 #+level: cross
 #+filetags: :codegen:v2_docs:templates:agile:recipe:
 #+created: 2026-05-18

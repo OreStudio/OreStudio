@@ -4,6 +4,7 @@
 #+title: Remove code seeders; seed from SQL populate scripts
 #+description: Replace C++ rbac_seeder and system_flags_seeder with SQL populate scripts; rename sql/data/ to sql/populate/; adapt tests to a pre-seeded database.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :sql:seeding:refactor:database_schema_and_seeding:sprint_08:v0:
 #+owner: marco

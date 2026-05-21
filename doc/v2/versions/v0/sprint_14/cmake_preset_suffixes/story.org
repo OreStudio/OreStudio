@@ -4,6 +4,7 @@
 #+title: CMake preset build-tool suffixes
 #+description: Add Ninja / Make suffix to every preset name; hidden ninja + make presets centralise generator settings; Linux + macOS support both, Windows on Ninja only.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :cmake:build:presets:refactor:sprint_14:v0:
 #+created: 2026-05-20

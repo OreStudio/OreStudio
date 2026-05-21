@@ -4,6 +4,7 @@
 #+title: Move all database entities back to public schema
 #+description: Reverse the metadata/production split landed in sprint 10; adopt Odoo-style ores_<component>_<entity> prefix in a single public schema. /We traded the illusion of cleanliness for the reality of speed./
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :sql:schema:refactor:public:database_role_split_and_schema_consolidation:sprint_11:v0:
 #+owner: marco

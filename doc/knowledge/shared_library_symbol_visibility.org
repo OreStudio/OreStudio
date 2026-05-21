@@ -3,6 +3,7 @@
 :ROAM_ALIASES: symbol visibility DLL exports
 :END:
 #+title: Shared Library Symbol Visibility
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 

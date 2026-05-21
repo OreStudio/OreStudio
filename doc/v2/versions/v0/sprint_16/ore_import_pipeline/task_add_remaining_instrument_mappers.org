@@ -4,6 +4,7 @@
 #+title: Add remaining instrument mappers and roundtrip tests
 #+description: Forward + reverse mapping for BondRepo, TotalReturnSwap, ContractForDifference + various barrier and scripted options; new round-trip test suite; equity mapper edge-case fixes.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :ore:trading:mappers:bond:tests:ore_import_pipeline:sprint_16:v0:
 #+owner: marco

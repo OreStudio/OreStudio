@@ -4,6 +4,7 @@
 #+title: Polish business centre UI and data quality
 #+description: city_name column derived from descriptions; hard-code US for NYFD/NYSE; WRLD = UN flag + Internal source; default columns: Code, Country (with flag), City; Description + Coding Scheme hidden by default; recorded_at narrower; country combo non-editable; protocol bump to 38.0.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :business_centres:ux:data_quality:sql:protocol:business_centre_polish:sprint_13:v0:
 #+owner: marco

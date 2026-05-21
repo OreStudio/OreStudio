@@ -4,6 +4,7 @@
 #+title: Add analytics pricing engine configuration
 #+description: ores.analytics component (api / core / service); domain entities + repositories + services for managing ORE pricing model configurations, products, parameters; SQL schema + NATS messaging protocols; component-creator skill updated; codegen NATS templates.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :analytics:ore:nats:sql:codegen:component:reporting_and_analytics:sprint_16:v0:
 #+owner: marco

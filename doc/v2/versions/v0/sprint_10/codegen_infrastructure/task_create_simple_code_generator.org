@@ -4,6 +4,7 @@
 #+title: Create a simple code generator
 #+description: Stand up basic codegen infrastructure to save Claude Code tokens; generate scaffolds locally and use Claude only to fix issues.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :codegen:infrastructure:llm:codegen_infrastructure:sprint_10:v0:
 #+owner: marco

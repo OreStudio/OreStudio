@@ -4,6 +4,7 @@
 #+title: Add country link to currencies
 #+description: Verify the existing country support links cleanly to currencies.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :country:currency:refdata:entity_modelling_books_portfolios:sprint_12:v0:
 #+owner: marco

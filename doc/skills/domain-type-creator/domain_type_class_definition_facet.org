@@ -2,6 +2,7 @@
 :ID: 7FEE0007-A792-5B34-94DB-056EFC99B8D6
 :END:
 #+title: Domain Type Class Definition Facet
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t title:t
 #+startup: inlineimages

@@ -2,6 +2,7 @@
 :ID: f76ed8a4-94c4-4a3f-86a1-fda9a76a3beb
 :END:
 #+title: Domain Type Test Creation Facet
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t title:t
 #+startup: inlineimages

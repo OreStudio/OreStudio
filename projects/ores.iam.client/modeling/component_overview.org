@@ -4,6 +4,7 @@
 #+title: ores.iam.client
 #+description: Client-side IAM library — session management and authentication helper for Qt and service consumers.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :iam:client:component:
 #+created: 2026-05-19

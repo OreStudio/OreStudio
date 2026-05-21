@@ -4,6 +4,7 @@
 #+title: Restructure SQL create/, drop/, teardown
 #+description: create/ reorganised into component-based subdirectories with master scripts; safer teardown (admin_teardown_instances_generate.sql for production); ER diagram updated with the new tables.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :sql:refactor:structure:teardown:sql_directory_refactor:sprint_10:v0:
 #+owner: marco

@@ -1,0 +1,244 @@
+#+TITLE: Tagged v1/v2 Coexistence — Merge doc/v2/ and add #+version: markers
+#+version: 1
+#+AUTHOR: Claude
+#+DATE: 2026-05-21
+
+* Overview
+
+The v1 → v2 doc migration began by isolating new content under
+=doc/v2/=. In practice the split has broken down: v2-shaped docs now live
+in three places (=doc/v2/=, =projects/*/modeling/component_overview.org=, and a
+long tail), v1 docs keep getting edited under their original paths, and
+there is no single source of truth per topic. Reviewers cannot tell which
+version is canonical, and tooling cannot measure progress.
+
+The new model:
+
+1. Every doc carries =#+version: 1= or =#+version: 2=.
+2. =doc/v2/= is merged into the main =doc/= tree — no separate subdir.
+3. *Touch-it-to-port-it*: editing a v1 doc means full-rewriting it to v2
+   (verifiable by the v2 frontmatter contract). Small fixes still trigger
+   the rewrite — that is the intentional pressure.
+4. A tracking script enumerates remaining v1 docs so we know how far we
+   have to go.
+
+** Baseline inventory
+
+Org files outside =build/=, =.packages/=, =vcpkg/=, =external/=:
+
+| Bucket                                | Count |
+|---------------------------------------+-------|
+| Total =.org= files                    |  1001 |
+| v2-shaped (have =#+type:=)            |   789 |
+| of which under =doc/v2/=              |   702 |
+| of which under =projects/*/modeling/= |   ~84 |
+| v1-shaped (no =#+type:=)              |   212 |
+
+* End state
+
+- Every doc-shaped =.org= file has =#+version: 1= or =#+version: 2=.
+- =doc/v2/= no longer exists; its contents live at their new top-level
+  paths inside =doc/=.
+- v1 sprint backlogs 01–16 plus =version_zero.org= are deleted (v2
+  trees already cover them).
+- =sprint_backlog_17.org= stays tagged as v1 (active sprint, no v2 form
+  yet).
+- =validate_docs.sh= enforces =#+version:= on every doc that carries
+  =#+type:=.
+- =projects/ores.codegen/scripts/doc_version_audit.py= lists remaining
+  v1 docs and reports the % migrated.
+- =CLAUDE.md= codifies the touch-it-to-port-it rule and points at the
+  audit script.
+- All scaffolds (v2-doc-author skill, mustache templates,
+  =v2_doc_generator.md=) inject =#+version: 2= and reference the new
+  doc paths.
+
+* Phase 1: Tracking script and bulk =#+version:= stamp
+
+** New script: =projects/ores.codegen/scripts/doc_version_audit.py=
+
+Walks the repo, excludes =build/ .packages/ vcpkg/ external/ .git/=,
+classifies each =.org= file:
+
+- =v2-tagged= — has both =#+version: 2= and =#+type:=
+- =v2-implied-untagged= — has =#+type:= but no =#+version:= (Phase 1
+  transitional)
+- =v1-tagged= — has =#+version: 1=
+- =v1-implied-untagged= — no =#+type:=, no =#+version:=, but has
+  =#+title:= (Phase 1 transitional)
+- =not-a-doc= — pure-scaffold files on an explicit allowlist
+  (=doc/doc.org=, =readme.org=, =index.org=, etc.) — exempt from
+  =#+version:=
+
+Outputs:
+
+- Default: summary table + counts.
+- =--list-v1=: paths of remaining v1 docs (one per line).
+- =--check=: exits non-zero if any untagged file remains (for CI).
+
+** Stamper: a one-shot Python pass invoked from the same script with =--stamp=
+
+- Idempotent: skips files that already have =#+version:= or are on the
+  not-a-doc allowlist.
+- Inserts =#+version: 2= immediately after =#+type:= for v2-shaped
+  files.
+- Inserts =#+version: 1= immediately after =#+title:= for v1-shaped
+  files.
+- Preserves UNIX line endings (CLAUDE.md convention).
+
+** Commit
+
+=[doc] Add #+version markers to every v1 and v2 document=
+
+* Phase 2: Delete v1 content already covered by v2 (sprint backlogs only)
+
+Confirmed-migrated to =doc/v2/versions/v0/sprint_NN/...=:
+
+Delete these v1 =.org= files (17):
+
+- =doc/agile/v0/sprint_backlog_01.org= through =_16.org=
+- =doc/agile/v0/version_zero.org= (v2 equivalent:
+  =doc/v2/versions/v0/version.org=)
+
+Delete the 49 auto-generated chart PNGs (only referenced from the
+deleted org files):
+
+- =sprint_backlog_NN_stories.png=, =_tags.png=, =_stories_pie_sorted.png=,
+  =_plan.png=, =_resources.png= for NN = 01..16.
+
+Delete the two release-notes markdowns (zero inbound references
+confirmed):
+
+- =sprint_backlog_15_release_notes.md=, =sprint_backlog_16_release_notes.md=
+
+*Keep*:
+
+- =sprint_backlog_17.org= — active sprint, no v2 tree yet. Remains
+  tagged =#+version: 1= from Phase 1.
+- 10 misc UI mockup PNGs (=dashboard_ideas.png=,
+  =figma_user_dashboard.jpeg=, etc.) — still referenced from
+  =doc/agile/product_backlog.org= (v1, lazy-port).
+
+** Commit
+
+=[doc] Delete v1 sprint backlogs and chart assets superseded by v2=
+
+* Phase 3: Merge =doc/v2/= into =doc/=
+
+No filename collisions found between =doc/v2/{knowledge,recipes}/= and
+=doc/{knowledge,recipes}/= (verified by recursive =comm=).
+
+** Moves (via =git mv= to preserve history)
+
+- =doc/v2/compass.org= → =doc/compass.org=
+- =doc/v2/meta/= → =doc/meta/=
+- =doc/v2/versions/= → =doc/versions/=
+- =doc/v2/knowledge/architecture/=, =documentation/=, =qt/= → into
+  =doc/knowledge/=
+- =doc/v2/recipes/cmake/=, =codegen/=, =emacs/= → into =doc/recipes/=
+
+Then remove the now-empty =doc/v2/=.
+
+** Update inbound references (3 real call sites + 6 example paths)
+
+- =.build-site.el= line 106: nav link
+  =/OreStudio/doc/v2/compass.html= → =/OreStudio/doc/compass.html=
+- =readme.org= line 277: text =doc/v2/recipes/cmake/= →
+  =doc/recipes/cmake/=
+- =projects/ores.codegen/docs/v2_doc_generator.md=: six
+  =--parent-dir doc/v2/...= examples (lines 6, 58, 101, 112, 152, 166)
+  rewritten to =doc/...=
+
+=doc/doc.org= line 13 uses an org-roam ID link to compass — survives
+the move.
+
+** Verify
+
+- =emacs -Q --script .build-site.el= builds
+- =./build/scripts/serve-site.sh= renders
+- The V2 Compass nav entry works.
+
+** Commit
+
+=[doc] Merge doc/v2/ into doc/; retire the v2 subdir=
+
+* Phase 4: Codify the rule + update tooling
+
+- *=projects/ores.codegen/validate_docs.py=*: add a =MISSING_VERSION=
+  check requiring =#+version: 1|2= on every file with =#+type:=.
+  Currently it only validates =component_overview.org= files; extend
+  the scope or wire =--check= of =doc_version_audit.py= into
+  =validate_docs.sh= so both run.
+
+- *=CLAUDE.md=*: add a "Documentation versions" section explaining the
+  marker, the touch-it-to-port-it rule, and pointing at
+  =doc_version_audit.py --list-v1=.
+
+- *Scaffolds inject =#+version: 2=*:
+  - =doc/skills/v2-doc-author/SKILL.org= (and any sub-templates)
+  - =projects/ores.codegen/library/templates/v2_doc_skill.org.mustache=
+  - =projects/ores.codegen/docs/v2_doc_generator.md= (update example
+    outputs to show the new header)
+
+- Re-run =python projects/ores.codegen/scripts/doc_version_audit.py --check=
+  — must pass.
+
+** Commit
+
+=[doc] Enforce #+version on v2 docs; codify touch-to-port rule=
+
+* Phase 5: PR
+
+- Push =feature/doc-version-marker=, open the PR.
+- In the body, include the audit summary (=vN / total = pp%=) so
+  reviewers can see the migration runway.
+
+* Open items to confirm at review
+
+1. *=sprint_backlog_17.org=*: confirmed plan keeps it as v1 (active
+   sprint). If you'd rather it be deleted now and the v2 =sprint_17=
+   tree authored in this PR, that is a much bigger scope — flag it.
+2. *Pure-scaffold allowlist*: the audit script will exempt
+   =doc/doc.org=, =readme.org=, =index.org=, and any other file flagged
+   as having no body and no =#+type:=. If you want even those tagged,
+   the rule is trivially relaxed.
+
+* Critical files
+
+- =projects/ores.codegen/scripts/doc_version_audit.py= (new)
+- =projects/ores.codegen/validate_docs.py= (extend)
+- =projects/ores.codegen/validate_docs.sh= (wire in the audit check)
+- =.build-site.el= (nav link)
+- =readme.org= (path text)
+- =index.org= (gets =#+version: 1=)
+- =CLAUDE.md= (touch-to-port rule)
+- =doc/skills/v2-doc-author/SKILL.org=
+- =projects/ores.codegen/library/templates/v2_doc_skill.org.mustache=
+- =projects/ores.codegen/docs/v2_doc_generator.md=
+
+Plus mass-stamping ~1000 =.org= files across the repo (via the script
+in Phase 1).
+
+* Verification
+
+End-to-end checks before opening the PR:
+
+1. =python projects/ores.codegen/scripts/doc_version_audit.py= — table
+   reports 0 untagged docs.
+2. =python projects/ores.codegen/scripts/doc_version_audit.py --check=
+   — exit 0.
+3. =./projects/ores.codegen/validate_docs.sh= — passes (includes
+   =MISSING_VERSION= check).
+4. =emacs -Q --script .build-site.el= — build succeeds, no broken
+   =[[file:]]= links.
+5. =./build/scripts/serve-site.sh= — browse:
+   - =/OreStudio/index.html=
+   - =/OreStudio/readme.html=
+   - =/OreStudio/doc/compass.html= (formerly under =/doc/v2/=)
+   - A sample sprint page like
+     =/OreStudio/doc/versions/v0/sprint_16/...html=
+   - A sample component overview from
+     =projects/ores.qt.trading/modeling/component_overview.html=
+6. =git grep 'doc/v2/'= returns no hits outside this plan file.
+7. Output of =doc_version_audit.py --list-v1 | wc -l= quoted in the PR
+   body as the migration runway baseline.

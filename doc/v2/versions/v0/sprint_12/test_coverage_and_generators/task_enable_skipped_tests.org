@@ -4,6 +4,7 @@
 #+title: Enable all skipped tests
 #+description: 19 previously skipped tests now active across DQ + IAM; skip count from 25 to 6 (only tenant RLS tests remain).
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :tests:coverage:fk:unskip:test_coverage_and_generators:sprint_12:v0:
 #+owner: marco

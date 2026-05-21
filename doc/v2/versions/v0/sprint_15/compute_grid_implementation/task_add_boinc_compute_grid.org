@@ -4,6 +4,7 @@
 #+title: Add BOINC-inspired distributed compute grid
 #+description: ores.compute domain library + ores.compute.service + ores.compute.wrapper executables; SQL schema; NATS JetStream lifecycle transitions; PostgreSQL trigger eventing (replaces PGMQ + pg_cron); HTTP endpoints; CLI commands; Qt list windows; UML diagrams; legacy plan docs removed.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :compute:grid:boinc:nats:jetstream:sql:qt:compute_grid_implementation:sprint_15:v0:
 #+owner: marco

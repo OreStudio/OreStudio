@@ -2,6 +2,7 @@
 :ID: C5EEF144-BB9D-2F44-453B-4B7338D8A457
 :END:
 #+title: New Sprint Skill
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

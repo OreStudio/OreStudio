@@ -4,6 +4,7 @@
 #+title: Sprint 06 housekeeping
 #+description: Sprint sundries: backlog, AI summary via the new skill, OCR notebooks.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :housekeeping:agile:sprint_06:v0:
 #+created: 2025-12-15

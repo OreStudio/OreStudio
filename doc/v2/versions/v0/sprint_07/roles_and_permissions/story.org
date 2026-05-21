@@ -4,6 +4,7 @@
 #+title: Roles and permissions
 #+description: Stand up RBAC: domain model + repository, enforcement points across the comms layer, Qt UI for management.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :iam:rbac:authorization:sprint_07:v0:
 #+created: 2026-05-19

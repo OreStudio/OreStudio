@@ -4,6 +4,7 @@
 #+title: Enhance currency taxonomy
 #+description: Replace currency_type free-text with structured asset_class (fiat / crypto / commodity / synthetic / supranational) + market_tier (g10 / emerging / exotic / frontier / historical); two new refdata entities currency_asset_class + currency_market_tier (SQL + domain + repo + service + messaging + Qt + Wt + CLI); protocol 41.0 (breaking).
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :refdata:currency:taxonomy:protocol:refactor:refdata_taxonomy_work:sprint_13:v0:
 #+owner: marco

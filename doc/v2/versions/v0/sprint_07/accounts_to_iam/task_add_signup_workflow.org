@@ -4,6 +4,7 @@
 #+title: Add sign-up workflow
 #+description: End-to-end sign-up: collect user details, validate, create account, route to first-login.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :iam:signup:authentication:accounts_to_iam:sprint_07:v0:
 #+owner: marco

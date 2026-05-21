@@ -2,6 +2,7 @@
 :ID: D6D86317-4961-6754-A6DB-9C12B5FAC997
 :END:
 #+title: PlantUML Class Modeler Skill
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

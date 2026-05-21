@@ -4,6 +4,7 @@
 #+title: Codegen infrastructure
 #+description: Stand up a simple in-tree code generator; cover domain-types SQL; auto-generate the ER diagram from SQL.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :codegen:sql:er_diagram:plantuml:sprint_10:v0:
 #+created: 2026-05-19

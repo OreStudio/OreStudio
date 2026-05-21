@@ -2,6 +2,7 @@
 :ID: f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c
 :END:
 #+title: Binary Protocol Developer
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

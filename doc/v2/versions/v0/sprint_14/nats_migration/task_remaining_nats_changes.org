@@ -4,6 +4,7 @@
 #+title: Remaining NATS changes
 #+description: Tenant provisioning auto-creates system party + seeds bootstrap-mode flag; server-side UUID generation in tenant_handler::save(); account_handler uses make_request_context for tenant scoping; lei_entity_handler::summary() implementation calling new SQL functions; PQsetNoticeProcessor routes PL/pgSQL through Boost.Log; provisioning wizard parity restored (depth + contact + seed); performed_by audit field attributed to service account; ores.wt.service startup fix.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :nats:iam:provisioning:audit:wt:nats_migration:sprint_14:v0:
 #+owner: marco

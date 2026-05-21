@@ -4,6 +4,7 @@
 #+title: Entity-creator skills suite
 #+description: Skills for adding a new entity end-to-end: Qt, Shell, HTTP (incl. recipes), Wt, CLI.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :skills:llm:scaffolding:sprint_08:v0:
 #+created: 2026-05-19

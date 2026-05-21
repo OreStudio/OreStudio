@@ -4,6 +4,7 @@
 #+title: Tidy up external data storage
 #+description: Restructure populate/ into domain-specific subdirectories (fpml/, crypto/, flags/, solvaris/); manifest.json files; code generators for flags/crypto/solvaris; relocate external data to external/.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :data:external:manifests:structure:external_data_reorganisation:sprint_10:v0:
 #+owner: marco

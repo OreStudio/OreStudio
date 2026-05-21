@@ -4,6 +4,7 @@
 #+title: Separate test database from application
 #+description: Use a dedicated Postgres database for tests so they don't collide with the dev/app database.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :testing:postgres:isolation:test_infrastructure:sprint_03:v0:
 #+owner: marco

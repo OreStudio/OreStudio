@@ -4,6 +4,7 @@
 #+title: White-boarding for new architecture
 #+description: Whiteboard the client/server architecture that the cobalt and comms work will implement.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :analysis:architecture:design:sprint_02_housekeeping:sprint_02:v0:
 #+owner: marco

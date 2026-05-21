@@ -4,6 +4,7 @@
 #+title: Qt entity creator skill
 #+description: Phase-based skill for adding a Qt UI for a domain entity (list window, detail dialog, history dialog, controller).
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :skills:qt:scaffolding:entity_creator_skills:sprint_08:v0:
 #+owner: marco

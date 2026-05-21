@@ -4,6 +4,7 @@
 #+title: ores.testing
 #+description: Catch2-based testing infrastructure — database isolation, per-test logging, tenant RLS helpers, and coroutine test support.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :testing:infrastructure:component:
 #+created: 2026-05-20

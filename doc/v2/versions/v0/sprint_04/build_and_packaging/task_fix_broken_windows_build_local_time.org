@@ -4,6 +4,7 @@
 #+title: Fix broken Windows build due to local time
 #+description: Resolve a Windows-only build break triggered by a local-time API mismatch.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :build:windows:bug_fix:build_and_packaging:sprint_04:v0:
 #+owner: marco

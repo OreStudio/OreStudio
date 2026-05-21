@@ -2,6 +2,7 @@
 :ID: 4B6536DF-56B6-A634-C7FB-FA3CF51E916D
 :END:
 #+title: Skill Manager Skill
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

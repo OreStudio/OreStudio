@@ -4,6 +4,7 @@
 #+title: Sprint 12
 #+description: Party + counterparty + business-centre domain end-to-end; GLEIF data integration; party-level RLS isolation; audit trail + system account; tenant provisioning wizards; books / portfolios / business units; FSM + trade envelope; counterparty advanced dialog.
 #+type: sprint
+#+version: 2
 #+level: s3
 #+filetags: :party:counterparty:gleif:rls:audit:tenants:trade:fsm:sprint_12:v0:
 #+created: 2026-05-20

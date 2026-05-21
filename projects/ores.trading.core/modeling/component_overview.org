@@ -4,6 +4,7 @@
 #+title: ores.trading.core
 #+description: Trade booking and lifecycle management — domain model, repositories, services, and NATS message handlers.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :trading:core:component:
 #+created: 2026-05-19

@@ -4,6 +4,7 @@
 #+title: Consider compressing payload
 #+description: Add optional zstd compression to comms payloads; benchmark against representative messages and decide thresholds.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :comms:compression:performance:comms_features:sprint_07:v0:
 #+owner: marco

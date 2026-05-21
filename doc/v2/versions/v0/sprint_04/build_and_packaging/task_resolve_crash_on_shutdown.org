@@ -4,6 +4,7 @@
 #+title: Resolve crash on shutdown
 #+description: Diagnose and fix a crash that occurs on application shutdown.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:shutdown:bug_fix:build_and_packaging:sprint_04:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: Use tenancy to isolate tests
 #+description: tenant_context C++ service in ores.database; per-test tenant provision + deprovision; RLS policies allow system tenant; --tenant CLI flag + ORES_TENANT env; psqlrc tenant prompt; ores_iam_provision_tenant_fn + ores_iam_deprovision_tenant_fn.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :tenancy:tests:rls:cli:context:tenancy_test_isolation:sprint_11:v0:
 #+owner: marco

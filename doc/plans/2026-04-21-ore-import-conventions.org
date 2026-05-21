@@ -2,6 +2,7 @@
 :ID: 7D4E1A08-1F3E-11F2-B4B1-40B0768014EB
 :END:
 #+title: ORE Import: Conventions Persistence & Full Import Pipeline
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

@@ -4,6 +4,7 @@
 #+title: Add trade import mapping dialog (carry-over)
 #+description: Carry-over from sprint 13. Attempted again in sprint 14: 4h39m of work landed but the story was postponed once more in favour of the broader ORE Import Wizard.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :trade:import:qt:carry_over:trade_import_dialog_attempt:sprint_14:v0:
 #+owner: marco

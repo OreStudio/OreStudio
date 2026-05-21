@@ -4,6 +4,7 @@
 #+title: Compute grid implementation
 #+description: BOINC-inspired distributed compute grid across the whole stack: ores.compute domain library + service + wrapper executables; NATS JetStream lifecycle; PostgreSQL trigger eventing; HTTP endpoints; CLI; Qt UI.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :compute:grid:boinc:nats:jetstream:sprint_15:v0:
 #+created: 2026-05-20

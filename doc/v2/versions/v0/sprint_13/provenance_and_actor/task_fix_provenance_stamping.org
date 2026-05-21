@@ -4,6 +4,7 @@
 #+title: Fix performed_by and modified_by stamping
 #+description: Remove current_user escape hatch from ores_iam_validate_account_username_fn; reorder foundation_populate.sql so IAM service accounts populate first; introduce ores_iam_current_actor_fn reading app.current_actor GUC; use resolved actor in all inserts under ores_iam_provision_tenant_fn; replace silent current_user defaults for assigned_by in image_tags + account_roles.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :audit:iam:provenance:sql:guc:provenance_and_actor:sprint_13:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: Rename instrument_family to product_type
 #+description: Pure rename of the DB routing discriminator field across SQL DDL, PG enum type (instrument_family_t → product_type_t), C++ domain structs, NATS message types, repository mapper, Qt trade window. Aligns with FpML productType + ISDA CDM language.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :trading:rename:fpml:cdm:refactor:asset_class_and_product_type_unification:sprint_16:v0:
 #+owner: marco

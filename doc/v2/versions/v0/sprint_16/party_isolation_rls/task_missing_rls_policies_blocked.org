@@ -4,6 +4,7 @@
 #+title: Add missing party isolation RLS policies (initial)
 #+description: RLS_002 validation surfaced several tables with party_id + tenant RLS but missing AS RESTRICTIVE party policy. Add the policies in iam / refdata / scheduler RLS files; harden trading instrument subtables to enable RLS + tenant isolation.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :rls:party:security:sql:validation:party_isolation_rls:sprint_16:v0:
 #+owner: marco

@@ -1,4 +1,5 @@
 #+TITLE: Workspace ID Codegen Propagation
+#+version: 1
 #+DATE: 2026-05-19
 #+STATUS: Complete
 

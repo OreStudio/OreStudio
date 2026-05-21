@@ -4,6 +4,7 @@
 #+title: Add scheduling support
 #+description: ores.scheduler library wraps pg_cron via Quartz.NET-style fluent API: job_definition / job_instance / job_definition_builder / cron_scheduler. Hand-crafted ores_scheduler_job_definitions_tbl linked to cron.job via cron_job_id; reads from cron.job_run_details directly. croncpp for cron_expression with std::expected error handling; utility::uuid::tenant_id for tenant isolation.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :scheduler:pg_cron:croncpp:sql:fluent_api:scheduling_subsystem:sprint_13:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: Implement the event bus
 #+description: Add an in-process event bus so components can publish/subscribe without coupling — basis for the upcoming Postgres-listener-driven notifications.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :eventing:infrastructure:infrastructure_features:sprint_06:v0:
 #+owner: marco

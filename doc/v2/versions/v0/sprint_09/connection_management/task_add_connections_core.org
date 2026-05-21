@@ -4,6 +4,7 @@
 #+title: Add ores.connections core
 #+description: New component for server connection bookmarks: folder + tag + server_environment + environment_tag domain types; SQLite persistence with AES-256-GCM password encryption and PBKDF2 key derivation; connection_manager service.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :connections:component:sqlite:encryption:connection_management:sprint_09:v0:
 #+owner: marco

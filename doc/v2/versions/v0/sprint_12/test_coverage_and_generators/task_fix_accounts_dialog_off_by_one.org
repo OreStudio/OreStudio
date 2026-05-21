@@ -4,6 +4,7 @@
 #+title: Fix off-by-one in accounts dialog
 #+description: Account list view off-by-one after AccountType column added; public Column enum + delegate refactor; documented in qt-entity-creator skill.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:bug_fix:delegate:ux:test_coverage_and_generators:sprint_12:v0:
 #+owner: marco

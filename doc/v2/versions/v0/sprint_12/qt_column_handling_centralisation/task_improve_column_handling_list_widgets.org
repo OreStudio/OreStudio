@@ -4,6 +4,7 @@
 #+title: Improve column handling in list widgets
 #+description: ColumnMetadata struct + helpers; 24 Client*Model headers + 24 *MdiWindow.cpp aligned; column_style enum relocated; initializeTableSettings takes string_view.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:refactor:columns:ux:qt_column_handling_centralisation:sprint_12:v0:
 #+owner: marco

@@ -4,6 +4,7 @@
 #+title: Create ores.fpml component
 #+description: Scaffold the ores.fpml component to host shared FPML infrastructure (XSD validation via libxml2, reporting-view schema set, partial-validation wrappers); export and import implementations carry forward to a later sprint.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :fpml:component:xml:validation:fpml_export_import_groundwork:sprint_10:v0:
 #+owner: marco

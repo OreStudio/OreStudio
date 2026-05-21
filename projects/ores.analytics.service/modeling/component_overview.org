@@ -4,6 +4,7 @@
 #+title: ores.analytics.service
 #+description: NATS service entrypoint for the analytics domain.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :analytics:service:component:
 #+created: 2026-05-19

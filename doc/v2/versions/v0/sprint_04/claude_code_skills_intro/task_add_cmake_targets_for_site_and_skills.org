@@ -4,6 +4,7 @@
 #+title: Add CMake targets for site and skills
 #+description: Add deploy_site and deploy_skills custom CMake targets that invoke emacs in batch mode.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :build:cmake:site:skills:claude_code_skills_intro:sprint_04:v0:
 #+owner: marco

@@ -3,6 +3,7 @@
 :END:
 #+options: date:nil toc:t author:nil num:nil
 #+title: Product Backlog
+#+version: 1
 #+tags: { reviewing(r) }
 #+tags: { code(c) infra(i) doc(d) agile(a) }
 #+startup: inlineimages

@@ -4,6 +4,7 @@
 #+title: Tenant administration
 #+description: Party-types lookup; RLS-aware tenant provisioning for tests; rename tenant types; tenant CRUD CLI; Super Admin role.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :tenants:iam:cli:refactor:sprint_12:v0:
 #+created: 2026-05-19

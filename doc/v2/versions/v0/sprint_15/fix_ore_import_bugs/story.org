@@ -4,6 +4,7 @@
 #+title: Fix ORE import bugs
 #+description: ORE CurrencyType mapping; status_id resolution; dynamic activity-type loading via NATS endpoint; ConnectionBrowserMdiWindow size restoration; subject_prefix on environments + connections.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :ore:import:bug_fix:qt:nats:sprint_15:v0:
 #+created: 2026-05-20

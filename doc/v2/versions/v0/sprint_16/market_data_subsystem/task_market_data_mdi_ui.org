@@ -4,6 +4,7 @@
 #+title: Market Data MDI UI
 #+description: Phase 6: market data browsing UI — list views for market series + index fixings; detailed time-series views for observations + fixing history; MarketDataController; case-sensitivity fix in asset class filter.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:marketdata:mdi:ui:market_data_subsystem:sprint_16:v0:
 #+owner: marco

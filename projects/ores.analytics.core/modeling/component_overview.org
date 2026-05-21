@@ -4,6 +4,7 @@
 #+title: ores.analytics.core
 #+description: Pricing model and analytics configuration — model types, product parameters, and batch pricing.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :analytics:core:component:
 #+created: 2026-05-19

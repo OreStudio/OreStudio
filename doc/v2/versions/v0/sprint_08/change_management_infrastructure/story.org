@@ -4,6 +4,7 @@
 #+title: Change management infrastructure
 #+description: Amendment / deletion reasons base infrastructure plus the Qt UI polish round on top.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :change_management:audit:iam:qt:sprint_08:v0:
 #+created: 2026-05-19

@@ -4,6 +4,7 @@
 #+title: Sprint 02
 #+description: Lay client/server foundations (cobalt, comms, messaging) and modernise serialisation and storage.
 #+type: sprint
+#+version: 2
 #+level: s3
 #+filetags: :client_server:serialisation:storage:v0:
 #+created: 2025-08-01

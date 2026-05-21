@@ -1,3 +1,4 @@
+#+version: 1
 I am thinking of a good way to visualise grid nodes of my risk engine as they execute in a qt application for finance. i was thinking of a heat map. I want to convey various bits of information. we may need multiple heat maps come to think of it. first one could be for a given report, showing the chunks of work the report is made of. how many of those have executed, how many are executing, how many are waiting for available engines. let's brainstorm on this use case, and if possible create some sample visualisations
 
 State: Brainstorming

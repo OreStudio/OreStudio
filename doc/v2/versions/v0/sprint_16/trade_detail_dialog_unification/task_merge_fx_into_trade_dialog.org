@@ -4,6 +4,7 @@
 #+title: Merge FX instrument into TradeDetailDialog
 #+description: PR 1 of 6: instrument-trade model refactor establishing independent identities; FX instrument tabs integrated into TradeDetailDialog; standalone FX UI components removed; OreImportWizard redesigned to target books.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :qt:trade:fx:instrument:refactor:trade_detail_dialog_unification:sprint_16:v0:
 #+owner: marco

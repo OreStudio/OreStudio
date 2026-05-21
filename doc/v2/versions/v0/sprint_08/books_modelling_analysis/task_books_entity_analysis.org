@@ -4,6 +4,7 @@
 #+title: Books entity analysis
 #+description: First-cut model of the entities needed to support books; FPML-anchored, iterated with Gemini and Qwen; ignore items explicitly marked as too complex.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :modelling:books:fpml:analysis:books_modelling_analysis:sprint_08:v0:
 #+owner: marco

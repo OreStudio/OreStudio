@@ -4,6 +4,7 @@
 #+title: ores.wt.service
 #+description: Wt C++ Web Toolkit frontend — account management, currency/country views, and session handling for ORE Studio.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :wt:web:frontend:component:
 #+created: 2026-05-20

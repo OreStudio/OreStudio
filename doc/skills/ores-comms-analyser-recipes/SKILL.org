@@ -2,6 +2,7 @@
 :ID: 943F0B37-DCD1-46EB-AD05-481BFF07DCFE
 :END:
 #+title: ORE Comms Analyser Recipes Skill
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

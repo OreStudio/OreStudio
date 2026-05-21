@@ -4,6 +4,7 @@
 #+title: Add JSON parsing support for currency
 #+description: Currencies can already round-trip through XML; add JSON round-trip via reflect-cpp for parity.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :currencies:json:reflect_cpp:currencies_ui_polish:sprint_05:v0:
 #+owner: marco

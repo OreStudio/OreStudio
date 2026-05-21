@@ -4,6 +4,7 @@
 #+title: Data Quality subsystem and Data Librarian
 #+description: Stand up ores.dq as a first-class component: domain types, ER schema, messaging subsystem, Data Librarian UI, publication workflow, fake-world dataset.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :dq:data_quality:librarian:lineage:fpml:sprint_09:v0:
 #+created: 2026-05-19

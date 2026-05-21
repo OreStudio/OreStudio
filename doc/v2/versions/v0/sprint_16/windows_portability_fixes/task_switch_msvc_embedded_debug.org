@@ -4,6 +4,7 @@
 #+title: cmake: Switch MSVC debug info to Embedded (/Z7)
 #+description: Switch MSVC debug information format from external PDB to embedded; /FS flag removed in consequence.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :windows:msvc:cmake:debug:pdb:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

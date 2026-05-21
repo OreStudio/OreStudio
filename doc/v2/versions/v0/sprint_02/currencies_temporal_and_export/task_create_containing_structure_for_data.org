@@ -4,6 +4,7 @@
 #+title: Create a containing structure for data
 #+description: Introduce a top-level container for ORE example data so groups of related files can be loaded together.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :data:examples:structure:currencies_temporal_and_export:sprint_02:v0:
 #+owner: marco

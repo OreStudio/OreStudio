@@ -4,6 +4,7 @@
 #+title: Loading indicator on entity list windows
 #+description: Indeterminate progress bar + centralised reload lifecycle across 45 subclasses; rename reload() override to doReload().
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :qt:ux:loading:refactor:sprint_15:v0:
 #+created: 2026-05-20

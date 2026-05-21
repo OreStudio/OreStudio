@@ -2,6 +2,7 @@
 :ID: F5E6A7B8-C9D0-1234-EFAB-345678901234
 :END:
 #+title: ores.assets Messaging Reference
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: overview

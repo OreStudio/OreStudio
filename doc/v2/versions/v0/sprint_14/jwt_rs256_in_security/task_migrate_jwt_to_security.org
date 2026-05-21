@@ -4,6 +4,7 @@
 #+title: Migrate JWT to ores.security with RS256
 #+description: Move JWT infrastructure from ores.http to ores.security; RS256 asymmetric signing (IAM mints with private key; services verify with public key); jwt_claims extended with tenant_id + party_id; ores.iam.service mints + returns JWT in login_response; protocol 49.0 (breaking).
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :iam:jwt:security:rs256:protocol:jwt_rs256_in_security:sprint_14:v0:
 #+owner: marco

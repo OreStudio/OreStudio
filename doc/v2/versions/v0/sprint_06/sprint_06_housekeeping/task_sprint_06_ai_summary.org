@@ -4,6 +4,7 @@
 #+title: Add AI-generated sprint summary
 #+description: Use the AI-summary skill (built in sprint 05) to produce a human-readable summary of sprint 06.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :agile:llm:summary:skill:sprint_06_housekeeping:sprint_06:v0:
 #+owner: marco

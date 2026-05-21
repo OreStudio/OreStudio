@@ -4,6 +4,7 @@
 #+title: Sprint 04 housekeeping
 #+description: Sprint-level sundries: backlog refinement, sprint instrumentation in R, postponed Debian install issue.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :housekeeping:agile:sprint_04:v0:
 #+created: 2025-11-30

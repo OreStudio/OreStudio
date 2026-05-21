@@ -4,6 +4,7 @@
 #+title: Rename tenant types
 #+description: platform → system; organisation → production; test → automation; new evaluation type added. ores_iam_tenant_types_tbl + provisioner + scripts aligned.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :tenants:iam:refactor:naming:tenant_administration:sprint_12:v0:
 #+owner: marco

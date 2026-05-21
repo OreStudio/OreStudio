@@ -4,6 +4,7 @@
 #+title: Update all UML diagrams after shell changes
 #+description: Refresh per-component UML diagrams to reflect the entity-first CLI restructure and merged currency messages.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :uml:plantuml:diagrams:docs_and_diagrams:sprint_05:v0:
 #+owner: marco

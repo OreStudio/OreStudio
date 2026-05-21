@@ -4,6 +4,7 @@
 #+title: CDM Phase 1: Rates instrument domain model
 #+description: Rates instruments: Swap, CrossCurrencySwap, CapFloor, Swaption. SQL: ores_trading_instruments_tbl + ores_trading_swap_legs_tbl + notify triggers + drop files. Domain: instrument + swap_leg structs with JSON I/O + table I/O + generator + protocol. Repository + service layer. Qt UI: ClientInstrumentModel + InstrumentMdiWindow + InstrumentDetailDialog + InstrumentHistoryDialog + InstrumentController.
 #+type: task
+#+version: 2
 #+level: s1
 #+filetags: :cdm:rates:trading:instrument:domain:qt:sql:cdm_instruments:sprint_15:v0:
 #+owner: marco

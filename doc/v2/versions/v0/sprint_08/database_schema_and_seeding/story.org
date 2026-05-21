@@ -4,6 +4,7 @@
 #+title: Database schema and seeding overhaul
 #+description: Rerun SQL from scratch with TimescaleDB tier detection; move all seeding from C++ to SQL populate scripts.
 #+type: story
+#+version: 2
 #+level: s2
 #+filetags: :sql:timescaledb:seeding:refactor:sprint_08:v0:
 #+created: 2026-05-19

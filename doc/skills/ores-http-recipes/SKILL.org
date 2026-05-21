@@ -2,6 +2,7 @@
 :ID: 06ce890f-7fce-4c94-83e3-3b8ea7bb18b5
 :END:
 #+title: ORE HTTP Recipes Skill
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

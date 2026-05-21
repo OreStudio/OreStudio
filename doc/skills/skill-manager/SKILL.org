@@ -58,8 +58,8 @@ bundle.
 
 - [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]] — the =skill= type entry defines the required sections, the
   filename convention (=SKILL.org=), and the =kebab-case= slug rule.
-- [[id:0944e150-a70f-47e3-9219-4177d208c9f8][V2 Document Author Skill]] — the umbrella skill for creating any v2 document;
-  refers back here for skill-specific work.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — the umbrella codegen recipe for
+  every v2 doc type; this skill specialises it for the skill flow.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the component that hosts the skill template
   (=projects/ores.codegen/library/templates/v2_doc_skill.org.mustache=).
 

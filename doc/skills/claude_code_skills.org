@@ -39,12 +39,9 @@ See [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]] for the deployment
 - [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][Release Notes Generator]] — generate release notes for a sprint.
 - [[id:28aaf9a6-b1e4-402a-83bb-289090990fb8][Recipe Author]] — create new recipe files and recipe-updating
   skills.
-- [[id:30D0AE60-5892-411C-8013-E858FFBF628B][ORE Shell Recipes]] — update shell recipes by comparing commands
-  to recipe documentation.
-- [[id:A962DF8E-783D-4DCF-BD60-9FEFAA2E1FBF][ORE CLI Recipes]] — update CLI recipes by comparing commands to
-  recipe documentation.
-- [[id:06ce890f-7fce-4c94-83e3-3b8ea7bb18b5][ORE HTTP Recipes]] — update HTTP recipes by comparing routes to
-  recipe documentation.
+- [[id:b5766b0e-24f0-45c3-b35d-e762bbab5206][ORES Recipe Sync]] — keep recipe documentation in sync with its
+  source (CLI parsers, HTTP routes, shell commands, etc.).
+  Replaces the per-topic recipe-sync skills.
 
 * Development
 
@@ -70,17 +67,12 @@ See [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]] for the deployment
   merge.
 - [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]] — autonomously monitor a PR after creation,
   addressing review comments and CI failures until green.
-- [[id:8c4f5b9a-3d2e-4c89-a7f1-9e8d6f2b5a4c][Autonomous Developer]] — autonomously pick up stories from the
-  sprint backlog, implement them incrementally with tests and
-  commits, then submit for review.
 - [[id:06BDB43A-EA9D-D474-68DB-198696A2B758][Semi Autonomous Developer]] — given a story, perform most of the
   development activities unsupervised.
 - [[id:37b88704-7a45-4347-a80a-9d9b4ee71bef][System Architect]] — analyse system architecture and plan
   incremental migrations for system-wide changes.
 - [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][Component Creator]] — create new components in the ORE Studio
   product.
-- [[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][Binary Protocol Developer]] — extend and modify the ORE Studio
-  binary messaging protocol.
 
 * Design
 

@@ -63,5 +63,6 @@ Additional v0 entries belonging here, not migrated as full tasks:
 * See also
 
 - [[id:50b83ce1-6e12-44e7-afeb-f6bac09ddc14][Claude Code skills introduction]] (sprint 04) — predecessor story.
-- [[id:0944e150-a70f-47e3-9219-4177d208c9f8][V2 Document Author Skill]] — descendant of the skills layer this
-  story grew.
+- [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][Skill Manager Skill]] — the skill that grew from this story; the
+  former =v2-doc-author= skill was folded into [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a
+  new v2 doc?]] when the codegen recipe took over.

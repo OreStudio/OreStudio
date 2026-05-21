@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1d0fd3d8-fdee-463b-b0c3-f4e3155f8249
 :END:
-#+title: Split scheduler / assets / variability / synthetic / trading / reporting (Phase 2)
+#+title: Task: Split scheduler / assets / variability / synthetic / trading / reporting (Phase 2)
 #+description: Six more service libraries refactored into *.api + *.core. New ores.assets.api + ores.reporting.api + ores.scheduler.api modules added with their CMake configs; existing modules renamed to .core. All ten service libraries now follow the three-layer api / core / service pattern.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-23]
-:END:
-
-** Now
-Completed 2026-03-23.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-23
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *API/core architecture migration* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Phase 2: split the remaining six service libraries into .api + .core.
+
+* Status
+
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | DONE                                                                         |
+| Parent story | [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]] |
+| Now          | Completed 2026-03-23.                                                        |
+| Waiting on   | None.                                                                        |
+| Next         | None.                                                                        |
+| Last touched | 2026-03-23                                                                   |
 
 * Acceptance
 

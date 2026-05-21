@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: dd59ed70-acf3-4a18-9c43-9739cb3a563b
 :END:
-#+title: Fix Windows build error in http_client path conversion
+#+title: Task: Fix Windows build error in http_client path conversion
 #+description: Use path::string().c_str() instead of path::c_str() in http_client.cpp.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-11]
-:END:
-
-** Now
-Completed 2026-04-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Windows portability fixes* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Use path::string().c_str() instead of path::c_str() in http_client.cpp.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] |
+| Now          | Completed 2026-04-11.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2026-04-11                                                             |
 
 * Acceptance
 

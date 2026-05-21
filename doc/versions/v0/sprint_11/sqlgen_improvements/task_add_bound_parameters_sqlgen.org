@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: a6d63825-d592-47bb-a1c6-b6e9564fd55c
 :END:
-#+title: Add bound parameters to sqlgen
+#+title: Task: Add bound parameters to sqlgen
 #+description: Replace remaining libpq escapes for SQL-injection-safe queries with native sqlgen bound parameters.
 #+type: task
 #+version: 2
@@ -16,25 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]].
-
-* BLOCKED Status
-
-** Now
-BLOCKED on upstream sqlgen support.
-
-** Waiting on
-=getml/sqlgen#119= to merge.
-
-** Next
-Pick up once upstream lands the feature.
-
-** Last touched
-2026-02-06
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *sqlgen improvements* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add native bound-parameter support to sqlgen so we can stop using libpq escapes for SQL-injection safety.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | BLOCKED                                                          |
+| Parent story | [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]] |
+| Now          | BLOCKED on upstream sqlgen support.                              |
+| Waiting on   | =getml/sqlgen#119= to merge.                                     |
+| Next         | Pick up once upstream lands the feature.                         |
+| Last touched | 2026-02-06                                                       |
 
 * Acceptance
 

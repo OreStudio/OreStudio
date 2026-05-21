@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: b735153c-70d0-42d5-a549-211f3e3e25b7
 :END:
-#+title: Fix MSYS2 path mangling of openssl -subj on Windows
+#+title: Task: Fix MSYS2 path mangling of openssl -subj on Windows
 #+description: Export MSYS_NO_PATHCONV + MSYS2_ARG_CONV_EXCL to prevent path conversion in generate_nats_certs.sh on Windows / Git Bash.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-11]
-:END:
-
-** Now
-Completed 2026-04-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Windows portability fixes* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Export MSYS_NO_PATHCONV + MSYS2_ARG_CONV_EXCL to prevent path conversion in generate_nats_certs.sh on Windows / Git Bash.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] |
+| Now          | Completed 2026-04-11.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2026-04-11                                                             |
 
 * Acceptance
 

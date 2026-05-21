@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: f98ad7f0-2034-4982-9f1b-efc48e8150c9
 :END:
-#+title: Rename accounts to iam
+#+title: Task: Rename accounts to iam
 #+description: Rename ores.accounts to ores.iam to reflect the broader identity-and-access concern; pure rename PR.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:6b57c190-4bb7-4f63-bf3d-7fb6d81d8d94][Accounts to IAM]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-25]
-:END:
-
-** Now
-Completed 2025-12-25.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-25
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Accounts to IAM* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Rename =ores.accounts= to =ores.iam= so the component name reflects the broader Identity-and-Access-Management concern that this sprint expands it to cover.
+
+* Status
+
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | DONE                                                         |
+| Parent story | [[id:6b57c190-4bb7-4f63-bf3d-7fb6d81d8d94][Accounts to IAM]] |
+| Now          | Completed 2025-12-25.                                        |
+| Waiting on   | None.                                                        |
+| Next         | None.                                                        |
+| Last touched | 2025-12-25                                                   |
 
 * Acceptance
 

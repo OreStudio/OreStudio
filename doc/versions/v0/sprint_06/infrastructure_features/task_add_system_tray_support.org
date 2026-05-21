@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 38dae511-4dd6-429d-bfc9-557cd3c57d0b
 :END:
-#+title: Add system tray support
+#+title: Task: Add system tray support
 #+description: Show ORE Studio in the system tray with minimise-to-tray behaviour for long-running sessions.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2025-12-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-15]
-:END:
-
-** Now
-Completed 2025-12-15.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-15
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Infrastructure features* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Show ORE Studio in the system tray with minimise-to-tray behaviour for long-running sessions.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | DONE                                                                 |
+| Parent story | [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]] |
+| Now          | Completed 2025-12-15.                                                |
+| Waiting on   | None.                                                                |
+| Next         | None.                                                                |
+| Last touched | 2025-12-15                                                           |
 
 * Acceptance
 

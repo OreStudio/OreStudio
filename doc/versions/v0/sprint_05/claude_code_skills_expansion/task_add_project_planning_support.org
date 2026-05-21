@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: bfb7fb18-06b9-451f-b0d4-d4d47eedd771
 :END:
-#+title: Add support for project planning
+#+title: Task: Add support for project planning
 #+description: Bring across the Dogen-style project-planning approach (Gantt-style milestones in org-mode) and a supporting skill.
 #+type: task
 #+version: 2
@@ -16,24 +16,7 @@
 #+updated: 2025-11-17
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-17]
-:END:
-
-** Now
-Completed 2025-11-17.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-17
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Claude Code skills expansion* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -41,6 +24,17 @@ Bring across Dogen's approach to project planning: org-mode
 TaskJuggler integration so we can render coarse milestones as a Gantt
 chart. Stand up the supporting skill so future planning passes are
 consistent.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]] |
+| Now          | Completed 2025-11-17.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2025-11-17                                                                |
 
 * Acceptance
 

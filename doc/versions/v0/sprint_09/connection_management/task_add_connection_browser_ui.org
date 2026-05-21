@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 581b2714-84ae-43ff-99db-f77003e4e0cd
 :END:
-#+title: Add Connection Browser MDI window
+#+title: Task: Add Connection Browser MDI window
 #+description: Hierarchical tree view of folders and environments; master-password support; full CRUD for folders and environments; database purge; pre-fill login from saved connection with auto-submit.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-13]
-:END:
-
-** Now
-Completed 2026-01-13.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-13
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Connection management* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Provide a Qt UI for managing the saved-connections store.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]] |
+| Now          | Completed 2026-01-13.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2026-01-13                                                         |
 
 * Acceptance
 

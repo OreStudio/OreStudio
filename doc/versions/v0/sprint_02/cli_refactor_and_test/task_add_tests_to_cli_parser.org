@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1dbc88f2-f004-45f8-bcd2-67d6ac646e97
 :END:
-#+title: Add tests to CLI parser
+#+title: Task: Add tests to CLI parser
 #+description: Add Catch2 tests covering the CLI parser's main flag and command paths.
 #+type: task
 #+version: 2
@@ -12,30 +12,24 @@
 #+updated: 2025-10-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:cf13ffb1-4d84-4965-ad65-c38b1d4849ab][CLI refactor and test]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-10-20]
-:END:
-
-** Now
-Completed 2025-10-20.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-10-20
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *CLI refactor and test* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add a Catch2 test suite to the CLI parser covering the main flag
 and command paths, so future changes to the parser are caught by
 CI.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:cf13ffb1-4d84-4965-ad65-c38b1d4849ab][CLI refactor and test]] |
+| Now          | Completed 2025-10-20.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2025-10-20                                                         |
 
 * Acceptance
 

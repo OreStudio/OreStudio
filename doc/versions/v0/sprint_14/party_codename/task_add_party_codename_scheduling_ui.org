@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: b57ab6e6-d2f5-431e-92a9-8503ad98b1c7
 :END:
-#+title: Add party codename and report scheduling UI
+#+title: Task: Add party codename and report scheduling UI
 #+description: adjective_noun codename per party via ores_utility_generate_whimsical_name_fn(); used as prefix for per-party PGMQ queues ({codename}_report_events); codename visible (hidden by default) + read-only in detail dialog; enhanced report scheduling UI; centralised stamp_auth helper in tenant_aware_handler; party-scoped MQ visibility (ores_mq_list_party_queues_fn + ores_mq_metrics_party_fn + ores_mq_metric_samples_fn); idempotent MQ metrics scrape job registration.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:9c57d467-3f17-469a-a245-5f57e6b20784][Party codename]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-03]
-:END:
-
-** Now
-Completed 2026-03-03.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-03
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Party codename* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add an =adjective_noun= codename per party (for per-party queue isolation) and the report scheduling UI on top of it.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | DONE                                                        |
+| Parent story | [[id:9c57d467-3f17-469a-a245-5f57e6b20784][Party codename]] |
+| Now          | Completed 2026-03-03.                                       |
+| Waiting on   | None.                                                       |
+| Next         | None.                                                       |
+| Last touched | 2026-03-03                                                  |
 
 * Acceptance
 

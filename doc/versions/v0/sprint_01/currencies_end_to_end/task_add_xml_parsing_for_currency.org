@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 33fbfda3-d79b-46ce-8fc8-64786da70a7e
 :END:
-#+title: Add XML parsing support for currency
+#+title: Task: Add XML parsing support for currency
 #+description: Read and write currencies from ORE's XML format, using the ORE examples as the import corpus.
 #+type: task
 #+version: 2
@@ -12,29 +12,23 @@
 #+updated: 2024-07-11
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2024-07-11]
-:END:
-
-** Now
-Completed 2024-07-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2024-07-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Currencies end-to-end* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Implement read and write paths for currency data in ORE's XML format,
 seeded with the currency input data from the upstream ORE examples.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]] |
+| Now          | Completed 2024-07-11.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2024-07-11                                                         |
 
 * Acceptance
 

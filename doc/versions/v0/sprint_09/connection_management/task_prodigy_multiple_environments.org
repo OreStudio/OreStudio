@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: d769d4f4-97c9-49d6-93ae-850f6755b6e1
 :END:
-#+title: Prodigy supports multiple environments
+#+title: Task: Prodigy supports multiple environments
 #+description: Prodigy shows all environments in a single buffer for running multiple claudes / qwens / geminis side-by-side.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-13]
-:END:
-
-** Now
-Completed 2026-01-13.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-13
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Connection management* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Update prodigy to surface every environment in a single buffer so running multiple LLM-driven sessions (claudes, qwens, geminis) side-by-side is friction-free.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]] |
+| Now          | Completed 2026-01-13.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2026-01-13                                                         |
 
 * Acceptance
 

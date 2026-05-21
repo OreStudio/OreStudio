@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: db5b3729-820d-4d11-8dc4-5a2fed022463
 :END:
-#+title: Add database command-line arguments to service
+#+title: Task: Add database command-line arguments to service
 #+description: Expose database connection parameters as CLI flags for the service runtime.
 #+type: task
 #+version: 2
@@ -16,24 +16,7 @@
 #+updated: 2025-11-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:3f819ee3-0834-4522-8b01-df4a7d09e77f][Postgres-backed currency persistence]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-25]
-:END:
-
-** Now
-Completed 2025-11-25.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-25
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Postgres-backed currency persistence* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -41,6 +24,17 @@ Expose database connection parameters as command-line flags on the
 service runtime, so configuration doesn't live as hard-coded values in
 the binary. Includes the corresponding update to the Prodigy launcher
 integration.
+
+* Status
+
+| Field        | Value                                                                             |
+|--------------+-----------------------------------------------------------------------------------|
+| State        | DONE                                                                              |
+| Parent story | [[id:3f819ee3-0834-4522-8b01-df4a7d09e77f][Postgres-backed currency persistence]] |
+| Now          | Completed 2025-11-25.                                                             |
+| Waiting on   | None.                                                                             |
+| Next         | None.                                                                             |
+| Last touched | 2025-11-25                                                                        |
 
 * Acceptance
 

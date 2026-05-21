@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 14d86f4f-3fe2-4f3a-bcf1-b91cf9d7ac35
 :END:
-#+title: Add Gemini action
+#+title: Task: Add Gemini action
 #+description: Wire a Gemini-based PR review action into GitHub Actions.
 #+type: task
 #+version: 2
@@ -12,30 +12,24 @@
 #+updated: 2025-09-10
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:0fe2033d-180f-4195-a314-998917d570be][Sprint 02 housekeeping]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-09-10]
-:END:
-
-** Now
-Completed 2025-09-10.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-09-10
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Sprint 02 housekeeping* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add a Gemini-driven code-review action so every PR receives an
 automated review pass, complementing the Claude review the project
 already uses.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:0fe2033d-180f-4195-a314-998917d570be][Sprint 02 housekeeping]] |
+| Now          | Completed 2025-09-10.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2025-09-10                                                          |
 
 * Acceptance
 

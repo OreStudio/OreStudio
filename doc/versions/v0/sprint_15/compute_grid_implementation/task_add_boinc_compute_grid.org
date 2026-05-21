@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: ab561c59-1b3e-4897-a14b-aee04c8f423d
 :END:
-#+title: Add BOINC-inspired distributed compute grid
+#+title: Task: Add BOINC-inspired distributed compute grid
 #+description: ores.compute domain library + ores.compute.service + ores.compute.wrapper executables; SQL schema; NATS JetStream lifecycle transitions; PostgreSQL trigger eventing (replaces PGMQ + pg_cron); HTTP endpoints; CLI commands; Qt list windows; UML diagrams; legacy plan docs removed.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:3ed3ca4d-8709-4f70-a1a8-1ff287adb8bf][Compute grid implementation]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-21]
-:END:
-
-** Now
-Completed 2026-03-21.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-21
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Compute grid implementation* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Implement the BOINC-inspired distributed compute grid end-to-end across the ORE Studio stack.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:3ed3ca4d-8709-4f70-a1a8-1ff287adb8bf][Compute grid implementation]] |
+| Now          | Completed 2026-03-21.                                                    |
+| Waiting on   | None.                                                                    |
+| Next         | None.                                                                    |
+| Last touched | 2026-03-21                                                               |
 
 * Acceptance
 

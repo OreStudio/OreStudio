@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: b0ac4e5f-a1db-401c-88b2-23c5cefa5950
 :END:
-#+title: ORE portfolio export: exporter + Qt Open Instrument + Export XML
+#+title: Task: ORE portfolio export: exporter + Qt Open Instrument + Export XML
 #+description: export_portfolio method in ores.ore exporter + Qt Open Instrument + Export to ORE XML actions in BookMdiWindow + TradeController; unit tests; review comments addressed (background thread serialisation, instrument data reuse).
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:fb0471f1-6bd2-4955-ac39-15d7800bb973][ORE portfolio export]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-01]
-:END:
-
-** Now
-Completed 2026-04-01.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-01
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *ORE portfolio export* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 export_portfolio method in ores.ore exporter + Qt Open Instrument + Export to ORE XML actions in BookMdiWindow + TradeController; unit tests; review comments addressed (background thread serialisation, instrument data reuse).
+
+* Status
+
+| Field        | Value                                                             |
+|--------------+-------------------------------------------------------------------|
+| State        | DONE                                                              |
+| Parent story | [[id:fb0471f1-6bd2-4955-ac39-15d7800bb973][ORE portfolio export]] |
+| Now          | Completed 2026-04-01.                                             |
+| Waiting on   | None.                                                             |
+| Next         | None.                                                             |
+| Last touched | 2026-04-01                                                        |
 
 * Acceptance
 

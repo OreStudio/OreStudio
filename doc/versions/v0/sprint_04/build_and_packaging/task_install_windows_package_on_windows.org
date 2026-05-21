@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 90e0b641-95ea-4c57-87d6-dce944cdd2b9
 :END:
-#+title: Install Windows package on Windows machine
+#+title: Task: Install Windows package on Windows machine
 #+description: Verify the Windows package produced by CI installs and runs end-to-end on a real Windows machine.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-11-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:c2e401c5-3f2b-4910-a91a-82dcf1b826e1][Build and packaging]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-20]
-:END:
-
-** Now
-Completed 2025-11-20.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-20
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Build and packaging* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Install the CI-built Windows package on a real Windows
 machine and verify console + GUI start, plus connections to a local and a
 remote service.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:c2e401c5-3f2b-4910-a91a-82dcf1b826e1][Build and packaging]] |
+| Now          | Completed 2025-11-20.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2025-11-20                                                       |
 
 * Acceptance
 

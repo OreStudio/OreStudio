@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: ea9a3802-114c-4250-97db-a2e172a69e67
 :END:
-#+title: Fix vcpkg patch application on Windows
+#+title: Task: Fix vcpkg patch application on Windows
 #+description: Diagnose and work around vcpkg failing to apply a port patch on Windows.
 #+type: task
 #+version: 2
@@ -16,24 +16,7 @@
 #+updated: 2025-11-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-15]
-:END:
-
-** Now
-Completed 2025-11-15.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-15
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Build stabilisation 3* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -41,6 +24,17 @@ Diagnose and work around vcpkg failing to apply our sqlgen port
 patches on Windows. The error was =Applying patch failed: error:
 corrupt patch at line 21= — patches that applied cleanly on Linux were
 rejected on Windows runners.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]] |
+| Now          | Completed 2025-11-15.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2025-11-15                                                         |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: da7f8221-f808-432c-ab7d-cbb2687fd7b1
 :END:
-#+title: Add serialisation support for reflect-cpp
+#+title: Task: Add serialisation support for reflect-cpp
 #+description: Integrate reflect-cpp into the build and use it to generate JSON serialisers for the existing types.
 #+type: task
 #+version: 2
@@ -12,30 +12,24 @@
 #+updated: 2025-09-28
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-09-28]
-:END:
-
-** Now
-Completed 2025-09-28.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-09-28
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Modernise serialisation and storage* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Integrate reflect-cpp into the build and use it to generate JSON
 serialisers for the existing types, replacing the hand-written
 serialisation code.
+
+* Status
+
+| Field        | Value                                                                            |
+|--------------+----------------------------------------------------------------------------------|
+| State        | DONE                                                                             |
+| Parent story | [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]] |
+| Now          | Completed 2025-09-28.                                                            |
+| Waiting on   | None.                                                                            |
+| Next         | None.                                                                            |
+| Last touched | 2025-09-28                                                                       |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 41c5a11e-0633-4112-9335-ec7ed684682f
 :END:
-#+title: Split god admin account into RBAC roles
+#+title: Task: Split god admin account into RBAC roles
 #+description: Introduce ores_owner / ores_rw / ores_ro group roles + LOGIN service users (ores_http_user, etc.); ALTER DEFAULT PRIVILEGES; schema ownership held by the DDL user. Postgres passwords removed from GitHub workflows as part of this.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:b726d4ea-4e80-4d54-a5cc-0cd895ce883c][Database role split and schema consolidation]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-31]
-:END:
-
-** Now
-Completed 2026-01-31.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-31
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Database role split and schema consolidation* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Split the single all-rights admin account into the Principle-of-Least-Privilege RBAC roles the project should have always had.
+
+* Status
+
+| Field        | Value                                                                                     |
+|--------------+-------------------------------------------------------------------------------------------|
+| State        | DONE                                                                                      |
+| Parent story | [[id:b726d4ea-4e80-4d54-a5cc-0cd895ce883c][Database role split and schema consolidation]] |
+| Now          | Completed 2026-01-31.                                                                     |
+| Waiting on   | None.                                                                                     |
+| Next         | None.                                                                                     |
+| Last touched | 2026-01-31                                                                                |
 
 * Acceptance
 

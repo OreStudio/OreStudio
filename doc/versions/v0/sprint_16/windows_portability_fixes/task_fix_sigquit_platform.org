@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7e0d1def-0fff-4c95-9c3c-c7cd5d5475fd
 :END:
-#+title: Fix Windows Clang build: replace SIGQUIT with platform shutdown_signals
+#+title: Task: Fix Windows Clang build: replace SIGQUIT with platform shutdown_signals
 #+description: Use centralised ores::platform::process::shutdown_signals list in domain_service_runner_impl.hpp + signing_service_runner_impl.hpp.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-11]
-:END:
-
-** Now
-Completed 2026-04-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Windows portability fixes* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Use centralised ores::platform::process::shutdown_signals list in domain_service_runner_impl.hpp + signing_service_runner_impl.hpp.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] |
+| Now          | Completed 2026-04-11.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2026-04-11                                                             |
 
 * Acceptance
 

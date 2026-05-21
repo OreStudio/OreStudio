@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 91dd5cfc-f76e-44fd-9381-1565b274e700
 :END:
-#+title: Business unit entity
+#+title: Task: Business unit entity
 #+description: Internal organisational units (desks, branches): unit_id, party_id, parent_business_unit_id, unit_name, unit_id_code, business_centre. Supports hierarchy.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:3afc713a-754e-42dc-ae10-022ac1dfdaba][Books, portfolios, business units modelling]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-17]
-:END:
-
-** Now
-Completed 2026-02-17.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-17
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Books, portfolios, business units modelling* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Model the business-unit entity for internal organisational units (desks, branches).
+
+* Status
+
+| Field        | Value                                                                                    |
+|--------------+------------------------------------------------------------------------------------------|
+| State        | DONE                                                                                     |
+| Parent story | [[id:3afc713a-754e-42dc-ae10-022ac1dfdaba][Books, portfolios, business units modelling]] |
+| Now          | Completed 2026-02-17.                                                                    |
+| Waiting on   | None.                                                                                    |
+| Next         | None.                                                                                    |
+| Last touched | 2026-02-17                                                                               |
 
 * Acceptance
 

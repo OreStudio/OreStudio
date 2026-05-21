@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 8153e98e-839f-4c19-9517-8fd41ac7052b
 :END:
-#+title: Image cache reloads on new datasets
+#+title: Task: Image cache reloads on new datasets
 #+description: When publishing images the image cache must reload; current behaviour leaves it stale.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:2a572d8a-644c-40d9-87d2-7a49a9c07d1b][Image cache polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-22]
-:END:
-
-** Now
-Completed 2026-01-22.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-22
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Image cache polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 When publishing images via the DQ pipeline, the image cache must reload — the current behaviour leaves it stale.
+
+* Status
+
+| Field        | Value                                                           |
+|--------------+-----------------------------------------------------------------|
+| State        | DONE                                                            |
+| Parent story | [[id:2a572d8a-644c-40d9-87d2-7a49a9c07d1b][Image cache polish]] |
+| Now          | Completed 2026-01-22.                                           |
+| Waiting on   | None.                                                           |
+| Next         | None.                                                           |
+| Last touched | 2026-01-22                                                      |
 
 * Acceptance
 

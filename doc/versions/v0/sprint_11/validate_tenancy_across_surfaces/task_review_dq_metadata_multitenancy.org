@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: d1b73897-ed9a-49a8-9fc6-8d77b941d1d2
 :END:
-#+title: Review DQ metadata tables for multi-tenancy
+#+title: Task: Review DQ metadata tables for multi-tenancy
 #+description: Audit: 11 DQ metadata tables have unique version indexes without tenant_id, blocking cross-tenant duplication; decision recorded; fix lands as part of the publish-across-tenants task.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-06]
-:END:
-
-** Now
-Completed 2026-02-06.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-06
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Validate tenancy across surfaces* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Analyse the DQ metadata tables for multi-tenant correctness: their unique version indexes don't include =tenant_id=, which would block different tenants from carrying the same metadata.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | DONE                                                                          |
+| Parent story | [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]] |
+| Now          | Completed 2026-02-06.                                                         |
+| Waiting on   | None.                                                                         |
+| Next         | None.                                                                         |
+| Last touched | 2026-02-06                                                                    |
 
 * Acceptance
 

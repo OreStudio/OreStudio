@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: db9f5667-7716-4f99-86f2-eed09a79de61
 :END:
-#+title: Setup laptop for development
+#+title: Task: Setup laptop for development
 #+description: Install all required toolchains, libraries, and editor configuration on the dev laptop.
 #+type: task
 #+version: 2
@@ -12,30 +12,24 @@
 #+updated: 2024-07-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:bca419e2-dff2-474b-969e-cfbd19e7c832][Sprint 01 housekeeping]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2024-07-15]
-:END:
-
-** Now
-Completed 2024-07-15.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2024-07-15
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Sprint 01 housekeeping* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Bring the dev laptop into a state where the project builds, the test
 suite runs, and the editor (emacs) has the org-mode + Doxygen + Qt
 integrations needed to work day-to-day.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:bca419e2-dff2-474b-969e-cfbd19e7c832][Sprint 01 housekeeping]] |
+| Now          | Completed 2024-07-15.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2024-07-15                                                          |
 
 * Acceptance
 

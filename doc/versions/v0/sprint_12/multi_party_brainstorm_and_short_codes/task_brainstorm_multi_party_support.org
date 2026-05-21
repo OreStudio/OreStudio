@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 3ec1360a-fa8d-4ef3-b545-1bee0fad4bab
 :END:
-#+title: Brainstorm multi-party support
+#+title: Task: Brainstorm multi-party support
 #+description: Party pagination implementation; party-level RLS isolation design; multi-party architecture document (companion to multi-tenancy doc); product-backlog updates for four-eyes / KYC / librarian lockdown.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:d0e2fb0d-24f0-4fa4-a403-872e01e60fb6][Multi-party brainstorm and short codes]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-10]
-:END:
-
-** Now
-Completed 2026-02-10.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-10
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Multi-party brainstorm and short codes* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Use the brainstorm skill to design multi-party support; settle the open questions left by the party-foundation story.
+
+* Status
+
+| Field        | Value                                                                               |
+|--------------+-------------------------------------------------------------------------------------|
+| State        | DONE                                                                                |
+| Parent story | [[id:d0e2fb0d-24f0-4fa4-a403-872e01e60fb6][Multi-party brainstorm and short codes]] |
+| Now          | Completed 2026-02-10.                                                               |
+| Waiting on   | None.                                                                               |
+| Next         | None.                                                                               |
+| Last touched | 2026-02-10                                                                          |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: f5ed48d0-31d1-409c-9bb7-672a16208b53
 :END:
-#+title: Add party-level currency and country restrictions (framework)
+#+title: Task: Add party-level currency and country restrictions (framework)
 #+description: ores_refdata_party_currencies_tbl + ores_refdata_party_countries_tbl junction tables to control per-party visibility; full stack via codegen (domain + repo + service + test); currency_service / country_service grow list_currencies_for_party / list_countries_for_party; bitemporal support.
 #+type: task
 #+version: 2
@@ -16,25 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:241a6de6-8978-4daf-a052-7e1cf06a8fc8][Party-level refdata restrictions]].
-
-* BACKLOG Status
-
-** Now
-POSTPONED in sprint 13; carried forward.
-
-** Waiting on
-A sprint with the slot.
-
-** Next
-Return to this once a sprint has the budget.
-
-** Last touched
-2026-02-28
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Party-level refdata restrictions* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add the framework for per-party visibility of currencies + countries; full enforcement deferred.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                       |
+| Parent story | [[id:241a6de6-8978-4daf-a052-7e1cf06a8fc8][Party-level refdata restrictions]] |
+| Now          | POSTPONED in sprint 13; carried forward.                                      |
+| Waiting on   | A sprint with the slot.                                                       |
+| Next         | Return to this once a sprint has the budget.                                  |
+| Last touched | 2026-02-28                                                                    |
 
 * Acceptance
 

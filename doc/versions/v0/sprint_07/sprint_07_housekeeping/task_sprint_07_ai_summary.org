@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: e10ad67b-fb97-4a39-af79-37c087094157
 :END:
-#+title: Add AI-generated sprint summary
+#+title: Task: Add AI-generated sprint summary
 #+description: Produce sprint 07's summary via the AI-summary skill.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:a5060b3b-a3c0-40ff-b5d3-36ed1e74b609][Sprint 07 housekeeping]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-30]
-:END:
-
-** Now
-Completed 2025-12-30.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-30
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Sprint 07 housekeeping* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Generate sprint 07's AI summary using the sprint-summariser skill.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:a5060b3b-a3c0-40ff-b5d3-36ed1e74b609][Sprint 07 housekeeping]] |
+| Now          | Completed 2025-12-30.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2025-12-30                                                          |
 
 * Acceptance
 

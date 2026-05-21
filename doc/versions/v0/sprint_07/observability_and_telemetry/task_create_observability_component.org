@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: af82e4cf-125d-4c32-b52a-cc1cd4ac5246
 :END:
-#+title: Create the observability component
+#+title: Task: Create the observability component
 #+description: Stand up ores.observability as a peer of ores.logging: structured event capture, retention, query surface.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-26]
-:END:
-
-** Now
-Completed 2025-12-26.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-26
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Observability and telemetry* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Stand up =ores.observability= as a peer of =ores.logging=: structured event capture, retention, query surface.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] |
+| Now          | Completed 2025-12-26.                                                    |
+| Waiting on   | None.                                                                    |
+| Next         | None.                                                                    |
+| Last touched | 2025-12-26                                                               |
 
 * Acceptance
 

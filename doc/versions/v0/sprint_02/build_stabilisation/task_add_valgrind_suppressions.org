@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 13b90143-aafd-4381-9e9d-3bccb88b8d3b
 :END:
-#+title: Add Valgrind suppressions
+#+title: Task: Add Valgrind suppressions
 #+description: Suppress known third-party false positives so Valgrind output highlights real issues.
 #+type: task
 #+version: 2
@@ -12,30 +12,24 @@
 #+updated: 2025-10-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-10-15]
-:END:
-
-** Now
-Completed 2025-10-15.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-10-15
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Build stabilisation* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 The Valgrind nightly was producing enough noise from third-party
 libraries that real issues were being missed. Add a suppression file
 covering the known false positives.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] |
+| Now          | Completed 2025-10-15.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2025-10-15                                                       |
 
 * Acceptance
 

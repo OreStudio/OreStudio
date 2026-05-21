@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 125319dd-7a6e-4df9-a3f7-0458f4c11256
 :END:
-#+title: Add nightly support with memcheck
+#+title: Task: Add nightly support with memcheck
 #+description: Add a nightly CI pipeline that runs the tests under memcheck.
 #+type: task
 #+version: 2
@@ -12,30 +12,24 @@
 #+updated: 2024-07-08
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2024-07-08]
-:END:
-
-** Now
-Completed 2024-07-08.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2024-07-08
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Build quality* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add a nightly pipeline distinct from the push-triggered one, running
 the test suite under memcheck so leaks surface without slowing down
 the regular feedback loop.
+
+* Status
+
+| Field        | Value                                                      |
+|--------------+------------------------------------------------------------|
+| State        | DONE                                                       |
+| Parent story | [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] |
+| Now          | Completed 2024-07-08.                                      |
+| Waiting on   | None.                                                      |
+| Next         | None.                                                      |
+| Last touched | 2024-07-08                                                 |
 
 * Acceptance
 

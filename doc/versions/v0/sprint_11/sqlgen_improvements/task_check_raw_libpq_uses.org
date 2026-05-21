@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: f0c71fe7-1920-44aa-b98f-9147aaa00032
 :END:
-#+title: Audit for uses of raw libpq
+#+title: Task: Audit for uses of raw libpq
 #+description: Sweep the codebase for libpq escapes Claude has snuck in; move all into ores.database; raise tickets on sqlgen for the gaps.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-01]
-:END:
-
-** Now
-Completed 2026-02-01.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-01
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *sqlgen improvements* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Sweep the codebase for raw libpq escapes (Claude has a habit of sneaking these in) and route everything through ores.database.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]] |
+| Now          | Completed 2026-02-01.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2026-02-01                                                       |
 
 * Acceptance
 

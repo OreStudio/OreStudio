@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: b9327231-19fb-4de1-9d14-5f77a8389619
 :END:
-#+title: Create faker for past timepoint
+#+title: Task: Create faker for past timepoint
 #+description: Add a faker generator for past timepoints so tests can produce realistic bitemporal history without hand-rolling dates.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2025-12-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-15]
-:END:
-
-** Now
-Completed 2025-12-15.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-15
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Infrastructure features* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add a faker generator for past timepoints so tests can produce realistic bitemporal history without hand-rolling dates.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | DONE                                                                 |
+| Parent story | [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]] |
+| Now          | Completed 2025-12-15.                                                |
+| Waiting on   | None.                                                                |
+| Next         | None.                                                                |
+| Last touched | 2025-12-15                                                           |
 
 * Acceptance
 

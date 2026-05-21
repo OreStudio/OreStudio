@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7850a146-bc92-4639-a6ba-ab810aedf3c8
 :END:
-#+title: Move context to database
+#+title: Task: Move context to database
 #+description: The runtime context (session, user, request metadata) lived in memory; persist it to the database so it survives restarts.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2025-12-13
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:50bb2acb-5687-4bad-b03a-12af606e8eab][Bootstrap polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-13]
-:END:
-
-** Now
-Completed 2025-12-13.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-13
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Bootstrap polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 The runtime context (session, user, request metadata) lived in memory; persist it to the database so it survives restarts.
+
+* Status
+
+| Field        | Value                                                         |
+|--------------+---------------------------------------------------------------|
+| State        | DONE                                                          |
+| Parent story | [[id:50bb2acb-5687-4bad-b03a-12af606e8eab][Bootstrap polish]] |
+| Now          | Completed 2025-12-13.                                         |
+| Waiting on   | None.                                                         |
+| Next         | None.                                                         |
+| Last touched | 2025-12-13                                                    |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 513272dd-7ed4-4f96-98fa-db038a4bae42
 :END:
-#+title: Add portfolio support
+#+title: Task: Add portfolio support
 #+description: Implementation of the portfolio entity based on the modelling analysis; hierarchical-tree storage following the Postgres-tree pattern.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:3afc713a-754e-42dc-ae10-022ac1dfdaba][Books, portfolios, business units modelling]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-19]
-:END:
-
-** Now
-Completed 2026-02-19.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-19
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Books, portfolios, business units modelling* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 First implementation slice of the portfolio entity.
+
+* Status
+
+| Field        | Value                                                                                    |
+|--------------+------------------------------------------------------------------------------------------|
+| State        | DONE                                                                                     |
+| Parent story | [[id:3afc713a-754e-42dc-ae10-022ac1dfdaba][Books, portfolios, business units modelling]] |
+| Now          | Completed 2026-02-19.                                                                    |
+| Waiting on   | None.                                                                                    |
+| Next         | None.                                                                                    |
+| Last touched | 2026-02-19                                                                               |
 
 * Acceptance
 

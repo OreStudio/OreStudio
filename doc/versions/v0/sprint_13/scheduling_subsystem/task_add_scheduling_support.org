@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 94ea7333-2b7d-412e-bbc6-4e502a3979be
 :END:
-#+title: Add scheduling support
+#+title: Task: Add scheduling support
 #+description: ores.scheduler library wraps pg_cron via Quartz.NET-style fluent API: job_definition / job_instance / job_definition_builder / cron_scheduler. Hand-crafted ores_scheduler_job_definitions_tbl linked to cron.job via cron_job_id; reads from cron.job_run_details directly. croncpp for cron_expression with std::expected error handling; utility::uuid::tenant_id for tenant isolation.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:a0b6c877-2fad-457a-b0c2-000d3f707a5b][Scheduling subsystem]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-27]
-:END:
-
-** Now
-Completed 2026-02-27.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-27
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Scheduling subsystem* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Build the =ores.scheduler= library wrapping =pg_cron= with a Quartz.NET-style fluent API.
+
+* Status
+
+| Field        | Value                                                             |
+|--------------+-------------------------------------------------------------------|
+| State        | DONE                                                              |
+| Parent story | [[id:a0b6c877-2fad-457a-b0c2-000d3f707a5b][Scheduling subsystem]] |
+| Now          | Completed 2026-02-27.                                             |
+| Waiting on   | None.                                                             |
+| Next         | None.                                                             |
+| Last touched | 2026-02-27                                                        |
 
 * Acceptance
 

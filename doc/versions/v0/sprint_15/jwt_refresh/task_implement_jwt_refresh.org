@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 922f4fd0-bef7-4115-88de-d855bfc96bba
 :END:
-#+title: Implement JWT refresh
+#+title: Task: Implement JWT refresh
 #+description: Configurable token lifetimes via iam.token.* system settings (access_lifetime, party_selection_lifetime, max_session_seconds, refresh_threshold_pct); iam.v1.auth.refresh NATS endpoint + validate_allow_expired() method; ores_iam_auth_events_tbl TimescaleDB hypertable with hourly + daily continuous aggregate views (90d raw, 3y daily); make_request_context returns std::expected with token_expired / unauthorized; error_reply via X-Error NATS headers; 48 domain handlers updated; hot-reload of token settings on system_setting_changed; shell reactive retry; Qt proactive QTimer at 80% of token lifetime; sessionExpired signal + warning dialog.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:169b15a7-442b-44fd-8e54-436fec8340a6][JWT refresh]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-21]
-:END:
-
-** Now
-Completed 2026-03-21.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-21
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *JWT refresh* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Close the loop on JWT auth with refresh + telemetry, so long-running sessions don't expire silently.
+
+* Status
+
+| Field        | Value                                                    |
+|--------------+----------------------------------------------------------|
+| State        | DONE                                                     |
+| Parent story | [[id:169b15a7-442b-44fd-8e54-436fec8340a6][JWT refresh]] |
+| Now          | Completed 2026-03-21.                                    |
+| Waiting on   | None.                                                    |
+| Next         | None.                                                    |
+| Last touched | 2026-03-21                                               |
 
 * Acceptance
 

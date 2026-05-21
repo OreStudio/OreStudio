@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 67fde70e-e08d-4b55-b420-5f2676763e8e
 :END:
-#+title: Event viewer review
+#+title: Task: Event viewer review
 #+description: Dialog reshape; ring buffer for last N events; error highlighting; eventing coverage gaps for accounts/login/feature flags/roles/permissions; non-admin permission gaps.
 #+type: task
 #+version: 2
@@ -16,25 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]].
-
-* BACKLOG Status
-
-** Now
-POSTPONED in sprint 08; carried forward to a later sprint.
-
-** Waiting on
-Nothing.
-
-** Next
-Return to this once a sprint has the slot.
-
-** Last touched
-2026-01-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Observability follow-up* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Review the event viewer and its eventing coverage; raise the fix list for a later sprint.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | BACKLOG                                                              |
+| Parent story | [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]] |
+| Now          | POSTPONED in sprint 08; carried forward to a later sprint.           |
+| Waiting on   | Nothing.                                                             |
+| Next         | Return to this once a sprint has the slot.                           |
+| Last touched | 2026-01-11                                                           |
 
 * Acceptance
 

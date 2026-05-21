@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 331bac68-cf7f-4fc3-97c6-fb7b7a993724
 :END:
-#+title: Check functionality in ores.wt
+#+title: Task: Check functionality in ores.wt
 #+description: Validate the Wt application end-to-end; raise bugs (theming, hard-coded currencies, password in log, dialog sizing, site logo).
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:13fbe901-b255-49f7-88c3-13b2a2506bf3][Wt and HTTP review]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-02]
-:END:
-
-** Now
-Completed 2026-01-02.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-02
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Wt and HTTP review* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Validate the Wt application end-to-end and raise the snag list.
+
+* Status
+
+| Field        | Value                                                           |
+|--------------+-----------------------------------------------------------------|
+| State        | DONE                                                            |
+| Parent story | [[id:13fbe901-b255-49f7-88c3-13b2a2506bf3][Wt and HTTP review]] |
+| Now          | Completed 2026-01-02.                                           |
+| Waiting on   | None.                                                           |
+| Next         | None.                                                           |
+| Last touched | 2026-01-02                                                      |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1075b79e-fe84-4a88-8045-0dcd57ddd6c8
 :END:
-#+title: Add LEI-to-BIC dataset
+#+title: Task: Add LEI-to-BIC dataset
 #+description: Mapping dataset for BIC settlements; CSV in external/, dataset + populate scripts + publisher; download from GLEIF mapping site.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:253ce971-c0f3-43c3-980c-276233250b86][GLEIF data integration]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-13]
-:END:
-
-** Now
-Completed 2026-02-13.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-13
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *GLEIF data integration* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add the LEI-to-BIC mapping as a dataset so settlement simulations can resolve BICs from LEIs.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:253ce971-c0f3-43c3-980c-276233250b86][GLEIF data integration]] |
+| Now          | Completed 2026-02-13.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-02-13                                                          |
 
 * Acceptance
 

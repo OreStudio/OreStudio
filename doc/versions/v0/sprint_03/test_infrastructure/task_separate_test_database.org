@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 5e739596-d2b8-4206-b2bf-5171ccc9b954
 :END:
-#+title: Separate test database from application
+#+title: Task: Separate test database from application
 #+description: Use a dedicated Postgres database for tests so they don't collide with the dev/app database.
 #+type: task
 #+version: 2
@@ -16,24 +16,7 @@
 #+updated: 2025-12-01
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-01]
-:END:
-
-** Now
-Completed 2025-12-01.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-01
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Test infrastructure* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -41,6 +24,17 @@ Stop tests from sharing the application's Postgres database. Each
 test run gets isolated state — no more deleting accounts or currencies
 out from under the running app, and no more tests trampling each
 other.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]] |
+| Now          | Completed 2025-12-01.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2025-12-01                                                       |
 
 * Acceptance
 

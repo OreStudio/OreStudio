@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7bf2dcbb-6df5-4626-b732-a4028abb3033
 :END:
-#+title: Per-party status trigger + correlation IDs + PartyProvisionPage
+#+title: Task: Per-party status trigger + correlation IDs + PartyProvisionPage
 #+description: Replace global party_setup_mode flag with per-party Inactive status; Nats-Correlation-Id header for distributed tracing; PartyProvisionPage replaces AccountSetupPage in tenant provisioning wizard.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:c0ed556b-57a4-4bce-9196-70bcf4fd0d63][Party provisioning saga]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-31]
-:END:
-
-** Now
-Completed 2026-03-31.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-31
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Party provisioning saga* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Replace global party_setup_mode flag with per-party Inactive status; Nats-Correlation-Id header for distributed tracing; PartyProvisionPage replaces AccountSetupPage in tenant provisioning wizard.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | DONE                                                                 |
+| Parent story | [[id:c0ed556b-57a4-4bce-9196-70bcf4fd0d63][Party provisioning saga]] |
+| Now          | Completed 2026-03-31.                                                |
+| Waiting on   | None.                                                                |
+| Next         | None.                                                                |
+| Last touched | 2026-03-31                                                           |
 
 * Acceptance
 

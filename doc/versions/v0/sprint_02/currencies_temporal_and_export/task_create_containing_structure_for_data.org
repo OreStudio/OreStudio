@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: acb832a6-da5e-4463-83a8-4bfa06bd607f
 :END:
-#+title: Create a containing structure for data
+#+title: Task: Create a containing structure for data
 #+description: Introduce a top-level container for ORE example data so groups of related files can be loaded together.
 #+type: task
 #+version: 2
@@ -12,24 +12,7 @@
 #+updated: 2025-08-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-08-25]
-:END:
-
-** Now
-Completed 2025-08-25.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-08-25
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Currencies temporal and export* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -37,6 +20,17 @@ ORE example data is naturally grouped (an example has Input,
 ExpectedOutput, etc). Introduce a top-level container that
 represents this grouping in the project so a user can load/save an
 example as a unit.
+
+* Status
+
+| Field        | Value                                                                       |
+|--------------+-----------------------------------------------------------------------------|
+| State        | DONE                                                                        |
+| Parent story | [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] |
+| Now          | Completed 2025-08-25.                                                       |
+| Waiting on   | None.                                                                       |
+| Next         | None.                                                                       |
+| Last touched | 2025-08-25                                                                  |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: cb12dda8-4b02-44a2-95a2-c27090aa53cc
 :END:
-#+title: Add basic widgets to display currencies
+#+title: Task: Add basic widgets to display currencies
 #+description: Display currency reference data in the Qt UI via a model/view tree + list widget.
 #+type: task
 #+version: 2
@@ -12,30 +12,24 @@
 #+updated: 2024-07-13
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2024-07-13]
-:END:
-
-** Now
-Completed 2024-07-13.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2024-07-13
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Currencies end-to-end* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Surface the parsed currency data in the Qt UI through a basic tree and
 list view. This is the first UI binding of project data and sets the
 pattern for every reference-data widget that follows.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]] |
+| Now          | Completed 2024-07-13.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2024-07-13                                                         |
 
 * Acceptance
 

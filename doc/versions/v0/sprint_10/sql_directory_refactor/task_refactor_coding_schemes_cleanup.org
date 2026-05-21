@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 37e6dbd7-8117-4cd9-a31a-527bc006e0c4
 :END:
-#+title: Refactor coding schemes and clean up ores.sql
+#+title: Task: Refactor coding schemes and clean up ores.sql
 #+description: Schema/ renamed to create/; deprecated files removed; admin objects follow admin_*_fn/admin_*_view convention; database_name_service updated to the new function names.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:38b6dddf-c02b-4072-b599-41ab3bcc9c28][SQL directory refactor]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-24]
-:END:
-
-** Now
-Completed 2026-01-24.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-24
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *SQL directory refactor* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Final cleanup pass on =ores.sql=: integrate FPML coding schemes into the DQ pipeline; standardise admin-object naming.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:38b6dddf-c02b-4072-b599-41ab3bcc9c28][SQL directory refactor]] |
+| Now          | Completed 2026-01-24.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-01-24                                                          |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: bcdd540f-ba92-4063-a279-941319276787
 :END:
-#+title: Create a splash screen and gray background
+#+title: Task: Create a splash screen and gray background
 #+description: Replace the default splash with a project-branded image; give the MDI background a neutral gray.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-11-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:2a9269e4-049a-49c3-9354-f26c95390e1f][UI polish and branding]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-22]
-:END:
-
-** Now
-Completed 2025-11-22.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-22
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *UI polish and branding* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Replace the placeholder splash with a project-branded one;
 give the empty MDI area a neutral gray background reminiscent of VS Code's
 welcome screen.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:2a9269e4-049a-49c3-9354-f26c95390e1f][UI polish and branding]] |
+| Now          | Completed 2025-11-22.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2025-11-22                                                          |
 
 * Acceptance
 

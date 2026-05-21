@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: fee9f73a-16b2-4692-9a22-b6c8b23ca451
 :END:
-#+title: Data Librarian publication workflow
+#+title: Task: Data Librarian publication workflow
 #+description: Multi-page publication wizard (upsert / insert_only / replace_all) with dependency resolution via Boost.Graph topological sort; stable dataset codes; publication history dialog; UI rename to 'methodology' and 'data passport'.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-20]
-:END:
-
-** Now
-Completed 2026-01-20.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-20
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Data Quality subsystem and Data Librarian* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add a publication workflow so curated datasets can be promoted from staging artefact tables into production tables with full dependency resolution.
+
+* Status
+
+| Field        | Value                                                                                  |
+|--------------+----------------------------------------------------------------------------------------|
+| State        | DONE                                                                                   |
+| Parent story | [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] |
+| Now          | Completed 2026-01-20.                                                                  |
+| Waiting on   | None.                                                                                  |
+| Next         | None.                                                                                  |
+| Last touched | 2026-01-20                                                                             |
 
 * Acceptance
 

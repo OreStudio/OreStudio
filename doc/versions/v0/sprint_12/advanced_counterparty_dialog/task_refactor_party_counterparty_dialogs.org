@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1b51b5e2-b0e2-4839-a911-50c1069300b4
 :END:
-#+title: Refactor party + counterparty dialogs
+#+title: Task: Refactor party + counterparty dialogs
 #+description: Strategy pattern: entity_detail_operations abstract interface; unified generic EntityDetailDialog; PartyDetailDialog deleted; PartyController + CounterpartyController instantiate the generic dialog with appropriate strategy.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:84545fff-58e6-4c97-821c-0d3bb0375f08][Advanced counterparty dialog]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-19]
-:END:
-
-** Now
-Completed 2026-02-19.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-19
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Advanced counterparty dialog* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Refactor party + counterparty dialogs behind a strategy pattern so the duplicated logic lives once.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:84545fff-58e6-4c97-821c-0d3bb0375f08][Advanced counterparty dialog]] |
+| Now          | Completed 2026-02-19.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2026-02-19                                                                |
 
 * Acceptance
 

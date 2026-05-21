@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: aa32b9c6-9c05-4f63-bbc5-51704df4e9b6
 :END:
-#+title: Rename ores.risk to ores.refdata
+#+title: Task: Rename ores.risk to ores.refdata
 #+description: Pure rename: include paths, namespaces, CMake targets, header guards, HTTP routes file (risk_routes.cpp -> refdata_routes.cpp); diagrams + docs aligned.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:61485635-64ba-4c31-a35b-2f60d7fb41aa][Database naming refactor]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-14]
-:END:
-
-** Now
-Completed 2026-01-14.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-14
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Database naming refactor* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Rename =ores.risk= to =ores.refdata= so the component name reflects /reference data/ rather than /risk calculation/.
+
+* Status
+
+| Field        | Value                                                                 |
+|--------------+-----------------------------------------------------------------------|
+| State        | DONE                                                                  |
+| Parent story | [[id:61485635-64ba-4c31-a35b-2f60d7fb41aa][Database naming refactor]] |
+| Now          | Completed 2026-01-14.                                                 |
+| Waiting on   | None.                                                                 |
+| Next         | None.                                                                 |
+| Last touched | 2026-01-14                                                            |
 
 * Acceptance
 

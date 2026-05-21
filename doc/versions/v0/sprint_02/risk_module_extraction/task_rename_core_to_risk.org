@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 5016b990-bb38-4386-a6d8-082a524f5359
 :END:
-#+title: Rename core to risk
+#+title: Task: Rename core to risk
 #+description: Pure rename of the =core= module to =risk= — no semantic changes.
 #+type: task
 #+version: 2
@@ -12,30 +12,24 @@
 #+updated: 2025-10-02
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-10-02]
-:END:
-
-** Now
-Completed 2025-10-02.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-10-02
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Risk module extraction* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Rename the =core= module to =risk= across the codebase — CMake
 targets, source files, headers, includes, references in
 documentation. No semantic changes; only a name change.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]] |
+| Now          | Completed 2025-10-02.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2025-10-02                                                          |
 
 * Acceptance
 

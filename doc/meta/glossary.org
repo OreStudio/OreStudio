@@ -11,6 +11,9 @@
 #+updated: 2026-05-18
 
 * Task
+:PROPERTIES:
+:ID: 31c868b9-306e-4282-ba8c-07e647021b34
+:END:
 
 The smallest unit of executable work. One task = one PR. Bounded by a
 concrete size limit (see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]). Owned by System 1.
@@ -24,58 +27,91 @@ A coherent user-visible outcome, composed of one or more tasks. The unit of
 sprint planning. Owned by System 2.
 
 * Sprint
+:PROPERTIES:
+:ID: 0820b7fd-147c-4832-ac25-c043d38d5b61
+:END:
 
 A bounded period of work delivering a set of stories aligned to a sprint
 mission. Owned by System 3.
 
 * Sprint mission
+:PROPERTIES:
+:ID: 198da730-d9fb-4bde-b1c0-b930cd019917
+:END:
 
 A one-sentence statement of what the sprint exists to achieve. Used to
 filter candidate stories. Owned by System 3.
 
 * Version
+:PROPERTIES:
+:ID: ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82
+:END:
 
 A major release target (e.g. 1.0). A coherent set of sprints. Owned by
 System 4.
 
 * Version identity
+:PROPERTIES:
+:ID: 83bc06e5-77dd-4aba-87cb-48a10ec0208a
+:END:
 
 The mini-mission of a version: what it exists to deliver, what makes it
 distinct. Owned by System 4.
 
 * Product identity
+:PROPERTIES:
+:ID: 436fb40c-422a-465b-b949-e9f0760820c1
+:END:
 
 The durable statement of what ORE Studio is and is not. Used to filter
 candidate versions, far stories, and feature requests. Owned by System 5.
 
 * Function
+:PROPERTIES:
+:ID: 66f2a9e8-0385-4d56-b4b1-0957208990dc
+:END:
 
 A named role that operates the system. Each function is one document
 describing its purpose, inputs, outputs, and the recipes it uses. Spans
 levels. Examples: PR Reviewer, Sprint Planner, Identity Steward.
 
 * Recipe
+:PROPERTIES:
+:ID: 117a95f9-b03d-490b-bb74-da9fe74537e2
+:END:
 
 A how-to document answering one operational question (e.g. "how do I run
 the tests"). Has executable scripts where applicable. Tested by CI.
 
 * Knowledge document
+:PROPERTIES:
+:ID: bd1f3458-f991-46be-abeb-5f06c2633375
+:END:
 
 A durable factual document about the domain, architecture, or components.
 Not state, not process — just facts that outlive any sprint.
 
 * Plan
+:PROPERTIES:
+:ID: 58d491a6-e4bd-4b0d-86bd-bb8465dfd4c7
+:END:
 
 A transient implementation strategy for a single task or story. Lives next
 to the work, dies with it. Key decisions distil into a =decisions.org= on
 the story before the plan is archived.
 
 * Discovered task
+:PROPERTIES:
+:ID: 4ea506f5-c3e9-4f92-8024-a5eed0b3df43
+:END:
 
 Work spotted in passing while executing another task. Filed without triage
 into =tasks/discovered/=; processed later by System 2 or System 3.
 
 * Backlog
+:PROPERTIES:
+:ID: e7acb613-01ed-4351-b704-e6c279e31157
+:END:
 
 A TODO state, not a folder. Tasks and stories in =BACKLOG= have been
 triaged but not started. The product backlog (work not yet pulled into
@@ -84,6 +120,9 @@ plus the broader product wishlist; it is split into =near/= and =far/=
 collections at the product-identity level.
 
 * TODO state
+:PROPERTIES:
+:ID: 8a246d60-6a87-4b54-a023-564ec1965c61
+:END:
 
 The TODO keyword on a stateful document's =* Status= headline. The full
 vocabulary is =DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED=
@@ -92,6 +131,9 @@ are not stateful (knowledge, recipes, functions, meta) have no Status
 headline.
 
 * Status headline
+:PROPERTIES:
+:ID: 26af1bc4-8b83-4aa4-a324-6fbebc2de960
+:END:
 
 The =* Status= headline inside a stateful document. Carries the TODO
 keyword (state) and four subheadings (=** Now=, =** Waiting on=,
@@ -100,12 +142,18 @@ detail. Updated every time an orchestrator or agent acts on the
 document.
 
 * Predecessor story
+:PROPERTIES:
+:ID: cf9b011e-7ff1-4fdb-8b5f-148adf43a75f
+:END:
 
 A story in a prior sprint that the current story continues. Captured
 as =#+predecessor: <id>= frontmatter plus a =Continued from: [[id:...][...]]=
 line in the body. See cross-sprint stories in [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]].
 
 * Successor story
+:PROPERTIES:
+:ID: 65976df1-57a0-4ba3-b6a5-a947886c20bd
+:END:
 
 A story in a later sprint that picks up where this one left off.
 Captured as =#+successor: <id>= frontmatter plus a =Continued in:
@@ -113,11 +161,17 @@ Captured as =#+successor: <id>= frontmatter plus a =Continued in:
 linkage.
 
 * Agent
+:PROPERTIES:
+:ID: 366d6521-79e0-42ce-97f4-5fd0f443a923
+:END:
 
 A subprocess forked by a System 2 orchestrator LLM to execute one task.
 Operates at System 1. See [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][execution model]].
 
 * Orchestrator
+:PROPERTIES:
+:ID: 32fbc685-b81d-4af8-9b10-294f9055bc75
+:END:
 
 The System 2 LLM session the user has assigned to a story. Forks agents,
 reviews their output, decides what to do with discovered work.

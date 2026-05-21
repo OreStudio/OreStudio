@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: bc07172b-d362-413f-bd9e-d00531425ea2
 :END:
-#+title: Polish party and counterparty list UI
+#+title: Task: Polish party and counterparty list UI
 #+description: Capitalise party-category values (Operational / System / Internal); country flag icon column (from business centre); business-centre input as combo box not free text.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:d0e2fb0d-24f0-4fa4-a403-872e01e60fb6][Multi-party brainstorm and short codes]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-13]
-:END:
-
-** Now
-Completed 2026-02-13.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-13
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Multi-party brainstorm and short codes* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Polish the party + counterparty list UI based on first-pass review.
+
+* Status
+
+| Field        | Value                                                                               |
+|--------------+-------------------------------------------------------------------------------------|
+| State        | DONE                                                                                |
+| Parent story | [[id:d0e2fb0d-24f0-4fa4-a403-872e01e60fb6][Multi-party brainstorm and short codes]] |
+| Now          | Completed 2026-02-13.                                                               |
+| Waiting on   | None.                                                                               |
+| Next         | None.                                                                               |
+| Last touched | 2026-02-13                                                                          |
 
 * Acceptance
 

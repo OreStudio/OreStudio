@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 3e644071-c68b-4a54-9623-87e09bd81d73
 :END:
-#+title: BOINC-based compute grid analysis
+#+title: Task: BOINC-based compute grid analysis
 #+description: Design pass for a distributed compute grid: Postgres as central state machine, PGMQ for hot dispatch, TimescaleDB for telemetry. Entities sketched: hosts, apps + app_versions, workunits, results, batches + batch_dependencies, assimilated_data (hypertable).
 #+type: task
 #+version: 2
@@ -16,25 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:85f8dc6c-1acd-4610-a877-b0fdba871254][Compute grid analysis (BOINC-based)]].
-
-* BACKLOG Status
-
-** Now
-POSTPONED in sprint 10; carried forward.
-
-** Waiting on
-A sprint with the slot to land it.
-
-** Next
-Return to this once a sprint has the budget.
-
-** Last touched
-2026-01-27
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Compute grid analysis (BOINC-based)* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 First-pass design for a BOINC-style distributed compute grid: Postgres central state machine, PGMQ hot dispatch, TimescaleDB telemetry.
+
+* Status
+
+| Field        | Value                                                                            |
+|--------------+----------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                          |
+| Parent story | [[id:85f8dc6c-1acd-4610-a877-b0fdba871254][Compute grid analysis (BOINC-based)]] |
+| Now          | POSTPONED in sprint 10; carried forward.                                         |
+| Waiting on   | A sprint with the slot to land it.                                               |
+| Next         | Return to this once a sprint has the budget.                                     |
+| Last touched | 2026-01-27                                                                       |
 
 * Acceptance
 

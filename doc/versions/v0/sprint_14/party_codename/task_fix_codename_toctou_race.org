@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 04aea289-a720-44c5-90ce-9f9bfdefd571
 :END:
-#+title: Fix TOCTOU race in party codename trigger
+#+title: Task: Fix TOCTOU race in party codename trigger
 #+description: Address the time-of-check-to-time-of-use race in party codename generation by adding pg_advisory_xact_lock inside the BEFORE INSERT trigger; serialises codename generation; fixes intermittent CI duplicate-key failures.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:9c57d467-3f17-469a-a245-5f57e6b20784][Party codename]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-04]
-:END:
-
-** Now
-Completed 2026-03-04.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-04
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Party codename* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Fix the time-of-check-to-time-of-use race in the party codename generation trigger.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | DONE                                                        |
+| Parent story | [[id:9c57d467-3f17-469a-a245-5f57e6b20784][Party codename]] |
+| Now          | Completed 2026-03-04.                                       |
+| Waiting on   | None.                                                       |
+| Next         | None.                                                       |
+| Last touched | 2026-03-04                                                  |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: f8794373-3e9c-4ee2-912a-43f7bf33a446
 :END:
-#+title: Incremental image cache loading with modified_since
+#+title: Task: Incremental image cache loading with modified_since
 #+description: Protocol: add optional modified_since to list_images_request and recorded_at to image_info; client tracks last_load_time and only fetches changed images.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:2a572d8a-644c-40d9-87d2-7a49a9c07d1b][Image cache polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-22]
-:END:
-
-** Now
-Completed 2026-01-22.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-22
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Image cache polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Make the reload incremental — only fetch images modified since the last successful load.
+
+* Status
+
+| Field        | Value                                                           |
+|--------------+-----------------------------------------------------------------|
+| State        | DONE                                                            |
+| Parent story | [[id:2a572d8a-644c-40d9-87d2-7a49a9c07d1b][Image cache polish]] |
+| Now          | Completed 2026-01-22.                                           |
+| Waiting on   | None.                                                           |
+| Next         | None.                                                           |
+| Last touched | 2026-01-22                                                      |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: aa89b17b-0cee-4786-82d9-747b20879f14
 :END:
-#+title: Add repository integration tests for all analytics entities
+#+title: Task: Add repository integration tests for all analytics entities
 #+description: Synthetic data generators + repository tests for pricing engine types, model configurations, products, parameters; real ORE engine type codes; unique config names to fix CI.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:08d2b499-53ce-4b1c-92cf-a7c26d036ec9][Reporting and analytics]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-07]
-:END:
-
-** Now
-Completed 2026-04-07.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-07
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Reporting and analytics* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Synthetic data generators + repository tests for pricing engine types, model configurations, products, parameters; real ORE engine type codes; unique config names to fix CI.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | DONE                                                                 |
+| Parent story | [[id:08d2b499-53ce-4b1c-92cf-a7c26d036ec9][Reporting and analytics]] |
+| Now          | Completed 2026-04-07.                                                |
+| Waiting on   | None.                                                                |
+| Next         | None.                                                                |
+| Last touched | 2026-04-07                                                           |
 
 * Acceptance
 

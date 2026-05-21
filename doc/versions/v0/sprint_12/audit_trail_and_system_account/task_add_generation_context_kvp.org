@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1088e4b4-fb61-4047-aebb-b35d913e4c43
 :END:
-#+title: Add generation context with KVP for audit trail fields
+#+title: Task: Add generation context with KVP for audit trail fields
 #+description: generation_context decomposed into generation_engine + generation_environment + composing context; ~36 generators migrated to accept generation_context&; modified_by lookup via environment; strict ores_iam_validate_account_username_fn re-enabled; make_generation_context() factory in ores.testing.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-17]
-:END:
-
-** Now
-Completed 2026-02-17.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-17
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Audit trail and system account* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Decompose the generation context: an engine for randomness/UUIDs, an environment for scoped KVPs, and a composing context. Generators read =modified_by= + =tenant_id= from the environment.
+
+* Status
+
+| Field        | Value                                                                       |
+|--------------+-----------------------------------------------------------------------------|
+| State        | DONE                                                                        |
+| Parent story | [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]] |
+| Now          | Completed 2026-02-17.                                                       |
+| Waiting on   | None.                                                                       |
+| Next         | None.                                                                       |
+| Last touched | 2026-02-17                                                                  |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 78304c42-6a95-4532-81e0-ed9f0972d6c8
 :END:
-#+title: Merge all databases into one
+#+title: Task: Merge all databases into one
 #+description: Remove ores_admin + ores_template dedicated databases; two-phase create (superuser then ores_ddl_user); centralised utility functions under ores_utility_ prefix.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:74a0b830-2f12-406f-9550-961098c11dc6][Infrastructure cleanup]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-11]
-:END:
-
-** Now
-Completed 2026-02-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Infrastructure cleanup* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Eliminate the ores_admin + ores_template dedicated databases; rely on RLS for test isolation.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:74a0b830-2f12-406f-9550-961098c11dc6][Infrastructure cleanup]] |
+| Now          | Completed 2026-02-11.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-02-11                                                          |
 
 * Acceptance
 

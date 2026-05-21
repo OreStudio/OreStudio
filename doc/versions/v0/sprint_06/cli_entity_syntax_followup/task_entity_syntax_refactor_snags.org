@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 25290cbf-79ac-4841-89b5-1d660d24859d
 :END:
-#+title: Entity syntax refactor snags
+#+title: Task: Entity syntax refactor snags
 #+description: Mop up the snags left by sprint 05's entity-first reshape: argument validation edge cases, help text inconsistencies.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2025-12-13
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:06c56ca2-9846-4dc9-b2f3-271bf4f084ce][CLI entity syntax follow-up]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-13]
-:END:
-
-** Now
-Completed 2025-12-13.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-13
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *CLI entity syntax follow-up* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Mop up the snags left by sprint 05's entity-first reshape: argument validation edge cases, help text inconsistencies.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:06c56ca2-9846-4dc9-b2f3-271bf4f084ce][CLI entity syntax follow-up]] |
+| Now          | Completed 2025-12-13.                                                    |
+| Waiting on   | None.                                                                    |
+| Next         | None.                                                                    |
+| Last touched | 2025-12-13                                                               |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: f315d65f-872f-421e-a22e-6d12cd9f6f88
 :END:
-#+title: Fix issues with logging after string_view change
+#+title: Task: Fix issues with logging after string_view change
 #+description: Repair call sites and tests that broke under the string_view migration.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2025-12-12
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:d9c5fcef-da11-45da-b7fb-2a7b62c8aa0b][Logging refactor (std::string_view)]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-12]
-:END:
-
-** Now
-Completed 2025-12-12.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-12
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Logging refactor (std::string_view)* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Repair call sites and tests that broke under the string_view migration.
+
+* Status
+
+| Field        | Value                                                                            |
+|--------------+----------------------------------------------------------------------------------|
+| State        | DONE                                                                             |
+| Parent story | [[id:d9c5fcef-da11-45da-b7fb-2a7b62c8aa0b][Logging refactor (std::string_view)]] |
+| Now          | Completed 2025-12-12.                                                            |
+| Waiting on   | None.                                                                            |
+| Next         | None.                                                                            |
+| Last touched | 2025-12-12                                                                       |
 
 * Acceptance
 

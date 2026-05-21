@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 617ad8a3-2903-465b-beda-abb7128613a2
 :END:
-#+title: Classify stories by type
+#+title: Task: Classify stories by type
 #+description: Apply consistent tag classification to every story in the sprint and reflect the classification in the sprint report.
 #+type: task
 #+version: 2
@@ -12,30 +12,24 @@
 #+updated: 2024-07-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:bca419e2-dff2-474b-969e-cfbd19e7c832][Sprint 01 housekeeping]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2024-07-22]
-:END:
-
-** Now
-Completed 2024-07-22.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2024-07-22
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Sprint 01 housekeeping* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Tag every story in the sprint with one of the project's canonical
 type tags (=:code:=, =:infra:=, =:doc:=, =:agile:=) so the
 resourcing-per-type chart can be generated.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:bca419e2-dff2-474b-969e-cfbd19e7c832][Sprint 01 housekeeping]] |
+| Now          | Completed 2024-07-22.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2024-07-22                                                          |
 
 * Acceptance
 

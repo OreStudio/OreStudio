@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 6d79d6ce-8a63-4b76-ad74-b107f54b8456
 :END:
-#+title: Fix codename with sequence-based unique suffix
+#+title: Task: Fix codename with sequence-based unique suffix
 #+description: Replace the advisory-lock + NOT-EXISTS loop with a sequence-based suffix: ores_refdata_party_codename_seq + ores_utility_to_base26_fn produce unique lowercase base-26 suffixes appended to whimsical names; simplified trigger; party_repository::write(vector) reinstated as proper batch insert.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:9c57d467-3f17-469a-a245-5f57e6b20784][Party codename]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-12]
-:END:
-
-** Now
-Completed 2026-03-12.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-12
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Party codename* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Replace the advisory-lock + NOT-EXISTS approach with a sequence-based unique suffix so codenames are unique even under batch insert.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | DONE                                                        |
+| Parent story | [[id:9c57d467-3f17-469a-a245-5f57e6b20784][Party codename]] |
+| Now          | Completed 2026-03-12.                                       |
+| Waiting on   | None.                                                       |
+| Next         | None.                                                       |
+| Last touched | 2026-03-12                                                  |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 326556b2-f83d-4e55-9e20-63d8ef83ce8e
 :END:
-#+title: Update C++ standard
+#+title: Task: Update C++ standard
 #+description: Bump the C++ standard used across the build to the project's chosen target.
 #+type: task
 #+version: 2
@@ -12,29 +12,23 @@
 #+updated: 2024-07-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2024-07-15]
-:END:
-
-** Now
-Completed 2024-07-15.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2024-07-15
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Build quality* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Set the C++ standard used by the project to the chosen target across
 CMake presets, the toolchain file, and any per-target overrides.
+
+* Status
+
+| Field        | Value                                                      |
+|--------------+------------------------------------------------------------|
+| State        | DONE                                                       |
+| Parent story | [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] |
+| Now          | Completed 2024-07-15.                                      |
+| Waiting on   | None.                                                      |
+| Next         | None.                                                      |
+| Last touched | 2024-07-15                                                 |
 
 * Acceptance
 

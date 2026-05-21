@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 88aaacdb-87db-4c8a-bfdc-b7b08037d0af
 :END:
-#+title: Add Nats-Session-Id header for per-session correlation
+#+title: Task: Add Nats-Session-Id header for per-session correlation
 #+description: Session-level trace ID enabling log aggregation across all requests within a session; nats_client supports + propagates session ID; sourced from IAM session record.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:ba5268af-df0e-4338-a6ce-1d5f84e1166d][Nats-Session-Id for session-level correlation]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-01]
-:END:
-
-** Now
-Completed 2026-04-01.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-01
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Nats-Session-Id for session-level correlation* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Session-level trace ID enabling log aggregation across all requests within a session; nats_client supports + propagates session ID; sourced from IAM session record.
+
+* Status
+
+| Field        | Value                                                                                      |
+|--------------+--------------------------------------------------------------------------------------------|
+| State        | DONE                                                                                       |
+| Parent story | [[id:ba5268af-df0e-4338-a6ce-1d5f84e1166d][Nats-Session-Id for session-level correlation]] |
+| Now          | Completed 2026-04-01.                                                                      |
+| Waiting on   | None.                                                                                      |
+| Next         | None.                                                                                      |
+| Last touched | 2026-04-01                                                                                 |
 
 * Acceptance
 

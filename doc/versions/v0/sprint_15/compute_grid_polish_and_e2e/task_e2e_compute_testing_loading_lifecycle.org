@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7daa4131-019b-4191-802d-cb67b22d102f
 :END:
-#+title: E2E compute testing fixes and loading lifecycle refactor
+#+title: Task: E2E compute testing fixes and loading lifecycle refactor
 #+description: AbstractClientModel base class with dataLoaded() + loadError() signals wired to endLoading() via EntityListMdiWindow::connectModel(); applies_to_new on change reason domain + SQL; centralised change-reason prompting in DetailDialogBase; compute RLS for app + app_versions as system-owned global registries; UUID generation in ORE app seed; ReflectCPP consteval workaround; app_version multi-platform via ores_compute_app_version_platforms_tbl junction; AppVersionDetailDialog + WorkunitDetailDialog combo boxes.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-22]
-:END:
-
-** Now
-Completed 2026-03-22.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-22
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Compute grid polish and E2E fixes* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Round of compute-grid polish + cross-cutting loading-lifecycle refactor.
+
+* Status
+
+| Field        | Value                                                                          |
+|--------------+--------------------------------------------------------------------------------|
+| State        | DONE                                                                           |
+| Parent story | [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]] |
+| Now          | Completed 2026-03-22.                                                          |
+| Waiting on   | None.                                                                          |
+| Next         | None.                                                                          |
+| Last touched | 2026-03-22                                                                     |
 
 * Acceptance
 

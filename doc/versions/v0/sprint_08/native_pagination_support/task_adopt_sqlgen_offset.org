@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 422d1b1b-d34c-4aa5-b127-0ff08d627377
 :END:
-#+title: Adopt sqlgen 0.6.0 native offset/limit
+#+title: Task: Adopt sqlgen 0.6.0 native offset/limit
 #+description: Update vcpkg submodule to sqlgen 0.6.0; drop custom overlay ports and the single_connection aggregation hack; expand pagination to feature_flags, role, permission, image, tag, login_info repositories.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:40d153e3-4a87-44b6-b605-1e3e28a44d03][Native pagination support]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-07]
-:END:
-
-** Now
-Completed 2026-01-07.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-07
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Native pagination support* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Adopt the sqlgen 0.6.0 features that landed natively what we previously worked around: native =offset=/=limit= and aggregation under sessions.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:40d153e3-4a87-44b6-b605-1e3e28a44d03][Native pagination support]] |
+| Now          | Completed 2026-01-07.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2026-01-07                                                             |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 552649c1-2541-4dfc-98e6-bcf59994f6d2
 :END:
-#+title: Add UI for roles and permission management
+#+title: Task: Add UI for roles and permission management
 #+description: Qt UI for listing roles, listing permissions, assigning roles to users, and granting permissions to roles.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:6255bc9f-95bc-4fc7-98c8-6060b8679b85][Roles and permissions]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-28]
-:END:
-
-** Now
-Completed 2025-12-28.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-28
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Roles and permissions* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add a Qt UI for managing roles and permissions.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:6255bc9f-95bc-4fc7-98c8-6060b8679b85][Roles and permissions]] |
+| Now          | Completed 2025-12-28.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2025-12-28                                                         |
 
 * Acceptance
 

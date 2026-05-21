@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 21dfacf9-f1cc-4c99-9e46-586fd8c6b23c
 :END:
-#+title: DQ messaging subsystem
+#+title: Task: DQ messaging subsystem
 #+description: New 0x6000-0x6FFF subsystem in the binary protocol; CRUD + history for every DQ entity; change-management messages migrated from IAM (0x2050-0x2061) to DQ (0x6070-0x6081); protocol bump 21.3 -> 22.0.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-19]
-:END:
-
-** Now
-Completed 2026-01-19.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-19
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Data Quality subsystem and Data Librarian* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Open a new subsystem in the binary protocol for DQ messages, and migrate the change-management messages into it.
+
+* Status
+
+| Field        | Value                                                                                  |
+|--------------+----------------------------------------------------------------------------------------|
+| State        | DONE                                                                                   |
+| Parent story | [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] |
+| Now          | Completed 2026-01-19.                                                                  |
+| Waiting on   | None.                                                                                  |
+| Next         | None.                                                                                  |
+| Last touched | 2026-01-19                                                                             |
 
 * Acceptance
 

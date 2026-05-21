@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: fb1bedbc-243b-4bdc-9c87-d2386516e002
 :END:
-#+title: Consider compressing payload
+#+title: Task: Consider compressing payload
 #+description: Add optional zstd compression to comms payloads; benchmark against representative messages and decide thresholds.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:b306f938-f939-44ca-9d69-6faedbf91c08][Comms features]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-23]
-:END:
-
-** Now
-Completed 2025-12-23.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-23
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Comms features* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Evaluate adding payload compression to the comms layer and land an implementation if it pays off.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | DONE                                                        |
+| Parent story | [[id:b306f938-f939-44ca-9d69-6faedbf91c08][Comms features]] |
+| Now          | Completed 2025-12-23.                                       |
+| Waiting on   | None.                                                       |
+| Next         | None.                                                       |
+| Last touched | 2025-12-23                                                  |
 
 * Acceptance
 

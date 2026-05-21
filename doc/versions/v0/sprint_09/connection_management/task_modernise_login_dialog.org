@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: b182b9b1-cb77-4751-b36c-75c380e7237b
 :END:
-#+title: Modernise login dialog
+#+title: Task: Modernise login dialog
 #+description: Dark-themed, modeless LoginDialog and SignUpDialog as MDI subwindows; auto-login after sign-up; saved-connections dropdown.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-15]
-:END:
-
-** Now
-Completed 2026-01-15.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-15
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Connection management* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Modernise login and sign-up dialogs: dark theme, modeless MDI subwindows, auto-login after sign-up, saved-connections dropdown.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]] |
+| Now          | Completed 2026-01-15.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2026-01-15                                                         |
 
 * Acceptance
 

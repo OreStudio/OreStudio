@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0fb53451-a686-4479-98bf-433c69a15932
 :END:
-#+title: Separate party identifiers into a dedicated table
+#+title: Task: Separate party identifiers into a dedicated table
 #+description: LEI not the primary code for parties; LEI + BIC + other schemes live in party_identifiers junction; party + counterparty detail dialogs gain identifier tabs.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:d0e2fb0d-24f0-4fa4-a403-872e01e60fb6][Multi-party brainstorm and short codes]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-14]
-:END:
-
-** Now
-Completed 2026-02-14.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-14
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Multi-party brainstorm and short codes* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Refactor: LEI is not the primary code for parties. Move LEI + BIC + other schemes into a junction table; let internal parties exist without LEIs.
+
+* Status
+
+| Field        | Value                                                                               |
+|--------------+-------------------------------------------------------------------------------------|
+| State        | DONE                                                                                |
+| Parent story | [[id:d0e2fb0d-24f0-4fa4-a403-872e01e60fb6][Multi-party brainstorm and short codes]] |
+| Now          | Completed 2026-02-14.                                                               |
+| Waiting on   | None.                                                                               |
+| Next         | None.                                                                               |
+| Last touched | 2026-02-14                                                                          |
 
 * Acceptance
 

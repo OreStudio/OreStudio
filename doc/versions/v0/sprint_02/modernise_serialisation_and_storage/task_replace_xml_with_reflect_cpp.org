@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: eb9d73f7-3598-48d2-8629-e0408f103280
 :END:
-#+title: Replace XML parsing with reflect-cpp
+#+title: Task: Replace XML parsing with reflect-cpp
 #+description: Replace the hand-rolled XML parsing path with reflect-cpp's XML codec.
 #+type: task
 #+version: 2
@@ -12,30 +12,24 @@
 #+updated: 2025-10-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-10-05]
-:END:
-
-** Now
-Completed 2025-10-05.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-10-05
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Modernise serialisation and storage* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Replace the project's hand-written XML parsing — including the
 sprint-01 currency XML path — with reflect-cpp's XML codec, so the
 same generated layer drives both JSON and XML.
+
+* Status
+
+| Field        | Value                                                                            |
+|--------------+----------------------------------------------------------------------------------|
+| State        | DONE                                                                             |
+| Parent story | [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]] |
+| Now          | Completed 2025-10-05.                                                            |
+| Waiting on   | None.                                                                            |
+| Next         | None.                                                                            |
+| Last touched | 2025-10-05                                                                       |
 
 * Acceptance
 

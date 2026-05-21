@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 297d7314-9875-4707-9561-ef4e21ad74fa
 :END:
-#+title: Add listen/notify to shell
+#+title: Task: Add listen/notify to shell
 #+description: Route Postgres LISTEN/NOTIFY events through the comms substrate to the shell so users see live state updates.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:b306f938-f939-44ca-9d69-6faedbf91c08][Comms features]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-24]
-:END:
-
-** Now
-Completed 2025-12-24.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-24
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Comms features* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Route Postgres =LISTEN= / =NOTIFY= events through the comms substrate to the shell so users see live state updates.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | DONE                                                        |
+| Parent story | [[id:b306f938-f939-44ca-9d69-6faedbf91c08][Comms features]] |
+| Now          | Completed 2025-12-24.                                       |
+| Waiting on   | None.                                                       |
+| Next         | None.                                                       |
+| Last touched | 2025-12-24                                                  |
 
 * Acceptance
 

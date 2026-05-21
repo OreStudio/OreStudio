@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 8d6ff09e-2be2-4600-991c-6c7556ec2484
 :END:
-#+title: Update Doxygen main page
+#+title: Task: Update Doxygen main page
 #+description: Refresh the Doxygen main page so it links to the v2 entry points instead of the legacy ones.
 #+type: task
 #+version: 2
@@ -16,29 +16,23 @@
 #+updated: 2025-11-30
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:13e4f41f-82e1-400a-9c84-e60a587e2647][Documentation polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-30]
-:END:
-
-** Now
-Completed 2025-11-30.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-30
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Documentation polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Refresh the Doxygen main page so it acts as a useful API
 landing rather than a placeholder.
+
+* Status
+
+| Field        | Value                                                             |
+|--------------+-------------------------------------------------------------------|
+| State        | DONE                                                              |
+| Parent story | [[id:13e4f41f-82e1-400a-9c84-e60a587e2647][Documentation polish]] |
+| Now          | Completed 2025-11-30.                                             |
+| Waiting on   | None.                                                             |
+| Next         | None.                                                             |
+| Last touched | 2025-11-30                                                        |
 
 * Acceptance
 

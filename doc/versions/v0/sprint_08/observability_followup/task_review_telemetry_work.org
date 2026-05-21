@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: d7794c1a-496d-491f-9a92-319c1b92d062
 :END:
-#+title: Review telemetry work
+#+title: Task: Review telemetry work
 #+description: Database support for telemetry was missing; persist telemetry log entries with sender identity; fix self-referential telemetry events; UI fixes (event-viewer timestamps, accounts dialog sizing).
 #+type: task
 #+version: 2
@@ -16,25 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]].
-
-* BACKLOG Status
-
-** Now
-POSTPONED in sprint 08; carried forward to a later sprint.
-
-** Waiting on
-Nothing.
-
-** Next
-Return to this once a sprint has the slot.
-
-** Last touched
-2026-01-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Observability follow-up* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Review the telemetry component landed in sprint 07: validate database persistence, sender identification, and surface fixes around the event viewer.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | BACKLOG                                                              |
+| Parent story | [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]] |
+| Now          | POSTPONED in sprint 08; carried forward to a later sprint.           |
+| Waiting on   | Nothing.                                                             |
+| Next         | Return to this once a sprint has the slot.                           |
+| Last touched | 2026-01-11                                                           |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 49bd7089-c2dd-4349-807b-57646076c043
 :END:
-#+title: Clean up system models and component models
+#+title: Task: Clean up system models and component models
 #+description: Refresh system + component models out of sync with recent refactorings; introduce component-model-creator skill; new component docs for ores.logging, ores.http, ores.http.server, ores.wt.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:e7ddb653-ceaa-4922-b0f9-8bd5393a747e][Engineering hygiene]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-12]
-:END:
-
-** Now
-Completed 2026-01-12.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-12
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Engineering hygiene* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Bring the system and component models back in sync with recent refactorings; introduce a skill to keep them that way.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:e7ddb653-ceaa-4922-b0f9-8bd5393a747e][Engineering hygiene]] |
+| Now          | Completed 2026-01-12.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2026-01-12                                                       |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 665dc710-e8a1-4c1f-9f66-2ee30aa94849
 :END:
-#+title: Add temporal support to currencies
+#+title: Task: Add temporal support to currencies
 #+description: Add validity-time and transaction-time columns to currencies so changes are tracked over time.
 #+type: task
 #+version: 2
@@ -12,24 +12,7 @@
 #+updated: 2025-09-10
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-09-10]
-:END:
-
-** Now
-Completed 2025-09-10.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-09-10
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Currencies temporal and export* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -37,6 +20,17 @@ Make the currency table bitemporal: each row carries both validity
 time (when the fact is true in the world) and transaction time
 (when we recorded it). Establishes the pattern every later
 reference-data type uses.
+
+* Status
+
+| Field        | Value                                                                       |
+|--------------+-----------------------------------------------------------------------------|
+| State        | DONE                                                                        |
+| Parent story | [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] |
+| Now          | Completed 2025-09-10.                                                       |
+| Waiting on   | None.                                                                       |
+| Next         | None.                                                                       |
+| Last touched | 2025-09-10                                                                  |
 
 * Acceptance
 

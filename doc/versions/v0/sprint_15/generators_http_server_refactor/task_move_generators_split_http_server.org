@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: afcd8728-5bd6-4fa5-8aa6-5eb5cd6b78f0
 :END:
-#+title: Move generators to api layer; split http.server
+#+title: Task: Move generators to api layer; split http.server
 #+description: Synthetic generators relocated from core to api layers across ores.trading + ores.reporting + ores.iam + ores.refdata + ores.compute (+ tests); auth_session_service relocated from ores.iam.core to ores.iam.api (in-memory, no core deps); domain-specific HTTP route handlers (iam, refdata, variability, assets) moved into their respective domain core modules; ores.http.server now exclusively manages generic server infrastructure (compute_routes only remaining domain-specific route); generator directories standardised to generators/ (plural); faker-cxx added as private dep on affected api libs.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:4837265a-934c-4cfc-9f7a-edc3f86f37c6][Generators to api layer + http.server split]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-25]
-:END:
-
-** Now
-Completed 2026-03-25.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-25
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Generators to api layer + http.server split* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Move synthetic generators to api layers + split http.server into core + infrastructure.
+
+* Status
+
+| Field        | Value                                                                                    |
+|--------------+------------------------------------------------------------------------------------------|
+| State        | DONE                                                                                     |
+| Parent story | [[id:4837265a-934c-4cfc-9f7a-edc3f86f37c6][Generators to api layer + http.server split]] |
+| Now          | Completed 2026-03-25.                                                                    |
+| Waiting on   | None.                                                                                    |
+| Next         | None.                                                                                    |
+| Last touched | 2026-03-25                                                                               |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 72662fdd-6362-4774-9084-7df231900596
 :END:
-#+title: Sprint and product backlog refinement
+#+title: Task: Sprint and product backlog refinement
 #+description: Maintain sprint 15 backlog and groom the product backlog.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:df3c08d8-a11e-4e2e-908a-5bd0ddc29626][Sprint 15 housekeeping]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-24]
-:END:
-
-** Now
-Completed 2026-03-24.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-24
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Sprint 15 housekeeping* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Maintain the sprint 15 backlog and groom the product backlog.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:df3c08d8-a11e-4e2e-908a-5bd0ddc29626][Sprint 15 housekeeping]] |
+| Now          | Completed 2026-03-24.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-03-24                                                          |
 
 * Acceptance
 

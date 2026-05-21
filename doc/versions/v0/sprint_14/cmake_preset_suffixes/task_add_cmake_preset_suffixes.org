@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: a77a88d5-737a-4136-85fa-f89e013d4908
 :END:
-#+title: Add build-tool suffix to CMake presets
+#+title: Task: Add build-tool suffix to CMake presets
 #+description: Every preset names its build tool ({platform}-{compiler}-{buildtype}-{tool}); hidden ninja + make presets centralise generator settings (incl. disabling coloured Make output); Linux + macOS support both Ninja + Make; Windows on Ninja only; parallel-build auto-detection removed in favour of env / tool default; docs + skill files updated.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:05cbd9fa-b1f2-4b53-8f83-2952a892c94d][CMake preset build-tool suffixes]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-10]
-:END:
-
-** Now
-Completed 2026-03-10.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-10
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *CMake preset build-tool suffixes* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Make every CMake preset name its build tool so multi-tool environments work cleanly.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | DONE                                                                          |
+| Parent story | [[id:05cbd9fa-b1f2-4b53-8f83-2952a892c94d][CMake preset build-tool suffixes]] |
+| Now          | Completed 2026-03-10.                                                         |
+| Waiting on   | None.                                                                         |
+| Next         | None.                                                                         |
+| Last touched | 2026-03-10                                                                    |
 
 * Acceptance
 

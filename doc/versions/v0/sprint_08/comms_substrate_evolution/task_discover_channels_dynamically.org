@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 410ef5b4-9e13-4357-8b20-d78c63419572
 :END:
-#+title: Discover notification channels dynamically
+#+title: Task: Discover notification channels dynamically
 #+description: Server-side event_channel_registry; new list_event_channels protocol messages (0x0015/0x0016); shell 'events channels' and 'events listen *' use discovery.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:da77fb50-27e8-4b42-a826-cab289c7826e][Comms substrate evolution]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-11]
-:END:
-
-** Now
-Completed 2026-01-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Comms substrate evolution* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Replace client-side hardcoded channel lists with server-side dynamic discovery.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:da77fb50-27e8-4b42-a826-cab289c7826e][Comms substrate evolution]] |
+| Now          | Completed 2026-01-11.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2026-01-11                                                             |
 
 * Acceptance
 

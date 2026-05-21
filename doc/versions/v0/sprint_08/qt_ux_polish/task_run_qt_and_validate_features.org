@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 56a07d0e-f2d9-4337-819f-1a20cdfc8c26
 :END:
-#+title: Run qt client and validate all new features
+#+title: Task: Run qt client and validate all new features
 #+description: End-to-end pass on holiday-period features: session monitoring, flags display, roles/permissions; raise bug list for the fixes that follow.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-02]
-:END:
-
-** Now
-Completed 2026-01-02.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-02
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Qt UX polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 End-to-end pass on the holiday-period features that couldn't be validated on the constrained laptop: session monitoring, flags display, roles + permissions.
+
+* Status
+
+| Field        | Value                                                     |
+|--------------+-----------------------------------------------------------|
+| State        | DONE                                                      |
+| Parent story | [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]] |
+| Now          | Completed 2026-01-02.                                     |
+| Waiting on   | None.                                                     |
+| Next         | None.                                                     |
+| Last touched | 2026-01-02                                                |
 
 * Acceptance
 

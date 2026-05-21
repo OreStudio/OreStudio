@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: a59ac77e-321e-4b55-b722-0fd74e0f1697
 :END:
-#+title: Replace clock_cast with portable file time conversion
+#+title: Task: Replace clock_cast with portable file time conversion
 #+description: Replace std::chrono::clock_cast with manual conversion for executable build time; Apple libc++ portability.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:2c3a9e28-68dc-4bf1-8eb7-5c4379e5c248][Engineering hygiene]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-07]
-:END:
-
-** Now
-Completed 2026-04-07.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-07
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Engineering hygiene* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Replace std::chrono::clock_cast with manual conversion for executable build time; Apple libc++ portability.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:2c3a9e28-68dc-4bf1-8eb7-5c4379e5c248][Engineering hygiene]] |
+| Now          | Completed 2026-04-07.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2026-04-07                                                       |
 
 * Acceptance
 

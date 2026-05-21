@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 94a87d79-bae3-46a1-b1b3-81784f3d8c2b
 :END:
-#+title: Test shell functionality with tenancy enabled
+#+title: Task: Test shell functionality with tenancy enabled
 #+description: Scenarios: super-admin login, tenant-admin creation + login, tenant-user creation + login; bootstrap mode replay. ores.iam::client login() + logout() helpers; messaging enum refactoring; C++ enum codegen.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-05]
-:END:
-
-** Now
-Completed 2026-02-05.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-05
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Validate tenancy across surfaces* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Verify the shell behaves correctly under tenancy across the realistic scenarios.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | DONE                                                                          |
+| Parent story | [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]] |
+| Now          | Completed 2026-02-05.                                                         |
+| Waiting on   | None.                                                                         |
+| Next         | None.                                                                         |
+| Last touched | 2026-02-05                                                                    |
 
 * Acceptance
 

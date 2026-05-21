@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0d8ff34d-dfd1-4e4a-bfb9-e88ce41ff581
 :END:
-#+title: Add exit confirmation dialog
+#+title: Task: Add exit confirmation dialog
 #+description: Prompt the user before quitting the application; avoid accidental data loss.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:72f723f4-378c-4e0a-b6f1-6ba3c29f5bea][Qt UX polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-22]
-:END:
-
-** Now
-Completed 2025-12-22.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-22
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Qt UX polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Prompt the user before quitting the application to avoid accidental data loss.
+
+* Status
+
+| Field        | Value                                                     |
+|--------------+-----------------------------------------------------------|
+| State        | DONE                                                      |
+| Parent story | [[id:72f723f4-378c-4e0a-b6f1-6ba3c29f5bea][Qt UX polish]] |
+| Now          | Completed 2025-12-22.                                     |
+| Waiting on   | None.                                                     |
+| Next         | None.                                                     |
+| Last touched | 2025-12-22                                                |
 
 * Acceptance
 

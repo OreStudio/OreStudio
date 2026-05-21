@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 9fe4da29-f05e-405e-9ad1-8268ba85efed
 :END:
-#+title: Investigate Valgrind leaks
+#+title: Task: Investigate Valgrind leaks
 #+description: Triage the leaks Valgrind reports and fix or suppress them with documented rationale.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-12-30
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observability]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-30]
-:END:
-
-** Now
-Completed 2025-12-30.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-30
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Logging and observability* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Triage the leaks Valgrind reports during the test run: classify
 each as a real leak or a benign third-party allocation that warrants
 a suppression rather than a fix.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observability]] |
+| Now          | Completed 2025-12-30.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2025-12-30                                                             |
 
 * Acceptance
 

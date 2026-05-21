@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 3bb7644c-3061-4925-99db-65d86a3b9c02
 :END:
-#+title: Add a logout message
+#+title: Task: Add a logout message
 #+description: Add a logout message type so the client can cleanly end its session, mirroring the existing login flow.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2025-12-04
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-04]
-:END:
-
-** Now
-Completed 2025-12-04.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-04
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Session lifecycle follow-up* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add a logout message type so the client can cleanly end its session — mirroring the existing login flow.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]] |
+| Now          | Completed 2025-12-04.                                                    |
+| Waiting on   | None.                                                                    |
+| Next         | None.                                                                    |
+| Last touched | 2025-12-04                                                               |
 
 * Acceptance
 

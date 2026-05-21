@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 40574a33-82d5-4e72-83b4-2048197460fb
 :END:
-#+title: Book and Portfolio entities
+#+title: Task: Book and Portfolio entities
 #+description: Portfolio = logical aggregation nodes (never hold trades). Book = operational ledger leaves (hold trades). Strict separation; legal ownership at Book level; trading vs banking book flag; Basel-friendly. Combined hierarchy rules documented.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:3afc713a-754e-42dc-ae10-022ac1dfdaba][Books, portfolios, business units modelling]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-18]
-:END:
-
-** Now
-Completed 2026-02-18.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-18
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Books, portfolios, business units modelling* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Model book + portfolio with strict separation: portfolios aggregate, books hold trades.
+
+* Status
+
+| Field        | Value                                                                                    |
+|--------------+------------------------------------------------------------------------------------------|
+| State        | DONE                                                                                     |
+| Parent story | [[id:3afc713a-754e-42dc-ae10-022ac1dfdaba][Books, portfolios, business units modelling]] |
+| Now          | Completed 2026-02-18.                                                                    |
+| Waiting on   | None.                                                                                    |
+| Next         | None.                                                                                    |
+| Last touched | 2026-02-18                                                                               |
 
 * Acceptance
 

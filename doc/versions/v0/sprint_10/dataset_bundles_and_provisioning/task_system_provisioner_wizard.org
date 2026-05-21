@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 8aa7657f-a37f-4ab7-85f0-95868cdfd8f3
 :END:
-#+title: Add System Provisioner Wizard to Qt
+#+title: Task: Add System Provisioner Wizard to Qt
 #+description: Multi-page wizard: admin account, foundation bundle, data-governance bundle, data-catalogues bundle, provisioning execution; replaces the shell-only bootstrap; localhost-only create_initial_admin_request atomically creates admin + exits bootstrap mode.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:2d3d3854-748e-4df7-8bbe-e6498c598c2d][Dataset bundles and provisioning]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-27]
-:END:
-
-** Now
-Completed 2026-01-27.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-27
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Dataset bundles and provisioning* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Replace the shell-only bootstrap with a guided Qt wizard.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | DONE                                                                          |
+| Parent story | [[id:2d3d3854-748e-4df7-8bbe-e6498c598c2d][Dataset bundles and provisioning]] |
+| Now          | Completed 2026-01-27.                                                         |
+| Waiting on   | None.                                                                         |
+| Next         | None.                                                                         |
+| Last touched | 2026-01-27                                                                    |
 
 * Acceptance
 

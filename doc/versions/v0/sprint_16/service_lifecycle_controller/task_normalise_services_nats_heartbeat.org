@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: d1e2865b-03df-4652-b495-5464f874f213
 :END:
-#+title: Normalise all services to NATS-based hosting with unified heartbeat
+#+title: Task: Normalise all services to NATS-based hosting with unified heartbeat
 #+description: IAM + HTTP + Wt + compute wrapper migrated to ores.service unified infrastructure; signing_service_runner + wt_service_runner; on_shutdown callbacks; standard NATS telemetry heartbeats; service dashboard sole-source-of-truth from heartbeats; IAM roles + service accounts for http / wt / compute.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-08]
-:END:
-
-** Now
-Completed 2026-04-08.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-08
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Service lifecycle controller* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 IAM + HTTP + Wt + compute wrapper migrated to ores.service unified infrastructure; signing_service_runner + wt_service_runner; on_shutdown callbacks; standard NATS telemetry heartbeats; service dashboard sole-source-of-truth from heartbeats; IAM roles + service accounts for http / wt / compute.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]] |
+| Now          | Completed 2026-04-08.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2026-04-08                                                                |
 
 * Acceptance
 

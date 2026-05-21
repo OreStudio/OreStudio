@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: efc673d9-f2f2-4a4d-978d-521dcf61e46c
 :END:
-#+title: Replace MaxMind implementation
+#+title: Task: Replace MaxMind implementation
 #+description: Replace the MaxMind-licensed GeoIP backend with a permissively-licensed alternative for the geo lookups used in session tracking.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-28]
-:END:
-
-** Now
-Completed 2025-12-28.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-28
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Observability and telemetry* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Replace the MaxMind-licensed GeoIP backend with a permissively-licensed alternative for the geo lookups used in session tracking.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] |
+| Now          | Completed 2025-12-28.                                                    |
+| Waiting on   | None.                                                                    |
+| Next         | None.                                                                    |
+| Last touched | 2025-12-28                                                               |
 
 * Acceptance
 

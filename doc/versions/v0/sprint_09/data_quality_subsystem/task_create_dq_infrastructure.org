@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: b03fee7c-2156-4b80-a2bd-020a9a5b6077
 :END:
-#+title: Create Data Quality infrastructure
+#+title: Task: Create Data Quality infrastructure
 #+description: Stand up ores.dq with domain types backing the user-driven sample-data workflow: dataset, lineage, provenance, classification, temporal context, data passport, granularity options.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-15]
-:END:
-
-** Now
-Completed 2026-01-15.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-15
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Data Quality subsystem and Data Librarian* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Lay out the conceptual foundations for the data-quality subsystem: how the project will manage curated sample data with full lineage and provenance.
+
+* Status
+
+| Field        | Value                                                                                  |
+|--------------+----------------------------------------------------------------------------------------|
+| State        | DONE                                                                                   |
+| Parent story | [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] |
+| Now          | Completed 2026-01-15.                                                                  |
+| Waiting on   | None.                                                                                  |
+| Next         | None.                                                                                  |
+| Last touched | 2026-01-15                                                                             |
 
 * Acceptance
 

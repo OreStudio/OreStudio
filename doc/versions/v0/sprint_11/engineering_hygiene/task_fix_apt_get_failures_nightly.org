@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1f64c879-3cca-42da-b16c-9f0194346964
 :END:
-#+title: Fix apt-get failures on nightly build
+#+title: Task: Fix apt-get failures on nightly build
 #+description: Exponential-backoff retry loop in install_debian_packages.sh (5 retries, 5s start); Acquire::Retries=3; --with-valgrind flag for nightly.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:0a69cb02-19df-4df7-bedd-81c57a604737][Engineering hygiene]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-05]
-:END:
-
-** Now
-Completed 2026-02-05.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-05
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Engineering hygiene* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Make the apt-get step in =install_debian_packages.sh= robust against transient network failures.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:0a69cb02-19df-4df7-bedd-81c57a604737][Engineering hygiene]] |
+| Now          | Completed 2026-02-05.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2026-02-05                                                       |
 
 * Acceptance
 

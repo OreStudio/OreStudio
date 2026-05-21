@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 68777ef7-8d69-4985-88a1-6363ea5ebee9
 :END:
-#+title: Implement authentication bootstrap workflow
+#+title: Task: Implement authentication bootstrap workflow
 #+description: Implement the bootstrap workflow that creates the first admin account on a fresh database; POSTPONED in sprint 03.
 #+type: task
 #+version: 2
@@ -16,24 +16,7 @@
 #+updated: 2025-11-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-22]
-:END:
-
-** Now
-Completed 2025-11-22.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-22
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Authentication bootstrap follow-up* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -41,6 +24,17 @@ Land the authentication bootstrap workflow that was
 POSTPONED in sprint 03's =login_and_sessions=. On a fresh database, the
 system needs a way to create the first admin account so anyone can log in
 at all.
+
+* Status
+
+| Field        | Value                                                                           |
+|--------------+---------------------------------------------------------------------------------|
+| State        | DONE                                                                            |
+| Parent story | [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] |
+| Now          | Completed 2025-11-22.                                                           |
+| Waiting on   | None.                                                                           |
+| Next         | None.                                                                           |
+| Last touched | 2025-11-22                                                                      |
 
 * Acceptance
 

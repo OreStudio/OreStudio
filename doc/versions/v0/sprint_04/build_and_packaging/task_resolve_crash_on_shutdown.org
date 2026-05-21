@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: ac81bc12-b879-441f-b2d6-c27fd9d8a135
 :END:
-#+title: Resolve crash on shutdown
+#+title: Task: Resolve crash on shutdown
 #+description: Diagnose and fix a crash that occurs on application shutdown.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-11-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:c2e401c5-3f2b-4910-a91a-82dcf1b826e1][Build and packaging]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-20]
-:END:
-
-** Now
-Completed 2025-11-20.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-20
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Build and packaging* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Diagnose and fix the crash on Qt UI shutdown. Root cause:
 the MDI detach/reattach logic was creating /two/ owners for each
 detachable sub-window, which led to a double-delete at exit.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:c2e401c5-3f2b-4910-a91a-82dcf1b826e1][Build and packaging]] |
+| Now          | Completed 2025-11-20.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2025-11-20                                                       |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: c9e69a10-8de8-49c3-acd2-4c470059e947
 :END:
-#+title: Add skill to generate release notes
+#+title: Task: Add skill to generate release notes
 #+description: Skill that produces release notes from a sprint backlog automatically.
 #+type: task
 #+version: 2
@@ -16,29 +16,23 @@
 #+updated: 2025-11-17
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-17]
-:END:
-
-** Now
-Completed 2025-11-17.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-17
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Claude Code skills expansion* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Build on the sprint-summary work: a skill that turns a closed
 sprint backlog into release notes ready for the GitHub release.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]] |
+| Now          | Completed 2025-11-17.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2025-11-17                                                                |
 
 * Acceptance
 

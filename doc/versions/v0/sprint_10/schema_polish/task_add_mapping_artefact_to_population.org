@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: bd7f39d4-46b1-41ce-992b-7feedf0cc59d
 :END:
-#+title: Add mapping artefact to population functions
+#+title: Task: Add mapping artefact to population functions
 #+description: Hard-coded mapping moved into the artefact pipeline.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-25]
-:END:
-
-** Now
-Completed 2026-01-25.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-25
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Schema polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Remove the hard-coded mapping in population functions; route it through the artefact pipeline.
+
+* Status
+
+| Field        | Value                                                      |
+|--------------+------------------------------------------------------------|
+| State        | DONE                                                       |
+| Parent story | [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]] |
+| Now          | Completed 2026-01-25.                                      |
+| Waiting on   | None.                                                      |
+| Next         | None.                                                      |
+| Last touched | 2026-01-25                                                 |
 
 * Acceptance
 

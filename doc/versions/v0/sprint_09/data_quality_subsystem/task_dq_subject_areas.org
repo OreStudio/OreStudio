@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 293a5704-3138-40d4-9903-6d09b67f3456
 :END:
-#+title: DQ subject areas management
+#+title: Task: DQ subject areas management
 #+description: SubjectAreaController + Detail + History dialogs; menu integration; version history with revert; read-only versioned view.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-19]
-:END:
-
-** Now
-Completed 2026-01-19.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-19
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Data Quality subsystem and Data Librarian* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add a dedicated subject-area management surface for the DQ subsystem.
+
+* Status
+
+| Field        | Value                                                                                  |
+|--------------+----------------------------------------------------------------------------------------|
+| State        | DONE                                                                                   |
+| Parent story | [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] |
+| Now          | Completed 2026-01-19.                                                                  |
+| Waiting on   | None.                                                                                  |
+| Next         | None.                                                                                  |
+| Last touched | 2026-01-19                                                                             |
 
 * Acceptance
 

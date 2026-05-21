@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: bbc0d0d7-0060-41bf-934d-00ad9452fbd6
 :END:
-#+title: Enforce UTC-everywhere timestamp policy
+#+title: Task: Enforce UTC-everywhere timestamp policy
 #+description: Canonical UTC API in ores.platform; UTC sessions enforced in DB; ISO 8601 UTC timestamps in wire protocols; clarify display-only formatting; db_timestamp alias; ore_log_parser inline Boost.Log timestamp parsing.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:1997ccef-3e2f-44c9-ab1c-9435a646bd61][UTC-everywhere timestamp policy]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-08]
-:END:
-
-** Now
-Completed 2026-04-08.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-08
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *UTC-everywhere timestamp policy* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Canonical UTC API in ores.platform; UTC sessions enforced in DB; ISO 8601 UTC timestamps in wire protocols; clarify display-only formatting; db_timestamp alias; ore_log_parser inline Boost.Log timestamp parsing.
+
+* Status
+
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | DONE                                                                         |
+| Parent story | [[id:1997ccef-3e2f-44c9-ab1c-9435a646bd61][UTC-everywhere timestamp policy]] |
+| Now          | Completed 2026-04-08.                                                        |
+| Waiting on   | None.                                                                        |
+| Next         | None.                                                                        |
+| Last touched | 2026-04-08                                                                   |
 
 * Acceptance
 

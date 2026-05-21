@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 60722e51-beb9-4221-abb1-95b0e08e9a32
 :END:
-#+title: Books entity analysis
+#+title: Task: Books entity analysis
 #+description: First-cut model of the entities needed to support books; FPML-anchored, iterated with Gemini and Qwen; ignore items explicitly marked as too complex.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:77211166-9316-40c0-88d6-c92f983a00b5][Books domain modelling analysis]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-11]
-:END:
-
-** Now
-Completed 2026-01-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Books domain modelling analysis* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 First-cut analysis of the entities required to support books, the next major modelling effort after currencies and countries.
+
+* Status
+
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | DONE                                                                         |
+| Parent story | [[id:77211166-9316-40c0-88d6-c92f983a00b5][Books domain modelling analysis]] |
+| Now          | Completed 2026-01-11.                                                        |
+| Waiting on   | None.                                                                        |
+| Next         | None.                                                                        |
+| Last touched | 2026-01-11                                                                   |
 
 * Acceptance
 

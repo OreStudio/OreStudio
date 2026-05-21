@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 #+todo: STARTED | RELEASED
 
-This page documents ORE Studio's *v0* — the pre-1.0 alpha version. It
+This page documents *v0* — the pre-1.0 alpha [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]] of ORE Studio. It
 captures v0's identity, mission, definition of done, current status,
 and the sprints that compose it. For the durable, version-independent
 statement of what ORE Studio is, see the [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product vision]].

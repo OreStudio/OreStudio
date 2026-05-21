@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: da48504b-2da4-48ae-895c-b8c5017a22c1
 :END:
-#+title: Improvements to connection browser
+#+title: Task: Improvements to connection browser
 #+description: Inline rename, drag-reorder folders, password policy validation, test-connection button, expanded start state, tags support, brighter-disabled-state fix, login-dialog integration.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-15]
-:END:
-
-** Now
-Completed 2026-01-15.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-15
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Connection management* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Polish the connection browser based on first-pass review.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]] |
+| Now          | Completed 2026-01-15.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2026-01-15                                                         |
 
 * Acceptance
 

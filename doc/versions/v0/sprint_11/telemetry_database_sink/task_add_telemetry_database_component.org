@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7edc04f8-907e-4230-bd82-23e9e979ffb1
 :END:
-#+title: Add ores.telemetry.database component
+#+title: Task: Add ores.telemetry.database component
 #+description: Split telemetry repository/mapper/entity into ores.telemetry.database to resolve the ores.telemetry ↔ ores.database circular dependency; Boost.Log database_sink_backend.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:2920a00e-538d-455e-9013-44a1c3a7ed36][Telemetry database sink]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-03]
-:END:
-
-** Now
-Completed 2026-02-03.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-03
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Telemetry database sink* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Resolve the =ores.telemetry= ↔ =ores.database= circular dependency by extracting a dedicated =ores.telemetry.database= library.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | DONE                                                                 |
+| Parent story | [[id:2920a00e-538d-455e-9013-44a1c3a7ed36][Telemetry database sink]] |
+| Now          | Completed 2026-02-03.                                                |
+| Waiting on   | None.                                                                |
+| Next         | None.                                                                |
+| Last touched | 2026-02-03                                                           |
 
 * Acceptance
 

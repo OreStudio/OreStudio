@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: f16634af-a817-4d61-b6e4-e329bc6e7914
 :END:
-#+title: Add provision_parties_workflow executor
+#+title: Task: Add provision_parties_workflow executor
 #+description: Saga-based workflow for provisioning parties + associated IAM accounts; NATS messaging infrastructure; workflow instance + step tracking; concrete provision_parties_workflow implementation.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:c0ed556b-57a4-4bce-9196-70bcf4fd0d63][Party provisioning saga]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-31]
-:END:
-
-** Now
-Completed 2026-03-31.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-31
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Party provisioning saga* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Saga-based workflow for provisioning parties + associated IAM accounts; NATS messaging infrastructure; workflow instance + step tracking; concrete provision_parties_workflow implementation.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | DONE                                                                 |
+| Parent story | [[id:c0ed556b-57a4-4bce-9196-70bcf4fd0d63][Party provisioning saga]] |
+| Now          | Completed 2026-03-31.                                                |
+| Waiting on   | None.                                                                |
+| Next         | None.                                                                |
+| Last touched | 2026-03-31                                                           |
 
 * Acceptance
 

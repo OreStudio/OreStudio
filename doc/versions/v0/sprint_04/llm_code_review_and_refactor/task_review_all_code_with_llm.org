@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: b08cb742-8e1c-4a0c-87ae-154ba9deefcd
 :END:
-#+title: Review all code created so far with an LLM
+#+title: Task: Review all code created so far with an LLM
 #+description: Run an LLM-driven review pass across every component and capture findings as follow-on tasks.
 #+type: task
 #+version: 2
@@ -16,24 +16,7 @@
 #+updated: 2025-11-28
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:f8d6459d-71d3-4bae-8ece-43201cd2b8ba][LLM code review and refactor]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-28]
-:END:
-
-** Now
-Completed 2025-11-28.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-28
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *LLM code review and refactor* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -41,6 +24,17 @@ Run an LLM-driven code review across every component
 delivered so far. Each pass produces a list of actionable items (bugs,
 missed C++23 opportunities, log levels, security gaps, naming); those
 items become follow-on tasks.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:f8d6459d-71d3-4bae-8ece-43201cd2b8ba][LLM code review and refactor]] |
+| Now          | Completed 2025-11-28.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2025-11-28                                                                |
 
 * Acceptance
 

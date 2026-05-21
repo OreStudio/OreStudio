@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: f1634788-2c13-4635-8ea4-cd9fe80b8b07
 :END:
-#+title: Assorted fixes to currencies dialog (flag and history)
+#+title: Task: Assorted fixes to currencies dialog (flag and history)
 #+description: Flag updates propagate after reload; flag changes visible in history; fix incorrect-version error on history revert.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-09]
-:END:
-
-** Now
-Completed 2026-01-09.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-09
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Qt UX polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Address the residual currency-flag and history-revert issues.
+
+* Status
+
+| Field        | Value                                                     |
+|--------------+-----------------------------------------------------------|
+| State        | DONE                                                      |
+| Parent story | [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]] |
+| Now          | Completed 2026-01-09.                                     |
+| Waiting on   | None.                                                     |
+| Next         | None.                                                     |
+| Last touched | 2026-01-09                                                |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0ad52060-dddc-43dd-b0a8-4fbbf42c7670
 :END:
-#+title: Add GLEIF-based evaluation tenant onboarding wizard
+#+title: Task: Add GLEIF-based evaluation tenant onboarding wizard
 #+description: Wizard available only for evaluation tenants; user picks root LEI entity; root party + descendants imported with hierarchy; identifiers stored in junction table.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:5886ffa7-170f-471c-a9db-37996e650cb6][GLEIF evaluation wizard and party hierarchy]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-19]
-:END:
-
-** Now
-Completed 2026-02-19.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-19
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *GLEIF evaluation wizard and party hierarchy* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add a wizard that creates operational parties from GLEIF data for evaluation tenants.
+
+* Status
+
+| Field        | Value                                                                                    |
+|--------------+------------------------------------------------------------------------------------------|
+| State        | DONE                                                                                     |
+| Parent story | [[id:5886ffa7-170f-471c-a9db-37996e650cb6][GLEIF evaluation wizard and party hierarchy]] |
+| Now          | Completed 2026-02-19.                                                                    |
+| Waiting on   | None.                                                                                    |
+| Next         | None.                                                                                    |
+| Last touched | 2026-02-19                                                                               |
 
 * Acceptance
 

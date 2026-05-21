@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 6b514406-2fbd-4697-8026-b0cb98a3b93d
 :END:
-#+title: Change reasons UI fixes
+#+title: Task: Change reasons UI fixes
 #+description: Polish the change-reason Qt dialogs based on first-pass review: mandatory reason selection, history visibility, save-dialog refactor, protocol bump to 21.1.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:150e3c44-aadb-48c8-a11e-322b44a0357a][Change management infrastructure]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-11]
-:END:
-
-** Now
-Completed 2026-01-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Change management infrastructure* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Polish the change-reason dialogs based on first-pass review and propagate change-tracking fields through all temporal entities.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | DONE                                                                          |
+| Parent story | [[id:150e3c44-aadb-48c8-a11e-322b44a0357a][Change management infrastructure]] |
+| Now          | Completed 2026-01-11.                                                         |
+| Waiting on   | None.                                                                         |
+| Next         | None.                                                                         |
+| Last touched | 2026-01-11                                                                    |
 
 * Acceptance
 

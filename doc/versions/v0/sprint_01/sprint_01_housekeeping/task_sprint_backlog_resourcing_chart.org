@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 237d992b-9901-4003-9d39-1acf13c2f1de
 :END:
-#+title: Use a bar chart for sprint resourcing cost
+#+title: Task: Use a bar chart for sprint resourcing cost
 #+description: Produce a per-story resourcing bar chart from the sprint's clocktable for the sprint report.
 #+type: task
 #+version: 2
@@ -12,29 +12,23 @@
 #+updated: 2024-07-21
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:bca419e2-dff2-474b-969e-cfbd19e7c832][Sprint 01 housekeeping]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2024-07-21]
-:END:
-
-** Now
-Completed 2024-07-21.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2024-07-21
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Sprint 01 housekeeping* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Make the sprint's resourcing breakdown legible at a glance: each
 story as a bar, length proportional to time spent.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:bca419e2-dff2-474b-969e-cfbd19e7c832][Sprint 01 housekeeping]] |
+| Now          | Completed 2024-07-21.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2024-07-21                                                          |
 
 * Acceptance
 

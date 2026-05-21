@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: c37dc0d8-f9fd-489d-a661-4b262f3037c5
 :END:
-#+title: Add links to UML diagrams
+#+title: Task: Add links to UML diagrams
 #+description: Each component model now links to its PlantUML diagram from the org-roam graph.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-12-01
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:3a763afb-22f3-4e9a-b121-a71997221c3f][Documentation and diagrams]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-01]
-:END:
-
-** Now
-Completed 2025-12-01.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-01
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Documentation and diagrams* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Each component model document should link to its PlantUML
 diagram so org-roam users can jump from prose to the picture (and back)
 with no friction.
+
+* Status
+
+| Field        | Value                                                                   |
+|--------------+-------------------------------------------------------------------------|
+| State        | DONE                                                                    |
+| Parent story | [[id:3a763afb-22f3-4e9a-b121-a71997221c3f][Documentation and diagrams]] |
+| Now          | Completed 2025-12-01.                                                   |
+| Waiting on   | None.                                                                   |
+| Next         | None.                                                                   |
+| Last touched | 2025-12-01                                                              |
 
 * Acceptance
 

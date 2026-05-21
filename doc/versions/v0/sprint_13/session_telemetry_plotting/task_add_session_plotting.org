@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 094c83ac-52a4-4ae5-9e6e-29098d682565
 :END:
-#+title: Add plotting of session data
+#+title: Task: Add plotting of session data
 #+description: Sync bytes_sent/received from live connection before logout; RTT in ping payloads; server records session_sample at each heartbeat into ores_iam_session_samples_tbl (TimescaleDB hypertable); get_session_samples_request/response (0x2072/0x2073); dynamic status-bar tooltip; QChartView/QLineSeries panel via qt6-charts vcpkg dep; TimescaleDB skill doc section.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:6f799af2-9844-4cb6-9e9c-a57c06ecbf23][Session telemetry and plotting]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-22]
-:END:
-
-** Now
-Completed 2026-02-22.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-22
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Session telemetry and plotting* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Sample RTT + bytes per session into a TimescaleDB hypertable and plot the history in My Sessions.
+
+* Status
+
+| Field        | Value                                                                       |
+|--------------+-----------------------------------------------------------------------------|
+| State        | DONE                                                                        |
+| Parent story | [[id:6f799af2-9844-4cb6-9e9c-a57c06ecbf23][Session telemetry and plotting]] |
+| Now          | Completed 2026-02-22.                                                       |
+| Waiting on   | None.                                                                       |
+| Next         | None.                                                                       |
+| Last touched | 2026-02-22                                                                  |
 
 * Acceptance
 

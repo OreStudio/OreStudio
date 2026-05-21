@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: ed38a636-d4c7-4069-9a49-b19c71903ead
 :END:
-#+title: Fix Valgrind failing to run unit tests
+#+title: Task: Fix Valgrind failing to run unit tests
 #+description: Diagnose and fix the cause of Valgrind crashing during the unit-test run.
 #+type: task
 #+version: 2
@@ -12,29 +12,23 @@
 #+updated: 2024-07-09
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2024-07-09]
-:END:
-
-** Now
-Completed 2024-07-09.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2024-07-09
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Build quality* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Stabilise the test run under Valgrind so the nightly memcheck
 pipeline produces useful output rather than crashing partway.
+
+* Status
+
+| Field        | Value                                                      |
+|--------------+------------------------------------------------------------|
+| State        | DONE                                                       |
+| Parent story | [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] |
+| Now          | Completed 2024-07-09.                                      |
+| Waiting on   | None.                                                      |
+| Next         | None.                                                      |
+| Last touched | 2024-07-09                                                 |
 
 * Acceptance
 

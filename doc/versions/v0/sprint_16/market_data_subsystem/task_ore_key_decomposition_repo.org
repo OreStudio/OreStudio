@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 084cb4ea-28bb-424d-bb77-26e23adc39f9
 :END:
-#+title: ORE key decomposition and database repository
+#+title: Task: ORE key decomposition and database repository
 #+description: Phase 3 + 4: ores.marketdata.core project with database entities + mappers + repositories; series_key_registry structures ORE keys for lossless reconstruction.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:47ce4c06-2c59-4b8b-89b3-232d04b2da23][Market data subsystem]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-01]
-:END:
-
-** Now
-Completed 2026-04-01.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-01
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Market data subsystem* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Phase 3 + 4: ores.marketdata.core project with database entities + mappers + repositories; series_key_registry structures ORE keys for lossless reconstruction.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:47ce4c06-2c59-4b8b-89b3-232d04b2da23][Market data subsystem]] |
+| Now          | Completed 2026-04-01.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2026-04-01                                                         |
 
 * Acceptance
 

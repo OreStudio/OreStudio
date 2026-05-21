@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 4776490d-d9b5-4465-9bd0-21afac83ca60
 :END:
-#+title: Add NATS telemetry sampling
+#+title: Task: Add NATS telemetry sampling
 #+description: nats.service that stores NATS samples for observability; question of renaming to messaging-service or moving to telemetry left open.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-16]
-:END:
-
-** Now
-Completed 2026-03-16.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-16
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *NATS migration* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add NATS telemetry sampling: an nats.service that stores samples for observability.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | DONE                                                        |
+| Parent story | [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]] |
+| Now          | Completed 2026-03-16.                                       |
+| Waiting on   | None.                                                       |
+| Next         | None.                                                       |
+| Last touched | 2026-03-16                                                  |
 
 * Acceptance
 

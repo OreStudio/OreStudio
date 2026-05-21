@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 99881550-e3d4-4692-a07d-a63ef5e2fd03
 :END:
-#+title: Implement party-related schemes via FPML codegen
+#+title: Task: Implement party-related schemes via FPML codegen
 #+description: 13 reference-data types (entity_type, party_role, business_center, person_role, account_types, entity_classifications, local_jurisdictions, party_relationships, regulatory_corporate_sectors, reporting_regimes, supervisory_bodies, etc.); codegen parses FpML XML to SQL; per-entity SQL files; business centres linked to country flags.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-22]
-:END:
-
-** Now
-Completed 2026-01-22.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-22
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Party schemes and FPML reference data* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Implement the 13 reference-data types party requires, end-to-end, via FpML codegen and the DQ artefact workflow.
+
+* Status
+
+| Field        | Value                                                                              |
+|--------------+------------------------------------------------------------------------------------|
+| State        | DONE                                                                               |
+| Parent story | [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] |
+| Now          | Completed 2026-01-22.                                                              |
+| Waiting on   | None.                                                                              |
+| Next         | None.                                                                              |
+| Last touched | 2026-01-22                                                                         |
 
 * Acceptance
 

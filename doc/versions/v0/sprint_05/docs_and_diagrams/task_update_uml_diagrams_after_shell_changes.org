@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7ed4e6e3-beec-458d-bbca-f4415dd0e443
 :END:
-#+title: Update all UML diagrams after shell changes
+#+title: Task: Update all UML diagrams after shell changes
 #+description: Refresh per-component UML diagrams to reflect the entity-first CLI restructure and merged currency messages.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-12-01
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:3a763afb-22f3-4e9a-b121-a71997221c3f][Documentation and diagrams]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-01]
-:END:
-
-** Now
-Completed 2025-12-01.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-01
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Documentation and diagrams* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Refresh the affected per-component UML diagrams after the
 entity-first CLI/REPL restructure and the merged-currency-messages work.
 Update the PlantUML skill if the diagram conventions need a tweak.
+
+* Status
+
+| Field        | Value                                                                   |
+|--------------+-------------------------------------------------------------------------|
+| State        | DONE                                                                    |
+| Parent story | [[id:3a763afb-22f3-4e9a-b121-a71997221c3f][Documentation and diagrams]] |
+| Now          | Completed 2025-12-01.                                                   |
+| Waiting on   | None.                                                                   |
+| Next         | None.                                                                   |
+| Last touched | 2025-12-01                                                              |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 396ebda8-ca0d-4bfc-ac5e-01e61cae0a6a
 :END:
-#+title: Implement a cobalt-based server and client
+#+title: Task: Implement a cobalt-based server and client
 #+description: Build the runtime split: a Boost.cobalt-based server process and a client embedded in the Qt application.
 #+type: task
 #+version: 2
@@ -12,30 +12,24 @@
 #+updated: 2025-09-21
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-09-21]
-:END:
-
-** Now
-Completed 2025-09-21.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-09-21
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Client/server foundations* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Stand up the runtime split: a Boost.cobalt-based server process that
 accepts client connections, and a client embedded in the Qt
 application that can issue requests.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] |
+| Now          | Completed 2025-09-21.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2025-09-21                                                             |
 
 * Acceptance
 

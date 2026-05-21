@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7f80b71d-b377-472f-8537-d1801556ee3f
 :END:
-#+title: Update ores.shell with REPL commands for all entities
+#+title: Task: Update ores.shell with REPL commands for all entities
 #+description: Expand the REPL so every domain entity has the standard verb set (list, add, delete, import, export).
 #+type: task
 #+version: 2
@@ -16,29 +16,23 @@
 #+updated: 2025-11-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-25]
-:END:
-
-** Now
-Completed 2025-11-25.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-25
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *CLI / REPL reshape* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Match the CLI's new entity-first shape inside =ores.shell=
 (the REPL): every domain entity gets the standard verb set.
+
+* Status
+
+| Field        | Value                                                           |
+|--------------+-----------------------------------------------------------------|
+| State        | DONE                                                            |
+| Parent story | [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]] |
+| Now          | Completed 2025-11-25.                                           |
+| Waiting on   | None.                                                           |
+| Next         | None.                                                           |
+| Last touched | 2025-11-25                                                      |
 
 * Acceptance
 

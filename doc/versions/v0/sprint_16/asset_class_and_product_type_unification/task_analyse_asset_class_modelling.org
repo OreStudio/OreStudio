@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: bac9030f-a95d-4ba4-a78e-426fc7439894
 :END:
-#+title: Analyse asset class modelling
+#+title: Task: Analyse asset class modelling
 #+description: Full reconciliation audit: trading instrument_family_t, marketdata asset_class C++ enum, refdata bitemporal table, Qt hardcoded labels. Conclude that asset_class (risk taxonomy) + product_type (structural discriminator) are orthogonal and must coexist with shared refdata source of truth.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:ffc60db1-b82a-4c8a-961e-2c6720379508][Asset class and product_type unification]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-03]
-:END:
-
-** Now
-Completed 2026-04-03.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-03
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Asset class and product_type unification* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Full reconciliation audit: trading instrument_family_t, marketdata asset_class C++ enum, refdata bitemporal table, Qt hardcoded labels. Conclude that asset_class (risk taxonomy) + product_type (structural discriminator) are orthogonal and must coexist with shared refdata source of truth.
+
+* Status
+
+| Field        | Value                                                                                 |
+|--------------+---------------------------------------------------------------------------------------|
+| State        | DONE                                                                                  |
+| Parent story | [[id:ffc60db1-b82a-4c8a-961e-2c6720379508][Asset class and product_type unification]] |
+| Now          | Completed 2026-04-03.                                                                 |
+| Waiting on   | None.                                                                                 |
+| Next         | None.                                                                                 |
+| Last touched | 2026-04-03                                                                            |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 9c9b5954-e01c-495d-94e9-2de3cb10c75c
 :END:
-#+title: Create a comms library
+#+title: Task: Create a comms library
 #+description: Extract a comms library so the messaging types live in one place, separate from client and server domain code.
 #+type: task
 #+version: 2
@@ -12,24 +12,7 @@
 #+updated: 2025-09-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-09-25]
-:END:
-
-** Now
-Completed 2025-09-25.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-09-25
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Client/server foundations* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -37,6 +20,17 @@ Pull the messaging-type definitions and the framing/transport
 helpers out of both client and server code into a shared =comms=
 library. Prevents the messaging surface from leaking into domain
 code on either side.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] |
+| Now          | Completed 2025-09-25.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2025-09-25                                                             |
 
 * Acceptance
 

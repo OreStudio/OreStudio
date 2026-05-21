@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 446fbbb7-69b8-4c85-b039-e119335f2268
 :END:
-#+title: Unify asset class modelling
+#+title: Task: Unify asset class modelling
 #+description: Implementation: refdata.v1.asset-classes.list NATS endpoint; new refdata service + repository + protocol; Qt loads asset classes asynchronously; asset_class column added to trades with validation + indexing.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:ffc60db1-b82a-4c8a-961e-2c6720379508][Asset class and product_type unification]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-03]
-:END:
-
-** Now
-Completed 2026-04-03.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-03
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Asset class and product_type unification* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Implementation: refdata.v1.asset-classes.list NATS endpoint; new refdata service + repository + protocol; Qt loads asset classes asynchronously; asset_class column added to trades with validation + indexing.
+
+* Status
+
+| Field        | Value                                                                                 |
+|--------------+---------------------------------------------------------------------------------------|
+| State        | DONE                                                                                  |
+| Parent story | [[id:ffc60db1-b82a-4c8a-961e-2c6720379508][Asset class and product_type unification]] |
+| Now          | Completed 2026-04-03.                                                                 |
+| Waiting on   | None.                                                                                 |
+| Next         | None.                                                                                 |
+| Last touched | 2026-04-03                                                                            |
 
 * Acceptance
 

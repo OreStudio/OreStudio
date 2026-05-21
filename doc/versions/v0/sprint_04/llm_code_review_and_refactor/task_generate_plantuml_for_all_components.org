@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 95c39216-f5d9-466d-a051-fbf65466a8ad
 :END:
-#+title: Generate PlantUML diagrams for all components
+#+title: Task: Generate PlantUML diagrams for all components
 #+description: Add a PlantUML diagram per component and wire it into the build via the mad target.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-11-28
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:f8d6459d-71d3-4bae-8ece-43201cd2b8ba][LLM code review and refactor]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-28]
-:END:
-
-** Now
-Completed 2025-11-28.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-28
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *LLM code review and refactor* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Generate a PlantUML diagram per component so the structure of
 each component is visible at a glance. Wired into the build via the =mad=
 target.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:f8d6459d-71d3-4bae-8ece-43201cd2b8ba][LLM code review and refactor]] |
+| Now          | Completed 2025-11-28.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2025-11-28                                                                |
 
 * Acceptance
 

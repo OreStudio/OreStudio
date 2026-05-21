@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1a8ebdce-d5e9-44e1-8e17-4ffd64350139
 :END:
-#+title: Instrument-trade model refactor and portfolio export
+#+title: Task: Instrument-trade model refactor and portfolio export
 #+description: instrument_family discriminator + instrument_id UUIDs link trades to product-specific extension tables; new get_instrument_for_trade + export_portfolio NATS endpoints; thread-safe UUID generation; N+1 query awareness.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:8361bc43-bd96-433d-889e-367072bad44e][ORE import pipeline]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-04]
-:END:
-
-** Now
-Completed 2026-04-04.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-04
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *ORE import pipeline* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 instrument_family discriminator + instrument_id UUIDs link trades to product-specific extension tables; new get_instrument_for_trade + export_portfolio NATS endpoints; thread-safe UUID generation; N+1 query awareness.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:8361bc43-bd96-433d-889e-367072bad44e][ORE import pipeline]] |
+| Now          | Completed 2026-04-04.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2026-04-04                                                       |
 
 * Acceptance
 

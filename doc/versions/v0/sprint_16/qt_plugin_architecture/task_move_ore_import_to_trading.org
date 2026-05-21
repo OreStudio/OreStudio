@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 2808e19f-d16d-456d-bf16-9de26203a72e
 :END:
-#+title: Move OreImport* from compute to trading plugin
+#+title: Task: Move OreImport* from compute to trading plugin
 #+description: ores.qt.trading build configuration updated to depend on ores.ore.api.lib; OreImport classes moved from compute to trading plugin.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:38c972e1-2dd2-41ae-a770-800fee90d1e6][Qt plugin architecture]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-09]
-:END:
-
-** Now
-Completed 2026-04-09.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-09
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Qt plugin architecture* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 ores.qt.trading build configuration updated to depend on ores.ore.api.lib; OreImport classes moved from compute to trading plugin.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:38c972e1-2dd2-41ae-a770-800fee90d1e6][Qt plugin architecture]] |
+| Now          | Completed 2026-04-09.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-04-09                                                          |
 
 * Acceptance
 

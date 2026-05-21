@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 61986ca2-c815-4cea-b029-26ab503379f5
 :END:
-#+title: Implement session cancellation
+#+title: Task: Implement session cancellation
 #+description: Cancel all active sessions when the server stops, so it can shut down cleanly under SIGINT or programmatic shutdown.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-12-04
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-04]
-:END:
-
-** Now
-Completed 2025-12-04.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-04
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Session lifecycle follow-up* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Cancel all active sessions when the server stops, so it can shut down
 cleanly under SIGINT or programmatic shutdown. Critical for container
 orchestration and service restarts.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]] |
+| Now          | Completed 2025-12-04.                                                    |
+| Waiting on   | None.                                                                    |
+| Next         | None.                                                                    |
+| Last touched | 2025-12-04                                                               |
 
 * Acceptance
 

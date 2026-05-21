@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7c6151b0-3a3b-4562-83fe-e0ec2459aeae
 :END:
-#+title: Add basic site
+#+title: Task: Add basic site
 #+description: Stand up a basic project site, generated from the org-mode sources.
 #+type: task
 #+version: 2
@@ -12,29 +12,23 @@
 #+updated: 2024-06-23
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:c85f2dca-f7d6-40ae-b796-8b4cf84a7093][Documentation infrastructure]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2024-06-23]
-:END:
-
-** Now
-Completed 2024-06-23.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2024-06-23
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Documentation infrastructure* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Generate a basic project site from the org-mode sources and publish
 it. This becomes the home for everything written about the project.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:c85f2dca-f7d6-40ae-b796-8b4cf84a7093][Documentation infrastructure]] |
+| Now          | Completed 2024-06-23.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2024-06-23                                                                |
 
 * Acceptance
 

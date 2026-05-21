@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0220ffb8-e3e6-4b8d-a882-98c4c4f74024
 :END:
-#+title: Add party-related support at the domain level
+#+title: Task: Add party-related support at the domain level
 #+description: 11 new C++ domain types in ores.refdata + ores.iam; account_party junction; full stack (JSON + table I/O, generators, repository, service, protocol); 40 new message types.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:76d84778-4544-4ee6-a17a-033019dbacb0][Party database and domain]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-08]
-:END:
-
-** Now
-Completed 2026-02-08.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-08
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Party database and domain* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Mirror the party schema at the C++ domain layer.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:76d84778-4544-4ee6-a17a-033019dbacb0][Party database and domain]] |
+| Now          | Completed 2026-02-08.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2026-02-08                                                             |
 
 * Acceptance
 

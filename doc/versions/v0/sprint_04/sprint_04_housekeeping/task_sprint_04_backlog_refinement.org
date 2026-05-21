@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 9f3ba7c7-7e51-4d32-be59-82d0dec3bb52
 :END:
-#+title: Sprint and product backlog refinement
+#+title: Task: Sprint and product backlog refinement
 #+description: Curate sprint 04 backlog through the sprint and groom the product backlog as work surfaces new ideas.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-11-30
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:d0a1c624-dc57-424e-a958-279f68956976][Sprint 04 housekeeping]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-30]
-:END:
-
-** Now
-Completed 2025-11-30.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-30
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Sprint 04 housekeeping* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Maintain the sprint backlog through the sprint and groom the
 product backlog as discoveries surface. Sprint 04 was a busy one — many
 follow-ons from the LLM-review pass were captured as new tasks here.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:d0a1c624-dc57-424e-a958-279f68956976][Sprint 04 housekeeping]] |
+| Now          | Completed 2025-11-30.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2025-11-30                                                          |
 
 * Acceptance
 

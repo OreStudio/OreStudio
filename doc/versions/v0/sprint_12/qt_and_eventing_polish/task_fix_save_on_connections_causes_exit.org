@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 8fbed264-99f8-4f9a-a991-cca4cbe26d7f
 :END:
-#+title: Fix save on connections causes exit
+#+title: Task: Fix save on connections causes exit
 #+description: Clicking Save asked the user to exit the application; saving repeatedly created duplicate folders.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-10]
-:END:
-
-** Now
-Completed 2026-02-10.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-10
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Qt and eventing polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Fix two bugs in the connection browser save path.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]] |
+| Now          | Completed 2026-02-10.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-02-10                                                          |
 
 * Acceptance
 

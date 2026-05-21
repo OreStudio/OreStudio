@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 9bd1200f-241f-4153-b804-6e7095da56de
 :END:
-#+title: Consider exposing endpoints via HTTP
+#+title: Task: Consider exposing endpoints via HTTP
 #+description: Add an HTTP entry point on the comms layer so non-Qt clients can talk to the service.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:db625c07-811a-4a61-8de8-910b29913744][Wt and HTTP introduction]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-30]
-:END:
-
-** Now
-Completed 2025-12-30.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-30
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Wt and HTTP introduction* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add an HTTP entry point on the comms layer so non-Qt clients can talk to the service.
+
+* Status
+
+| Field        | Value                                                                 |
+|--------------+-----------------------------------------------------------------------|
+| State        | DONE                                                                  |
+| Parent story | [[id:db625c07-811a-4a61-8de8-910b29913744][Wt and HTTP introduction]] |
+| Now          | Completed 2025-12-30.                                                 |
+| Waiting on   | None.                                                                 |
+| Next         | None.                                                                 |
+| Last touched | 2025-12-30                                                            |
 
 * Acceptance
 

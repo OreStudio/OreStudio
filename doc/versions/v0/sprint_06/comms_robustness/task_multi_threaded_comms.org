@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: a9a1e81d-9061-43ac-b566-10b40dee845b
 :END:
-#+title: Multi-threaded scenarios with comms
+#+title: Task: Multi-threaded scenarios with comms
 #+description: Cover the comms stack under multi-threaded use; surface and fix races discovered along the way.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2025-12-10
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-10]
-:END:
-
-** Now
-Completed 2025-12-10.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-10
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Comms robustness* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Cover the comms stack under multi-threaded use; surface and fix races discovered along the way.
+
+* Status
+
+| Field        | Value                                                         |
+|--------------+---------------------------------------------------------------|
+| State        | DONE                                                          |
+| Parent story | [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]] |
+| Now          | Completed 2025-12-10.                                         |
+| Waiting on   | None.                                                         |
+| Next         | None.                                                         |
+| Last touched | 2025-12-10                                                    |
 
 * Acceptance
 

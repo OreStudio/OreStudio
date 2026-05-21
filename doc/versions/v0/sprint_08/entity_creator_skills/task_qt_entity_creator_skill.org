@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: a6afe796-dcfb-40c1-a9c8-bd7a20091930
 :END:
-#+title: Qt entity creator skill
+#+title: Task: Qt entity creator skill
 #+description: Phase-based skill for adding a Qt UI for a domain entity (list window, detail dialog, history dialog, controller).
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:b302b2b6-13f8-49cc-a6af-88418668be31][Entity-creator skills suite]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-11]
-:END:
-
-** Now
-Completed 2026-01-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Entity-creator skills suite* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Skill describing how to add a Qt UI for a domain entity end-to-end.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:b302b2b6-13f8-49cc-a6af-88418668be31][Entity-creator skills suite]] |
+| Now          | Completed 2026-01-11.                                                    |
+| Waiting on   | None.                                                                    |
+| Next         | None.                                                                    |
+| Last touched | 2026-01-11                                                               |
 
 * Acceptance
 

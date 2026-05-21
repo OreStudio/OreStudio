@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: cb0c08a7-e7ba-40d5-8f01-1e2cdaf61b8c
 :END:
-#+title: Add NATS service discovery for HTTP base URL
+#+title: Task: Add NATS service discovery for HTTP base URL
 #+description: Qt client automatically discovers the HTTP server's base URL after login via NATS; protocol types moved to ores.http shared utility lib so ores.qt can include them without linking ores.http.server; architecture migration plan added for splitting service libraries into *.types + *.core (later refined to *.api + *.core).
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:84fca31b-b6a8-444f-9ea9-33515d50645f][NATS service discovery for HTTP base URL]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-22]
-:END:
-
-** Now
-Completed 2026-03-22.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-22
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *NATS service discovery for HTTP base URL* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Qt client automatically discovers the HTTP server's base URL after login — no more manual http_port configuration.
+
+* Status
+
+| Field        | Value                                                                                 |
+|--------------+---------------------------------------------------------------------------------------|
+| State        | DONE                                                                                  |
+| Parent story | [[id:84fca31b-b6a8-444f-9ea9-33515d50645f][NATS service discovery for HTTP base URL]] |
+| Now          | Completed 2026-03-22.                                                                 |
+| Waiting on   | None.                                                                                 |
+| Next         | None.                                                                                 |
+| Last touched | 2026-03-22                                                                            |
 
 * Acceptance
 

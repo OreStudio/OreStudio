@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 37743ef3-168c-47d3-9b3b-e06e12b9eaa0
 :END:
-#+title: Per-type rates instrument tables
+#+title: Task: Per-type rates instrument tables
 #+description: Replace generic instrument with per-type rates domain objects: standalone asset-class-specific tables; SQL schema; C++ domain + repository; Qt UI forms; legacy generic instrument infrastructure removed; party_id + RLS.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:ce26e56b-944f-4c89-b5a9-e0dabf521908][Per-type instrument tables]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-10]
-:END:
-
-** Now
-Completed 2026-04-10.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-10
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Per-type instrument tables* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Replace generic instrument with per-type rates domain objects: standalone asset-class-specific tables; SQL schema; C++ domain + repository; Qt UI forms; legacy generic instrument infrastructure removed; party_id + RLS.
+
+* Status
+
+| Field        | Value                                                                   |
+|--------------+-------------------------------------------------------------------------|
+| State        | DONE                                                                    |
+| Parent story | [[id:ce26e56b-944f-4c89-b5a9-e0dabf521908][Per-type instrument tables]] |
+| Now          | Completed 2026-04-10.                                                   |
+| Waiting on   | None.                                                                   |
+| Next         | None.                                                                   |
+| Last touched | 2026-04-10                                                              |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 8b3e7d8a-d3be-48d1-8fb1-369754c9c95a
 :END:
-#+title: Add roles for Super Admin
+#+title: Task: Add roles for Super Admin
 #+description: Distinguish Super Admin from Tenant Admin via separate roles.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:00e6e192-a255-4c94-8fcc-15826f7e33ae][Tenant administration]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-12]
-:END:
-
-** Now
-Completed 2026-02-12.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-12
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Tenant administration* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Distinguish Super Admin from Tenant Admin via separate roles.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:00e6e192-a255-4c94-8fcc-15826f7e33ae][Tenant administration]] |
+| Now          | Completed 2026-02-12.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2026-02-12                                                         |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7bec862e-0566-4666-a1b7-035e8d5bbe73
 :END:
-#+title: Improve code coverage
+#+title: Task: Improve code coverage
 #+description: Raise overall code coverage by adding tests for the under-tested modules surfaced by the coverage report.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-12-30
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observability]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-30]
-:END:
-
-** Now
-Completed 2025-12-30.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-30
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Logging and observability* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Bring code coverage to a green baseline before adding more
 features. Identify the under-tested modules from the coverage report
 and add targeted tests.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observability]] |
+| Now          | Completed 2025-12-30.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2025-12-30                                                             |
 
 * Acceptance
 

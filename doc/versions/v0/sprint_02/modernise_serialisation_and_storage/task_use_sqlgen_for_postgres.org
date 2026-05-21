@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 83dcdf42-74fa-4c71-b9c6-a31b4e0cc30c
 :END:
-#+title: Use sqlgen for Postgres
+#+title: Task: Use sqlgen for Postgres
 #+description: Replace hand-written Postgres CRUD with sqlgen-generated code.
 #+type: task
 #+version: 2
@@ -12,30 +12,24 @@
 #+updated: 2025-10-10
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-10-10]
-:END:
-
-** Now
-Completed 2025-10-10.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-10-10
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Modernise serialisation and storage* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Replace the project's hand-written Postgres CRUD code with sqlgen-
 generated adapters, keeping schema shape and C++ types in sync
 without manual marshalling.
+
+* Status
+
+| Field        | Value                                                                            |
+|--------------+----------------------------------------------------------------------------------|
+| State        | DONE                                                                             |
+| Parent story | [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]] |
+| Now          | Completed 2025-10-10.                                                            |
+| Waiting on   | None.                                                                            |
+| Next         | None.                                                                            |
+| Last touched | 2025-10-10                                                                       |
 
 * Acceptance
 

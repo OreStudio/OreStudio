@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: f3187f2d-d903-4674-8338-d83af02736ec
 :END:
-#+title: OCR scan notebooks for this sprint
+#+title: Task: OCR scan notebooks for this sprint
 #+description: Continue notebook OCR thread for sprint 09.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:1e7a8abc-1abc-4a37-bdce-1d8dfb9d21ff][Sprint 09 housekeeping]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-20]
-:END:
-
-** Now
-Completed 2026-01-20.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-20
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Sprint 09 housekeeping* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Continue digitising the paper notebooks for the period covered by sprint 09.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:1e7a8abc-1abc-4a37-bdce-1d8dfb9d21ff][Sprint 09 housekeeping]] |
+| Now          | Completed 2026-01-20.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-01-20                                                          |
 
 * Acceptance
 

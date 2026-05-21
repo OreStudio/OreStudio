@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 27ee7d4c-c59e-4b9f-a6c6-3920dcce5c77
 :END:
-#+title: Check Data Librarian can publish across tenants
+#+title: Task: Check Data Librarian can publish across tenants
 #+description: Add tenant_id to unique version indexes on 11 DQ metadata + asset + refdata tables; image_id resolution looks up by key in DQ images then by key in target-tenant assets; ImageCache::clear() before reload; connection-browser UI polish; permissions suggest shell command; ores_iam_generate_role_commands_fn SECURITY DEFINER.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-06]
-:END:
-
-** Now
-Completed 2026-02-06.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-06
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Validate tenancy across surfaces* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Get cross-tenant Data Librarian publication working correctly; close the DQ metadata unique-index gap.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | DONE                                                                          |
+| Parent story | [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]] |
+| Now          | Completed 2026-02-06.                                                         |
+| Waiting on   | None.                                                                         |
+| Next         | None.                                                                         |
+| Last touched | 2026-02-06                                                                    |
 
 * Acceptance
 

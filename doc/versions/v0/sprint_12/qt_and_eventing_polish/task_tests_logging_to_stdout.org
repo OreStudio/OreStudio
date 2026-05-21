@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: b70593d8-65c2-4334-81ee-228c7911e067
 :END:
-#+title: Tests logging to stdout in github
+#+title: Task: Tests logging to stdout in github
 #+description: Excessive stdout output in CDash; investigated and resolved (logging disabled or routed correctly now).
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-10]
-:END:
-
-** Now
-Completed 2026-02-10.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-10
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Qt and eventing polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Investigate excessive stdout output in CDash from unit tests.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]] |
+| Now          | Completed 2026-02-10.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-02-10                                                          |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 43667103-8a31-45f3-b1fa-b18af8297256
 :END:
-#+title: Move coding schemes through DQ artefact pipeline
+#+title: Task: Move coding schemes through DQ artefact pipeline
 #+description: ISO + FpML coding schemes now flow through dq_coding_schemes_artefact_tbl with preview / upsert / insert_only / replace_all modes; party schemes (LEI, BIC, MIC) remain direct inserts.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:ebc22454-356d-4b6c-a3be-e8edfd858fca][External data reorganisation]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-24]
-:END:
-
-** Now
-Completed 2026-01-24.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-24
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *External data reorganisation* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Route ISO + FpML coding schemes through the DQ artefact pipeline rather than direct database inserts.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:ebc22454-356d-4b6c-a3be-e8edfd858fca][External data reorganisation]] |
+| Now          | Completed 2026-01-24.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2026-01-24                                                                |
 
 * Acceptance
 

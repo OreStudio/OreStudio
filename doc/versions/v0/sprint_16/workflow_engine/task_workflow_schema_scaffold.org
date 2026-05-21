@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: ece0a01d-ef94-4599-8410-db8096b46935
 :END:
-#+title: Add ores.workflow SQL schema and C++ scaffold
+#+title: Task: Add ores.workflow SQL schema and C++ scaffold
 #+description: Foundational saga-pattern workflow orchestration component: SQL schema for workflow instances + steps; RLS policies; C++ domain entities + repositories; codegen template fixes for timestamptz handling.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:4fcd03ac-51ad-47ad-8203-faefaa4211b9][Workflow engine]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-06]
-:END:
-
-** Now
-Completed 2026-04-06.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-06
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Workflow engine* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Foundational saga-pattern workflow orchestration component: SQL schema for workflow instances + steps; RLS policies; C++ domain entities + repositories; codegen template fixes for timestamptz handling.
+
+* Status
+
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | DONE                                                         |
+| Parent story | [[id:4fcd03ac-51ad-47ad-8203-faefaa4211b9][Workflow engine]] |
+| Now          | Completed 2026-04-06.                                        |
+| Waiting on   | None.                                                        |
+| Next         | None.                                                        |
+| Last touched | 2026-04-06                                                   |
 
 * Acceptance
 

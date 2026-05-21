@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: db80603b-eb19-4c36-bf8c-e997c250766b
 :END:
-#+title: Refactor tenant lookup functions to accept const context
+#+title: Task: Refactor tenant lookup functions to accept const context
 #+description: resolve_tenant_id, lookup_by_code, lookup_by_hostname take const context& (they're read-only); eliminates unnecessary mutable copies.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:976a2745-6728-435e-970e-d1205d46dc7a][Per-request tenant context]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-05]
-:END:
-
-** Now
-Completed 2026-02-05.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-05
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Per-request tenant context* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Make the read-only tenant-lookup functions actually take =const context&=.
+
+* Status
+
+| Field        | Value                                                                   |
+|--------------+-------------------------------------------------------------------------|
+| State        | DONE                                                                    |
+| Parent story | [[id:976a2745-6728-435e-970e-d1205d46dc7a][Per-request tenant context]] |
+| Now          | Completed 2026-02-05.                                                   |
+| Waiting on   | None.                                                                   |
+| Next         | None.                                                                   |
+| Last touched | 2026-02-05                                                              |
 
 * Acceptance
 

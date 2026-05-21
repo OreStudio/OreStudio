@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: f491ba45-287b-46fb-bf80-7db6f66f59a3
 :END:
-#+title: Create GitHub repository
+#+title: Task: Create GitHub repository
 #+description: Create the OreStudio GitHub organisation and the initial OreStudio repository with vcpkg support.
 #+type: task
 #+version: 2
@@ -12,29 +12,23 @@
 #+updated: 2024-06-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:64e55e42-12eb-46cf-8269-6b30da277a1b][Project bootstrap]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2024-06-15]
-:END:
-
-** Now
-Completed 2024-06-15.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2024-06-15
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Project bootstrap* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Create the project's home on GitHub: a new organisation and an initial
 repository containing a minimal project skeleton with vcpkg support.
+
+* Status
+
+| Field        | Value                                                          |
+|--------------+----------------------------------------------------------------|
+| State        | DONE                                                           |
+| Parent story | [[id:64e55e42-12eb-46cf-8269-6b30da277a1b][Project bootstrap]] |
+| Now          | Completed 2024-06-15.                                          |
+| Waiting on   | None.                                                          |
+| Next         | None.                                                          |
+| Last touched | 2024-06-15                                                     |
 
 * Acceptance
 

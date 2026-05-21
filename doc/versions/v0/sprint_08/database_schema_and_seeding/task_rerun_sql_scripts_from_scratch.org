@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 27768a0e-d9dc-4958-9731-adef4385f23e
 :END:
-#+title: Rerun SQL scripts from scratch
+#+title: Task: Rerun SQL scripts from scratch
 #+description: Validate schema bring-up from a clean slate; add TimescaleDB license-tier detection and per-database extension install; document the schema.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:42e6c351-795f-48aa-a435-eb3d1c9b6704][Database schema and seeding overhaul]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-31]
-:END:
-
-** Now
-Completed 2025-12-31.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-31
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Database schema and seeding overhaul* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Validate the SQL schema by rebuilding from scratch; in passing, make TimescaleDB integration adaptive to the available license tier and install extensions per-database.
+
+* Status
+
+| Field        | Value                                                                             |
+|--------------+-----------------------------------------------------------------------------------|
+| State        | DONE                                                                              |
+| Parent story | [[id:42e6c351-795f-48aa-a435-eb3d1c9b6704][Database schema and seeding overhaul]] |
+| Now          | Completed 2025-12-31.                                                             |
+| Waiting on   | None.                                                                             |
+| Next         | None.                                                                             |
+| Last touched | 2025-12-31                                                                        |
 
 * Acceptance
 

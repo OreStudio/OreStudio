@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 61f94da2-5c29-442a-9ab8-1c4066b7d45b
 :END:
-#+title: Add customer party support
+#+title: Task: Add customer party support
 #+description: Optional dataset bundle members; OptionalDatasetsPage in publish-bundle wizard; missing LEI publication dependencies added; SQL publish skips unselected optional datasets; protocol 28.0 → 29.0.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:d40d5971-c864-4449-91ad-ca8ab949a4a6][System and customer party]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-11]
-:END:
-
-** Now
-Completed 2026-02-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *System and customer party* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Make the publish-bundle wizard support optional dataset members so users can opt out of LEI (and similar) on first publish.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:d40d5971-c864-4449-91ad-ca8ab949a4a6][System and customer party]] |
+| Now          | Completed 2026-02-11.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2026-02-11                                                             |
 
 * Acceptance
 

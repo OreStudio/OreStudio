@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: b277d89b-eb0d-40b9-828e-2f917828e8f1
 :END:
-#+title: Market data service layer
+#+title: Task: Market data service layer
 #+description: Phase 5: ores.marketdata.service component with NATS messaging protocols + handlers + service logic for managing market series, observations, fixings; import service for ORE-formatted data files.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:47ce4c06-2c59-4b8b-89b3-232d04b2da23][Market data subsystem]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-01]
-:END:
-
-** Now
-Completed 2026-04-01.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-01
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Market data subsystem* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Phase 5: ores.marketdata.service component with NATS messaging protocols + handlers + service logic for managing market series, observations, fixings; import service for ORE-formatted data files.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:47ce4c06-2c59-4b8b-89b3-232d04b2da23][Market data subsystem]] |
+| Now          | Completed 2026-04-01.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2026-04-01                                                         |
 
 * Acceptance
 

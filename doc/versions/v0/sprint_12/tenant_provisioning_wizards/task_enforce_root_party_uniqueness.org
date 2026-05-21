@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 58dcd34b-3ef5-4aa3-b7f2-d531661db110
 :END:
-#+title: Enforce root party uniqueness constraints
+#+title: Task: Enforce root party uniqueness constraints
 #+description: Each tenant has exactly two root parties: one system (auto-created) and one operational (the 'house'). Service-layer validation prevents additional roots.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a][Tenant provisioning wizards]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-12]
-:END:
-
-** Now
-Completed 2026-02-12.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-12
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Tenant provisioning wizards* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Validate at the service layer that each tenant has exactly two root parties: system + operational.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a][Tenant provisioning wizards]] |
+| Now          | Completed 2026-02-12.                                                    |
+| Waiting on   | None.                                                                    |
+| Next         | None.                                                                    |
+| Last touched | 2026-02-12                                                               |
 
 * Acceptance
 

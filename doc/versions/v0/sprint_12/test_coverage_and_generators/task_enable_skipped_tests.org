@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 8a3058db-f08e-4fbf-b8e4-65910c66f69b
 :END:
-#+title: Enable all skipped tests
+#+title: Task: Enable all skipped tests
 #+description: 19 previously skipped tests now active across DQ + IAM; skip count from 25 to 6 (only tenant RLS tests remain).
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-11]
-:END:
-
-** Now
-Completed 2026-02-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Test coverage and FK-aware generators* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Re-enable the previously skipped tests now that FK-aware generators produce valid data.
+
+* Status
+
+| Field        | Value                                                                              |
+|--------------+------------------------------------------------------------------------------------|
+| State        | DONE                                                                               |
+| Parent story | [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] |
+| Now          | Completed 2026-02-11.                                                              |
+| Waiting on   | None.                                                                              |
+| Next         | None.                                                                              |
+| Last touched | 2026-02-11                                                                         |
 
 * Acceptance
 

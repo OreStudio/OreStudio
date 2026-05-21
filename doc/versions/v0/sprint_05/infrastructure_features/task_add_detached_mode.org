@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 9ac0485f-8f7b-4c15-a60b-8ea9f6c7a439
 :END:
-#+title: Add a detached mode
+#+title: Task: Add a detached mode
 #+description: Default sub-window mode setting (attached / detached) so new windows respect the user's preference.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-11-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:645df0b4-51b5-40bc-be07-0ab986111653][Infrastructure features]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-20]
-:END:
-
-** Now
-Completed 2025-11-20.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-20
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Infrastructure features* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add a user-preference for detached sub-windows. Today the
 user has to detach each window manually; let them opt-in to detached as
 the default.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | DONE                                                                 |
+| Parent story | [[id:645df0b4-51b5-40bc-be07-0ab986111653][Infrastructure features]] |
+| Now          | Completed 2025-11-20.                                                |
+| Waiting on   | None.                                                                |
+| Next         | None.                                                                |
+| Last touched | 2025-11-20                                                           |
 
 * Acceptance
 

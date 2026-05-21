@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7851dac6-9048-4c2b-b6bb-3167d55412f6
 :END:
-#+title: Add sign-up workflow
+#+title: Task: Add sign-up workflow
 #+description: End-to-end sign-up: collect user details, validate, create account, route to first-login.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:6b57c190-4bb7-4f63-bf3d-7fb6d81d8d94][Accounts to IAM]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-24]
-:END:
-
-** Now
-Completed 2025-12-24.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-24
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Accounts to IAM* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add an end-to-end sign-up workflow: collect user details, validate, create the account, route to first login.
+
+* Status
+
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | DONE                                                         |
+| Parent story | [[id:6b57c190-4bb7-4f63-bf3d-7fb6d81d8d94][Accounts to IAM]] |
+| Now          | Completed 2025-12-24.                                        |
+| Waiting on   | None.                                                        |
+| Next         | None.                                                        |
+| Last touched | 2025-12-24                                                   |
 
 * Acceptance
 

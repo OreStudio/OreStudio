@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: e7fda609-024b-4ef1-95d9-6726ed112315
 :END:
-#+title: Create handshake service in comms
+#+title: Task: Create handshake service in comms
 #+description: Move the handshake logic out of session into a dedicated handshake service so failures are reported with structure rather than as opaque read errors.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2025-12-10
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-10]
-:END:
-
-** Now
-Completed 2025-12-10.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-10
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Comms robustness* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Move the handshake logic out of session into a dedicated handshake service so failures are reported with structure rather than opaque read errors.
+
+* Status
+
+| Field        | Value                                                         |
+|--------------+---------------------------------------------------------------|
+| State        | DONE                                                          |
+| Parent story | [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]] |
+| Now          | Completed 2025-12-10.                                         |
+| Waiting on   | None.                                                         |
+| Next         | None.                                                         |
+| Last touched | 2025-12-10                                                    |
 
 * Acceptance
 

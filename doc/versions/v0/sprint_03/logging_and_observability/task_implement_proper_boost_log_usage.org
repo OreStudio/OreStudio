@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 2a55f924-e279-475d-b150-d165029f83c8
 :END:
-#+title: Implement proper Boost.Log usage
+#+title: Task: Implement proper Boost.Log usage
 #+description: Replace ad-hoc logging with the supported Boost.Log idioms (severity channels, attribute scopes, sinks).
 #+type: task
 #+version: 2
@@ -16,24 +16,7 @@
 #+updated: 2025-12-30
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observability]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-30]
-:END:
-
-** Now
-Completed 2025-12-30.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-30
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Logging and observability* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -41,6 +24,17 @@ Replace the project's use of function-local =static= logger objects
 with class-level loggers using idiomatic Boost.Log severity channels,
 attribute scopes, and sinks. The local-static pattern was a suspected
 source of the Valgrind noise the team had been chasing.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observability]] |
+| Now          | Completed 2025-12-30.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2025-12-30                                                             |
 
 * Acceptance
 

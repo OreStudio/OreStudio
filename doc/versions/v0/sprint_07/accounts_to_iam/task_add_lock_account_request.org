@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: c4f2b895-852b-4f29-b04f-d78f674609c1
 :END:
-#+title: Add lock account request
+#+title: Task: Add lock account request
 #+description: Add a protocol message + service handler to lock an account (administrative action, separate from auto-lock on failed logins).
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:6b57c190-4bb7-4f63-bf3d-7fb6d81d8d94][Accounts to IAM]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-22]
-:END:
-
-** Now
-Completed 2025-12-22.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-22
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Accounts to IAM* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add an explicit /lock account/ protocol message + handler so an administrator can lock an account (distinct from automatic lock-on-too-many-failed-logins).
+
+* Status
+
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | DONE                                                         |
+| Parent story | [[id:6b57c190-4bb7-4f63-bf3d-7fb6d81d8d94][Accounts to IAM]] |
+| Now          | Completed 2025-12-22.                                        |
+| Waiting on   | None.                                                        |
+| Next         | None.                                                        |
+| Last touched | 2025-12-22                                                   |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7bf0ee19-ab13-4425-89f1-08d476bbd57b
 :END:
-#+title: Add AI-generated sprint summary
+#+title: Task: Add AI-generated sprint summary
 #+description: Use the AI-summary skill (built in sprint 05) to produce a human-readable summary of sprint 06.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2025-12-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:193a779f-a313-414c-9236-d075b84a2f67][Sprint 06 housekeeping]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-15]
-:END:
-
-** Now
-Completed 2025-12-15.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-15
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Sprint 06 housekeeping* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 First exercise of the AI-summary skill (built in sprint 05) — produce a human-readable summary of sprint 06.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:193a779f-a313-414c-9236-d075b84a2f67][Sprint 06 housekeeping]] |
+| Now          | Completed 2025-12-15.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2025-12-15                                                          |
 
 * Acceptance
 

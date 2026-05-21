@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7d95a76c-f755-44c4-84fa-a00c0e263573
 :END:
-#+title: Investigate Valgrind leak on sqlgen
+#+title: Task: Investigate Valgrind leak on sqlgen
 #+description: Triage the remaining sqlgen-flavoured leaks; confirm upstream fixes have landed.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-11-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-25]
-:END:
-
-** Now
-Completed 2025-11-25.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-25
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Valgrind leaks follow-up* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Triage the remaining sqlgen-flavoured Valgrind output.
 Sprint 04 fixed the previously-known leaks; check whether the residual
 allocations represent new leaks or just retained state.
+
+* Status
+
+| Field        | Value                                                                 |
+|--------------+-----------------------------------------------------------------------|
+| State        | DONE                                                                  |
+| Parent story | [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]] |
+| Now          | Completed 2025-11-25.                                                 |
+| Waiting on   | None.                                                                 |
+| Next         | None.                                                                 |
+| Last touched | 2025-11-25                                                            |
 
 * Acceptance
 

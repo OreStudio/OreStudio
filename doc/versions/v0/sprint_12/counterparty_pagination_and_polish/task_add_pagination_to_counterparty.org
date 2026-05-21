@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: d4c30c00-84c1-45a0-89e3-28c9caee144a
 :END:
-#+title: Add pagination to counterparty
+#+title: Task: Add pagination to counterparty
 #+description: offset/limit on get_counterparties_request; total_available_count on response; ClientCounterpartyModel with load_page + fetchMore + set_page_size; PaginationWidget in CounterpartyMdiWindow; protocol bump 31.0.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:af7112ba-bf04-4b6b-ae2f-8fb1c7b362fe][Counterparty pagination and polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-12]
-:END:
-
-** Now
-Completed 2026-02-12.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-12
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Counterparty pagination and polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Bring counterparty up to the same pagination story as party.
+
+* Status
+
+| Field        | Value                                                                           |
+|--------------+---------------------------------------------------------------------------------|
+| State        | DONE                                                                            |
+| Parent story | [[id:af7112ba-bf04-4b6b-ae2f-8fb1c7b362fe][Counterparty pagination and polish]] |
+| Now          | Completed 2026-02-12.                                                           |
+| Waiting on   | None.                                                                           |
+| Next         | None.                                                                           |
+| Last touched | 2026-02-12                                                                      |
 
 * Acceptance
 

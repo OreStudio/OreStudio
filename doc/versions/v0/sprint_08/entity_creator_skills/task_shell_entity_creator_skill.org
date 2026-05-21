@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0127aa75-dca4-432e-b892-edd1caa334b4
 :END:
-#+title: Shell entity creator skill
+#+title: Task: Shell entity creator skill
 #+description: Skill for adding shell commands for a domain entity: list/add then history; register with REPL; recipe with runnable examples.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:b302b2b6-13f8-49cc-a6af-88418668be31][Entity-creator skills suite]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-11]
-:END:
-
-** Now
-Completed 2026-01-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Entity-creator skills suite* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Skill describing how to add shell commands for a domain entity.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:b302b2b6-13f8-49cc-a6af-88418668be31][Entity-creator skills suite]] |
+| Now          | Completed 2026-01-11.                                                    |
+| Waiting on   | None.                                                                    |
+| Next         | None.                                                                    |
+| Last touched | 2026-01-11                                                               |
 
 * Acceptance
 

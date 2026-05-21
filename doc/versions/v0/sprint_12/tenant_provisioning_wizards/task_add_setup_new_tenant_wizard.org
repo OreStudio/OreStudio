@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 45641916-c11d-4810-ac9d-1298f5e42ab7
 :END:
-#+title: Add setup-new-tenant wizard
+#+title: Task: Add setup-new-tenant wizard
 #+description: Tenant provisioner UI: GLEIF-based or synthetic party setup; counterparty setup; clear that it's evaluation. Synthetic subsystem in ores.synthetic (organisation_generator_service + organisation_publisher_service); tree_builder utility; protocol range 0x7000-0x7FFF.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a][Tenant provisioning wizards]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-13]
-:END:
-
-** Now
-Completed 2026-02-13.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-13
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Tenant provisioning wizards* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Build a tenant-provisioning wizard for evaluation tenants supporting GLEIF or synthetic party setup.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a][Tenant provisioning wizards]] |
+| Now          | Completed 2026-02-13.                                                    |
+| Waiting on   | None.                                                                    |
+| Next         | None.                                                                    |
+| Last touched | 2026-02-13                                                               |
 
 * Acceptance
 

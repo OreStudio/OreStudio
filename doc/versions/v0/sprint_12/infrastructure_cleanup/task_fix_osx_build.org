@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 9262faf6-0b47-47a4-b351-43d22ba07aeb
 :END:
-#+title: Fix OSX build
+#+title: Task: Fix OSX build
 #+description: Replace GNU getopt with portable while/case parsing in recreate_database.sh + recreate_env.sh; BSD getopt incompatibility resolved.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:74a0b830-2f12-406f-9550-961098c11dc6][Infrastructure cleanup]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-12]
-:END:
-
-** Now
-Completed 2026-02-12.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-12
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Infrastructure cleanup* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Replace GNU getopt with portable while/case argument parsing in recreate scripts so OSX CI works.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:74a0b830-2f12-406f-9550-961098c11dc6][Infrastructure cleanup]] |
+| Now          | Completed 2026-02-12.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-02-12                                                          |
 
 * Acceptance
 

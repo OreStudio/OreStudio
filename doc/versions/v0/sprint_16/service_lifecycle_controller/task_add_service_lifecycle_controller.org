@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: ce070f4d-04f6-4b35-b46d-ee6d744c2d7f
 :END:
-#+title: Add service lifecycle controller and dashboard enhancements
+#+title: Task: Add service lifecycle controller and dashboard enhancements
 #+description: ores.controller component for managing service definitions + instances + lifecycle events; process supervisor with dependency-ordered service launch; cert management; HTTP/Wt/wrapper definitions; service dashboard UX overhaul with badge status + Stop/Restart controls; graceful shutdown of child processes.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-08]
-:END:
-
-** Now
-Completed 2026-04-08.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-08
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Service lifecycle controller* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 ores.controller component for managing service definitions + instances + lifecycle events; process supervisor with dependency-ordered service launch; cert management; HTTP/Wt/wrapper definitions; service dashboard UX overhaul with badge status + Stop/Restart controls; graceful shutdown of child processes.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]] |
+| Now          | Completed 2026-04-08.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2026-04-08                                                                |
 
 * Acceptance
 

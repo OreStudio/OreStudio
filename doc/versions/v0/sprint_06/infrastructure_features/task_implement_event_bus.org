@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 4e142df7-d208-453d-bc44-25f92f6d5934
 :END:
-#+title: Implement the event bus
+#+title: Task: Implement the event bus
 #+description: Add an in-process event bus so components can publish/subscribe without coupling — basis for the upcoming Postgres-listener-driven notifications.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2025-12-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-15]
-:END:
-
-** Now
-Completed 2025-12-15.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-15
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Infrastructure features* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add an in-process event bus so components can publish/subscribe without coupling — basis for the upcoming Postgres-listener-driven notifications.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | DONE                                                                 |
+| Parent story | [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]] |
+| Now          | Completed 2025-12-15.                                                |
+| Waiting on   | None.                                                                |
+| Next         | None.                                                                |
+| Last touched | 2025-12-15                                                           |
 
 * Acceptance
 

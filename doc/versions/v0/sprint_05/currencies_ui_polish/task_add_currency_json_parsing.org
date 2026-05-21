@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 88c04494-05ad-4cd3-b599-80924aea8595
 :END:
-#+title: Add JSON parsing support for currency
+#+title: Task: Add JSON parsing support for currency
 #+description: Currencies can already round-trip through XML; add JSON round-trip via reflect-cpp for parity.
 #+type: task
 #+version: 2
@@ -16,29 +16,23 @@
 #+updated: 2025-11-28
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:9836e113-dea9-4605-ae1b-9b0c955b6b73][Currencies UI polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-28]
-:END:
-
-** Now
-Completed 2025-11-28.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-28
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Currencies UI polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Currencies already round-trip through XML; add the matching
 JSON round-trip via reflect-cpp so both formats are first-class.
+
+* Status
+
+| Field        | Value                                                             |
+|--------------+-------------------------------------------------------------------|
+| State        | DONE                                                              |
+| Parent story | [[id:9836e113-dea9-4605-ae1b-9b0c955b6b73][Currencies UI polish]] |
+| Now          | Completed 2025-11-28.                                             |
+| Waiting on   | None.                                                             |
+| Next         | None.                                                             |
+| Last touched | 2025-11-28                                                        |
 
 * Acceptance
 

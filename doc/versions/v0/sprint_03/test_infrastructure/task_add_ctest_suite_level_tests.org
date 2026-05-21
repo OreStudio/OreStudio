@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1b023b81-0bc0-4733-aacb-89e42c9bf068
 :END:
-#+title: Add tests at suite level to ctest
+#+title: Task: Add tests at suite level to ctest
 #+description: Register each Catch2 suite as its own ctest entry so the dashboard reports per-suite status.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-12-01
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-01]
-:END:
-
-** Now
-Completed 2025-12-01.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-01
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Test infrastructure* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Register each Catch2 test /suite/ as a single CTest entry rather
 than registering every individual test case. Now that the test database
 is isolated per-suite, the per-case granularity is too slow.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]] |
+| Now          | Completed 2025-12-01.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2025-12-01                                                       |
 
 * Acceptance
 

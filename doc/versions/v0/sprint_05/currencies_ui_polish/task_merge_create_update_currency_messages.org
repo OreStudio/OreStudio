@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: c905ce58-8eb6-4713-8205-3e55ce7a3c70
 :END:
-#+title: Merge update and create currency messages
+#+title: Task: Merge update and create currency messages
 #+description: Bitemporal repositories always insert, so the create/update split was never semantically necessary. Collapse to a single save_currency message.
 #+type: task
 #+version: 2
@@ -16,24 +16,7 @@
 #+updated: 2025-11-28
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:9836e113-dea9-4605-ae1b-9b0c955b6b73][Currencies UI polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-28]
-:END:
-
-** Now
-Completed 2025-11-28.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-28
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Currencies UI polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -42,6 +25,17 @@ Collapse =create_currency_request/response= and
 message pair. Bitemporal repositories always insert new versions, so
 the create/update distinction was never semantically necessary —
 removing it simplifies the protocol and the UI.
+
+* Status
+
+| Field        | Value                                                             |
+|--------------+-------------------------------------------------------------------|
+| State        | DONE                                                              |
+| Parent story | [[id:9836e113-dea9-4605-ae1b-9b0c955b6b73][Currencies UI polish]] |
+| Now          | Completed 2025-11-28.                                             |
+| Waiting on   | None.                                                             |
+| Next         | None.                                                             |
+| Last touched | 2025-11-28                                                        |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7efd1dcf-2729-4e98-bd2d-712f55bdd83d
 :END:
-#+title: Rename currency asset classes
+#+title: Task: Rename currency asset classes
 #+description: Avoid 'asset classes' for values that aren't usual asset classes; pick clearer naming.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:7ae49d47-624c-41c6-8c07-cdbeb71d85ec][Refdata taxonomy work]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-24]
-:END:
-
-** Now
-Completed 2026-02-24.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-24
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Refdata taxonomy work* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Pick clearer naming for the currency taxonomy values that aren't really asset classes.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:7ae49d47-624c-41c6-8c07-cdbeb71d85ec][Refdata taxonomy work]] |
+| Now          | Completed 2026-02-24.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2026-02-24                                                         |
 
 * Acceptance
 

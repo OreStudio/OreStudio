@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: beb34249-570e-49f6-a9f0-f515be8eb89b
 :END:
-#+title: Add ORE instrument dispatch pipeline
+#+title: Task: Add ORE instrument dispatch pipeline
 #+description: map_instrument std::variant-based dispatch wired into import pipeline; credit instrument mapper + Thing 3 tests; BondOption + BondTRS mapper support.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:8361bc43-bd96-433d-889e-367072bad44e][ORE import pipeline]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-04]
-:END:
-
-** Now
-Completed 2026-04-04.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-04
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *ORE import pipeline* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 map_instrument std::variant-based dispatch wired into import pipeline; credit instrument mapper + Thing 3 tests; BondOption + BondTRS mapper support.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:8361bc43-bd96-433d-889e-367072bad44e][ORE import pipeline]] |
+| Now          | Completed 2026-04-04.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2026-04-04                                                       |
 
 * Acceptance
 

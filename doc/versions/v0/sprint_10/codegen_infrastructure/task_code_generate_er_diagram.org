@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 3b04427d-b956-4bd0-97e8-b68f445bd5ae
 :END:
-#+title: Code-generate ER diagram from SQL
+#+title: Task: Code-generate ER diagram from SQL
 #+description: Python SQL parser produces PlantUML ER diagrams; convention-validation engine; Mustache template; orchestration script.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:49a3b815-b5e9-4b3d-9213-100bf96c266d][Codegen infrastructure]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-24]
-:END:
-
-** Now
-Completed 2026-01-24.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-24
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Codegen infrastructure* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Generate the PlantUML ER diagram directly from the SQL schema so it can't drift out of date.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:49a3b815-b5e9-4b3d-9213-100bf96c266d][Codegen infrastructure]] |
+| Now          | Completed 2026-01-24.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-01-24                                                          |
 
 * Acceptance
 

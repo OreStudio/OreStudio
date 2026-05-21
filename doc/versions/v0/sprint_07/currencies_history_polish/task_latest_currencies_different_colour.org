@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 88f8a3c7-1ed3-43a6-9396-1766896e6586
 :END:
-#+title: Latest currencies should have different colour
+#+title: Task: Latest currencies should have different colour
 #+description: Visually distinguish the currently-active version of a currency in the history dialog (and the list view).
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:818b6261-1780-4fb3-aa89-da02c91da363][Currencies history polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-18]
-:END:
-
-** Now
-Completed 2025-12-18.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-18
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Currencies history polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Visually distinguish the currently-active version of a currency in the history dialog and the main list view.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:818b6261-1780-4fb3-aa89-da02c91da363][Currencies history polish]] |
+| Now          | Completed 2025-12-18.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2025-12-18                                                             |
 
 * Acceptance
 

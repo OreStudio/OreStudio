@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 6888a023-d626-44ce-b6c7-d0d92d31cbe1
 :END:
-#+title: Add database logging for tests
+#+title: Task: Add database logging for tests
 #+description: ORES_TEST_LOG_DATABASE CMake option enables direct DB logging from unit tests; three-tier tenant lifecycle (terminate / deprovision / purge); skip_telemetry_guard prevents recursive logging.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:2920a00e-538d-455e-9013-44a1c3a7ed36][Telemetry database sink]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-03]
-:END:
-
-** Now
-Completed 2026-02-03.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-03
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Telemetry database sink* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Make the database sink usable from the test framework so unit-test logs land in Postgres alongside the tenant data the test produces.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | DONE                                                                 |
+| Parent story | [[id:2920a00e-538d-455e-9013-44a1c3a7ed36][Telemetry database sink]] |
+| Now          | Completed 2026-02-03.                                                |
+| Waiting on   | None.                                                                |
+| Next         | None.                                                                |
+| Last touched | 2026-02-03                                                           |
 
 * Acceptance
 

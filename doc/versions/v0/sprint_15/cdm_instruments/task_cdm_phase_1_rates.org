@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 9723ed40-7424-4f44-bdb7-79c6c019b3e9
 :END:
-#+title: CDM Phase 1: Rates instrument domain model
+#+title: Task: CDM Phase 1: Rates instrument domain model
 #+description: Rates instruments: Swap, CrossCurrencySwap, CapFloor, Swaption. SQL: ores_trading_instruments_tbl + ores_trading_swap_legs_tbl + notify triggers + drop files. Domain: instrument + swap_leg structs with JSON I/O + table I/O + generator + protocol. Repository + service layer. Qt UI: ClientInstrumentModel + InstrumentMdiWindow + InstrumentDetailDialog + InstrumentHistoryDialog + InstrumentController.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-26]
-:END:
-
-** Now
-Completed 2026-03-26.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-26
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *CDM instrument domain models* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Phase 1 of the CDM-inspired instrument design: rates instruments (Swap, CrossCurrencySwap, CapFloor, Swaption).
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]] |
+| Now          | Completed 2026-03-26.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2026-03-26                                                                |
 
 * Acceptance
 

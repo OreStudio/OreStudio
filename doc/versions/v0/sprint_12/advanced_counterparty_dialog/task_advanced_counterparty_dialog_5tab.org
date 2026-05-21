@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: bc6a1b9e-253a-4727-badf-324d86a98313
 :END:
-#+title: Counterparty dialog: 5-tab layout
+#+title: Task: Counterparty dialog: 5-tab layout
 #+description: Tabs: General Info / Identifiers / Contacts / Hierarchy / Metadata. Inline sub-entity management; counterparty hierarchy tree; change-reason dialog on amend; eventing for counterparty + identifier + contact info; tenant_id fix on save handlers; reconnect crash fix.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:84545fff-58e6-4c97-821c-0d3bb0375f08][Advanced counterparty dialog]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-18]
-:END:
-
-** Now
-Completed 2026-02-18.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-18
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Advanced counterparty dialog* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Reshape the counterparty dialog into a five-tab layout with inline sub-entity management.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:84545fff-58e6-4c97-821c-0d3bb0375f08][Advanced counterparty dialog]] |
+| Now          | Completed 2026-02-18.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2026-02-18                                                                |
 
 * Acceptance
 

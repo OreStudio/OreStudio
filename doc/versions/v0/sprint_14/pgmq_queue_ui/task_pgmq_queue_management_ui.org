@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 48e29288-2b7b-4c13-a037-195bdb4f3c0e
 :END:
-#+title: Add pgmq queue management and messaging UI
+#+title: Task: Add pgmq queue management and messaging UI
 #+description: MQ subsystem on top of pgmq: protocol 0xB000-0xB013 messages; ores_mq_metrics_samples_tbl time-series; ores_mq_scrape_metrics_fn pg_cron job; Qt monitor UI (ClientQueueModel + QueueMonitorMdiWindow + QueueDetailDialog + QueueChartWindow); protocol 46.3.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:7b45be68-3970-4657-b2a3-f24151156ac7][pgmq queue management and messaging UI]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-03]
-:END:
-
-** Now
-Completed 2026-03-03.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-03
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *pgmq queue management and messaging UI* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Stand up an MQ subsystem on top of pgmq with a full Qt monitoring UI.
+
+* Status
+
+| Field        | Value                                                                               |
+|--------------+-------------------------------------------------------------------------------------|
+| State        | DONE                                                                                |
+| Parent story | [[id:7b45be68-3970-4657-b2a3-f24151156ac7][pgmq queue management and messaging UI]] |
+| Now          | Completed 2026-03-03.                                                               |
+| Waiting on   | None.                                                                               |
+| Next         | None.                                                                               |
+| Last touched | 2026-03-03                                                                          |
 
 * Acceptance
 

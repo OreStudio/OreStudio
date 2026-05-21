@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 03c2977e-ca76-43a1-9cf6-46a5648be40a
 :END:
-#+title: Add dataset bundles
+#+title: Task: Add dataset bundles
 #+description: dq_dataset_bundles_tbl + bundle_members + bundle_publications audit; PL/pgSQL: dq_list_bundles_fn, dq_list_bundle_datasets_fn, dq_preview_bundle_publication_fn, dq_populate_bundle_fn, dq_get_bundle_publication_history_fn; seed solvaris / base / crypto bundles.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:2d3d3854-748e-4df7-8bbe-e6498c598c2d][Dataset bundles and provisioning]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-27]
-:END:
-
-** Now
-Completed 2026-01-27.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-27
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Dataset bundles and provisioning* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Group datasets into named bundles so the system can be brought into a coherent state in one step.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | DONE                                                                          |
+| Parent story | [[id:2d3d3854-748e-4df7-8bbe-e6498c598c2d][Dataset bundles and provisioning]] |
+| Now          | Completed 2026-01-27.                                                         |
+| Waiting on   | None.                                                                         |
+| Next         | None.                                                                         |
+| Last touched | 2026-01-27                                                                    |
 
 * Acceptance
 

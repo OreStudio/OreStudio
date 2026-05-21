@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 10f2ee08-c4c4-4b2d-af8a-10898ff2d309
 :END:
-#+title: Check eventing across tenants
+#+title: Task: Check eventing across tenants
 #+description: tenant_id propagated through SQL triggers → JSONB payloads → event bus → subscription_manager; subscription_manager::notify() filters by session tenant; backward-compatible broadcast when tenant absent; 5 new test cases.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-06]
-:END:
-
-** Now
-Completed 2026-02-06.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-06
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Validate tenancy across surfaces* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Make sure events stay inside their tenant — a database trigger in tenant A must not reach subscribers in tenant B.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | DONE                                                                          |
+| Parent story | [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]] |
+| Now          | Completed 2026-02-06.                                                         |
+| Waiting on   | None.                                                                         |
+| Next         | None.                                                                         |
+| Last touched | 2026-02-06                                                                    |
 
 * Acceptance
 

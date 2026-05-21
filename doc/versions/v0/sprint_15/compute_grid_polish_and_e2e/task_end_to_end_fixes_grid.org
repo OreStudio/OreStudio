@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0761a4ec-66d1-4c3e-b46f-36d18b3d3cfa
 :END:
-#+title: End-to-end fixes for grid work
+#+title: Task: End-to-end fixes for grid work
 #+description: Service dashboard offline threshold raised to 120s; ORES_VERSION macro for accurate version display; status-services.sh node vs service counts; idle heartbeat sender in wrapper for online hosts; ores.platform::datetime for cross-platform timestamps; result_handler::submit uses service context for unauthenticated wrapper requests; outcome code mapping fix; host_id persisted to result; file extension preservation in artifact URIs (.tar.gz, .csv, .xml); double-slash URL fix in AppVersionDetailDialog; SIGSEGV fix; pill badges on Result UI; main window geometry persistence; RAII thread cleanup + terminate() guard in wrapper.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-26]
-:END:
-
-** Now
-Completed 2026-03-26.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-26
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Compute grid polish and E2E fixes* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Comprehensive end-to-end fix sweep on the compute grid based on real-data testing.
+
+* Status
+
+| Field        | Value                                                                          |
+|--------------+--------------------------------------------------------------------------------|
+| State        | DONE                                                                           |
+| Parent story | [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]] |
+| Now          | Completed 2026-03-26.                                                          |
+| Waiting on   | None.                                                                          |
+| Next         | None.                                                                          |
+| Last touched | 2026-03-26                                                                     |
 
 * Acceptance
 

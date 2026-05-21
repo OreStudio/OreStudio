@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: e00e8fd6-82f2-4ab4-9456-c6f44f855129
 :END:
-#+title: HTTP recipes skill
+#+title: Task: HTTP recipes skill
 #+description: Mirror of the shell/cli recipes skill for HTTP endpoints: Emacs verb-mode requests, route source references.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:b302b2b6-13f8-49cc-a6af-88418668be31][Entity-creator skills suite]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-11]
-:END:
-
-** Now
-Completed 2026-01-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Entity-creator skills suite* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Skill for documenting HTTP API recipes — mirror of =ores-shell-recipes= and =ores-cli-recipes=.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:b302b2b6-13f8-49cc-a6af-88418668be31][Entity-creator skills suite]] |
+| Now          | Completed 2026-01-11.                                                    |
+| Waiting on   | None.                                                                    |
+| Next         | None.                                                                    |
+| Last touched | 2026-01-11                                                               |
 
 * Acceptance
 

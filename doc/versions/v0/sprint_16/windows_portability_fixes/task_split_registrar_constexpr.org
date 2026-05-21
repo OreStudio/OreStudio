@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1a1ad7fe-4d09-4876-a5a4-c1734db1d183
 :END:
-#+title: Split registrar.cpp to fix MSVC C1202 constexpr depth limit
+#+title: Task: Split registrar.cpp to fix MSVC C1202 constexpr depth limit
 #+description: Split NATS handler registration logic into multiple translation units to prevent MSVC C1202 caused by excessive template instantiations.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-11]
-:END:
-
-** Now
-Completed 2026-04-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Windows portability fixes* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Split NATS handler registration logic into multiple translation units to prevent MSVC C1202 caused by excessive template instantiations.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] |
+| Now          | Completed 2026-04-11.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2026-04-11                                                             |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 36c998ee-1171-468c-943f-80eefc88a8f4
 :END:
-#+title: Add system account
+#+title: Task: Add system account
 #+description: Non-login system account used for all initial population; publication uses the new admin account, not the system account.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-16]
-:END:
-
-** Now
-Completed 2026-02-16.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-16
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Audit trail and system account* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add a non-login system account for initial population so =modified_by= always maps to an existing account row.
+
+* Status
+
+| Field        | Value                                                                       |
+|--------------+-----------------------------------------------------------------------------|
+| State        | DONE                                                                        |
+| Parent story | [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]] |
+| Now          | Completed 2026-02-16.                                                       |
+| Waiting on   | None.                                                                       |
+| Next         | None.                                                                       |
+| Last touched | 2026-02-16                                                                  |
 
 * Acceptance
 

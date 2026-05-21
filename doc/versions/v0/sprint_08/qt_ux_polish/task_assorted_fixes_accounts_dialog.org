@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 2ad7863b-31f9-4d50-8c47-2decba543013
 :END:
-#+title: Assorted fixes to accounts dialog
+#+title: Task: Assorted fixes to accounts dialog
 #+description: Save-button enable-on-change, my-account dialog reshape, session-history non-maximisable, byte counters, status taxonomy (locked/unlocked/reset), right-click menu.
 #+type: task
 #+version: 2
@@ -16,25 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]].
-
-* BACKLOG Status
-
-** Now
-POSTPONED in sprint 08; carried forward to a later sprint.
-
-** Waiting on
-Nothing.
-
-** Next
-Return to this once a sprint has the slot.
-
-** Last touched
-2026-01-11
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Qt UX polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Address the long tail of accounts-dialog snags surfaced during the validation pass.
+
+* Status
+
+| Field        | Value                                                      |
+|--------------+------------------------------------------------------------|
+| State        | BACKLOG                                                    |
+| Parent story | [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]]  |
+| Now          | POSTPONED in sprint 08; carried forward to a later sprint. |
+| Waiting on   | Nothing.                                                   |
+| Next         | Return to this once a sprint has the slot.                 |
+| Last touched | 2026-01-11                                                 |
 
 * Acceptance
 

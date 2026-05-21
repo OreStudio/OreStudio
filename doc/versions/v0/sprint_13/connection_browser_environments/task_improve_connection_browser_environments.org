@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1284cd48-5b99-48b2-8925-ce7e7c0aac1e
 :END:
-#+title: Refactor connection browser with environments
+#+title: Task: Refactor connection browser with environments
 #+description: Split server_environment into environment (host + port) and connection (credentials, optionally linked to environment); migrate existing connections automatically; unified tree (folders + environments + connections); Duplicate action; environment-linked connections show inherited tags + resolved host/port; login dialog gets unified quick-connect combo (Manual / Environments / Connections headers); new Keyboard + Copy icons.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:ee315a6f-8933-4738-ae3f-e63cbbf57f03][Connection browser: environments]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-24]
-:END:
-
-** Now
-Completed 2026-02-24.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-24
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Connection browser: environments* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Refactor the connection browser to separate the host/port from the credentials and unify the tree.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | DONE                                                                          |
+| Parent story | [[id:ee315a6f-8933-4738-ae3f-e63cbbf57f03][Connection browser: environments]] |
+| Now          | Completed 2026-02-24.                                                         |
+| Waiting on   | None.                                                                         |
+| Next         | None.                                                                         |
+| Last touched | 2026-02-24                                                                    |
 
 * Acceptance
 

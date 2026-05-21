@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 196729ef-6042-4b3d-8c91-96cfe6c67a5c
 :END:
-#+title: Add FSM support to Postgres
+#+title: Task: Add FSM support to Postgres
 #+description: Generic FSM framework in Postgres (machines / states / transitions); notification triggers; RLS policies. Foundation for trade lifecycles and authorisation.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:bd4110c2-fdf7-47b0-a726-f4cd83ded8e5][FSM and trade support]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-20]
-:END:
-
-** Now
-Completed 2026-02-20.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-20
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *FSM and trade support* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add a generic FSM framework in Postgres to support trade life-cycles + authorisation.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:bd4110c2-fdf7-47b0-a726-f4cd83ded8e5][FSM and trade support]] |
+| Now          | Completed 2026-02-20.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2026-02-20                                                         |
 
 * Acceptance
 

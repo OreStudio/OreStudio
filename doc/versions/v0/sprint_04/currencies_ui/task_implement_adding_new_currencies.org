@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 32448b40-ed11-4ee4-8ff8-49daa81a70a9
 :END:
-#+title: Implement adding new currencies
+#+title: Task: Implement adding new currencies
 #+description: Add a new-currency dialog and wire it to the repository.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-11-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:1e99eee4-dca5-4384-942e-0ce28b0a467c][Currencies UI]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-25]
-:END:
-
-** Now
-Completed 2025-11-25.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-25
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Currencies UI* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add the ability to /add/ new currencies from the UI: a
 new-currency dialog, wiring to the repository, and a message protocol
 so the server side picks up the new row.
+
+* Status
+
+| Field        | Value                                                      |
+|--------------+------------------------------------------------------------|
+| State        | DONE                                                       |
+| Parent story | [[id:1e99eee4-dca5-4384-942e-0ce28b0a467c][Currencies UI]] |
+| Now          | Completed 2025-11-25.                                      |
+| Waiting on   | None.                                                      |
+| Next         | None.                                                      |
+| Last touched | 2025-11-25                                                 |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 48715de8-2882-45a0-b45f-208603a1dd23
 :END:
-#+title: Add rounding type entity
+#+title: Task: Add rounding type entity
 #+description: rounding_type domain entity end-to-end: JSON model, repository, protocol, service, Qt UI (model + MDI + detail + history); CurrencyDetailDialog replaces free-text with combo box (server-populated, tooltips); Data menu restructured (top-level Currencies/Countries; Auxiliary Data submenu); Rounding Types toolbar entry from CurrencyDetail; description SQL enriched with 2-dp examples.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:7ae49d47-624c-41c6-8c07-cdbeb71d85ec][Refdata taxonomy work]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-23]
-:END:
-
-** Now
-Completed 2026-02-23.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-23
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Refdata taxonomy work* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Promote rounding-type from a string column on currency to a proper refdata entity.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:7ae49d47-624c-41c6-8c07-cdbeb71d85ec][Refdata taxonomy work]] |
+| Now          | Completed 2026-02-23.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2026-02-23                                                         |
 
 * Acceptance
 

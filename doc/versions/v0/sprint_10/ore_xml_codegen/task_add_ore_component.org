@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 27b76a70-df1d-4c66-89a9-fba3cb801353
 :END:
-#+title: Add ores.ore component for import/export
+#+title: Task: Add ores.ore component for import/export
 #+description: Dedicated component for ORE (Open Source Risk Engine) import/export work; directory + CMake + stubs + arch docs updated.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-25]
-:END:
-
-** Now
-Completed 2026-01-25.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-25
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *ORE XML codegen* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add a dedicated =ores.ore= component to host ORE (Open Source Risk Engine) import + export work.
+
+* Status
+
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | DONE                                                         |
+| Parent story | [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]] |
+| Now          | Completed 2026-01-25.                                        |
+| Waiting on   | None.                                                        |
+| Next         | None.                                                        |
+| Last touched | 2026-01-25                                                   |
 
 * Acceptance
 

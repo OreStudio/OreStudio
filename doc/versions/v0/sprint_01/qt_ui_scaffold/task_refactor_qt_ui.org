@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 742f2310-4678-4a9e-bba9-d73d9dd6b42a
 :END:
-#+title: Refactor Qt UI
+#+title: Task: Refactor Qt UI
 #+description: Tidy the Qt UI — launcher, logging, column names, row sizes, tab opening, table sizing — before more widgets are added.
 #+type: task
 #+version: 2
@@ -12,24 +12,7 @@
 #+updated: 2024-07-23
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2024-07-23]
-:END:
-
-** Now
-Completed 2024-07-23.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2024-07-23
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Qt UI scaffold* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -37,6 +20,17 @@ Make a sweep through the Qt UI to fix the small issues that would
 compound as we add more widgets: launcher integration, logging
 wiring, column header names, row sizing, tab opening behaviour, and
 the main-window-following table size.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | DONE                                                        |
+| Parent story | [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]] |
+| Now          | Completed 2024-07-23.                                       |
+| Waiting on   | None.                                                       |
+| Next         | None.                                                       |
+| Last touched | 2024-07-23                                                  |
 
 * Acceptance
 

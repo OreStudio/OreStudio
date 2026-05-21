@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 74c6a18c-2b7b-4ab2-b1b8-7d3ecd220d5e
 :END:
-#+title: Add party types lookup table
+#+title: Task: Add party types lookup table
 #+description: ores_refdata_party_types_tbl with system + operational types; tenant provisioner auto-creates system party for new tenants; party creation validates type.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:00e6e192-a255-4c94-8fcc-15826f7e33ae][Tenant administration]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-12]
-:END:
-
-** Now
-Completed 2026-02-12.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-12
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Tenant administration* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Add =ores_refdata_party_types_tbl= with system + operational types.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:00e6e192-a255-4c94-8fcc-15826f7e33ae][Tenant administration]] |
+| Now          | Completed 2026-02-12.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2026-02-12                                                         |
 
 * Acceptance
 

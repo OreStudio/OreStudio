@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 21fb0404-f5be-40c4-b9de-0d703025518f
 :END:
-#+title: Split feature flags out of accounts
+#+title: Task: Split feature flags out of accounts
 #+description: Extract feature flags from ores.accounts into their own component so they can be managed independently.
 #+type: task
 #+version: 2
@@ -16,30 +16,24 @@
 #+updated: 2025-11-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-22]
-:END:
-
-** Now
-Completed 2025-11-22.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-22
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Authentication bootstrap follow-up* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Pull feature flags out of =ores.accounts= into their own
 component. The two were coupled by accident; separating them lets feature
 flags evolve without dragging the accounts surface along.
+
+* Status
+
+| Field        | Value                                                                           |
+|--------------+---------------------------------------------------------------------------------|
+| State        | DONE                                                                            |
+| Parent story | [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] |
+| Now          | Completed 2025-11-22.                                                           |
+| Waiting on   | None.                                                                           |
+| Next         | None.                                                                           |
+| Last touched | 2025-11-22                                                                      |
 
 * Acceptance
 

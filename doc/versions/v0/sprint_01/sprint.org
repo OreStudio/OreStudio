@@ -11,32 +11,29 @@
 #+updated: 2026-05-18
 #+todo: STARTED | DONE
 
-This page documents *Sprint 01* of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 01*) of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
 Bootstrap project infrastructure and bring currencies end-to-end through
 the stack.
 
-(Synthesised from the original two-bullet mission: "Create basic project
-infrastructure" and "Handle currencies front to back".)
-
 * Status
 
-| Field          | Value                                                  |
-|----------------+--------------------------------------------------------|
-| State          | DONE                                                   |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]] |
-| Now            | Sprint closed 2024-07-28. All stories merged.          |
-| Waiting on     | None.                                                  |
-| Next           | None.                                                  |
-| Last touched   | 2024-07-28                                             |
+| Field          | Value                                         |
+|----------------+-----------------------------------------------|
+| State          | DONE                                          |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                     |
+| Now            | Sprint closed 2024-07-28. All stories merged. |
+| Waiting on     | None.                                         |
+| Next           | None.                                         |
+| Last touched   | 2024-07-28                                    |
 
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                     | State | Theme                                                                                                        |
-|---------------------------------------------------------------------------+-------+--------------------------------------------------------------------------------------------------------------|
+| Story                        | State | Theme                                                                                                        |
+|------------------------------+-------+--------------------------------------------------------------------------------------------------------------|
 | [[id:64e55e42-12eb-46cf-8269-6b30da277a1b][Project bootstrap]]            | DONE  | diffuse story covering repo, build, CI, and packaging. The plumbing every later story stands on.             |
 | [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]]               | DONE  | initial Qt application: hello world, splash, refactor toward a usable layout, icon set.                      |
 | [[id:c85f2dca-f7d6-40ae-b796-8b4cf84a7093][Documentation infrastructure]] | DONE  | project site, Doxygen, README, seed domain notes.                                                            |
@@ -58,13 +55,3 @@ Filled in retrospect, from the v0 record:
 - /Carry forward to v2/ :: the discipline of one PR per task and the
   habit of recording outcomes inline are preserved; the missing story
   layer is what the v2 information architecture restores.
-
-
-* Notes on the conversion
-
-This sprint was the drive-test for the v2 information architecture. All
-six stories converted (2 in the first pass, 4 implied stories added in
-the second pass). Each story has 3 representative tasks migrated; the
-remaining ~25 v0 entries are listed under each story's /Additional
-tasks belonging to this story in v0 but not migrated in the drive-test/
-section. See =doc/meta/= for the contract these documents follow.

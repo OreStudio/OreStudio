@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 23ba1502-d6a9-422a-9ddf-32d13acfb30d
 :END:
-#+title: Add proper party short codes
+#+title: Task: Add proper party short codes
 #+description: ores_utility_strip_corporate_suffix_fn + ores_utility_generate_short_code_fn for 4-8 char mnemonic codes; transliterated_name column across the stack; Qt models standardise on PaginationWidget + process_authenticated_request. Protocol bump to 32.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:d0e2fb0d-24f0-4fa4-a403-872e01e60fb6][Multi-party brainstorm and short codes]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-13]
-:END:
-
-** Now
-Completed 2026-02-13.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-13
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Multi-party brainstorm and short codes* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Stop using LEI as a short code; generate proper mnemonic short codes; add transliterated_name support.
+
+* Status
+
+| Field        | Value                                                                               |
+|--------------+-------------------------------------------------------------------------------------|
+| State        | DONE                                                                                |
+| Parent story | [[id:d0e2fb0d-24f0-4fa4-a403-872e01e60fb6][Multi-party brainstorm and short codes]] |
+| Now          | Completed 2026-02-13.                                                               |
+| Waiting on   | None.                                                                               |
+| Next         | None.                                                                               |
+| Last touched | 2026-02-13                                                                          |
 
 * Acceptance
 

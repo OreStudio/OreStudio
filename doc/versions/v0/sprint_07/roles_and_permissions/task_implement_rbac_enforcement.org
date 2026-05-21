@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 4d1fd802-ebc4-413d-af97-bbadd0c6467c
 :END:
-#+title: Implement RBAC enforcement
+#+title: Task: Implement RBAC enforcement
 #+description: Enforce role-based access at the message handler layer: reject requests the calling session lacks permission for.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:6255bc9f-95bc-4fc7-98c8-6060b8679b85][Roles and permissions]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-27]
-:END:
-
-** Now
-Completed 2025-12-27.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-27
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Roles and permissions* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Enforce role-based access at the message-handler layer: reject requests the calling session lacks permission for.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:6255bc9f-95bc-4fc7-98c8-6060b8679b85][Roles and permissions]] |
+| Now          | Completed 2025-12-27.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2025-12-27                                                         |
 
 * Acceptance
 

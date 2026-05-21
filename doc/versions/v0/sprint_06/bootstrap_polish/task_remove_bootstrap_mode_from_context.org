@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 9e64d794-0f79-4e34-96be-a637706649bf
 :END:
-#+title: Remove bootstrap mode from context
+#+title: Task: Remove bootstrap mode from context
 #+description: Bootstrap mode is a startup-only concern; remove the runtime context's awareness of it now that the workflow handles itself.
 #+type: task
 #+version: 2
@@ -16,28 +16,22 @@
 #+updated: 2025-12-13
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-Parent story: [[id:50bb2acb-5687-4bad-b03a-12af606e8eab][Bootstrap polish]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-13]
-:END:
-
-** Now
-Completed 2025-12-13.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-13
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Bootstrap polish* story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Bootstrap mode is a startup-only concern; remove the runtime context's awareness of it now that the workflow handles itself.
+
+* Status
+
+| Field        | Value                                                         |
+|--------------+---------------------------------------------------------------|
+| State        | DONE                                                          |
+| Parent story | [[id:50bb2acb-5687-4bad-b03a-12af606e8eab][Bootstrap polish]] |
+| Now          | Completed 2025-12-13.                                         |
+| Waiting on   | None.                                                         |
+| Next         | None.                                                         |
+| Last touched | 2025-12-13                                                    |
 
 * Acceptance
 

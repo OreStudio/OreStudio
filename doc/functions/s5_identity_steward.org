@@ -61,7 +61,7 @@ Before acting, load:
 
 * Skills
 
-- =brainstorming= — for identity-shaping conversations with the user.
+- [[id:460c89da-50d2-40c3-88b2-be52e430d170][brainstorming]] — for identity-shaping conversations with the user.
 
 * Recipes
 

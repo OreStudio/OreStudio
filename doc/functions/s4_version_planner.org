@@ -59,9 +59,9 @@ Before acting, load:
 
 * Skills
 
-- =brainstorming= — when shaping a fresh version mission or
+- [[id:460c89da-50d2-40c3-88b2-be52e430d170][brainstorming]] — when shaping a fresh version mission or
   Definition of done.
-- =relese-notes-generator= — adapted to the version-level release.
+- [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][relese-notes-generator]] — adapted to the version-level release.
 
 * Recipes
 

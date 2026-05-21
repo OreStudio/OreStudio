@@ -61,7 +61,7 @@ Before acting, load:
 S3* is mostly script-driven; the existing skills used adjacent to
 audit work:
 
-- =recipe-author= — when an audit finding repeats often enough to
+- [[id:28aaf9a6-b1e4-402a-83bb-289090990fb8][recipe-author]] — when an audit finding repeats often enough to
   warrant a recipe.
 
 * Recipes

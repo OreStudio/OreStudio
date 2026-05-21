@@ -63,11 +63,11 @@ Before acting, load:
 
 * Skills
 
-- =new-sprint= — opening a sprint (mechanics).
-- =agile-product-owner= — story creation, prioritisation, and
+- [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][new-sprint]] — opening a sprint (mechanics).
+- [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]] — story creation, prioritisation, and
   capture promotion.
-- =relese-notes-generator= — release notes at sprint close.
-- =brainstorming= — when defining a sprint mission from a fuzzy
+- [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][relese-notes-generator]] — release notes at sprint close.
+- [[id:460c89da-50d2-40c3-88b2-be52e430d170][brainstorming]] — when defining a sprint mission from a fuzzy
   initial direction.
 
 * Recipes

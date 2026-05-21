@@ -11,12 +11,10 @@
 #+updated: 2026-05-21
 
 Every Claude Code [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skill]] used with ORE Studio lives at
-=doc/skills/<slug>/SKILL.org= and is listed below, grouped by area.
-Skills are /task-shaped/: each one is the playbook an LLM session
-loads to perform a specific unit of work end-to-end. Compare with
-[[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], which is /role-shaped/. See [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]] for the
-deployment workflow (=cmake --build --target deploy_skills=). Return
-to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+=doc/skills/<slug>/SKILL.org= and is listed below, grouped by area. Skills are
+/task-shaped/: each one is the playbook an LLM session loads to perform a
+specific unit of work end-to-end. Compare with [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], which is /role-shaped/.
+See [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]] for the deployment workflow or return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Meta-skills
 
@@ -30,6 +28,8 @@ to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 - [[id:2df8adaf-20c9-4757-9399-798eec6df828][Agile Product Owner]] — manage the team through story creation,
   prioritisation, sprint planning.
+- [[id:7357c672-a49f-4974-9399-a166f761d222][ORES Memory]] — decide when to write a project-scope memory and
+  scaffold it into =doc/memory/=.
 - [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]] — class diagrams for C++ components.
 - [[id:b0b99088-d88e-4980-a4ee-7d6a9a8e96a5][Component Model Creator]] — component model documentation in
   org-mode with PlantUML diagrams.

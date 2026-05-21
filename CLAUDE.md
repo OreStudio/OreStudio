@@ -113,6 +113,20 @@ Installs from distro repos: GCC, Clang, CMake, Ninja, PostgreSQL, Qt6, Valgrind,
 and X11/GL headers. Then set up the database with
 `./projects/ores.sql/recreate_database.sh` before the first build.
 
+## Project memory
+
+Persistent project-scope memories for LLM sessions live in
+`doc/memory/`, one memory per `.org` file. Write here when the user
+gives durable feedback, corrects an approach in a way that should
+apply to future sessions, or asks you to remember a fact. The
+catalogue and inclusion rules live in `doc/memory/memory.org`. For
+the decision flow ("is this worth a memory? which subtype?"), invoke
+the `ores-memory` skill in `doc/skills/ores-memory/SKILL.org`.
+
+Code patterns, architecture, and anything derivable from the current
+state of the codebase do **not** belong in `doc/memory/` — those go
+in `doc/knowledge/`.
+
 ## Pull Requests
 
 - do not add "Test plan" section to PRs.

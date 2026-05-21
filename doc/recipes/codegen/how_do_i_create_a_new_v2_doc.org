@@ -18,7 +18,8 @@ vocabulary), see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]. Fo
 
 How do I create a new v2 information-architecture document — [[id:b7fa729c-2d42-408a-9424-b6aa90eb16b4][task]], [[id:6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752][story]],
 [[id:f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12][sprint]], [[id:8fc15ea1-ab30-47be-993f-ed624a57f761][version]], [[id:0a28b9ca-dc07-4a1d-9942-7843eabf8a40][component]], [[id:0c57932d-d13a-480f-b426-49525aa8ba3d][recipe]], [[id:f497aa0a-f604-436a-8555-c17b14302c99][knowledge]], [[id:6054cc20-5f41-482f-a587-759512577b1d][skill]], [[id:f1311596-b8ed-43ad-8c46-76c58c0194c7][product identity]], or
-[[id:978e0a8f-197c-48da-a405-457e0aee91d9][capture]] — without hand-writing the frontmatter?
+[[id:978e0a8f-197c-48da-a405-457e0aee91d9][capture]], or [[id:32b3a055-63fa-4edf-8dcc-901e9d883f22][memory]] — without hand-writing the
+frontmatter?
 
 * Answer
 
@@ -236,6 +237,29 @@ projects/ores.codegen/generate_v2_doc.sh \
 
 The blurb in the generated file automatically picks up the bucket
 name from the =--parent-dir= basename.
+
+** New memory
+:PROPERTIES:
+:ID: 3b7156cd-3a8d-49e5-bf89-a5f6f2486596
+:END:
+
+Memories live under =doc/memory/=. Pass =--memory-subtype= to pick
+the kind of memory (=feedback= / =user= / =project= / =reference=
+— default =feedback=). The =memory= filetag is auto-injected so
+the catalogue is greppable.
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type memory --slug do_not_re_export_env_vars \
+  --parent-dir doc/memory \
+  --title "Do not re-export ORES_* env vars in Bash tool calls" \
+  --description "The user already exports them; prepending is noise." \
+  --memory-subtype feedback
+#+end_src
+
+For the LLM-side decision flow (when to write vs push back), see
+the [[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory skill]]; for the standalone recipe with body
+conventions, see [[id:391b9231-dba8-4e8c-97ab-a75e2b9fea07][How do I create a memory?]].
 
 ** Creating a set of inter-linked documents
 

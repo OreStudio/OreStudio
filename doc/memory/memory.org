@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: dc0bba22-9d4f-4fdd-b011-e30b02b4b82f
+:END:
+#+title: Project memory
+#+description: Persistent project-scope memories for LLM sessions. One memory per file under doc/memory/. Read at session start; appended to over time.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :memory:index:knowledge:
+#+created: 2024-06-15
+#+updated: 2026-05-21
+
+Project-scope persistent memory for LLM sessions. /This is where any
+LLM working on ORE Studio should write things that future sessions
+need to remember/ — feedback from the user, durable project facts,
+references to external systems, anything that would otherwise be
+lost between conversations. Each memory lives as a single
+=.org= file in this folder; this page is the catalogue. See [[id:391b9231-dba8-4e8c-97ab-a75e2b9fea07][How do
+I create a memory?]] for the operational flow and the [[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory]]
+skill for the LLM-side procedure. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* What goes here
+
+Memories are short, atomic, and durable. Use the same four subtypes
+as Claude Code's auto-memory:
+
+- *feedback* — what the user has corrected or confirmed. /Lead with
+  the rule, then =*Why:*= and =*How to apply:*= lines./
+- *user* — facts about the user's role, expertise, working style.
+- *project* — facts about the work in flight or its motivation
+  that aren't otherwise derivable from the code or git history.
+- *reference* — pointers to external systems (where a thing is
+  tracked, which dashboard is canonical).
+
+Every memory carries =#+type: memory= and =#+memory_subtype: <one
+of the four>=. The =:memory:= filetag makes the whole set
+greppable in one shot.
+
+* What does NOT go here
+
+- *Code patterns, conventions, architecture* — derivable from the
+  current state of the codebase; live in [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] instead.
+- *Git history* — =git log= / =git blame= are authoritative.
+- *Debugging recipes* — the fix is in the code; the commit
+  message has the context.
+- *Anything already documented in [[https://github.com/OreStudio/OreStudio/blob/main/CLAUDE.md][CLAUDE.md]]*.
+- *Ephemeral task state* — current sprint work belongs in the
+  sprint/story/task docs, not here.
+
+If the user explicitly asks you to remember something that fits any
+of these exclusions, push back: the right home is somewhere else.
+
+* Catalogue
+
+** Feedback
+
+- [[id:f9b796df-2c06-42ef-aacf-d69e53621ff9][Do not re-export ORES_* env vars in Bash tool calls]].
+
+** User
+
+(none yet)
+
+** Project
+
+(none yet)
+
+** Reference
+
+(none yet)
+
+* See also
+
+- [[id:391b9231-dba8-4e8c-97ab-a75e2b9fea07][How do I create a memory?]] — operational recipe.
+- [[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory skill]] — LLM-side procedure for adding memories.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]]§"New memory" — the codegen
+  scaffold flow.

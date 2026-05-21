@@ -277,6 +277,28 @@ is moved into the appropriate sprint folder and its =#+type:= flips from
 | Example         | [[id:cebab022-2039-47a4-aab2-bb2ffba5507c][Add a dashboard for users]] (in the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] bucket)                                                      |
 | Inventory       | [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]] (browse via [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] / [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]])                                                             |
 
+* Memory
+:PROPERTIES:
+:ID: 32b3a055-63fa-4edf-8dcc-901e9d883f22
+:END:
+
+A short, durable note an LLM session writes for the benefit of future
+sessions — feedback the user gave, a fact about them, a fact about
+the work in flight, or a pointer to an external system. One memory
+per file under =doc/memory/=; carries =#+type: memory= and a
+=#+memory_subtype:= of =feedback=, =user=, =project=, or
+=reference=. Memory captures /how to work together/; code-derivable
+facts and architecture belong in [[id:bd1f3458-f991-46be-abeb-5f06c2633375][knowledge]] instead.
+
+#+ATTR_HTML: :class hug-leading
+| Field           | Value                                                            |
+|-----------------+------------------------------------------------------------------|
+| Owner           | cross-cutting (any LLM session may write, with user approval)    |
+| How to generate | [[id:3b7156cd-3a8d-49e5-bf89-a5f6f2486596][New memory]] in the v2-doc recipe; [[id:391b9231-dba8-4e8c-97ab-a75e2b9fea07][How do I create a memory?]] |
+|                 | for the full conventions                                         |
+| Example         | [[id:f9b796df-2c06-42ef-aacf-d69e53621ff9][Do not re-export ORES_* env vars]]                                 |
+| Inventory       | [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][Project memory]]                                                   |
+
 * TODO state
 :PROPERTIES:
 :ID: 8a246d60-6a87-4b54-a023-564ec1965c61

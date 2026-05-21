@@ -459,6 +459,34 @@ A pre-sprint idea — see [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][Capture]] i
   - =* See also= — related captures, knowledge docs, components.
     Optional.
 
+** memory
+
+A persistent project-scope note an LLM session writes for the benefit
+of future sessions — see [[id:32b3a055-63fa-4edf-8dcc-901e9d883f22][Memory]] in the glossary.
+
+- Folder :: =doc/memory/<slug>.org= — flat, one memory per file.
+- Level :: =cross= (memories cut across cybernetic levels; they're
+  about how-to-work-together, not about composition).
+- Slug :: =snake_case=, descriptive of /the rule/, not the topic
+  (=do_not_re_export_env_vars=, not =bash_environment=).
+- Title :: free-form, restated as a one-line summary in the body.
+- Not stateful — no TODO, no =* Status= table. The =#+updated= date
+  reflects when the memory was last refreshed.
+- Subtype :: =#+memory_subtype:= is one of =feedback= (corrected or
+  confirmed by the user), =user= (facts about the user), =project=
+  (facts about the work in flight), =reference= (pointer to an
+  external system). Same four-way taxonomy as Claude Code's
+  auto-memory.
+- How to create :: see [[id:3b7156cd-3a8d-49e5-bf89-a5f6f2486596][New memory]] in the v2-doc recipe.
+- Required structure ::
+  - /Blurb/ — one short paragraph stating the rule, fact, or
+    insight.
+  - =*Why:*= — one or two sentences. The reason the user gave, or
+    the incident. Without the why, a future session can't judge
+    edge cases.
+  - =*How to apply:*= — when this memory should kick in: which
+    files, which workflows, what circumstances.
+
 ** product_identity
 
 - Folder :: =identity/=

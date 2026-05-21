@@ -125,8 +125,9 @@ analysis tied to one component's code) lives co-located with the code at
 - =manual/= — user-facing PDF / LaTeX manual built from =manual.org=. Surfaced
   to end users, not part of the developer-doc tree.
 - =prompts/= — reusable LLM prompts that don't fit cleanly as a [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skill]].
-- =memory/= — Claude Code session-feedback memory (=feedback.org=). Operational
-  artefact, not part of the doc graph.
+- =memory/= — persistent project-scope [[id:32b3a055-63fa-4edf-8dcc-901e9d883f22][memory]] for LLM sessions. One
+  memory per file; the catalogue lives at [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][project memory]]. Write here
+  when the user gives feedback worth keeping across sessions.
 - =samples/= — screenshots and product imagery referenced from [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product identity]]
   and visual mockups.
 - =analysis/= — older one-off analyses from before v2. Some still useful as

@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 391b9231-dba8-4e8c-97ab-a75e2b9fea07
+:END:
+#+title: How do I create a memory?
+#+description: Scaffold a v2 memory file under doc/memory/ — feedback, user, project, or reference subtype — and wire it into the inventory.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :documentation:memory:recipe:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+For background on what project memory /is/ and what does and does not
+belong in it, see the [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][project memory inventory]]. For the LLM-side
+procedure (when to write a memory vs when to push back), see the
+[[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory skill]].
+
+* Question
+
+How do I write a new project memory — pick the subtype, scaffold the
+file, fill in the body, and link it from the inventory?
+
+* Answer
+
+Memories are short, atomic, durable. One memory per file under
+=doc/memory/=. Use the codegen to scaffold; never hand-write the
+frontmatter.
+
+1. /Pick the subtype/. Memories use the same four subtypes as
+   Claude Code's auto-memory:
+
+   - =feedback= — what the user has corrected or confirmed.
+   - =user= — facts about the user.
+   - =project= — facts about the work in flight or its motivation.
+   - =reference= — pointers to external systems.
+
+2. /Pick a slug/. Snake-case, short, descriptive of the rule rather
+   than the topic — e.g. =do_not_re_export_env_vars=, not =bash=.
+
+3. /Scaffold the file/:
+
+   #+begin_src sh :results verbatim
+   projects/ores.codegen/generate_v2_doc.sh \
+     --type memory --slug do_not_re_export_env_vars \
+     --parent-dir doc/memory \
+     --title "Do not re-export ORES_* env vars in Bash tool calls" \
+     --description "The user has already exported ORES_* env vars in their shell session — don't prepend them." \
+     --memory-subtype feedback
+   #+end_src
+
+   The =memory= tag and the chosen subtype are auto-added to
+   =#+filetags= so the whole catalogue is greppable in one shot.
+
+4. /Fill in the body/. The scaffold gives you a one-paragraph
+   placeholder plus =*Why:*= and =*How to apply:*= bold lines.
+   Replace each with the actual content:
+
+   - /Lead with the rule/, one to two sentences.
+   - /=*Why:*=/ the reason (the user's words, or the incident).
+   - /=*How to apply:*=/ when this kicks in (which files, which
+     workflows, what circumstances).
+
+5. /Link from the inventory/. Open =doc/memory/memory.org= and add
+   an id-link under the appropriate subtype heading.
+
+6. /Verify/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.codegen/doc_show.sh <uuid-prefix>
+   #+end_src
+
+   The Outgoing/Incoming link sections should resolve cleanly.
+
+* Conventions
+
+- /One memory per file/. If you find yourself writing "and also…",
+  the second point is its own memory.
+- /Lead with the rule, not the topic/. =do_not_re_export_env_vars=,
+  not =bash_environment=.
+- /Always include =*Why:*=./ Without the why, future sessions can't
+  judge edge cases.
+- /Don't duplicate code-derivable facts/. Architecture, conventions,
+  file paths belong in [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]], not memory.
+- /Don't duplicate [[https://github.com/OreStudio/OreStudio/blob/main/CLAUDE.md][CLAUDE.md]]/. If a guideline is enforced on every
+  session, it goes there.
+
+* Script
+
+The wrapper is =projects/ores.codegen/generate_v2_doc.sh=. The
+memory-specific machinery (template, =--memory-subtype= flag, tag
+injection) lives in =projects/ores.codegen/src/v2_doc_generate.py=
+and the template at
+=projects/ores.codegen/library/templates/v2_doc_memory.org.mustache=.
+
+* Tested by
+
+Manual. =doc_version_audit.py --check= verifies every memory file
+carries =#+version: 2=.
+
+* See also
+
+- [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][Project memory]] — the catalogue and the contract for what
+  belongs.
+- [[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory skill]] — the LLM-side decision flow.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — the parent codegen recipe;
+  memory is one of its doctypes.
+- [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]] — sibling recipe-shape doc.

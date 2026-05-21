@@ -42,6 +42,7 @@ TYPE_TO_TEMPLATE = {
     "skill": "v2_doc_skill.org.mustache",
     "product_identity": "v2_doc_product_identity.org.mustache",
     "capture": "v2_doc_capture.org.mustache",
+    "memory": "v2_doc_memory.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {
@@ -55,6 +56,7 @@ DEFAULT_INITIAL_STATE = {
     "skill": "",
     "product_identity": "",
     "capture": "",
+    "memory": "",
 }
 
 # Composition: each type's direct parent type.
@@ -69,7 +71,7 @@ PARENT_OF_TYPE = {
 # Types that don't take a parent (and aren't stateful).
 PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "skill", "product_identity",
-    "capture",
+    "capture", "memory",
 }
 
 
@@ -228,6 +230,10 @@ def parse_args(argv=None):
                         help="Use this UUID for :ID: instead of generating a fresh one. "
                              "Pass an existing document's UUID to preserve org-roam links "
                              "when migrating a file to v2 format.")
+    parser.add_argument("--memory-subtype", default="feedback",
+                        choices=["feedback", "user", "project", "reference"],
+                        help="For --type memory: subtype of memory being stored. "
+                             "Default feedback. Ignored for other types.")
     parser.add_argument("--force", action="store_true",
                         help="Overwrite the output file if it already exists.")
     return parser.parse_args(argv)
@@ -308,6 +314,15 @@ def main(argv=None):
     # Captures derive their bucket (near | far) from the parent-dir name.
     bucket = parent_dir.name if args.type == "capture" else ""
 
+    # Memories carry a subtype (feedback / user / project / reference) that
+    # both lands as a filetag and appears in #+memory_subtype. The literal
+    # "memory" tag is also injected so :memory: is greppable across the set.
+    memory_subtype = args.memory_subtype if args.type == "memory" else ""
+    if memory_subtype:
+        injected = f"memory,{memory_subtype}"
+        args.tags = f"{args.tags},{injected}" if args.tags else injected
+        filetags = build_filetags(args.tags, ancestor_slugs)
+
     variables = {
         "id": new_id,
         "slug": args.slug,
@@ -322,6 +337,7 @@ def main(argv=None):
         "predecessor_id": args.predecessor_id or "",
         "predecessor_title": args.predecessor_title or "",
         "bucket": bucket,
+        "memory_subtype": memory_subtype,
     }
 
     template_path = TEMPLATE_DIR / TYPE_TO_TEMPLATE[args.type]
@@ -345,7 +361,7 @@ def main(argv=None):
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
     elif args.type in ("component", "recipe", "knowledge", "product_identity",
-                       "capture"):
+                       "capture", "memory"):
         # Captures live at agile/product_backlog/<bucket>/<slug>.org. The
         # caller passes --parent-dir as that bucket directory; we validate
         # the bucket name only loosely (audit can tighten later).

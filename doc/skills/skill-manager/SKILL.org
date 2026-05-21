@@ -21,48 +21,45 @@ license: Complete terms in LICENSE.txt
 
 * When to use this skill
 
-When the user asks to create a new Claude Code skill for ORE Studio,
-slim an existing skill into the v2 thin-index shape, or rebuild the
-shipped skill bundle.
+When the user asks to create a new Claude Code skill for ORE Studio, slim an
+existing skill into the v2 thin-index shape, or rebuild the shipped skill
+bundle.
 
 * How to use this skill
 
-1. Confirm the work is /skill-shaped/ — a thin index over recipes and
-   a knowledge document, not the recipes themselves. See =skill= in
-   [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]] for the contract.
-2. Identify the recipes the skill will index. Each operational
-   how-to belongs in its own =how_do_i_<thing>.org= recipe (see
-   [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]]). If a recipe doesn't exist yet,
-   create it first using =--type recipe=.
-3. Generate the skill scaffold with the v2 doc generator
-   (=--type skill=). The slug uses =kebab-case= and doubles as the
-   Claude Code =name:= field. See [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] for
-   the exact invocation.
+1. Confirm the work is /skill-shaped/ — a thin index over recipes and a
+   knowledge document, not the recipes themselves. See =skill= in [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]]
+   for the contract.
+2. Identify the recipes the skill will index. Each operational how-to belongs in
+   its own =how_do_i_<thing>.org= recipe (see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]]). If
+   a recipe doesn't exist yet, create it first using =--type recipe=.
+3. Generate the skill scaffold with the v2 doc generator (=--type skill=). The
+   slug uses =kebab-case= and doubles as the Claude Code =name:= field. See [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How
+   do I create a new v2 doc?]] for the exact invocation.
 4. Fill in the skeleton:
    - =* When to use this skill= — one or two sentences.
    - =* How to use this skill= — numbered steps.
    - =* Recipes= — id-link to every related recipe.
    - =* Reference= — id-link to the knowledge document and the
      component model that back the skill.
-5. Rebuild the shipped bundle to verify the skill exports cleanly —
-   see [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]].
+5. Rebuild the shipped bundle to verify the skill exports cleanly — see [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I
+   deploy the skills?]].
 
 * Recipes
 
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — the master recipe; section
-  /New Claude Code skill/ has the skill-specific invocation.
-- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — rebuild the bundle with the
-  =deploy_skills= cmake target.
-- [[id:4c526597-c668-486b-a4ab-95775c01089a][How do I refresh org-babel results?]] — for skills that include
-  executable blocks whose =#+RESULTS:= you want kept fresh.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — the master recipe; section [[id:6054cc20-5f41-482f-a587-759512577b1d][New Claude Code
+  skill]] has the skill-specific invocation.
+- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — rebuild the bundle with the =deploy_skills=
+  cmake target.
+- [[id:4c526597-c668-486b-a4ab-95775c01089a][How do I refresh org-babel results?]] — for skills that include executable
+  blocks whose =#+RESULTS:= you want kept fresh.
 
 * Reference
 
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]] — the =skill= type entry defines the required
-  sections, the filename convention (=SKILL.org=), and the
-  =kebab-case= slug rule.
-- [[id:0944e150-a70f-47e3-9219-4177d208c9f8][V2 Document Author Skill]] — the umbrella skill for creating any
-  v2 document; refers back here for skill-specific work.
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]] — the =skill= type entry defines the required sections, the
+  filename convention (=SKILL.org=), and the =kebab-case= slug rule.
+- [[id:0944e150-a70f-47e3-9219-4177d208c9f8][V2 Document Author Skill]] — the umbrella skill for creating any v2 document;
+  refers back here for skill-specific work.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the component that hosts the skill template
   (=projects/ores.codegen/library/templates/v2_doc_skill.org.mustache=).
 

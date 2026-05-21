@@ -26,6 +26,8 @@ recipes]] under "Authoring documents".
 - [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — component-specific flow.
 - [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]] — recipe-specific conventions and
   inventory wiring; physically under =recipes/documentation/=.
+- [[id:391b9231-dba8-4e8c-97ab-a75e2b9fea07][How do I create a memory?]] — memory-specific conventions;
+  physically under =recipes/documentation/=.
 
 * Running codegen
 

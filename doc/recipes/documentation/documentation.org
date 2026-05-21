@@ -27,6 +27,7 @@ For the codegen scripts that generate /code/ (not docs) see the
 
 - [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]] — recipe-specific conventions;
   this recipe lives here.
+- [[id:391b9231-dba8-4e8c-97ab-a75e2b9fea07][How do I create a memory?]] — project-scope memory authoring.
 - [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — generic scaffold flow;
   physically under =recipes/codegen/=.
 - [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — component scaffold

@@ -39,14 +39,13 @@ feature for Qt.
 
 In execution order:
 
-- Move Cron widgets to qt.api to fix Windows link error (#706)
-- Fix Windows MSVC export and libpq link (#708)
-- Link OpenSSL for libpq on Windows (#709)
-- Analyse Windows WiX installer size and file-count limits (#710)
-- Clear WiX v3 size and file-count limits (#711)
-- Lift libpq Windows workaround to PostgreSQL imported target (#712)
-- Add opt-in qt feature for Windows users in vcpkg (#717)
-
+- [[id:4097525f-66b6-48d8-9ee1-6297fe896b40][Task: [qt.api] Move Cron widgets to qt.api to fix Windows link error]]
+- [[id:b64c5983-f243-4380-a2db-5e55830ee0af][Task: [qt.api/database] Fix Windows MSVC export and libpq link]]
+- [[id:40c6968a-7d60-44f0-9b14-b2887a0525ab][Task: [database] Link OpenSSL for libpq on Windows]]
+- [[id:f099eeeb-345d-419e-a0a3-f7bccaf4a7b2][Task: [backlog] Analyse Windows WiX installer size and file-count limits]]
+- [[id:25886210-f144-4243-a741-7607243726ce][Task: [cpack/windows] Clear WiX v3 size and file-count limits]]
+- [[id:d07e1889-fd0c-4f0b-ab3f-60d1519d08ba][Task: [cmake] Lift libpq Windows workaround to PostgreSQL imported target]]
+- [[id:9d673cfc-3396-4d61-950f-4888d19f1bd9][Task: [vcpkg] Add opt-in qt feature for Windows users]]
 * Decisions
 
 - /Lift to imported target/ :: the libpq workaround that existed in multiple CMake files was consolidated into a single PostgreSQL imported target definition to avoid drift.

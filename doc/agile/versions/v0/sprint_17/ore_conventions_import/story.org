@@ -38,11 +38,10 @@ convention types, and add the CLI conventions import handler (Phase 3).
 
 In execution order:
 
-- ORE import analysis and zero_convention pilot (#716)
-- deposit_convention: Phase 2 first type (#718)
-- Add full codegen stack for seven ORE convention types (#733)
-- Add conventions import handler (Phase 3) (#734)
-
+- [[id:b923672f-7056-41e1-982d-2d7730e02aae][Task: [refdata] ORE import analysis and zero_convention pilot]]
+- [[id:cdb7ec88-03cc-4456-90ae-6ce6c9bdc9f8][Task: [refdata] deposit_convention: Phase 2 first type]]
+- [[id:8abed069-682b-4c7d-bb6d-192392305495][Task: Add full codegen stack for seven ORE convention types]]
+- [[id:d3f0d24e-d687-42f0-a5b8-cd16e2ad4de1][Task: [cli] Add conventions import handler (Phase 3)]]
 * Decisions
 
 - /zero_convention as pilot/ :: used zero_convention as the first type to

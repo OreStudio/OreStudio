@@ -39,11 +39,10 @@ per-row Retry button).
 
 In execution order:
 
-- Large GLEIF counterparty bundle wiring, tenant reset, upload logging (#704)
-- Per-triplet app_version packages via junction table (#714)
-- Per-platform package uploads via Packages tab (#719)
-- Mop-up: autogen leak, URI scheme, per-row Retry (#722)
-
+- [[id:e8553690-dd3d-4818-8722-cf614f8bca4f][Task: [ores.sql/qt.compute] Large GLEIF counterparty bundle wiring, tenant reset, upload logging]]
+- [[id:602ebc68-1a40-4fe8-b578-fd482a56ee12][Task: [compute] Per-triplet app_version packages via junction table]]
+- [[id:39d52674-0d37-41a5-8c8a-42402b883fd5][Task: [qt,compute] Per-platform package uploads via Packages tab]]
+- [[id:44f7c2af-35ce-4cff-b09a-e90b6024096f][Task: [qt,compute] Mop-up: autogen leak, URI scheme, per-row Retry]]
 * Decisions
 
 - (none significant)

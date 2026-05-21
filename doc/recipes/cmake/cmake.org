@@ -15,6 +15,7 @@ a single how-do-I question with executable steps.
 
 * Recipes
 
+- [[id:49f7da81-adb7-44ed-be7e-06dbfbb32a84][How do I set up a development environment?]]
 - [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]]
 - [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]]
 - [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]]

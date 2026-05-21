@@ -33,6 +33,13 @@ For the codegen scripts that generate /code/ (not docs) see the
 - [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — component scaffold
   flow; physically under =recipes/codegen/=.
 
+* Validation
+
+- [[id:6ac06a04-eb95-4925-8488-c7a47c6a451f][How do I validate component documentation before committing?]] — run
+  =validate_docs.sh= before pushing any component doc change.
+- [[id:23bcac49-325f-4083-b854-87ea747c2abe][How do I audit and fix document version tags?]] — check and stamp
+  =#+version:= tags across the repo.
+
 * See also
 
 - [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — the v2 contract every doc satisfies.

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 23bcac49-325f-4083-b854-87ea747c2abe
+:END:
+#+title: How do I audit and fix document version tags?
+#+description: Run doc_version_audit.py to check, list, or stamp #+version: tags across all org files.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :documentation:version:audit:recipe:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+Every =.org= file in the repo must carry =#+version: 1= (legacy) or
+=#+version: 2= (current). See [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] for the version contract
+and the touch-it-to-port-it rule.
+
+* Question
+
+How do I check which org files are missing a version tag, and how do I fix them?
+
+* Answer
+
+#+begin_src sh :results verbatim
+# Summary: tagged counts and % migrated
+python3 projects/ores.codegen/scripts/doc_version_audit.py
+
+# List remaining v1 files (one path per line)
+python3 projects/ores.codegen/scripts/doc_version_audit.py --list-v1
+
+# CI gate — exits non-zero if any .org file is missing #+version:
+python3 projects/ores.codegen/scripts/doc_version_audit.py --check
+
+# Stamp newly-untagged files as #+version: 1 (idempotent)
+python3 projects/ores.codegen/scripts/doc_version_audit.py --stamp
+#+end_src
+
+Run =--check= before committing. Run =--stamp= after adding new files via
+=generate_v2_doc.sh= (which already stamps them =2=); it only touches files
+with no tag.
+
+To port a v1 file to v2: edit the file to add the full v2 frontmatter
+(=#+type:=, =#+description:=, =#+filetags:=, etc.) per [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]],
+then change =#+version: 1= to =#+version: 2=. The touch-it-to-port-it rule
+means editing /any/ part of a v1 file triggers a full rewrite.
+
+* Script
+
+=projects/ores.codegen/scripts/doc_version_audit.py= — standalone Python
+script; no external dependencies.
+
+* Tested by
+
+CI gate: =validate_docs.sh= calls =doc_version_audit.py --check= as its
+second phase.
+
+* See also
+
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — the v1/v2 contract and touch-it-to-port-it rule.
+- [[id:6ac06a04-eb95-4925-8488-c7a47c6a451f][How do I validate component documentation before committing?]] — full validation including this check.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — scaffold a correctly-tagged v2 doc.

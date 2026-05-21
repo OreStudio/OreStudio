@@ -38,8 +38,7 @@ at service boundaries.
 
 In execution order:
 
-- Migrate 11 party domain types to utility::uuid::tenant_id strong type (#782)
-
+- [[id:7a34c5a4-abd4-4103-b82b-a25f2aef7da3][Task: [refdata] Migrate 11 party domain types to utility::uuid::tenant_id strong type]]
 * Decisions
 
 - /Strong type everywhere/ :: utility::uuid::tenant_id was already used in

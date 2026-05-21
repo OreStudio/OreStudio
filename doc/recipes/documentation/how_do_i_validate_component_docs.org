@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 6ac06a04-eb95-4925-8488-c7a47c6a451f
+:END:
+#+title: How do I validate component documentation before committing?
+#+description: Run validate_docs.sh to check every ores.* component has a well-formed component_overview.org before pushing.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :documentation:validation:component:recipe:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+Run this before committing any change that touches a =modeling/= folder or
+=component_overview.org=. See [[id:6c57a2a1-54f0-4b00-9524-e2a9218e9c09][Component documentation guide]] for the full
+structure contract.
+
+* Question
+
+How do I validate component documentation before committing?
+
+* Answer
+
+From the project root:
+
+#+begin_src sh :results verbatim
+./projects/ores.codegen/validate_docs.sh
+#+end_src
+
+Two checks run in sequence:
+
+1. /Component structure/ — every =projects/ores.*/= has a
+   =modeling/component_overview.org= with the required v2 frontmatter
+   (=:ID:=, =#+type: component=, =#+description:=), required sections, and
+   at least one =.puml= diagram. Exceptions are listed in
+   =projects/ores.codegen/docs_exceptions.txt=.
+2. /Version tagging/ — every =.org= file in the repo carries
+   =#+version: 1= or =#+version: 2= (see
+   [[id:23bcac49-325f-4083-b854-87ea747c2abe][How do I audit and fix document version tags?]]).
+
+Fix any reported errors, then re-run until the script exits =0=.
+
+* Script
+
+=projects/ores.codegen/validate_docs.sh= — wraps the component-structure
+checker and =doc_version_audit.py --check= in sequence.
+
+* Tested by
+
+CI gate on every PR. The check runs as part of the documentation
+validation workflow and the PR goes red if it exits non-zero.
+
+* See also
+
+- [[id:6c57a2a1-54f0-4b00-9524-e2a9218e9c09][Component documentation guide]] — what a correct =component_overview.org= looks like.
+- [[id:23bcac49-325f-4083-b854-87ea747c2abe][How do I audit and fix document version tags?]] — fix missing =#+version:= tags.
+- [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][How do I fix a failing CI check?]] — if the check fails in CI.

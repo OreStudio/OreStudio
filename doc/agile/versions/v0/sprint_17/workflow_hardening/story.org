@@ -39,11 +39,10 @@ latency by offloading DB writes to a thread pool.
 
 In execution order:
 
-- Workflow engine hardening + package renames (#742)
-- ORE import error reporting, step log, and service isolation (#748)
-- Fix shutdown latency: offload DB writes to thread pool (#760)
-- Fix pg_notify pipeline, badge RLS, and system reset (#772)
-
+- [[id:a4bc5ab1-4f4e-4bfc-a8a8-152379e6ce7e][Task: Workflow engine hardening + package renames]]
+- [[id:526f6418-b4f0-4d7a-a29b-7cc67fe10a0e][Task: [workflow] ORE import error reporting, step log, and service isolation]]
+- [[id:2018f6e5-95f7-443b-9406-9d941ce3934a][Task: [controller] Fix shutdown latency: offload DB writes to thread pool]]
+- [[id:24b4ae53-ad80-455c-8a6d-6d4d5c7793a8][Task: Fix pg_notify pipeline, badge RLS, and system reset]]
 * Decisions
 
 - /Thread pool for DB writes/ :: offloading DB writes on shutdown removes the

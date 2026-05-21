@@ -37,11 +37,10 @@ Routine dependency maintenance: vcpkg submodule update, CI action bumps
 
 In execution order:
 
-- Update vcpkg submodule to latest master (#707)
-- Bump hendrikmuhs/ccache-action from 1.2.22 to 1.2.23 (#723)
-- Bump lukka/get-cmake from 4.3.1 to 4.3.2 (#724)
-- Bump egor-tensin/setup-clang from 2.2 to 2.3 (#762)
-
+- [[id:2e213dae-3fc7-4811-aa76-b8e9f844abae][Task: [vcpkg] Update submodule to latest master]]
+- [[id:fc5897ea-d1b6-4081-b3d5-d2d788c38f10][Task: Bump hendrikmuhs/ccache-action from 1.2.22 to 1.2.23]]
+- [[id:784e38a9-a447-4836-95ad-99ac95699c51][Task: Bump lukka/get-cmake from 4.3.1 to 4.3.2]]
+- [[id:c755abb8-8c68-405b-a614-e451a92e8100][Task: Bump egor-tensin/setup-clang from 2.2 to 2.3]]
 * Decisions
 
 - (none)

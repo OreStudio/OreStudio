@@ -38,10 +38,9 @@ forward variants, read path, and deletion of the legacy generic table.
 
 In execution order:
 
-- FX forward import E2E wiring and instrument-bundle API (#715)
-- Equity per-type migration: forwards produce variants; read-side stub deferred (#720)
-- Equity per-type: finish read path + delete legacy generic (#721)
-
+- [[id:f8785fd8-fb24-4cb0-be33-119062158eb8][Task: [trading,qt,sql] FX forward import E2E wiring and instrument-bundle API]]
+- [[id:5de55856-aa28-43dd-9cb5-ada241b12765][Task: [ore,trading,qt] Equity per-type migration: forwards produce variants; read-side stub deferred]]
+- [[id:f9ec0a78-2233-4241-8c18-ba08572057f5][Task: [ore,trading,qt,sql] Equity per-type: finish read path + delete legacy generic]]
 * Decisions
 
 - /Instrument-bundle API/ :: FX forward wiring introduced the instrument-bundle

@@ -40,12 +40,11 @@ device support for psql output redirection.
 
 In execution order:
 
-- Add cross-platform null device support for psql output redirection (#740)
-- Codegen drift remediation: Categories A and B (#747)
-- Codegen drift remediation: template fixes + report_definitions (#752)
-- Replace 4 remaining hand-crafted SQL files with codegen (#756)
-- Fix entity model profile dispatch and composite natural-key indexes (#758)
-
+- [[id:6822f0a2-bb7e-4979-8d4c-af01c1a7ce75][Task: Add cross-platform null device support for psql output redirection]]
+- [[id:79dfd8ce-1eff-4fe5-82e2-9a93afb4b0ed][Task: [sql] Codegen drift remediation: Categories A and B]]
+- [[id:73dc3a27-295d-4834-97bf-a8d6f0e1e4ca][Task: [sql] Codegen drift remediation: template fixes + report_definitions]]
+- [[id:cf4b8da3-0b8f-41f9-a5f4-198efafdd1ff][Task: [sql] Replace 4 remaining hand-crafted SQL files with codegen]]
+- [[id:dc845b65-c7c0-4156-afff-ec968079cfce][Task: [codegen] Fix entity model profile dispatch and composite natural-key indexes]]
 * Decisions
 
 - /Zero tolerance/ :: every SQL file with an existing codegen model must be

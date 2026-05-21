@@ -49,7 +49,7 @@ correctly-formatted title and a structured body?
 
 * Conventions
 
-- /No "Test plan" section/ in the body — per =CLAUDE.md=.
+- /No "Test plan" section/ in the body.
 - /Title format/ is =[COMPONENT] Description=. Multi-component PRs
   use =[a,b,c]=.
 - Body sections may be expanded (Notes, Decisions, Follow-ups), but

@@ -39,9 +39,8 @@ flow.
 
 In execution order:
 
-- DQ publish-from-dq pattern, wizard UX, IAM logging (#767)
-- Complete DQ publish pattern: async PublishDatasetsDialog with WorkflowStepsWidget (#777)
-
+- [[id:7b174d52-e5ba-4a95-ad5d-dd44c59dd808][Task: DQ publish-from-dq pattern, wizard UX, IAM logging]]
+- [[id:61ea68c3-e750-431f-8552-fe6e58a567ef][Task: [dq] Complete DQ publish pattern: async PublishDatasetsDialog with WorkflowStepsWidget]]
 * Decisions
 
 - /Async dialog/ :: the PublishDatasetsDialog polls the workflow engine via

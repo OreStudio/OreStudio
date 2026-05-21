@@ -40,12 +40,11 @@ simplify the menu structure.
 
 In execution order:
 
-- Require JWT for HTTP URL discovery; fail login on missing URL (#713)
-- Currency combos with flag icons, date pickers, and dialog polish (#726)
-- Add login environment filter and recent parties to party picker (#753)
-- Fix wt.service crash, trade dialog UI, geometry persistence, and IAM party cache (#755)
-- Qt menu structure simplification + V2 component documentation (#785)
-
+- [[id:ac9b906b-7650-4df3-93b3-df24de0f00a9][Task: [http,qt] Require JWT for HTTP URL discovery; fail login on missing URL]]
+- [[id:32991e7a-e3a7-40bb-b381-767e16f1d83a][Task: [qt,trading] Currency combos with flag icons, date pickers, and dialog polish]]
+- [[id:fdea8162-00ca-4de8-b1cc-d901d494c2c4][Task: Add login environment filter and recent parties to party picker]]
+- [[id:91acdecb-a296-4b26-a441-ab99bc9b9c08][Task: Fix wt.service crash, trade dialog UI, geometry persistence, and IAM party cache]]
+- [[id:03bfb2e5-5bdd-46ee-9e7e-8a41e130d4b4][Task: Qt menu structure simplification + V2 component documentation]]
 * Decisions
 
 - /Menu simplification/ :: the menu hierarchy was analysed and flattened;

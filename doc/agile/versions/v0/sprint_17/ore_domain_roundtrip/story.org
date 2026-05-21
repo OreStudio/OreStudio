@@ -38,10 +38,9 @@ four ORE XML document types (portfolio, market data, fixings, calendar).
 
 In execution order:
 
-- Add ore roundtrip command and retire Thing 2 coverage check (#730)
-- Add initial ORE domain roundtrip baseline (Thing 3, Phase 5) (#731)
-- Extend roundtrip to all four ORE XML document types (#732)
-
+- [[id:b5d90461-980a-4bbc-9a1c-15be795be9c6][Task: Add ore roundtrip command and retire Thing 2 coverage check]]
+- [[id:ef0b846b-3406-4411-ab08-877514890b66][Task: [ore] Add initial ORE domain roundtrip baseline (Thing 3, Phase 5)]]
+- [[id:9af052ac-0875-4bc5-964b-b4821ed7b161][Task: [ore,cli,scripts] Extend roundtrip to all four ORE XML document types]]
 * Decisions
 
 - /Retire Thing 2/ :: the Thing 2 coverage check was superseded by the Thing 3

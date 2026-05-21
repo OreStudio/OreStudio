@@ -38,9 +38,8 @@ bond/credit/commodity/scripted instruments in typed export_result structs.
 
 In execution order:
 
-- Wrap bond/credit/commodity/scripted in export_result structs (#725)
-- Import/export cleanup: composite legs, pure parser, batch fetches, trade list split (#728)
-
+- [[id:81432fff-48a3-4749-bdbc-34ff88c0362c][Task: [trading,ore,qt] Wrap bond/credit/commodity/scripted in *_export_result structs]]
+- [[id:13255aaf-c142-4a65-a56a-065d456ba952][Task: Import/export cleanup: composite legs, pure parser, batch fetches, trade list split]]
 * Decisions
 
 - /export_result structs/ :: wrapping all instrument types in typed

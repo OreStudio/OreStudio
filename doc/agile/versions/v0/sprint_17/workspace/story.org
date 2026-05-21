@@ -38,11 +38,10 @@ lifecycle operations, and codegen pipeline propagation for workspace_id
 
 In execution order:
 
-- Workspace: bitemporal schema, service layer, UI, and lifecycle operations (#766)
-- Add workspace_id to codegen pipeline (Phases 1-4) (#773)
-- Phase 3+4: controller wiring and Data Workshop UI (#778)
-- Update workspace design plan with Phase 3-4 progress (#783)
-
+- [[id:7ec6a5b1-5e00-44f3-ba8b-8143621667b2][Task: Workspace: bitemporal schema, service layer, UI, and lifecycle operations]]
+- [[id:293a6f5a-5027-41c0-ac4e-00e4140a0f44][Task: Add workspace_id to codegen pipeline (Phases 1-4)]]
+- [[id:15c29ef8-6012-480f-8d11-81701591921e][Task: [workspace] Phase 3+4: controller wiring and Data Workshop UI]]
+- [[id:e56d4ae5-9d91-4943-ac74-f7d9d3a95987][Task: docs: Update workspace design plan with Phase 3–4 progress]]
 * Decisions
 
 - /Bitemporal from day one/ :: the workspace schema uses bitemporal tracking

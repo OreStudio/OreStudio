@@ -39,15 +39,14 @@ sprint history.
 
 In execution order:
 
-- Open Sprint 17 agile bookkeeping (#705)
-- Fix broken org-mode links in identifier-length-cleanup plan (#739)
-- v2 cybernetic information architecture: sprints 01-07 (#771)
-- v2 information architecture: sprints 08-11 (#775)
-- Add :eval never to list-presets sh block to fix site build (#776)
-- v2 information architecture: sprints 12-16; close v0 (#781)
-- Site theme: dark CSS + sidebar TOC + preamble + Pages enablement (#784)
-- Drop site banner, restore index cards, GitHub icon in nav (#787)
-
+- [[id:30e9701e-fc42-4e9a-b486-980ab3a8fe3c][Task: [agile] Open Sprint 17]]
+- [[id:593cd821-11b6-4667-a5b1-66f131e81765][Task: [doc] Fix broken org-mode links in identifier-length-cleanup plan]]
+- [[id:b174a3c8-031f-40f1-ada0-a9cc79983ed8][Task: [doc] v2 cybernetic information architecture (sprints 01-07)]]
+- [[id:5b0c49bf-dbc8-442c-95aa-6ff739928e72][Task: [doc] v2 information architecture (sprints 08-11)]]
+- [[id:0aa8c336-274c-4043-b41f-ecd012d41ae6][Task: [doc] Add :eval never to list-presets sh block to fix site build]]
+- [[id:0dee4230-d7fa-479e-9a22-91093b0eefcc][Task: [doc] v2 information architecture (sprints 12-16); close v0]]
+- [[id:fbe4fc1e-38b7-4840-a1f4-a76294470aec][Task: [doc] Site theme: dark CSS + sidebar TOC + preamble + Pages enablement]]
+- [[id:119d103a-81df-4aad-9106-214080bfcc53][Task: [doc] Drop site banner, restore index cards, GitHub icon in nav]]
 * Decisions
 
 - /All at once/ :: the full sprint history was ported in one sprint rather

@@ -240,6 +240,30 @@ the ancestor slugs from the =--parent-dir= path (following the
   exactly one story slug as a tag; every story must carry exactly one
   sprint slug; every sprint must carry exactly one version slug.
 
+* Version tagging
+
+Every =.org= file in the repo carries one of:
+
+- =#+version: 1= — legacy v1 document, still in its original form.
+- =#+version: 2= — current cybernetic v2 document (also has =#+type:=,
+  =#+description:=, =#+filetags:=, etc. per this spec).
+
+*Rule: touch-it-to-port-it.* When you edit a v1 doc for /any/ reason —
+even a one-line fix — rewrite it fully to v2, satisfying the frontmatter
+contract in =* Standard frontmatter= above. Small fixes still trigger the
+rewrite. This is intentional pressure to clear the v1 backlog.
+
+The audit script enforces this:
+
+#+begin_src sh :results verbatim
+# CI gate — exits non-zero if any .org file is missing #+version:
+python3 projects/ores.codegen/scripts/doc_version_audit.py --check
+#+end_src
+
+See [[id:23bcac49-325f-4083-b854-87ea747c2abe][How do I audit and fix document version tags?]] for the full tooling
+reference, and [[id:6ac06a04-eb95-4925-8488-c7a47c6a451f][How do I validate component documentation before committing?]]
+for the combined pre-commit check.
+
 * Document types
 
 ** task

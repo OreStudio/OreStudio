@@ -41,17 +41,17 @@ coverage of the entities that landed in earlier sprints.
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                                     | State   | Theme                                                                                   |
-|-------------------------------------------+---------+-----------------------------------------------------------------------------------------|
-| [[id:1e7a8abc-1abc-4a37-bdce-1d8dfb9d21ff][Sprint 09 housekeeping]]                    | DONE    | backlog + OCR.                                                                          |
-| [[id:09a8d544-22f3-491a-82a9-306b1aa7c756][CLI entity coverage]]                       | DONE    | list/delete commands for the five entities the CLI was missing; helper-driven refactor. |
-| [[id:e7ddb653-ceaa-4922-b0f9-8bd5393a747e][Engineering hygiene]]                       | DONE    | model refresh + pr-manager skill + valgrind fixes; documentation refactor postponed.    |
-| [[id:8c29b0e8-64ea-4f32-add0-59419769bcd4][Security module]]                           | DONE    | ores.security with RAII OpenSSL.                                                        |
-| [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]]                     | DONE    | ores.connections + Connection Browser MDI + modernised login dialog.                    |
-| [[id:61485635-64ba-4c31-a35b-2f60d7fb41aa][Database naming refactor]]                  | DONE    | ores.risk → ores.refdata; =<component>_<entity>_<suffix>= across the schema.            |
-| [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] | DONE    | the flagship of the sprint.                                                             |
-| [[id:abd80ec4-e7e4-4bb2-b5ae-4fc7f8c46fd3][Qt visual refresh]]                         | DONE    | icon-enum + theme refactor.                                                             |
-| [[id:ef555d10-3fd3-4928-8e43-e63284d7706f][Party database groundwork]]                 | BACKLOG | table structure only; postponed.                                                        |
+| Story                                                                                  | State   | Start      | End        | Theme                                                                                   |
+|----------------------------------------------------------------------------------------+---------+------------+------------+-----------------------------------------------------------------------------------------|
+| [[id:1e7a8abc-1abc-4a37-bdce-1d8dfb9d21ff][Sprint 09 housekeeping]]                    | DONE    |            | 2026-01-20 | backlog + OCR.                                                                          |
+| [[id:09a8d544-22f3-491a-82a9-306b1aa7c756][CLI entity coverage]]                       | DONE    |            | 2026-01-12 | list/delete commands for the five entities the CLI was missing; helper-driven refactor. |
+| [[id:e7ddb653-ceaa-4922-b0f9-8bd5393a747e][Engineering hygiene]]                       | DONE    |            | 2026-01-14 | model refresh + pr-manager skill + valgrind fixes; documentation refactor postponed.    |
+| [[id:8c29b0e8-64ea-4f32-add0-59419769bcd4][Security module]]                           | DONE    |            | 2026-01-13 | ores.security with RAII OpenSSL.                                                        |
+| [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]]                     | DONE    |            | 2026-01-15 | ores.connections + Connection Browser MDI + modernised login dialog.                    |
+| [[id:61485635-64ba-4c31-a35b-2f60d7fb41aa][Database naming refactor]]                  | DONE    |            | 2026-01-14 | ores.risk → ores.refdata; =<component>_<entity>_<suffix>= across the schema.            |
+| [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] | DONE    |            | 2026-01-20 | the flagship of the sprint.                                                             |
+| [[id:abd80ec4-e7e4-4bb2-b5ae-4fc7f8c46fd3][Qt visual refresh]]                         | DONE    |            | 2026-01-20 | icon-enum + theme refactor.                                                             |
+| [[id:ef555d10-3fd3-4928-8e43-e63284d7706f][Party database groundwork]]                 | BACKLOG |            |            | table structure only; postponed.                                                        |
 
 * Retrospective
 

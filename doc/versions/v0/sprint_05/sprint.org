@@ -36,16 +36,16 @@ skills layer.
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                              | State | Theme                                                                                                   |
-|------------------------------------+-------+---------------------------------------------------------------------------------------------------------|
-| [[id:de3eee9f-331e-440c-b62c-abdefe1d87e2][Sprint 05 housekeeping]]             | DONE  | backlog, AI sprint summary, OCR notebooks.                                                              |
-| [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]]       | DONE  | new-sprint skill, release-notes skill, project-planning support.                                        |
-| [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]]           | DONE  | successor of sprint 03's OpenSSL BLOCKED item; sweeps up sqlgen residuals and comms-test leaks.         |
-| [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] | DONE  | successor of sprint 03's POSTPONED bootstrap workflow; adds delete-account and the feature-flags split. |
-| [[id:645df0b4-51b5-40bc-be07-0ab986111653][Infrastructure features]]            | DONE  | detached-mode default; database configuration unified across console and Qt.                            |
-| [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]]                 | DONE  | entity-first command syntax across CLI and REPL; synchronous REPL sockets.                              |
-| [[id:9836e113-dea9-4605-ae1b-9b0c955b6b73][Currencies UI polish]]               | DONE  | JSON parsing, merged save_currency message, XML-import dialog.                                          |
-| [[id:3a763afb-22f3-4e9a-b121-a71997221c3f][Documentation and diagrams]]         | DONE  | UML refresh after the reshape; per-component diagram links.                                             |
+| Story                                                                           | State | Start      | End        | Theme                                                                                                   |
+|---------------------------------------------------------------------------------+-------+------------+------------+---------------------------------------------------------------------------------------------------------|
+| [[id:de3eee9f-331e-440c-b62c-abdefe1d87e2][Sprint 05 housekeeping]]             | DONE  |            | 2025-12-01 | backlog, AI sprint summary, OCR notebooks.                                                              |
+| [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]]       | DONE  |            | 2025-11-17 | new-sprint skill, release-notes skill, project-planning support.                                        |
+| [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]]           | DONE  |            | 2025-11-25 | successor of sprint 03's OpenSSL BLOCKED item; sweeps up sqlgen residuals and comms-test leaks.         |
+| [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] | DONE  |            | 2025-11-22 | successor of sprint 03's POSTPONED bootstrap workflow; adds delete-account and the feature-flags split. |
+| [[id:645df0b4-51b5-40bc-be07-0ab986111653][Infrastructure features]]            | DONE  |            | 2025-11-20 | detached-mode default; database configuration unified across console and Qt.                            |
+| [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]]                 | DONE  |            | 2025-11-25 | entity-first command syntax across CLI and REPL; synchronous REPL sockets.                              |
+| [[id:9836e113-dea9-4605-ae1b-9b0c955b6b73][Currencies UI polish]]               | DONE  |            | 2025-11-28 | JSON parsing, merged save_currency message, XML-import dialog.                                          |
+| [[id:3a763afb-22f3-4e9a-b121-a71997221c3f][Documentation and diagrams]]         | DONE  |            | 2025-12-01 | UML refresh after the reshape; per-component diagram links.                                             |
 
 * Retrospective
 

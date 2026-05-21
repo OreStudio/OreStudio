@@ -41,16 +41,16 @@ later sprints with the codegen-driven approach.)
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                               | State | Theme                                                                                                      |
-|-------------------------------------+-------+------------------------------------------------------------------------------------------------------------|
-| [[id:193a779f-a313-414c-9236-d075b84a2f67][Sprint 06 housekeeping]]              | DONE  | backlog, AI summary via the skill, OCR.                                                                    |
-| [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]]         | DONE  | successor of sprint 05's authentication bootstrap; lands session cancellation + logout + client heartbeat. |
-| [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]]                    | DONE  | split protocol, handshake service, multi-thread coverage, retry-with-give-up.                              |
-| [[id:55c35962-46a0-4353-93ad-fc15bf847c7e][Variability service]]                 | DONE  | feature-flag service end-to-end.                                                                           |
-| [[id:d9c5fcef-da11-45da-b7fb-2a7b62c8aa0b][Logging refactor (std::string_view)]] | DONE  | migration + fallout.                                                                                       |
-| [[id:50bb2acb-5687-4bad-b03a-12af606e8eab][Bootstrap polish]]                    | DONE  | context to DB, drop bootstrap flag, manifest password-validation knob.                                     |
-| [[id:06c56ca2-9846-4dc9-b2f3-271bf4f084ce][CLI entity syntax follow-up]]         | DONE  | successor of sprint 05's CLI/REPL reshape; mops up snags and adds top-level shell login/logout.            |
-| [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]]             | DONE  | event bus, system tray, past-timepoint faker.                                                              |
+| Story                                                                            | State | Start      | End        | Theme                                                                                                      |
+|----------------------------------------------------------------------------------+-------+------------+------------+------------------------------------------------------------------------------------------------------------|
+| [[id:193a779f-a313-414c-9236-d075b84a2f67][Sprint 06 housekeeping]]              | DONE  |            | 2025-12-15 | backlog, AI summary via the skill, OCR.                                                                    |
+| [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]]         | DONE  |            | 2025-12-04 | successor of sprint 05's authentication bootstrap; lands session cancellation + logout + client heartbeat. |
+| [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]]                    | DONE  |            | 2025-12-10 | split protocol, handshake service, multi-thread coverage, retry-with-give-up.                              |
+| [[id:55c35962-46a0-4353-93ad-fc15bf847c7e][Variability service]]                 | DONE  |            | 2025-12-08 | feature-flag service end-to-end.                                                                           |
+| [[id:d9c5fcef-da11-45da-b7fb-2a7b62c8aa0b][Logging refactor (std::string_view)]] | DONE  |            | 2025-12-12 | migration + fallout.                                                                                       |
+| [[id:50bb2acb-5687-4bad-b03a-12af606e8eab][Bootstrap polish]]                    | DONE  |            | 2025-12-13 | context to DB, drop bootstrap flag, manifest password-validation knob.                                     |
+| [[id:06c56ca2-9846-4dc9-b2f3-271bf4f084ce][CLI entity syntax follow-up]]         | DONE  |            | 2025-12-13 | successor of sprint 05's CLI/REPL reshape; mops up snags and adds top-level shell login/logout.            |
+| [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]]             | DONE  |            | 2025-12-15 | event bus, system tray, past-timepoint faker.                                                              |
 
 * Retrospective
 

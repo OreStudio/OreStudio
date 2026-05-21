@@ -41,24 +41,24 @@ portfolios / trades.
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                                           | State   | Theme                                                                         |
-|-------------------------------------------------+---------+-------------------------------------------------------------------------------|
-| [[id:90161bf2-67f0-4542-899c-5d844a3f6f95][Sprint 13 housekeeping]]                          | DONE    | backlog + two-step release notes.                                             |
-| [[id:6ac2981b-ba0a-4916-a2c1-6b5a816a9148][FSM consolidation into DQ]]                       | DONE    | moves FSM under DQ. Continues from sprint 12 fsm_and_trade_support.           |
-| [[id:ec6d8e8d-4421-412a-9331-9bba5b542d54][Detail dialogs modernisation]]                    | DONE    | tabbed dialogs + toolbar removal.                                             |
-| [[id:7b926ace-57f6-414d-8f3e-568175041f87][Provenance and actor]]                            | DONE    | performed_by / modified_by stamping tightened; current_actor GUC.             |
-| [[id:6f799af2-9844-4cb6-9e9c-a57c06ecbf23][Session telemetry plotting]]                      | DONE    | RTT + bytes hypertable + QChartView.                                          |
-| [[id:956fcd0e-41c3-46e4-9895-b64b4c143e6d][Account-party management and login]]              | DONE    | multi-party login picker. Continues from sprint 12 party_level_rls_isolation. |
-| [[id:7ae49d47-624c-41c6-8c07-cdbeb71d85ec][Refdata taxonomy work]]                           | DONE    | rounding type, currency taxonomy split, asset-class naming.                   |
-| [[id:19ee14c8-952d-42d6-9ae1-ecea45a5efcf][Business centre polish]]                          | DONE    | city_name + flag fixes.                                                       |
-| [[id:df3b299e-7fed-4411-b257-125ed35c3a9e][Party isolation for books / portfolios / trades]] | DONE    | RLS extended.                                                                 |
-| [[id:ee315a6f-8933-4738-ae3f-e63cbbf57f03][Connection browser environments]]                 | DONE    | environment + connection split.                                               |
-| [[id:8a04de16-6bdd-4696-9f04-122c92692d59][Portfolio explorer]]                              | DONE    | combined tree + trade table.                                                  |
-| [[id:68c577a4-b33e-47cb-953f-f3d90a4440d6][Trade import mapping analysis]]                   | DONE    | design pass.                                                                  |
-| [[id:f8caa6ce-a36f-464c-a9a2-058e796a0f81][Trade import mapping dialog]]                     | BACKLOG | POSTPONED.                                                                    |
-| [[id:a0b6c877-2fad-457a-b0c2-000d3f707a5b][Scheduling subsystem]]                            | DONE    | protocol + lib + queue.                                                       |
-| [[id:0251593a-0d85-49c4-aee1-7aac673978b7][Batch operations]]                                | DONE    | atomic save + delete.                                                         |
-| [[id:241a6de6-8978-4daf-a052-7e1cf06a8fc8][Party-level refdata restrictions]]                | BACKLOG | BACKLOG framework only.                                                       |
+| Story                                                                                        | State   | Start      | End        | Theme                                                                         |
+|----------------------------------------------------------------------------------------------+---------+------------+------------+-------------------------------------------------------------------------------|
+| [[id:90161bf2-67f0-4542-899c-5d844a3f6f95][Sprint 13 housekeeping]]                          | DONE    |            | 2026-02-24 | backlog + two-step release notes.                                             |
+| [[id:6ac2981b-ba0a-4916-a2c1-6b5a816a9148][FSM consolidation into DQ]]                       | DONE    |            | 2026-02-20 | moves FSM under DQ. Continues from sprint 12 fsm_and_trade_support.           |
+| [[id:ec6d8e8d-4421-412a-9331-9bba5b542d54][Detail dialogs modernisation]]                    | DONE    |            | 2026-02-25 | tabbed dialogs + toolbar removal.                                             |
+| [[id:7b926ace-57f6-414d-8f3e-568175041f87][Provenance and actor]]                            | DONE    |            | 2026-02-21 | performed_by / modified_by stamping tightened; current_actor GUC.             |
+| [[id:6f799af2-9844-4cb6-9e9c-a57c06ecbf23][Session telemetry plotting]]                      | DONE    |            | 2026-02-22 | RTT + bytes hypertable + QChartView.                                          |
+| [[id:956fcd0e-41c3-46e4-9895-b64b4c143e6d][Account-party management and login]]              | DONE    |            | 2026-02-23 | multi-party login picker. Continues from sprint 12 party_level_rls_isolation. |
+| [[id:7ae49d47-624c-41c6-8c07-cdbeb71d85ec][Refdata taxonomy work]]                           | DONE    |            | 2026-02-24 | rounding type, currency taxonomy split, asset-class naming.                   |
+| [[id:19ee14c8-952d-42d6-9ae1-ecea45a5efcf][Business centre polish]]                          | DONE    |            | 2026-02-22 | city_name + flag fixes.                                                       |
+| [[id:df3b299e-7fed-4411-b257-125ed35c3a9e][Party isolation for books / portfolios / trades]] | DONE    |            | 2026-02-24 | RLS extended.                                                                 |
+| [[id:ee315a6f-8933-4738-ae3f-e63cbbf57f03][Connection browser environments]]                 | DONE    |            | 2026-02-24 | environment + connection split.                                               |
+| [[id:8a04de16-6bdd-4696-9f04-122c92692d59][Portfolio explorer]]                              | DONE    |            | 2026-02-25 | combined tree + trade table.                                                  |
+| [[id:68c577a4-b33e-47cb-953f-f3d90a4440d6][Trade import mapping analysis]]                   | DONE    |            | 2026-02-25 | design pass.                                                                  |
+| [[id:f8caa6ce-a36f-464c-a9a2-058e796a0f81][Trade import mapping dialog]]                     | BACKLOG |            |            | POSTPONED.                                                                    |
+| [[id:a0b6c877-2fad-457a-b0c2-000d3f707a5b][Scheduling subsystem]]                            | DONE    |            | 2026-02-27 | protocol + lib + queue.                                                       |
+| [[id:0251593a-0d85-49c4-aee1-7aac673978b7][Batch operations]]                                | DONE    |            | 2026-02-28 | atomic save + delete.                                                         |
+| [[id:241a6de6-8978-4daf-a052-7e1cf06a8fc8][Party-level refdata restrictions]]                | BACKLOG |            |            | BACKLOG framework only.                                                       |
 
 * Retrospective
 

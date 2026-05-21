@@ -40,20 +40,20 @@ Wizard that uses them.
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                                 | State   | Theme                                                                                                               |
-|---------------------------------------+---------+---------------------------------------------------------------------------------------------------------------------|
-| [[id:61f6ab0b-bb2e-43e7-9735-447a7e3d55de][Sprint 10 housekeeping]]                | DONE    | backlog + OCR + misspell-CI fix.                                                                                    |
-| [[id:49a3b815-b5e9-4b3d-9213-100bf96c266d][Codegen infrastructure]]                | DONE    | simple in-tree codegen; domain-types SQL; ER diagram from SQL.                                                      |
-| [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] | DONE    | 13 types via FpML codegen + DQ artefact workflow; GLEIF subset. Continues from sprint 09 party-database groundwork. |
-| [[id:2a572d8a-644c-40d9-87d2-7a49a9c07d1b][Image cache polish]]                    | DONE    | reload on new datasets; incremental loading via =modified_since=.                                                   |
-| [[id:ebc22454-356d-4b6c-a3be-e8edfd858fca][External data reorganisation]]          | DONE    | domain-specific subdirectories + manifests; coding schemes via DQ pipeline.                                         |
-| [[id:38b6dddf-c02b-4072-b599-41ab3bcc9c28][SQL directory refactor]]                | DONE    | create/, drop/, populate/ by component; safer teardown; admin naming convention.                                    |
-| [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]]                       | DONE    | =ores.ore= + xsdcpp + Windows MSVC fix.                                                                             |
-| [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]]                         | DONE    | layer cleanup, rounding types, icon labels, mapping artefact.                                                       |
-| [[id:2d3d3854-748e-4df7-8bbe-e6498c598c2d][Dataset bundles and provisioning]]      | DONE    | metadata/production schema split, bundles, System Provisioner Wizard.                                               |
-| [[id:75442a55-dbbb-4bc1-875e-981679e05621][Librarian polish]]                      | DONE    | sprint-09 PR-review fix-up.                                                                                         |
-| [[id:4c7782d0-1382-4fed-a9f3-c209a45caf7e][FPML export and import groundwork]]     | BACKLOG | =ores.fpml= scaffolded; export/import postponed.                                                                    |
-| [[id:85f8dc6c-1acd-4610-a877-b0fdba871254][Compute grid analysis (BOINC-based)]]   | BACKLOG | design pass; implementation deferred.                                                                               |
+| Story                                                                              | State   | Start      | End        | Theme                                                                                                               |
+|------------------------------------------------------------------------------------+---------+------------+------------+---------------------------------------------------------------------------------------------------------------------|
+| [[id:61f6ab0b-bb2e-43e7-9735-447a7e3d55de][Sprint 10 housekeeping]]                | DONE    |            | 2026-01-27 | backlog + OCR + misspell-CI fix.                                                                                    |
+| [[id:49a3b815-b5e9-4b3d-9213-100bf96c266d][Codegen infrastructure]]                | DONE    |            | 2026-01-24 | simple in-tree codegen; domain-types SQL; ER diagram from SQL.                                                      |
+| [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] | DONE    |            | 2026-01-23 | 13 types via FpML codegen + DQ artefact workflow; GLEIF subset. Continues from sprint 09 party-database groundwork. |
+| [[id:2a572d8a-644c-40d9-87d2-7a49a9c07d1b][Image cache polish]]                    | DONE    |            | 2026-01-23 | reload on new datasets; incremental loading via =modified_since=.                                                   |
+| [[id:ebc22454-356d-4b6c-a3be-e8edfd858fca][External data reorganisation]]          | DONE    |            | 2026-01-24 | domain-specific subdirectories + manifests; coding schemes via DQ pipeline.                                         |
+| [[id:38b6dddf-c02b-4072-b599-41ab3bcc9c28][SQL directory refactor]]                | DONE    |            | 2026-01-24 | create/, drop/, populate/ by component; safer teardown; admin naming convention.                                    |
+| [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]]                       | DONE    |            | 2026-01-27 | =ores.ore= + xsdcpp + Windows MSVC fix.                                                                             |
+| [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]]                         | DONE    |            | 2026-01-26 | layer cleanup, rounding types, icon labels, mapping artefact.                                                       |
+| [[id:2d3d3854-748e-4df7-8bbe-e6498c598c2d][Dataset bundles and provisioning]]      | DONE    |            | 2026-01-27 | metadata/production schema split, bundles, System Provisioner Wizard.                                               |
+| [[id:75442a55-dbbb-4bc1-875e-981679e05621][Librarian polish]]                      | DONE    |            | 2026-01-27 | sprint-09 PR-review fix-up.                                                                                         |
+| [[id:4c7782d0-1382-4fed-a9f3-c209a45caf7e][FPML export and import groundwork]]     | BACKLOG |            |            | =ores.fpml= scaffolded; export/import postponed.                                                                    |
+| [[id:85f8dc6c-1acd-4610-a877-b0fdba871254][Compute grid analysis (BOINC-based)]]   | BACKLOG |            |            | design pass; implementation deferred.                                                                               |
 
 * Retrospective
 

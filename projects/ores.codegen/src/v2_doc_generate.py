@@ -136,7 +136,14 @@ def read_parent_info(parent_file):
         if stripped.startswith(":ID:") and "id" not in info:
             info["id"] = stripped[len(":ID:"):].strip()
         elif stripped.lower().startswith("#+title:") and "title" not in info:
-            info["title"] = stripped[len("#+title:"):].strip()
+            title = stripped[len("#+title:"):].strip()
+            # Parent titles in tasks/stories carry a "Task: " / "Story: "
+            # prefix; strip it so links read naturally in child docs.
+            for prefix in ("Task:", "Story:"):
+                if title.lower().startswith(prefix.lower()):
+                    title = title[len(prefix):].strip()
+                    break
+            info["title"] = title
         if "id" in info and "title" in info:
             break
     return info
@@ -257,6 +264,14 @@ def main(argv=None):
     args.title = fill_required("title", args.title, prompt_label="Title")
     args.description = fill_required("description", args.description,
                                      prompt_label="Description (one-liner)")
+
+    # Tasks and stories carry a "Task: " / "Story: " prefix in their
+    # #+title so v1 and v2 docs are easy to tell apart at a glance.
+    # Only add the prefix when not already present.
+    if args.type == "task" and not args.title.lower().startswith("task:"):
+        args.title = "Task: " + args.title
+    elif args.type == "story" and not args.title.lower().startswith("story:"):
+        args.title = "Story: " + args.title
 
     # Optional fields.
     args.tags = fill_optional("tags", args.tags,

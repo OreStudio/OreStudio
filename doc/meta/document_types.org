@@ -88,40 +88,41 @@ Active states are left of the bar; terminal states are right.
 
 ** Where the TODO state lives
 
-On the =* Status= headline of every stateful document:
+Every stateful document has a =* Status= section formatted as a table.
+The state lives in the =State= row (greppable), and the row order is
+fixed: =State / Parent <type> / Now / Waiting on / Next / Last touched=.
+Versions are top-level so the =Parent= row is dropped.
 
 #+begin_src org
-,* STARTED Status
-,:PROPERTIES:
-,:LAST_REPEAT: ...
-,:END:
+,* Status
 ,
-,** Now
-,Implementing the XML serialiser; tests passing for ISO 4217 codes.
-,
-,** Waiting on
-,None.
-,
-,** Next
-,Add the round-trip test for unknown currency codes.
-,
-,** Last touched
-,2026-05-18 14:32
+,| Field        | Value                              |
+,|--------------+------------------------------------|
+,| State        | STARTED                            |
+,| Parent story | [[id:<UUID>][Currencies end-to-end]] |
+,| Now          | Implementing the XML serialiser.   |
+,| Waiting on   | Nothing.                           |
+,| Next         | Add round-trip tests.              |
+,| Last touched | 2026-05-21                         |
 #+end_src
 
-The =* Status= heading carries the TODO keyword; the subheadings carry
-the operational detail.
+The Status section sits /after/ the document's "what is this?" section
+(=* Goal= for tasks/stories, =* Mission= for sprints, =* Identity= for
+versions) so the reader knows what the doc is before reading its
+state. Operational detail of in-flight work goes in =Now / Waiting on
+/ Next / Last touched= and is updated on every agent or orchestrator
+action.
 
 ** Why state-on-headline, not state-in-folder
 
 - /Shallower trees/. The folder structure mirrors composition only
   (version → sprint → story → task), no state subdivisions.
 - /Native org-mode tooling/. Org-agenda, the org-mode mode line, and
-  TODO cycling (=C-c C-t=) all work out of the box.
-- /Atomic transitions/. Changing state is one edit (or one keystroke in
-  emacs); the diff is small and the LOGBOOK auto-records when.
-- /State-by-grep/. =grep -lR "^\* STARTED Status"= finds every
-  in-flight task in seconds.
+  TODO cycling (=C-c C-t=) all work out of the box on the state of
+  the =* Status= heading.
+- /Atomic transitions/. Changing state is one edit; the diff is small.
+- /State-by-grep/. =grep -lR "^| State.*STARTED"= finds every
+  in-flight document in seconds.
 
 * Linking between documents
 
@@ -136,10 +137,15 @@ standard org-mode but invisible to org-roam, so we do not use them.
 
 Conventions:
 
-- Every document carries at least one outbound link to its direct parent
+- Every stateful document carries an outbound link to its direct parent
   (a task to its story, a story to its sprint, a sprint to its version).
-- Parent links live in the document's =* Context= or top-level
-  introduction so they are visible at a glance.
+  The link sits in the =Parent <type>= row of the =* Status= table /and/
+  in the top-of-page blurb, both pointing at the same =:ID:=.
+- Every stateful document opens with a one-sentence /blurb/ above the
+  first section that hyperlinks the type word (=task=, =story=, =sprint=,
+  =version=) to the glossary entry for that type. The blurb is the
+  reader's orientation: what kind of document this is and who its
+  parent is.
 - Sibling links (related tasks, related stories) live in a =* See also=
   section or inline as the prose calls for them.
 
@@ -243,6 +249,8 @@ the ancestor slugs from the =--parent-dir= path (following the
   leaves; only composition nodes (story, sprint, version) get
   folders. The =task_= prefix sorts tasks together (after =story.org=)
   and makes their type obvious in =ls=.
+- Title :: =Task: <human readable title>=. The =Task: = prefix is
+  added by the codegen automatically when the type is =task=.
 - Level :: =s1=
 - Size constraint :: one PR; soft limits ≤ ~10 files changed, ≤ ~400 LOC
   delta, one coherent concept. Tasks exceeding this should be split or
@@ -251,6 +259,8 @@ the ancestor slugs from the =--parent-dir= path (following the
   (screenshots, attached data), promote that single task to a folder
   ahead of time (=<task_slug>/<task_slug>.org= plus the supporting
   files). The default remains the flat file.
+- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
+  =--type task= to the codegen.
 
 *** Task frontmatter (additions on top of the standard set)
 
@@ -272,13 +282,16 @@ These fields make in-flight work greppable:
 
 *** Task sections
 
-Required, in this order. The =* Status= section answers /what is
-happening right now/; the others describe the work itself.
+Required, in this order. The blurb tells the reader what this is; the
+=* Goal= says what success looks like; the =* Status= table gives the
+operational state.
 
-- =* Status= — TODO state on the headline (DISCOVERED / BACKLOG /
-  STARTED / BLOCKED / DONE / ABANDONED). See below.
+- /Blurb/ (one paragraph, no heading) — opens with =This page documents
+  a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the
+  [[id:<parent_id>][<parent_title>]] story.=
 - =* Goal= — one paragraph: what user-visible-or-internal change does
   this task produce.
+- =* Status= — table; see /The Status table/ below.
 - =* Acceptance= — bulleted criteria. A task is done when these all
   hold.
 - =* Plan= — transient implementation strategy. Written when the agent
@@ -290,60 +303,55 @@ happening right now/; the others describe the work itself.
 - =* Result= — filled when task closes: PR link, commit hashes,
   follow-up tasks filed.
 
-The parent story link is /not/ a section — it lives as a one-line prose
-=Parent story: [[id:...][...]]= immediately after the frontmatter, so it
-is the first thing a reader sees.
-
-*** The =* Status= headline — TODO + live channel
-
-The =* Status= headline carries the TODO state for the task. Its
-subheadings give the operational detail.
+*** The Status table — state + parent link + live channel
 
 #+begin_src org
-,* STARTED Status
+,* Status
 ,
-,** Now
-,Implementing the XML serialiser; tests passing for ISO 4217 codes.
-,
-,** Waiting on
-,None.
-,
-,** Next
-,Add the round-trip test for unknown currency codes.
-,
-,** Last touched
-,2026-05-18 14:32
+,| Field        | Value                                |
+,|--------------+--------------------------------------|
+,| State        | STARTED                              |
+,| Parent story | [[id:<UUID>][Currencies end-to-end]] |
+,| Now          | Implementing the XML serialiser.     |
+,| Waiting on   | Nothing.                             |
+,| Next         | Add the round-trip test.             |
+,| Last touched | 2026-05-21                           |
 #+end_src
 
-State transitions are TODO changes (=C-c C-t= in emacs, or hand-edit
-the keyword). Org auto-stamps =CLOSED:= on transition to a terminal
-state.
+State transitions overwrite the =State= row (=DISCOVERED= / =BACKLOG=
+/ =STARTED= / =BLOCKED= / =DONE= / =ABANDONED=). The row value is
+greppable: =grep -lR "^| State .*STARTED"=.
 
-For =DONE= and =ABANDONED= tasks, the subheadings reduce: =** Now=
-becomes a single-sentence epitaph (=Completed 2024-07-12.=), =Waiting
-on= and =Next= are empty, =Last touched= equals the closing date.
+For =DONE= and =ABANDONED= tasks, =Now= becomes a single-sentence
+epitaph (=Completed 2024-07-12.=), =Waiting on= / =Next= are =None.=,
+=Last touched= equals the closing date.
 
 *Heartbeat rule.* Every time an orchestrator or agent acts on a task,
-it must update the Status subheadings and =#+updated= before yielding
+it must update the Status rows and =#+updated= before yielding
 control. Audit flags tasks in =STARTED= or =BLOCKED= whose =#+updated=
 has gone stale.
 
 ** story
 
 - Folder :: =versions/<v>/<sprint>/<story_slug>/story.org=
+- Title :: =Story: <human readable title>=. The =Story: = prefix is
+  added by the codegen automatically when the type is =story=.
 - Level :: =s2=
 - TODO vocabulary :: =BACKLOG STARTED | DONE ABANDONED= (no DISCOVERED or
   BLOCKED at story level).
-- Required sections ::
-  - =* Status= — TODO state on the headline; subheadings as for tasks.
+- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
+  =--type story= to the codegen.
+- Required sections (in this order) ::
+  - /Blurb/ — opens with =This page documents a
+    [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in
+    [[id:<parent_id>][<parent_title>]].=
   - =* Goal= — the user-visible outcome.
+  - =* Status= — table; rows =State / Parent sprint / Now / Waiting on
+    / Next / Last touched=.
   - =* Acceptance= — when is this story done?
   - =* Tasks= — id-links to its child tasks, in execution order.
   - =* Decisions= — distilled from plans as tasks land.
   - =* Out of scope= — what we explicitly /chose/ not to include.
-
-The parent sprint link sits as a one-line =Parent sprint: [[id:...][...]]= after
-the frontmatter.
 
 *** Cross-sprint stories — predecessor and successor
 
@@ -377,14 +385,25 @@ matching =#+successor= pointing back.
 ** sprint
 
 - Folder :: =versions/<v>/<sprint_NN>/sprint.org=
+- Title :: =Sprint NN= — no prefix (the word "Sprint" is already in the
+  title).
 - Level :: =s3=
 - TODO vocabulary :: =STARTED | DONE= (sprints don't go through BACKLOG;
   they exist when they exist, and lexicographic order tells you which
   is current).
-- Required sections ::
-  - =* Status= — TODO state on the headline.
-  - =* Mission= — one sentence.
-  - =* Stories= — id-links to the sprint's stories, in priority order.
+- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
+  =--type sprint= to the codegen.
+- Required sections (in this order) ::
+  - /Blurb/ — opens with =This page documents a
+    [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint NN*) of
+    ORE Studio. ... see [[id:<parent_version_id>][<parent_version_title>]].=
+  - =* Mission= — one or two paragraphs / bullets: what this sprint
+    exists to achieve.
+  - =* Status= — table; rows =State / Parent version / Now / Waiting on
+    / Next / Last touched=.
+  - =* Stories= — table with class =hug-leading=; columns =Story /
+    State / Start / End / Theme=. Story column carries the
+    id-link to each child story.
   - =* Retrospective= — filled at close.
 
 A sprint folder may also contain an =inbox/= subfolder for untriaged
@@ -394,14 +413,24 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
 ** version
 
 - Folder :: =versions/<v>/=
+- Title :: =Version N= — no prefix (the word "Version" is already in
+  the title).
 - Level :: =s4=
 - TODO vocabulary :: =STARTED | RELEASED= (one in flight at a time;
   the rest are released).
-- Required sections ::
-  - =* Status= — TODO state on the headline.
+- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
+  =--type version= to the codegen.
+- Required sections (in this order) ::
+  - /Blurb/ — opens with =This page documents the
+    [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]] *Version N* of
+    ORE Studio. ... see [[id:436fb40c-422a-465b-b949-e9f0760820c1][product identity]].=
   - =* Identity= — what makes this version distinct.
   - =* Mission= — what the version is for.
-  - =* Sprints= — id-links to its sprints, in order.
+  - =* Definition of done= — when the version can close.
+  - =* Status= — table; rows =State / Now / Waiting on / Next / Last
+    touched= (no Parent row — versions are top-level).
+  - =* Sprints= — table with class =hug-leading=; columns =Sprint /
+    Start / End / Theme=.
   - =* Release scope= — what is in, what is deferred.
 
 ** product_identity
@@ -412,6 +441,13 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
   - =product_vision.org= — what ORE Studio is.
   - =out_of_scope.org= — what ORE Studio is not. Equally important.
 - Not stateful — no TODO. These documents are durable.
+- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
+  =--type product_identity= to the codegen.
+- Required sections ::
+  - =* What this is= — the durable statement.
+  - =* What this is not= — explicit boundaries.
+  - =* Relationship to versions= — how identity relates to the
+    version tree.
 
 ** function
 
@@ -433,6 +469,8 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
 - Filename :: starts with =how_do_i_= or similar NLP question phrasing.
 - Not stateful by TODO, but audit may set a =:stale:= tag when the
   script fails.
+- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
+  =--type recipe= to the codegen.
 - Required sections ::
   - =* Question= — the NLP question.
   - =* Answer= — the steps. Shell commands inside an =* Answer= belong
@@ -455,6 +493,7 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
   component, not a full reference. Deeper material (architecture,
   internals, design decisions) lives in linked =knowledge= documents
   alongside the code.
+- How to create :: see [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]]
 - Required sections ::
   - =* Summary= — three to five sentences: what the component does
     and why it exists.
@@ -475,6 +514,8 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
 - Slug :: =kebab-case= (matches existing =cmake-runner=, =v2-doc-author=).
   The slug doubles as the Claude Code skill =name:=.
 - Not stateful — no TODO.
+- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
+  =--type skill= to the codegen.
 - Required sections ::
   - A =#+begin_export markdown ... #+end_export= block with
     =name:= / =description:= / =license:= (Claude Code metadata).
@@ -498,6 +539,8 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
     component's code) lives co-located at =projects/<comp>/docs/=.
 - Level :: =cross=
 - Not stateful — no TODO. Audit may flag stale facts via a tag.
+- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
+  =--type knowledge= to the codegen.
 - Required sections ::
   - =* Summary= — 3–5 sentence overview.
   - =* Detail= — the content.

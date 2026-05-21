@@ -14,29 +14,26 @@
 #+predecessor: {{predecessor_id}}
 {{/predecessor_id}}
 
-Parent sprint: [[id:{{parent_id}}][{{parent_title}}]].
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:{{parent_id}}][{{parent_title}}]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 {{#predecessor_id}}
 
 Continued from: [[id:{{predecessor_id}}][{{predecessor_title}}]].
 {{/predecessor_id}}
 
-* {{state}} Status
-
-** Now
-Not yet started.
-
-** Waiting on
-Nothing.
-
-** Next
-Break the story into tasks.
-
-** Last touched
-{{date}}
-
 * Goal
 
 (Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | {{state}}                              |
+| Parent sprint | [[id:{{parent_id}}][{{parent_title}}]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | {{date}}                               |
 
 * Acceptance
 

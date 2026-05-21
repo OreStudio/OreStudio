@@ -41,23 +41,23 @@ FX, bond, credit).
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                                       | State | Theme                                                                   |
-|---------------------------------------------+-------+-------------------------------------------------------------------------|
-| [[id:df3c08d8-a11e-4e2e-908a-5bd0ddc29626][Sprint 15 housekeeping]]                      | DONE  | backlog refinement.                                                     |
-| [[id:fd12bbd4-bd95-454a-a636-5f22c928c4d1][Fix ORE import bugs]]                         | DONE  | real-data shakedown of the sprint-14 wizard.                            |
-| [[id:7b5e0c11-8c1f-4d91-adea-2596197cd0d4][Loading indicator on entity list windows]]    | DONE  | UI consistency.                                                         |
-| [[id:bfac3a00-1684-4546-b10b-5ba358b5a867][Unified system_settings]]                     | DONE  | replace feature_flags.                                                  |
-| [[id:3ed3ca4d-8709-4f70-a1a8-1ff287adb8bf][Compute grid implementation]]                 | DONE  | the sprint's mission. Continues from sprint 10 compute_grid_analysis.   |
-| [[id:679da033-934a-4330-951f-5016675cc8af][Compute grid observability]]                  | DONE  | telemetry + RAG dashboard.                                              |
-| [[id:169b15a7-442b-44fd-8e54-436fec8340a6][JWT refresh]]                                 | DONE  | closes the loop on sprint-14 RS256.                                     |
-| [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]]           | DONE  | real-data testing + loading-lifecycle refactor.                         |
-| [[id:84fca31b-b6a8-444f-9ea9-33515d50645f][NATS service discovery for HTTP base URL]]    | DONE  | and the architecture migration plan.                                    |
-| [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]]             | DONE  | 10 service libraries split into *.api + *.core.                         |
-| [[id:bc195cb4-4cbf-4d9d-8685-8ce3304da3fe][Engineering hygiene]]                         | DONE  | sccache cache bloat, tenant_id in tests, ORES_PRESET + start-client.sh. |
-| [[id:4837265a-934c-4cfc-9f7a-edc3f86f37c6][Generators to api layer + http.server split]] | DONE  | cross-cutting cleanup completing the migration.                         |
-| [[id:1af340aa-fb79-4870-bc13-0dd2fc75af2b][Environment isolation for database roles]]    | DONE  | prefixed PostgreSQL roles.                                              |
-| [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]]                | DONE  | rates / FX / credit / bond, in four phases.                             |
-| [[id:2aa3562a-9e27-4efc-a2a0-492098f9ebbb][Badges to database (phase 1)]]                | DONE  | DB-driven badge metadata.                                               |
+| Story                                                                                    | State | Start      | End        | Theme                                                                   |
+|------------------------------------------------------------------------------------------+-------+------------+------------+-------------------------------------------------------------------------|
+| [[id:df3c08d8-a11e-4e2e-908a-5bd0ddc29626][Sprint 15 housekeeping]]                      | DONE  |            | 2026-03-24 | backlog refinement.                                                     |
+| [[id:fd12bbd4-bd95-454a-a636-5f22c928c4d1][Fix ORE import bugs]]                         | DONE  |            | 2026-03-19 | real-data shakedown of the sprint-14 wizard.                            |
+| [[id:7b5e0c11-8c1f-4d91-adea-2596197cd0d4][Loading indicator on entity list windows]]    | DONE  |            | 2026-03-20 | UI consistency.                                                         |
+| [[id:bfac3a00-1684-4546-b10b-5ba358b5a867][Unified system_settings]]                     | DONE  |            | 2026-03-20 | replace feature_flags.                                                  |
+| [[id:3ed3ca4d-8709-4f70-a1a8-1ff287adb8bf][Compute grid implementation]]                 | DONE  |            | 2026-03-21 | the sprint's mission. Continues from sprint 10 compute_grid_analysis.   |
+| [[id:679da033-934a-4330-951f-5016675cc8af][Compute grid observability]]                  | DONE  |            | 2026-03-21 | telemetry + RAG dashboard.                                              |
+| [[id:169b15a7-442b-44fd-8e54-436fec8340a6][JWT refresh]]                                 | DONE  |            | 2026-03-21 | closes the loop on sprint-14 RS256.                                     |
+| [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]]           | DONE  |            | 2026-03-26 | real-data testing + loading-lifecycle refactor.                         |
+| [[id:84fca31b-b6a8-444f-9ea9-33515d50645f][NATS service discovery for HTTP base URL]]    | DONE  |            | 2026-03-22 | and the architecture migration plan.                                    |
+| [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]]             | DONE  |            | 2026-03-23 | 10 service libraries split into *.api + *.core.                         |
+| [[id:bc195cb4-4cbf-4d9d-8685-8ce3304da3fe][Engineering hygiene]]                         | DONE  |            | 2026-03-25 | sccache cache bloat, tenant_id in tests, ORES_PRESET + start-client.sh. |
+| [[id:4837265a-934c-4cfc-9f7a-edc3f86f37c6][Generators to api layer + http.server split]] | DONE  |            | 2026-03-25 | cross-cutting cleanup completing the migration.                         |
+| [[id:1af340aa-fb79-4870-bc13-0dd2fc75af2b][Environment isolation for database roles]]    | DONE  |            | 2026-03-25 | prefixed PostgreSQL roles.                                              |
+| [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]]                | DONE  |            | 2026-03-30 | rates / FX / credit / bond, in four phases.                             |
+| [[id:2aa3562a-9e27-4efc-a2a0-492098f9ebbb][Badges to database (phase 1)]]                | DONE  |            | 2026-03-28 | DB-driven badge metadata.                                               |
 
 * Retrospective
 

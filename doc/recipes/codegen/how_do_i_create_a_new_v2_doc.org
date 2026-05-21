@@ -17,17 +17,22 @@ the generator itself, see [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codege
 * Question
 
 How do I create a new v2 information-architecture document —
-task, story, sprint, version, component, recipe, knowledge, or
-skill — without hand-writing the frontmatter?
+task, story, sprint, version, component, recipe, knowledge, skill,
+or product_identity — without hand-writing the frontmatter?
 
 * Answer
 
 Call =projects/ores.codegen/generate_v2_doc.sh= with the type, slug,
 parent directory, and the document's title and description. The
-script fills in a fresh UUID, today's dates, the required frontmatter,
-an initial =* Status= headline at the type's default TODO state (where
-applicable), and the skeleton sections — leaving only the content for
-you to fill in.
+script fills in a fresh UUID, today's dates, the required frontmatter
+(including =#+version: 2= and the glossary-linked blurb), a =* Status=
+table at the type's default state where applicable, and the skeleton
+sections — leaving only the content for you to fill in.
+
+For =task= and =story=, the codegen automatically prepends =Task: = /
+=Story: = to the title you supply (idempotent: passing =--title "Task:
+Foo"= won't double-prefix). Sprints and versions keep the title
+as-given.
 
 For task / story / sprint, parent =:ID:=, title and slug are
 auto-detected from =<parent-dir>/<parent-type>.org= so you usually

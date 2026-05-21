@@ -37,15 +37,15 @@ explicitly.)
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                               | State | Theme                                                                                                                                        |
-|-------------------------------------+-------+----------------------------------------------------------------------------------------------------------------------------------------------|
-| [[id:0fe2033d-180f-4195-a314-998917d570be][Sprint 02 housekeeping]]              | DONE  | sprint refinement, whiteboarding for the new architecture, dev-environment fixes, Gemini action.                                             |
-| [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]]                 | DONE  | Windows/macOS builds, vcpkg caching, Valgrind suppressions, broken-build firefighting.                                                       |
-| [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]]           | DONE  | cobalt-based server and client, =comms= library, messaging for risk. Records the GRPC and 0MQ experiments that were abandoned along the way. |
-| [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]] | DONE  | adopt reflect-cpp for JSON, replace XML parsing with reflect-cpp, use sqlgen for Postgres.                                                   |
-| [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]]      | DONE  | temporal support for currencies, CLI dump command, a containing structure for ORE example data.                                              |
-| [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]]              | DONE  | rename =core= to =risk= and refactor the contents accordingly.                                                                               |
-| [[id:cf13ffb1-4d84-4965-ad65-c38b1d4849ab][CLI refactor and test]]               | DONE  | restructure the CLI to follow the new project layout and add tests to the CLI parser.                                                        |
+| Story                                                                            | State | Start      | End        | Theme                                                                                                                                        |
+|----------------------------------------------------------------------------------+-------+------------+------------+----------------------------------------------------------------------------------------------------------------------------------------------|
+| [[id:0fe2033d-180f-4195-a314-998917d570be][Sprint 02 housekeeping]]              | DONE  |            | 2025-10-23 | sprint refinement, whiteboarding for the new architecture, dev-environment fixes, Gemini action.                                             |
+| [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]]                 | DONE  |            | 2025-10-23 | Windows/macOS builds, vcpkg caching, Valgrind suppressions, broken-build firefighting.                                                       |
+| [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]]           | DONE  |            | 2025-10-15 | cobalt-based server and client, =comms= library, messaging for risk. Records the GRPC and 0MQ experiments that were abandoned along the way. |
+| [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]] | DONE  |            | 2025-10-10 | adopt reflect-cpp for JSON, replace XML parsing with reflect-cpp, use sqlgen for Postgres.                                                   |
+| [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]]      | DONE  |            | 2025-09-30 | temporal support for currencies, CLI dump command, a containing structure for ORE example data.                                              |
+| [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]]              | DONE  |            | 2025-10-05 | rename =core= to =risk= and refactor the contents accordingly.                                                                               |
+| [[id:cf13ffb1-4d84-4965-ad65-c38b1d4849ab][CLI refactor and test]]               | DONE  |            | 2025-10-10 | restructure the CLI to follow the new project layout and add tests to the CLI parser.                                                        |
 
 * Retrospective
 

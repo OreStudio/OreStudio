@@ -28,23 +28,25 @@ registrar::register_handlers(ores::nats::service::client& nats,
     std::optional<ores::security::jwt::jwt_authenticator> verifier,
     std::string http_base_url) {
 
+    // trades=32, rates=36, fx=7, bond=4, credit=4, equity=9,
+    // commodity=4, composite=5, scripted=4 → 105 total
     auto subs = detail::register_trade_handlers(nats, ctx, verifier, http_base_url);
-    subs.reserve(113);
+    subs.reserve(105);
 
-    auto rates = detail::register_rates_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(),
-        std::make_move_iterator(rates.begin()),
-        std::make_move_iterator(rates.end()));
+    const auto append = [&subs](auto vec) {
+        subs.insert(subs.end(),
+            std::make_move_iterator(vec.begin()),
+            std::make_move_iterator(vec.end()));
+    };
 
-    auto fx = detail::register_fx_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(),
-        std::make_move_iterator(fx.begin()),
-        std::make_move_iterator(fx.end()));
-
-    auto other = detail::register_other_instrument_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(),
-        std::make_move_iterator(other.begin()),
-        std::make_move_iterator(other.end()));
+    append(detail::register_rates_handlers(nats, ctx, verifier));
+    append(detail::register_fx_handlers(nats, ctx, verifier));
+    append(detail::register_bond_handlers(nats, ctx, verifier));
+    append(detail::register_credit_handlers(nats, ctx, verifier));
+    append(detail::register_equity_handlers(nats, ctx, verifier));
+    append(detail::register_commodity_handlers(nats, ctx, verifier));
+    append(detail::register_composite_handlers(nats, ctx, verifier));
+    append(detail::register_scripted_handlers(nats, ctx, verifier));
 
     return subs;
 }

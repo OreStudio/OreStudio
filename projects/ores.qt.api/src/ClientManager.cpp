@@ -19,13 +19,24 @@
  */
 #include "ores.qt/ClientManager.hpp"
 
+// rfl::internal::no_duplicate_field_names does O(N²) constexpr comparisons
+// over all variant field names.  Raise the MSVC constexpr budget for this TU.
+#ifdef _MSC_VER
+#  pragma constexpr_depth(1024)
+#  pragma constexpr_steps(1000000)
+#endif
+
+#include <QDateTime>
+#include <QTimeZone>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_connect_error.hpp"
+#include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.platform/environment/environment.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
@@ -610,6 +621,156 @@ void ClientManager::onRefreshTimer() {
         BOOST_LOG_SEV(lg(), info) << "Proactive JWT refresh succeeded";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Proactive refresh exception: " << e.what();
+    }
+}
+
+LoginResult ClientManager::testConnection(
+    const std::string& host,
+    std::uint16_t port,
+    const std::string& username,
+    const std::string& password) {
+
+    BOOST_LOG_SEV(lg(), info) << "Testing connection to " << host << ":" << port;
+
+    try {
+        ores::nats::service::nats_client temp_session;
+        nats::config::nats_options opts;
+        opts.url = "nats://" + host + ":" + std::to_string(port);
+        opts.subject_prefix = subject_prefix_;
+        temp_session.connect(std::move(opts));
+
+        // Attempt login
+        iam::messaging::login_request request{
+            .principal = username,
+            .password = password
+        };
+        const auto json_body = rfl::json::write(request);
+        auto msg = temp_session.request(
+            iam::messaging::login_request::nats_subject, json_body);
+        temp_session.disconnect();
+
+        const std::string_view data(
+            reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+        auto resp = rfl::json::read<iam::messaging::login_response>(data);
+        if (!resp || !resp->success) {
+            const std::string err = resp ? resp->error_message : "Invalid response";
+            return {.success = false, .error_message = QString::fromStdString(err)};
+        }
+        return {.success = true, .error_message = {}};
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Test connection failed: " << e.what();
+        return {.success = false, .error_message = QString::fromStdString(e.what())};
+    }
+}
+
+SignupResult ClientManager::signup(
+    const std::string& host,
+    std::uint16_t port,
+    const std::string& username,
+    const std::string& email,
+    const std::string& password) {
+
+    BOOST_LOG_SEV(lg(), info) << "Attempting signup to " << host << ":" << port;
+
+    try {
+        ores::nats::service::nats_client temp_session;
+        nats::config::nats_options opts;
+        opts.url = "nats://" + host + ":" + std::to_string(port);
+        opts.subject_prefix = subject_prefix_;
+        temp_session.connect(std::move(opts));
+
+        iam::messaging::signup_request request{
+            .principal = username,
+            .password = password,
+            .email = email
+        };
+        const auto json_body = rfl::json::write(request);
+        auto msg = temp_session.request(
+            iam::messaging::signup_request::nats_subject, json_body);
+        temp_session.disconnect();
+
+        const std::string_view data(
+            reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+        auto resp = rfl::json::read<iam::messaging::signup_response>(data);
+        if (!resp || !resp->success) {
+            const std::string err = resp ? resp->message : "Invalid response";
+            return {.success = false,
+                    .error_message = QString::fromStdString(err)};
+        }
+        return {.success = true,
+                .error_message = {},
+                .username = QString::fromStdString(username)};
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Signup failed: " << e.what();
+        return {.success = false,
+                .error_message = QString::fromStdString(e.what())};
+    }
+}
+
+void ClientManager::subscribeToEvent(const std::string& subject) {
+    if (nats_subscriptions_.count(subject))
+        return;
+
+    auto cl = session_.get_client();
+    if (!cl) {
+        BOOST_LOG_SEV(lg(), warn) << "subscribeToEvent: not connected, skipping '"
+                                  << subject << "'";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Subscribing to NATS event: " << subject;
+    try {
+        auto sub = cl->subscribe(subject,
+            [this, subject](nats::message msg) {
+                try {
+                    const std::string_view json(
+                        reinterpret_cast<const char*>(msg.data.data()),
+                        msg.data.size());
+                    auto result =
+                        rfl::json::read<eventing::domain::entity_change_event>(json);
+                    if (!result) {
+                        BOOST_LOG_SEV(lg(), warn)
+                            << "Failed to parse event on '" << subject << "': "
+                            << result.error().what();
+                        return;
+                    }
+                    const auto& ev = *result;
+                    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                        ev.timestamp.time_since_epoch()).count();
+                    QDateTime ts = QDateTime::fromMSecsSinceEpoch(ms, QTimeZone::UTC);
+                    QStringList ids;
+                    ids.reserve(static_cast<int>(ev.entity_ids.size()));
+                    for (const auto& id : ev.entity_ids)
+                        ids.append(QString::fromStdString(id));
+                    QString eventType = QString::fromStdString(subject);
+                    QString tenantId  = QString::fromStdString(ev.tenant_id);
+                    QMetaObject::invokeMethod(this,
+                        [this, eventType, ts, ids, tenantId]() {
+                            emit notificationReceived(
+                                eventType, ts, ids, tenantId, 0, {});
+                        }, Qt::QueuedConnection);
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Exception in event handler for '" << subject
+                        << "': " << e.what();
+                }
+            });
+        nats_subscriptions_.emplace(subject, std::move(sub));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to subscribe to '" << subject
+                                   << "': " << e.what();
+    }
+}
+
+void ClientManager::unsubscribeFromEvent(const std::string& subject) {
+    if (nats_subscriptions_.erase(subject) > 0) {
+        try {
+            BOOST_LOG_SEV(lg(), debug) << "Unsubscribed from event: " << subject;
+        } catch (...) {
+            // Boost.Log may already be torn down during static destruction.
+        }
     }
 }
 

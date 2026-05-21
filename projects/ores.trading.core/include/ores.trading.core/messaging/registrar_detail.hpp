@@ -31,9 +31,9 @@
 
 namespace ores::trading::messaging::detail {
 
-// Each function registers a subset of NATS handlers and returns the resulting
-// subscriptions. Split across translation units to avoid MSVC C1202 when too
-// many rfl::json::write<T> instantiations land in a single TU.
+// Each function registers one instrument family's NATS handlers and returns
+// the resulting subscriptions. Split by domain family for clarity and to allow
+// parallel incremental builds across instrument families.
 
 inline constexpr auto queue_name = "ores.trading.service";
 
@@ -54,7 +54,32 @@ register_fx_handlers(ores::nats::service::client& nats,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
-register_other_instrument_handlers(ores::nats::service::client& nats,
+register_bond_handlers(ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
+register_credit_handlers(ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
+register_equity_handlers(ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
+register_commodity_handlers(ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
+register_composite_handlers(ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
+register_scripted_handlers(ores::nats::service::client& nats,
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 

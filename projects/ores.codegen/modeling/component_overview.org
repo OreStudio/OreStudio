@@ -46,6 +46,102 @@ licence headers and editor modelines.
 By default, output lands in =output/= alongside the wrapper script;
 each entry point accepts a custom output directory.
 
+* Profile catalogue
+
+C++ profiles are declared in =library/profiles.json= and invoked with
+=--profile <name>=. Each profile is a named collection of Mustache
+templates. The type mappings that apply across all profiles are in
+[[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]]§"Type mappings".
+
+| Profile | Covers | Key library |
+|---|---|---|
+| =--profile domain= | Domain class, JSON I/O, table I/O | =reflectcpp=, =libfort= |
+| =--profile generator= | Test data generator | =faker-cxx= |
+| =--profile repository= | Entity, mapper, repository | =sqlgen= |
+| =--profile service= | Service layer | — |
+| =--profile protocol= | NATS messaging protocol header | — |
+| =--profile sql= | SQL schema, notify triggers, drop scripts | — |
+| =--profile qt= | Qt UI (ClientModel, MdiWindow, dialogs, controller) | Qt6 |
+| =--profile all-cpp= | domain + generator + repository + service + protocol | all above |
+| =--profile all= | all-cpp + sql | all above |
+
+** domain
+
+Generates the domain class (a plain =struct=), JSON I/O, and table I/O.
+
+- *JSON I/O*: uses =reflectcpp= (=<rfl/json.hpp>=, =rfl::json::write()=)
+  with custom reflectors from =ores.utility/rfl/reflectors.hpp= to
+  handle types not natively supported (=boost::uuids::uuid=,
+  =std::chrono::system_clock::time_point=, etc.). Exposes
+  =operator<<(std::ostream&, const T&)=.
+- *Table I/O*: uses =libfort= (=<fort.hpp>=, =fort::char_table= with
+  =FT_BASIC_STYLE=) for aligned column output.  Type-formatting
+  conventions: UUIDs → =boost::uuids::to_string()=; booleans → "Y"/"N";
+  timestamps → =std::put_time()= as "YYYY-MM-DD HH:MM:SS"; IP addresses →
+  =.to_string()=.  Exposes
+  =operator<<(std::ostream&, const std::vector<T>&)=.
+
+** generator
+
+Generates a test data generator with two static methods:
+=generate()= → one random instance; =generate_set(n)= → =n= instances.
+Uses =faker-cxx= for realistic fake field values and
+=ores.utility/uuid/uuid_v7_generator= for UUID fields.
+
+** repository
+
+Generates three file pairs: entity, mapper, and repository.
+
+- *Entity*: a flat struct with =sqlgen= annotations that maps to the
+  database table.  One domain class does not always map to one entity
+  — consult the model when they diverge.
+- *Mapper*: converts entity↔domain via =to_domain()= and =from_domain()=.
+  Handles type conversions: UUID strings ↔ =boost::uuids::uuid=,
+  database timestamps ↔ =std::chrono::system_clock::time_point=.
+- *Repository*: uses =sqlgen= for database operations and
+  =ores.database/repository/bitemporal_operations.hpp= for all read/write
+  helpers.  Write operations use upsert semantics — there is no separate
+  create vs update at the repository layer.  Read methods: =read_latest()=,
+  =read_all()=, =read_latest_since(time_point)= (incremental loading),
+  =read_at_timepoint(timestamp)=.
+
+** service
+
+Generates the service layer that wraps the repository. Method names
+follow the convention in [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]]§"Service method naming":
+=save_*=, =remove_*=, =find_*=, =list_*=, =list_*_since=,
+=get_*_history=.
+
+** protocol
+
+Generates a single NATS messaging protocol header declaring the
+request/response types for the entity's pub-sub channels.
+
+** sql
+
+Generates SQL table create, notify trigger, and drop scripts.
+Naming and idempotency conventions are in
+[[id:5cb31a0e-4e38-4521-b0ee-e4396c3e2936][SQL entity schema patterns]].
+
+** qt
+
+Generates 12 files: =ClientModel=, =MdiWindow=, detail/history dialogs,
+controller, and the two =.ui= form files.  Patterns are in
+[[id:2fddc2f6-c510-4a86-8c50-d79c83eddfff][Qt entity patterns]] and [[id:e44891dc-234c-42db-90e1-9421400abd1a][Qt menu and toolbar patterns]].
+
+** Component scaffold profiles
+
+These profiles create a new component skeleton rather than entity code.
+They generate CMakeLists, a master header, a stub header+impl, and test
+harness.  See [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]] for the split model and CMake dep chain.
+
+| Profile | Part | Files |
+|---|---|---|
+| =--profile component-api= | =ores.COMPONENT.api= | 9 (CMakeLists ×4, header, stub header+impl, test main+stub) |
+| =--profile component-core= | =ores.COMPONENT.core= | 9 (same set, core CMake deps) |
+| =--profile component-service= | =ores.COMPONENT.service= | 18 (core set + app/config headers+impls + main.cpp) |
+| =--profile component= | standalone (no split) | 9 (generic CMake deps) |
+
 * Entry points
 
 - =run_generator.sh= — the C++/SQL wrapper. Accepts a model path, an
@@ -69,6 +165,9 @@ each entry point accepts a custom output directory.
 
 * See also
 
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][Model Assisted Software Development]] — the conceptual model (logical
+  entities, facets, transformations) that the profile catalogue
+  implements.
 - [[id:fe693595-6693-459b-ad9b-eb7e3abbbc88][ores.codegen architecture]] — directory layout, internal modules,
   template system, model-template mapping, modeline configuration,
   features.

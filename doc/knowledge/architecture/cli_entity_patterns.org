@@ -16,6 +16,19 @@ and an =<entity>_parser= class that owns command registration and
 dispatch. Phase 1 delivers list + export; Phase 2 delivers add +
 delete; Phase 3 adds recipe docs. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
+* Codegen gap
+
+⚠ *No codegen profile exists for this layer.* Before creating CLI
+commands for any new entity:
+
+1. Create mustache templates in =projects/ores.codegen/library/templates/=.
+2. Add a =cli= profile entry to =projects/ores.codegen/library/profiles.json=.
+3. Validate against an existing entity (e.g. =currency=).
+4. Only then use codegen to generate the layer.
+
+Until the profile exists, see the recipes for the manual path — but
+treat this as a workaround, not the target state.
+
 * Registration steps
 
 Every new entity requires four registration points:
@@ -30,32 +43,19 @@ Every new entity requires four registration points:
 
 * Options struct layout
 
-Each operation that takes parameters gets its own options struct:
-
-#+begin_example
-struct add_{entity}_options {
-    std::string <required_field>;
-    std::optional<std::string> <optional_field>;
-    std::string modified_by;
-};
-#+end_example
-
-Option names use hyphens on the command line (=--iso-code=) but
-snake_case in the struct (=iso_code=).
+Each operation that takes parameters gets its own options struct in
+=include/ores.cli/config/=.  Required fields are plain members;
+optional fields use =std::optional=.  Every struct includes a
+=modified_by= field.  Option names use hyphens on the command line
+(=--iso-code=) but snake_case in the struct (=iso_code=).
 
 * Parser class layout
 
-#+begin_example
-class {entity}_parser {
-public:
-    {entity}_parser(const database::context& ctx,
-                    const log_options& log_opts);
-    void register_commands(program_options::options_description& global);
-    int execute(const program_options::variables_map& vm);
-private:
-    // one private method per operation: list, export, add, delete
-};
-#+end_example
+Each entity parser lives in =include/ores.cli/parsers/{entity}_parser.hpp=
+and =src/parsers/{entity}_parser.cpp=.  It exposes
+=register_commands(options_description&)= and
+=execute(const variables_map&)=, with one private method per
+operation (list, export, add, delete).
 
 * Operation shapes
 

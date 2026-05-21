@@ -18,50 +18,34 @@ that communicate with the server via a =client_session=. Phase 1
 delivers list + add; Phase 2 delivers history; Phase 3 adds recipe
 docs. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
+* Codegen gap
+
+⚠ *No codegen profile exists for this layer.* Before creating shell
+commands for any new entity:
+
+1. Create mustache templates in =projects/ores.codegen/library/templates/=.
+2. Add a =shell= profile entry to =projects/ores.codegen/library/profiles.json=.
+3. Validate against an existing entity (e.g. =currency=).
+4. Only then use codegen to generate the layer.
+
+Until the profile exists, see the recipes for the manual path — but
+treat this as a workaround, not the target state.
+
 * Command class layout
 
-#+begin_example
-class {entity}_commands {
-private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.commands.{entity}_commands";
-    static auto& lg() { ... }  // static logger accessor
-
-public:
-    static void register_commands(cli::Menu& root_menu,
-                                  comms::net::client_session& session);
-
-    static void process_get_{entities}(std::ostream& out,
-                                       comms::net::client_session& session);
-    static void process_add_{entity}(std::ostream& out,
-                                     comms::net::client_session& session,
-                                     /* per-field params */);
-    static void process_get_{entity}_history(std::ostream& out,
-                                             comms::net::client_session& session,
-                                             const std::string& id);
-};
-#+end_example
+The commands class is all-static.  It carries an
+=inline static std::string_view logger_name= with the fully-qualified
+logger path and a static =lg()= accessor.  =register_commands= takes
+a =cli::Menu&= root and a =client_session&=; it inserts a submenu and
+registers one lambda per operation.  Each operation is a separate
+static =process_*= method.
 
 * Registration in register_commands
 
-#+begin_example
-void {entity}_commands::register_commands(
-    cli::Menu& root_menu, comms::net::client_session& session) {
-    auto {entities}_menu = root_menu.Insert("{entities}");
-    {entities}_menu->Insert("list", ...,
-        [&session](std::ostream& out) {
-            process_get_{entities}(out, session);
-        });
-    {entities}_menu->Insert("add", ...,
-        [&session](std::ostream& out, /* params */) {
-            process_add_{entity}(out, session, /* params */);
-        });
-}
-#+end_example
-
-Registration in the top-level menu occurs in
-=src/app/application.cpp= where all commands classes call
-=register_commands=.
+Create a named submenu via =root_menu.Insert("{entities}")=.  Insert
+each operation by name with a capturing lambda that calls the
+corresponding =process_*= method.  Call =register_commands= once from
+=src/app/application.cpp= during startup.
 
 * Operation shapes
 

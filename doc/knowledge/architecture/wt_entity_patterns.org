@@ -18,46 +18,39 @@ All UI components use Wt signal/slot for parent–child communication;
 the parent page or controller connects the signals and calls the
 service. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
+* Codegen gap
+
+⚠ *No codegen profile exists for this layer.* Before creating Wt UI
+components for any new entity:
+
+1. Create mustache templates in =projects/ores.codegen/library/templates/=.
+2. Add a =wt= profile entry to =projects/ores.codegen/library/profiles.json=.
+3. Validate against an existing entity (e.g. =currency=).
+4. Only then use codegen to generate the layer.
+
+Until the profile exists, see the recipes for the manual path — but
+treat this as a workaround, not the target state.
+
 * List widget layout
 
-#+begin_example
-class {entity}_list_widget final : public Wt::WContainerWidget {
-public:
-    void set_{entities}(const std::vector<{entity}_row>& entries);
-    void refresh();
+The list widget inherits =Wt::WContainerWidget= and is =final=.  It
+exposes =set_{entities}(...)= and =refresh()=, plus four signals:
+=add_requested()=, =refresh_requested()=, =edit_requested(std::string)=
+(passes primary key), and =delete_requested(std::string)=.  Private
+helpers =setup_toolbar()=, =setup_table()=, =populate_table()= build
+the layout.
 
-    Wt::Signal<>&            add_requested();
-    Wt::Signal<>&            refresh_requested();
-    Wt::Signal<std::string>& edit_requested();    // passes primary key
-    Wt::Signal<std::string>& delete_requested();  // passes primary key
-private:
-    void setup_toolbar();
-    void setup_table();
-    void populate_table();
-    Wt::WTable* table_ = nullptr;
-    std::vector<{entity}_row> entries_;
-    // signal members
-};
-#+end_example
-
-={entity}_row= is a lightweight display-only struct containing only
-the fields needed for the table (primary key, name, version, etc.).
+The companion =*_row= struct is a lightweight display-only struct
+containing only the fields needed for the table (primary key, name,
+version, etc.).
 
 * Detail dialog layout
 
-#+begin_example
-class {entity}_dialog final : public Wt::WDialog {
-public:
-    {entity}_dialog();
-    void set_{entity}(const domain::{entity}& e);  // populate for edit
-    domain::{entity} get_{entity}() const;          // read back for save
-    Wt::Signal<domain::{entity}>& save_requested();
-private:
-    // one WLineEdit / WComboBox per editable field
-    Wt::WLineEdit* {field}_edit_ = nullptr;
-    Wt::Signal<domain::{entity}> save_requested_;
-};
-#+end_example
+The detail dialog inherits =Wt::WDialog= and is =final=.  It exposes
+=set_{entity}(const domain::{entity}&)= to populate for edit,
+=get_{entity}() const= to read back the edited values, and a
+=save_requested()= signal.  One =WLineEdit= or =WComboBox= per
+editable field.
 
 * Application integration
 

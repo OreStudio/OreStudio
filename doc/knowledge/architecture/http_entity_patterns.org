@@ -17,6 +17,19 @@ async router. All handlers are =boost::asio::awaitable= coroutines;
 authentication and authorisation are declared on the route builder,
 not inside the handler body. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
+* Codegen gap
+
+⚠ *No codegen profile exists for this layer.* Before creating HTTP
+endpoints for any new entity:
+
+1. Create mustache templates in =projects/ores.codegen/library/templates/=.
+2. Add an =http= profile entry to =projects/ores.codegen/library/profiles.json=.
+3. Validate against an existing entity (e.g. =currency=).
+4. Only then use codegen to generate the layer.
+
+Until the profile exists, see the recipes for the manual path — but
+treat this as a workaround, not the target state.
+
 * Route structure
 
 Each entity routes class exposes a standard set of endpoints:
@@ -45,16 +58,9 @@ Key conventions for every handler:
 * Authorisation hooks
 
 Declare auth and roles on the route builder, not in the handler:
-
-#+begin_example
-router->get("/api/v1/{entities}")
-    .auth_required()
-    .roles({"Admin", "Read"})
-    .query_param("offset", "integer", "", false, "Pagination offset", "0")
-    .query_param("limit",  "integer", "", false, "Maximum results",   "100")
-    .response<get_{entities}_response>()
-    ...
-#+end_example
+call =.auth_required()= and =.roles(...)= on the route, then add
+=.query_param(...)= for pagination parameters (=offset=, =limit=)
+and =.response<...>()= for the response type.
 
 * File locations
 

@@ -53,12 +53,9 @@ be justified in the file header.
    class diagram; [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]] for the ER diagram.
 
 If codegen cannot express the pattern, extend the Mustache templates
-in =library/templates/= first, then regenerate. Use the facet docs
-([[id:7FEE0007-A792-5B34-94DB-056EFC99B8D6][Domain Type Class Definition Facet]], [[id:23c416e0-1b90-4248-84d6-9275e8b76514][Domain Type JSON I/O Facet]],
-[[id:264c683a-35fd-499f-94c2-476677d2f9bd][Domain Type Table I/O Facet]], [[id:8840cd84-2fb3-48d8-b893-ca30db244284][Domain Type Generator Support Facet]],
-[[id:6f78f6f3-7a1d-46c2-9515-101c56145037][Domain Type Repository Entity and Mapper Facet]],
-[[id:2132af63-21a0-4ad0-9773-603d00838572][Domain Type Repository CRUD Operations Facet]]) only as a last resort
-for the manual path.
+in =library/templates/= first, then regenerate. See
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]]§"Profile catalogue" for what each profile generates
+and which library it uses.
 
 * Recipes
 

@@ -26,6 +26,7 @@
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.service/export.hpp"
 
 namespace ores::ore::service::app {
 
@@ -35,7 +36,7 @@ namespace ores::ore::service::app {
  * Parses command-line arguments, initialises logging, and drives the
  * application coroutine.
  */
-class host final {
+class ORES_ORE_SERVICE_EXPORT host final {
 private:
     inline static std::string_view logger_name = "ores.ore.service.app.host";
 

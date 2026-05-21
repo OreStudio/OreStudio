@@ -29,6 +29,7 @@ set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 
 add_library(${lib_target_name} ${lib_files})
+target_compile_definitions(${lib_target_name} PRIVATE ORES_TELEMETRY_SERVICE_LIBRARY)
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}

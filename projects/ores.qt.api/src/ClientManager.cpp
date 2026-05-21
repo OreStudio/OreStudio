@@ -19,13 +19,6 @@
  */
 #include "ores.qt/ClientManager.hpp"
 
-// rfl::internal::no_duplicate_field_names does O(N²) constexpr comparisons
-// over all variant field names.  Raise the MSVC constexpr budget for this TU.
-#ifdef _MSC_VER
-#  pragma constexpr_depth(1024)
-#  pragma constexpr_steps(1000000)
-#endif
-
 #include <QDateTime>
 #include <QTimeZone>
 #include <boost/uuid/uuid_io.hpp>

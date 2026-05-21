@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 9c57d467-3f17-469a-a245-5f57e6b20784
 :END:
-#+title: Party codename
+#+title: Story: Party codename
 #+description: Add adjective_noun codenames per party for per-party queue isolation; sequence-based unique suffix; TOCTOU race fix.
 #+type: story
 #+version: 2
@@ -11,24 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-12]
-:END:
-
-** Now
-Completed 2026-03-12.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-12
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 14*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -36,6 +19,17 @@ Add adjective_noun codenames per party for per-party queue
 isolation; fix the race conditions the simple trigger approach
 surfaced; switch to a sequence-based suffix that survives batch
 inserts.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]] |
+| Now           | Completed 2026-03-12.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-12                                             |
 
 * Acceptance
 

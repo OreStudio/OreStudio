@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 2aa3562a-9e27-4efc-a2a0-492098f9ebbb
 :END:
-#+title: Badges to database (phase 1)
+#+title: Story: Badges to database (phase 1)
 #+description: DB-driven badge metadata so the same definitions can power Qt + Wt; codegen models for badge_severity + code_domain + badge_definition + badge_mapping junction; BadgeCache in Qt.
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-28]
-:END:
-
-** Now
-Completed 2026-03-28.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-28
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 15*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Replace hardcoded Qt UI badge metadata with database-driven
 definitions so Qt + Wt can share the same source of truth. Phase 1
 lands the infrastructure.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Now           | Completed 2026-03-28.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-28                                             |
 
 * Acceptance
 

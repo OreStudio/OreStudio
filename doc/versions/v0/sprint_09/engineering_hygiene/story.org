@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: e7ddb653-ceaa-4922-b0f9-8bd5393a747e
 :END:
-#+title: Engineering hygiene
+#+title: Story: Engineering hygiene
 #+description: System-model refresh, PR-skill consolidation, valgrind fixes; documentation refactor postponed.
 #+type: story
 #+version: 2
@@ -11,24 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-14]
-:END:
-
-** Now
-Completed 2026-01-14.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-14
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 09*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -36,6 +19,17 @@ Three independent hygiene strands: bring system + component models
 back in sync; consolidate PR-handling skills behind a single
 =pr-manager=; resolve the valgrind regressions. A fourth strand —
 documentation refactor — is postponed.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]] |
+| Now           | Completed 2026-01-14.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-14                                             |
 
 * Acceptance
 

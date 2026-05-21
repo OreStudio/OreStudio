@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: df3c08d8-a11e-4e2e-908a-5bd0ddc29626
 :END:
-#+title: Sprint 15 housekeeping
+#+title: Story: Sprint 15 housekeeping
 #+description: Sprint backlog refinement.
 #+type: story
 #+version: 2
@@ -11,28 +11,22 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-24]
-:END:
-
-** Now
-Completed 2026-03-24.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-24
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 15*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Recurring per-sprint housekeeping.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Now           | Completed 2026-03-24.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-24                                             |
 
 * Acceptance
 

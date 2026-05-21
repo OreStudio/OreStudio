@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 47ce4c06-2c59-4b8b-89b3-232d04b2da23
 :END:
-#+title: Market data subsystem
+#+title: Story: Market data subsystem
 #+description: ORE market data file types parser + serializer; market data domain model with DB schema + C++ CDM; ORE key decomposition + database repository; market data service layer; Market Data MDI UI.
 #+type: story
 #+version: 2
@@ -11,28 +11,22 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-01]
-:END:
-
-** Now
-Completed 2026-04-01.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-01
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 16*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 ORE market data file types parser + serializer; market data domain model with DB schema + C++ CDM; ORE key decomposition + database repository; market data service layer; Market Data MDI UI.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Now           | Completed 2026-04-01.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-04-01                                             |
 
 * Acceptance
 

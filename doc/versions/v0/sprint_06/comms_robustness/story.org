@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 88971afe-e0b4-4e54-b0d7-b1c627c2f239
 :END:
-#+title: Comms robustness
+#+title: Story: Comms robustness
 #+description: Split protocol.hpp by component; add a handshake service; cover multi-threaded scenarios; add a Postgres listener; add retry to the client with give-up notification.
 #+type: story
 #+version: 2
@@ -11,24 +11,7 @@
 #+updated: 2025-12-10
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-10]
-:END:
-
-** Now
-Completed 2025-12-10.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-10
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 06*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -36,6 +19,17 @@ Make the comms substrate production-ready: structurally separate
 handshake from session, split the bloated =protocol.hpp= along
 component lines, cover the stack under multi-threaded use, add retry
 with give-up notification to the client.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]] |
+| Now           | Completed 2025-12-10.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-12-10                                             |
 
 * Acceptance
 

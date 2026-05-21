@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 42e6c351-795f-48aa-a435-eb3d1c9b6704
 :END:
-#+title: Database schema and seeding overhaul
+#+title: Story: Database schema and seeding overhaul
 #+description: Rerun SQL from scratch with TimescaleDB tier detection; move all seeding from C++ to SQL populate scripts.
 #+type: story
 #+version: 2
@@ -11,24 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-31]
-:END:
-
-** Now
-Completed 2025-12-31.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-31
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 08*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -36,6 +19,17 @@ Take the database story from /works on my dev box/ to /reproducible from
 scratch/. Make TimescaleDB integration adaptive to the available license
 tier, centralise seeding in SQL populate scripts, and document the
 schema.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] |
+| Now           | Completed 2025-12-31.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-12-31                                             |
 
 * Acceptance
 

@@ -11,26 +11,7 @@
 #+updated: 2026-05-19
 #+todo: STARTED | DONE
 
-Parent version: [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-11]
-:END:
-
-** Now
-Sprint closed 2026-01-11. Three observability-review items and the
-accounts-dialog polish carry forward.
-
-** Waiting on
-None — carried-forward items are scheduled for sprint 09+.
-
-** Next
-Sprint 09 picks up the deferred items and continues the reference-data
-work (countries → next entity).
-
-** Last touched
-2026-01-11
+This page documents *Sprint 08* of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
@@ -40,30 +21,33 @@ reproducibility, change-management infrastructure for amends/deletes,
 Qt UX polish across most dialogs, plus a full set of entity-creator
 skills to make the next entity cheaper.
 
+* Status
+
+| Field          | Value                                                                                                    |
+|----------------+----------------------------------------------------------------------------------------------------------|
+| State          | DONE                                                                                                     |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                   |
+| Now            | Sprint closed 2026-01-11. Three observability-review items and the accounts-dialog polish carry forward. |
+| Waiting on     | None — carried-forward items are scheduled for sprint 09+.                                               |
+| Next           | Sprint 09 picks up the deferred items and continues the reference-data work (countries → next entity).   |
+| Last touched   | 2026-01-11                                                                                               |
+
 * Stories
 
-In execution order:
-
-- [[id:f40e0162-a092-4716-a256-206fdba93452][Sprint 08 housekeeping]] — backlog refinement, OCR scans;
-  AI summary deferred.
-- [[id:42e6c351-795f-48aa-a435-eb3d1c9b6704][Database schema and seeding overhaul]] — rerun SQL from
-  scratch with TimescaleDB tier detection; remove code seeders.
-- [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]] — validate holiday features; assorted dialog
-  fixes; log-viewer UI; accounts polish deferred.
-- [[id:da77fb50-27e8-4b42-a826-cab289c7826e][Comms substrate evolution]] — composable options, rename
-  =ores.shell= → =ores.comms.shell=, dynamic channel discovery.
-- [[id:40d153e3-4a87-44b6-b605-1e3e28a44d03][Native pagination support]] — adopt sqlgen 0.6.0.
-- [[id:13fbe901-b255-49f7-88c3-13b2a2506bf3][Wt and HTTP review]] — validate the sprint-07 surfaces;
-  document the HTTP service.
-- [[id:150e3c44-aadb-48c8-a11e-322b44a0357a][Change management infrastructure]] — reasons base + UI.
-- [[id:501c05b5-aa7f-4807-a4f2-627b857ce2aa][Reference data: countries]] — first proper refdata entity,
-  end-to-end.
-- [[id:b302b2b6-13f8-49cc-a6af-88418668be31][Entity-creator skills suite]] — Qt, shell, HTTP (incl.
-  recipes), Wt, CLI.
-- [[id:77211166-9316-40c0-88d6-c92f983a00b5][Books domain modelling analysis]] — strategic next-modelling
-  effort.
-- [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]] — review pass only; three
-  implementation tasks carry forward.
+#+ATTR_HTML: :class hug-leading
+| Story                                                                             | State   | Theme                                                                                      |
+|-----------------------------------------------------------------------------------+---------+--------------------------------------------------------------------------------------------|
+| [[id:f40e0162-a092-4716-a256-206fdba93452][Sprint 08 housekeeping]]               | DONE    | backlog refinement, OCR scans; AI summary deferred.                                        |
+| [[id:42e6c351-795f-48aa-a435-eb3d1c9b6704][Database schema and seeding overhaul]] | DONE    | rerun SQL from scratch with TimescaleDB tier detection; remove code seeders.               |
+| [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]]                         | DONE    | validate holiday features; assorted dialog fixes; log-viewer UI; accounts polish deferred. |
+| [[id:da77fb50-27e8-4b42-a826-cab289c7826e][Comms substrate evolution]]            | DONE    | composable options, rename =ores.shell= → =ores.comms.shell=, dynamic channel discovery.   |
+| [[id:40d153e3-4a87-44b6-b605-1e3e28a44d03][Native pagination support]]            | DONE    | adopt sqlgen 0.6.0.                                                                        |
+| [[id:13fbe901-b255-49f7-88c3-13b2a2506bf3][Wt and HTTP review]]                   | DONE    | validate the sprint-07 surfaces; document the HTTP service.                                |
+| [[id:150e3c44-aadb-48c8-a11e-322b44a0357a][Change management infrastructure]]     | DONE    | reasons base + UI.                                                                         |
+| [[id:501c05b5-aa7f-4807-a4f2-627b857ce2aa][Reference data: countries]]            | DONE    | first proper refdata entity, end-to-end.                                                   |
+| [[id:b302b2b6-13f8-49cc-a6af-88418668be31][Entity-creator skills suite]]          | DONE    | Qt, shell, HTTP (incl. recipes), Wt, CLI.                                                  |
+| [[id:77211166-9316-40c0-88d6-c92f983a00b5][Books domain modelling analysis]]      | DONE    | strategic next-modelling effort.                                                           |
+| [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]]              | BACKLOG | review pass only; three implementation tasks carry forward.                                |
 
 * Retrospective
 

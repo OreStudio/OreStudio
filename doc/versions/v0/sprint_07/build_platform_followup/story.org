@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: bb39ecbd-1ea5-4d53-a117-a0c88e0463c1
 :END:
-#+title: Build platform follow-up
+#+title: Story: Build platform follow-up
 #+description: WSL setup, prebuilt Qt adoption, Windows clang build failures, BLOCKED warnings-on-windows-osx carry-over from sprint 04.
 #+type: story
 #+version: 2
@@ -10,34 +10,30 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+predecessor: c2e401c5-3f2b-4910-a91a-82dcf1b826e1
 
-Parent sprint: [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]].
-
-Continued from: [[id:c2e401c5-3f2b-4910-a91a-82dcf1b826e1][Build and packaging]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-18]
-:END:
-
-** Now
-Completed 2025-12-18.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-18
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 07*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Follow up on the build-platform work from sprint 04: get a Windows
 laptop fully functional, switch to a prebuilt Qt, and resolve the
 latest Windows clang build breaks.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]] |
+| Now           | Completed 2025-12-18.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-12-18                                             |
+
+
+#+predecessor: c2e401c5-3f2b-4910-a91a-82dcf1b826e1
+
+Continued from: [[id:c2e401c5-3f2b-4910-a91a-82dcf1b826e1][Build and packaging]].
 
 * Acceptance
 

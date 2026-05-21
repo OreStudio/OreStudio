@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: a0b6c877-2fad-457a-b0c2-000d3f707a5b
 :END:
-#+title: Scheduling subsystem
+#+title: Story: Scheduling subsystem
 #+description: ores.scheduler wrapping pg_cron with Quartz.NET-style fluent API; scheduler binary protocol (0x9000-0x9FFF, protocol 45.0); message queue infrastructure.
 #+type: story
 #+version: 2
@@ -10,37 +10,33 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+successor: ed082d5a-4afb-4bf9-81db-8712f881dde3
 
-Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
-
-Continued in: [[id:ed082d5a-4afb-4bf9-81db-8712f881dde3][Custom MQ tables and in-process scheduler]]
-(sprint 14) — replaces the pg_cron-backed scheduler from this
-story with an in-process boost::asio scheduler loop alongside the
-custom MQ tables.
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-27]
-:END:
-
-** Now
-Completed 2026-02-27.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-27
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 13*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Stand up the scheduling subsystem end-to-end: ores.scheduler library
 wrapping pg_cron, a binary-protocol surface, and the message queue
 that supports it.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Now           | Completed 2026-02-27.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-27                                             |
+
+
+#+successor: ed082d5a-4afb-4bf9-81db-8712f881dde3
+
+Continued in: [[id:ed082d5a-4afb-4bf9-81db-8712f881dde3][Custom MQ tables and in-process scheduler]]
+(sprint 14) — replaces the pg_cron-backed scheduler from this
+story with an in-process boost::asio scheduler loop alongside the
+custom MQ tables.
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 3afc713a-754e-42dc-ae10-022ac1dfdaba
 :END:
-#+title: Books, portfolios, business units modelling
+#+title: Story: Books, portfolios, business units modelling
 #+description: Business unit entity; book + portfolio entities; business-centre scheme entity; portfolio implementation; country link to currencies.
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-19]
-:END:
-
-** Now
-Completed 2026-02-19.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-19
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 12*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Model the next layer of entities: business units, books + portfolios,
 the business-centre coding scheme; first implementation slice of
 portfolios; verify country↔currency link.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-19.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-19                                             |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 86927ebe-880c-42e4-8c94-e4705c4a622a
 :END:
-#+title: Trade status FSM and activity type
+#+title: Story: Trade status FSM and activity type
 #+description: FSM for trade status (new / live / expired / cancelled); activity_type taxonomy replaces lifecycle_events; trade_status_service::resolve_status() enforces transitions.
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-02]
-:END:
-
-** Now
-Completed 2026-03-02.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-02
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 14*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Replace the loose lifecycle_events concept with a proper trade-
 status FSM + activity_type taxonomy so trade lifecycles are
 enforced + auditable.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]] |
+| Now           | Completed 2026-03-02.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-02                                             |
 
 * Acceptance
 

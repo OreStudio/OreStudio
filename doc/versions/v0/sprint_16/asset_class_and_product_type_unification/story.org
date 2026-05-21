@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: ffc60db1-b82a-4c8a-961e-2c6720379508
 :END:
-#+title: Asset class and product_type unification
+#+title: Story: Asset class and product_type unification
 #+description: Rename instrument_family → product_type; separate asset_class (risk taxonomy) from product_type (structural routing); unify modelling end-to-end.
 #+type: story
 #+version: 2
@@ -11,28 +11,22 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-03]
-:END:
-
-** Now
-Completed 2026-04-03.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-03
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 16*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Rename instrument_family → product_type; separate asset_class (risk taxonomy) from product_type (structural routing); unify modelling end-to-end.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Now           | Completed 2026-04-03.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-04-03                                             |
 
 * Acceptance
 

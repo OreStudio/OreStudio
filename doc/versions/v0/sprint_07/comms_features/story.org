@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: b306f938-f939-44ca-9d69-6faedbf91c08
 :END:
-#+title: Comms features
+#+title: Story: Comms features
 #+description: Payload compression, listen/notify routed to shell, message-grouping type traits, session recording support.
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-25]
-:END:
-
-** Now
-Completed 2025-12-25.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-25
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 07*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Stretch the comms substrate: optional payload compression,
 LISTEN/NOTIFY through the shell, and type-traits-based message
 classification.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]] |
+| Now           | Completed 2025-12-25.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-12-25                                             |
 
 * Acceptance
 

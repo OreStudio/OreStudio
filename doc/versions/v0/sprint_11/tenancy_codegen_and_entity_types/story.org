@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 467e909e-ceac-4829-8688-d43179d38f18
 :END:
-#+title: Tenancy codegen and entity types
+#+title: Story: Tenancy codegen and entity types
 #+description: Update codegen templates for tenant-aware tables; introduce pgTAP; C++ tenant entities; protocol bump 26.1.
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-03]
-:END:
-
-** Now
-Completed 2026-02-03.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-03
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 11*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Take the schema-level tenancy plumbed in by the foundation story and
 push it through the rest of the stack: codegen, C++ entities, shell
 commands, protocol bump.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Now           | Completed 2026-02-03.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-03                                             |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: f8d6459d-71d3-4bae-8ece-43201cd2b8ba
 :END:
-#+title: LLM code review and refactor
+#+title: Story: LLM code review and refactor
 #+description: Run an LLM review across the codebase; act on its findings — Dogen-style component restructure, splits, moves, UML coverage.
 #+type: story
 #+version: 2
@@ -11,24 +11,7 @@
 #+updated: 2025-11-28
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-28]
-:END:
-
-** Now
-Completed 2025-11-28.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-28
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 04*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -38,6 +21,17 @@ consistent =src/modeling/tests/= layout, generate per-component
 PlantUML diagrams, and pick up the smaller refactors (=operator<<=
 splits, table representations, =base32_encode= move, main-window
 split, Catch2 tags).
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]] |
+| Now           | Completed 2025-11-28.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-11-28                                             |
 
 * Acceptance
 

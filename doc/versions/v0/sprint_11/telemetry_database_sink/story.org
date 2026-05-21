@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 2920a00e-538d-455e-9013-44a1c3a7ed36
 :END:
-#+title: Telemetry database sink
+#+title: Story: Telemetry database sink
 #+description: Split ores.telemetry.database to resolve circular deps; database logging sink for tests; three-tier tenant lifecycle (terminate / deprovision / purge); recursive-logging guard.
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-03]
-:END:
-
-** Now
-Completed 2026-02-03.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-03
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 11*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Make unit-test logs available to subsequent analysis: split off
 =ores.telemetry.database= to break the circular dependency, and add a
 Boost.Log sink that writes telemetry directly to the database.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Now           | Completed 2026-02-03.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-03                                             |
 
 * Acceptance
 

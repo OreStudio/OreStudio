@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0a69cb02-19df-4df7-bedd-81c57a604737
 :END:
-#+title: Engineering hygiene
+#+title: Story: Engineering hygiene
 #+description: Past PR-review comments, CI apt-get retries, vcpkg cache backend fix.
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-06]
-:END:
-
-** Now
-Completed 2026-02-06.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-06
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 11*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Three independent hygiene strands: clear the backlog of past PR review
 comments, harden apt-get against transient failures, and restore vcpkg
 binary caching after the =x-gha= backend was silently removed upstream.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Now           | Completed 2026-02-06.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-06                                             |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1d334356-f123-43b5-a98e-317ebad2848a
 :END:
-#+title: Build quality
+#+title: Story: Build quality
 #+description: Raise the build's quality floor — nightly memcheck, Valgrind, C++ standard alignment, vcpkg hygiene.
 #+type: story
 #+version: 2
@@ -11,31 +11,24 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2024-07-28]
-:END:
-
-** Now
-Story closed; nightlies green, Valgrind stable, C++ standard bumped,
-vcpkg warnings tamed.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2024-07-28
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 01*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Bring the build's quality floor up to a level the rest of v0 can rely
 on: nightly memcheck running, Valgrind clean, the chosen C++ standard
 applied consistently, vcpkg warnings suppressed.
+
+* Status
+
+| Field         | Value                                                                                      |
+|---------------+--------------------------------------------------------------------------------------------|
+| State         | DONE                                                                                       |
+| Parent sprint | [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]                                     |
+| Now           | Story closed; nightlies green, Valgrind stable, C++ standard bumped, vcpkg warnings tamed. |
+| Waiting on    | None.                                                                                      |
+| Next          | None.                                                                                      |
+| Last touched  | 2024-07-28                                                                                 |
 
 * Acceptance
 

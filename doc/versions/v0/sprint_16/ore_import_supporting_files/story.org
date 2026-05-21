@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 44ecad9c-332a-48f5-acb4-7c30f9eb8ddf
 :END:
-#+title: ORE import supporting files
+#+title: Story: ORE import supporting files
 #+description: Import market.txt + fixings.txt alongside trade XML; calendar adjustments + market convention imports from ORE XML.
 #+type: story
 #+version: 2
@@ -11,28 +11,22 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-03]
-:END:
-
-** Now
-Completed 2026-04-03.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-03
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 16*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Import market.txt + fixings.txt alongside trade XML; calendar adjustments + market convention imports from ORE XML.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Now           | Completed 2026-04-03.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-04-03                                             |
 
 * Acceptance
 

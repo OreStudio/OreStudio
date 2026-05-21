@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: aacc71e6-3dee-47d2-b77c-e0b4847260bd
 :END:
-#+title: Connection management
+#+title: Story: Connection management
 #+description: ores.connections component, Connection Browser MDI, login-dialog modernisation, prodigy multi-environment support.
 #+type: story
 #+version: 2
@@ -11,24 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-15]
-:END:
-
-** Now
-Completed 2026-01-15.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-15
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 09*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -36,6 +19,17 @@ Solve the /which server am I talking to?/ problem the multi-environment
 agent workflow surfaces. Land =ores.connections= as the local-SQLite
 bookmark store, a Connection Browser MDI on top of it, polish the
 browser, and modernise the login dialog to consume saved connections.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]] |
+| Now           | Completed 2026-01-15.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-15                                             |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: bcef2c68-65fe-4848-95ba-6ddb01b2ab9f
 :END:
-#+title: Sprint 03 housekeeping
+#+title: Story: Sprint 03 housekeeping
 #+description: Sprint-level sundries — backlog refinement, build-break misspell fix, postponed-work tracking.
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2025-12-31
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-31]
-:END:
-
-** Now
-Story closed; sprint backlog tidy, build-break misspell fixed.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-31
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 03*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Catch the sprint-level work that has to happen for the sprint to
 function but does not deliver a user-visible outcome: backlog
 refinement and a misspelled symbol that was failing the build.
+
+* Status
+
+| Field         | Value                                                          |
+|---------------+----------------------------------------------------------------|
+| State         | DONE                                                           |
+| Parent sprint | [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]]         |
+| Now           | Story closed; sprint backlog tidy, build-break misspell fixed. |
+| Waiting on    | None.                                                          |
+| Next          | None.                                                          |
+| Last touched  | 2025-12-31                                                     |
 
 * Acceptance
 

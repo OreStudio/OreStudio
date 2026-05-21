@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 50bb2acb-5687-4bad-b03a-12af606e8eab
 :END:
-#+title: Bootstrap polish
+#+title: Story: Bootstrap polish
 #+description: Move context to the database; remove bootstrap mode from context once it's no longer needed; surface system-level password-validation control via the manifest; verify server checks DB connectivity on startup.
 #+type: story
 #+version: 2
@@ -11,24 +11,7 @@
 #+updated: 2025-12-13
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-13]
-:END:
-
-** Now
-Completed 2025-12-13.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-13
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 06*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -36,6 +19,17 @@ Polish the bootstrap surface introduced in sprint 05: move the
 runtime context to the database, remove the bootstrap-mode flag from
 context now that it isn't needed at runtime, and add manifest-level
 password-validation control.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]] |
+| Now           | Completed 2025-12-13.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-12-13                                             |
 
 * Acceptance
 

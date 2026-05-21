@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 55bf0070-33c2-4f1d-986f-a787138942f6
 :END:
-#+title: NNG message broker attempt
+#+title: Story: NNG message broker attempt
 #+description: Stand up ores.mq.broker on NNG with JWT-in-frame and service self-registration; cancelled before final hook-up in favour of NATS.
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-12]
-:END:
-
-** Now
-Completed 2026-03-12.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-12
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 14*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Stand up an NNG-based message broker with JWT-in-frame + service
 self-registration. The architecture got implemented but the hook-up
 to the comms service was cancelled in favour of NATS.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]] |
+| Now           | Completed 2026-03-12.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-12                                             |
 
 * Acceptance
 

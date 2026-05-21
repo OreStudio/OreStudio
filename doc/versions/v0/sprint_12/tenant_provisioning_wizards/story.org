@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a
 :END:
-#+title: Tenant provisioning wizards
+#+title: Story: Tenant provisioning wizards
 #+description: Enforce root party uniqueness; new tenant provisioning wizard (incl. synthetic); gate wizard steps by tenant type; UX polish; evaluation-tenant onboarding on first login.
 #+type: story
 #+version: 2
@@ -11,24 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-16]
-:END:
-
-** Now
-Completed 2026-02-16.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-16
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 12*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -36,6 +19,17 @@ Polish the tenant-provisioning experience: enforce root-party
 invariants; introduce the new wizard with GLEIF or synthetic paths;
 gate by tenant type; round of UX polish; first-login onboarding for
 evaluation tenants.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-16.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-16                                             |
 
 * Acceptance
 

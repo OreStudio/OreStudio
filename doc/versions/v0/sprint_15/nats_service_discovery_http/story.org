@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 84fca31b-b6a8-444f-9ea9-33515d50645f
 :END:
-#+title: NATS service discovery for HTTP base URL
+#+title: Story: NATS service discovery for HTTP base URL
 #+description: Qt client auto-discovers HTTP server's base URL after login via NATS; eliminates manual http_port; protocol types moved to ores.http shared utility lib.
 #+type: story
 #+version: 2
@@ -11,29 +11,23 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-22]
-:END:
-
-** Now
-Completed 2026-03-22.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-22
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 15*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Qt client automatically discovers the HTTP server's base URL via
 NATS so users don't need to configure http_port manually.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Now           | Completed 2026-03-22.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-22                                             |
 
 * Acceptance
 

@@ -11,27 +11,7 @@
 #+updated: 2026-05-20
 #+todo: STARTED | DONE
 
-Parent version: [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-19]
-:END:
-
-** Now
-Sprint closed 2026-03-19. One BACKLOG item carries forward: the trade-
-import dialog (second attempt, postponed again). The ORE Import Wizard
-landed in this sprint covers part of its goal.
-
-** Waiting on
-None.
-
-** Next
-Sprint 15 picks up the carry-over + likely continues NATS / reporting
-polish.
-
-** Last touched
-2026-03-19
+This page documents *Sprint 14* of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
@@ -45,31 +25,35 @@ JWT RS256 in ores.security, party codename for per-party queue
 isolation (with a couple of race-condition fixes), CLI domain layer,
 ORE Import Wizard, CMake preset suffixes.
 
+* Status
+
+| Field          | Value                                                                                                                                                                                        |
+|----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| State          | DONE                                                                                                                                                                                         |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                       |
+| Now            | Sprint closed 2026-03-19. One BACKLOG item carries forward: the trade- import dialog (second attempt, postponed again). The ORE Import Wizard landed in this sprint covers part of its goal. |
+| Waiting on     | None.                                                                                                                                                                                        |
+| Next           | Sprint 15 picks up the carry-over + likely continues NATS / reporting polish.                                                                                                                |
+| Last touched   | 2026-03-19                                                                                                                                                                                   |
+
 * Stories
 
-In execution order (with the messaging-pivot arc grouped):
-
-- [[id:7dcf008e-33a5-4493-8ff2-abe1e7d78053][Sprint 14 housekeeping]] — backlog refinement.
-- [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]] — seven-page directory-scan wizard.
-  Continues from sprint 13 trade_import_analysis.
-- [[id:84559b48-546b-4724-bdd0-53dbfca2c24a][Reporting subsystem]] — design + schema + domain +
-  messaging + repo + Qt UI with cron widget.
-- [[id:86927ebe-880c-42e4-8c94-e4705c4a622a][Trade status FSM]] — status FSM + activity_type taxonomy.
-- [[id:4d9869da-72ce-4b92-bb19-91c274ca7a2b][CLI domain layer]] — domain sub-menu in CLI syntax.
-- [[id:7b45be68-3970-4657-b2a3-f24151156ac7][pgmq queue management and messaging UI]] — first MQ UI.
-- [[id:ed082d5a-4afb-4bf9-81db-8712f881dde3][Custom MQ tables and in-process scheduler]] — replace
-  external extensions. Continues from sprint 13 scheduling_subsystem.
-- [[id:9c57d467-3f17-469a-a245-5f57e6b20784][Party codename]] — adjective_noun + two race-condition fixes.
-- [[id:1de357ff-7139-49fd-bc97-b30cd095ef53][JWT RS256 in ores.security]] — centralised JWT with RS256.
-- [[id:55bf0070-33c2-4f1d-986f-a787138942f6][NNG message broker attempt]] — partially built; hook-up
-  cancelled in favour of NATS.
-- [[id:05cbd9fa-b1f2-4b53-8f83-2952a892c94d][CMake preset build-tool suffixes]] — explicit Ninja /
-  Make naming.
-- [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]] — the pivot. Binary protocol replaced
-  with NATS request/reply + JetStream; 10 services migrated.
-- [[id:05cfef69-f80b-437f-aeee-3881e4fe96f1][Trade import mapping dialog (second attempt)]] —
-  BACKLOG; postponed again. Continues from sprint 13
-  trade_import_dialog.
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                     | State   | Theme                                                                                          |
+|-------------------------------------------------------------------------------------------+---------+------------------------------------------------------------------------------------------------|
+| [[id:7dcf008e-33a5-4493-8ff2-abe1e7d78053][Sprint 14 housekeeping]]                       | DONE    | backlog refinement.                                                                            |
+| [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]]                            | DONE    | seven-page directory-scan wizard. Continues from sprint 13 trade_import_analysis.              |
+| [[id:84559b48-546b-4724-bdd0-53dbfca2c24a][Reporting subsystem]]                          | DONE    | design + schema + domain + messaging + repo + Qt UI with cron widget.                          |
+| [[id:86927ebe-880c-42e4-8c94-e4705c4a622a][Trade status FSM]]                             | DONE    | status FSM + activity_type taxonomy.                                                           |
+| [[id:4d9869da-72ce-4b92-bb19-91c274ca7a2b][CLI domain layer]]                             | DONE    | domain sub-menu in CLI syntax.                                                                 |
+| [[id:7b45be68-3970-4657-b2a3-f24151156ac7][pgmq queue management and messaging UI]]       | DONE    | first MQ UI.                                                                                   |
+| [[id:ed082d5a-4afb-4bf9-81db-8712f881dde3][Custom MQ tables and in-process scheduler]]    | DONE    | replace external extensions. Continues from sprint 13 scheduling_subsystem.                    |
+| [[id:9c57d467-3f17-469a-a245-5f57e6b20784][Party codename]]                               | DONE    | adjective_noun + two race-condition fixes.                                                     |
+| [[id:1de357ff-7139-49fd-bc97-b30cd095ef53][JWT RS256 in ores.security]]                   | DONE    | centralised JWT with RS256.                                                                    |
+| [[id:55bf0070-33c2-4f1d-986f-a787138942f6][NNG message broker attempt]]                   | DONE    | partially built; hook-up cancelled in favour of NATS.                                          |
+| [[id:05cbd9fa-b1f2-4b53-8f83-2952a892c94d][CMake preset build-tool suffixes]]             | DONE    | explicit Ninja / Make naming.                                                                  |
+| [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]]                               | DONE    | the pivot. Binary protocol replaced with NATS request/reply + JetStream; 10 services migrated. |
+| [[id:05cfef69-f80b-437f-aeee-3881e4fe96f1][Trade import mapping dialog (second attempt)]] | BACKLOG | BACKLOG; postponed again. Continues from sprint 13 trade_import_dialog.                        |
 
 * Retrospective
 

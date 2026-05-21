@@ -11,27 +11,7 @@
 #+updated: 2025-12-15
 #+todo: STARTED | DONE
 
-Parent version: [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-15]
-:END:
-
-** Now
-Sprint closed 2025-12-15. Session cancellation live; variability is its
-own service; comms substrate has handshake/protocol split and retry;
-logging migrated to =std::string_view= (with the inevitable post-migration
-cleanup); two predecessor links from sprint 05 closed.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-15
+This page documents *Sprint 06* of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
@@ -44,24 +24,30 @@ generation/ — that did /not/ land. The =Experiment with simple code
 generation= entry was CANCELLED. Templatised generation reappears in
 later sprints with the codegen-driven approach.)
 
+* Status
+
+| Field          | Value                                                                                                                                                                                                                                                                          |
+|----------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| State          | DONE                                                                                                                                                                                                                                                                           |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                                                                                                         |
+| Now            | Sprint closed 2025-12-15. Session cancellation live; variability is its own service; comms substrate has handshake/protocol split and retry; logging migrated to =std::string_view= (with the inevitable post-migration cleanup); two predecessor links from sprint 05 closed. |
+| Waiting on     | None.                                                                                                                                                                                                                                                                          |
+| Next           | None.                                                                                                                                                                                                                                                                          |
+| Last touched   | 2025-12-15                                                                                                                                                                                                                                                                     |
+
 * Stories
 
-In execution order:
-
-- [[id:193a779f-a313-414c-9236-d075b84a2f67][Sprint 06 housekeeping]] — backlog, AI summary via the skill, OCR.
-- [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]] — successor of sprint 05's
-  authentication bootstrap; lands session cancellation + logout +
-  client heartbeat.
-- [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]] — split protocol, handshake service, multi-thread
-  coverage, retry-with-give-up.
-- [[id:55c35962-46a0-4353-93ad-fc15bf847c7e][Variability service]] — feature-flag service end-to-end.
-- [[id:d9c5fcef-da11-45da-b7fb-2a7b62c8aa0b][Logging refactor (std::string_view)]] — migration + fallout.
-- [[id:50bb2acb-5687-4bad-b03a-12af606e8eab][Bootstrap polish]] — context to DB, drop bootstrap flag, manifest
-  password-validation knob.
-- [[id:06c56ca2-9846-4dc9-b2f3-271bf4f084ce][CLI entity syntax follow-up]] — successor of sprint 05's CLI/REPL
-  reshape; mops up snags and adds top-level shell login/logout.
-- [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]] — event bus, system tray, past-timepoint
-  faker.
+#+ATTR_HTML: :class hug-leading
+| Story                                                                            | State | Theme                                                                                                      |
+|----------------------------------------------------------------------------------+-------+------------------------------------------------------------------------------------------------------------|
+| [[id:193a779f-a313-414c-9236-d075b84a2f67][Sprint 06 housekeeping]]              | DONE  | backlog, AI summary via the skill, OCR.                                                                    |
+| [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]]         | DONE  | successor of sprint 05's authentication bootstrap; lands session cancellation + logout + client heartbeat. |
+| [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]]                    | DONE  | split protocol, handshake service, multi-thread coverage, retry-with-give-up.                              |
+| [[id:55c35962-46a0-4353-93ad-fc15bf847c7e][Variability service]]                 | DONE  | feature-flag service end-to-end.                                                                           |
+| [[id:d9c5fcef-da11-45da-b7fb-2a7b62c8aa0b][Logging refactor (std::string_view)]] | DONE  | migration + fallout.                                                                                       |
+| [[id:50bb2acb-5687-4bad-b03a-12af606e8eab][Bootstrap polish]]                    | DONE  | context to DB, drop bootstrap flag, manifest password-validation knob.                                     |
+| [[id:06c56ca2-9846-4dc9-b2f3-271bf4f084ce][CLI entity syntax follow-up]]         | DONE  | successor of sprint 05's CLI/REPL reshape; mops up snags and adds top-level shell login/logout.            |
+| [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]]             | DONE  | event bus, system tray, past-timepoint faker.                                                              |
 
 * Retrospective
 
@@ -78,6 +64,7 @@ In execution order:
 - /Carry forward to v2/ :: the LISTEN/NOTIFY thread started here but
   the full client fan-out is incomplete; expect a successor story in
   a later sprint when the event bus gets its second consumer.
+
 
 * Notes on the conversion
 

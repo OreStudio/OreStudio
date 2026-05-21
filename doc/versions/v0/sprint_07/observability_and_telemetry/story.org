@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 8c4c8429-9328-46dd-88ef-27689fb556f2
 :END:
-#+title: Observability and telemetry
+#+title: Story: Observability and telemetry
 #+description: Create ores.observability and incorporate the new telemetry component; replace MaxMind for geo lookup.
 #+type: story
 #+version: 2
@@ -10,36 +10,32 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+successor: cd9e9d04-44d2-4d0d-95ce-719d55c40da4
 
-Parent sprint: [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]].
-
-Continued in: [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]] (sprint 08) — review pass of
-telemetry, comms analyser, and event viewer; implementations carried
-forward.
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-28]
-:END:
-
-** Now
-Completed 2025-12-28.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-28
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 07*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Bring up observability and telemetry as first-class components,
 and drop the MaxMind GeoIP dependency in favour of a permissively
 licensed alternative.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]] |
+| Now           | Completed 2025-12-28.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-12-28                                             |
+
+
+#+successor: cd9e9d04-44d2-4d0d-95ce-719d55c40da4
+
+Continued in: [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]] (sprint 08) — review pass of
+telemetry, comms analyser, and event viewer; implementations carried
+forward.
 
 * Acceptance
 

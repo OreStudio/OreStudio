@@ -180,6 +180,15 @@ th, td {
     border-bottom: 1px solid var(--border-color);
 }
 
+/* Opt-in: narrow leading columns hug their content; only the trailing
+   column wraps. Apply by attaching class="hug-leading" to the <table>
+   (in org-mode: #+ATTR_HTML: :class hug-leading). Suitable when the
+   last column is the only wide / wrappy one. */
+table.hug-leading th:not(:last-child),
+table.hug-leading td:not(:last-child) {
+    white-space: nowrap;
+}
+
 th {
     background-color: var(--bg-accent);
     color: #ffffff;

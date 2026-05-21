@@ -11,26 +11,7 @@
 #+updated: 2025-12-01
 #+todo: STARTED | DONE
 
-Parent version: [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-01]
-:END:
-
-** Now
-Sprint closed 2025-12-01. Bootstrap workflow live; CLI/REPL reshape
-landed; currency messaging collapsed to =save_currency=; skills layer
-grew to cover sprint-opening and release-notes generation.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-01
+This page documents *Sprint 05* of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
@@ -42,27 +23,30 @@ skills layer.
 /finish up all remaining tasks around domain entities/. The skills
 expansion thread surfaced organically and earned its own story.)
 
+* Status
+
+| Field          | Value                                                                                                                                                                                                |
+|----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| State          | DONE                                                                                                                                                                                                 |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                               |
+| Now            | Sprint closed 2025-12-01. Bootstrap workflow live; CLI/REPL reshape landed; currency messaging collapsed to =save_currency=; skills layer grew to cover sprint-opening and release-notes generation. |
+| Waiting on     | None.                                                                                                                                                                                                |
+| Next           | None.                                                                                                                                                                                                |
+| Last touched   | 2025-12-01                                                                                                                                                                                           |
+
 * Stories
 
-In execution order:
-
-- [[id:de3eee9f-331e-440c-b62c-abdefe1d87e2][Sprint 05 housekeeping]] — backlog, AI sprint summary, OCR
-  notebooks.
-- [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]] — new-sprint skill, release-notes
-  skill, project-planning support.
-- [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]] — successor of sprint 03's OpenSSL
-  BLOCKED item; sweeps up sqlgen residuals and comms-test leaks.
-- [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] — successor of sprint 03's
-  POSTPONED bootstrap workflow; adds delete-account and the
-  feature-flags split.
-- [[id:645df0b4-51b5-40bc-be07-0ab986111653][Infrastructure features]] — detached-mode default; database
-  configuration unified across console and Qt.
-- [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]] — entity-first command syntax across CLI and
-  REPL; synchronous REPL sockets.
-- [[id:9836e113-dea9-4605-ae1b-9b0c955b6b73][Currencies UI polish]] — JSON parsing, merged save_currency
-  message, XML-import dialog.
-- [[id:3a763afb-22f3-4e9a-b121-a71997221c3f][Documentation and diagrams]] — UML refresh after the reshape;
-  per-component diagram links.
+#+ATTR_HTML: :class hug-leading
+| Story                                                                           | State | Theme                                                                                                   |
+|---------------------------------------------------------------------------------+-------+---------------------------------------------------------------------------------------------------------|
+| [[id:de3eee9f-331e-440c-b62c-abdefe1d87e2][Sprint 05 housekeeping]]             | DONE  | backlog, AI sprint summary, OCR notebooks.                                                              |
+| [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]]       | DONE  | new-sprint skill, release-notes skill, project-planning support.                                        |
+| [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]]           | DONE  | successor of sprint 03's OpenSSL BLOCKED item; sweeps up sqlgen residuals and comms-test leaks.         |
+| [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] | DONE  | successor of sprint 03's POSTPONED bootstrap workflow; adds delete-account and the feature-flags split. |
+| [[id:645df0b4-51b5-40bc-be07-0ab986111653][Infrastructure features]]            | DONE  | detached-mode default; database configuration unified across console and Qt.                            |
+| [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]]                 | DONE  | entity-first command syntax across CLI and REPL; synchronous REPL sockets.                              |
+| [[id:9836e113-dea9-4605-ae1b-9b0c955b6b73][Currencies UI polish]]               | DONE  | JSON parsing, merged save_currency message, XML-import dialog.                                          |
+| [[id:3a763afb-22f3-4e9a-b121-a71997221c3f][Documentation and diagrams]]         | DONE  | UML refresh after the reshape; per-component diagram links.                                             |
 
 * Retrospective
 
@@ -78,6 +62,7 @@ In execution order:
 - /Carry forward to v2/ :: =POSTPONED: Troubleshoot skills in Claude=
   and =POSTPONED: Implement session cancellation= will become
   successor stories or product-backlog candidates in a later sprint.
+
 
 * Notes on the conversion
 

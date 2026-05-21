@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 5bafbeb2-c875-4655-bb78-801a3bf65022
 :END:
-#+title: Schema polish
+#+title: Story: Schema polish
 #+description: Clean up data-population layers, add rounding type table, add CSV/ORE/FPML labels to icons, add mapping artefact to population functions.
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-26]
-:END:
-
-** Now
-Completed 2026-01-26.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-26
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 10*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Four independent polish strands on the schema and the UI: layer the
 population scripts, add rounding types, label the import/export
 icons, and route the mapping data through the artefact pipeline.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Now           | Completed 2026-01-26.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-26                                             |
 
 * Acceptance
 

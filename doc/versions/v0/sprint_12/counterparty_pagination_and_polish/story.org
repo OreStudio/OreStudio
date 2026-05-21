@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: af7112ba-bf04-4b6b-ae2f-8fb1c7b362fe
 :END:
-#+title: Counterparty pagination and polish
+#+title: Story: Counterparty pagination and polish
 #+description: Pagination across the counterparty path; business-centres full CRUD; identifier cardinality + non-Latin text handling.
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-14]
-:END:
-
-** Now
-Completed 2026-02-14.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-14
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 12*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Bring counterparty up to the same pagination story as party;
 land a full business-centres CRUD surface; tidy the lingering
 identifier-cardinality + non-Latin issues.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-14.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-14                                             |
 
 * Acceptance
 

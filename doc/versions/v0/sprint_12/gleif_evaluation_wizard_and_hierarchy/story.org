@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 5886ffa7-170f-471c-a9db-37996e650cb6
 :END:
-#+title: GLEIF evaluation wizard and party hierarchy
+#+title: Story: GLEIF evaluation wizard and party hierarchy
 #+description: GLEIF-based evaluation-tenant onboarding wizard; party hierarchy graph visualisation.
 #+type: story
 #+version: 2
@@ -11,29 +11,23 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-19]
-:END:
-
-** Now
-Completed 2026-02-19.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-19
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 12*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Add the GLEIF-based evaluation-tenant onboarding wizard (separate
 from tenant provisioning) and a party-hierarchy graph visualisation.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-19.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-19                                             |
 
 * Acceptance
 

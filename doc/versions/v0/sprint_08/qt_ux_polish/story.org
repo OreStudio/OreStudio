@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: cb564c6a-f248-4740-8d1c-a1be148ce576
 :END:
-#+title: Qt UX polish
+#+title: Story: Qt UX polish
 #+description: Validation of features added during the holidays + assorted dialog fixes (currency, currencies, feature flags, accounts, log viewer).
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-11]
-:END:
-
-** Now
-Completed 2026-01-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-11
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 08*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Validate the holiday-period Qt features end-to-end and resolve the
 snag list across the currency, currencies, feature-flags, and accounts
 dialogs. Add a Qt UI for log viewing.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] |
+| Now           | Completed 2026-01-11.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-11                                             |
 
 * Acceptance
 

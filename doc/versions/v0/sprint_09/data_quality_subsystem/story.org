@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 3579ab5e-d5d8-45ae-8cb5-00ad1c58644f
 :END:
-#+title: Data Quality subsystem and Data Librarian
+#+title: Story: Data Quality subsystem and Data Librarian
 #+description: Stand up ores.dq as a first-class component: domain types, ER schema, messaging subsystem, Data Librarian UI, publication workflow, fake-world dataset.
 #+type: story
 #+version: 2
@@ -10,29 +10,8 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+successor: 75442a55-dbbb-4bc1-875e-981679e05621
 
-Parent sprint: [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]].
-
-Continued in: [[id:75442a55-dbbb-4bc1-875e-981679e05621][Librarian polish]] (sprint 10) — PR-review feedback on
-the librarian landed here.
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-20]
-:END:
-
-** Now
-Completed 2026-01-20.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-20
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 09*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -41,6 +20,23 @@ concept model, domain types + FpML reference data, ER refactor,
 messaging subsystem with breaking protocol bump, Data Librarian UI,
 subject-area surface, circular-dependency resolution, publication
 workflow, and a fake-world validation dataset.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]] |
+| Now           | Completed 2026-01-20.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-20                                             |
+
+
+#+successor: 75442a55-dbbb-4bc1-875e-981679e05621
+
+Continued in: [[id:75442a55-dbbb-4bc1-875e-981679e05621][Librarian polish]] (sprint 10) — PR-review feedback on
+the librarian landed here.
 
 * Acceptance
 

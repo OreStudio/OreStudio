@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 68c577a4-b33e-47cb-953f-f3d90a4440d6
 :END:
-#+title: Trade import mapping analysis
+#+title: Story: Trade import mapping analysis
 #+description: Document the mapping requirements between ORE portfolio XML and the ORES model (counterparty resolution, book assignment, portfolio mapping, batch configuration).
 #+type: story
 #+version: 2
@@ -10,36 +10,32 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+successor: f80bad05-2e66-458d-9223-1db0a83ef694
 
-Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
-
-Continued in: [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]] (sprint 14) — the analysis here
-surfaced that a directory-scanning wizard was the right shape; the
-wizard implements that.
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-25]
-:END:
-
-** Now
-Completed 2026-02-25.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-25
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 13*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Document the mapping requirements between ORE portfolio XML and the
 ORES model; design the approach for resolving string-based ORE
 references.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Now           | Completed 2026-02-25.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-25                                             |
+
+
+#+successor: f80bad05-2e66-458d-9223-1db0a83ef694
+
+Continued in: [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]] (sprint 14) — the analysis here
+surfaced that a directory-scanning wizard was the right shape; the
+wizard implements that.
 
 * Acceptance
 

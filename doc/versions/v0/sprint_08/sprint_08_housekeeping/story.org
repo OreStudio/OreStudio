@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: f40e0162-a092-4716-a256-206fdba93452
 :END:
-#+title: Sprint 08 housekeeping
+#+title: Story: Sprint 08 housekeeping
 #+description: Sprint backlog refinement, AI summary, notebook OCR scans.
 #+type: story
 #+version: 2
@@ -11,29 +11,23 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-11]
-:END:
-
-** Now
-Completed 2026-01-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-11
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 08*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Recurring per-sprint housekeeping: keep the backlog honest,
 continue the notebook OCR thread. AI summary was postponed.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] |
+| Now           | Completed 2026-01-11.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-11                                             |
 
 * Acceptance
 

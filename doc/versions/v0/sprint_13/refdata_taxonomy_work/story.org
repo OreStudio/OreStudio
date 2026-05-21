@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7ae49d47-624c-41c6-8c07-cdbeb71d85ec
 :END:
-#+title: Refdata taxonomy work
+#+title: Story: Refdata taxonomy work
 #+description: Rounding type as a refdata entity; currency taxonomy split into asset_class + market_tier; asset-class naming cleaned up.
 #+type: story
 #+version: 2
@@ -11,24 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-24]
-:END:
-
-** Now
-Completed 2026-02-24.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-24
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 13*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -36,6 +19,17 @@ Three pieces of taxonomy hygiene: promote rounding type from a
 string to a proper refdata entity; split currency_type into
 asset_class + market_tier; rename asset-class values to avoid the
 trading-domain overload.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Now           | Completed 2026-02-24.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-24                                             |
 
 * Acceptance
 

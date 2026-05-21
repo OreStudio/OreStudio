@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7be09d1c-e25a-4783-a911-c37dec55cc43
 :END:
-#+title: CLI / REPL reshape
+#+title: Story: CLI / REPL reshape
 #+description: Reorganise the CLI by entity; expand the shell REPL to cover every entity; rename client to repl; synchronous socket ops in REPL.
 #+type: story
 #+version: 2
@@ -10,29 +10,8 @@
 #+created: 2025-11-25
 #+updated: 2025-11-25
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+successor: 06c56ca2-9846-4dc9-b2f3-271bf4f084ce
 
-Parent sprint: [[id:2429db80-ec7b-482c-9ff3-4d1933035863][Sprint 05]].
-
-Continued in: [[id:06c56ca2-9846-4dc9-b2f3-271bf4f084ce][CLI entity syntax follow-up]] (sprint 06) — argument-
-validation snags and top-level shell login/logout land there.
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-25]
-:END:
-
-** Now
-Completed 2025-11-25.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-25
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 05*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -41,6 +20,23 @@ Reshape the CLI and REPL surfaces from /verb-first/ (=ores.cli export
 export=). Pull every entity into the REPL with the same verb set so
 the CLI and REPL are interchangeable. Rename =client= to =repl= along
 the way.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:2429db80-ec7b-482c-9ff3-4d1933035863][Sprint 05]] |
+| Now           | Completed 2025-11-25.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-11-25                                             |
+
+
+#+successor: 06c56ca2-9846-4dc9-b2f3-271bf4f084ce
+
+Continued in: [[id:06c56ca2-9846-4dc9-b2f3-271bf4f084ce][CLI entity syntax follow-up]] (sprint 06) — argument-
+validation snags and top-level shell login/logout land there.
 
 * Acceptance
 

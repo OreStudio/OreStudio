@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: af70cdf6-071f-43a9-91bb-7eb9a59a550f
 :END:
-#+title: Currencies end-to-end
+#+title: Story: Currencies end-to-end
 #+description: Bring currency reference data through XML, JSON, the database, and the Qt UI as the first complete data type.
 #+type: story
 #+version: 2
@@ -11,24 +11,7 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2024-07-28]
-:END:
-
-** Now
-Story closed; currency data flows through XML → DB → Qt UI.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2024-07-28
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 01*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -36,6 +19,17 @@ Use currencies as the pathfinder data type that exercises every tier the
 project will need: XML import, JSON serialisation, database persistence,
 and Qt UI display. The shape of this story dictates the shape of every
 later reference-data story.
+
+* Status
+
+| Field         | Value                                                       |
+|---------------+-------------------------------------------------------------|
+| State         | DONE                                                        |
+| Parent sprint | [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]      |
+| Now           | Story closed; currency data flows through XML → DB → Qt UI. |
+| Waiting on    | None.                                                       |
+| Next          | None.                                                       |
+| Last touched  | 2024-07-28                                                  |
 
 * Acceptance
 

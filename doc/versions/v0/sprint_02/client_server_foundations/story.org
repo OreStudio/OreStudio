@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 145adede-c3dd-4b51-ad3b-d6b5506c6c37
 :END:
-#+title: Client/server foundations
+#+title: Story: Client/server foundations
 #+description: Introduce a client/server split via a cobalt-based runtime, a comms library, and risk messaging — recording GRPC/0MQ pivots.
 #+type: story
 #+version: 2
@@ -11,25 +11,7 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-10-15]
-:END:
-
-** Now
-Story closed; cobalt server/client running, comms library extracted,
-risk module exchanges messages.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-10-15
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 02*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -37,6 +19,17 @@ Introduce a client/server architecture into the project. The Qt
 application becomes the client; a runtime process — built on Boost
 cobalt — becomes the server. A new =comms= library carries the
 messages between them, and the risk module is the first consumer.
+
+* Status
+
+| Field         | Value                                                                                                |
+|---------------+------------------------------------------------------------------------------------------------------|
+| State         | DONE                                                                                                 |
+| Parent sprint | [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]                                               |
+| Now           | Story closed; cobalt server/client running, comms library extracted, risk module exchanges messages. |
+| Waiting on    | None.                                                                                                |
+| Next          | None.                                                                                                |
+| Last touched  | 2025-10-15                                                                                           |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 38c972e1-2dd2-41ae-a770-800fee90d1e6
 :END:
-#+title: Qt plugin architecture
+#+title: Story: Qt plugin architecture
 #+description: Extract ores.qt.api shared framework library; extract domain-specific plugins (admin, compute, refdata, party, mktdata, trading, workflow); move classes between plugins to satisfy ownership.
 #+type: story
 #+version: 2
@@ -11,28 +11,22 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-09]
-:END:
-
-** Now
-Completed 2026-04-09.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-09
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 16*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Extract ores.qt.api shared framework library; extract domain-specific plugins (admin, compute, refdata, party, mktdata, trading, workflow); move classes between plugins to satisfy ownership.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Now           | Completed 2026-04-09.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-04-09                                             |
 
 * Acceptance
 

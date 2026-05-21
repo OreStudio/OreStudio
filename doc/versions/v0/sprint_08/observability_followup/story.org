@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: cd9e9d04-44d2-4d0d-95ce-719d55c40da4
 :END:
-#+title: Observability follow-up
+#+title: Story: Observability follow-up
 #+description: Telemetry review, comms-analyser review, event-viewer review — all postponed within the sprint window.
 #+type: story
 #+version: 2
@@ -10,34 +10,32 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+predecessor: 8c4c8429-9328-46dd-88ef-27689fb556f2
 
-Parent sprint: [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]].
-
-Continued from: [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] (sprint 07) — sprint 07
-stood up the components; this story is the review pass which deferred
-all three review items to a later sprint.
-
-* BACKLOG Status
-
-** Now
-Review notes captured in sprint 08; all three implementation
-passes carry forward.
-
-** Waiting on
-A sprint with the slot to land the fixes.
-
-** Next
-Schedule the telemetry/comms-analyser/event-viewer fix passes.
-
-** Last touched
-2026-01-11
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 08*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Review the telemetry, comms-analyser, and event-viewer surfaces that
 landed in sprint 07. Raise fix lists. All three review items were
 POSTPONED within this sprint — implementation carries forward.
+
+* Status
+
+| Field         | Value                                                                              |
+|---------------+------------------------------------------------------------------------------------|
+| State         | BACKLOG                                                                            |
+| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]]                             |
+| Now           | Review notes captured in sprint 08; all three implementation passes carry forward. |
+| Waiting on    | A sprint with the slot to land the fixes.                                          |
+| Next          | Schedule the telemetry/comms-analyser/event-viewer fix passes.                     |
+| Last touched  | 2026-01-11                                                                         |
+
+
+#+predecessor: 8c4c8429-9328-46dd-88ef-27689fb556f2
+
+Continued from: [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] (sprint 07) — sprint 07
+stood up the components; this story is the review pass which deferred
+all three review items to a later sprint.
 
 * Acceptance
 

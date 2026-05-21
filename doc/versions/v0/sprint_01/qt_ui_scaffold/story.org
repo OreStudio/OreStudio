@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 36a36bcb-6d25-4cea-a2de-53741edad563
 :END:
-#+title: Qt UI scaffold
+#+title: Story: Qt UI scaffold
 #+description: Stand up the initial Qt application shell — hello world, splash, refactor toward a usable layout, and icon set.
 #+type: story
 #+version: 2
@@ -11,31 +11,24 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2024-07-28]
-:END:
-
-** Now
-Story closed; Qt shell builds, splash works, columns/rows tidied, icon
-set in.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2024-07-28
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 01*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Bring a runnable Qt application into existence with the visual basics
 the rest of v0 will build on: an application window, a splash screen,
 a sensible layout, and a coherent icon set.
+
+* Status
+
+| Field         | Value                                                                          |
+|---------------+--------------------------------------------------------------------------------|
+| State         | DONE                                                                           |
+| Parent sprint | [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]                         |
+| Now           | Story closed; Qt shell builds, splash works, columns/rows tidied, icon set in. |
+| Waiting on    | None.                                                                          |
+| Next          | None.                                                                          |
+| Last touched  | 2024-07-28                                                                     |
 
 * Acceptance
 

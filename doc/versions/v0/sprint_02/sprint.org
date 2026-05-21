@@ -11,25 +11,7 @@
 #+updated: 2026-05-18
 #+todo: STARTED | DONE
 
-Parent version: [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-10-23]
-:END:
-
-** Now
-Sprint closed 2025-10-23. Client/server foundations in place; serialisation
-and storage modernised; risk module extracted.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-10-23
+This page documents *Sprint 02* of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
@@ -41,25 +23,29 @@ plus "Add client and server support". The serialisation and storage work
 was the largest single thread by time, so it is reflected in the mission
 explicitly.)
 
+* Status
+
+| Field          | Value                                                                                                                      |
+|----------------+----------------------------------------------------------------------------------------------------------------------------|
+| State          | DONE                                                                                                                       |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                     |
+| Now            | Sprint closed 2025-10-23. Client/server foundations in place; serialisation and storage modernised; risk module extracted. |
+| Waiting on     | None.                                                                                                                      |
+| Next           | None.                                                                                                                      |
+| Last touched   | 2025-10-23                                                                                                                 |
+
 * Stories
 
-In execution order:
-
-- [[id:0fe2033d-180f-4195-a314-998917d570be][Sprint 02 housekeeping]] — sprint refinement, whiteboarding for the
-  new architecture, dev-environment fixes, Gemini action.
-- [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] — Windows/macOS builds, vcpkg caching,
-  Valgrind suppressions, broken-build firefighting.
-- [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] — cobalt-based server and client, =comms=
-  library, messaging for risk. Records the GRPC and 0MQ experiments
-  that were abandoned along the way.
-- [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]] — adopt reflect-cpp for JSON,
-  replace XML parsing with reflect-cpp, use sqlgen for Postgres.
-- [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] — temporal support for currencies,
-  CLI dump command, a containing structure for ORE example data.
-- [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]] — rename =core= to =risk= and refactor the
-  contents accordingly.
-- [[id:cf13ffb1-4d84-4965-ad65-c38b1d4849ab][CLI refactor and test]] — restructure the CLI to follow the new
-  project layout and add tests to the CLI parser.
+#+ATTR_HTML: :class hug-leading
+| Story                                                                            | State | Theme                                                                                                                                        |
+|----------------------------------------------------------------------------------+-------+----------------------------------------------------------------------------------------------------------------------------------------------|
+| [[id:0fe2033d-180f-4195-a314-998917d570be][Sprint 02 housekeeping]]              | DONE  | sprint refinement, whiteboarding for the new architecture, dev-environment fixes, Gemini action.                                             |
+| [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]]                 | DONE  | Windows/macOS builds, vcpkg caching, Valgrind suppressions, broken-build firefighting.                                                       |
+| [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]]           | DONE  | cobalt-based server and client, =comms= library, messaging for risk. Records the GRPC and 0MQ experiments that were abandoned along the way. |
+| [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]] | DONE  | adopt reflect-cpp for JSON, replace XML parsing with reflect-cpp, use sqlgen for Postgres.                                                   |
+| [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]]      | DONE  | temporal support for currencies, CLI dump command, a containing structure for ORE example data.                                              |
+| [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]]              | DONE  | rename =core= to =risk= and refactor the contents accordingly.                                                                               |
+| [[id:cf13ffb1-4d84-4965-ad65-c38b1d4849ab][CLI refactor and test]]               | DONE  | restructure the CLI to follow the new project layout and add tests to the CLI parser.                                                        |
 
 * Retrospective
 
@@ -77,6 +63,7 @@ Filled in retrospect, from the v0 record:
   =ABANDONED= tasks rather than deleted — they document why we are
   *not* using GRPC or 0MQ. This is exactly the kind of provenance
   that is missing in the v0 model.
+
 
 * Notes on the conversion
 

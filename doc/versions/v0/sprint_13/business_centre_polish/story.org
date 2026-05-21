@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 19ee14c8-952d-42d6-9ae1-ecea45a5efcf
 :END:
-#+title: Business centre polish
+#+title: Story: Business centre polish
 #+description: city_name field, US country hard-coding for NY centres, WRLD UN flag + Internal source, default column tidy.
 #+type: story
 #+version: 2
@@ -11,29 +11,23 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-22]
-:END:
-
-** Now
-Completed 2026-02-22.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-22
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 13*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Data-quality + UI polish round on business centres after the
 sprint-12 CRUD landing surfaced the rough edges.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Now           | Completed 2026-02-22.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-22                                             |
 
 * Acceptance
 

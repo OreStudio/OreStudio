@@ -11,27 +11,7 @@
 #+updated: 2026-05-19
 #+todo: STARTED | DONE
 
-Parent version: [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-06]
-:END:
-
-** Now
-Sprint closed 2026-02-06. One task carries forward: the sqlgen
-bound-parameters work, BLOCKED on upstream =getml/sqlgen#119=.
-
-** Waiting on
-Upstream sqlgen bound-parameter support.
-
-** Next
-Sprint 12 picks up the tenancy work in any surface that needs it
-(Qt, Wt, HTTP all benefit) and exercises the system end-to-end under
-a realistic multi-tenant load.
-
-** Last touched
-2026-02-06
+This page documents *Sprint 11* of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
@@ -43,30 +23,33 @@ RBAC roles, RLS), seeding (system tenant), test isolation
 data-leakage risk), and validation (shell, librarian publication, DQ
 metadata, eventing).
 
+* Status
+
+| Field          | Value                                                                                                                                                                |
+|----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| State          | DONE                                                                                                                                                                 |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                               |
+| Now            | Sprint closed 2026-02-06. One task carries forward: the sqlgen bound-parameters work, BLOCKED on upstream =getml/sqlgen#119=.                                        |
+| Waiting on     | Upstream sqlgen bound-parameter support.                                                                                                                             |
+| Next           | Sprint 12 picks up the tenancy work in any surface that needs it (Qt, Wt, HTTP all benefit) and exercises the system end-to-end under a realistic multi-tenant load. |
+| Last touched   | 2026-02-06                                                                                                                                                           |
+
 * Stories
 
-In execution order:
-
-- [[id:572c63f9-9a87-40fb-8609-8d4d7c1ccd39][Sprint 11 housekeeping]] — backlog + OCR.
-- [[id:0a69cb02-19df-4df7-bedd-81c57a604737][Engineering hygiene]] — past review comments; apt-get
-  retry; vcpkg cache fix.
-- [[id:b726d4ea-4e80-4d54-a5cc-0cd895ce883c][Database role split and schema consolidation]] —
-  preconditions: RBAC, single public schema, SQL tree tidy-up.
-- [[id:f6748da4-e8d7-48b6-b91f-bc05e68f53d8][Tenancy foundation]] — schema, seeding, login/test plumbing.
-- [[id:1eff8c9c-e4c2-49cc-a563-bb91923ec406][Tenancy-based test isolation]] — tenant_context service,
-  per-test tenants, RLS.
-- [[id:467e909e-ceac-4829-8688-d43179d38f18][Tenancy codegen and entity types]] — Mustache templates,
-  pgTAP, C++ tenant entities, protocol bump 26.1.
-- [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]] — libpq audit; upstream notice +
-  bound-params work.
-- [[id:2920a00e-538d-455e-9013-44a1c3a7ed36][Telemetry database sink]] — ores.telemetry.database;
-  test logging; three-tier tenant lifecycle.
-- [[id:b23bfd60-4604-4d43-92b3-3ef3e1d5dbe6][Service accounts and audit]] — account_type +
-  performed_by audit field + telemetry deadlock fix.
-- [[id:976a2745-6728-435e-970e-d1205d46dc7a][Per-request tenant context]] — security fix; tenant_id
-  wrapper; system tenant nil → max UUID.
-- [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]] — shell, librarian,
-  DQ metadata, eventing.
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                     | State | Theme                                                               |
+|-------------------------------------------------------------------------------------------+-------+---------------------------------------------------------------------|
+| [[id:572c63f9-9a87-40fb-8609-8d4d7c1ccd39][Sprint 11 housekeeping]]                       | DONE  | backlog + OCR.                                                      |
+| [[id:0a69cb02-19df-4df7-bedd-81c57a604737][Engineering hygiene]]                          | DONE  | past review comments; apt-get retry; vcpkg cache fix.               |
+| [[id:b726d4ea-4e80-4d54-a5cc-0cd895ce883c][Database role split and schema consolidation]] | DONE  | preconditions: RBAC, single public schema, SQL tree tidy-up.        |
+| [[id:f6748da4-e8d7-48b6-b91f-bc05e68f53d8][Tenancy foundation]]                           | DONE  | schema, seeding, login/test plumbing.                               |
+| [[id:1eff8c9c-e4c2-49cc-a563-bb91923ec406][Tenancy-based test isolation]]                 | DONE  | tenant_context service, per-test tenants, RLS.                      |
+| [[id:467e909e-ceac-4829-8688-d43179d38f18][Tenancy codegen and entity types]]             | DONE  | Mustache templates, pgTAP, C++ tenant entities, protocol bump 26.1. |
+| [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]]                          | DONE  | libpq audit; upstream notice + bound-params work.                   |
+| [[id:2920a00e-538d-455e-9013-44a1c3a7ed36][Telemetry database sink]]                      | DONE  | ores.telemetry.database; test logging; three-tier tenant lifecycle. |
+| [[id:b23bfd60-4604-4d43-92b3-3ef3e1d5dbe6][Service accounts and audit]]                   | DONE  | account_type + performed_by audit field + telemetry deadlock fix.   |
+| [[id:976a2745-6728-435e-970e-d1205d46dc7a][Per-request tenant context]]                   | DONE  | security fix; tenant_id wrapper; system tenant nil → max UUID.      |
+| [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]]             | DONE  | shell, librarian, DQ metadata, eventing.                            |
 
 * Retrospective
 

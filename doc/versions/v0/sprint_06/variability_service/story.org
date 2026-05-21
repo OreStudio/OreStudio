@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 55c35962-46a0-4353-93ad-fc15bf847c7e
 :END:
-#+title: Variability service
+#+title: Story: Variability service
 #+description: Stand up a dedicated variability service for feature flags: messaging surface, support across the stack.
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2025-12-08
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-08]
-:END:
-
-** Now
-Completed 2025-12-08.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-08
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 06*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Stand up =ores.variability= as a proper service: feature-flag domain
 model + repository + messaging surface. Closes the feature-flags
 thread that started as POSTPONED in sprint 03.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]] |
+| Now           | Completed 2025-12-08.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-12-08                                             |
 
 * Acceptance
 

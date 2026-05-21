@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: cf13ffb1-4d84-4965-ad65-c38b1d4849ab
 :END:
-#+title: CLI refactor and test
+#+title: Story: CLI refactor and test
 #+description: Restructure the CLI to follow the new project layout and add tests to the CLI parser.
 #+type: story
 #+version: 2
@@ -11,31 +11,24 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-10-10]
-:END:
-
-** Now
-Story closed; CLI restructured under the new project layout, parser
-test suite green.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-10-10
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 02*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 The CLI grew up alongside the project's initial layout and no longer
 fits it. Restructure the CLI to follow the new project shape and add
 tests to the parser so future changes are caught.
+
+* Status
+
+| Field         | Value                                                                                 |
+|---------------+---------------------------------------------------------------------------------------|
+| State         | DONE                                                                                  |
+| Parent sprint | [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]                                |
+| Now           | Story closed; CLI restructured under the new project layout, parser test suite green. |
+| Waiting on    | None.                                                                                 |
+| Next          | None.                                                                                 |
+| Last touched  | 2025-10-10                                                                            |
 
 * Acceptance
 

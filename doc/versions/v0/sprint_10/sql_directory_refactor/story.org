@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 38b6dddf-c02b-4072-b599-41ab3bcc9c28
 :END:
-#+title: SQL directory refactor
+#+title: Story: SQL directory refactor
 #+description: Reorganise create/, drop/, populate/ into component-based subdirectories; safer teardown; admin object naming convention.
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-24]
-:END:
-
-** Now
-Completed 2026-01-24.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-24
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 10*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Reorganise =create/=, =drop/=, =populate/= into component-based
 subdirectories with consistent naming; harden teardown; clean up
 deprecated files.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Now           | Completed 2026-01-24.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-24                                             |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 2901ce42-268c-4ade-a3e4-cf6e01b8668e
 :END:
-#+title: Audit trail and system account
+#+title: Story: Audit trail and system account
 #+description: Standardise audit-trail terminology; system account (no login) for initial population; modified_by from session; generation-context KVP for FK + audit fields.
 #+type: story
 #+version: 2
@@ -11,24 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-17]
-:END:
-
-** Now
-Completed 2026-02-17.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-17
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 12*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -36,6 +19,17 @@ Get the audit trail honest. Standardise terminology. Add a non-login
 system account for initial population. Make protocol messages stop
 trusting client-supplied =modified_by=. Decompose the generation
 context so generators can read audit fields from environment.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-17.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-17                                             |
 
 * Acceptance
 

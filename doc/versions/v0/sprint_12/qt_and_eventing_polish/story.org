@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 5b48d17b-f510-4458-8fb9-95832f9782c2
 :END:
-#+title: Qt and eventing polish
+#+title: Story: Qt and eventing polish
 #+description: Shell widget in Qt, name-based role management, connections-save fix, configurable icon theme, test-stdout, unsubscribe-before-logout, events for connect/login.
 #+type: story
 #+version: 2
@@ -11,24 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-10]
-:END:
-
-** Now
-Completed 2026-02-10.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-10
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 12*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -36,6 +19,17 @@ Round of unrelated Qt + eventing polish: shell widget, name-based
 role management, save-on-connections fix, configurable icons,
 test-stdout, unsubscribe-before-logout, and lifecycle events for
 comms + accounts.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-10.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-10                                             |
 
 * Acceptance
 

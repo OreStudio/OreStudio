@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: a9055a54-ae06-4cc4-8b51-2cb9627e0d5a
 :END:
-#+title: Test infrastructure follow-up
+#+title: Story: Test infrastructure follow-up
 #+description: Continuation of sprint 03's CTest suite-level work — lands the BLOCKED CTest-only-shows-one-test-per-suite item.
 #+type: story
 #+version: 2
@@ -10,34 +10,30 @@
 #+created: 2025-11-20
 #+updated: 2025-11-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+predecessor: 22efe1e8-427f-488a-94a3-8ca78f180966
 
-Parent sprint: [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]].
-
-Continued from: [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-11-20]
-:END:
-
-** Now
-Completed 2025-11-20.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-11-20
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 04*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Close out the BLOCKED item from sprint 03's =test_infrastructure=:
 CTest only reported one Catch2 test per suite, making per-test
 failure analysis impossible.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]] |
+| Now           | Completed 2025-11-20.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-11-20                                             |
+
+
+#+predecessor: 22efe1e8-427f-488a-94a3-8ca78f180966
+
+Continued from: [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]].
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 679da033-934a-4330-951f-5016675cc8af
 :END:
-#+title: Compute grid observability
+#+title: Story: Compute grid observability
 #+description: Telemetry pipeline with TimescaleDB hypertables + samplers; service heartbeat + RAG-status dashboard.
 #+type: story
 #+version: 2
@@ -10,32 +10,29 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+successor: 014352d4-aaa5-48e7-903d-c06b5b4f7d62
-Parent sprint: [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]].
 
-Continued in: [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]] (sprint 16). Sprint 15 added the RAG service dashboard; sprint 16 adds the controller component that manages service definitions + instances + lifecycle events.
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-21]
-:END:
-
-** Now
-Completed 2026-03-21.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-21
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 15*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Make the compute grid observable: TimescaleDB telemetry pipeline
 feeding a unified dashboard with RAG service health.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Now           | Completed 2026-03-21.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-21                                             |
+
+
+#+successor: 014352d4-aaa5-48e7-903d-c06b5b4f7d62
+
+Continued in: [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]] (sprint 16). Sprint 15 added the RAG service dashboard; sprint 16 adds the controller component that manages service definitions + instances + lifecycle events.
 
 * Acceptance
 

@@ -54,6 +54,7 @@ results graphically inside ORE Studio.
 In lexicographic order. The lexicographically highest sprint folder is
 the current sprint; the rest are closed.
 
+#+ATTR_HTML: :class hug-leading
 | Sprint                                                            | Start      | End        | Theme                                                                          |
 |-------------------------------------------------------------------+------------+------------+--------------------------------------------------------------------------------|
 | [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]] | 2024-06-22 | 2024-07-28 | Project bootstrap; currencies end-to-end.                                      |

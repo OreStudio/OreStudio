@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 75442a55-dbbb-4bc1-875e-981679e05621
 :END:
-#+title: Librarian polish
+#+title: Story: Librarian polish
 #+description: Address PR-review feedback on the Data Librarian landed in sprint 09.
 #+type: story
 #+version: 2
@@ -10,36 +10,32 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+predecessor: 3579ab5e-d5d8-45ae-8cb5-00ad1c58644f
 
-Parent sprint: [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]].
-
-Continued from: [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] (sprint 09)
-— polishes the librarian based on PR-review feedback from the sprint
-09 work.
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-27]
-:END:
-
-** Now
-Completed 2026-01-27.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-27
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 10*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Address the PR-review feedback on the Data Librarian landed in
 sprint 09. Some of the review work ran out of token budget last
 sprint and was carried into this one.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Now           | Completed 2026-01-27.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-27                                             |
+
+
+#+predecessor: 3579ab5e-d5d8-45ae-8cb5-00ad1c58644f
+
+Continued from: [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] (sprint 09)
+— polishes the librarian based on PR-review feedback from the sprint
+09 work.
 
 * Acceptance
 

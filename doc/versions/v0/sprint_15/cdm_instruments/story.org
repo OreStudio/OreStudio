@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: f8e6374b-aaaf-4d50-98ce-844da4558172
 :END:
-#+title: CDM instrument domain models
+#+title: Story: CDM instrument domain models
 #+description: Four CDM-inspired instrument phases: rates (Swap, CrossCurrencySwap, CapFloor, Swaption), FX (FxForward, FxSwap, FxOption), bond (Bond, ForwardBond, CallableBond, ConvertibleBond, BondRepo), credit (CDS, CDSIndex, SyntheticCDO).
 #+type: story
 #+version: 2
@@ -10,33 +10,30 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+successor: ce26e56b-944f-4c89-b5a9-e0dabf521908
-Parent sprint: [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]].
 
-Continued in: [[id:ce26e56b-944f-4c89-b5a9-e0dabf521908][Per-type instrument tables]] (sprint 16). Sprint 15's four CDM instrument models lived on a shared instruments table; sprint 16 replaces it with per-type tables for rates / FX / equity.
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-30]
-:END:
-
-** Now
-Completed 2026-03-30.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-30
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 15*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Lay down the CDM-inspired instrument domain model in four phases:
 rates, FX, credit, bond. Each phase is a full vertical slice (SQL,
 domain, repo, service, Qt UI).
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Now           | Completed 2026-03-30.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-30                                             |
+
+
+#+successor: ce26e56b-944f-4c89-b5a9-e0dabf521908
+
+Continued in: [[id:ce26e56b-944f-4c89-b5a9-e0dabf521908][Per-type instrument tables]] (sprint 16). Sprint 15's four CDM instrument models lived on a shared instruments table; sprint 16 replaces it with per-type tables for rates / FX / equity.
 
 * Acceptance
 

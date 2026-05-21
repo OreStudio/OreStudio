@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: d40d5971-c864-4449-91ad-ca8ab949a4a6
 :END:
-#+title: System and customer party
+#+title: Story: System and customer party
 #+description: System-party design lands end-to-end; customer-party flag via optional dataset members in the publish-bundle wizard.
 #+type: story
 #+version: 2
@@ -11,29 +11,23 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-11]
-:END:
-
-** Now
-Completed 2026-02-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-11
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 12*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Land system-party design end-to-end; let users opt into / out of
 LEI and similar via optional dataset bundle members.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-11.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-11                                             |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: ed082d5a-4afb-4bf9-81db-8712f881dde3
 :END:
-#+title: Custom MQ tables and in-process scheduler
+#+title: Story: Custom MQ tables and in-process scheduler
 #+description: Remove the pgmq + pg_cron external extensions; replace with custom ores_mq_* tables (party/tenant/system scope, task/channel queue types) and an in-process boost::asio scheduler loop.
 #+type: story
 #+version: 2
@@ -10,37 +10,33 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+predecessor: a0b6c877-2fad-457a-b0c2-000d3f707a5b
 
-Parent sprint: [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]].
-
-Continued from: [[id:a0b6c877-2fad-457a-b0c2-000d3f707a5b][Scheduling subsystem]] (sprint 13). That story built
-=ores.scheduler= on top of pg_cron; this one replaces the
-external pgmq + pg_cron extensions entirely with custom in-process
-infrastructure.
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-03-04]
-:END:
-
-** Now
-Completed 2026-03-04.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-03-04
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 14*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Replace the external pgmq + pg_cron extensions with custom in-
 process tables + scheduler. Tighter integration with RLS, full
 control over data structures, unified codebase.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]] |
+| Now           | Completed 2026-03-04.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-04                                             |
+
+
+#+predecessor: a0b6c877-2fad-457a-b0c2-000d3f707a5b
+
+Continued from: [[id:a0b6c877-2fad-457a-b0c2-000d3f707a5b][Scheduling subsystem]] (sprint 13). That story built
+=ores.scheduler= on top of pg_cron; this one replaces the
+external pgmq + pg_cron extensions entirely with custom in-process
+infrastructure.
 
 * Acceptance
 

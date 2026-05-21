@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0fe2033d-180f-4195-a314-998917d570be
 :END:
-#+title: Sprint 02 housekeeping
+#+title: Story: Sprint 02 housekeeping
 #+description: Sprint-level sundries — backlog refinement, architecture whiteboarding, dev-environment fixes, Gemini action.
 #+type: story
 #+version: 2
@@ -11,25 +11,7 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-10-23]
-:END:
-
-** Now
-Story closed; sprint backlog refined, architecture whiteboarded, dev
-environment tidied, Gemini action in CI.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-10-23
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 02*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -38,6 +20,17 @@ user-visible outcome: sprint backlog refinement, architecture
 whiteboarding, dev-environment fixes (emacs completions, misspell
 fixer, prog-mode URLs, REPL cleanup), and the Gemini code-review
 action.
+
+* Status
+
+| Field         | Value                                                                                                         |
+|---------------+---------------------------------------------------------------------------------------------------------------|
+| State         | DONE                                                                                                          |
+| Parent sprint | [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]                                                        |
+| Now           | Story closed; sprint backlog refined, architecture whiteboarded, dev environment tidied, Gemini action in CI. |
+| Waiting on    | None.                                                                                                         |
+| Next          | None.                                                                                                         |
+| Last touched  | 2025-10-23                                                                                                    |
 
 * Acceptance
 

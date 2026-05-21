@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 6b57c190-4bb7-4f63-bf3d-7fb6d81d8d94
 :END:
-#+title: Accounts to IAM
+#+title: Story: Accounts to IAM
 #+description: Rename ores.accounts to ores.iam; land lock-account, password reset, sign-up workflow, session info persistence.
 #+type: story
 #+version: 2
@@ -11,24 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2025-12-25]
-:END:
-
-** Now
-Completed 2025-12-25.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2025-12-25
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 07*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -36,6 +19,17 @@ Rename =ores.accounts= to =ores.iam= and broaden it from
 /accounts management/ into proper /Identity and Access Management/. Add
 the missing self-service surfaces — lock, password reset, sign-up — and
 leave the component ready for RBAC to land on top.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]] |
+| Now           | Completed 2025-12-25.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-12-25                                             |
 
 * Acceptance
 

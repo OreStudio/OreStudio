@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 014352d4-aaa5-48e7-903d-c06b5b4f7d62
 :END:
-#+title: Service lifecycle controller
+#+title: Story: Service lifecycle controller
 #+description: ores.controller component for managing service definitions + instances + lifecycle events; service dashboard polish; normalise all services to NATS-based hosting with unified heartbeat; menu restructure.
 #+type: story
 #+version: 2
@@ -10,32 +10,28 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+predecessor: 679da033-934a-4330-951f-5016675cc8af
 
-Parent sprint: [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]].
-
-Continued from: [[id:679da033-934a-4330-951f-5016675cc8af][Compute grid observability]] (sprint 15). Sprint 15 added the RAG service dashboard. This sprint adds the controller component that manages service definitions + instances + lifecycle events.
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-08]
-:END:
-
-** Now
-Completed 2026-04-08.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-08
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 16*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 ores.controller component for managing service definitions + instances + lifecycle events; service dashboard polish; normalise all services to NATS-based hosting with unified heartbeat; menu restructure.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Now           | Completed 2026-04-08.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-04-08                                             |
+
+
+#+predecessor: 679da033-934a-4330-951f-5016675cc8af
+
+Continued from: [[id:679da033-934a-4330-951f-5016675cc8af][Compute grid observability]] (sprint 15). Sprint 15 added the RAG service dashboard. This sprint adds the controller component that manages service definitions + instances + lifecycle events.
 
 * Acceptance
 

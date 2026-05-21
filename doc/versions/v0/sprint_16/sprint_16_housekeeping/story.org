@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: c1db4c7a-16d7-4289-a457-a6c6ce5c8b5c
 :END:
-#+title: Sprint 16 housekeeping
+#+title: Story: Sprint 16 housekeeping
 #+description: Sprint backlog refinement.
 #+type: story
 #+version: 2
@@ -11,28 +11,22 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-17]
-:END:
-
-** Now
-Completed 2026-04-17.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-17
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 16*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Sprint backlog refinement.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Now           | Completed 2026-04-17.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-04-17                                             |
 
 * Acceptance
 

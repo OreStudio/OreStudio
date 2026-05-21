@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 2d496a77-5238-4b5b-8cc6-c61fc59fa9c1
 :END:
-#+title: Scheduler UI complete
+#+title: Story: Scheduler UI complete
 #+description: Job Instances execution history + Scheduler Monitor live status views; real-time job lifecycle events; reactive UI.
 #+type: story
 #+version: 2
@@ -11,28 +11,22 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-04-11]
-:END:
-
-** Now
-Completed 2026-04-11.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-04-11
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 16*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Job Instances execution history + Scheduler Monitor live status views; real-time job lifecycle events; reactive UI.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Now           | Completed 2026-04-11.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-04-11                                             |
 
 * Acceptance
 

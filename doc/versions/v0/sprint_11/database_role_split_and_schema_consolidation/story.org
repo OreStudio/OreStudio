@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: b726d4ea-4e80-4d54-a5cc-0cd895ce883c
 :END:
-#+title: Database role split and schema consolidation
+#+title: Story: Database role split and schema consolidation
 #+description: Split the 'god' admin account into RBAC roles; collapse metadata/production schemas back into public; SQL directory + naming cleanup.
 #+type: story
 #+version: 2
@@ -11,30 +11,24 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-Parent sprint: [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]].
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-01-31]
-:END:
-
-** Now
-Completed 2026-01-31.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-01-31
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 11*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Get the database into the shape multi-tenant work needs:
 Principle-of-Least-Privilege RBAC roles, a single =public= schema
 (reversing the sprint-10 split), and a tidy SQL directory tree.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Now           | Completed 2026-01-31.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-31                                             |
 
 * Acceptance
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: bd4110c2-fdf7-47b0-a726-f4cd83ded8e5
 :END:
-#+title: FSM and trade support
+#+title: Story: FSM and trade support
 #+description: Generic FSM framework in Postgres; trade envelope schema (trades + identifiers + party roles); ORE envelope view; rename ores.trade → ores.trading.
 #+type: story
 #+version: 2
@@ -10,35 +10,31 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+successor: 6ac2981b-ba0a-4916-a2c1-6b5a816a9148
 
-Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
-
-Continued in: [[id:6ac2981b-ba0a-4916-a2c1-6b5a816a9148][FSM consolidation into DQ]] (sprint 13) — moves the FSM
-framework into the DQ layer where it conceptually belongs.
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-20]
-:END:
-
-** Now
-Completed 2026-02-20.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-20
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 12*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Add a generic FSM framework in Postgres and use it to land the
 trade-envelope schema. Rename =ores.trade= → =ores.trading= in the
 process.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-20.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-20                                             |
+
+
+#+successor: 6ac2981b-ba0a-4916-a2c1-6b5a816a9148
+
+Continued in: [[id:6ac2981b-ba0a-4916-a2c1-6b5a816a9148][FSM consolidation into DQ]] (sprint 13) — moves the FSM
+framework into the DQ layer where it conceptually belongs.
 
 * Acceptance
 

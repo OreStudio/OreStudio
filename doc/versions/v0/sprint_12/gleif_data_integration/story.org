@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 253ce971-c0f3-43c3-980c-276233250b86
 :END:
-#+title: GLEIF data integration
+#+title: Story: GLEIF data integration
 #+description: Add GLEIF LEI entities + relationships as datasets via codegen; central-bank LEIs; LEI-to-BIC mapping dataset.
 #+type: story
 #+version: 2
@@ -10,35 +10,31 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
-#+predecessor: 700d4325-2ad1-4e0d-b6af-900abbe1a66e
 
-Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
-
-Continued from: [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] (sprint 10) —
-that story shipped the GLEIF download + split script; this one
-turns the resulting CSVs into proper datasets + populate scripts.
-
-* DONE Status
-:PROPERTIES:
-:CLOSED: [2026-02-13]
-:END:
-
-** Now
-Completed 2026-02-13.
-
-** Waiting on
-None.
-
-** Next
-None.
-
-** Last touched
-2026-02-13
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 12*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
 Turn the GLEIF CSV subsets into proper datasets; expand anchor
 coverage with central banks; add LEI-to-BIC mapping.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-13.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-13                                             |
+
+
+#+predecessor: 700d4325-2ad1-4e0d-b6af-900abbe1a66e
+
+Continued from: [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] (sprint 10) —
+that story shipped the GLEIF download + split script; this one
+turns the resulting CSVs into proper datasets + populate scripts.
 
 * Acceptance
 

@@ -123,6 +123,19 @@ Generates 12 files: =ClientModel=, =MdiWindow=, detail/history dialogs,
 controller, and the two =.ui= form files.  Patterns are in
 [[id:2fddc2f6-c510-4a86-8c50-d79c83eddfff][Qt entity patterns]] and [[id:e44891dc-234c-42db-90e1-9421400abd1a][Qt menu and toolbar patterns]].
 
+** Component scaffold profiles
+
+These profiles create a new component skeleton rather than entity code.
+They generate CMakeLists, a master header, a stub header+impl, and test
+harness.  See [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]] for the split model and CMake dep chain.
+
+| Profile | Part | Files |
+|---|---|---|
+| =--profile component-api= | =ores.COMPONENT.api= | 9 (CMakeLists ×4, header, stub header+impl, test main+stub) |
+| =--profile component-core= | =ores.COMPONENT.core= | 9 (same set, core CMake deps) |
+| =--profile component-service= | =ores.COMPONENT.service= | 18 (core set + app/config headers+impls + main.cpp) |
+| =--profile component= | standalone (no split) | 9 (generic CMake deps) |
+
 * Entry points
 
 - =run_generator.sh= — the C++/SQL wrapper. Accepts a model path, an

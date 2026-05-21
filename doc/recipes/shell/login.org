@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 92e184f9-0a3d-44b5-bd4c-9521b818a69f
+:END:
+#+title: Login
+#+description: Login
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Explicit login is discouraged as it saves your credentials to the history.
+Instead, consider using [[id:CA27A829-0A1C-2C44-9AE3-D389D3898C4E][Auto login]].
+
+#+name: explicit-login
+#+begin_src ores-shell :exports none
+accounts login newuser3 Secure-Password-123
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<explicit-login>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Login successful!
+  User: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ores-shell> Bye!
+#+end_example

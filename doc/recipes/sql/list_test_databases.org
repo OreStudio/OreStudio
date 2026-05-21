@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID: bb9d68f2-f65d-4a65-8e08-81587c16f615
+:END:
+#+title: List Test Databases
+#+description: List Test Databases
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:database_management:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List databases created by automated tests (=ores_test_*=, =oresdb_test_*=):
+
+#+begin_src sql
+select * from ores_utility_test_databases_view;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+database_name
+#+end_example

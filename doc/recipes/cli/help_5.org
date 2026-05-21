@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 7954bc79-0d34-4149-9326-fceac88046d3
+:END:
+#+title: Help
+#+description: Help
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:feature_flags:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Show available operations for feature flags.
+
+#+begin_src sh :wrap src text
+./ores.cli variability feature-flags --help
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+feature-flags - Manage feature flags
+
+Usage: ores.cli feature-flags <operation> [options]
+
+Available operations:
+   list           List feature flags as JSON or table (internal formats)
+   delete         Delete a feature flag by key
+   add            Add a new feature flag
+
+For operation-specific options, use: feature-flags <operation> --help
+#+end_src

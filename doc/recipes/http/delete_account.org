@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: 3a31efd8-12e4-4027-a0a0-1bbfc96b8989
+:END:
+#+title: Delete Account
+#+description: Delete Account
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:accounts_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Delete an account by ID (admin only).
+
+#+begin_src verb :wrap src json
+delete /accounts/{{(verb-var account_id)}}
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src

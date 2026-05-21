@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 453650ab-b1cb-45ce-b40b-3acbf93c21f5
+:END:
+#+title: List
+#+description: List
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:roles:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List roles from the database.
+
+**** List all as JSON
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam roles list ${db_args} ${log_args} --format json | jq .[:3]
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "version": 1,
+    "id": "0b24cff7-8095-4223-b060-d1fa0236a942",
+    "name": "Admin",
+    "description": "Full administrative access to all system functions",
+    "recorded_by": "system",
+    "change_reason_code": "system.new_record",
+    "change_commentary": "System seed data",
+    "recorded_at": "2026-01-11 21:39:06.000000000Z",
+    "permission_codes": []
+  },
+  {
+    "version": 1,
+    "id": "888f6214-dd68-4b52-b86e-3c49b1f6f5cc",
+    "name": "Operations",
+    "description": "Operations - currency management and account viewing",
+    "recorded_by": "system",
+    "change_reason_code": "system.new_record",
+    "change_commentary": "System seed data",
+    "recorded_at": "2026-01-11 21:39:06.000000000Z",
+    "permission_codes": []
+  },
+  {
+    "version": 1,
+    "id": "52a9730a-d868-4f21-967a-7959d3584924",
+    "name": "Sales",
+    "description": "Sales operations - read-only currency access",
+    "recorded_by": "system",
+    "change_reason_code": "system.new_record",
+    "change_commentary": "System seed data",
+    "recorded_at": "2026-01-11 21:39:06.000000000Z",
+    "permission_codes": []
+  }
+]
+#+end_src
+
+**** List all as table
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam roles list ${db_args} ${log_args} --format table
+#+end_src
+
+#+RESULTS:
+#+begin_src org
++--------------------------------------+-------------+---------------------------------------------------------------+-------------+-------------+---------+
+| ID (UUID)                            | Name        | Description                                                   | Permissions | Recorded By | Version |
++--------------------------------------+-------------+---------------------------------------------------------------+-------------+-------------+---------+
+| 0b24cff7-8095-4223-b060-d1fa0236a942 | Admin       | Full administrative access to all system functions            |             | system      | 1       |
+| f6dd5c47-25f6-42e3-90d2-ac7abc88ad1b | Custom Role | Role with specific permissions                                |             | admin       | 1       |
+| 888f6214-dd68-4b52-b86e-3c49b1f6f5cc | Operations  | Operations - currency management and account viewing          |             | system      | 1       |
+| 52a9730a-d868-4f21-967a-7959d3584924 | Sales       | Sales operations - read-only currency access                  |             | system      | 1       |
+| 6fde2b91-20ac-4c2e-a29d-a678bcfa92c9 | Support     | Support - read-only access to all resources and admin screens |             | system      | 1       |
+| 929cb0de-016e-4647-8bc2-e7664f680d7d | Trading     | Trading operations - currency read access                     |             | system      | 1       |
+| 7585f982-59df-403d-9bdb-bb757da248d3 | Viewer      | Viewer - basic read-only access to domain data                |             | system      | 1       |
++--------------------------------------+-------------+---------------------------------------------------------------+-------------+-------------+---------+
+
+#+end_src
+
+**** List specific role
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam roles list ${db_args} ${log_args} \
+  --format json --key "Admin" | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "version": 1,
+    "id": "0b24cff7-8095-4223-b060-d1fa0236a942",
+    "name": "Admin",
+    "description": "Full administrative access to all system functions",
+    "recorded_by": "system",
+    "change_reason_code": "system.new_record",
+    "change_commentary": "System seed data",
+    "recorded_at": "2026-01-11 21:39:06.000000000Z",
+    "permission_codes": []
+  }
+]
+#+end_src

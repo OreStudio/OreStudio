@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 1162e635-a8fe-4066-90cb-5887bfbc6c3c
+:END:
+#+title: List
+#+description: List
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List accounts from the database.
+
+**** List all as JSON
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam accounts list ${db_args} ${log_args} \
+  --format json | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "version": 1,
+    "is_admin": false,
+    "id": "e7bddd23-c004-4652-99e1-8d4ff5856fe1",
+    "modified_by": "admin",
+    "username": "newuser5",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$/hbMzxNC7PoCaMsu9FfYPg==$n6DPA0bUTHzF3X7cc0ZHB0A1ALpvhbN3Y95fybA3ZXnDWqOXjiBiv7WnCdhQkj5g4QGvh0mjG5oGYq7m07ySDg==",
+    "password_salt": "",
+    "totp_secret": "",
+    "email": "newuser5@example.com"
+  }
+]
+#+end_src
+
+**** List all as table
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam accounts list ${db_args} ${log_args} \
+  --format table
+#+end_src
+
+#+RESULTS:
+#+begin_src org
++--------------------------------------+----------+-------------------+-------------------+-------------+-------------------------------+---------+
+| ID (UUID)                            | Username | Email             | Change Reason     | Recorded By | Recorded At                   | Version |
++--------------------------------------+----------+-------------------+-------------------+-------------+-------------------------------+---------+
+| 019baeff-c69f-7571-8e0d-761e1cd3156c | newuser3 | newuser3@test.com | system.new_record | bootstrap   | 2026-01-11 21:39:16.000000000 | 1       |
++--------------------------------------+----------+-------------------+-------------------+-------------+-------------------------------+---------+
+
+#+end_src
+
+**** List specific account by username
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam accounts list ${db_args} ${log_args} \
+  --format json --key adminuser | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "version": 1,
+    "is_admin": true,
+    "id": "1ba0b8a3-9668-4a70-80fd-6d9d9efcda9d",
+    "modified_by": "admin",
+    "username": "adminuser",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$Ivga7n7Xz+PjF2rkDa5iVw==$+izU4e5BT57qFYdpiF6c2Ln1pRVEh8RH+nZkZ8MOHrWxDvTEjemC4yq34RiOrgzqaYGeX8QdjiEKBS5sQS614w==",
+    "password_salt": "",
+    "totp_secret": "",
+    "email": "admin@example.com"
+  }
+]
+#+end_src
+
+**** List all versions of an account
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam accounts list ${db_args} ${log_args} \
+  --format json --key adminuser --all-versions | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "version": 1,
+    "is_admin": true,
+    "id": "1ba0b8a3-9668-4a70-80fd-6d9d9efcda9d",
+    "modified_by": "admin",
+    "username": "adminuser",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$Ivga7n7Xz+PjF2rkDa5iVw==$+izU4e5BT57qFYdpiF6c2Ln1pRVEh8RH+nZkZ8MOHrWxDvTEjemC4yq34RiOrgzqaYGeX8QdjiEKBS5sQS614w==",
+    "password_salt": "",
+    "totp_secret": "",
+    "email": "admin@example.com"
+  }
+]
+#+end_src

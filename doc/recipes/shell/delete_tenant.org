@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 74a76d6b-ff31-42f6-8e1d-09501f09fa9f
+:END:
+#+title: Delete Tenant
+#+description: Delete Tenant
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:tenants:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Delete a tenant by ID. Note: The system tenant cannot be deleted.
+
+#+name: tenants-delete
+#+begin_src ores-shell :exports none
+tenants delete 019c1234-5678-90ab-cdef-1234567890ab
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<tenants-delete>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Tenant deleted successfully!
+ores-shell> Bye!
+#+end_example

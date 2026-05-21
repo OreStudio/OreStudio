@@ -1,0 +1,26 @@
+:PROPERTIES:
+:ID: f3efbcf2-a167-41ce-9d8e-42abbabb1d57
+:END:
+#+title: List Enabled Features
+#+description: List Enabled Features
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:feature_flags:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select name, description
+from ores.feature_flags
+where enabled = 1
+  and valid_to = '9999-12-31 23:59:59'::timestamptz
+order by name;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| name                  | description                                                                            |
+|-----------------------+----------------------------------------------------------------------------------------|
+| system.bootstrap_mode | Indicates whether the system is in bootstrap mode (waiting for initial admin account). |
+#+end_example

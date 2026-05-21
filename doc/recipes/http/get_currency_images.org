@@ -1,0 +1,981 @@
+:PROPERTIES:
+:ID: 0d267d00-a03e-4e8c-83b5-211ae64f61e2
+:END:
+#+title: Get Currency Images
+#+description: Get Currency Images
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:assets_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Retrieve currency-to-image mappings.
+
+#+begin_src verb :wrap src json
+get /assets/currency-images
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 20245
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "currency_images": [
+    {
+      "iso_code": "USD",
+      "image_id": "f6a9d8f3-f32e-4bed-83c2-a865f8f9f3e3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CAD",
+      "image_id": "2f57960f-5654-4fcb-9552-ada48f2d1634",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MXN",
+      "image_id": "2e7d4121-e91c-47c6-9a4b-a6620cd951d6",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BRL",
+      "image_id": "621bfb00-9958-4e1a-8242-7cd2065c25db",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ARS",
+      "image_id": "85de14d6-5556-410b-83dc-c0c92098d5db",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CLP",
+      "image_id": "a82097a8-52b4-4b10-a92d-d7b3c4470ad3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "COP",
+      "image_id": "40a7658a-5fe3-4444-8123-69eeac6b74f0",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "PEN",
+      "image_id": "797072b2-a60f-4026-83cd-29606eba83e3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "UYU",
+      "image_id": "ce1b7aa2-6832-4ac4-9ad4-77a9d4b95068",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "PYG",
+      "image_id": "0fa355ad-08a6-4273-82ea-3ae2ee5c998d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BOB",
+      "image_id": "0abcc77d-6cac-48b1-b568-cc80121c0a91",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "VES",
+      "image_id": "2467a970-0bd4-46e9-84ed-19746a9066f5",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CRC",
+      "image_id": "0a7b72e0-1e6f-4af6-9aae-85263761a6c1",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "PAB",
+      "image_id": "97eec69b-5e53-4af2-8fdc-b54e6ae924b1",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GTQ",
+      "image_id": "88fd171b-7dfc-431f-85ca-2f45cee084ca",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "HNL",
+      "image_id": "fd5b63a1-79f4-408d-9c9b-4347bf018178",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "NIO",
+      "image_id": "674207cf-1bad-4ecd-a8e6-6d564e92a7bc",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "DOP",
+      "image_id": "101a0062-d84a-4174-8f15-3b68ab444814",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CUP",
+      "image_id": "7127088d-2832-47f2-8627-3dcc940e9d50",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "JMD",
+      "image_id": "451fc4e3-89ec-48fb-9fba-1240a3abb229",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TTD",
+      "image_id": "c2536cf2-6579-480d-9f04-a41e07eeb451",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BBD",
+      "image_id": "05f4a87e-b481-4953-b6cd-9e9b5d3fc7a6",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BSD",
+      "image_id": "d1175684-4046-440b-92ac-0945bdb84963",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "HTG",
+      "image_id": "eb100538-defe-49a7-bf61-51f73e76ab6b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SRD",
+      "image_id": "29ccafd5-02fe-4da2-a215-eb5537acfad0",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GYD",
+      "image_id": "5cf97e9f-02a3-4fbc-8b5c-89f82ab315bf",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BZD",
+      "image_id": "48727981-a842-45d0-9019-123c8edf83aa",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "AWG",
+      "image_id": "9dfc69aa-fe57-4518-a988-0e089f58e390",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ANG",
+      "image_id": "e5f7ae6e-2361-44c7-b627-6ac092d761e6",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KYD",
+      "image_id": "a8ad04a1-abed-4642-9d75-c967c9f40dc1",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BMD",
+      "image_id": "fc1b8b9b-0a95-4233-bcea-1b95486bf7a2",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "FKP",
+      "image_id": "121c7cbb-ba6b-4d7d-863d-9162316a2cbc",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XCD",
+      "image_id": "c056bd53-7c7b-4313-990c-7b9d1d80828d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "EUR",
+      "image_id": "422dd41f-420b-4070-be46-cb36447c0692",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GBP",
+      "image_id": "1847b80c-d2aa-436f-888e-57b9c1c7a483",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CHF",
+      "image_id": "054e2173-7db3-498d-a165-87c1ebbfa8bf",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "NOK",
+      "image_id": "124dda6e-5aaf-4a6e-a43c-2434efd30b27",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SEK",
+      "image_id": "b0f911a7-870c-49e2-9344-baa45d1a4e9a",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "DKK",
+      "image_id": "7ee6f25a-a9c4-44c5-8575-d6158cca4b01",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ISK",
+      "image_id": "12649e0f-8a6a-443f-8609-e3679f470aea",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "PLN",
+      "image_id": "43ee0e71-5806-4567-9f96-35b78b281d6e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CZK",
+      "image_id": "cbcbde0d-2066-4fec-912a-a1b7aaf81eb0",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "HUF",
+      "image_id": "3bf49cc2-19ee-4917-b9df-e4f21e1ccdef",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "RON",
+      "image_id": "edcbdb6f-662d-4208-8d5f-2a43062b373a",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BGN",
+      "image_id": "8c86c82e-e418-4af7-81f2-fc77fac38fef",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "HRK",
+      "image_id": "575d72b1-af6a-4db9-9c14-31628c937c42",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "RSD",
+      "image_id": "df250afa-c64b-4710-a226-9fa7993cc9dc",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BAM",
+      "image_id": "aa21e9e2-eac2-44dd-a927-7eef3c9ffa30",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MKD",
+      "image_id": "73ded437-c571-4bc4-b6a2-7c87c67b2527",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ALL",
+      "image_id": "458d56d5-e535-477c-8af5-32bc6097c24b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MDL",
+      "image_id": "b38e725e-02d6-4355-b4ab-b2326de60243",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "UAH",
+      "image_id": "1c9a2b8c-68a3-4800-bb9d-7a8250b94e77",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BYN",
+      "image_id": "d5cada37-d552-4ef9-8885-194b099afba7",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "RUB",
+      "image_id": "a0b0356d-441b-49fb-aae4-255ba30f13f5",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GEL",
+      "image_id": "e56ae222-cdb9-44c5-b3b0-8a04bbadb8db",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "AMD",
+      "image_id": "9e01af37-ac88-4488-a857-81843736cf21",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "AZN",
+      "image_id": "5e0b55f6-83df-4fda-862a-0d1ab3d5139e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TRY",
+      "image_id": "a3e0aa64-58be-4eb1-bfe0-421db1e3d329",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GIP",
+      "image_id": "ce717713-0ed7-40be-bf34-763e5ccb0aa6",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "JPY",
+      "image_id": "f9d5c4f9-de32-4611-b28d-bcc89aa6ee78",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CNY",
+      "image_id": "f208658f-885e-4a85-b7fd-770b3c9ec8ca",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "HKD",
+      "image_id": "3dc927c3-a55f-40bf-a1a4-6491c414bbff",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TWD",
+      "image_id": "193d7b72-4506-4026-8449-d08648d32f5c",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KRW",
+      "image_id": "b23967ff-7899-4de9-b9e3-36a0051d09bb",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KPW",
+      "image_id": "d8d5b38d-32b1-4b7d-b139-1a4bb4b50d73",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SGD",
+      "image_id": "88e0154c-ba36-4572-9d65-0fede2d00842",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MYR",
+      "image_id": "01ae7cde-d700-429c-805a-7d5785185da8",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "IDR",
+      "image_id": "db28c17d-dcf8-4b4d-898f-65ac5f1f4853",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "THB",
+      "image_id": "0a990bce-edfa-4fc5-9d3c-202fb3f226fe",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "VND",
+      "image_id": "85fedc35-178a-4efe-b669-a504e75781a6",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "PHP",
+      "image_id": "64087892-b0fe-44ce-ad51-58b6582a7303",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "INR",
+      "image_id": "4ee29c9b-6c98-44cc-b6a6-da7a24dce16b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "PKR",
+      "image_id": "83010360-7a46-4078-9171-64e58c66e334",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BDT",
+      "image_id": "fb7bf13d-4dee-4ee5-aa65-102ff8f08f1c",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "LKR",
+      "image_id": "f9def450-31b7-4ddc-af57-bfc9daf3b60a",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "NPR",
+      "image_id": "9d860744-cc2b-4f5d-a277-85c08d08814d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MMK",
+      "image_id": "74ba8535-2783-4a97-8fac-1dd208f85252",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KHR",
+      "image_id": "c1fe8fbf-4c2a-4ede-afbe-60e7b62401f4",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "LAK",
+      "image_id": "bfcc629a-70ee-439d-91ce-f71b97587f29",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MNT",
+      "image_id": "1ba01af3-7817-4b5d-9a49-5ed41602728d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KZT",
+      "image_id": "5c4fcf1d-5d96-4716-bb8a-ba663abaa257",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "UZS",
+      "image_id": "d4798afc-8af6-48d5-961d-a5d1e94ad23b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KGS",
+      "image_id": "e1a88336-817c-4016-82bb-5f88bc952cd9",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TJS",
+      "image_id": "1d64f417-9d1f-4c8e-b40c-a37f57a30e49",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TMT",
+      "image_id": "3be24a78-97d6-4fde-bb04-a6083d848717",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "AFN",
+      "image_id": "1116a6b0-7511-4fda-869f-b4f9946c15b4",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "AUD",
+      "image_id": "beb9ef9e-ba7c-438d-9282-85298a083347",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "NZD",
+      "image_id": "3e313203-8012-4fad-a5c0-5d86aeb22370",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "FJD",
+      "image_id": "aea8eef2-473f-4204-a5a8-2bd60b25a40b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "PGK",
+      "image_id": "da8d24f9-3b43-4da6-9d6f-7e904e258f28",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SBD",
+      "image_id": "447643e4-611f-4755-8cee-ae1416bcd8c6",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "VUV",
+      "image_id": "c7248e0d-46fe-4edf-80f2-115a4920258c",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "WST",
+      "image_id": "ec232baf-223f-48ca-ae18-ab7b78631238",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TOP",
+      "image_id": "b2622a2a-c78e-479e-a00b-91d121230d1a",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MOP",
+      "image_id": "8ac695fa-6fd9-4016-9c78-5e1ab38ad9a3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BND",
+      "image_id": "308d8d06-f0f6-4dc8-a8cf-8aac0a27ae3b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BTN",
+      "image_id": "e2b25c8f-f22f-4532-8b4b-02d96528f07d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MVR",
+      "image_id": "ff55126d-f9a7-4c58-a1d5-5b6e84aa40f4",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SAR",
+      "image_id": "0fd6e616-dfad-467d-8bf6-fb3fdae96a2b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "AED",
+      "image_id": "31cafad9-db0c-4359-ada8-da331f08949e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "QAR",
+      "image_id": "6f7322b3-ad31-481d-89a5-c4291198b8e3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KWD",
+      "image_id": "3269c3e5-3c60-43c4-84ea-31635ff7888a",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BHD",
+      "image_id": "25973a2f-1236-4690-87b4-cc9346b9796d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "OMR",
+      "image_id": "dde7bcbe-c4ee-4972-82d1-bcf80b932013",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "JOD",
+      "image_id": "aaa2d58e-fe2f-4ba3-9ca3-a90696a8eef1",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ILS",
+      "image_id": "e29bb118-ba9a-485f-8574-12c1d963315e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "LBP",
+      "image_id": "991d5ee8-e557-4202-becd-6e60eaa3d236",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SYP",
+      "image_id": "8d640073-cd72-42da-a9d6-df87cdf6fa4e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "IQD",
+      "image_id": "0a707774-49f9-4dc8-83bb-6eb40c7f1491",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "IRR",
+      "image_id": "edfd781f-2f12-4a2e-aa02-e3bd689c2d05",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "YER",
+      "image_id": "aeb2560a-2d87-4be8-8cc6-8c22a3e8469b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ZAR",
+      "image_id": "556e30a8-0941-4e78-9fd8-8ddda851ef7d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "EGP",
+      "image_id": "7535ccd9-cfa4-4def-9253-5830383ad363",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "NGN",
+      "image_id": "6b7e84ec-d213-432e-bdd6-4cfdd4ff3f53",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KES",
+      "image_id": "224b3ed1-01d2-4cf4-8988-e08c09060b63",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GHS",
+      "image_id": "212f4371-13d0-4cb9-8f3a-27abaa86c5f1",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TZS",
+      "image_id": "a0d3b01c-dbad-4b9b-81ea-2ea51b1056ed",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "UGX",
+      "image_id": "e099909a-1a05-43a7-9dbe-f62dbb058807",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ETB",
+      "image_id": "0bf12652-8e80-4cc9-a718-b591556e2b26",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MAD",
+      "image_id": "5c4e7cb3-2439-45e2-85ab-39fca9e9aadc",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TND",
+      "image_id": "9cf418e6-5812-43dc-8ea2-7c52e8df31f3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "DZD",
+      "image_id": "57210766-e01c-46ac-9c21-f9bcc6db03c3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "LYD",
+      "image_id": "5f11f142-5581-43ec-8577-a5721cc6a029",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SDG",
+      "image_id": "7ecb9019-f787-4c48-8c03-93c0f6cef647",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SSP",
+      "image_id": "6ab55238-4423-45cd-9523-ca93ffa1ef23",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "AOA",
+      "image_id": "fcdb0cd7-6184-4bfa-bad0-180cebeb2224",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XAF",
+      "image_id": "bc2a5c97-55d0-49a2-9ff5-760991f6cdb4",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XOF",
+      "image_id": "fa9e2012-0e44-4a17-9663-2d61ef76bc83",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ZMW",
+      "image_id": "fd16439c-b0cf-4edd-8c63-3bd6e5795e2f",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MZN",
+      "image_id": "699b5ea7-c74d-4d84-9615-decd7f7206f3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BWP",
+      "image_id": "39436777-1584-472a-bfdc-04534f0e2505",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "NAD",
+      "image_id": "c0bb63fe-ee7f-4fe4-b6bd-eea0b4ae2dee",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SZL",
+      "image_id": "7ee54284-d654-48ac-b03b-55f564959283",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "LSL",
+      "image_id": "a974f8ba-d820-4970-a996-15c50b2575d8",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MWK",
+      "image_id": "cae5d22c-9a8e-4d4f-881c-bd5e85ed76aa",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ZWL",
+      "image_id": "67c4c792-99b7-41a9-9d9f-ff327c7e4444",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "RWF",
+      "image_id": "5d514ca3-0979-405e-a2a2-8cf7ba8498b9",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BIF",
+      "image_id": "16482952-7e65-484c-8be1-b26ccfc36722",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CDF",
+      "image_id": "01f27c3f-1b35-4905-8209-6ff247ff613e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "DJF",
+      "image_id": "b19ca24e-b641-4989-8ddd-f87942fc0eeb",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ERN",
+      "image_id": "17bd40c0-d833-41ec-afdb-c3f97c76d5eb",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SOS",
+      "image_id": "749e2236-8f8a-4c63-97a2-5b03ee81be00",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GMD",
+      "image_id": "2869a88f-7d3d-4d59-a4a0-8d8f18d97ae3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GNF",
+      "image_id": "3f0286db-a9dd-411e-9b80-523d8e9afb2e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SLL",
+      "image_id": "f3d6ca42-9f3f-4a81-8ead-a5dd6664f902",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "LRD",
+      "image_id": "495e2cd6-c1b7-40f5-a166-ea1b55b36564",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CVE",
+      "image_id": "0c790177-beb2-4991-8b7e-1faba24d92fd",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "STN",
+      "image_id": "ef1521da-3b8d-473a-9792-00210828cc87",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MRU",
+      "image_id": "20291b55-0ae2-41d7-80d5-7ed2cfa5ecc9",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MGA",
+      "image_id": "6baa83bd-25f4-4e92-b062-3067a0c0bba5",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MUR",
+      "image_id": "3953fcb9-8d45-4052-92b9-9967b939fdca",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SCR",
+      "image_id": "5e1e11e6-e7f2-4414-a7d5-a8deb4f36398",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KMF",
+      "image_id": "b8992a6e-2ca1-4596-a34c-7b5b263ece4e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XAU",
+      "image_id": "2c2f3266-daa8-4208-9158-a6d1febc7b87",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XAG",
+      "image_id": "c78d4394-28d7-46ec-b141-90840a1ed45d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XPT",
+      "image_id": "49650c61-d1f7-49f6-9b64-bbd4e9778b2f",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XPD",
+      "image_id": "61aecb59-6f3c-4af6-9572-b3ff7a5f254e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XDR",
+      "image_id": "586fea71-089e-427f-ae9a-f543c5175588",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    }
+  ]
+}
+#+end_src

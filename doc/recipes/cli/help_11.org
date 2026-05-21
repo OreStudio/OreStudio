@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: e7e4dda4-8bae-4ea4-bc35-ff56aecac4a4
+:END:
+#+title: Help
+#+description: Help
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:compute_hosts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Show available operations for compute hosts.
+
+#+begin_src sh :wrap src text
+./ores.cli compute hosts --help
+#+end_src

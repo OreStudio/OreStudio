@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: 0f1d158a-01c2-4296-9f3b-4cf2ab5e1619
+:END:
+#+title: Add
+#+description: Add
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:compute_apps:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Register a new compute application.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute apps add ${db_args} ${log_args} \
+  --name "ore-pricing-engine" \
+  --description "ORE-based derivatives pricing engine" \
+  --modified-by admin
+#+end_src

@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 54371d4e-6b27-4ebb-9368-158a63faec9a
+:END:
+#+title: Channels
+#+description: Channels
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:events:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List available event channels.
+
+#+name: events-channels
+#+begin_src ores-shell :exports none
+events channels
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<events-channels>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> Available event channels:
+  ores.assets.assets_changed - Currency image assets modified
+  ores.iam.account_changed - Account data modified
+  ores.iam.change_reason_category_changed - Change reason category data modified
+  ores.iam.change_reason_changed - Change reason data modified
+  ores.iam.permission_changed - Permission data modified
+  ores.iam.role_changed - Role data modified
+  ores.refdata.country_changed - Country data modified
+  ores.refdata.currency_changed - Currency data modified
+  ores.variability.feature_flags_changed - Feature flags modified
+
+Use 'listen <channel>' to subscribe, or 'listen *' for all.
+ores-shell> Bye!
+#+end_example

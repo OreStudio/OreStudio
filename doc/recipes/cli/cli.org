@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: A1B2C3D4-E5F6-7890-ABCD-EF1234567890
+:END:
+#+title: CLI recipes
+#+description: Inventory of cli recipes grouped by category.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:index:knowledge:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Recipes related to *CLI recipes*. Each entry below is a single how-do-I question with executable steps. New recipes go in this folder; re-run no script — just edit this inventory to add a link.
+
+* General
+
+- [[id:694dcc10-a1e1-45f9-8ecb-aee4c71395b2][Help]]
+- [[id:3d139b63-c1de-4410-930c-df11e62c2cea][Version]]
+
+* Currencies
+
+- [[id:cb85c105-afcb-49f6-bd62-2a5f9ca62590][Help]]
+- [[id:16b0472b-acb9-4f20-9f43-74c7e8f53593][Import]]
+- [[id:e4c1e73d-cd5f-45d0-af10-3dd223b697d1][Export]]
+- [[id:91b80133-bce8-4ecd-bd87-3196d04bd58b][List]]
+- [[id:0f1f88d0-d8c7-470f-808a-34ea686226d1][Delete]]
+- [[id:71cabb20-a7b2-46c3-9a19-f8c0662a5422][Add]]
+
+* Accounts
+
+- [[id:9be3a44a-7f2f-425d-9195-9a5bed671246][Help]]
+- [[id:1162e635-a8fe-4066-90cb-5887bfbc6c3c][List]]
+- [[id:62aab88c-aa0a-427d-8353-a46b095ee927][Delete]]
+- [[id:a4556487-4842-462b-9f87-b330d7db740d][Add]]
+
+* Login Info
+
+- [[id:350b20fd-a797-42ad-ae0b-f922d935a958][Help]]
+- [[id:f5a4c655-2d07-4d1f-a73b-e8a1b844ece8][List]]
+- [[id:d0820631-9884-410d-98c3-1388481fbc11][Delete]]
+- [[id:84d9e897-e90b-4a63-b8a7-82dd61234571][Add]]
+
+* Feature Flags
+
+- [[id:7954bc79-0d34-4149-9326-fceac88046d3][Help]]
+- [[id:806cb8dd-27e7-4c2c-9f65-462cd1a96a60][List]]
+- [[id:452a691f-988e-4493-b480-2139dd005d5a][Add]]
+- [[id:14e1981e-2032-46b7-a050-a6cff9311ed4][Delete]]
+
+* Roles
+
+- [[id:17a92bec-05ea-41a1-8118-1360e7ea8903][Help]]
+- [[id:453650ab-b1cb-45ce-b40b-3acbf93c21f5][List]]
+- [[id:4977e892-1b8e-4549-bd87-75f773361059][Delete]]
+- [[id:08fea192-496d-43ec-ad2d-9e0680b76001][Add]]
+
+* Permissions
+
+- [[id:898723ad-a564-4458-94a3-7b5dad08a6c3][Help]]
+- [[id:44698b77-2d0a-49ed-ba1b-04bf6ccc110a][List]]
+- [[id:60174bb6-de3d-4e82-84a5-4b8c337d3348][Delete]]
+- [[id:a30a46fe-f2b7-46da-b1fb-698acecc5f09][Add]]
+
+* Countries
+
+- [[id:592c6373-dc2f-45fe-ae2c-810fc1d3e40f][Help]]
+- [[id:d67f1e36-6cc8-4311-b146-3834e9139829][List]]
+- [[id:c979c4e8-c10f-4d69-be82-39c60e5602ff][Delete]]
+- [[id:d3857fe6-8b07-4276-ad2a-8f32efb3755e][Add]]
+
+* Change Reasons
+
+- [[id:fa0057d2-9a0d-4a52-89a1-a123bb530333][Help]]
+- [[id:c7d76217-ae65-4272-b035-0567bf9bf2de][List]]
+- [[id:0f0b77d2-d635-4ae1-bbba-3e0e9ec396c3][Delete]]
+- [[id:59c39597-4483-4f32-8b36-82c24ef7ec26][Add]]
+
+* Change Reason Categories
+
+- [[id:4bfd3268-95df-45d0-aead-ed1d533d06cd][Help]]
+- [[id:3c1dc435-9227-4aad-b9cd-e9fd641975d0][List]]
+- [[id:6e1d3117-ca5b-4617-96a0-fd295654505a][Delete]]
+- [[id:ebe12443-ad16-4cd4-bd1f-25b71f17e37e][Add]]
+
+* Compute Hosts
+
+- [[id:e7e4dda4-8bae-4ea4-bc35-ff56aecac4a4][Help]]
+- [[id:22a2f77d-c2f5-4a39-9418-2da94ef0f410][List]]
+- [[id:15883cde-2b4e-4c37-b4c0-299ebf9e71f2][List as JSON]]
+- [[id:155b1482-7ec3-4db1-ae4d-44e0371aa5f2][Add]]
+
+* Compute Apps
+
+- [[id:2d6ead25-0654-4231-a64c-a4a45ccc9e09][Help]]
+- [[id:9c273142-ea54-44d0-96b1-c8660bd5bce8][List]]
+- [[id:c8709697-1082-44e3-863f-776332d890c1][List as JSON]]
+- [[id:0f1d158a-01c2-4296-9f3b-4cf2ab5e1619][Add]]
+
+* Compute App Versions
+
+- [[id:87976633-b5c7-422d-8d54-5a8f1a9a7be5][Help]]
+- [[id:47bcd022-22c8-4504-a4e9-c4e7cee76cb5][List]]
+- [[id:66dbe0b0-c8f6-4580-a977-d74efbca3eac][List as JSON]]
+- [[id:bb91fbcb-f8ab-4f50-9989-70fa2bb46627][Add]]
+
+* Compute Batches
+
+- [[id:1fc16986-44f0-422e-9a0a-7e29269359b1][Help]]
+- [[id:84ccbec1-136e-41f2-b024-104669ac6b99][List]]
+- [[id:c3b6efb2-6a52-4f32-8aa2-10f71ab6bc5f][List as JSON]]
+- [[id:59f9633d-510b-469a-b40b-acde9fb56836][Add]]
+
+* Compute Workunits
+
+- [[id:ff804fcd-1fbd-4069-a41d-10948738cd75][Help]]
+- [[id:2f9a2883-abb1-4065-936e-902100330f3f][List]]
+- [[id:c24e86a3-38cf-42cd-9496-7a02b99cd742][List as JSON]]
+- [[id:7b30ee14-5692-4070-8ce9-8874ee178f46][Add]]
+
+* Compute Results
+
+- [[id:0c871fc9-9b83-4fc0-87e5-4bb06046d6b7][Help]]
+- [[id:4b52c31c-98b0-4904-aef3-bb7899569af8][List]]
+- [[id:05b40ace-1db9-46e5-aee7-cfb32e32c0ff][List as JSON]]

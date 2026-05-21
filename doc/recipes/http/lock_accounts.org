@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 0bda612c-5251-40f6-8b7e-6eba7f317285
+:END:
+#+title: Lock Accounts
+#+description: Lock Accounts
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:accounts_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Lock one or more accounts (admin only).
+
+#+begin_src verb :wrap src json
+post /accounts/lock
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "account_ids": ["{{(verb-var account_id)}}"]
+}
+#+end_src

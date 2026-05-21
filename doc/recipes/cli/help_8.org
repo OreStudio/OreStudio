@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 592c6373-dc2f-45fe-ae2c-810fc1d3e40f
+:END:
+#+title: Help
+#+description: Help
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:countries:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Show available operations for countries.
+
+#+begin_src sh :wrap src text
+./ores.cli refdata countries --help
+#+end_src

@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: 77585b40-d712-4c90-99e7-6d6c0a206cc2
+:END:
+#+title: Get Account Permissions
+#+description: Get Account Permissions
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:rbac_role_based_access_control_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Get effective permissions for an account.
+
+#+begin_src verb :wrap src json
+get /accounts/{{(verb-var account_id)}}/permissions
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src

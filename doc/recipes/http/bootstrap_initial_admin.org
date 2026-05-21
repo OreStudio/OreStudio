@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: d3b34b6f-7fbf-461e-8660-d9bf90176ca0
+:END:
+#+title: Bootstrap Initial Admin
+#+description: Bootstrap Initial Admin
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:authentication_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Create the initial admin account. Only works from localhost when system is in
+bootstrap mode.
+
+#+begin_src verb :wrap src json
+post /auth/bootstrap
+Accept: application/json
+Content-Type: application/json
+
+{
+    "username": "newuser3",
+    "email": "newuser3@example.com",
+    "password": "Secure-Password-123"
+}
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 87
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "success": true,
+  "error_message": "",
+  "account_id": "019b9856-215c-7fd4-b139-11821e39d80a"
+}
+#+end_src

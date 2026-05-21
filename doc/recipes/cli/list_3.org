@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: f5a4c655-2d07-4d1f-a73b-e8a1b844ece8
+:END:
+#+title: List
+#+description: List
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:login_info:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List feature flags from the database.
+
+**** List all as JSON
+
+#+begin_src sh :wrap src json
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam login-info list ${db_args} ${log_args} --format json | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "last_login": "2025-12-12 16:07:21.000000000Z",
+    "account_id": "e7bddd23-c004-4652-99e1-8d4ff5856fe1",
+    "failed_logins": 0,
+    "locked": false,
+    "online": false,
+    "last_ip": "0.0.0.0",
+    "last_attempt_ip": "0.0.0.0"
+  }
+]
+#+end_src
+
+**** List all as table
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam login-info list ${db_args} ${log_args} --format table
+#+end_src
+
+#+RESULTS:
+#+begin_src org
++--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
+| Account ID                           | Last IP   | Last Attempt IP | Failed | Locked | Online | Last Login          |
++--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
+| 019baeff-c69f-7571-8e0d-761e1cd3156c | 127.0.0.1 | 127.0.0.1       | 0      | N      | N      | 2026-01-12 00:17:34 |
++--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
+
+#+end_src
+
+**** List specific feature flag
+
+#+begin_src sh :wrap src json
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam login-info list ${db_args} ${log_args} \
+  --format json --key "019b1008-6da1-733c-a6e6-e942eaab2ed6" | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "last_login": "1969-12-31 23:00:00.000000000Z",
+    "account_id": "019b1008-6da1-733c-a6e6-e942eaab2ed6",
+    "failed_logins": 0,
+    "locked": false,
+    "online": false,
+    "last_ip": "0.0.0.0",
+    "last_attempt_ip": "0.0.0.0"
+  }
+]
+#+end_src

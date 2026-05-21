@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 55b185b4-c9ea-4604-8116-a2efbaa9b491
+:END:
+#+title: Help
+#+description: Help
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:comms_analyser:general:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Display the available commands and options.
+
+#+begin_src sh
+./ores.comms.analyser --help
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ores.comms.analyser - ORES session recording analyser
+
+Usage: ores.comms.analyser [command] <session-file> [options]
+
+Commands:
+  read    Read and display session frames (default)
+  info    Display session metadata only
+
+General:
+  -h [ --help ]         Display usage and exit.
+  -v [ --version ]      Output version information and exit.
+  --verbose             Enable verbose output.
+
+Examples:
+  ores.comms.analyser read session-20250115-143205-abc123.ores
+  ores.comms.analyser info session.ores
+  ores.comms.analyser session.ores --verbose
+#+end_src

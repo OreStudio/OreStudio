@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 6a18169e-c629-433f-bf7a-6ddd90ec72ac
+:END:
+#+title: Login
+#+description: Login
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:authentication_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Authenticate with username and password.
+
+#+begin_src verb :wrap src json
+post /auth/login
+Accept: application/json
+Content-Type: application/json
+
+{
+    "username": "newuser3",
+    "password": "Secure-Password-123"
+}
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 592
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "success": true,
+  "account_id": "019b9856-215c-7fd4-b139-11821e39d80a",
+  "username": "newuser3",
+  "email": "newuser3@example.com",
+  "password_reset_required": false,
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMTliOTg1Ni0yMTVjLTdmZDQtYjEzOS0xMTgyMWUzOWQ4MGEiLCJpYXQiOjE3Njc3ODg1MzYsImV4cCI6MTc2Nzg3NDkzNiwiaXNzIjoib3JlcyIsImF1ZCI6Im9yZXMtYXBpIiwicm9sZXMiOlsiQWRtaW4iXSwidXNlcm5hbWUiOiJuZXd1c2VyMyIsImVtYWlsIjoibmV3dXNlcjNAZXhhbXBsZS5jb20iLCJzZXNzaW9uX2lkIjoiM2IyMTUzYmYtNWM0ZS00Yzg3LWE2ODMtZjY4NWE5OTk5MzFkIiwic2Vzc2lvbl9zdGFydCI6MTc2Nzc4ODUzNn0.xg6PT_c59qYsgKniBfdP_TIKyAwkv0bNOOi3d4Yu8aU"
+}
+#+end_src

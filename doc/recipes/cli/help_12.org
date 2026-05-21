@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 2d6ead25-0654-4231-a64c-a4a45ccc9e09
+:END:
+#+title: Help
+#+description: Help
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:compute_apps:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Show available operations for compute apps.
+
+#+begin_src sh :wrap src text
+./ores.cli compute apps --help
+#+end_src

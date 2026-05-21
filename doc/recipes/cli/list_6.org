@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 44698b77-2d0a-49ed-ba1b-04bf6ccc110a
+:END:
+#+title: List
+#+description: List
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:permissions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List permissions from the database.
+
+**** List all as JSON
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam permissions list ${db_args} ${log_args} --format json | jq .[:5]
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "id": "1498c520-d1de-44dd-9e80-fc55eed99cad",
+    "code": "*",
+    "description": "Full access to all operations"
+  },
+  {
+    "id": "bd12140d-8548-4a74-8c1c-f74a51c3b8f4",
+    "code": "accounts:create",
+    "description": "Create new user accounts"
+  },
+  {
+    "id": "a8181f95-9630-45d2-aa87-329739235891",
+    "code": "accounts:delete",
+    "description": "Delete user accounts"
+  },
+  {
+    "id": "9e41a6c8-ca64-42ef-85cb-824fd7831580",
+    "code": "accounts:lock",
+    "description": "Lock user accounts"
+  },
+  {
+    "id": "154ff7c3-9fc0-43cb-b2a7-a04ca8d29377",
+    "code": "accounts:read",
+    "description": "View user account details"
+  }
+]
+#+end_src
+
+**** List all as table
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam permissions list ${db_args} ${log_args} --format table
+#+end_src
+
+#+RESULTS:
+#+begin_src org
++--------------------------------------+-------------------------+---------------------------------------+
+| ID (UUID)                            | Code                    | Description                           |
++--------------------------------------+-------------------------+---------------------------------------+
+| 1498c520-d1de-44dd-9e80-fc55eed99cad | *                       | Full access to all operations         |
+| bd12140d-8548-4a74-8c1c-f74a51c3b8f4 | accounts:create         | Create new user accounts              |
+| a8181f95-9630-45d2-aa87-329739235891 | accounts:delete         | Delete user accounts                  |
+| 9e41a6c8-ca64-42ef-85cb-824fd7831580 | accounts:lock           | Lock user accounts                    |
+| 154ff7c3-9fc0-43cb-b2a7-a04ca8d29377 | accounts:read           | View user account details             |
+| df9f78b9-d404-42d5-8e47-8d34dcd2f53e | accounts:reset_password | Force password reset on user accounts |
+| 404da389-251c-45be-bff7-89f524dc8057 | accounts:unlock         | Unlock user accounts                  |
+| 2fbe9929-74c6-4b79-9189-81274e71cf50 | accounts:update         | Modify user account settings          |
+| 89449ee4-fd11-4d1b-b79a-a8ece124db15 | currencies:create       | Create new currencies                 |
+| 9e5872f5-b38c-46c5-91df-955f152c936d | currencies:delete       | Delete currencies                     |
+| 4086eb14-77d7-468b-9910-980f6125a71f | currencies:history      | View currency version history         |
+| e4d53707-2815-42c6-996b-6e6c7d92a334 | currencies:read         | View currency details                 |
+| caf0279f-6628-40f8-96e4-3b03e38eac9b | currencies:update       | Modify currency settings              |
+| 2431fc5e-d8ab-418c-9cec-6ce11c2a8805 | flags:create            | Create new feature flags              |
+| 8c888602-bc4a-41d4-8d44-fc4c0259220f | flags:delete            | Delete feature flags                  |
+| 0db19b38-fda4-43af-8a41-acf441a098d2 | flags:read              | View feature flag status              |
+| 62f0b1cb-fe50-4ee3-9c2e-9465c2932346 | flags:update            | Modify feature flag settings          |
+| a0ef49da-964d-49a7-80bd-54da813f4989 | login_info:read         | View login history and info           |
+| 0bb9f547-a6f3-4a3e-a042-a5211e0ec513 | roles:assign            | Assign roles to accounts              |
+| 107b10f8-3dc1-4dbd-8a8a-370d00e6210f | roles:create            | Create new roles                      |
+| 86c259d8-1598-449a-b47c-780c3311d52a | roles:delete            | Delete roles                          |
+| be06c01a-1e2f-4f90-b41a-80cec99c980f | roles:read              | View role details                     |
+| d2d8dead-f212-4c6f-8ec8-a80fd6800541 | roles:revoke            | Revoke roles from accounts            |
+| 24836c1b-9851-4bd6-b34f-1952cd101ade | roles:update            | Modify role permissions               |
++--------------------------------------+-------------------------+---------------------------------------+
+
+#+end_src
+
+**** List specific permission
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam permissions list ${db_args} ${log_args} \
+  --format json --key "accounts:create" | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "id": "bd12140d-8548-4a74-8c1c-f74a51c3b8f4",
+    "code": "accounts:create",
+    "description": "Create new user accounts"
+  }
+]
+#+end_src

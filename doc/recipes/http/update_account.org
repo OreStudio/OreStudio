@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: f6ac262b-ea31-47bc-b962-8f16ad342526
+:END:
+#+title: Update Account
+#+description: Update Account
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:accounts_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Update account details by ID (admin only).
+
+#+begin_src verb :wrap src json
+put /accounts/{{(verb-var account_id)}}
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "email": "updated@example.com"
+}
+#+end_src

@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: ad6a0ba3-3857-40c9-9a23-57bd240c115e
+:END:
+#+title: Check Bootstrap Status
+#+description: Check Bootstrap Status
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:authentication_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Check if the system is in bootstrap mode (awaiting initial admin account).
+
+#+begin_src verb :wrap src json
+get /auth/bootstrap-status
+Accept: application/json
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 108
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "is_in_bootstrap_mode": true,
+  "message": "System in BOOTSTRAP MODE - awaiting initial admin account creation"
+}
+#+end_src

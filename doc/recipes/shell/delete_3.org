@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 8a23c49d-61fb-4a0e-8829-abcd0463dec8
+:END:
+#+title: Delete
+#+description: Delete
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:change_reasons:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Delete a change reason by code.
+
+#+name: change-reasons-delete
+#+begin_src ores-shell :exports none
+change-reasons delete test_reason
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reasons-delete>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Change reason test_reason deleted successfully!
+ores-shell> Bye!
+#+end_example

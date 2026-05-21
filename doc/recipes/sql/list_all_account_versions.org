@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: b89a17b3-dd9d-4028-b850-cc7d4397b1fd
+:END:
+#+title: List All Account Versions
+#+description: List All Account Versions
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+View the complete temporal history of an account:
+
+#+begin_src sql
+select id, username, email, version, valid_from, valid_to
+from ores.accounts
+where username = 'admin'
+order by valid_from;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+id	username	email	version	valid_from	valid_to
+#+end_example

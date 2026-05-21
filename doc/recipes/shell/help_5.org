@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 7459c714-ad65-4be9-84c8-249a4d56231e
+:END:
+#+title: Help
+#+description: Help
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:change_reason_categories:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+name: help-change-reasons-categories-exit
+#+begin_src ores-shell :exports none
+change-reason-categories
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-change-reasons-categories-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> change-reason-categories> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - get
+	Retrieve all change reason categories from the server
+ - add <string> <string> <string>
+	Add a category (code description "commentary")
+ - delete <string>
+	Delete a category by code
+ - history <string>
+	Get version history for a category by code
+ - ores-shell
+	(menu)
+change-reason-categories> Bye!
+#+end_example

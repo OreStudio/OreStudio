@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 5a1b606b-db54-4187-9570-99894f0f9097
+:END:
+#+title: Download Result Output
+#+description: Download Result Output
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:compute_file_storage_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Download the result output file.
+
+#+begin_src verb :wrap src text
+get http://localhost:8080/api/v1/compute/results/{{(verb-var result_id)}}/output
+#+end_src

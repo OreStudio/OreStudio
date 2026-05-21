@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: dd903837-76fb-4061-a1ad-83f3f059fd3a
+:END:
+#+title: List
+#+description: List
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:roles:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List all roles in the system.
+
+#+name: list-roles
+#+begin_src ores-shell :exports none
+roles list
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<list-roles>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++--------------------------------------+-------------+---------------------------------------------------------------+--------------------------------------------------------------------------------------+-------------+---------+
+| ID (UUID)                            | Name        | Description                                                   | Permissions                                                                          | Recorded By | Version |
++--------------------------------------+-------------+---------------------------------------------------------------+--------------------------------------------------------------------------------------+-------------+---------+
+| 8a03c887-5f48-4d5e-9de0-aef7445e9ff9 | Operations  | Operations - currency management and account viewing          | iam::accounts:read, refdata::currencies:create, refdata::currencies:delete (+4 more) | postgres    | 1       |
+| e4bc15b2-2df2-4f33-8968-5b9445ff0e00 | Sales       | Sales operations - read-only currency access                  | refdata::currencies:read, variability::flags:read                                    | postgres    | 1       |
+| dae17381-7ce6-447e-957d-745e5add896b | SuperAdmin  | Platform super administrator with tenant management access    | *, iam::tenants:create, iam::tenants:delete (+5 more)                                | postgres    | 1       |
+| 621e3b9d-dae0-47b5-9c29-31cc56f2c09a | Support     | Support - read-only access to all resources and admin screens | iam::accounts:read, iam::login_info:read, iam::roles:read (+3 more)                  | postgres    | 1       |
+| bcee1515-5338-415c-bfab-448f0faca285 | TenantAdmin | Tenant administrator with full access within a tenant         | *                                                                                    | postgres    | 1       |
+| b94e37cb-5863-4aa8-9d3b-6f818e5ed681 | Trading     | Trading operations - currency read access                     | refdata::currencies:history, refdata::currencies:read, variability::flags:read       | postgres    | 1       |
+| 70916a6b-924a-4d5e-9314-1421e577fc5d | Viewer      | Viewer - basic read-only access to domain data                | refdata::currencies:read, variability::flags:read                                    | postgres    | 1       |
++--------------------------------------+-------------+---------------------------------------------------------------+--------------------------------------------------------------------------------------+-------------+---------+
+
+
+ores-shell> Bye!
+#+end_example

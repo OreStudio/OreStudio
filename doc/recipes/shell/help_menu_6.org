@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: d4f96bab-f96e-4441-8e53-584bbc046398
+:END:
+#+title: Help Menu
+#+description: Help Menu
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:events:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+name: help-events-exit
+#+begin_src ores-shell :exports none
+events
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-events-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> events> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - channels
+	List available event channels
+ - listen <string>
+	Subscribe to notifications for an event type
+ - unlisten <string>
+	Unsubscribe from notifications (event_type or * for all)
+ - subscriptions
+	List active subscriptions
+ - notifications
+	Display and clear pending notifications
+ - ores-shell
+	(menu)
+events> Bye!
+#+end_example

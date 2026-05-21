@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 3a124a2e-1b52-422b-89e0-6b858c205d33
+:END:
+#+title: Get All Permissions for an Account (via Roles)
+#+description: Get All Permissions for an Account (via Roles)
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:rbac_roles_and_permissions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select distinct a.username, p.code as permission_code
+from ores.accounts a
+join ores.account_roles ar on ar.account_id = a.id
+  and ar.valid_to = '9999-12-31 23:59:59'::timestamptz
+join ores.role_permissions rp on rp.role_id = ar.role_id
+  and rp.valid_to = '9999-12-31 23:59:59'::timestamptz
+join ores.permissions p on p.id = rp.permission_id
+  and p.valid_to = '9999-12-31 23:59:59'::timestamptz
+where a.valid_to = '9999-12-31 23:59:59'::timestamptz
+  and a.username = 'admin'
+order by p.code;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| username | permission_code |
+|----------+-----------------|
+#+end_example

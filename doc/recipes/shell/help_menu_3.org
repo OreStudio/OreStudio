@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 6ba77ef7-5f06-48cb-8be9-a4e9b670e910
+:END:
+#+title: Help Menu
+#+description: Help Menu
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:tenants:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+name: help-tenants-exit
+#+begin_src ores-shell :exports none
+tenants
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-tenants-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> tenants> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - get
+	Retrieve active tenants from the server
+ - get-all
+	Retrieve all tenants including deleted
+ - add <string> <string> <string> <string> <string>
+	Add a tenant (code name type hostname description)
+ - history <string>
+	Show history for a tenant (tenant_id)
+ - delete <string>
+	Delete a tenant (tenant_id)
+ - ores-shell
+	(menu)
+tenants> Bye!
+#+end_example

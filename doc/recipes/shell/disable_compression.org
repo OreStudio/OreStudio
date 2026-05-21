@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: ec0dd331-1b7f-4971-851a-73c9780ce891
+:END:
+#+title: Disable Compression
+#+description: Disable Compression
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:compression:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Disable compression for new connections.
+
+#+name: compression-off
+#+begin_src ores-shell :exports none
+compression off
+compression
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<compression-off>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> wrong command: compression off
+ores-shell> Compression: on (zlib, gzip, bzip2)
+ores-shell> Bye!
+#+end_example

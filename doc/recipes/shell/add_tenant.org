@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: d7d6bccb-26cc-47c9-b763-220c07062939
+:END:
+#+title: Add Tenant
+#+description: Add Tenant
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:tenants:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Create a new tenant with the specified parameters.
+
+#+name: tenants-add
+#+begin_src ores-shell :exports none
+tenants add acme "Acme Corp" organisation acme.com "Acme Corporation tenant"
+tenants add example "Example Corp" organisation example.com "Example Corporation tenant"
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<tenants-add>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Tenant added successfully!
+  ID: ea8ee6fb-17e7-4bff-ad4f-cb2be4ed8e6c
+ores-shell> ✓ Tenant added successfully!
+  ID: a45224a2-9350-4f13-aba6-a7610b0530a6
+ores-shell> Bye!
+#+end_example

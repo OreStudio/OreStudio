@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 28b359cc-1d56-4347-96ec-5d244c1fcaa7
+:END:
+#+title: Auto connect
+#+description: Auto connect
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+name: auto-connect
+#+begin_src ores-shell :exports none
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<auto-connect>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+
+⚠ WARNING: System is in BOOTSTRAP MODE
+  System in BOOTSTRAP MODE - awaiting initial admin account creation
+  Use 'bootstrap <username> <password> <email>' to create the initial admin account.
+
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> Bye!
+#+end_example

@@ -1,0 +1,15 @@
+:PROPERTIES:
+:ID: 428d0312-8094-4f9b-8fb1-f1ea9fa6b9cc
+:END:
+#+title: Download Workunit Config
+#+description: Download Workunit Config
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:compute_file_storage_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src verb :wrap src text
+get http://localhost:8080/api/v1/compute/workunits/{{(verb-var workunit_id)}}/config
+#+end_src

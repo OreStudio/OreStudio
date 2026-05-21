@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: d0dbc636-39d8-4542-ac44-975dc7ca38f6
+:END:
+#+title: Check Feature Flag Status
+#+description: Check Feature Flag Status
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:feature_flags:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select name, enabled
+from ores.feature_flags
+where name like '%bootstrap_mode%'
+  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| name                  | enabled |
+|-----------------------+---------|
+| system.bootstrap_mode |       1 |
+#+end_example

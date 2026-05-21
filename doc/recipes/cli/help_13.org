@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 87976633-b5c7-422d-8d54-5a8f1a9a7be5
+:END:
+#+title: Help
+#+description: Help
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:compute_app_versions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Show available operations for compute app-versions.
+
+#+begin_src sh :wrap src text
+./ores.cli compute app-versions --help
+#+end_src

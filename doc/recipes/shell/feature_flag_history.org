@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 660dd54d-8319-4508-b398-c02aa956c979
+:END:
+#+title: Feature Flag History
+#+description: Feature Flag History
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:variability:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Get version history for a feature flag.
+
+#+name: feature-flag-history
+#+begin_src ores-shell :exports none
+variability flag-history system.bootstrap_mode
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+<<feature-flag-history>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++-----------------------+---------+----------------------------------------------------------------------------------------+---------+-------------------+-------------+-------------------------------+
+| Name                  | Version | Description                                                                            | Enabled | Change Reason     | Recorded By | Recorded At                   |
++-----------------------+---------+----------------------------------------------------------------------------------------+---------+-------------------+-------------+-------------------------------+
+| system.bootstrap_mode | 1       | Indicates whether the system is in bootstrap mode (waiting for initial admin account). | 0       | system.new_record | system      | 2026-02-05 11:31:42.000000000 |
++-----------------------+---------+----------------------------------------------------------------------------------------+---------+-------------------+-------------+-------------------------------+
+
+
+ores-shell> Bye!
+#+end_example

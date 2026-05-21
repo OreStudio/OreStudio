@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: 69796171-66f4-4459-913d-01523fc27e54
+:END:
+#+title: Codegen recipes
+#+description: Inventory of codegen recipes.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :recipe:codegen:index:knowledge:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Recipes related to *codegen*. Each entry below is
+a single how-do-I question with executable steps.
+
+* Recipes
+
+- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]]
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]]
+- [[id:20d0a77d-e0c0-492e-b0ec-45c7638dd220][How do I run codegen?]]

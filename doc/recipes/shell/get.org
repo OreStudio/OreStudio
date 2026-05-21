@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 53e30b9f-e327-4250-8f8f-a4865fd5fe23
+:END:
+#+title: Get
+#+description: Get
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:currencies:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Get all currencies in the system.
+
+#+name: currencies-list
+#+begin_src ores-shell :exports none
+page-size
+currencies get
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<currencies-list>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> Current page size: 20
+ores-shell>
+
++----------+---------+------------------+--------+--------------+----------------+-----------+-----------------------------+-----------------+-------------------------------+
+| ISO Code | Version | Name             | Symbol | Type         | Fractions/Unit | Precision | Change Reason               | Recorded By     | Recorded At                   |
++----------+---------+------------------+--------+--------------+----------------+-----------+-----------------------------+-----------------+-------------------------------+
+| XLM      | 1       | Stellar          | XLM    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| PAXG     | 1       | PAX Gold         | PAXG   | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| USDC     | 1       | USD Coin         | USDC   | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| LINK     | 1       | Chainlink        | LINK   | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| HYPE     | 1       | Hype             | HYPE   | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| ZEC      | 1       | ZCash            | ZEC    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| USDT     | 1       | Tether           | USDT   | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| SOL      | 1       | Solana           | SOL    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| ADA      | 1       | Cardano          | ADA    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| TRX      | 1       | TRON             | TRX    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| HBAR     | 1       | Hedera Hashgraph | HBAR   | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| SUI      | 1       | Sui              | SUI    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| BCH      | 1       | Bitcoin Cash     | BCH    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| XMR      | 1       | Monero           | XMR    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| BTC      | 1       | Bitcoin          | ₿    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| ETH      | 1       | Ethereum         | Ξ     | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| XRP      | 1       | XRP              | ✕    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| BNB      | 1       | Binance Coin     | BNB    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| DOGE     | 1       | Dogecoin         | Ð     | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| AVAX     | 1       | Avalanche        | AVAX   | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
++----------+---------+------------------+--------+--------------+----------------+-----------+-----------------------------+-----------------+-------------------------------+
+
+
+
+
+Page 1 of 13 (20 of 257 total)
+ores-shell> Bye!
+#+end_example

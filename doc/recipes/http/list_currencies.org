@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: afbc3142-5de3-474e-b5b9-ccbecd1a65e9
+:END:
+#+title: List Currencies
+#+description: List Currencies
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:currencies_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Retrieve currencies with optional pagination.
+
+#+begin_src verb :wrap src json
+get /currencies?offset=0&limit=10
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src

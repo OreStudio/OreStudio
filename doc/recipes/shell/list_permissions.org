@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: e864dc84-a0df-4997-aced-e69c870f0afe
+:END:
+#+title: List Permissions
+#+description: List Permissions
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:permissions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List all permissions in the system.
+
+#+name: list-permissions
+#+begin_src ores-shell :exports none
+permissions list
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<list-permissions>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++--------------------------------------+-------------------------+---------------------------------------+
+| ID (UUID)                            | Code                    | Description                           |
++--------------------------------------+-------------------------+---------------------------------------+
+| 9419caac-72d8-450c-9d11-1f7918345e49 | *                       | Full access to all operations         |
+| 724e3690-a1b8-4fe4-a895-9a63d36d54bd | accounts:create         | Create new user accounts              |
+| 45585d27-2aa9-4962-a9d1-1dd5a28b0d4d | accounts:delete         | Delete user accounts                  |
+| 01015492-b33a-4423-be66-d893783abf59 | accounts:lock           | Lock user accounts                    |
+| 19590e4b-a7db-4658-983a-a2ae7d03c3a8 | accounts:read           | View user account details             |
+| 2811d1b2-2838-4ac2-b8a0-9946f5ab27f1 | accounts:reset_password | Force password reset on user accounts |
+| 67d955c7-f181-43e5-bec8-4e0abc7b598b | accounts:unlock         | Unlock user accounts                  |
+| d9d3ea86-9488-4c96-a630-49722a7e8818 | accounts:update         | Modify user account settings          |
+| 7fcae376-2fec-4fa3-8202-73bdf94102b6 | currencies:create       | Create new currencies                 |
+| 69517ef0-774e-4766-9f76-aa3dc7a13899 | currencies:delete       | Delete currencies                     |
+| 032cb9fe-3e20-4a5b-a868-81de0847159f | currencies:history      | View currency version history         |
+| fc20f9d6-2f9a-44fa-b3ab-35508c0bc159 | currencies:read         | View currency details                 |
+| f24f6086-b870-4181-a209-292d66645701 | currencies:update       | Modify currency settings              |
+| 89547294-7d87-487e-8943-e7dfa463ee6b | flags:create            | Create new feature flags              |
+| 2aac3165-1041-4d30-a302-d87131720771 | flags:delete            | Delete feature flags                  |
+| 44d8d0d2-b76f-45f3-9a0e-247741823b18 | flags:read              | View feature flag status              |
+| 113e6f5e-6dc5-4a9a-a517-830c7358ac3d | flags:update            | Modify feature flag settings          |
+| 2585f8bc-9f49-4263-b541-3649316089ab | login_info:read         | View login history and info           |
+| 34427cd3-142f-4e7b-a1c4-27a4f69a644b | roles:assign            | Assign roles to accounts              |
+| 35df85f7-d1bb-4a0f-b313-5a945b6180e2 | roles:create            | Create new roles                      |
+| 6de5d1c3-41b0-4308-91cf-ef99071f9b9f | roles:delete            | Delete roles                          |
+| 9a2eeab8-4d85-4165-96bb-b02b3bc6c458 | roles:read              | View role details                     |
+| 6cc5048f-5a75-4424-b4f6-df810179016d | roles:revoke            | Revoke roles from accounts            |
+| 5e28f39a-9949-4b9e-869a-aa149e25843a | roles:update            | Modify role permissions               |
+| 2039fe0b-cac8-42d7-be41-777161a3c62b | tenants:create          | Create new tenants                    |
+| 63398d70-793a-43c3-90ad-c330b325715a | tenants:impersonate     | Access other tenants                  |
+| 0d48b476-5560-480f-8e94-6e320245e835 | tenants:read            | View tenant details                   |
+| f56550e1-819f-4e9b-a50d-5833c5812b56 | tenants:suspend         | Suspend tenants                       |
+| 989874d8-f59f-41e2-90e0-4c600ed50c0d | tenants:terminate       | Terminate tenants                     |
+| bf8c077f-ed23-4702-b4f6-0841de33f090 | tenants:update          | Modify tenant settings                |
++--------------------------------------+-------------------------+---------------------------------------+
+
+
+ores-shell> Bye!
+#+end_example

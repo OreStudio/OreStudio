@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 04071145-177f-4afa-87d9-4c15b7ef821a
+:END:
+#+title: Display Session Metadata
+#+description: Display Session Metadata
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:comms_analyser:reading_session_files:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Use the =info= command to display only the session metadata without listing
+all frames. This is useful for quickly checking when and where a session was
+recorded. You can call it against a directory:
+
+#+begin_src sh
+./ores.comms.analyser info ${data_dir}/
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ores.comms.analyser:
+  File: "session-20260106-115622-019b932a.ores"
+  Session ID: 019b932a-50d3-7e71-8e5d-bd46e092365c
+  Start time: 2026-01-06 11:56:22
+  Server: localhost:55555
+  Protocol: v16.1
+  Compression: zlib
+
+ores.comms.analyser:
+  File: "session-20260106-114916-019b9323.ores"
+  Session ID: 019b9323-d06d-7403-bb4c-cd2aa5deb13b
+  Start time: 2026-01-06 11:49:16
+  Server: localhost:55555
+  Protocol: v16.1
+  Compression: zlib
+
+#+end_src
+
+Or call it against a specific file:
+
+#+begin_src sh
+./ores.comms.analyser info ${data_dir}/session-20260106-114916-019b9323.ores
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ores.comms.analyser:
+  File: "session-20260106-114916-019b9323.ores"
+  Session ID: 019b9323-d06d-7403-bb4c-cd2aa5deb13b
+  Start time: 2026-01-06 11:49:16
+  Server: localhost:55555
+  Protocol: v16.1
+  Compression: zlib
+
+#+end_src

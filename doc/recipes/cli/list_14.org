@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: 2f9a2883-abb1-4065-936e-902100330f3f
+:END:
+#+title: List
+#+description: List
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:compute_workunits:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List all compute workunits in table format.
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute workunits list ${db_args} ${log_args} --format table
+#+end_src

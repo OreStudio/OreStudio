@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 60174bb6-de3d-4e82-84a5-4b8c337d3348
+:END:
+#+title: Delete
+#+description: Delete
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:permissions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Delete a permission by ID.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam permissions delete ${db_args} ${log_args} \
+  --key "currencies:audit"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Permission deleted successfully: 63dce823-a4b1-451b-844e-b1baf52de3dc
+#+end_src

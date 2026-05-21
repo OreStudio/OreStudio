@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: c50edfa2-9618-452a-b0aa-a28b2d8a5847
+:END:
+#+title: Revoke Role
+#+description: Revoke Role
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:rbac_role_based_access_control_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Revoke a role from an account (admin only).
+
+#+begin_src verb :wrap src json
+delete /accounts/{{(verb-var account_id)}}/roles/{{(verb-var role_id)}}
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src

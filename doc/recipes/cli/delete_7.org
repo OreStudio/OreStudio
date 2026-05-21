@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: c979c4e8-c10f-4d69-be82-39c60e5602ff
+:END:
+#+title: Delete
+#+description: Delete
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:countries:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Delete a country by alpha-2 code.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli refdata countries delete ${db_args} ${log_args} \
+  --key "XX"
+#+end_src

@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: e8b519f9-f36f-4389-8152-08f5cd787bde
+:END:
+#+title: List Recent Sessions
+#+description: List Recent Sessions
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:sessions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select s.id, a.username, s.start_time, s.end_time,
+       s.client_ip, s.country_code, s.city
+from ores.sessions s
+join ores.accounts a on a.id = s.account_id
+  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
+order by s.start_time desc
+limit 20;
+#+end_src

@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: eec4f8be-26bb-42a6-9c60-e65ac9cefc41
+:END:
+#+title: Create
+#+description: Create
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Creates new user accounts on system tenant.
+
+#+name: create-account
+#+begin_src ores-shell :exports none
+accounts create newuser40 Secure-Password-123 567 newuser40@example.com
+accounts create newuser41 Secure-Password-123 567 newuser41@example.com
+accounts create newuser42 Secure-Password-123 567 newuser42@example.com
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<create-account>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Account created with ID: 019c3245-8c98-742f-a1e5-4746ed74fa05
+ores-shell> ✓ Account created with ID: 019c3245-8d12-7cae-9315-470f8a5c3839
+ores-shell> ✓ Account created with ID: 019c3245-8d8e-7a18-a5d4-4e1b316e542a
+ores-shell> Bye!
+#+end_example

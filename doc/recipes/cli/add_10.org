@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 155b1482-7ec3-4db1-ae4d-44e0371aa5f2
+:END:
+#+title: Add
+#+description: Add
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:compute_hosts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Register a new compute host node.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute hosts add ${db_args} ${log_args} \
+  --external-id "worker-01.example.com" \
+  --location "us-east-1" \
+  --cpu-count 32 \
+  --ram-mb 65536 \
+  --gpu-type "A100" \
+  --modified-by admin
+#+end_src

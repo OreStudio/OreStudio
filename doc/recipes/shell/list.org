@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: e706ef2d-00ba-44a1-bc3f-e206ef6eca30
+:END:
+#+title: List
+#+description: List
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Lists existing accounts.
+
+#+name: list-account
+#+begin_src ores-shell :exports none
+accounts list
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+<<list-account>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++--------------------------------------+--------------------+-----------------------+---------------------+-------------+-------------------------------+---------+
+| ID (UUID)                            | Username           | Email                 | Change Reason       | Recorded By | Recorded At                   | Version |
++--------------------------------------+--------------------+-----------------------+---------------------+-------------+-------------------------------+---------+
+| 019c2d93-213a-7800-a9e3-9093a7af2d5d | newuser41          | newuser41@example.com | system.new_record   | postgres    | 2026-02-05 11:32:23.000000000 | 1       |
+| 019c2d93-20bf-7750-acdb-2b34d97ecfca | newuser40          | newuser40@example.com | system.new_record   | postgres    | 2026-02-05 11:32:22.000000000 | 1       |
+| 019c2d92-8448-7158-90d0-ccb8b5f7e812 | newuser3           | newuser3@test.com     | system.new_record   | bootstrap   | 2026-02-05 11:31:42.000000000 | 1       |
+| 644b4827-7281-4596-b9e0-befeb123688a | ores_test_dml_user | test_dml@system.ores  | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
+| 3860fdff-54db-4d83-bb6b-3a7f45b88687 | ores_test_ddl_user | test_ddl@system.ores  | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
+| 0308a18f-d075-4ea0-a7a9-0211d7ca217b | ores_http_user     | http@system.ores      | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
+| e775c0ca-5d55-4d2d-a5dd-5f6ae7a432ba | ores_shell_user    | comms@system.ores     | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
+| cd426d64-3fcc-4306-8e5a-19149e3b89e0 | ores_wt_user       | wt@system.ores        | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
+| 30ed8453-69a6-4f5c-92c3-930424565cd5 | ores_cli_user      | cli@system.ores       | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
+| a9fb774d-2048-48dc-a96c-e432d7107ea4 | ores_ddl_user      | ddl@system.ores       | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
++--------------------------------------+--------------------+-----------------------+---------------------+-------------+-------------------------------+---------+
+
+
+
+Page 1 of 1 (10 of 10 total)
+ores-shell> Bye!
+#+end_example

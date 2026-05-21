@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: 0a3f763c-0c53-427d-923c-a2f11f916c2c
+:END:
+#+title: List Permissions
+#+description: List Permissions
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:rbac_role_based_access_control_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List all permissions in the system.
+
+#+begin_src verb :wrap src json
+get /permissions
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 2648
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "permissions": [
+    {
+      "id": "8f827c95-2af4-4d78-9ccb-22f5d9f4df99",
+      "code": "*",
+      "description": "Full access to all operations"
+    },
+    {
+      "id": "9e337a58-2ee6-4de4-8946-76015de6e928",
+      "code": "accounts:create",
+      "description": "Create new user accounts"
+    },
+    {
+      "id": "7151df18-e4c9-4522-bb65-c1055a3e97c1",
+      "code": "accounts:delete",
+      "description": "Delete user accounts"
+    },
+    {
+      "id": "c225162e-2b04-4685-b1be-0bacbe367e45",
+      "code": "accounts:lock",
+      "description": "Lock user accounts"
+    },
+    {
+      "id": "4956001c-5ece-4dc8-b437-c834045c25eb",
+      "code": "accounts:read",
+      "description": "View user account details"
+    },
+    {
+      "id": "5f5f8909-3820-411f-a9f2-d5efb5ad351a",
+      "code": "accounts:reset_password",
+      "description": "Force password reset on user accounts"
+    },
+    {
+      "id": "fc5587f3-72ad-4706-a1ac-ca735af5a919",
+      "code": "accounts:unlock",
+      "description": "Unlock user accounts"
+    },
+    {
+      "id": "cf4ac1a8-b39e-4faa-b6d3-f9ed3d1ef41a",
+      "code": "accounts:update",
+      "description": "Modify user account settings"
+    },
+    {
+      "id": "43ce84fb-b14a-490a-92d1-4eade25eda37",
+      "code": "currencies:create",
+      "description": "Create new currencies"
+    },
+    {
+      "id": "7fb3f2e6-9b0d-4996-9c02-14e39a732acd",
+      "code": "currencies:delete",
+      "description": "Delete currencies"
+    },
+    {
+      "id": "5472a25a-40cf-4bac-9c95-dda2589f12f7",
+      "code": "currencies:history",
+      "description": "View currency version history"
+    },
+    {
+      "id": "17f8d400-47fa-4648-8b47-48ab3c1ec82b",
+      "code": "currencies:read",
+      "description": "View currency details"
+    },
+    {
+      "id": "e1bca8df-8133-4c08-9365-160baf99125e",
+      "code": "currencies:update",
+      "description": "Modify currency settings"
+    },
+    {
+      "id": "62e6e9ea-5258-41d2-9107-0602512801e6",
+      "code": "flags:create",
+      "description": "Create new feature flags"
+    },
+    {
+      "id": "8e42e330-5467-48c2-9a26-5af5b5fcb10e",
+      "code": "flags:delete",
+      "description": "Delete feature flags"
+    },
+    {
+      "id": "3b26954f-6368-4c12-b2e2-67797d442714",
+      "code": "flags:read",
+      "description": "View feature flag status"
+    },
+    {
+      "id": "5f72cfef-c8a9-4926-a1a3-f51c955595f7",
+      "code": "flags:update",
+      "description": "Modify feature flag settings"
+    },
+    {
+      "id": "12e8300a-e76c-4cd6-a439-2098e45393a2",
+      "code": "login_info:read",
+      "description": "View login history and info"
+    },
+    {
+      "id": "95d69095-1223-4dbb-970e-8042d90d61de",
+      "code": "roles:assign",
+      "description": "Assign roles to accounts"
+    },
+    {
+      "id": "2301fe57-f568-4930-b3ec-4a9fba903932",
+      "code": "roles:create",
+      "description": "Create new roles"
+    },
+    {
+      "id": "e12a56d4-64a8-436d-8ad8-1909b2439369",
+      "code": "roles:delete",
+      "description": "Delete roles"
+    },
+    {
+      "id": "eba37c8c-79e2-4193-9a54-ceb555b1cdda",
+      "code": "roles:read",
+      "description": "View role details"
+    },
+    {
+      "id": "cd69a420-e93b-4e41-9bab-ee8d6dcd0b7a",
+      "code": "roles:revoke",
+      "description": "Revoke roles from accounts"
+    },
+    {
+      "id": "af5743da-3042-469d-8487-ed859b9de7f5",
+      "code": "roles:update",
+      "description": "Modify role permissions"
+    }
+  ]
+}
+#+end_src

@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 854b1200-2746-4418-a37e-c61cdb14182d
+:END:
+#+title: Save Currency
+#+description: Save Currency
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:currencies_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Create or update a currency (admin only).
+
+#+begin_src verb :wrap src json
+post /currencies
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "currency": {
+        "iso_code": "TST",
+        "name": "Test Currency",
+        "numeric_code": 999,
+        "symbol": "T",
+        "fractions_per_unit": 100
+    }
+}
+#+end_src

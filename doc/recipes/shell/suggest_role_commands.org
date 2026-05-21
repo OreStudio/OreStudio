@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: afdd8573-8d4f-4b2f-8246-23f68d2e304d
+:END:
+#+title: Suggest Role Commands
+#+description: Suggest Role Commands
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:permissions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Generate shell commands to assign all roles to an account. The second argument
+can be either a hostname or a tenant UUID.
+
+#+name: permissions-suggest
+#+begin_src ores-shell :exports none
+permissions suggest newuser60 example.com
+permissions suggest newuser61 acme.com
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<permissions-suggest>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> # Role assignment commands for: newuser60@example.com
+# Account ID: 019c3245-e0d3-7fd2-9883-c335b920b797
+
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 e1dc5f65-9010-4d7b-be52-c5d07247c095  # DataPublisher
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 25b2d945-db76-48be-a16b-4964c4287abc  # Operations
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 a8dc1f14-332a-443a-85af-da2fbf927ff7  # Sales
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 6d583a15-3c34-4522-8bd8-569e7d448225  # SuperAdmin
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 49eb7984-800e-460c-b5a0-7a0ce5c94b0a  # Support
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 40224d84-446b-4cae-8fb8-86b16accd5e6  # TenantAdmin
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 36f85405-e037-46db-8f98-fe03c402081d  # Trading
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 e8e20a73-bb66-466c-8b11-8583341217f3  # Viewer
+ores-shell> # Role assignment commands for: newuser61@acme.com
+# Account ID: 019c3245-e15f-73dc-b843-3c131b96872f
+
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f e1dc5f65-9010-4d7b-be52-c5d07247c095  # DataPublisher
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 25b2d945-db76-48be-a16b-4964c4287abc  # Operations
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f a8dc1f14-332a-443a-85af-da2fbf927ff7  # Sales
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 6d583a15-3c34-4522-8bd8-569e7d448225  # SuperAdmin
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 49eb7984-800e-460c-b5a0-7a0ce5c94b0a  # Support
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 40224d84-446b-4cae-8fb8-86b16accd5e6  # TenantAdmin
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 36f85405-e037-46db-8f98-fe03c402081d  # Trading
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f e8e20a73-bb66-466c-8b11-8583341217f3  # Viewer
+ores-shell> Bye!
+#+end_example

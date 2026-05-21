@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: 4b52c31c-98b0-4904-aef3-bb7899569af8
+:END:
+#+title: List
+#+description: List
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:compute_results:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List all compute results in table format.
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute results list ${db_args} ${log_args} --format table
+#+end_src

@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 10408305-f864-4152-8fca-8132179f4df4
+:END:
+#+title: HTTP recipes
+#+description: Inventory of http recipes grouped by category.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:index:knowledge:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Recipes related to *HTTP recipes*. Each entry below is a single how-do-I question with executable steps. New recipes go in this folder; re-run no script — just edit this inventory to add a link.
+
+* Authentication                                                      :verb:
+
+- [[id:ad6a0ba3-3857-40c9-9a23-57bd240c115e][Check Bootstrap Status]]
+- [[id:d3b34b6f-7fbf-461e-8660-d9bf90176ca0][Bootstrap Initial Admin]]
+- [[id:6a18169e-c629-433f-bf7a-6ddd90ec72ac][Login]]
+- [[id:88104df6-6db1-4ee9-a572-7bbc7cf67d86][Signup]]
+- [[id:1e27ba58-468a-44b3-98f5-94727c8df233][Logout]]
+
+* Accounts                                                            :verb:
+
+- [[id:46b87cad-dbe9-494a-a8f5-50da7aee9fb9][List Accounts]]
+- [[id:cac9fd66-1d57-4d2c-af27-cbb8064508cf][Create Account]]
+- [[id:f6ac262b-ea31-47bc-b962-8f16ad342526][Update Account]]
+- [[id:3a31efd8-12e4-4027-a0a0-1bbfc96b8989][Delete Account]]
+- [[id:1244de89-061c-401f-ac3e-e371a79fb663][Get Account History]]
+- [[id:7c83c9fa-c898-49c8-81c5-a391307c1911][List Login Info]]
+- [[id:0bda612c-5251-40f6-8b7e-6eba7f317285][Lock Accounts]]
+- [[id:e97f5e82-4ad4-4b9a-9fef-7831371d527e][Unlock Accounts]]
+- [[id:12b69414-f6b2-4d08-8a72-b40f0bf5bbb9][Reset Password]]
+
+* Current User                                                        :verb:
+
+- [[id:4b4302d0-73c5-47bc-9b0f-1e49ab8b55ef][Change Password]]
+- [[id:46879465-eb8e-46aa-83da-a9acff512150][Update Email]]
+
+* RBAC (Role-Based Access Control)                                    :verb:
+
+- [[id:2fb451ac-d28a-4919-9a1f-f4366a7a75c4][List Roles]]
+- [[id:a9c3a711-97ba-4d8d-95ae-2c09d0843158][Get Role]]
+- [[id:0a3f763c-0c53-427d-923c-a2f11f916c2c][List Permissions]]
+- [[id:7bd7a5c6-f450-4162-b502-6803d9c1f779][Get Account Roles]]
+- [[id:77585b40-d712-4c90-99e7-6d6c0a206cc2][Get Account Permissions]]
+- [[id:5027042a-a137-4c7a-9c81-14a58c0ddccf][Assign Role]]
+- [[id:c50edfa2-9618-452a-b0aa-a28b2d8a5847][Revoke Role]]
+
+* Sessions                                                            :verb:
+
+- [[id:8b56e6d2-03ff-4958-a086-8ddedd45a9ba][List Sessions]]
+- [[id:85c2e902-c3e1-4434-b867-0c2cdd9a207a][Get Session Statistics]]
+- [[id:082de5c9-b0e4-46be-b4fa-9a0b7610ed5b][Get Active Sessions]]
+
+* Currencies                                                          :verb:
+
+- [[id:afbc3142-5de3-474e-b5b9-ccbecd1a65e9][List Currencies]]
+- [[id:854b1200-2746-4418-a37e-c61cdb14182d][Save Currency]]
+- [[id:5b72ec63-dfed-4d75-9e3f-4ee43b3dfb3f][Delete Currencies]]
+- [[id:639468ab-f141-413e-bfc1-3bd82f121b77][Get Currency History]]
+
+* Feature Flags                                                       :verb:
+
+- [[id:c143e2d1-3efb-4192-8c18-96eaf70d415b][List Feature Flags]]
+
+* Assets                                                              :verb:
+
+- [[id:0d267d00-a03e-4e8c-83b5-211ae64f61e2][Get Currency Images]]
+- [[id:8a6b3650-2f1f-4fb5-987c-0755af177006][Get Images]]
+
+* Compute File Storage                                                :verb:
+
+- [[id:7525055d-e7ac-4d48-8571-439a7487f850][Upload Package]]
+- [[id:3908decc-a581-4bde-9d76-d064410ab953][Download Package]]
+- [[id:f923319e-1c9d-4ea5-b824-54a08e31a6f0][Upload Workunit Input]]
+- [[id:a9074a87-e40e-4bb1-9e2a-9b9855875be8][Download Workunit Input]]
+- [[id:b6496640-b87d-4f86-bfcb-a693171a42c7][Upload Workunit Config]]
+- [[id:428d0312-8094-4f9b-8fb1-f1ea9fa6b9cc][Download Workunit Config]]
+- [[id:cc6fe132-8476-4fe9-bfba-f080cc7afdad][Upload Result Output]]
+- [[id:5a1b606b-db54-4187-9570-99894f0f9097][Download Result Output]]

@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 694dcc10-a1e1-45f9-8ecb-aee4c71395b2
+:END:
+#+title: Help
+#+description: Help
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:general:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Display global help showing all available commands.
+
+#+begin_src sh
+./ores.cli --help
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ORE Studio is a User Interface for Open Source Risk Engine (ORE).
+CLI provides a command line version of the interface.
+ORE Studio is created by the ORE Studio project.
+ores.cli uses a domain-based interface: <domain> <entity> <operation> <options>.
+See below for a list of valid domains and their entities.
+
+Global options:
+
+General:
+  -h [ --help ]                       Display usage and exit.
+  -v [ --version ]                    Output version information and exit.
+
+Logging:
+  -e [ --log-enabled ]                Generate a log file.
+  -l [ --log-level ] arg (=info)      What level to use for logging. Valid
+                                      values: trace, debug, info, warn, error.
+  --log-to-console                    Output logging to the console, as well as
+                                      to file.
+  --log-directory arg (=log)          Where to place the log files.
+  --log-filename arg (=ores.cli.log)  Name of the log file.
+
+Domains:
+
+   refdata        Reference data: currencies, countries.
+   iam            Identity and access management: accounts, roles, permissions, login-info.
+   dq             Data quality: change-reasons, change-reason-categories.
+   variability    Feature flags and variability: feature-flags.
+
+For entity and operation specific options, use: <domain> <entity> <operation> --help
+#+end_src

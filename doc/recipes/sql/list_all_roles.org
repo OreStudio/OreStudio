@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: b0f5dbb7-2a02-4986-b85f-9f0207c67657
+:END:
+#+title: List All Roles
+#+description: List All Roles
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:rbac_roles_and_permissions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select id, name, description, version
+from ores.roles
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by name;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| id                                   | name       | description                                                   | version |
+|--------------------------------------+------------+---------------------------------------------------------------+---------|
+| dd2ecaec-138b-453c-a110-77441a60583e | Admin      | Full administrative access to all system functions            |       1 |
+| b898350f-f704-4e97-b8ec-36c3481af052 | Operations | Operations - currency management and account viewing          |       1 |
+| d48b608d-c894-4346-887d-228e342d36c6 | Sales      | Sales operations - read-only currency access                  |       1 |
+| d533c93f-bf3c-4d1f-bba8-4e949b976a8a | Support    | Support - read-only access to all resources and admin screens |       1 |
+| a74f8a4e-f331-4179-aecb-cda61e472805 | Trading    | Trading operations - currency read access                     |       1 |
+| 6e4ee358-1970-400f-a3cb-fbcfe8296f52 | Viewer     | Viewer - basic read-only access to domain data                |       1 |
+#+end_example

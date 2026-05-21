@@ -1,0 +1,23 @@
+:PROPERTIES:
+:ID: d0820631-9884-410d-98c3-1388481fbc11
+:END:
+#+title: Delete
+#+description: Delete
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:login_info:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Delete a feature flag by key.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam login-info delete ${db_args} ${log_args} \
+  --key "Test feature3"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+#+end_src

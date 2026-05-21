@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 1244de89-061c-401f-ac3e-e371a79fb663
+:END:
+#+title: Get Account History
+#+description: Get Account History
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:accounts_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Retrieve version history for an account.
+
+#+begin_src verb :wrap src json
+get /accounts/admin/history
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 74
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "success": true,
+  "message": "",
+  "history": {
+    "username": "admin",
+    "versions": []
+  }
+}
+#+end_src

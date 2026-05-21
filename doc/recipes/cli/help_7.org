@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 898723ad-a564-4458-94a3-7b5dad08a6c3
+:END:
+#+title: Help
+#+description: Help
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:permissions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Show available operations for permissions.
+
+#+begin_src sh :wrap src text
+./ores.cli iam permissions --help
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+permissions - Manage permissions
+
+Usage: ores.cli permissions <operation> [options]
+
+Available operations:
+   list           List permissions as JSON or table
+   delete         Delete a permission by ID
+   add            Add a new permission
+
+For operation-specific options, use: permissions <operation> --help
+#+end_src

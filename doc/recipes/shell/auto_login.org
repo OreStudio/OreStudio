@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: CA27A829-0A1C-2C44-9AE3-D389D3898C4E
+:END:
+#+title: Auto login
+#+description: Auto login
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+
+#+name: auto-login
+#+begin_src ores-shell :exports none
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<auto-login>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> Bye!
+#+end_example

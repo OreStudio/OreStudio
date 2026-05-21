@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 7c83c9fa-c898-49c8-81c5-a391307c1911
+:END:
+#+title: List Login Info
+#+description: List Login Info
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:accounts_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Retrieve login info for all accounts.
+
+#+begin_src verb :wrap src json
+get /accounts/login-info
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 707
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "login_infos": [
+    {
+      "last_login": "2026-01-02 12:50:28.000000000Z",
+      "account_id": "019b7c16-a28c-7444-9546-9a051962f014",
+      "failed_logins": 0,
+      "locked": false,
+      "online": true,
+      "password_reset_required": false,
+      "last_ip": "127.0.0.1",
+      "last_attempt_ip": "127.0.0.1"
+    },
+    {
+      "last_login": "1969-12-31 21:00:00.000000000Z",
+      "account_id": "019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c",
+      "failed_logins": 0,
+      "locked": false,
+      "online": false,
+      "password_reset_required": false,
+      "last_ip": "0.0.0.0",
+      "last_attempt_ip": "0.0.0.0"
+    },
+    {
+      "last_login": "2026-01-05 13:30:16.000000000Z",
+      "account_id": "019b7c15-5f67-76a1-84be-9d74381b1c7f",
+      "failed_logins": 0,
+      "locked": false,
+      "online": true,
+      "password_reset_required": false,
+      "last_ip": "127.0.0.1",
+      "last_attempt_ip": "127.0.0.1"
+    }
+  ]
+}
+#+end_src

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: ad4bf0f1-4d5c-492c-be63-03e640dcece3
+:END:
+#+title: Count Currencies by Asset Class
+#+description: Count Currencies by Asset Class
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:currencies:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select asset_class, count(*) as count
+from ores.currencies
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+group by asset_class
+order by count desc;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| asset_class   | count |
+|---------------+-------|
+| fiat          |   153 |
+| commodity     |     4 |
+| supranational |     1 |
+#+end_example

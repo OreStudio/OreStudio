@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44
+:END:
+#+title: Git recipes
+#+description: Inventory of git recipes grouped by category.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :recipe:git:index:knowledge:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Recipes related to *Git recipes*. Each entry below is a single how-do-I question with executable steps. New recipes go in this folder; re-run no script — just edit this inventory to add a link.
+
+* Recipes
+
+- [[id:2a8f0d61-b3f9-4c20-9e76-1d92c8a47fb5][How do I update submodules to latest?]]

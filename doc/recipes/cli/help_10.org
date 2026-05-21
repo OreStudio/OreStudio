@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 4bfd3268-95df-45d0-aead-ed1d533d06cd
+:END:
+#+title: Help
+#+description: Help
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:change_reason_categories:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Show available operations for change reason categories.
+
+#+begin_src sh :wrap src text
+./ores.cli dq change-reason-categories --help
+#+end_src

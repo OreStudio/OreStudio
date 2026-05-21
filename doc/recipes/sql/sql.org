@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F
+:END:
+#+title: SQL recipes
+#+description: Inventory of sql recipes grouped by category.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:index:knowledge:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Recipes related to *SQL recipes*. Each entry below is a single how-do-I question with executable steps. New recipes go in this folder; re-run no script — just edit this inventory to add a link.
+
+* Database Management
+
+- [[id:2bfc42e9-2615-44da-9e08-52feb221a826][List All ORES Databases]]
+- [[id:bb9d68f2-f65d-4a65-8e08-81587c16f615][List Test Databases]]
+- [[id:6deb7fe7-32d2-40a9-a043-cd5c0301fada][List Instance Databases]]
+- [[id:cffa6f33-9c71-4f76-9763-db5e23cbf155][Delete All Test Databases]]
+- [[id:3ebf5f97-6090-4329-bbec-e5bfd2fa2026][Delete All ORES Databases]]
+- [[id:d9eac6e8-f842-4da8-93ac-11bae7f5ba1c][Delete All Instance Databases]]
+- [[id:0bfca9d4-2f97-4cfa-b7d5-cd97318855ba][Preview Cleanup SQL]]
+- [[id:ce523555-1a0c-42ed-96c7-b84c3ff6cb69][Generate Whimsical Database Name]]
+
+* Accounts
+
+- [[id:e3a8668f-26e7-44f3-bd47-6255fc87aec0][List All Current Accounts]]
+- [[id:b89a17b3-dd9d-4028-b850-cc7d4397b1fd][List All Account Versions]]
+- [[id:32ddf8d9-8c81-4d9e-9b0d-e8ff48f72e7f][Get Account by Username]]
+- [[id:a92db443-4336-4b39-9f6d-fc50d873facb][Get Account by UUID]]
+- [[id:24a4b36b-31fb-41dd-bf95-83af769b5e2e][Count Active Accounts]]
+
+* Login Info
+
+- [[id:6a0a10d4-560f-496b-bb87-ea08b380e82f][List All Login Info]]
+- [[id:f844d680-ee16-42e2-a054-4238bde8d26c][Find Locked Accounts]]
+- [[id:1b807ee1-a183-4283-882d-322470f77a3c][Find Online Users]]
+
+* Sessions
+
+- [[id:e8b519f9-f36f-4389-8152-08f5cd787bde][List Recent Sessions]]
+- [[id:5a911f51-ee75-404d-96dd-3ec093103be8][Session Statistics by User]]
+
+* Population Scripts
+
+- [[id:a566f8ba-4041-459a-98f7-c9d9f80b8896][View Seeded Permissions]]
+- [[id:c64ba4b3-8e3c-4ab8-a605-06b2a4f2ee7d][View Seeded Roles]]
+- [[id:11c9dbfb-943a-47d4-9e7c-7ce10c77a604][View Role-Permission Assignments]]
+- [[id:bc09b7f4-d487-4430-b466-dbcee0441a50][View Seeded System Flags]]
+- [[id:a59b9a7c-b4c1-4084-aa21-c4ebac2764ba][Re-run All Population Scripts]]
+- [[id:187f2f2f-4678-4fff-a5d8-2f7f58786adc][Re-run Individual Population Scripts]]
+
+* RBAC (Roles and Permissions)
+
+- [[id:b0f5dbb7-2a02-4986-b85f-9f0207c67657][List All Roles]]
+- [[id:5e8e8b96-94f4-4c8c-84b7-b9e34d8753f2][List All Permissions]]
+- [[id:2dd0aa0d-9eff-4aca-b1fc-b8bd47270620][Get Permissions for a Role]]
+- [[id:950d0206-5cc7-49cd-ab84-af7e3d5c9f32][Get Roles for an Account]]
+- [[id:3a124a2e-1b52-422b-89e0-6b858c205d33][Get All Permissions for an Account (via Roles)]]
+- [[id:d4a4ca18-7652-4b2e-a51d-f8cd3c40777f][Check if Account Has Permission]]
+
+* Currencies
+
+- [[id:7955cc98-c463-48c9-b8ae-6b5f95ce2306][List All Currencies]]
+- [[id:1edaeb0f-16b4-4fb4-b806-7bee9175cff1][Get Currency Details]]
+- [[id:ad4bf0f1-4d5c-492c-be63-03e640dcece3][Count Currencies by Asset Class]]
+- [[id:18b0e215-6662-472e-9fea-99cf1680e285][Count Currencies by Market Tier]]
+- [[id:96eed88d-58c1-487a-8df4-16021b211b36][Get Currency with Flag Image]]
+
+* Feature Flags
+
+- [[id:055e7245-1d4e-4044-b12e-93f407aea1df][List All Feature Flags]]
+- [[id:d0dbc636-39d8-4542-ac44-975dc7ca38f6][Check Feature Flag Status]]
+- [[id:f3efbcf2-a167-41ce-9d8e-42abbabb1d57][List Enabled Features]]
+
+* Images and Tags
+
+- [[id:455ae1aa-57b2-4952-9e1e-e71d047c3b31][List All Images]]
+- [[id:4fcb5abb-cce6-4ed2-a7e6-f6014b071faf][List All Tags]]
+- [[id:f835c004-ce6b-4e7a-903b-30433fe3e85d][Get Images by Tag]]
+
+* Temporal Queries
+
+- [[id:6f9c3077-8207-48d6-a0c2-883703825b2e][View Entity History]]
+- [[id:8e85305b-64f3-48b2-b59d-6e97a476382b][Point-in-Time Query]]
+- [[id:be785e49-3af0-4086-918d-efc261fcae4b][Count Entity Versions]]
+
+* Administrative
+
+- [[id:2bf63848-718f-4388-ad09-759292ef65dc][Database Size]]
+- [[id:3d098827-07d6-4d73-89bc-87980365b10d][Table Sizes]]
+- [[id:35d6ec68-f7e0-445a-8f03-78ca5eac9c13][Row Counts per Table]]

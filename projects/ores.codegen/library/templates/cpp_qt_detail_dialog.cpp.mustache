@@ -13,6 +13,12 @@
 {{/domain_entity.qt.has_combo_fields}}
 {{#domain_entity.qt.has_uuid_primary_key}}
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+{{/domain_entity.qt.has_uuid_primary_key}}
+{{^domain_entity.qt.has_uuid_primary_key}}
+{{#domain_entity.qt.has_uuid_detail_fields}}
+#include <boost/uuid/uuid_io.hpp>
+{{/domain_entity.qt.has_uuid_detail_fields}}
 {{/domain_entity.qt.has_uuid_primary_key}}
 #include "ui_{{domain_entity.entity_pascal}}DetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
@@ -207,6 +213,20 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}
 void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.entity_pascal_short}}() {
 {{#domain_entity.qt.detail_fields}}
 {{#is_line_edit}}
+{{#is_optional_uuid}}
+    {
+        const auto& _opt = {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}};
+        ui_->{{widget}}->setText(_opt
+            ? QString::fromStdString(boost::uuids::to_string(*_opt))
+            : QString{});
+    }
+{{/is_optional_uuid}}
+{{^is_optional_uuid}}
+{{#is_uuid}}
+    ui_->{{widget}}->setText(QString::fromStdString(
+        boost::uuids::to_string({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}})));
+{{/is_uuid}}
+{{^is_uuid}}
 {{#is_optional_string}}
     ui_->{{widget}}->setText({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}
         ? QString::fromStdString(*{{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}})
@@ -215,6 +235,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
 {{^is_optional_string}}
     ui_->{{widget}}->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
 {{/is_optional_string}}
+{{/is_uuid}}
+{{/is_optional_uuid}}
 {{/is_line_edit}}
 {{#is_text_edit}}
 {{#is_optional_string}}
@@ -289,6 +311,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
 {{/is_key}}
 {{^is_key}}
 {{#is_line_edit}}
+{{^is_uuid}}
+{{^is_optional_uuid}}
 {{#is_optional_string}}
     {
         const auto {{field}}_str = ui_->{{widget}}->text().trimmed().toStdString();
@@ -299,6 +323,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
 {{^is_optional_string}}
     {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->text().trimmed().toStdString();
 {{/is_optional_string}}
+{{/is_optional_uuid}}
+{{/is_uuid}}
 {{/is_line_edit}}
 {{#is_text_edit}}
 {{#is_optional_string}}
@@ -483,13 +509,18 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
     };
 
 {{#domain_entity.qt.has_uuid_primary_key}}
-    auto task = [self, id = {{domain_entity.qt.item_var}}_.{{#domain_entity.qt.id_access}}{{domain_entity.qt.id_access}}{{/domain_entity.qt.id_access}}{{^domain_entity.qt.id_access}}id{{/domain_entity.qt.id_access}}]() -> DeleteResult {
+    auto task = [self, id_str = boost::uuids::to_string({{domain_entity.qt.item_var}}_.{{#domain_entity.qt.id_access}}{{domain_entity.qt.id_access}}{{/domain_entity.qt.id_access}}{{^domain_entity.qt.id_access}}id{{/domain_entity.qt.id_access}})]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         {{domain_entity.qt.delete_request_class}} request;
-        request.ids = {id};
+{{#domain_entity.qt.delete_request_id_is_plural}}
+        request.{{domain_entity.qt.delete_request_id_field}} = {id_str};
+{{/domain_entity.qt.delete_request_id_is_plural}}
+{{^domain_entity.qt.delete_request_id_is_plural}}
+        request.{{domain_entity.qt.delete_request_id_field}} = id_str;
+{{/domain_entity.qt.delete_request_id_is_plural}}
         auto response_result = self->clientManager_->
             process_authenticated_request(std::move(request));
 

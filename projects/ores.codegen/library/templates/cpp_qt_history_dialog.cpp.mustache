@@ -10,6 +10,14 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "{{domain_entity.qt.protocol_include}}"
+{{#domain_entity.qt.has_uuid_primary_key}}
+#include <boost/uuid/uuid_io.hpp>
+{{/domain_entity.qt.has_uuid_primary_key}}
+{{^domain_entity.qt.has_uuid_primary_key}}
+{{#domain_entity.qt.has_uuid_detail_fields}}
+#include <boost/uuid/uuid_io.hpp>
+{{/domain_entity.qt.has_uuid_detail_fields}}
+{{/domain_entity.qt.has_uuid_primary_key}}
 
 namespace ores::qt {
 
@@ -133,11 +141,11 @@ void {{domain_entity.entity_pascal}}HistoryDialog::loadHistory() {
 
 {{#domain_entity.qt.has_uuid_primary_key}}
     QFuture<HistoryResult> future =
-        QtConcurrent::run([self, id = id_]() -> HistoryResult {
+        QtConcurrent::run([self, id_str = boost::uuids::to_string(id_)]() -> HistoryResult {
         if (!self || !self->clientManager_)
             return std::unexpected("Dialog closed");
         {{domain_entity.qt.history_request_class}} request;
-        request.id = id;
+        request.id = id_str;
         auto result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!result) return std::unexpected(result.error());
         return std::move(*result);
@@ -292,9 +300,26 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateChangesTable(int curren
 {{^is_optional_string}}
 {{^is_check_box}}
 {{^is_spin_box}}
+{{#is_optional_uuid}}
+        {
+            auto _to_s = [](const std::optional<boost::uuids::uuid>& o) {
+                return o ? QString::fromStdString(boost::uuids::to_string(*o)) : QString{};
+            };
+            addChange("{{label}}", _to_s(previous.{{field}}), _to_s(current.{{field}}));
+        }
+{{/is_optional_uuid}}
+{{^is_optional_uuid}}
+{{#is_uuid}}
+        addChange("{{label}}",
+                  QString::fromStdString(boost::uuids::to_string(previous.{{field}})),
+                  QString::fromStdString(boost::uuids::to_string(current.{{field}})));
+{{/is_uuid}}
+{{^is_uuid}}
         addChange("{{label}}",
                   QString::fromStdString(previous.{{field}}),
                   QString::fromStdString(current.{{field}}));
+{{/is_uuid}}
+{{/is_optional_uuid}}
 {{/is_spin_box}}
 {{/is_check_box}}
 {{/is_optional_string}}
@@ -348,7 +373,20 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateFullDetails(int version
 {{^is_optional_string}}
 {{^is_check_box}}
 {{^is_spin_box}}
+{{#is_optional_uuid}}
+    ui_->{{value_widget}}->setText(version.{{field}}
+        ? QString::fromStdString(boost::uuids::to_string(*version.{{field}}))
+        : QString{});
+{{/is_optional_uuid}}
+{{^is_optional_uuid}}
+{{#is_uuid}}
+    ui_->{{value_widget}}->setText(
+        QString::fromStdString(boost::uuids::to_string(version.{{field}})));
+{{/is_uuid}}
+{{^is_uuid}}
     ui_->{{value_widget}}->setText(QString::fromStdString(version.{{field}}));
+{{/is_uuid}}
+{{/is_optional_uuid}}
 {{/is_spin_box}}
 {{/is_check_box}}
 {{/is_optional_string}}

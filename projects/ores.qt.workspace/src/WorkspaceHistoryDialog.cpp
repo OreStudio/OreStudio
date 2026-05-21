@@ -27,6 +27,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.workspace.api/messaging/workspace_protocol.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -128,11 +129,11 @@ void WorkspaceHistoryDialog::loadHistory() {
     using HistoryResult = std::expected<workspace::messaging::get_workspace_history_response, std::string>;
 
     QFuture<HistoryResult> future =
-        QtConcurrent::run([self, id = id_]() -> HistoryResult {
+        QtConcurrent::run([self, id_str = boost::uuids::to_string(id_)]() -> HistoryResult {
         if (!self || !self->clientManager_)
             return std::unexpected("Dialog closed");
         workspace::messaging::get_workspace_history_request request;
-        request.id = id;
+        request.id = id_str;
         auto result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!result) return std::unexpected(result.error());
         return std::move(*result);
@@ -259,15 +260,18 @@ void WorkspaceHistoryDialog::updateChangesTable(int currentVersionIndex) {
     }
 
     if (current.parent_workspace_id != previous.parent_workspace_id) {
-        addChange("Parent",
-                  QString::fromStdString(previous.parent_workspace_id),
-                  QString::fromStdString(current.parent_workspace_id));
+        {
+            auto _to_s = [](const std::optional<boost::uuids::uuid>& o) {
+                return o ? QString::fromStdString(boost::uuids::to_string(*o)) : QString{};
+            };
+            addChange("Parent", _to_s(previous.parent_workspace_id), _to_s(current.parent_workspace_id));
+        }
     }
 
     if (current.owner_id != previous.owner_id) {
         addChange("Owner",
-                  QString::fromStdString(previous.owner_id),
-                  QString::fromStdString(current.owner_id));
+                  QString::fromStdString(boost::uuids::to_string(previous.owner_id)),
+                  QString::fromStdString(boost::uuids::to_string(current.owner_id)));
     }
 
     if (current.status_code != previous.status_code) {
@@ -297,8 +301,11 @@ void WorkspaceHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->nameValue->setText(QString::fromStdString(version.name));
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
     ui_->sourcePathValue->setText(QString::fromStdString(version.source_path));
-    ui_->parentValue->setText(QString::fromStdString(version.parent_workspace_id));
-    ui_->ownerValue->setText(QString::fromStdString(version.owner_id));
+    ui_->parentValue->setText(version.parent_workspace_id
+        ? QString::fromStdString(boost::uuids::to_string(*version.parent_workspace_id))
+        : QString{});
+    ui_->ownerValue->setText(
+        QString::fromStdString(boost::uuids::to_string(version.owner_id)));
     ui_->statusValue->setText(QString::fromStdString(version.status_code));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));

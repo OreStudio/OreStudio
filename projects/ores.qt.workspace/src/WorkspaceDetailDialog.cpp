@@ -22,7 +22,9 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QPlainTextEdit>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ui_WorkspaceDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -80,6 +82,8 @@ void WorkspaceDetailDialog::setupConnections() {
 
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &WorkspaceDetailDialog::onCodeChanged);
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+            &WorkspaceDetailDialog::onFieldChanged);
     connect(ui_->sourcePathEdit, &QLineEdit::textChanged, this,
             &WorkspaceDetailDialog::onFieldChanged);
     connect(ui_->parentEdit, &QLineEdit::textChanged, this,
@@ -119,6 +123,7 @@ void WorkspaceDetailDialog::setCreateMode(bool createMode) {
 void WorkspaceDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->nameEdit->setReadOnly(true);
+    ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->sourcePathEdit->setReadOnly(readOnly);
     ui_->parentEdit->setReadOnly(readOnly);
     ui_->ownerEdit->setReadOnly(readOnly);
@@ -129,9 +134,16 @@ void WorkspaceDetailDialog::setReadOnly(bool readOnly) {
 
 void WorkspaceDetailDialog::updateUiFromWorkspace() {
     ui_->nameEdit->setText(QString::fromStdString(workspace_.name));
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(workspace_.description));
     ui_->sourcePathEdit->setText(QString::fromStdString(workspace_.source_path));
-    ui_->parentEdit->setText(QString::fromStdString(workspace_.parent_workspace_id));
-    ui_->ownerEdit->setText(QString::fromStdString(workspace_.owner_id));
+    {
+        const auto& _opt = workspace_.parent_workspace_id;
+        ui_->parentEdit->setText(_opt
+            ? QString::fromStdString(boost::uuids::to_string(*_opt))
+            : QString{});
+    }
+    ui_->ownerEdit->setText(QString::fromStdString(
+        boost::uuids::to_string(workspace_.owner_id)));
     ui_->statusEdit->setText(QString::fromStdString(workspace_.status_code));
 
     populateProvenance(workspace_.version,
@@ -149,9 +161,8 @@ void WorkspaceDetailDialog::updateWorkspaceFromUi() {
     if (createMode_) {
         workspace_.name = ui_->nameEdit->text().trimmed().toStdString();
     }
+    workspace_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     workspace_.source_path = ui_->sourcePathEdit->text().trimmed().toStdString();
-    workspace_.parent_workspace_id = ui_->parentEdit->text().trimmed().toStdString();
-    workspace_.owner_id = ui_->ownerEdit->text().trimmed().toStdString();
     workspace_.status_code = ui_->statusEdit->text().trimmed().toStdString();
     workspace_.modified_by = username_;
 }
@@ -274,13 +285,13 @@ void WorkspaceDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, id = workspace_.id]() -> DeleteResult {
+    auto task = [self, id_str = boost::uuids::to_string(workspace_.id)]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         workspace::messaging::archive_workspace_request request;
-        request.ids = {id};
+        request.id = id_str;
         auto response_result = self->clientManager_->
             process_authenticated_request(std::move(request));
 

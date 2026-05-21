@@ -128,6 +128,7 @@
       "delete_request_class": "workspace::messaging::archive_workspace_request",
       "delete_response_class": "workspace::messaging::archive_workspace_response",
       "delete_message_type": "archive_workspace_request",
+      "delete_request_id_field": "id",
       "history_request_class":  "workspace::messaging::get_workspace_history_request",
       "history_response_class": "workspace::messaging::get_workspace_history_response",
       "history_message_type":   "get_workspace_history_request",

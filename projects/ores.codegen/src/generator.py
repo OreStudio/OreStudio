@@ -1486,7 +1486,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             }
             for i, f in enumerate(detail_fields):
                 f['is_line_edit'] = f.get('type') == 'line_edit'
-                f['is_text_edit'] = f.get('type') == 'text_edit'
+                f['is_text_edit'] = f.get('type') in ('text_edit', 'plain_text_edit')
                 f['is_static_combo'] = f.get('type') == 'static_combo'
                 f['is_dynamic_combo'] = f.get('type') == 'dynamic_combo'
                 f['is_check_box'] = f.get('type') == 'check_box'
@@ -1496,6 +1496,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     field_cpp.startswith('std::optional<std::string>')
                     and (f['is_line_edit'] or f['is_text_edit'])
                 )
+                # UUID type detection — needed for boost::uuids::to_string() conversions
+                _is_any_uuid = 'boost::uuids::uuid' in field_cpp
+                f['is_optional_uuid'] = 'std::optional<boost::uuids::uuid>' in field_cpp
+                f['is_uuid'] = _is_any_uuid and not f['is_optional_uuid']
                 # Tri-state checkbox for optional<bool>; normal two-state
                 # for plain bool. Nullable spin box uses minimum as sentinel.
                 f['is_tristate'] = (
@@ -1546,7 +1550,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Default has_pagination to False if not set
             qt['has_pagination'] = qt.get('has_pagination', False)
             qt['has_text_edit_fields'] = any(
-                f.get('type') == 'text_edit' for f in detail_fields
+                f.get('type') in ('text_edit', 'plain_text_edit') for f in detail_fields
             )
             qt['has_combo_fields'] = any(
                 f.get('type') in ('static_combo', 'dynamic_combo') for f in detail_fields
@@ -1557,6 +1561,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['has_static_combo_fields'] = any(
                 f.get('type') == 'static_combo' for f in detail_fields
             )
+            qt['has_uuid_detail_fields'] = any(
+                f.get('is_uuid') or f.get('is_optional_uuid') for f in detail_fields
+            )
+            # Delete request id field config for UUID PK entities
+            if qt.get('has_uuid_primary_key', False):
+                qt.setdefault('delete_request_id_field', 'ids')
+                qt['delete_request_id_is_plural'] = (
+                    qt['delete_request_id_field'] != 'id')
             qt['metadata_start_row'] = len(detail_fields)
             qt['metadata_start_row_plus_1'] = len(detail_fields) + 1
             qt['metadata_start_row_plus_2'] = len(detail_fields) + 2

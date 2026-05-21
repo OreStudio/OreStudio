@@ -75,6 +75,17 @@ Do you understand these instructions?
 
 Manual usage across multiple LLM chat interfaces.
 
+* Notes
+
+The output is *draft content* — generic org-mode, not v2 format. If
+the notes are destined for the repo, a human must reshape the output
+to satisfy the v2 frontmatter contract before committing. See
+[[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] for the codegen scaffold, and
+[[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] for the per-type section requirements.
+
 * See also
 
 - [[id:51fe4df6-d12f-4cf3-a32f-e793979aa68b][LLM prompt recipes]] — index of all LLM prompts.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — scaffold the target doc after
+  transcription.
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — v2 frontmatter and section contract to apply.

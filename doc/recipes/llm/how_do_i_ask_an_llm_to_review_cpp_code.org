@@ -37,7 +37,16 @@ Be succinct — prefer clarity over grammar.
 
 Output a short list of actionable items, ideally with suggested fixes.
 
-The system uses Data-Oriented design for finance.
+Architecture context:
+- C++23, snake_case throughout (classes, methods, variables).
+- Four-layer system: foundation / infrastructure / domain / application.
+- Domain components split into .api (domain types, NATS protocol),
+  .core (repositories, services), .service (runnable host).
+- Domain types are plain structs; JSON I/O via reflectcpp; table I/O
+  via libfort. No business logic in domain types.
+- Repository layer uses sqlgen + bitemporal reads; upsert semantics
+  (no separate create vs update).
+- NATS pub/sub for inter-service messaging.
 
 I'll show you the header and implementation (if any) separately —
 comment on them separately.
@@ -50,3 +59,9 @@ Used successfully in Gemini 2.5 Flash and ChatGPT.
 * See also
 
 - [[id:51fe4df6-d12f-4cf3-a32f-e793979aa68b][LLM prompt recipes]] — index of all LLM prompts.
+- [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]] — api/core/service split and facet placement
+  rules the reviewer should know.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — profile catalogue describing what each generated
+  file should look like (useful context for generated code reviews).
+- [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][Skills]] — if using Claude Code, the unit-test-writer and
+  domain-type-creator skills encode the project's coding conventions.

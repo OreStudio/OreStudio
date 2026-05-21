@@ -10,15 +10,22 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
+This prompt requires *Claude Code* — it uses the =AskUserQuestion=
+tool which is only available inside Claude Code sessions. It is not
+suitable for generic LLM chat interfaces.
+
 * Question
 
-I have a rough idea for a new feature. How do I use an LLM to turn
-it into a detailed story (or set of stories) in the agile backlog?
+I have a rough idea for a new feature. How do I use Claude Code to
+turn it into a detailed story (or set of stories) in the agile backlog?
 
 * Answer
 
 Replace =<story summary here>= with a one-paragraph description of
 the idea, then send the prompt to Claude Code in the repo root.
+The result lands in the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]] as one or more
+[[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]] (if not yet sprint-ready) or directly as
+[[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][stories]] in the current sprint.
 
 #+begin_example
 Consider this idea for a new feature:
@@ -49,4 +56,9 @@ Manual usage with Claude Code.
 * See also
 
 - [[id:51fe4df6-d12f-4cf3-a32f-e793979aa68b][LLM prompt recipes]] — index of all LLM prompts.
-- [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]] — the skill invoked after the interview.
+- [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]] — the skill that writes the result into the
+  backlog.
+- [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Agile process]] — sprint planning phase and story format the output
+  must satisfy.
+- [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]] — where captures land before promotion to a sprint.
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — frontmatter contract for story and capture files.

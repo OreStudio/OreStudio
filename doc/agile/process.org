@@ -46,6 +46,11 @@ the version's [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Definition of done]] is
 
 ** Backlog refinement
 
+*Owned by* [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] (sprint coherence drives whether near is honest).
+Captures are filed by [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] when discovered during execution.
+Identity-fit calls are referred to [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]]; near↔far moves for the
+next version are driven by [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]].
+
 Refinement is the cheap, ongoing work that keeps the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] bucket
 usable. It is /not/ a meeting — it is small touches whenever a
 capture is touched:
@@ -70,6 +75,11 @@ A sprint moves through three phases. Each phase is a distinct mode of
 work; the phase boundaries are sharp.
 
 *** Sprint planning
+
+*Owned by* [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]. [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]] vets each candidate against the
+[[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product vision]]; [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] sanity-checks the sprint mission
+against the version mission; [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] decomposes each promoted
+story into tasks.
 
 A sprint exists when its folder exists. To open sprint N+1:
 
@@ -102,6 +112,10 @@ A sprint exists when its folder exists. To open sprint N+1:
 
 *** Sprint execution
 
+*Owned by* [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]] (does the work). [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] reviews S1 output and
+triages discovered tasks; [[id:ed29c99b-1507-49c9-9937-d296fffe428e][System 3*]] audits the heartbeat
+invariant and id-link integrity.
+
 Agents pick up =BACKLOG= tasks and run them through the [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]
 state machine: =BACKLOG → STARTED → (maybe BLOCKED → STARTED) → DONE=.
 Each task is one PR.
@@ -118,6 +132,10 @@ current story if they do. They must leave =DISCOVERED= within one
 orchestrator session (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
 
 *** Sprint closure
+
+*Owned by* [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] (drives the sequence). [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] resolves each
+story (=DONE= / =ABANDONED= / carried); [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] weighs in on whether
+to cut a release.
 
 Closure is more than transitioning to =DONE=. The sequence is:
 

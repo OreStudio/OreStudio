@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.workspace component diagram
+#+caption: ores.qt.workspace
+[[file:ores.qt.workspace.png][file:ores.qt.workspace.png]]
+
 * Summary
 
 =ores.qt.workspace= is the Qt plugin for workspace management. Workspaces are

@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.dq.service component diagram
+#+caption: ores.dq.service
+[[file:ores.dq.service.png][file:ores.dq.service.png]]
+
 * Summary
 
 =ores.dq.service= is the NATS service entrypoint for the data-quality domain.

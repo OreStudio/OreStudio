@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.eventing component diagram
+#+caption: ores.eventing
+[[file:ores.eventing.png][file:ores.eventing.png]]
+
 * Summary
 
 =ores.eventing= provides an in-process publish/subscribe event bus for decoupled

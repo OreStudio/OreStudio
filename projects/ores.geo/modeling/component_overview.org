@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.geo component diagram
+#+caption: ores.geo
+[[file:ores.geo.png][file:ores.geo.png]]
+
 * Summary
 
 =ores.geo= provides IP-to-geographic-location lookups for ORE Studio. It stores

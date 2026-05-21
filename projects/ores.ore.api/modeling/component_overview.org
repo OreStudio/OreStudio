@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.ore.api component diagram
+#+caption: ores.ore.api
+[[file:ores.ore.api.png][file:ores.ore.api.png]]
+
 * Summary
 
 =ores.ore.api= is a header-only library defining the shared contract for the

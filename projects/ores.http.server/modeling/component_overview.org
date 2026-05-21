@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.http.server component diagram
+#+caption: ores.http.server
+[[file:ores.http.server.png][file:ores.http.server.png]]
+
 * Summary
 
 =ores.http.server= is the HTTP server process entrypoint for ORE Studio. It

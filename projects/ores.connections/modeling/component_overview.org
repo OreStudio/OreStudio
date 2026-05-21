@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.connections component diagram
+#+caption: ores.connections
+[[file:ores.connections.png][file:ores.connections.png]]
+
 * Summary
 
 =ores.connections= manages client-side server connection bookmarks with

@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.telemetry.database component diagram
+#+caption: ores.telemetry.database
+[[file:ores.telemetry.database.png][file:ores.telemetry.database.png]]
+
 * Summary
 
 =ores.telemetry.database= is the PostgreSQL persistence layer for telemetry

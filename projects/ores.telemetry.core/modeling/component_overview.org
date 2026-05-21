@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.telemetry.core component diagram
+#+caption: ores.telemetry.core
+[[file:ores.telemetry.core.png][file:ores.telemetry.core.png]]
+
 * Summary
 
 =ores.telemetry.core= is the observability library for ORE Studio. It provides

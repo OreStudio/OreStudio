@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.fpml component diagram
+#+caption: ores.fpml
+[[file:ores.fpml.png][file:ores.fpml.png]]
+
 * Summary
 
 =ores.fpml= is the infrastructure component for processing Financial Products

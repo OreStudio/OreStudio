@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.ore.core component diagram
+#+caption: ores.ore.core
+[[file:ores.ore.core.png][file:ores.ore.core.png]]
+
 * Summary
 
 =ores.ore.core= provides ORE (Open Source Risk Engine) integration for ORE

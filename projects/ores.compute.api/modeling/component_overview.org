@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.compute.api component diagram
+#+caption: ores.compute.api
+[[file:ores.compute.api.png][file:ores.compute.api.png]]
+
 * Summary
 
 =ores.compute.api= is a header-only library defining the shared contract for

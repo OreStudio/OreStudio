@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.dq.api component diagram
+#+caption: ores.dq.api
+[[file:ores.dq.api.png][file:ores.dq.api.png]]
+
 * Summary
 
 =ores.dq.api= is a header-only library defining the shared contract for the

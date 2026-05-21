@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.assets.service component diagram
+#+caption: ores.assets.service
+[[file:ores.assets.service.png][file:ores.assets.service.png]]
+
 * Summary
 
 =ores.assets.service= is the NATS service entrypoint for the assets domain.

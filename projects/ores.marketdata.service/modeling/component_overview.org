@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.marketdata.service component diagram
+#+caption: ores.marketdata.service
+[[file:ores.marketdata.service.png][file:ores.marketdata.service.png]]
+
 * Summary
 
 =ores.marketdata.service= is the NATS service entrypoint for the market-data

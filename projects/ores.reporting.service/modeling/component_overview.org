@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.reporting.service component diagram
+#+caption: ores.reporting.service
+[[file:ores.reporting.service.png][file:ores.reporting.service.png]]
+
 * Summary
 
 =ores.reporting.service= is the NATS service entrypoint for the reporting

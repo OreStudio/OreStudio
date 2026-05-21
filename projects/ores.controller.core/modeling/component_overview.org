@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.controller.core component diagram
+#+caption: ores.controller.core
+[[file:ores.controller.core.png][file:ores.controller.core.png]]
+
 * Summary
 
 =ores.controller.core= is the service registry and lifecycle controller for

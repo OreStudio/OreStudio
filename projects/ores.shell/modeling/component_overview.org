@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.shell component diagram
+#+caption: ores.shell
+[[file:ores.shell.png][file:ores.shell.png]]
+
 * Summary
 
 =ores.shell= is an interactive REPL for connecting to ORE Studio via NATS. It

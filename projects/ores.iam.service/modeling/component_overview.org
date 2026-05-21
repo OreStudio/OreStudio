@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.iam.service component diagram
+#+caption: ores.iam.service
+[[file:ores.iam.service.png][file:ores.iam.service.png]]
+
 * Summary
 
 =ores.iam.service= is the NATS service entrypoint for the IAM domain. It reads

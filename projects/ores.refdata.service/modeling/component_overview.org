@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.refdata.service component diagram
+#+caption: ores.refdata.service
+[[file:ores.refdata.service.png][file:ores.refdata.service.png]]
+
 * Summary
 
 =ores.refdata.service= is the NATS service entrypoint for the reference-data

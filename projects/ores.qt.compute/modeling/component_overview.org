@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.compute component diagram
+#+caption: ores.qt.compute
+[[file:ores.qt.compute.png][file:ores.qt.compute.png]]
+
 * Summary
 
 =ores.qt.compute= is the Qt plugin for the compute and reporting domain.

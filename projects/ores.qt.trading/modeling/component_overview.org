@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.trading component diagram
+#+caption: ores.qt.trading
+[[file:ores.qt.trading.png][file:ores.qt.trading.png]]
+
 * Summary
 
 =ores.qt.trading= is the Qt plugin for the trading domain. It provides MDI

@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.testing component diagram
+#+caption: ores.testing
+[[file:ores.testing.png][file:ores.testing.png]]
+
 * Summary
 
 =ores.testing= provides the shared Catch2 testing infrastructure for all ORE

@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.scheduler component diagram
+#+caption: ores.qt.scheduler
+[[file:ores.qt.scheduler.png][file:ores.qt.scheduler.png]]
+
 * Summary
 
 =ores.qt.scheduler= is the Qt plugin for the job scheduling domain. It

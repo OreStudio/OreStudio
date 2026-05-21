@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.synthetic.core component diagram
+#+caption: ores.synthetic.core
+[[file:ores.synthetic.core.png][file:ores.synthetic.core.png]]
+
 * Summary
 
 =ores.synthetic.core= generates synthetic data-quality catalog structures for

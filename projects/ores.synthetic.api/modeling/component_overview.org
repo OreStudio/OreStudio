@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.synthetic.api component diagram
+#+caption: ores.synthetic.api
+[[file:ores.synthetic.api.png][file:ores.synthetic.api.png]]
+
 * Summary
 
 =ores.synthetic.api= is a header-only library defining the domain types and

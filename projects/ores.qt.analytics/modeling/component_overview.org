@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.analytics component diagram
+#+caption: ores.qt.analytics
+[[file:ores.qt.analytics.png][file:ores.qt.analytics.png]]
+
 * Summary
 
 =ores.qt.analytics= is the Qt plugin for the analytics pricing domain.

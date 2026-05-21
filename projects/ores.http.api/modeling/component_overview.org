@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.http.api component diagram
+#+caption: ores.http.api
+[[file:ores.http.api.png][file:ores.http.api.png]]
+
 * Summary
 
 =ores.http.api= is the primary HTTP infrastructure library for ORE Studio. It

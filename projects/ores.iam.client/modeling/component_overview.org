@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.iam.client component diagram
+#+caption: ores.iam.client
+[[file:ores.iam.client.png][file:ores.iam.client.png]]
+
 * Summary
 
 =ores.iam.client= is a lightweight client-side library that manages IAM session

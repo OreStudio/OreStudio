@@ -10,6 +10,12 @@
 #+created: 2024-07-15
 #+updated: 2026-05-18
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.codegen component diagram
+#+caption: ores.codegen
+[[file:ores.codegen.png][file:ores.codegen.png]]
+
 * Summary
 
 =ores.codegen= is the project's Python-based code generator. It takes

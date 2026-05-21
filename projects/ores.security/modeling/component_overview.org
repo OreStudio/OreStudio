@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.security component diagram
+#+caption: ores.security
+[[file:ores.security.png][file:ores.security.png]]
+
 * Summary
 
 =ores.security= provides the shared cryptographic primitives for ORE Studio.

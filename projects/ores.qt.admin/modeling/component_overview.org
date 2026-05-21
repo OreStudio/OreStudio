@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.admin component diagram
+#+caption: ores.qt.admin
+[[file:ores.qt.admin.png][file:ores.qt.admin.png]]
+
 * Summary
 
 =ores.qt.admin= is the Qt plugin for identity and access management UI.

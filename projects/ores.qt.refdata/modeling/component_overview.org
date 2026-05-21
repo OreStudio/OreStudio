@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.refdata component diagram
+#+caption: ores.qt.refdata
+[[file:ores.qt.refdata.png][file:ores.qt.refdata.png]]
+
 * Summary
 
 =ores.qt.refdata= is the Qt plugin for the reference data domain. It provides

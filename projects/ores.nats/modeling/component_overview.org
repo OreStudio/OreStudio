@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.nats component diagram
+#+caption: ores.nats
+[[file:ores.nats.png][file:ores.nats.png]]
+
 * Summary
 
 =ores.nats= is the NATS messaging transport library for ORE Studio. It provides

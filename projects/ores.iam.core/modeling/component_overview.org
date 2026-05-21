@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.iam.core component diagram
+#+caption: ores.iam.core
+[[file:ores.iam.core.png][file:ores.iam.core.png]]
+
 * Summary
 
 =ores.iam.core= provides identity and access management for ORE Studio:

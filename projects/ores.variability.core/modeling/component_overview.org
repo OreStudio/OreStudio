@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.variability.core component diagram
+#+caption: ores.variability.core
+[[file:ores.variability.core.png][file:ores.variability.core.png]]
+
 * Summary
 
 =ores.variability.core= manages system-wide configuration and runtime

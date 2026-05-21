@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.service component diagram
+#+caption: ores.service
+[[file:ores.service.png][file:ores.service.png]]
+
 * Summary
 
 =ores.service= provides the shared NATS domain service runner infrastructure

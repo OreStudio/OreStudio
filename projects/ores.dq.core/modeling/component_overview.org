@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.dq.core component diagram
+#+caption: ores.dq.core
+[[file:ores.dq.core.png][file:ores.dq.core.png]]
+
 * Summary
 
 =ores.dq.core= is the data-quality infrastructure library for ORE Studio. It

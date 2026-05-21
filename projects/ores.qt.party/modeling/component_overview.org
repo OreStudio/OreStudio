@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.party component diagram
+#+caption: ores.qt.party
+[[file:ores.qt.party.png][file:ores.qt.party.png]]
+
 * Summary
 
 =ores.qt.party= is the Qt plugin for the party and organisation domain. It

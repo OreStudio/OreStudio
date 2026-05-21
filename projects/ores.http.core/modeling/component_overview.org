@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.http.core component diagram
+#+caption: ores.http.core
+[[file:ores.http.core.png][file:ores.http.core.png]]
+
 * Summary
 
 =ores.http.core= implements the concrete HTTP route handlers for the ORE Studio

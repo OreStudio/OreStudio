@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.variability.service component diagram
+#+caption: ores.variability.service
+[[file:ores.variability.service.png][file:ores.variability.service.png]]
+
 * Summary
 
 =ores.variability.service= is the NATS service entrypoint for the variability

@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.platform component diagram
+#+caption: ores.platform
+[[file:ores.platform.png][file:ores.platform.png]]
+
 * Summary
 
 =ores.platform= provides cross-platform OS abstractions used throughout ORE

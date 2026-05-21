@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.refdata.core component diagram
+#+caption: ores.refdata.core
+[[file:ores.refdata.core.png][file:ores.refdata.core.png]]
+
 * Summary
 
 =ores.refdata.core= manages the reference-data domain in ORE Studio: over 150

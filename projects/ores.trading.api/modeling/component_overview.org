@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.trading.api component diagram
+#+caption: ores.trading.api
+[[file:ores.trading.api.png][file:ores.trading.api.png]]
+
 * Summary
 
 =ores.trading.api= is a header-only library that defines the shared contract

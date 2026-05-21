@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.compute.core component diagram
+#+caption: ores.compute.core
+[[file:ores.compute.core.png][file:ores.compute.core.png]]
+
 * Summary
 
 =ores.compute.core= manages the compute cluster for ORE risk runs. It maintains

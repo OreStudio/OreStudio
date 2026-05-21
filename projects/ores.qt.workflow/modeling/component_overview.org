@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.workflow component diagram
+#+caption: ores.qt.workflow
+[[file:ores.qt.workflow.png][file:ores.qt.workflow.png]]
+
 * Summary
 
 =ores.qt.workflow= is the Qt plugin for the workflow domain. It provides MDI

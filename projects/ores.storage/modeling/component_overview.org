@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.storage component diagram
+#+caption: ores.storage
+[[file:ores.storage.png][file:ores.storage.png]]
+
 * Summary
 
 =ores.storage= provides file storage abstractions for binary assets in ORE

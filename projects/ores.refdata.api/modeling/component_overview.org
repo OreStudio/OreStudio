@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.refdata.api component diagram
+#+caption: ores.refdata.api
+[[file:ores.refdata.api.png][file:ores.refdata.api.png]]
+
 * Summary
 
 =ores.refdata.api= is a header-only library defining the shared contract for

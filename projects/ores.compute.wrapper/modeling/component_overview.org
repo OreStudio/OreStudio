@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.compute.wrapper component diagram
+#+caption: ores.compute.wrapper
+[[file:ores.compute.wrapper.png][file:ores.compute.wrapper.png]]
+
 * Summary
 
 =ores.compute.wrapper= is the worker-node process for ORE risk runs. It

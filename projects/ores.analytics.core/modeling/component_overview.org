@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.analytics.core component diagram
+#+caption: ores.analytics.core
+[[file:ores.analytics.core.png][file:ores.analytics.core.png]]
+
 * Summary
 
 =ores.analytics.core= manages pricing model configuration for ORE Studio. It

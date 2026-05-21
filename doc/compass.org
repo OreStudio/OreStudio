@@ -75,97 +75,88 @@ agile/versions/<version>/<sprint>/<story_folder>/<task_slug>.org
                                                 story.org sits at this level too
 #+end_example
 
-Stories and sprints are folders (they contain children); tasks are
-flat files (they are leaves). One sprint per lexicographic step:
-=sprint_01=, =sprint_02=, ... The lexicographically-highest sprint
-folder is the current sprint.
+Stories and sprints are folders (they contain children); tasks are flat files
+(they are leaves). One sprint per lexicographic step: =sprint_01=, =sprint_02=,
+... The lexicographically-highest sprint folder is the current sprint.
 
 *** =agile/product_backlog/= — the pre-sprint queue
 
-Holds [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]] — ideas not yet pulled into a sprint as stories.
-Split into two buckets:
+Holds [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]] — ideas not yet pulled into a sprint as stories. Split into two
+buckets:
 
 - =near/= — candidate work for the next version.
 - =far/= — longer-term wishlist.
 
-When a capture is promoted into a sprint, the file moves into the
-appropriate sprint folder and its =#+type:= flips from =capture= to
-=story=. The =:ID:= is preserved so links keep working.
+When a capture is promoted into a sprint, the file moves into the appropriate
+sprint folder and its =#+type:= flips from =capture= to =story=. The =:ID:= is
+preserved so links keep working.
 
 ** =recipes/= — how do I do X?
 
 Short, tested, executable how-tos grouped by topic
-(=recipes/<topic>/how_do_i_xxx.org=). Each recipe answers one NLP
-question. Shell commands inside =#+begin_src sh :results verbatim=
-blocks so they run in place via =C-c C-c=.
+(=recipes/<topic>/how_do_i_xxx.org=). Each recipe answers one NLP question.
+Shell commands inside =#+begin_src sh :results verbatim= blocks so they run in place via
+=C-c C-c=.
 
 ** =knowledge/= — durable reference
 
 Cross-cutting knowledge that outlives any sprint. Lives under
-=knowledge/<topic>/=. Component-specific knowledge (e.g. an
-architecture analysis tied to one component's code) lives co-located
-with the code at =projects/<comp>/docs/=, not here.
+=knowledge/<topic>/=. Component-specific knowledge (e.g. an architecture
+analysis tied to one component's code) lives co-located with the code at
+=projects/<comp>/docs/=, not here.
 
 ** Identity, functions, skills
 
-- =identity/= — system-5 docs: [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product identity]]; what's out of
-  scope. Holds the durable identity statements that filter candidate
-  versions and far captures.
-- =functions/= — system-spanning named roles. One [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]] per
-  cybernetic level (S1 Agent, S2 Orchestrator, S3 Sprint Planner,
-  S3* Auditor, S4 Version Planner, S5 Identity Steward), plus the
-  [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][index page]]. A function doc is the priming context an LLM session
-  loads when it takes on that role.
-- =skills/= — Claude Code [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skills]], one per kebab-case slug. Each
-  =SKILL.org= is task-shaped: how to perform a specific unit of work
-  end-to-end. The catalogue lives at [[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills index]].
+- =identity/= — system-5 docs: [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product identity]]; what's out of scope. Holds the
+  durable identity statements that filter candidate versions and far captures.
+- =functions/= — system-spanning named roles. One [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]] per cybernetic level
+  (S1 Agent, S2 Orchestrator, S3 Sprint Planner, S3* Auditor, S4 Version
+  Planner, S5 Identity Steward), plus the [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][index page]]. A function doc is the
+  priming context an LLM session loads when it takes on that role.
+- =skills/= — Claude Code [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skills]], one per kebab-case slug. Each =SKILL.org= is
+  task-shaped: how to perform a specific unit of work end-to-end. The catalogue
+  lives at [[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills index]].
 
 ** Secondary folders
 
-- =plans/= — historical design plans, one =YYYY-MM-DD-name.org= per
-  plan. Plans inside a sprint live as the =* Plan= section of the
-  task/story; this folder is for one-off cross-cutting designs
-  retained for the record.
-- =manual/= — user-facing PDF / LaTeX manual built from
-  =manual.org=. Surfaced to end users, not part of the
-  developer-doc tree.
-- =prompts/= — reusable LLM prompts that don't fit cleanly as a
-  [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skill]].
-- =memory/= — Claude Code session-feedback memory (=feedback.org=).
-  Operational artefact, not part of the doc graph.
-- =samples/= — screenshots and product imagery referenced from
-  [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product identity]] and visual mockups.
-- =analysis/= — older one-off analyses from before v2. Some still
-  useful as background context; not actively maintained.
+- =plans/= — historical design plans, one =YYYY-MM-DD-name.org= per plan. Plans
+  inside a sprint live as the =* Plan= section of the task/story; this folder is
+  for one-off cross-cutting designs retained for the record.
+- =manual/= — user-facing PDF / LaTeX manual built from =manual.org=. Surfaced
+  to end users, not part of the developer-doc tree.
+- =prompts/= — reusable LLM prompts that don't fit cleanly as a [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skill]].
+- =memory/= — Claude Code session-feedback memory (=feedback.org=). Operational
+  artefact, not part of the doc graph.
+- =samples/= — screenshots and product imagery referenced from [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product identity]]
+  and visual mockups.
+- =analysis/= — older one-off analyses from before v2. Some still useful as
+  background context; not actively maintained.
 
 ** Reserved folders
 
-- =audit/= — system-3 scripts and reports enforcing invariants
-  (orphan tasks, stale recipes, broken links, etc.). Empty in this
-  branch.
+- =audit/= — system-3 scripts and reports enforcing invariants (orphan tasks,
+  stale recipes, broken links, etc.). Empty in this branch.
 
 * Core invariants
 
-- Every stateful document carries the standard frontmatter described
-  in [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]].
-- Folders encode composition, not state. A document's TODO state
-  lives on its =* Status= headline as an org-mode TODO keyword.
-- Composition is strict: a version is made up of one or more
-  sprints; a sprint is made up of one or more stories; a story is
-  made up of one or more tasks; a task is one PR. No exceptions.
-- A story belongs to exactly one sprint. Work that spans sprints
-  closes the current story and opens a /successor/ in the next
-  sprint, with =#+predecessor=/=#+successor= links.
-- Plans are transient. They live as the =* Plan= section inside a
-  task or story; decisions distil into the story; the section is
-  cleared when the task closes.
-- Document references are id-links (=[[id:UUID][...]]=), never
-  =[[file:...]]=. Paths can change; IDs don't.
-- The user is not responsible for filing. Periodic audit jobs catch
-  drift.
+- Every stateful document carries the standard frontmatter described in [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document
+  types]].
+- Folders encode composition, not state. A document's TODO state lives on its =*
+  Status= headline as an org-mode TODO keyword.
+- Composition is strict: a version is made up of one or more sprints; a sprint
+  is made up of one or more stories; a story is made up of one or more tasks; a
+  task is one PR. No exceptions.
+- A story belongs to exactly one sprint. Work that spans sprints closes the
+  current story and opens a /successor/ in the next sprint, with
+  =#+predecessor=/=#+successor= links.
+- Plans are transient. They live as the =* Plan= section inside a task or story;
+  decisions distil into the story; the section is cleared when the task closes.
+- Document references are id-links (=[[id:UUID][...]]=), never =[[file:...]]=.
+  Paths can change; IDs don't.
+- The user is not responsible for filing. Periodic audit jobs catch drift.
 
 * Out of scope here
 
-This document /describes/ the layout. The /contract/ that every
-document follows lives in [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]. The /vocabulary/ used
-across the system lives in [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][glossary]].
+This document /describes/ the layout. The /contract/ that every document follows
+lives in [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]. The /vocabulary/ used across the system lives in
+[[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][glossary]].

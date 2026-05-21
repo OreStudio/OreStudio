@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt component diagram
+#+caption: ores.qt
+[[file:ores.qt.png][file:ores.qt.png]]
+
 * Summary
 
 =ores.qt= is the Qt 6 desktop application for ORE Studio. It provides a

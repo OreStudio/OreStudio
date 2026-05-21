@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.reporting.core component diagram
+#+caption: ores.reporting.core
+[[file:ores.reporting.core.png][file:ores.reporting.core.png]]
+
 * Summary
 
 =ores.reporting.core= manages the report lifecycle in ORE Studio: report-type

@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.cli component diagram
+#+caption: ores.cli
+[[file:ores.cli.png][file:ores.cli.png]]
+
 * Summary
 
 =ores.cli= is a command-line tool for importing and exporting ORE Studio

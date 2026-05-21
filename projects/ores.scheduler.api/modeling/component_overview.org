@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.scheduler.api component diagram
+#+caption: ores.scheduler.api
+[[file:ores.scheduler.api.png][file:ores.scheduler.api.png]]
+
 * Summary
 
 =ores.scheduler.api= is a header-only library defining the shared contract for

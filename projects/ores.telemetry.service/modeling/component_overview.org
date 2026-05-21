@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.telemetry.service component diagram
+#+caption: ores.telemetry.service
+[[file:ores.telemetry.service.png][file:ores.telemetry.service.png]]
+
 * Summary
 
 =ores.telemetry.service= is the NATS service entrypoint that receives log

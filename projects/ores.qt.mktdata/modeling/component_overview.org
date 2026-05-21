@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.mktdata component diagram
+#+caption: ores.qt.mktdata
+[[file:ores.qt.mktdata.png][file:ores.qt.mktdata.png]]
+
 * Summary
 
 =ores.qt.mktdata= is the Qt plugin for the market data domain. It provides

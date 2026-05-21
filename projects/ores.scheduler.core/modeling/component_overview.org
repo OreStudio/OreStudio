@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.scheduler.core component diagram
+#+caption: ores.scheduler.core
+[[file:ores.scheduler.core.png][file:ores.scheduler.core.png]]
+
 * Summary
 
 =ores.scheduler.core= provides cron-based job scheduling for ORE Studio. It

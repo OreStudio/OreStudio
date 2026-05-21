@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.trading.core component diagram
+#+caption: ores.trading.core
+[[file:ores.trading.core.png][file:ores.trading.core.png]]
+
 * Summary
 
 =ores.trading.core= is the primary component for trade booking and lifecycle

@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.reporting.api component diagram
+#+caption: ores.reporting.api
+[[file:ores.reporting.api.png][file:ores.reporting.api.png]]
+
 * Summary
 
 =ores.reporting.api= is a header-only library defining the shared contract for

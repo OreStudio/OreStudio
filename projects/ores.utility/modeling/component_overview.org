@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.utility component diagram
+#+caption: ores.utility
+[[file:ores.utility.png][file:ores.utility.png]]
+
 * Summary
 
 =ores.utility= is the foundation utilities library for ORE Studio with no

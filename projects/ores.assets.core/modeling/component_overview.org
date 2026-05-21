@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.assets.core component diagram
+#+caption: ores.assets.core
+[[file:ores.assets.core.png][file:ores.assets.core.png]]
+
 * Summary
 
 =ores.assets.core= manages dynamically loaded images (SVG), tags, image-tag

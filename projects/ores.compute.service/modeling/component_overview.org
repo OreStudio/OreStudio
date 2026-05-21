@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.compute.service component diagram
+#+caption: ores.compute.service
+[[file:ores.compute.service.png][file:ores.compute.service.png]]
+
 * Summary
 
 =ores.compute.service= is the NATS service entrypoint for the compute

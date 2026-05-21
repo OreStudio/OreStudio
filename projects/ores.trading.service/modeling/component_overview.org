@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.trading.service component diagram
+#+caption: ores.trading.service
+[[file:ores.trading.service.png][file:ores.trading.service.png]]
+
 * Summary
 
 =ores.trading.service= is the NATS service entrypoint for the trading domain.

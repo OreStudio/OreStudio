@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.synthetic.service component diagram
+#+caption: ores.synthetic.service
+[[file:ores.synthetic.service.png][file:ores.synthetic.service.png]]
+
 * Summary
 
 =ores.synthetic.service= is the NATS service entrypoint for the synthetic

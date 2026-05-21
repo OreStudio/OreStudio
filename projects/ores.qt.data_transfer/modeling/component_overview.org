@@ -10,6 +10,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.data_transfer component diagram
+#+caption: ores.qt.data_transfer
+[[file:ores.qt.data_transfer.png][file:ores.qt.data_transfer.png]]
+
 * Summary
 
 =ores.qt.data_transfer= is the Qt plugin that owns the Data Management

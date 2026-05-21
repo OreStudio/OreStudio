@@ -10,6 +10,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.workflow.core component diagram
+#+caption: ores.workflow.core
+[[file:ores.workflow.core.png][file:ores.workflow.core.png]]
+
 * Summary
 
 =ores.workflow.core= provides workflow orchestration for ORE Studio. It manages

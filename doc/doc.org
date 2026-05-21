@@ -87,13 +87,11 @@ Before generating any document, read the contract:
 
 Then, when you need to create a doc:
 
-- Use [[id:3153aa4b-23d4-4111-9710-5a4971102edc][generate_v2_doc.sh]] to scaffold every new document — never
-  hand-write frontmatter. The codegen mints the =:ID:=, applies the
-  per-type prefix on the title, fills in dates, and produces the
-  required skeleton.
+- See [[id:3153aa4b-23d4-4111-9710-5a4971102edc]["How do I create a new v2 doc?"]] to scaffold every new document — never
+  hand-write frontmatter. The codegen mints the =:ID:=, applies the per-type
+  prefix on the title, fills in dates, and produces the required skeleton.
 - Every new =.org= file must carry =#+version: 2=. The audit script
-  =doc_version_audit.py --check= gates this; run it before
-  committing.
+  =doc_version_audit.py --check= gates this; run it before committing.
 
 Skim [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] for orientation if you have not yet seen it.
 

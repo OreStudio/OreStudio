@@ -17,8 +17,9 @@ recipes; each topic has its own inventory that lists its recipes.
 * Topics
 
 - [[id:5720a0fb-e510-4f25-99cb-410d42062799][CMake recipes]] — build, test, deploy.
-- [[id:69796171-66f4-4459-913d-01523fc27e54][Codegen recipes]] — create v2 docs, run codegen, scaffold
-  component overviews.
+- [[id:69796171-66f4-4459-913d-01523fc27e54][Codegen recipes]] — run the C++ generator, scaffold v2 docs.
+- [[id:95ff6af4-2320-4cb6-a007-b016b7da16ed][Documentation recipes]] — find docs, inspect links, author new
+  recipes.
 - [[id:74bac855-ec3e-49a7-832f-d0eae85c1b14][Emacs recipes]] — org-babel and other emacs-specific workflows.
 - [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI recipes]] — using the CLI tool with entity-based syntax.
 - [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][Shell recipes]] — using the client REPL.

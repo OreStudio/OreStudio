@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 95ff6af4-2320-4cb6-a007-b016b7da16ed
+:END:
+#+title: Documentation recipes
+#+description: Inventory of recipes for navigating, finding, and authoring the v2 documentation graph.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :recipe:documentation:docs:search:index:knowledge:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Recipes for working with the documentation /as a graph/ — finding
+docs, following links, and writing new ones that satisfy the v2
+contract. For the codegen scripts that generate code (not docs)
+see the [[id:69796171-66f4-4459-913d-01523fc27e54][Codegen recipes]] topic.
+
+* Finding and inspecting documents
+
+- [[id:d1ae0786-5f2f-4437-8449-0e480c278a1b][How do I find docs matching a pattern?]]
+- [[id:e8231c22-cb31-4d85-a9c0-7602953764ff][How do I show a doc by UUID?]]
+
+* Authoring documents
+
+- [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]]
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — lives under the codegen
+  recipes; covers /every/ v2 doc type via the scaffold.
+- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — also a codegen
+  recipe, since it operates the same scaffold.
+
+* See also
+
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — the v2 contract every doc satisfies.
+- [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes index]] — sibling topics.

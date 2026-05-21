@@ -3,42 +3,54 @@
 :ROAM_ALIASES: IAM
 :END:
 #+title: Identity and Access Management
-#+version: 1
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+description: IAM concepts — identity lifecycle, authentication, authorisation, and access control enforcement — as realised in the ores.iam.* components.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:security:iam:
+#+created: 2024-06-15
+#+updated: 2026-05-21
 
-/Identity and Access Management (IAM)/ is the core security component of a
-system responsible for governing and enforcing access to all system resources.
-It ensures that only authenticated and authorized entities - whether users,
-services, or hardware - can interact with applications, data, and infrastructure
-according to the defined policies.
+/Identity and Access Management (IAM)/ is the security subsystem
+that governs who can do what in ORE Studio. It is realised by the
+=ores.iam.*= components — domain logic in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]], wire
+protocol in [[id:4e0dc581-d74d-4bd1-87d2-7f524a36d20c][ores.iam.api]], service-side enforcement in
+[[id:70f2d886-bb3f-4fe0-929c-45509e1ce967][ores.iam.service]], and the client-side helpers in
+[[id:28a7af22-1eb1-4989-b4bd-a383d09605f3][ores.iam.client]]. The companion concept doc is [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access
+Control]]. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
-Core Responsibilities:
+* Core Responsibilities
 
-- *Identity Lifecycle Management*: Manages the digital identity of all entities
-  (users, systems, applications), including their creation, provisioning,
-  maintenance, and decommissioning.
-- *Authentication*: Verifies the identity of an entity attempting to access the
-  system (/e.g./, via passwords, certificates, or protocols).
-- *Authorisation*: Controls what actions an authenticated identity is permitted
-  to perform on specific resources based on assigned roles and policies.
-- *Access Control Enforcement*: Technically enforces authorization decisions
-  across the ecosystem, ensuring access rights are adhered to during operation.
-  See [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][RBAC]] for more details.
+- *Identity Lifecycle Management*: Manages the digital identity of
+  all entities (users, systems, applications), including their
+  creation, provisioning, maintenance, and decommissioning.
+- *Authentication*: Verifies the identity of an entity attempting
+  to access the system — passwords, certificates, protocols.
+- *Authorisation*: Controls what actions an authenticated identity
+  is permitted to perform on specific resources, based on assigned
+  roles and policies.
+- *Access Control Enforcement*: Technically enforces authorisation
+  decisions across the ecosystem, ensuring access rights are
+  adhered to during operation. See [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][RBAC]] for how the role and
+  permission model fits together.
 
-Operational Scope:
+* Operational Scope
 
-The IAM module operates across two primary phases:
+The IAM subsystem operates across two primary phases:
 
-- *Configuration Phase*: The definition and registration of identities, their
-  roles, and their authorized access rights.
-- *Operation Phase*: The real-time execution of identification, authentication,
-  and access control checks based on the configured policies.
+- *Configuration Phase*: The definition and registration of
+  identities, their roles, and their authorised access rights.
+- *Operation Phase*: The real-time execution of identification,
+  authentication, and access control checks based on the
+  configured policies.
 
-In essence, this module centralizes the policy framework and technical
-mechanisms that secure the system by guaranteeing the principle of least
-privilege: the right access for the right entity to the right resource.
+In essence, IAM centralises the policy framework and technical
+mechanisms that secure the system by guaranteeing the principle of
+least privilege: the right access for the right entity to the
+right resource.
 
-* Footer
+* See also
 
-| Top: [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio IAM Component]] |
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — domain types and business logic.
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — the role/permission model that
+  backs authorisation.

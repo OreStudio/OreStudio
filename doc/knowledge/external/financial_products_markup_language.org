@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: FCC3BBA5-DFA3-17F4-69B3-B7958C05B1F8
+:ROAM_ALIASES: FPML
+:END:
+#+title: Financial Products Markup Language
+#+description: FpML — the ISDA-managed XML standard for representing OTC derivative transactions. External reference for docs that touch the wire format.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:external:fpml:domain:
+#+created: 2024-06-15
+#+updated: 2026-05-21
+
+[[https://en.wikipedia.org/wiki/FpML][FpML]] (Financial Products Markup Language) is the ISDA-managed XML
+standard for representing over-the-counter (OTC) derivative
+transactions. ORE Studio touches FpML mainly through [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding
+schemes]] — the FpML mechanism for constraining fields to a known set
+of values. Return to [[id:cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* What it is
+
+From [[https://en.wikipedia.org/wiki/FpML][Wikipedia]]:
+
+#+begin_quote
+FpML (Financial products Markup Language) is a business information
+exchange standard based on Extensible Markup Language (XML) that
+enables business-to-business over-the-counter (OTC) financial
+derivative transactions online by following W3C standards.
+
+The standard is managed by the International Swaps and Derivatives
+Association (ISDA) on behalf of a community of investment banks
+that make up the OTC derivatives industry. All categories of
+privately negotiated derivatives will eventually be included within
+the standard.
+
+FpML is distinct from similar financial standards such as SWIFT
+and FIX because it does not specify a network or transport
+mechanism.
+#+end_quote
+
+* See also
+
+- [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding schemes]] — the FpML mechanism we use most directly.
+- [[https://www.fpml.org/][fpml.org]] — standard home page.

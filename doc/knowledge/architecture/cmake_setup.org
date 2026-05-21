@@ -15,7 +15,7 @@ Linux, macOS, and Windows. Presets fix the compiler, build type, and
 generator in one name. A small wrapper (=build/scripts/build.sh=)
 provides a shortcut for the day-to-day Make preset. This document
 captures /what the parts are/; the recipes it links to cover /how to
-use them/.
+use them/. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Detail
 
@@ -121,7 +121,8 @@ Environment-variable equivalents (override the configure-time
 defaults at run time): =ORES_TEST_LOG_ENABLED=,
 =ORES_TEST_LOG_LEVEL=, =ORES_TEST_LOG_CONSOLE=.
 
-Used by the testing recipe at [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]].
+See [[id:4bf2516d-f37e-4e31-ad7b-124f2639b9ab][How do I enable test logging?]] for the operational steps;
+[[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] is the surrounding test-run recipe.
 
 * See also
 

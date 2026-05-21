@@ -6,7 +6,7 @@
 #+type: recipe
 #+version: 2
 #+level: cross
-#+filetags: :codegen:docs:search:recipe:
+#+filetags: :documentation:docs:search:recipe:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

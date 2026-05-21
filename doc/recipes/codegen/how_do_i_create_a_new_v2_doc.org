@@ -10,34 +10,32 @@
 #+created: 2026-05-18
 #+updated: 2026-05-20
 
-For the contract every generated document follows (frontmatter,
-sections, TODO vocabulary), see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]. For background on
-the generator itself, see [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].
+For the contract every generated document follows (frontmatter, sections, TODO
+vocabulary), see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]. For background on the generator itself, see
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].
 
 * Question
 
-How do I create a new v2 information-architecture document —
-[[id:b7fa729c-2d42-408a-9424-b6aa90eb16b4][task]], [[id:6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752][story]], [[id:f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12][sprint]], [[id:8fc15ea1-ab30-47be-993f-ed624a57f761][version]], [[id:0a28b9ca-dc07-4a1d-9942-7843eabf8a40][component]], [[id:0c57932d-d13a-480f-b426-49525aa8ba3d][recipe]], [[id:f497aa0a-f604-436a-8555-c17b14302c99][knowledge]], [[id:6054cc20-5f41-482f-a587-759512577b1d][skill]], [[id:f1311596-b8ed-43ad-8c46-76c58c0194c7][product_identity]],
-or [[id:978e0a8f-197c-48da-a405-457e0aee91d9][capture]] — without hand-writing the frontmatter?
+How do I create a new v2 information-architecture document — [[id:b7fa729c-2d42-408a-9424-b6aa90eb16b4][task]], [[id:6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752][story]],
+[[id:f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12][sprint]], [[id:8fc15ea1-ab30-47be-993f-ed624a57f761][version]], [[id:0a28b9ca-dc07-4a1d-9942-7843eabf8a40][component]], [[id:0c57932d-d13a-480f-b426-49525aa8ba3d][recipe]], [[id:f497aa0a-f604-436a-8555-c17b14302c99][knowledge]], [[id:6054cc20-5f41-482f-a587-759512577b1d][skill]], [[id:f1311596-b8ed-43ad-8c46-76c58c0194c7][product identity]], or
+[[id:978e0a8f-197c-48da-a405-457e0aee91d9][capture]] — without hand-writing the frontmatter?
 
 * Answer
 
-Call =projects/ores.codegen/generate_v2_doc.sh= with the type, slug,
-parent directory, and the document's title and description. The
-script fills in a fresh UUID, today's dates, the required frontmatter
-(including =#+version: 2= and the glossary-linked blurb), a =* Status=
-table at the type's default state where applicable, and the skeleton
-sections — leaving only the content for you to fill in.
+Call =projects/ores.codegen/generate_v2_doc.sh= with the type, slug, parent
+directory, and the document's title and description. The script fills in a fresh
+UUID, today's dates, the required frontmatter (including =#+version: 2= and the
+glossary-linked blurb), a =* Status= table at the type's default state where
+applicable, and the skeleton sections — leaving only the content for you to fill
+in.
 
-For =task= and =story=, the codegen automatically prepends =Task: = /
-=Story: = to the title you supply (idempotent: passing =--title "Task:
-Foo"= won't double-prefix). Sprints and versions keep the title
-as-given.
+For =task= and =story=, the codegen automatically prepends =Task: = / =Story: =
+to the title you supply (idempotent: passing =--title "Task: Foo"= won't
+double-prefix). Sprints and versions keep the title as-given.
 
-For task / story / sprint, parent =:ID:=, title and slug are
-auto-detected from =<parent-dir>/<parent-type>.org= so you usually
-don't need to pass them. Run the script from a terminal and it
-prompts for any missing required field.
+For task / story / sprint, parent =:ID:=, title and slug are auto-detected from
+=<parent-dir>/<parent-type>.org= so you usually don't need to pass them. Run the
+script from a terminal and it prompts for any missing required field.
 
 ** New task
 :PROPERTIES:

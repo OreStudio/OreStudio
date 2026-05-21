@@ -15,7 +15,7 @@ comprehensive software framework for quantitative finance — modelling,
 trading, and risk management in real life." It has been the de-facto
 standard quantitative-finance library in C++ for over twenty years.
 [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]] builds on top of it; ORE Studio depends on QuantLib transitively
-through ORE.
+through ORE. Return to [[id:cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Detail
 

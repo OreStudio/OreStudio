@@ -6,42 +6,39 @@
 #+type: recipe
 #+version: 2
 #+level: cross
-#+filetags: :codegen:docs:recipe:meta:
+#+filetags: :documentation:docs:recipe:meta:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-The v2 [[id:117a95f9-b03d-490b-bb74-da9fe74537e2][recipe]] contract is defined in
-[[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]§=recipe=. The codegen scaffold for /every/ v2 doc
-type (including recipes) lives at [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]];
-this recipe specialises that flow with the conventions that make a
+The v2 [[id:117a95f9-b03d-490b-bb74-da9fe74537e2][recipe]] contract is defined in [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]§=recipe=. The codegen
+scaffold for /every/ v2 doc type (including recipes) lives at [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a
+new v2 doc?]]; this recipe specialises that flow with the conventions that make a
 /good/ recipe, distinct from a bare skeleton.
 
 * Question
 
-How do I add a new operational how-to recipe — file name, structure,
-executable shell blocks, links to glossary, links from the topic
-inventory?
+How do I add a new operational how-to recipe — file name, structure, executable
+shell blocks, links to glossary, links from the topic inventory?
 
 * Answer
 
-A recipe answers one NLP question. Filename, title, and body must
-agree on what that question is.
+A recipe answers one NLP question. Filename, title, and body must agree on what
+that question is.
 
-1. /Pick the topic folder/. Recipes live under
-   =doc/recipes/<topic>/=, one folder per area (=cli/=, =sql/=,
-   =cmake/=, =codegen/=, =emacs/=, =git/=, =http/=, =shell/=). Each
-   topic has its own inventory page (e.g. =cli/cli.org=) which
-   lists every recipe in that topic.
+1. /Pick the topic folder/. Recipes live under =doc/recipes/<topic>/=, one
+   folder per area (=cli/=, =sql/=, =cmake/=, =codegen/=, =emacs/=, =git/=,
+   =http/=, =shell/=). Each topic has its own inventory page (e.g.
+   =cli/cli.org=) which lists every recipe in that topic.
 
-2. /Phrase the question/ as a single =how_do_i_X= sentence. The same
-   question becomes /three/ artefacts that must match:
+2. /Phrase the question/ as a single =how_do_i_X= sentence. The same question
+   becomes /three/ artefacts that must match:
 
    - filename: =how_do_i_x_y_z.org=
    - =#+title:= =How do I X Y Z?=
    - =* Question= body: the full sentence
 
-3. /Scaffold with the codegen/ — never hand-write the frontmatter,
-   UUID, or skeleton:
+3. /Scaffold with the codegen/ — never hand-write the frontmatter, UUID, or
+   skeleton:
 
    #+begin_src sh :results verbatim
    projects/ores.codegen/generate_v2_doc.sh \

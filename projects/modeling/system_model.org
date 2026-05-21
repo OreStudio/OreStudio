@@ -9,12 +9,10 @@
 
 This file documents the architecture of the [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]] system. ORE Studio
 provides a graphical interface and data management for [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine
-(ORE)]].
-
-ORE Studio is a C++23 application providing persistent storage, graphical user
-interface, and orchestration tools for quantitative risk analysis using ORE. The
-system is built on a layered architecture with clear separation of concerns. The
-objective of this page is to describe the system architecture.
+(ORE)]]. ORE Studio is a C++23 application providing persistent storage, graphical
+user interface, and orchestration tools for quantitative risk analysis using
+ORE. The system is built on a layered architecture with clear separation of
+concerns. The objective of this page is to describe the system architecture.
 
 
 #+attr_html: :class note

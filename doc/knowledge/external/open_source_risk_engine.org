@@ -11,12 +11,14 @@
 #+updated: 2026-05-21
 
 The [[https://www.opensourcerisk.org/][Open Source Risk Engine]] (ORE) is a C++ library for pricing and
-risk analytics maintained by [[https://acadia.inc/][Acadia]]. It builds on [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]] and extends
-it with industry-grade XVA, sensitivities, regulatory scenarios, and a
-broad set of financial instruments. ORE Studio is a graphical wrapper
-around ORE — it does not modify ORE itself, has /no affiliation/ with
-the ORE project, and inherits ORE's models, conventions, and
-limitations as-is.
+risk analytics maintained by [[https://acadia.inc/][Acadia]]. It builds on [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]] and
+extends it with industry-grade XVA, sensitivities, regulatory
+scenarios, and a broad set of financial instruments. ORE Studio is a
+graphical wrapper around ORE — it does not modify ORE itself, has /no
+affiliation/ with the ORE project, and inherits ORE's models,
+conventions, and limitations as-is. The slice we map into our domain
+model is described in [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]]. Return to [[id:cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11][External
+knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Detail
 
@@ -64,6 +66,8 @@ interface, the v0 [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][version]] absorbs t
 
 * See also
 
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — our analysis of ORE's model-config XML
+  files and how we persist them.
 - [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]] — upstream repo.
 - [[https://www.opensourcerisk.org/][opensourcerisk.org]] — project home page.
 - [[https://acadia.inc/][acadia.inc]] — Acadia.

@@ -2,14 +2,19 @@
 :ID: A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C
 :END:
 #+title: ORE Model Configuration
-#+version: 1
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+description: Analysis of the ORE model-configuration XML files (~1,486 examples) and a proposal for representing them as persisted domain entities in ORE Studio.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:ore:model_configuration:domain:
+#+created: 2024-06-15
+#+updated: 2026-05-21
 
-This document analyses the model configuration files used by [[https://github.com/OpenSourceRisk/Engine][Open Source Risk
-Engine (ORE)]] and proposes how to represent them as persisted domain entities in
-[[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. The analysis is based on ~1,486 XML files found under
-=external/ore/examples/=.
+This document analyses the model configuration files used by [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][Open
+Source Risk Engine (ORE)]] and proposes how to represent them as
+persisted domain entities in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. The analysis is based on
+~1,486 XML files found under =external/ore/examples/=. Return to
+[[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Background
 

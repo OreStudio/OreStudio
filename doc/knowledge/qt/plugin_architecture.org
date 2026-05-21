@@ -10,13 +10,15 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
-ORE Studio's Qt desktop application is assembled from independently-loaded
-plugins, each implementing the =IPlugin= interface (=ores.qt.api=). Plugins
-follow a four-stage lifecycle: =on_login=, =setup_menus=, =create_menus=, and
-=on_logout=. The =load_order()= integer controls both the setup and creation
-sequences. =MainWindow= runs all =setup_menus()= calls first (one pass), then
-all =create_menus()= calls (a second pass), so every plugin can contribute
-items to a shared menu before any plugin returns its own menu for insertion.
+ORE Studio's Qt desktop application is assembled from
+independently-loaded plugins, each implementing the =IPlugin=
+interface (=ores.qt.api=). Plugins follow a four-stage lifecycle:
+=on_login=, =setup_menus=, =create_menus=, and =on_logout=. The
+=load_order()= integer controls both the setup and creation
+sequences. =MainWindow= runs all =setup_menus()= calls first (one
+pass), then all =create_menus()= calls (a second pass), so every
+plugin can contribute items to a shared menu before any plugin
+returns its own menu for insertion. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Detail
 

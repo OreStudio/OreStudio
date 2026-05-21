@@ -3,18 +3,22 @@
 :ROAM_ALIASES: symbol visibility DLL exports
 :END:
 #+title: Shared Library Symbol Visibility
-#+version: 1
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+description: Symbol visibility at the compiler/linker level — hidden-by-default policy, boost/config.hpp export macros, and the per-library export.hpp convention.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:external:linker:visibility:cpp:
+#+created: 2024-06-15
+#+updated: 2026-05-21
 
-* Overview
+/Symbol visibility/ controls which names compiled into a shared
+library (=.dll= on Windows, =.so= on Linux, =.dylib= on macOS) are
+accessible to other code that links against it. The default in ORE
+Studio is /hidden-by-default/: only symbols explicitly annotated for
+export are visible to consumers. Everything else is an internal
+implementation detail. Return to [[id:cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
-/Symbol visibility/ controls which names compiled into a shared library
-(=.dll= on Windows, =.so= on Linux, =.dylib= on macOS) are accessible to
-other code that links against it.  The default in ORE Studio is
-/hidden-by-default/: only symbols explicitly annotated for export are
-visible to consumers.  Everything else is an internal implementation
-detail.
+* Why it matters
 
 Correct visibility control solves three problems simultaneously:
 

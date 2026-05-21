@@ -22,3 +22,4 @@ a single how-do-I question with executable steps.
 - [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]]
 - [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available CMake presets?]]
 - [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]]
+- [[id:4bf2516d-f37e-4e31-ad7b-124f2639b9ab][How do I enable test logging?]]

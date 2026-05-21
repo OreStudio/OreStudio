@@ -3,16 +3,22 @@
 :ROAM_ALIASES: DQ
 :END:
 #+title: Data Quality
-#+version: 1
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
-#+startup: inlineimages
+#+description: The DQ-6 dimensions, related industry bodies, and the provenance fields every reference-data entity carries — the conceptual foundation for the ores.dq.* subsystem.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:domain:dq:data_quality:
+#+created: 2024-06-15
+#+updated: 2026-05-21
 
 Data Quality (DQ) is the measure of how well a dataset satisfies the
-requirements of its intended business use. In financial markets, high-quality
-data is defined as being accurate, complete, timely, and traceable, ensuring
-that automated trading decisions and risk calculations are based on a "single
-version of the truth" rather than corrupted or ambiguous artefacts.
+requirements of its intended business use. In financial markets,
+high-quality data is defined as being accurate, complete, timely, and
+traceable, ensuring that automated trading decisions and risk
+calculations are based on a "single version of the truth" rather than
+corrupted or ambiguous artefacts. The patterns described here back
+[[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq.core]] (domain logic) and its service / API siblings
+([[id:fa64a6de-7010-4fd8-a1f8-d153b3cd96a9][ores.dq.service]], [[id:ffcfc860-204d-4f48-ae34-d3e382d7a02b][ores.dq.api]]). Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * The Standard Dimensions - The "DQ 6"
 

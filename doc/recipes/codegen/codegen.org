@@ -10,19 +10,15 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-Recipes related to *codegen* and to navigating the doc graph. Each
-entry below is a single how-do-I question with executable steps.
+Recipes related to *codegen* — the model-driven C++ generator and the
+v2 documentation scaffold. For working with the docs themselves as a
+graph (search, link inspection, recipe authoring), see the
+[[id:95ff6af4-2320-4cb6-a007-b016b7da16ed][Documentation recipes]] topic.
 
-* Creating documents
+* Scaffolding documents
 
-- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]]
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]]
-- [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]]
-
-* Finding and inspecting documents
-
-- [[id:d1ae0786-5f2f-4437-8449-0e480c278a1b][How do I find docs matching a pattern?]]
-- [[id:e8231c22-cb31-4d85-a9c0-7602953764ff][How do I show a doc by UUID?]]
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — generic flow for every doctype.
+- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — component-specific flow.
 
 * Running codegen
 

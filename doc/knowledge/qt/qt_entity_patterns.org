@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: 2fddc2f6-c510-4a86-8c50-d79c83eddfff
+:END:
+#+title: Qt entity patterns
+#+description: ClientModel, list window, detail dialog, history dialog, and async-fetch patterns for ores.qt entity UI components.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:qt:entity:ui:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Qt entity UI components live in =ores.qt= and follow a four-part
+structure: a =Client<Entity>Model= (async data fetching, pagination,
+QAbstractTableModel), a list window (toolbar + proxy model + table
+view), a detail dialog (form editors, save/cancel), and a history
+dialog (read-only versioned view). Codegen (=--profile qt=) is the
+primary path; all four components should be generated from the JSON
+model before resorting to manual creation. Return to
+[[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* ClientModel layout
+
+The model owns async loading via =QFutureWatcher= and exposes
+pagination through =load_page(offset, limit)=:
+
+#+begin_example
+class Client{Entity}Model final : public QAbstractTableModel {
+    Q_OBJECT
+public:
+    enum Column { /* one per display field, */ ColumnCount };
+    explicit Client{Entity}Model(ClientManager*, QObject* parent = nullptr);
+    int rowCount(...) const override;
+    int columnCount(...) const override;
+    QVariant data(const QModelIndex&, int role) const override;
+    QVariant headerData(...) const override;
+    const {component}::domain::{entity}* get{Entity}(int row) const;
+    void refresh();
+    void load_page(std::uint32_t offset, std::uint32_t limit);
+signals:
+    void dataLoaded();
+    void loadError(const QString& msg, const QString& details = {});
+private slots:
+    void onDataLoaded();
+private:
+    ClientManager* client_manager_;
+    QFutureWatcher<...> watcher_;
+    std::vector<{component}::domain::{entity}> data_;
+    std::uint32_t page_size_ = 100;
+    std::uint32_t total_available_count_ = 0;
+};
+#+end_example
+
+*Async fetch pattern*: =refresh()= starts a =QtConcurrent::run= that
+calls the service; =watcher_.setFuture(...)= connects to
+=onDataLoaded()=. Emit =loadError= (not an exception) on failure so
+the UI can display a message without crashing.
+
+*Recency highlighting*: =data()= returns =Qt::BackgroundRole= with a
+highlight colour for rows whose =valid_from= is within a configurable
+window (e.g., last 24 h). This is implemented in the model, not the
+view.
+
+* List window layout
+
+#+begin_example
+class {Entity}ListWindow final : public QWidget {
+    Q_OBJECT
+public:
+    explicit {Entity}ListWindow(ClientManager*, QWidget* parent = nullptr);
+signals:
+    void entitySelected(const QString& primaryKey);
+private slots:
+    void onAddClicked();
+    void onEditClicked();
+    void onDeleteClicked();
+    void onRefreshClicked();
+    void onDataLoaded();
+    void onLoadError(const QString& msg, const QString& details);
+private:
+    Client{Entity}Model* model_;
+    QSortFilterProxyModel* proxy_;
+    QTableView* view_;
+    // toolbar buttons
+};
+#+end_example
+
+The list window owns the model and a sort/filter proxy. Double-click
+or Edit button opens the detail dialog. The window does not own the
+dialog — it creates it on demand and connects its =accepted()= signal.
+
+* Detail dialog
+
+#+begin_example
+class {Entity}Dialog final : public QDialog {
+    Q_OBJECT
+public:
+    explicit {Entity}Dialog(ClientManager*, QWidget* parent = nullptr);
+    void set{Entity}(const {component}::domain::{entity}& e);
+    {component}::domain::{entity} get{Entity}() const;
+private slots:
+    void onSaveClicked();
+private:
+    // one editor widget per editable field
+    QLineEdit* {field}_edit_ = nullptr;
+    ClientManager* client_manager_;
+};
+#+end_example
+
+On save: read fields into a domain object, call the service
+asynchronously (same =QtConcurrent= + =QFutureWatcher= pattern as the
+model), emit =accepted()= on success, emit =rejected()= with an error
+message on failure.
+
+* History dialog
+
+Read-only dialog using its own =Client{Entity}HistoryModel=
+(inherits =QAbstractTableModel=, loads all versions of one entity by
+UUID). Opened from the list window via a History toolbar button.
+
+* Icon selection
+
+Choose an icon from the [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] skill. Icons are set on
+QAction / QPushButton using =QIcon::fromTheme()= or embedded resource
+paths.
+
+* File locations
+
+| Component | Header | Implementation |
+|---|---|---|
+| ClientModel | =include/ores.qt/Client{Entity}Model.hpp= | =src/Client{Entity}Model.cpp= |
+| List window | =include/ores.qt/{Entity}ListWindow.hpp= | =src/{Entity}ListWindow.cpp= |
+| Detail dialog | =include/ores.qt/{Entity}Dialog.hpp= | =src/{Entity}Dialog.cpp= |
+| History dialog | =include/ores.qt/{Entity}HistoryDialog.hpp= | =src/{Entity}HistoryDialog.cpp= |
+| Controller wiring | =src/MainWindow.cpp= (register in menu + plugin) | — |
+
+* See also
+
+- [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][qt-entity-creator]] — skill that drives this workflow.
+- [[id:25167ed8-6ccc-43ac-9978-026e6ad581fc][How do I create Qt UI for a new entity?]] — recipe walkthrough.
+- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] — =ores.qt.api= contract, plugin lifecycle.
+- [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] — icon selection for toolbar actions.
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.

@@ -8,7 +8,7 @@
 #+level: s4
 #+filetags: :v0:alpha:
 #+created: 2024-06-15
-#+updated: 2026-05-21
+#+updated: 2026-05-22
 #+todo: STARTED | RELEASED
 
 This page documents *v0* — the pre-1.0 alpha [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]] of ORE Studio. It
@@ -44,10 +44,10 @@ results graphically inside ORE Studio.
 | Field        | Value                                                       |
 |--------------+-------------------------------------------------------------|
 | State        | STARTED                                                     |
-| Now          | Sprint 17 in flight; closing v0.                            |
+| Now          | Sprint 18 in flight; closing v0.                            |
 | Waiting on   | Nothing.                                                    |
 | Next         | Close remaining v0 sprints, then cut v1.0.                  |
-| Last touched | 2026-05-21                                                  |
+| Last touched | 2026-05-22                                                  |
 
 * Sprints
 
@@ -74,6 +74,7 @@ the current sprint; the rest are closed.
 | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] | 2026-03-19 | 2026-03-30 | Compute grid (BOINC-style) + RAG dashboard; api/core split; CDM instruments.   |
 | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] | 2026-03-30 | 2026-04-17 | ORE import e2e; workflow engine; market data; Qt plugins; Windows portability. |
 | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] | 2026-04-18 |            | Windows/MSVC portability, symbol visibility, ORE conventions, workspace, DQ publish, service isolation, SQL codegen, Qt UI, v2 docs. |
+| [[id:1737c00c-699a-475a-bc94-743c6cda1001][Sprint 18]] | 2026-05-22 |            | TBD.                                                                           |
 
 * Release scope
 

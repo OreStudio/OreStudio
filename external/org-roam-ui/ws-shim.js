@@ -2,7 +2,51 @@
   'use strict'
 
   var EMACS_WS_URL = 'ws://localhost:35903'
+  var NODE_API_BASE = 'http://localhost:35901/node/'
   var DATA_URL = '/OreStudio/graph/graphdata.json'
+
+  // id -> node object, populated when graphdata loads
+  var nodeById = {}
+
+  function buildNodeIndex(data) {
+    var nodes = data.nodes || []
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i]
+      if (n && n.id) nodeById[n.id] = n
+    }
+  }
+
+  function nodeToOrgText(node) {
+    var lines = ['#+title: ' + (node.title || '(untitled)')]
+    if (node.tags && node.tags.length) {
+      lines.push('#+filetags: :' + Array.prototype.join.call(node.tags, ':') + ':')
+    }
+    lines.push('')
+    if (node.file) {
+      lines.push('[[' + node.file + '][Open page ↗]]')
+      lines.push('')
+    }
+    lines.push('/(Node content not available in static mode.)/\n')
+    return lines.join('\n')
+  }
+
+  // Intercept fetch() calls to localhost:35901/node/ and serve from cached graphdata
+  var NativeFetch = window.fetch
+  window.fetch = function (url, opts) {
+    var urlStr = typeof url === 'string' ? url : (url && typeof url.url === 'string' ? url.url : '')
+    if (urlStr.indexOf(NODE_API_BASE) === 0) {
+      var encoded = urlStr.slice(NODE_API_BASE.length).split('?')[0]
+      var id
+      try { id = decodeURIComponent(decodeURIComponent(encoded)) } catch (e) { id = encoded }
+      var node = nodeById[id]
+      var body = node ? nodeToOrgText(node) : '(could not find node)'
+      return Promise.resolve(new Response(body, {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      }))
+    }
+    return NativeFetch.apply(this, arguments)
+  }
 
   function FakeWebSocket(url) {
     var self = this
@@ -25,6 +69,7 @@
       fetch(DATA_URL)
         .then(function (r) { return r.json() })
         .then(function (data) {
+          buildNodeIndex(data)
           var evt = { type: 'message', data: JSON.stringify({ type: 'graphdata', data: data }) }
           emit('message', evt)
         })

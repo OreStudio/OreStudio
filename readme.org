@@ -72,19 +72,9 @@ Binary packages for each release are available on [[https://github.com/OreStudio
 macOS, Windows — 64-bit). Per-commit packages are attached to the
 corresponding [[https://github.com/OreStudio/OreStudio/actions][GitHub Actions workflow run]].
 
-To build from source on Ubuntu, Debian, or WSL:
-
-#+begin_src sh
-git clone https://github.com/OreStudio/OreStudio.git --recurse-submodules
-cd OreStudio
-./build/scripts/install_debian_packages.sh --full-install
-./projects/ores.sql/recreate_database.sh
-cmake --preset linux-clang-debug-ninja
-cmake --build --preset linux-clang-debug-ninja
-#+end_src
-
-Full build instructions, preset options, and platform notes are in the
-[[https://orestudio.github.io/OreStudio/doc/recipes/cmake/cmake.html][CMake recipes]].
+To build from source, follow the
+[[https://orestudio.github.io/OreStudio/doc/recipes/cmake/how_do_i_set_up_a_dev_environment.html][How do I set up a development environment?]] recipe. Preset options and
+platform notes are in the [[https://orestudio.github.io/OreStudio/doc/recipes/cmake/cmake.html][CMake recipes]].
 
 * Contributing
 

@@ -108,4 +108,4 @@ history to the v2 cybernetic information architecture.
 
 * Release Notes
 
-See [[file:release_notes.md][release_notes.md]] for the full narrative.
+See [[file:release_notes.org][release_notes.org]] for the full narrative.

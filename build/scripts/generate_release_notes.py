@@ -1,20 +1,28 @@
 #!/usr/bin/env python3
-"""Generate release notes for a sprint from org-mode backlog data and PR records.
+"""Generate a v2 org-mode release-notes document for a sprint.
 
 Reads the sprint's ``sprint.org`` and each story's ``story.org``, merges the
-data with any available PR records from ``tmp/release_pr_data/``, and writes
-``release_notes.md`` inside the sprint folder. Also appends a link to that
-file from the sprint's ``sprint.org``.
+data with any available PR records from ``tmp/release_pr_data/``, then renders
+``projects/ores.codegen/library/templates/v2_doc_release_notes.org.mustache``
+via pystache and writes the result as ``release_notes.org`` inside the sprint
+folder.  A link to that file is also appended to the sprint's ``sprint.org``.
 
-No pip dependencies — stdlib only. The script auto-detects the latest sprint
-under ``doc/agile/versions/v0/`` or accepts an explicit path via ``--sprint-dir``.
+After generation, open the file and fill in the summary blurb that sits between
+the date line and the first ``-----`` rule — the placeholder says so explicitly.
+
+Pystache is pulled from the ores.codegen venv (``projects/ores.codegen/venv``).
+No other pip dependencies are required.
+
+The script auto-detects the latest sprint under ``doc/agile/versions/v0/`` or
+accepts an explicit path via ``--sprint-dir``.
 """
 
 import argparse
 import json
 import re
 import sys
-from datetime import datetime
+import uuid
+from datetime import date, datetime
 from pathlib import Path
 from textwrap import dedent
 
@@ -60,7 +68,6 @@ def _split_sections(text: str, level: int = 1) -> dict[str, str]:
 
 
 def _extract_frontmatter(text: str) -> dict[str, str]:
-    """Extract #+key: value pairs from org frontmatter."""
     meta: dict[str, str] = {}
     for line in text.splitlines():
         m = re.match(r"^\s*#\+([^:]+):\s*(.*)", line)
@@ -72,19 +79,16 @@ def _extract_frontmatter(text: str) -> dict[str, str]:
 
 
 def _extract_filetags(text: str) -> set[str]:
-    """Return the set of tags from #+filetags: :a:b:c:"""
     meta = _extract_frontmatter(text)
     raw = meta.get("filetags", "")
     return {t.lower() for t in raw.strip(":").split(":") if t}
 
 
 def _strip_org_links(text: str) -> str:
-    """Replace [[id:...][label]] → label, [[file:...][label]] → label."""
     return re.sub(r"\[\[[^\]]*\]\[([^\]]*)\]\]", r"\1", text)
 
 
 def _table_rows(text: str) -> list[list[str]]:
-    """Return non-separator rows from an org table as lists of cell strings."""
     rows = []
     for line in text.splitlines():
         line = line.strip()
@@ -97,7 +101,6 @@ def _table_rows(text: str) -> list[list[str]]:
 # ── Sprint and story parsing ─────────────────────────────────────────────────
 
 def parse_sprint(sprint_dir: Path) -> dict:
-    """Parse sprint.org and return structured sprint data."""
     path = sprint_dir / "sprint.org"
     if not path.exists():
         sys.exit(f"[err] sprint.org not found at {path}")
@@ -110,8 +113,7 @@ def parse_sprint(sprint_dir: Path) -> dict:
     mission = sections.get("Mission", "").strip()
 
     stories_raw: list[dict] = []
-    stories_body = sections.get("Stories", "")
-    for cells in _table_rows(stories_body):
+    for cells in _table_rows(sections.get("Stories", "")):
         if len(cells) < 5:
             continue
         title_cell = _strip_org_links(cells[0]).strip()
@@ -128,8 +130,8 @@ def parse_sprint(sprint_dir: Path) -> dict:
     retro: dict[str, str] = {}
     for heading, body in sections.items():
         if "Retrospective" in heading:
-            retro_secs = _split_sections(body, level=2)
-            retro = {k: _strip_org_links(v) for k, v in retro_secs.items()}
+            retro = {k: _strip_org_links(v)
+                     for k, v in _split_sections(body, level=2).items()}
 
     return {
         "title": title,
@@ -140,7 +142,6 @@ def parse_sprint(sprint_dir: Path) -> dict:
 
 
 def parse_story(story_dir: Path) -> dict:
-    """Parse story.org and return structured story data."""
     path = story_dir / "story.org"
     if not path.exists():
         return {}
@@ -156,13 +157,6 @@ def parse_story(story_dir: Path) -> dict:
 
     goal = _strip_org_links(sections.get("Goal", "")).strip()
 
-    tasks: list[str] = []
-    tasks_body = sections.get("Tasks", "")
-    for line in tasks_body.splitlines():
-        m = re.match(r"^-\s+\[\[id:[^\]]+\]\[([^\]]+)\]\]", line)
-        if m:
-            tasks.append(m.group(1).strip())
-
     state_rows = _table_rows(sections.get("Status", ""))
     state = ""
     for row in state_rows:
@@ -176,7 +170,6 @@ def parse_story(story_dir: Path) -> dict:
         "goal": goal,
         "state": state,
         "tags": tags,
-        "tasks": tasks,
     }
 
 
@@ -196,10 +189,9 @@ def load_pr_summary(pr_dir: Path) -> dict:
     return json.loads(summary_path.read_text(encoding="utf-8"))
 
 
-# ── Markdown generation ──────────────────────────────────────────────────────
+# ── Context building ─────────────────────────────────────────────────────────
 
 def _wrap_para(text: str, width: int = 100) -> str:
-    """Reflow a multi-line org paragraph into one wrapped Markdown paragraph."""
     words = text.split()
     lines: list[str] = []
     current: list[str] = []
@@ -217,62 +209,33 @@ def _wrap_para(text: str, width: int = 100) -> str:
     return "\n".join(lines)
 
 
-def generate_notes(sprint: dict, stories: list[dict], pr_summary: dict) -> str:
+def build_context(sprint: dict, stories: list[dict], pr_summary: dict,
+                  sprint_dir: Path) -> dict:
     sprint_title = sprint["title"]
 
-    # Sprint number for version tag guess
-    m = re.search(r"(\d+)", sprint_title)
-    sprint_num = int(m.group(1)) if m else 0
+    # Sprint slug for filetags (e.g. sprint_17)
+    sprint_slug = sprint_dir.name
 
-    # Date range from stories
-    all_dates = []
-    for s in sprint["stories"]:
-        for d in (s["start"], s["end"]):
-            if d and re.match(r"\d{4}-\d{2}-\d{2}", d):
-                all_dates.append(d)
+    # Date range
+    all_dates = [
+        d for entry in sprint["stories"]
+        for d in (entry["start"], entry["end"])
+        if d and re.match(r"\d{4}-\d{2}-\d{2}", d)
+    ]
     sprint_start = min(all_dates) if all_dates else "?"
     sprint_end = max(all_dates) if all_dates else "?"
     try:
         month_year = datetime.strptime(sprint_end, "%Y-%m-%d").strftime("%B %Y")
     except ValueError:
-        month_year = "2026"
+        month_year = date.today().strftime("%B %Y")
 
     # PR stats
     pr_count = pr_summary.get("pr_count", 0)
-    since_tag = pr_summary.get("since_tag", "previous release")
+    since_tag = pr_summary.get("since_tag", "")
     pr_since = pr_summary.get("since_commit_iso", "")[:10]
 
-    # Categorise stories
-    by_section: dict[str, list[dict]] = {}
-    story_map = {s["slug"]: s for s in stories if s}
-    for entry in sprint["stories"]:
-        # Match sprint table entry to parsed story by title
-        match = None
-        for s in stories:
-            if s and s.get("title", "").lower() == entry["title"].lower():
-                match = s
-                break
-        if match is None:
-            # Fallback: create minimal record from sprint table
-            match = {
-                "slug": "",
-                "title": entry["title"],
-                "goal": entry["theme"],
-                "state": entry["state"],
-                "tags": set(),
-                "tasks": [],
-            }
-        section = assign_section(match.get("tags", set()))
-        by_section.setdefault(section, []).append({**entry, **match})
-
-    # Decide section order
-    section_order = [s for _, s in TAG_TO_SECTION] + [DEFAULT_SECTION]
-    ordered_sections = [(sec, by_section[sec])
-                        for sec in section_order if sec in by_section]
-
-    # Highlights: from retrospective "What went well" — join multi-line bullets
-    retro = sprint.get("retrospective", {})
-    went_well = retro.get("What went well", "")
+    # ── Highlights from retrospective "What went well" ──────────────────
+    went_well = sprint.get("retrospective", {}).get("What went well", "")
     highlights: list[str] = []
     current: list[str] = []
     for line in went_well.splitlines():
@@ -287,80 +250,114 @@ def generate_notes(sprint: dict, stories: list[dict], pr_summary: dict) -> str:
         highlights.append(" ".join(current))
     highlights = highlights[:6]
 
-    # Known issues: ABANDONED or BLOCKED stories
-    deferred: list[dict] = []
+    highlights_block = "\n".join(f"- {h}" for h in highlights) \
+        if highlights else "- All planned stories delivered."
+
+    # ── Categorise stories ───────────────────────────────────────────────
+    by_section: dict[str, list[dict]] = {}
     for entry in sprint["stories"]:
-        if entry["state"] not in ("DONE", "STARTED", ""):
-            deferred.append(entry)
-
-    # ── Build the document ────────────────────────────────────────────────
-
-    lines: list[str] = []
-
-    lines.append(f"# **ORE Studio {sprint_title} – Release Notes**")
-    lines.append(f"*{month_year}*")
-    lines.append("")
-    lines.append(_wrap_para(sprint["mission"]))
-    lines.append("")
-    lines.append("---")
-    lines.append("")
-
-    # Highlights
-    lines.append("## ✅ **Highlights**")
-    lines.append("")
-    if highlights:
-        for h in highlights:
-            lines.append(f"- {h}")
-    else:
-        lines.append("- All planned stories delivered.")
-    lines.append("")
-
-    # Key Improvements
-    lines.append("## 🛠️ **Key Improvements**")
-    lines.append("")
-    for section_name, section_stories in ordered_sections:
-        lines.append(f"### **{section_name}**")
-        lines.append("")
-        for s in section_stories:
-            title = s.get("title", "")
-            theme = s.get("theme", "")
-            goal = s.get("goal", "")
-            # Use goal if available; fall back to theme (from sprint table)
-            detail = goal if goal else theme
-            # Normalise whitespace and truncate to first sentence
-            detail = re.sub(r"\s+", " ", detail).strip()
-            first_sentence = re.split(r"(?<=[.!?])\s", detail)[0] if detail else ""
-            lines.append(f"- **{title}**: {first_sentence}")
-        lines.append("")
-
-    # Known Issues
-    lines.append("## ⚠️ **Known Issues & Postponed**")
-    lines.append("")
-    if deferred:
-        for entry in deferred:
-            lines.append(f"- **{entry['title']}** ({entry['state']}): deferred.")
-    else:
-        lines.append("- None — all stories completed.")
-    lines.append("")
-
-    # Time Summary
-    lines.append("## 📊 **Time Summary**")
-    lines.append("")
-    lines.append("**Total effort**: not tracked")
-    if pr_count:
-        lines.append(
-            f"**PRs merged**: {pr_count} (since {since_tag}"
-            + (f", {pr_since} to {sprint_end}" if pr_since else "")
-            + ")"
+        story = next(
+            (s for s in stories if s and
+             s.get("title", "").lower() == entry["title"].lower()),
+            None,
         )
-    lines.append(f"**Sprint duration**: {sprint_start} → {sprint_end}")
-    lines.append("")
-    lines.append("---")
-    lines.append("")
-    lines.append("*Next sprint: TBD.*")
-    lines.append("")
+        if story is None:
+            story = {
+                "slug": "",
+                "title": entry["title"],
+                "goal": entry["theme"],
+                "state": entry["state"],
+                "tags": set(),
+            }
+        section = assign_section(story.get("tags", set()))
+        detail = story.get("goal") or entry["theme"]
+        detail = re.sub(r"\s+", " ", detail).strip()
+        first_sentence = re.split(r"(?<=[.!?])\s", detail)[0] if detail else ""
+        by_section.setdefault(section, []).append({
+            "title": entry["title"],
+            "detail": first_sentence,
+        })
 
-    return "\n".join(lines)
+    section_order = [s for _, s in TAG_TO_SECTION] + [DEFAULT_SECTION]
+    sections_lines: list[str] = []
+    for sec in section_order:
+        if sec not in by_section:
+            continue
+        sections_lines.append(f"** {sec}")
+        sections_lines.append("")
+        for s in by_section[sec]:
+            sections_lines.append(f"- *{s['title']}*: {s['detail']}")
+        sections_lines.append("")
+    sections_block = "\n".join(sections_lines).rstrip()
+
+    # ── Deferred / postponed ─────────────────────────────────────────────
+    deferred = [e for e in sprint["stories"]
+                if e["state"] not in ("DONE", "STARTED", "")]
+    deferred_block = "\n".join(
+        f"- *{e['title']}* ({e['state']}): deferred." for e in deferred
+    ) if deferred else "- None — all stories completed."
+
+    # ── Time summary ─────────────────────────────────────────────────────
+    time_lines = ["- *Total effort*: not tracked"]
+    if pr_count and since_tag:
+        pr_line = f"{pr_count} (since {since_tag}"
+        if pr_since:
+            pr_line += f", {pr_since} to {sprint_end}"
+        pr_line += ")"
+        time_lines.append(f"- *PRs merged*: {pr_line}")
+    time_lines.append(f"- *Sprint duration*: {sprint_start} → {sprint_end}")
+    time_block = "\n".join(time_lines)
+
+    # ── Filetags ─────────────────────────────────────────────────────────
+    filetags = f":release_notes:{sprint_slug}:v0:"
+
+    return {
+        "id": str(uuid.uuid4()),
+        "title": f"ORE Studio {sprint_title} – Release Notes",
+        "description": f"{sprint_title} release notes ({month_year}).",
+        "filetags": filetags,
+        "date": date.today().isoformat(),
+        "month_year": month_year,
+        "mission": _wrap_para(sprint["mission"]),
+        "highlights_block": highlights_block,
+        "sections_block": sections_block,
+        "deferred_block": deferred_block,
+        "time_block": time_block,
+    }
+
+
+# ── Rendering ────────────────────────────────────────────────────────────────
+
+def _load_pystache(repo_root: Path):
+    """Import pystache from the ores.codegen venv, or from the active environment."""
+    try:
+        import pystache
+        return pystache
+    except ImportError:
+        pass
+    import glob
+    venv_root = repo_root / "projects" / "ores.codegen" / "venv"
+    candidates = sorted(glob.glob(str(venv_root / "lib" / "python*" / "site-packages")))
+    if not candidates:
+        sys.exit(
+            "[err] pystache not found. Activate the ores.codegen venv:\n"
+            "  cd projects/ores.codegen && source venv/bin/activate\n"
+            "  pip install -r requirements.txt"
+        )
+    sys.path.insert(0, candidates[-1])
+    import pystache
+    return pystache
+
+
+def render_release_notes(context: dict, repo_root: Path) -> str:
+    pystache = _load_pystache(repo_root)
+    template_path = (
+        repo_root / "projects" / "ores.codegen" / "library" / "templates"
+        / "v2_doc_release_notes.org.mustache"
+    )
+    template_text = template_path.read_text(encoding="utf-8")
+    renderer = pystache.Renderer(escape=lambda v: v)
+    return renderer.render(template_text, context)
 
 
 # ── Sprint org linking ────────────────────────────────────────────────────────
@@ -370,19 +367,28 @@ def link_release_notes(sprint_dir: Path) -> None:
     path = sprint_dir / "sprint.org"
     text = path.read_text(encoding="utf-8")
 
-    if "release_notes.md" in text:
-        print("[info] sprint.org already links release_notes.md — skipping.")
+    if "release_notes.org" in text:
+        print("[info] sprint.org already links release_notes.org — skipping.")
         return
 
-    # Append before the last non-empty line or at the end
+    # Upgrade a legacy .md link written by a previous run of this script.
+    if "release_notes.md" in text:
+        text = text.replace(
+            "[[file:release_notes.md][release_notes.md]]",
+            "[[file:release_notes.org][release_notes.org]]",
+        )
+        path.write_text(text, encoding="utf-8")
+        print(f"[info] Updated release_notes.md → release_notes.org link in {path}")
+        return
+
     appendix = dedent("""\
 
         * Release Notes
 
-        See [[file:release_notes.md][release_notes.md]] for the full narrative.
+        See [[file:release_notes.org][release_notes.org]] for the full narrative.
         """)
     path.write_text(text.rstrip() + "\n" + appendix, encoding="utf-8")
-    print(f"[info] Linked release_notes.md in {path}")
+    print(f"[info] Linked release_notes.org in {path}")
 
 
 # ── Auto-detect latest sprint ─────────────────────────────────────────────────
@@ -410,10 +416,10 @@ def main() -> None:
                     help="Directory with PR data from collect_release_pr_data.py "
                          "(default: tmp/release_pr_data).")
     ap.add_argument("--out", default="",
-                    help="Output path for release_notes.md (default: "
-                         "<sprint-dir>/release_notes.md).")
+                    help="Output path for release_notes.org (default: "
+                         "<sprint-dir>/release_notes.org).")
     ap.add_argument("--no-link", action="store_true",
-                    help="Do not update sprint.org with a link to release_notes.md.")
+                    help="Do not update sprint.org with a link to release_notes.org.")
     args = ap.parse_args()
 
     repo_root = Path(__file__).resolve().parent.parent.parent
@@ -424,11 +430,9 @@ def main() -> None:
 
     pr_dir = (repo_root / args.pr_data_dir).resolve()
 
-    # Parse sprint
     sprint = parse_sprint(sprint_dir)
     print(f"[info] Sprint: {sprint['title']} ({len(sprint['stories'])} stories)")
 
-    # Parse each story subdir
     stories: list[dict] = []
     for subdir in sorted(sprint_dir.iterdir()):
         if subdir.is_dir() and (subdir / "story.org").exists():
@@ -437,7 +441,6 @@ def main() -> None:
                 stories.append(s)
     print(f"[info] Parsed {len(stories)} story files.")
 
-    # Load PR summary
     pr_summary = load_pr_summary(pr_dir)
     if pr_summary:
         print(f"[info] PR data: {pr_summary.get('pr_count', 0)} PRs "
@@ -445,15 +448,14 @@ def main() -> None:
     else:
         print("[info] No PR data found — continuing without it.")
 
-    # Generate notes
-    notes = generate_notes(sprint, stories, pr_summary)
+    context = build_context(sprint, stories, pr_summary, sprint_dir)
+    rendered = render_release_notes(context, repo_root)
 
-    # Write output
-    out_path = Path(args.out) if args.out else sprint_dir / "release_notes.md"
-    out_path.write_text(notes, encoding="utf-8")
+    out_path = Path(args.out) if args.out else sprint_dir / "release_notes.org"
+    out_path.write_text(rendered, encoding="utf-8")
     print(f"[info] Wrote {out_path}")
+    print(f"[info] Open {out_path} and fill in the summary blurb placeholder.")
 
-    # Link from sprint.org
     if not args.no_link:
         link_release_notes(sprint_dir)
 

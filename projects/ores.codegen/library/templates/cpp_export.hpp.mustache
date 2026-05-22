@@ -1,0 +1,15 @@
+{{{cpp_license}}}
+{{#component}}
+#ifndef {{full_name_upper}}_EXPORT_HPP
+#define {{full_name_upper}}_EXPORT_HPP
+
+#include <boost/config.hpp>
+
+#ifdef {{full_name_upper}}_LIBRARY
+#  define {{full_name_upper}}_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define {{full_name_upper}}_EXPORT BOOST_SYMBOL_IMPORT
+#endif
+
+#endif
+{{/component}}

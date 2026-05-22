@@ -12,11 +12,23 @@
 
 /{{month_year}}/
 
+{{#screenshot_filename}}
+[[../../../../../assets/images/{{screenshot_filename}}]]
+
+{{/screenshot_filename}}
 (( Summary blurb: one paragraph describing the sprint's focus and key outcomes.
    Replace this placeholder after generation. ))
 
 -----
 
+{{#demo_video_id}}
+* 🎬 Demo
+
+[[https://youtu.be/{{demo_video_id}}][https://img.youtube.com/vi/{{demo_video_id}}/hqdefault.jpg]]
+
+[[https://youtu.be/{{demo_video_id}}][Watch the {{sprint_title}} demo on YouTube]].
+
+{{/demo_video_id}}
 * ✅ Highlights
 
 {{{highlights_block}}}

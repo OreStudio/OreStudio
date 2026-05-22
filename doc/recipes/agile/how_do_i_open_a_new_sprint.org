@@ -8,12 +8,13 @@
 #+level: cross
 #+filetags: :agile:sprint:codegen:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-05-22
 
 For the surrounding agile cycle (planning / execution / closure) and
 which cybernetic system owns the work, see [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Agile process]]. For the
-build-side version bump that often follows opening a new sprint, see
-[[id:e9f98da1-cf33-4b53-bc4d-a034c652f3b0][How do I bump the project version?]].
+build-side housekeeping that pairs with opening a new sprint, see
+[[id:e9f98da1-cf33-4b53-bc4d-a034c652f3b0][How do I bump the project version?]] and [[id:2a8f0d61-b3f9-4c20-9e76-1d92c8a47fb5][How do I update submodules to
+latest?]].
 
 * Question
 
@@ -68,6 +69,11 @@ folder, set its mission, and link it from the version manifest?
 7. /Bump the project version/ as separate housekeeping — see
    [[id:e9f98da1-cf33-4b53-bc4d-a034c652f3b0][How do I bump the project version?]]. The version-number bump
    is decoupled from sprint opening; do not couple them in one PR.
+
+8. /Update the =vcpkg= submodule to latest/ — see [[id:2a8f0d61-b3f9-4c20-9e76-1d92c8a47fb5][How do I update
+   submodules to latest?]]. Land it as a separate commit on the
+   same new-sprint PR so the build-side housekeeping ships with
+   the sprint open.
 
 * Script
 

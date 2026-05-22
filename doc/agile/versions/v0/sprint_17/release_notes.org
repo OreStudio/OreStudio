@@ -12,6 +12,8 @@
 
 /May 2026/
 
+[[../../../../../assets/images/ore_studio-v0.0.17.png]]
+
 Sprint 17 marks the point where ORE Studio's Windows/MSVC build story went from
 solid to fragile. The sprint opened with 14 hotfix-inherited C1202 workarounds
 and closed with all of them reversed or superseded by what we hope is the root
@@ -26,6 +28,12 @@ ORE roundtrip. The sprint also closed out the documentation debt — all 16 prio
 sprints are now in the v2 cybernetic architecture.
 
 -----
+
+* 🎬 Demo
+
+[[https://youtu.be/NDxW12FNhrU][https://img.youtube.com/vi/NDxW12FNhrU/hqdefault.jpg]]
+
+[[https://youtu.be/NDxW12FNhrU][Watch the Sprint 17 demo on YouTube]].
 
 * ✅ Highlights
 

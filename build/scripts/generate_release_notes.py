@@ -210,7 +210,8 @@ def _wrap_para(text: str, width: int = 100) -> str:
 
 
 def build_context(sprint: dict, stories: list[dict], pr_summary: dict,
-                  sprint_dir: Path) -> dict:
+                  sprint_dir: Path, screenshot_filename: str = "",
+                  demo_video_id: str = "") -> dict:
     sprint_title = sprint["title"]
 
     # Sprint slug for filetags (e.g. sprint_17)
@@ -314,6 +315,7 @@ def build_context(sprint: dict, stories: list[dict], pr_summary: dict,
     return {
         "id": str(uuid.uuid4()),
         "title": f"ORE Studio {sprint_title} – Release Notes",
+        "sprint_title": sprint_title,
         "description": f"{sprint_title} release notes ({month_year}).",
         "filetags": filetags,
         "date": date.today().isoformat(),
@@ -323,6 +325,8 @@ def build_context(sprint: dict, stories: list[dict], pr_summary: dict,
         "sections_block": sections_block,
         "deferred_block": deferred_block,
         "time_block": time_block,
+        "screenshot_filename": screenshot_filename,
+        "demo_video_id": demo_video_id,
     }
 
 
@@ -420,6 +424,12 @@ def main() -> None:
                          "<sprint-dir>/release_notes.org).")
     ap.add_argument("--no-link", action="store_true",
                     help="Do not update sprint.org with a link to release_notes.org.")
+    ap.add_argument("--screenshot-filename", default="",
+                    help="Filename under assets/images/ to embed at the top "
+                         "(e.g. ore_studio-v0.0.18.png). Omit to skip.")
+    ap.add_argument("--demo-video-id", default="",
+                    help="YouTube video ID for the sprint demo "
+                         "(e.g. NDxW12FNhrU). Omit to skip the demo section.")
     args = ap.parse_args()
 
     repo_root = Path(__file__).resolve().parent.parent.parent
@@ -448,7 +458,11 @@ def main() -> None:
     else:
         print("[info] No PR data found — continuing without it.")
 
-    context = build_context(sprint, stories, pr_summary, sprint_dir)
+    context = build_context(
+        sprint, stories, pr_summary, sprint_dir,
+        screenshot_filename=args.screenshot_filename,
+        demo_video_id=args.demo_video_id,
+    )
     rendered = render_release_notes(context, repo_root)
 
     out_path = Path(args.out) if args.out else sprint_dir / "release_notes.org"

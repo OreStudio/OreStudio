@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :skills:claude_code:agile:sprint:
 #+created: 2024-09-01
-#+updated: 2026-05-21
+#+updated: 2026-05-22
 
 #+begin_export markdown
 ---
@@ -45,7 +45,12 @@ do at the same time, before, or after.
    commit/PR — [[id:e9f98da1-cf33-4b53-bc4d-a034c652f3b0][How do I bump the project version?]]. Bumps and
    sprint openings are decoupled by design.
 
-5. /If the work moves to a new branch/, use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch
+5. /If requested, update the =vcpkg= submodule to latest/ as a
+   separate commit/PR — [[id:2a8f0d61-b3f9-4c20-9e76-1d92c8a47fb5][How do I update submodules to latest?]].
+   Like the version bump, this is build-side housekeeping that
+   pairs with sprint opening but rides its own PR.
+
+6. /If the work moves to a new branch/, use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch
    Manager]]. Otherwise, raise the PR via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]].
 
 * Recipes
@@ -54,6 +59,8 @@ do at the same time, before, or after.
   flow.
 - [[id:e9f98da1-cf33-4b53-bc4d-a034c652f3b0][How do I bump the project version?]] — the build-side
   housekeeping.
+- [[id:2a8f0d61-b3f9-4c20-9e76-1d92c8a47fb5][How do I update submodules to latest?]] — paired build-side
+  housekeeping for the =vcpkg= submodule.
 - [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] §"New sprint" — the underlying
   codegen invocation.
 

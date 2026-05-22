@@ -332,6 +332,13 @@ add_custom_target(deploy_skills
     COMMAND emacs -Q --script .build-skills.el 2>&1
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+set(ORES_CLAUDE_SETTINGS_FILE ".claude/settings.json")
+add_custom_target(deploy_settings
+    COMMENT "Deploying ORE Studio Claude Code Settings to ${ORES_CLAUDE_SETTINGS_FILE}" VERBATIM
+    COMMAND echo "Removing settings file" && rm -f ${ORES_CLAUDE_SETTINGS_FILE}
+    COMMAND emacs -Q --script .build-settings.el 2>&1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 set(ORES_TASKS_DIRECTORY "build/output/plan")
 add_custom_target(deploy_plan
     COMMENT "Deploying ORE Studio Plan to ${ORES_TASKS_DIRECTORY}" VERBATIM
@@ -366,10 +373,16 @@ add_custom_target(make_all_diagrams)
 add_custom_target(mad)
 add_dependencies(mad make_all_diagrams)
 
+add_custom_target(deploy_org
+    COMMENT "Deploying all ORE Studio org-mode artefacts" VERBATIM)
+add_dependencies(deploy_org deploy_site deploy_skills deploy_settings make_all_diagrams)
+add_custom_target(dorg)
+add_dependencies(dorg deploy_org)
+
 add_subdirectory(${CMAKE_SOURCE_DIR}/build)
 add_subdirectory(${CMAKE_SOURCE_DIR}/assets)
 add_subdirectory(${CMAKE_SOURCE_DIR}/projects)
-add_subdirectory(${CMAKE_SOURCE_DIR}/doc/skills/modeling)
+add_subdirectory(${CMAKE_SOURCE_DIR}/doc/llm/skills/modeling)
 
 # On Windows we disable vcpkg's per-target X_VCPKG_APPLOCAL_DEPS_INSTALL hook
 # (set in CMakePresets.json) because it registers one install(CODE ...) block

@@ -60,6 +60,8 @@ The =build-site.yml= GitHub Action publishes the site on every push to
 - [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — output directory layout.
 - [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — the parallel target for Claude Code
   skills.
+- [[id:3ddb2afa-9caa-44a0-a91a-645a95320a5f][How do I deploy the settings?]] — the parallel target for Claude Code
+  permissions.
 - [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — diagrams used inside the
   generated site.
 - [[id:d560fc97-03a3-4169-aa5a-2761e9c017ec][How do I serve the site locally?]] — preview the compiled site in a

@@ -68,6 +68,10 @@ You probably want one of:
 
 * I am an LLM about to do work in this codebase
 
+Start with [[id:f9ad7932-8e11-433c-a812-b57dbc9bf5d8][LLM instructions]] — it is the mandatory session entry point with
+all non-negotiable rules. See [[id:94f9949a-1580-4d47-9331-aa0597543c99][LLM Configuration and Artefacts]] for the
+map of skills, memory, and settings under =doc/llm/=.
+
 Before generating any document, read the contract:
 
 1. [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — the frontmatter every doc must carry, per-type

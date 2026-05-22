@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 5acade16-bcc4-46e5-950e-34015b87c4ec
+:END:
+#+title: How do I deploy all org-mode artefacts?
+#+description: Build the site, skills, settings, and diagrams in one shot with the deploy_org CMake target.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :cmake:build:org:recipe:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+The =deploy_org= CMake target is the composite for all org-mode publishing.
+For individual targets see [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]],
+[[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]], and [[id:3ddb2afa-9caa-44a0-a91a-645a95320a5f][How do I deploy the settings?]].
+For CMake setup and preset names see [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]].
+
+* Question
+
+How do I rebuild the website, Claude Code skills, settings, and PlantUML
+diagrams all at once?
+
+* Answer
+
+The =deploy_org= target (alias =dorg=) depends on =deploy_site=,
+=deploy_skills=, =deploy_settings=, and =make_all_diagrams=. Running it
+rebuilds every org-mode artefact in dependency order:
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-debug-ninja --target deploy_org
+#+end_src
+
+Or with the shorter alias:
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-debug-ninja --target dorg
+#+end_src
+
+This must be run outside the sandbox (Emacs, CMake, PlantUML, and
+=ores-babel.el= all need a full environment); use
+=dangerouslyDisableSandbox: true= on the Bash tool call.
+
+** Individual targets
+
+Run a single target if you only changed one kind of artefact:
+
+| Target            | Alias | What it rebuilds                                |
+|-------------------+-------+-------------------------------------------------|
+| =deploy_site=     | —     | HTML website under =build/output/site/=         |
+| =deploy_skills=   | —     | Claude Code skills under =.claude/skills/=      |
+| =deploy_settings= | —     | =.claude/settings.json= from its org source     |
+| =make_all_diagrams= | =mad= | PlantUML diagrams across the repository       |
+
+** Prerequisites
+
+- Emacs on =PATH=.
+- PlantUML on =PATH= (for =make_all_diagrams=; skipped if absent).
+- The project must be configured (=cmake --preset ...=).
+
+* Script
+
+The =deploy_org= target has no script of its own — it delegates to the
+four sub-targets listed above. The CMake definition lives in
+=CMakeLists.txt= near =add_custom_target(deploy_org ...)=.
+
+* Tested by
+
+Manual. Run =dorg= after any change to =doc/llm/=, =doc/recipes/=, or any
+=.org= file. Verified working when all four sub-targets complete without
+error.
+
+* See also
+
+- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — sub-target for the website.
+- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — sub-target for Claude Code skills.
+- [[id:3ddb2afa-9caa-44a0-a91a-645a95320a5f][How do I deploy the settings?]] — sub-target for =.claude/settings.json=.
+- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — sub-target for diagrams.
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset names and output directory layout.

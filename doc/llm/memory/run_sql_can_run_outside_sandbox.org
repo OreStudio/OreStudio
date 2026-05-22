@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 5bddd435-9f2a-4abc-ba71-5bb3b980c785
+:END:
+#+title: run_sql.sh can run outside the sandbox
+#+description: Claude may use dangerouslyDisableSandbox when running projects/ores.sql/run_sql.sh — the sandbox blocks localhost:5432.
+#+type: memory
+#+memory_subtype: feedback
+#+version: 2
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+Claude may use =dangerouslyDisableSandbox: true= when running
+=projects/ores.sql/run_sql.sh= or =projects/ores.sql/recreate_database.sh=.
+
+*Why:* The sandbox blocks outbound connections to =localhost:5432=
+(PostgreSQL). Any SQL script that calls =psql= will fail inside the sandbox.
+The user explicitly authorised running these scripts outside the sandbox.
+
+*How to apply:* Set =dangerouslyDisableSandbox: true= on the Bash tool call
+whenever invoking =run_sql.sh= or =recreate_database.sh=. This is a standing
+authorisation — no need to confirm each time. Remember also: never prefix
+=PGPASSWORD= on the command line; the script sources =.env= itself.

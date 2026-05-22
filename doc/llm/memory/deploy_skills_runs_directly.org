@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: c26b61e8-1ca7-4241-b1d9-d4d95b7ddb01
+:END:
+#+title: Run deploy_skills cmake target directly — it is Emacs-only, not C++ compilation
+#+description: The deploy_skills cmake target runs Emacs in batch mode only; Claude can invoke it directly with cmake --build --preset linux-clang-debug-ninja --target deploy_skills.
+#+type: memory
+#+memory_subtype: feedback
+#+version: 2
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+The =deploy_skills= cmake target only invokes Emacs in batch mode via
+=.build-skills.el=; it performs no C++ compilation. Claude can run it
+directly without asking the user.
+
+*Why:* Session on 2026-05-22 incorrectly deferred the command to the user by
+applying build-parallelism concerns (=-j $(nproc)= crash risk, build.sh
+wrapper) to a target that does not compile anything. The user corrected this
+and requested the rule be made explicit.
+
+*How to apply:* When the user asks to regenerate or redeploy skills, run:
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug-ninja --target deploy_skills
+#+end_src
+
+from the project root. Do not ask the user to run it. The =-j= caps and
+=build/scripts/build.sh= wrapper only apply to C++ compilation targets.

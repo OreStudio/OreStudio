@@ -83,7 +83,7 @@ which is a required step when adding the Qt layer for any entity.
 
 * Phase 1 — Orchestrator skill
 
-Create =doc/skills/entity-creator/SKILL.org= using the codegen script.
+Create [[id:0cba2f23-7f5f-433d-921a-d9c056bd9ca8][Entity Creator Skill]] using the codegen script.
 
 The skill describes a *complete regular entity* as requiring all seven layers,
 executed in dependency order.  Each layer is a separate task the LLM creates
@@ -251,7 +251,7 @@ new knowledge doc once it has an ID.
 
 | File | Action |
 |---|---|
-| =doc/skills/entity-creator/SKILL.org= | New (orchestrator) |
+| [[id:0cba2f23-7f5f-433d-921a-d9c056bd9ca8][Entity Creator Skill]] | New (orchestrator) |
 | =doc/knowledge/architecture/entity_lifecycle.org= | Update: file checklist + template refs |
 | =doc/knowledge/architecture/sql_entity_schema_patterns.org= | Rewrite: templates, not code |
 | =doc/knowledge/architecture/http_entity_patterns.org= | Rewrite: gap notice |
@@ -260,13 +260,13 @@ new knowledge doc once it has an ID.
 | =doc/knowledge/architecture/wt_entity_patterns.org= | Rewrite: gap notice |
 | =doc/knowledge/qt/qt_entity_patterns.org= | Rewrite: template names, not code |
 | =doc/knowledge/qt/qt_menu_toolbar_patterns.org= | New |
-| =doc/skills/domain-type-creator/SKILL.org= | Add Templates section |
-| =doc/skills/sql-schema-creator/SKILL.org= | Add Templates section |
-| =doc/skills/qt-entity-creator/SKILL.org= | Add Templates section |
-| =doc/skills/http-entity-creator/SKILL.org= | Add Codegen gap section |
-| =doc/skills/cli-entity-creator/SKILL.org= | Add Codegen gap section |
-| =doc/skills/shell-entity-creator/SKILL.org= | Add Codegen gap section |
-| =doc/skills/wt-entity-creator/SKILL.org= | Add Codegen gap section |
+| [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator Skill]] | Add Templates section |
+| [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator Skill]] | Add Templates section |
+| [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][Qt Entity Creator Skill]] | Add Templates section |
+| [[id:bdcc47d4-b050-409e-8c50-3d179843a274][HTTP Entity Creator Skill]] | Add Codegen gap section |
+| [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][CLI Entity Creator Skill]] | Add Codegen gap section |
+| [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][Shell Entity Creator Skill]] | Add Codegen gap section |
+| [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][Wt Entity Creator Skill]] | Add Codegen gap section |
 
 * Verification
 

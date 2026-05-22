@@ -175,7 +175,7 @@ the move.
   =doc_version_audit.py --list-v1=.
 
 - *Scaffolds inject =#+version: 2=*:
-  - =doc/skills/v2-doc-author/SKILL.org= (and any sub-templates)
+  - =doc/llm/skills/v2-doc-author/SKILL.org= (and any sub-templates)
   - =projects/ores.codegen/library/templates/v2_doc_skill.org.mustache=
   - =projects/ores.codegen/docs/v2_doc_generator.md= (update example
     outputs to show the new header)
@@ -212,7 +212,7 @@ the move.
 - =readme.org= (path text)
 - =index.org= (gets =#+version: 1=)
 - =CLAUDE.md= (touch-to-port rule)
-- =doc/skills/v2-doc-author/SKILL.org=
+- =doc/llm/skills/v2-doc-author/SKILL.org=
 - =projects/ores.codegen/library/templates/v2_doc_skill.org.mustache=
 - =projects/ores.codegen/docs/v2_doc_generator.md=
 

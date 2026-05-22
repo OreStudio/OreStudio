@@ -39,7 +39,7 @@ shipped bundle so the skill changes propagate to Claude Code.
 
 3. /Scaffold the skill/ via the codegen. Use kebab-case for the
    slug; it doubles as the Claude Code =name:= field and the
-   folder name (=doc/skills/<slug>/SKILL.org=). See
+   folder name (=doc/llm/skills/<slug>/SKILL.org=). See
    [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] §"New Claude Code skill" for
    the exact invocation.
 

@@ -20,7 +20,7 @@ section skeleton. Writing files directly bypasses all of that and was
 explicitly corrected by the user.
 
 *How to apply:* Whenever creating any new =.org= file under =doc/=,
-=doc/agile/=, =doc/memory/=, =doc/recipes/=, or =doc/knowledge/=, run
+=doc/agile/=, =doc/llm/memory/=, =doc/recipes/=, or =doc/knowledge/=, run
 =generate_v2_doc.sh= with the appropriate =--type=, =--slug=,
 =--parent-dir=, =--title=, =--description=, and =--tags= flags. Use
 =--id= to preserve an existing UUID when migrating a v1 file. After

@@ -308,3 +308,9 @@ controllers need to listen and forward it to the ClientManager.
   ~has_workspace_id~ is true (workspace-only filter, no tenant filter).
 - Mapper include guard: ~boost/lexical_cast.hpp~ needed for UUID round-trip;
   already included when ~has_uuid_columns~ is true but verify for all entities.
+
+
+----
+
+- docs for recreate db (recipe)
+- fix links in readme, should be org-roam links.

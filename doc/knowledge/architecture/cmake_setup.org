@@ -59,7 +59,10 @@ build/output/
 │           └── <component>_TESTS/ test logs, scoped by component
 │               └── <suite>/       e.g. domain_account_tests/
 │                   └── <test>.log e.g. account_serialization_to_json.log
-└── site/                          generated website (deploy_site target)
+├── site/                          generated website (deploy_site target)
+└── (project root)
+    └── .claude/
+        └── settings.json          Claude Code permissions (deploy_settings target)
 #+end_example
 
 Test log paths follow the source layout exactly: =<component>_TESTS/=
@@ -130,8 +133,10 @@ See [[id:4bf2516d-f37e-4e31-ad7b-124f2639b9ab][How do I enable test logging?]] f
 - [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]]
 - [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]]
 - [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]]
+- [[id:5acade16-bcc4-46e5-950e-34015b87c4ec][How do I deploy all org-mode artefacts?]]
 - [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]]
 - [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]]
+- [[id:3ddb2afa-9caa-44a0-a91a-645a95320a5f][How do I deploy the settings?]]
 - [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]]
 - [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner skill]] — the skill that bundles all the recipes for
   Claude Code.

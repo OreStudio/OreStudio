@@ -86,6 +86,15 @@ Read these first on a new contact:
   body structure, and the no-test-plan rule.
 - [[id:1882d6df-4012-4c6e-bf62-0d943ef805b0][How do I generate a PR summary?]] — assemble the body before =gh pr create=.
 
+* Claude Code configuration
+
+- [[id:2d83251f-0e24-4b97-b736-08f710316634][Claude Code Settings]] — the literate source for =.claude/settings.json=.
+  Lists every permission entry with its security rationale and the concrete
+  command variations it covers. Edit this file (not the JSON) to add or
+  remove permissions; regenerate with [[id:3ddb2afa-9caa-44a0-a91a-645a95320a5f][How do I deploy the settings?]].
+- [[id:5acade16-bcc4-46e5-950e-34015b87c4ec][How do I deploy all org-mode artefacts?]] — the =deploy_org= (=dorg=) target
+  rebuilds site, skills, settings, and diagrams in one shot.
+
 * Memory
 
 - [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][Project memory]] — catalogue of session-feedback memories; read and write

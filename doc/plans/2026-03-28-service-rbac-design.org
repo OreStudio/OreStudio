@@ -549,7 +549,7 @@ Update all references in:
 - =projects/ores.sql/modeling/database_lifecycle.org=
 - =doc/recipes/shell_recipes.org= (=ORES_COMMS_SHELL_LOGIN_PASSWORD= →
   =ORES_SHELL_LOGIN_PASSWORD=; =ores_comms_user= → =ores_shell_user=)
-- Any =.claude/skills= or =doc/skills= files referencing =COMMS_SHELL=
+- Any =.claude/skills= or =doc/llm/skills= files referencing =COMMS_SHELL=
 
 ** Files Changed
 

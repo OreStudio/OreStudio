@@ -20,7 +20,7 @@ How do I build the Claude Code skills bundle locally?
 * Answer
 
 The =deploy_skills= CMake target invokes Emacs in batch mode against
-=.build-skills.el=, which exports each skill under =doc/skills/= to
+=.build-skills.el=, which exports each skill under =doc/llm/skills/= to
 the format Claude Code expects:
 
 #+begin_src sh :results verbatim
@@ -50,3 +50,4 @@ deployment when a skill is updated.
 
 - [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]]
 - [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — parallel target for the website.
+- [[id:3ddb2afa-9caa-44a0-a91a-645a95320a5f][How do I deploy the settings?]] — parallel target for Claude Code permissions.

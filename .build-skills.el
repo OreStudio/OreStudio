@@ -66,13 +66,13 @@
       '(
         ("skills:tangle"
          :recursive t
-         :base-directory "./doc/skills/"
+         :base-directory "./doc/llm/skills/"
          :exclude "claude_code_skills.org"
          :publishing-function org-babel-tangle-publish
          :publishing-directory "./.claude/skills/")
         ("skills:export"
          :recursive t
-         :base-directory "./doc/skills/"
+         :base-directory "./doc/llm/skills/"
          :exclude "claude_code_skills.org"
          :publishing-function org-gfm-publish-to-gfm
          :publishing-directory "./.claude/skills/"

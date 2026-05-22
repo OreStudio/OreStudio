@@ -31,11 +31,12 @@ doc/
 │   └── external/         ← reference docs for systems we don't own
 ├── identity/             ← product vision, out-of-scope
 ├── functions/            ← named roles across levels (one per system)
-├── skills/               ← Claude Code skills, one per slug
+├── llm/                  ← LLM config: instructions, settings, skills, memories
+│   ├── skills/           ← Claude Code skills, one per slug
+│   └── memory/           ← Claude Code session-feedback memory
 ├── plans/                ← historical design plans (retained for record)
 ├── manual/               ← user-facing PDF/LaTeX manual
 ├── prompts/              ← reusable LLM prompts
-├── memory/               ← Claude Code session-feedback memory
 ├── samples/              ← screenshots and product imagery
 └── analysis/             ← older one-off analyses (v1, mostly historical)
 #+end_example
@@ -103,7 +104,7 @@ Cross-cutting knowledge that outlives any sprint. Lives under
 analysis tied to one component's code) lives co-located with the code at
 =projects/<comp>/docs/=, not here.
 
-** Identity, functions, skills
+** Identity, functions
 
 - =identity/= — system-5 docs: [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product identity]]; what's out of scope. Holds the
   durable identity statements that filter candidate versions and far captures.
@@ -111,9 +112,21 @@ analysis tied to one component's code) lives co-located with the code at
   (S1 Agent, S2 Orchestrator, S3 Sprint Planner, S3* Auditor, S4 Version
   Planner, S5 Identity Steward), plus the [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][index page]]. A function doc is the
   priming context an LLM session loads when it takes on that role.
+
+** =llm/= — LLM configuration and artefacts
+
+See [[id:94f9949a-1580-4d47-9331-aa0597543c99][LLM Configuration and Artefacts]] for the full description. Summary:
+
+- =llm_instructions.org= ([[id:f9ad7932-8e11-433c-a812-b57dbc9bf5d8][LLM instructions]]) — the mandatory session entry
+  point; lists non-negotiable rules and links to every other reference.
+- =claude_code_settings.org= ([[id:2d83251f-0e24-4b97-b736-08f710316634][Claude Code Settings]]) — literate source for
+  =.claude/settings.json=; regenerate with =deploy_settings= CMake target.
 - =skills/= — Claude Code [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skills]], one per kebab-case slug. Each =SKILL.org= is
   task-shaped: how to perform a specific unit of work end-to-end. The catalogue
-  lives at [[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills index]].
+  lives at [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]].
+- =memory/= — persistent project-scope [[id:32b3a055-63fa-4edf-8dcc-901e9d883f22][memory]] for LLM sessions. One
+  memory per file; the catalogue lives at [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][Project memory]]. Write here
+  when the user gives feedback worth keeping across sessions.
 
 ** Secondary folders
 
@@ -123,9 +136,6 @@ analysis tied to one component's code) lives co-located with the code at
 - =manual/= — user-facing PDF / LaTeX manual built from =manual.org=. Surfaced
   to end users, not part of the developer-doc tree.
 - =prompts/= — reusable LLM prompts that don't fit cleanly as a [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skill]].
-- =memory/= — persistent project-scope [[id:32b3a055-63fa-4edf-8dcc-901e9d883f22][memory]] for LLM sessions. One
-  memory per file; the catalogue lives at [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][project memory]]. Write here
-  when the user gives feedback worth keeping across sessions.
 - =samples/= — screenshots and product imagery referenced from [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product identity]]
   and visual mockups.
 - =analysis/= — older one-off analyses from before v2. Some still useful as

@@ -26,7 +26,7 @@ belong in any existing domain plugin.
   searchable execution list.
 - Badge-based status rendering matching colour constants used everywhere else.
 - Standard toolbar icons from the icon registry defined in
-  =doc/skills/qt-entity-creator/SKILL.org=.
+  [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][Qt Entity Creator Skill]].
 - Step-level detail dialog with its own status badges.
 - Phase-2 scope (not in this branch): throughput chart, pause/resume, retry,
   pagination, settings tab.

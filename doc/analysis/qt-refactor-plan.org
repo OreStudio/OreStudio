@@ -519,7 +519,7 @@ can be deleted.
 2. Delete =LegacyPlugin= class and its CMake target.
 3. Update the top-level =CMakeLists.txt= (projects list),
    =projects/modeling/system_model.org=, and CI configuration.
-4. Update =doc/skills/component-creator/SKILL.org= (now there are 7 Qt
+4. Update [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][Component Creator]] skill (now there are 7 Qt
    plugin projects, not 1).
 5. Rename the analysis branch and raise the final PR against main.
 

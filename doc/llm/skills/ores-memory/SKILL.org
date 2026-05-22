@@ -2,7 +2,7 @@
 :ID: 7357c672-a49f-4974-9399-a166f761d222
 :END:
 #+title: ORES Memory Skill
-#+description: Decide when to write, update, or push back on a project-scope memory; then scaffold it into doc/memory/ via the codegen.
+#+description: Decide when to write, update, or push back on a project-scope memory; then scaffold it into doc/llm/memory/ via the codegen.
 #+type: skill
 #+version: 2
 #+level: cross
@@ -13,7 +13,7 @@
 #+begin_export markdown
 ---
 name: ores-memory
-description: When the user gives feedback worth remembering, or asks "remember this", write or update a memory under doc/memory/ following the ORE Studio memory contract.
+description: When the user gives feedback worth remembering, or asks "remember this", write or update a memory under doc/llm/memory/ following the ORE Studio memory contract.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -69,7 +69,7 @@ correct response.
    #+begin_src sh :results verbatim
    projects/ores.codegen/generate_v2_doc.sh \
      --type memory --slug <slug> \
-     --parent-dir doc/memory \
+     --parent-dir doc/llm/memory \
      --title "<one-line title>" \
      --description "<one-line description>" \
      --memory-subtype feedback
@@ -81,7 +81,7 @@ correct response.
      session judge edge cases.
    - =*How to apply:*= — when this kicks in.
 
-7. /Wire into the inventory/. Open =doc/memory/memory.org= and
+7. /Wire into the inventory/. Open [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][Project memory]] and
    add the id-link under the matching subtype heading.
 
 8. /Confirm with the user/ that the captured memory matches their

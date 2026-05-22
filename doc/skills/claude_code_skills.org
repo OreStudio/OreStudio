@@ -29,7 +29,7 @@ See [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]] for the deployment
 - [[id:2df8adaf-20c9-4757-9399-798eec6df828][Agile Product Owner]] — manage the team through story creation,
   prioritisation, sprint planning.
 - [[id:7357c672-a49f-4974-9399-a166f761d222][ORES Memory]] — decide when to write a project-scope memory and
-  scaffold it into =doc/memory/=.
+  scaffold it into =doc/llm/memory/=.
 - [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]] — class diagrams for C++ components.
 - [[id:b0b99088-d88e-4980-a4ee-7d6a9a8e96a5][Component Model Creator]] — component model documentation in
   org-mode with PlantUML diagrams.

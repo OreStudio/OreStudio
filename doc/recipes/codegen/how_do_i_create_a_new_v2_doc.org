@@ -243,7 +243,7 @@ name from the =--parent-dir= basename.
 :ID: 3b7156cd-3a8d-49e5-bf89-a5f6f2486596
 :END:
 
-Memories live under =doc/memory/=. Pass =--memory-subtype= to pick
+Memories live under =doc/llm/memory/=. Pass =--memory-subtype= to pick
 the kind of memory (=feedback= / =user= / =project= / =reference=
 — default =feedback=). The =memory= filetag is auto-injected so
 the catalogue is greppable.
@@ -251,7 +251,7 @@ the catalogue is greppable.
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type memory --slug do_not_re_export_env_vars \
-  --parent-dir doc/memory \
+  --parent-dir doc/llm/memory \
   --title "Do not re-export ORES_* env vars in Bash tool calls" \
   --description "The user already exports them; prepending is noise." \
   --memory-subtype feedback

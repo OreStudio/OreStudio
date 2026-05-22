@@ -500,7 +500,7 @@ A pre-sprint idea — see [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][Capture]] i
 A persistent project-scope note an LLM session writes for the benefit
 of future sessions — see [[id:32b3a055-63fa-4edf-8dcc-901e9d883f22][Memory]] in the glossary.
 
-- Folder :: =doc/memory/<slug>.org= — flat, one memory per file.
+- Folder :: =doc/llm/memory/<slug>.org= — flat, one memory per file.
 - Level :: =cross= (memories cut across cybernetic levels; they're
   about how-to-work-together, not about composition).
 - Slug :: =snake_case=, descriptive of /the rule/, not the topic

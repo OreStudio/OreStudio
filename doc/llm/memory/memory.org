@@ -2,7 +2,7 @@
 :ID: dc0bba22-9d4f-4fdd-b011-e30b02b4b82f
 :END:
 #+title: Project memory
-#+description: Persistent project-scope memories for LLM sessions. One memory per file under doc/memory/. Read at session start; appended to over time.
+#+description: Persistent project-scope memories for LLM sessions. One memory per file under doc/llm/memory/. Read at session start; appended to over time.
 #+type: knowledge
 #+version: 2
 #+level: cross
@@ -59,6 +59,13 @@ of these exclusions, push back: the right home is somewhere else.
   directly; use =generate_v2_doc.sh= to scaffold them.
 - [[id:387016ad-42cf-4830-b504-f255f6a7d1ab][Check recipes before searching for how to do something]] — =doc/recipes/=
   is the first port of call for any project operation.
+- [[id:c26b61e8-1ca7-4241-b1d9-d4d95b7ddb01][Run deploy_skills cmake target directly]] — it is Emacs-only, not C++
+  compilation; run =cmake --build --preset linux-clang-debug-ninja --target deploy_skills= without asking the user.
+- [[id:06a0919d-b741-40ea-bff2-376bd36c4a27][Builds can run outside the sandbox]] — use =dangerouslyDisableSandbox: true=
+  for any =cmake --build= or =make -C build/output/...= call; compiler
+  toolchain and vcpkg detection are blocked inside the sandbox.
+- [[id:5bddd435-9f2a-4abc-ba71-5bb3b980c785][run_sql.sh can run outside the sandbox]] — use =dangerouslyDisableSandbox: true=
+  for =run_sql.sh= and =recreate_database.sh=; sandbox blocks =localhost:5432=.
 
 ** User
 

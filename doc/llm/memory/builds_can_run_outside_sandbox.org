@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: 06a0919d-b741-40ea-bff2-376bd36c4a27
+:END:
+#+title: Builds can run outside the sandbox
+#+description: Claude may use dangerouslyDisableSandbox when running cmake or make build targets — the compiler toolchain and sccache are not accessible inside the sandbox.
+#+type: memory
+#+memory_subtype: feedback
+#+version: 2
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+Claude may use =dangerouslyDisableSandbox: true= when invoking any cmake or
+make build target — including lightweight non-compilation targets such as
+=deploy_skills=.
+
+*Why:* The compiler toolchain (=clang++=, =gcc=), =sccache=, and cmake's
+vcpkg compiler-detection step are all inaccessible inside the sandbox. Any
+=cmake --build= or =make -C build/output/...= invocation will fail if run
+sandboxed when CMake needs to re-configure. The user explicitly authorised
+running builds outside the sandbox (2026-05-22).
+
+*How to apply:* Set =dangerouslyDisableSandbox: true= on the Bash tool call
+whenever running =cmake --build=, =make -C build/output/...=, or
+=build/scripts/build.sh=. This is a standing authorisation — no need to
+confirm with the user each time.

@@ -157,7 +157,7 @@ as SQL: a directory wildcard would permit running arbitrary scripts in
 a large codegen tree.
 
 Common invocations:
-- =projects/ores.codegen/generate_v2_doc.sh --type memory --slug foo --parent-dir doc/memory ...=
+- =projects/ores.codegen/generate_v2_doc.sh --type memory --slug foo --parent-dir doc/llm/memory ...=
 - =projects/ores.codegen/run_generator.sh=
 - =projects/ores.codegen/plantuml_er_generate.sh -i doc/plans/foo.org=
 

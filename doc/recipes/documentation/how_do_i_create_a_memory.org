@@ -2,7 +2,7 @@
 :ID: 391b9231-dba8-4e8c-97ab-a75e2b9fea07
 :END:
 #+title: How do I create a memory?
-#+description: Scaffold a v2 memory file under doc/memory/ — feedback, user, project, or reference subtype — and wire it into the inventory.
+#+description: Scaffold a v2 memory file under doc/llm/memory/ — feedback, user, project, or reference subtype — and wire it into the inventory.
 #+type: recipe
 #+version: 2
 #+level: cross
@@ -23,7 +23,7 @@ file, fill in the body, and link it from the inventory?
 * Answer
 
 Memories are short, atomic, durable. One memory per file under
-=doc/memory/=. Use the codegen to scaffold; never hand-write the
+=doc/llm/memory/=. Use the codegen to scaffold; never hand-write the
 frontmatter.
 
 1. /Pick the subtype/. Memories use the same four subtypes as
@@ -42,7 +42,7 @@ frontmatter.
    #+begin_src sh :results verbatim
    projects/ores.codegen/generate_v2_doc.sh \
      --type memory --slug do_not_re_export_env_vars \
-     --parent-dir doc/memory \
+     --parent-dir doc/llm/memory \
      --title "Do not re-export ORES_* env vars in Bash tool calls" \
      --description "The user has already exported ORES_* env vars in their shell session — don't prepend them." \
      --memory-subtype feedback
@@ -60,7 +60,7 @@ frontmatter.
    - /=*How to apply:*=/ when this kicks in (which files, which
      workflows, what circumstances).
 
-5. /Link from the inventory/. Open =doc/memory/memory.org= and add
+5. /Link from the inventory/. Open [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][Project memory]] and add
    an id-link under the appropriate subtype heading.
 
 6. /Verify/:

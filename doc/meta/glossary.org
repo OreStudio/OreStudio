@@ -285,7 +285,7 @@ is moved into the appropriate sprint folder and its =#+type:= flips from
 A short, durable note an LLM session writes for the benefit of future
 sessions — feedback the user gave, a fact about them, a fact about
 the work in flight, or a pointer to an external system. One memory
-per file under =doc/memory/=; carries =#+type: memory= and a
+per file under =doc/llm/memory/=; carries =#+type: memory= and a
 =#+memory_subtype:= of =feedback=, =user=, =project=, or
 =reference=. Memory captures /how to work together/; code-derivable
 facts and architecture belong in [[id:bd1f3458-f991-46be-abeb-5f06c2633375][knowledge]] instead.

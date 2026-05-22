@@ -165,6 +165,25 @@
          :publishing-function org-publish-attachment)
         ("site:main" :components("site:pages" "site:images" "site:style"))))
 
+(defun ores-inject-site-nav (index-file preamble)
+  "Inject site CSS and PREAMBLE nav into the org-roam-ui INDEX-FILE."
+  (when (file-exists-p index-file)
+    (let* ((content (with-temp-buffer
+                      (insert-file-contents index-file)
+                      (buffer-string)))
+           (css-tag "<link rel=\"stylesheet\" href=\"/OreStudio/assets/style.css\">")
+           (fa-tag  "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css\">")
+           (patched (replace-regexp-in-string
+                     "</head>"
+                     (concat css-tag fa-tag "</head>")
+                     (replace-regexp-in-string
+                      "<body>"
+                      (concat "<body>" preamble)
+                      content))))
+      (with-temp-file index-file
+        (insert patched)))
+    (message "Injected site nav into %s" index-file)))
+
 (defun ores-deploy-org-roam-ui (site-dir)
   "Copy pre-built org-roam-ui static files to SITE-DIR/graph/."
   (let ((src (expand-file-name "./external/org-roam-ui"))
@@ -173,6 +192,7 @@
         (message "Warning: external/org-roam-ui not found; skipping")
       (make-directory dst t)
       (copy-directory src dst nil t t)
+      (ores-inject-site-nav (expand-file-name "index.html" dst) site-html-preamble)
       (message "org-roam-ui files copied to %s" dst))))
 
 (condition-case err

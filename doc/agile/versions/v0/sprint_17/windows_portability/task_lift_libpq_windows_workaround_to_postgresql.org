@@ -35,16 +35,18 @@ Consolidate the scattered Windows libpq link workaround into a single PostgreSQL
 
 * Acceptance
 
--
+- libpq Windows workaround is lifted to a reusable CMake helper at the =postgresql= level.
+- All consumers pick up the fix without per-component duplication.
+- PR #710 landed.
 
 * Plan
 
 * Notes
 
 ** Summary
-PRs #708 and #709 patched the Windows libpq link workaround (\=pgport\=, \=pgcommon\=, \=OpenSSL::SSL\=/\=Crypto\=, \=Secur32\=, \=Wldap32\=) onto \=ores.database\=. That cleared the symptom there, but every other DLL that transitively pulls libpq in via \=sqlgen\= now reports the same undefined references — the latest failing build had \=ores.refdata.core.dll\= tripping over \=pg_tolower\=, \=pg_strong_random\=, \=gettimeofday\=, \=strlcpy\=, \=RAND_bytes\=, \=BIO_new\=, ... The per-target patch does not scale.
+PRs #708 and #709 patched the Windows libpq link workaround (=pgport=, =pgcommon=, =OpenSSL::SSL=/=Crypto=, =Secur32=, =Wldap32=) onto =ores.database=. That cleared the symptom there, but every other DLL that transitively pulls libpq in via =sqlgen= now reports the same undefined references — the latest failing build had =ores.refdata.core.dll= tripping over =pg_tolower=, =pg_strong_random=, =gettimeofday=, =strlcpy=, =RAND_bytes=, =BIO_new=, ... The per-target patch does not scale.
 
-*Fix*: lift the workaround to the root \=CMakeLists.txt\= and append the libraries directly onto the \=PostgreSQL::PostgreSQL\= imported target. \=sqlgen\='s exported config already declares \=PostgreSQL::PostgreSQL\= in its \=INTERFACE_LINK_LIBRARIES\=, so every consumer — \=ores.database\=, \=ores.refdata.core\=, and any future one — picks the fix up through normal CMake transitivity with zero per-target edits. The per-target block in \=ores.database/src/CMakeLists.txt\= is removed as now-redundant.
+*Fix*: lift the workaround to the root =CMakeLists.txt= and append the libraries directly onto the =PostgreSQL::PostgreSQL= imported target. =sqlgen='s exported config already declares =PostgreSQL::PostgreSQL= in its =INTERFACE_LINK_LIBRARIES=, so every consumer — =ores.database=, =ores.refdata.core=, and any future one — picks the fix up through normal CMake transitivity with zero per-target edits. The per-target block in =ores.database/src/CMakeLists.txt= is removed as now-redundant.
 
 
 * Result

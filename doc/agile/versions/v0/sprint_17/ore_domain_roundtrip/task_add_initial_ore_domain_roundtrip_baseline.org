@@ -35,7 +35,8 @@ Fix leg_type_from_string gaps for inflation and commodity legs, then generate an
 
 * Acceptance
 
--
+- Fix leg_type_from_string gaps for inflation and commodity legs, then generate and commit the initial 1474-file domain roundtrip baseline from the ORE examples directory.
+- PR #731 merged and landed on main.
 
 * Plan
 

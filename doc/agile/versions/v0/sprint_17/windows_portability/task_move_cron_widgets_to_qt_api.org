@@ -35,7 +35,9 @@ Move CronExpressionWidget, CronEditorDialog, and CronFieldWidget from ores.qt.co
 
 * Acceptance
 
--
+- =CronExpressionWidget=, =CronEditorDialog=, and =CronFieldWidget= live in =ores.qt.api=.
+- =ores.qt.scheduler.dll= links cleanly with no undefined =staticMetaObject= symbols on Windows.
+- PR #706 landed.
 
 * Plan
 

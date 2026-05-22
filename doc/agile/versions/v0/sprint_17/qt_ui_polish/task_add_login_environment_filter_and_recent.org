@@ -35,7 +35,8 @@ Add a checkout-label filter to the login dialog that auto-tags environments by O
 
 * Acceptance
 
--
+- Add a checkout-label filter to the login dialog that auto-tags environments by ORES_CHECKOUT_LABEL, and add recent-parties quick-pick to the party picker.
+- PR #753 merged and landed on main.
 
 * Plan
 

@@ -35,7 +35,8 @@ Decompose the 25-field trade struct into five rfl::Flatten sub-structs to resolv
 
 * Acceptance
 
--
+- Decompose the 25-field trade struct into five rfl::Flatten sub-structs to resolve MSVC C1202 caused by rfl's O(n²) constexpr field-uniqueness check exceeding the depth budget.
+- PR #761 merged and landed on main.
 
 * Plan
 

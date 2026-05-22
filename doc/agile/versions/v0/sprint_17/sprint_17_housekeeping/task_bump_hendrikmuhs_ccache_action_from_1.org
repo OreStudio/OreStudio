@@ -35,7 +35,8 @@ Bump the hendrikmuhs/ccache-action GitHub Action from 1.2.22 to 1.2.23.
 
 * Acceptance
 
--
+- Bump the hendrikmuhs/ccache-action GitHub Action from 1.2.22 to 1.2.23.
+- PR #723 merged and landed on main.
 
 * Plan
 

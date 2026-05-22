@@ -35,7 +35,8 @@ Split ClientManager.cpp into four focused translation units (connect/login, setu
 
 * Acceptance
 
--
+- Split ClientManager.cpp into four focused translation units (connect/login, setup, trades, events) to keep each under MSVC's constexpr template depth budget.
+- PR #754 merged and landed on main.
 
 * Plan
 

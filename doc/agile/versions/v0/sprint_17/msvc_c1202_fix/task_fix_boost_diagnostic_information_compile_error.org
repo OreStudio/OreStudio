@@ -35,7 +35,8 @@ Replace boost::diagnostic_information with e.what() in ClientManagerTradeDetail.
 
 * Acceptance
 
--
+- Replace boost::diagnostic_information with e.what() in ClientManagerTradeDetail.cpp to fix a missing-header compile error on all Linux builds.
+- PR #759 merged and landed on main.
 
 * Plan
 

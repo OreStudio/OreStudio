@@ -35,7 +35,8 @@ Raise the MSVC /constexpr:depth limit on ores.qt.api to 100000 to resolve C1202 
 
 * Acceptance
 
--
+- Raise the MSVC /constexpr:depth limit on ores.qt.api to 100000 to resolve C1202 in ClientManagerTrades.cpp caused by rfl's variant field-uniqueness check.
+- PR #768 merged and landed on main.
 
 * Plan
 

@@ -35,7 +35,8 @@ Verify ore_import_handler dispatches workflows via NATS only and remove the dead
 
 * Acceptance
 
--
+- Verify ore_import_handler dispatches workflows via NATS only and remove the dead ores_workflow_ DML grant and ores.workflow.core.lib link from ores.ore.service.
+- PR #746 merged and landed on main.
 
 * Plan
 

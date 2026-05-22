@@ -35,7 +35,8 @@ Migrate sprints 08-11 of v0 (43 stories, 114 tasks) into the v2 information arch
 
 * Acceptance
 
--
+- Migrate sprints 08-11 of v0 (43 stories, 114 tasks) into the v2 information architecture established in PR #771.
+- PR #775 merged and landed on main.
 
 * Plan
 

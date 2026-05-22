@@ -35,7 +35,8 @@ Remove #pragma constexpr_depth and #pragma constexpr_steps from two TUs — thes
 
 * Acceptance
 
--
+- Remove #pragma constexpr_depth and #pragma constexpr_steps from two TUs — these pragma names do not exist in MSVC and caused /WX hard build errors via C4068.
+- PR #790 merged and landed on main.
 
 * Plan
 

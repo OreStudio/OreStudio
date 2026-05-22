@@ -35,7 +35,8 @@ Add the missing ORES_TRADING_API_LIBRARY and ORES_TRADING_CORE_LIBRARY compile d
 
 * Acceptance
 
--
+- Add the missing ORES_TRADING_API_LIBRARY and ORES_TRADING_CORE_LIBRARY compile definitions that were omitted from the initial -fvisibility=hidden migration.
+- PR #743 merged and landed on main.
 
 * Plan
 

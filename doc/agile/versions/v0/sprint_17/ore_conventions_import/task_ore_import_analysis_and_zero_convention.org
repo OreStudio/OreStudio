@@ -35,7 +35,8 @@ Deliver Phase 1 of the ORE convention import plan: zero_convention end-to-end vi
 
 * Acceptance
 
--
+- Deliver Phase 1 of the ORE convention import plan: zero_convention end-to-end via codegen, establishing the pattern and fixing codegen defects for all remaining types.
+- PR #716 merged and landed on main.
 
 * Plan
 

@@ -35,25 +35,27 @@ Add explicit OpenSSL::SSL and OpenSSL::Crypto links to ores.database to resolve 
 
 * Acceptance
 
--
+- =ores.database= explicitly links =OpenSSL::SSL= and =OpenSSL::Crypto= on the =x64-windows= triplet.
+- =ores.database.dll= links cleanly with no undefined OpenSSL symbols.
+- PR #709 landed.
 
 * Plan
 
 * Notes
 
 ** Summary
-Windows clang builds still fail linking \=ores.database.dll\= after #708:
+Windows clang builds still fail linking =ores.database.dll= after #708:
 
-\=\=\`
+==\`
 lld-link: error: undefined symbol: RAND_bytes
 lld-link: error: undefined symbol: BIO_new
 lld-link: error: undefined symbol: OPENSSL_sk_num
 lld-link: error: undefined symbol: ASN1_STRING_get0_data
-\=\=\`
+==\`
 
-libpq's SSL connection paths pull in OpenSSL. vcpkg's libpq cmake wrapper only attaches \=OpenSSL::SSL\= when the triplet linkage is \=static\=; the dynamic \=x64-windows\= triplet skips it. Same root cause as the pgport/pgcommon gap — extend the Windows compensation block in \=ores.database/src/CMakeLists.txt\= to also link \=OpenSSL::SSL\= and \=OpenSSL::Crypto\=.
+libpq's SSL connection paths pull in OpenSSL. vcpkg's libpq cmake wrapper only attaches =OpenSSL::SSL= when the triplet linkage is =static=; the dynamic =x64-windows= triplet skips it. Same root cause as the pgport/pgcommon gap — extend the Windows compensation block in =ores.database/src/CMakeLists.txt= to also link =OpenSSL::SSL= and =OpenSSL::Crypto=.
 
-The two MSVC WiX packaging failures (\=LGHT0263\= on \=ores.trading.core.lib\= exceeding 2GB and \=LGHT0306\= on >65k files in a single CAB) are packaging-level issues, not build errors, and will be addressed separately.
+The two MSVC WiX packaging failures (=LGHT0263= on =ores.trading.core.lib= exceeding 2GB and =LGHT0306= on >65k files in a single CAB) are packaging-level issues, not build errors, and will be addressed separately.
 
 
 * Result

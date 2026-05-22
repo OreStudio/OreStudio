@@ -35,7 +35,8 @@ Wire the CLI conventions import handler (Phase 3): add --entity=conventions, imp
 
 * Acceptance
 
--
+- Wire the CLI conventions import handler (Phase 3): add --entity=conventions, implement application::import_conventions(), and route all nine convention types to their repositories.
+- PR #734 merged and landed on main.
 
 * Plan
 

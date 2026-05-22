@@ -35,7 +35,8 @@ Fix two Windows build failures: move getTradeDetail to a dedicated TU to clear a
 
 * Acceptance
 
--
+- Fix two Windows build failures: move getTradeDetail to a dedicated TU to clear a C1202 depth overflow, and add missing workflow.api DLL export annotations.
+- PR #757 merged and landed on main.
 
 * Plan
 

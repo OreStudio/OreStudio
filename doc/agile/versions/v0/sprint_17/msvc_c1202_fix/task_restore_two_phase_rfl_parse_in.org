@@ -35,7 +35,8 @@ Restore the two-phase rfl parse in getTradeDetail to work around MSVC C1202 stil
 
 * Acceptance
 
--
+- Restore the two-phase rfl parse in getTradeDetail to work around MSVC C1202 still triggered by the 8-alternative trade_instrument variant even after trade decomposition.
+- PR #765 merged and landed on main.
 
 * Plan
 

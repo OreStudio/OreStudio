@@ -35,7 +35,8 @@ Add MSVC-only /constexpr:depth1024 and /constexpr:steps10000000 flags to fix C12
 
 * Acceptance
 
--
+- Add MSVC-only /constexpr:depth1024 and /constexpr:steps10000000 flags to fix C1202 in ClientManager.cpp caused by rfl's O(N²) field-uniqueness check on fra_instrument.
+- PR #727 merged and landed on main.
 
 * Plan
 

@@ -35,7 +35,8 @@ Introduce four new export-result wrappers (bond, credit, commodity, scripted) sy
 
 * Acceptance
 
--
+- Introduce four new export-result wrappers (bond, credit, commodity, scripted) symmetric with the existing swap/fx/equity/composite wrappers.
+- PR #725 merged and landed on main.
 
 * Plan
 

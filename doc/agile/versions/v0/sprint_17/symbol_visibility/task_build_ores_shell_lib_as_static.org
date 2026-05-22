@@ -35,7 +35,8 @@ Convert ores.shell.lib from shared to STATIC to fix lld-link undefined symbol er
 
 * Acceptance
 
--
+- Convert ores.shell.lib from shared to STATIC to fix lld-link undefined symbol errors in all four Windows plugin DLL configurations.
+- PR #764 merged and landed on main.
 
 * Plan
 

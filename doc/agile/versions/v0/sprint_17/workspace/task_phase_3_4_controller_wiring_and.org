@@ -35,7 +35,8 @@ Complete workspace propagation: wire EntityController to forward workspace conte
 
 * Acceptance
 
--
+- Workspace controller is wired for phases 3 and 4.
+- PR landed.
 
 * Plan
 

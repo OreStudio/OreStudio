@@ -35,7 +35,8 @@ Fix the pg_notify timestamp format to ISO 8601 UTC, correct an entity name misma
 
 * Acceptance
 
--
+- Fix the pg_notify timestamp format to ISO 8601 UTC, correct an entity name mismatch in party cache refresh, and repair badge RLS and system-reset commands.
+- PR #772 merged and landed on main.
 
 * Plan
 

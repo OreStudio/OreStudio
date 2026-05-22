@@ -35,7 +35,8 @@ Fix the wt.service startup crash caused by a stale ORES_WT_PORT env var, close I
 
 * Acceptance
 
--
+- Fix the wt.service startup crash caused by a stale ORES_WT_PORT env var, close IAM party cache cold-start gaps, and fix a black-strip rendering defect in the trade detail dialog.
+- PR #755 merged and landed on main.
 
 * Plan
 

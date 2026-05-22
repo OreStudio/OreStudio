@@ -35,7 +35,8 @@ Add deposit_convention as the second codegen-driven ORE convention type, fixing 
 
 * Acceptance
 
--
+- Add deposit_convention as the second codegen-driven ORE convention type, fixing the notify-trigger template to support domain_entity model syntax.
+- PR #718 merged and landed on main.
 
 * Plan
 

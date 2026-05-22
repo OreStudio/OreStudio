@@ -35,7 +35,9 @@ Replace IAM's direct cross-service reads of refdata party tables with an in-proc
 
 * Acceptance
 
--
+- =ores.iam= and =ores.party= services use domain repositories exclusively with no cross-service SQL joins.
+- All refdata phase 4 isolation stories are complete.
+- PR #722 landed.
 
 * Plan
 
@@ -44,26 +46,26 @@ Replace IAM's direct cross-service reads of refdata party tables with an in-proc
 ** Summary
 
 - Removes direct IAM→refdata DB reads by introducing an in-process party cache backed by NATS
-- \=party_cache\= holds per-tenant flat maps of party records; warmed at startup for all active tenants and reloaded on \=refdata.v1.parties.changed\= events
-- Eliminates the \=ores_refdata_parties\= cross-service DML grant from the IAM service registry
-- Drops \=ores.refdata.core.lib\= link dependency from \=ores.iam.core\=
+- =party_cache= holds per-tenant flat maps of party records; warmed at startup for all active tenants and reloaded on =refdata.v1.parties.changed= events
+- Eliminates the =ores_refdata_parties= cross-service DML grant from the IAM service registry
+- Drops =ores.refdata.core.lib= link dependency from =ores.iam.core=
 
 ** Changes
 
 *refdata (API/core/service)*
-- \=party_protocol.hpp\=: add \=read_parties_for_cache_request/response\= with subject \=refdata.v1.parties.read\=
-- \=party_handler.hpp\=: add \=read_for_cache\= method that scopes to tenant and returns all active parties
-- \=registrar.cpp\=: register the new \=refdata.v1.parties.read\= NATS subject
-- \=application.cpp\=: wire \=party_changed_event\= → \=refdata.v1.parties.changed\= publish via existing PostgreSQL LISTEN/NOTIFY pipeline
+- =party_protocol.hpp=: add =read_parties_for_cache_request/response= with subject =refdata.v1.parties.read=
+- =party_handler.hpp=: add =read_for_cache= method that scopes to tenant and returns all active parties
+- =registrar.cpp=: register the new =refdata.v1.parties.read= NATS subject
+- =application.cpp=: wire =party_changed_event= → =refdata.v1.parties.changed= publish via existing PostgreSQL LISTEN/NOTIFY pipeline
 
 *iam (core)*
-- \=service/party_cache.hpp\=: new in-process cache; \=load()\= calls \=refdata.v1.parties.read\=; \=compute_visible_party_ids()\= walks \=parent_party_id\= tree in-process; \=lookup_party()\= does O(1) UUID lookup
-- \=auth_handler.hpp\=: remove \=party_repository\= include; accept \=shared_ptr<party_cache>\=; use cache for visible-party computation and party lookup
-- \=account_handler.hpp\=: same — replace \=party_repository\= with cache
-- \=registrar.cpp\=: query \=tenant_repository::read_latest()\= at startup and call \=party_cache::load()\= for each active tenant; subscribe to \=refdata.v1.parties.changed\= to reload per-tenant on mutations; pass cache to handlers
+- =service/party_cache.hpp=: new in-process cache; =load()= calls =refdata.v1.parties.read=; =compute_visible_party_ids()= walks =parent_party_id= tree in-process; =lookup_party()= does O(1) UUID lookup
+- =auth_handler.hpp=: remove =party_repository= include; accept =shared_ptr<party_cache>=; use cache for visible-party computation and party lookup
+- =account_handler.hpp=: same — replace =party_repository= with cache
+- =registrar.cpp=: query =tenant_repository::read_latest()= at startup and call =party_cache::load()= for each active tenant; subscribe to =refdata.v1.parties.changed= to reload per-tenant on mutations; pass cache to handlers
 
 *service registry*
-- Remove \=ores_refdata_parties\= from IAM \=dml_prefixes\= (cross-service grant no longer needed)
+- Remove =ores_refdata_parties= from IAM =dml_prefixes= (cross-service grant no longer needed)
 
 *doc*
 - Mark identifier-length-cleanup and symbol-visibility-migration plans as COMPLETE
@@ -72,8 +74,8 @@ Replace IAM's direct cross-service reads of refdata party tables with an in-proc
 
 ** Notes
 
-- Cache warm-up failures (e.g. refdata service not yet up) are caught and logged; IAM continues to start and the \={party_id}\= fallback in \=compute_visible_party_ids\= keeps login functional
-- Bootstrap flow (\=bootstrap_handler\=) does not use the party cache; provisioning works before the cache is warm
+- Cache warm-up failures (e.g. refdata service not yet up) are caught and logged; IAM continues to start and the ={party_id}= fallback in =compute_visible_party_ids= keeps login functional
+- Bootstrap flow (=bootstrap_handler=) does not use the party cache; provisioning works before the cache is warm
 - Phases 5.2 and 5.3 (workflow→IAM/refdata NATS write APIs) remain to be implemented
 
 

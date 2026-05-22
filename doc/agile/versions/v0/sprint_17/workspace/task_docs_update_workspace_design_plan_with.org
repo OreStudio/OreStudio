@@ -35,7 +35,8 @@ Update the workspace design plan to reflect Phase 1-2 completion and Phase 3-4 p
 
 * Acceptance
 
--
+- Workspace design plan is updated with latest implementation decisions.
+- PR landed.
 
 * Plan
 

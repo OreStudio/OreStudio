@@ -35,7 +35,8 @@ Propagate workspace_id through the C++ codegen pipeline (Phases 1-4): add the fi
 
 * Acceptance
 
--
+- Workspace ID is propagated through the codegen pipeline end-to-end.
+- PR landed.
 
 * Plan
 

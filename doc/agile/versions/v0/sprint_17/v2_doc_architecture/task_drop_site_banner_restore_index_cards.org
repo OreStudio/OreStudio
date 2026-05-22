@@ -35,7 +35,8 @@ Drop the oversized site banner, restore dark-theme styles for the index page her
 
 * Acceptance
 
--
+- Drop the oversized site banner, restore dark-theme styles for the index page hero and feature cards, and add the GitHub icon to the site nav.
+- PR #787 merged and landed on main.
 
 * Plan
 

@@ -35,7 +35,8 @@ Replace five hand-crafted trading reference data tables and reporting enum table
 
 * Acceptance
 
--
+- Replace five hand-crafted trading reference data tables and reporting enum tables with codegen output, and fix naming inconsistencies across index files (Categories A and B).
+- PR #747 merged and landed on main.
 
 * Plan
 

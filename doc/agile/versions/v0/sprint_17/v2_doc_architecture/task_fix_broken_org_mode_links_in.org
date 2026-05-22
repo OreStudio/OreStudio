@@ -35,7 +35,8 @@ Fix three broken org-mode internal links in the identifier-length-cleanup plan t
 
 * Acceptance
 
--
+- Fix three broken org-mode internal links in the identifier-length-cleanup plan that used an incorrect heading anchor text.
+- PR #739 merged and landed on main.
 
 * Plan
 

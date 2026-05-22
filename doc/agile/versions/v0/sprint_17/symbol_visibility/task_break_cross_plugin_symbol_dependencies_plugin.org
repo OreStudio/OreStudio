@@ -35,7 +35,8 @@ Break compile-time inter-plugin dependencies by introducing IBusinessUnitBrowser
 
 * Acceptance
 
--
+- Break compile-time inter-plugin dependencies by introducing IBusinessUnitBrowser in ores.qt.api and moving 8 DQ catalogue controllers from DataTransferPlugin to RefdataPlugin.
+- PR #749 merged and landed on main.
 
 * Plan
 

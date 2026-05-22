@@ -35,7 +35,8 @@ Add ORES_SHELL_EXPORT to ores::shell::app::host to fix the Windows undefined-sym
 
 * Acceptance
 
--
+- Add ORES_SHELL_EXPORT to ores::shell::app::host to fix the Windows undefined-symbol linker error on host::execute.
+- PR #780 merged and landed on main.
 
 * Plan
 

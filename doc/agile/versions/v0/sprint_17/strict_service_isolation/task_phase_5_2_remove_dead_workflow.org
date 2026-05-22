@@ -35,7 +35,8 @@ Verify the workflow service routes all party and IAM writes through NATS and rem
 
 * Acceptance
 
--
+- Verify the workflow service routes all party and IAM writes through NATS and remove the dead ores_iam_ and ores_refdata_parties DML grants from the workflow service registry.
+- PR #745 merged and landed on main.
 
 * Plan
 

@@ -35,7 +35,8 @@ Introduce a step outcome tri-state (completed/completed_with_warnings/failed), p
 
 * Acceptance
 
--
+- Introduce a step outcome tri-state (completed/completed_with_warnings/failed), per-trade step log entries in a JSON column, and service isolation improvements to the ORE import workflow.
+- PR #748 merged and landed on main.
 
 * Plan
 

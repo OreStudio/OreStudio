@@ -35,7 +35,9 @@ Introduce a unified instrument variant hierarchy, fix composite legs being silen
 
 * Acceptance
 
--
+- Unified instrument variant hierarchy is in place.
+- Composite legs are no longer silently dropped on ORE import.
+- UUID minting is moved out of the parser into the planner layer.
 
 * Plan
 

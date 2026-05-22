@@ -35,7 +35,8 @@ Fix a Windows LNK2001 missing export on ores.refdata.service::host and a C1202 c
 
 * Acceptance
 
--
+- Fix a Windows LNK2001 missing export on ores.refdata.service::host and a C1202 constexpr depth error in ores.qt.api using per-TU #pragma constexpr overrides.
+- PR #786 merged and landed on main.
 
 * Plan
 

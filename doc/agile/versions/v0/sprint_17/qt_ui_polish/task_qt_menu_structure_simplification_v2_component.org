@@ -35,7 +35,8 @@ Restructure the Qt application menu bar into logical submenus (System, Analytics
 
 * Acceptance
 
--
+- Restructure the Qt application menu bar into logical submenus (System, Analytics) and migrate all Qt plugin component overviews to the v2 documentation format.
+- PR #785 merged and landed on main.
 
 * Plan
 

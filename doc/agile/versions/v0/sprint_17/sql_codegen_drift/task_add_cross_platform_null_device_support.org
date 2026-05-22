@@ -35,7 +35,9 @@ Add platform-agnostic null device detection (/dev/null vs NUL) so psql output re
 
 * Acceptance
 
--
+- =setup_database.sh= detects =/dev/null= vs =NUL= and passes the correct value via =-v null_dev=.
+- All 80+ populate SQL scripts use =:null_dev= instead of hardcoded =/dev/null=.
+- Database setup runs without errors on both Linux and Windows/MINGW.
 
 * Plan
 

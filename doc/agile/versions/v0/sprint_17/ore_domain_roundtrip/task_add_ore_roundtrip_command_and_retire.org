@@ -35,7 +35,8 @@ Implement 'ore roundtrip' as a DB-free CLI command that imports and re-exports a
 
 * Acceptance
 
--
+- Implement 'ore roundtrip' as a DB-free CLI command that imports and re-exports a directory of ORE portfolio XMLs, returning a roundtrip_summary.
+- PR #730 merged and landed on main.
 
 * Plan
 

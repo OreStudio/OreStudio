@@ -35,7 +35,8 @@ Enforce the strict service table isolation invariant: SECURITY DEFINER validator
 
 * Acceptance
 
--
+- Enforce the strict service table isolation invariant: SECURITY DEFINER validators for cross-service FK checks, and mandatory role drops on database recreate.
+- PR #737 merged and landed on main.
 
 * Plan
 

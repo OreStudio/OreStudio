@@ -35,7 +35,8 @@ Extend the SQL codegen Mustache template with six new capabilities and convert t
 
 * Acceptance
 
--
+- Extend the SQL codegen Mustache template with six new capabilities and convert the four remaining hand-crafted Category A SQL files to generated output.
+- PR #756 merged and landed on main.
 
 * Plan
 

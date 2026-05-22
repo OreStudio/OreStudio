@@ -35,7 +35,8 @@ Bump the vcpkg submodule from 62159a45e to 256acc6401 (latest microsoft/vcpkg ma
 
 * Acceptance
 
--
+- Bump the vcpkg submodule from 62159a45e to 256acc6401 (latest microsoft/vcpkg master).
+- PR #707 merged and landed on main.
 
 * Plan
 

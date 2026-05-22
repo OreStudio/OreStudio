@@ -35,7 +35,8 @@ Add the schema model type to the sql profile to enable automatic dispatch for pl
 
 * Acceptance
 
--
+- Add the schema model type to the sql profile to enable automatic dispatch for plain entity models and fix composite natural-key index generation in the Mustache template.
+- PR #758 merged and landed on main.
 
 * Plan
 

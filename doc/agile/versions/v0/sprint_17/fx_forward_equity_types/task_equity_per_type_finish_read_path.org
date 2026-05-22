@@ -35,7 +35,9 @@ Complete the equity per-type migration by flipping the export (read) path onto p
 
 * Acceptance
 
--
+- Export (read) path uses per-type variants for all nine equity instrument types.
+- Legacy generic equity infrastructure (=ores_trading_equity_instruments_tbl= and related) is deleted end-to-end.
+- PR #746 landed.
 
 * Plan
 

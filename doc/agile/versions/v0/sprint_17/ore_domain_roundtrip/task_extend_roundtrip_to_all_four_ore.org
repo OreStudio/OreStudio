@@ -35,7 +35,8 @@ Extend the roundtrip command to auto-detect and handle all four ORE XML document
 
 * Acceptance
 
--
+- Extend the roundtrip command to auto-detect and handle all four ORE XML document types: Portfolio, CurrencyConfig, CalendarAdjustments, and Conventions.
+- PR #732 merged and landed on main.
 
 * Plan
 

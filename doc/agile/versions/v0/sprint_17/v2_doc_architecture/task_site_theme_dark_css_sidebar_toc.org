@@ -35,7 +35,8 @@ Adopt a dark CSS theme with sidebar TOC, add a site-wide preamble with nav bar, 
 
 * Acceptance
 
--
+- Adopt a dark CSS theme with sidebar TOC, add a site-wide preamble with nav bar, and enable GitHub Pages deployment for the ORE Studio product website.
+- PR #784 merged and landed on main.
 
 * Plan
 

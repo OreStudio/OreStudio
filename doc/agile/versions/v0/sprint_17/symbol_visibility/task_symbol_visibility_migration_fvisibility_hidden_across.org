@@ -35,7 +35,8 @@ Apply -fvisibility=hidden to all 18 shared libraries, add per-library export.hpp
 
 * Acceptance
 
--
+- Apply -fvisibility=hidden to all 18 shared libraries, add per-library export.hpp headers with ORES_X_EXPORT macros, and annotate all public API symbols.
+- PR #738 merged and landed on main.
 
 * Plan
 

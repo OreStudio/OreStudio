@@ -35,7 +35,8 @@ Remove the three artificial TU splits introduced as C1202 workarounds now that t
 
 * Acceptance
 
--
+- Remove the three artificial TU splits introduced as C1202 workarounds now that the root fix (pragma constexpr limits in CMake) renders them unnecessary.
+- PR #788 merged and landed on main.
 
 * Plan
 

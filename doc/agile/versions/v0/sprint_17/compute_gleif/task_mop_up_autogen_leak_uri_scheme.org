@@ -35,7 +35,9 @@ Fix three follow-up defects from the per-platform package work: narrow AUTOUIC i
 
 * Acceptance
 
--
+- AUTOUIC include is narrowed to prevent stale generated-header leaks.
+- NATS URI scheme is normalised across connection paths.
+- Per-row Retry buttons are present on the Packages tab.
 
 * Plan
 

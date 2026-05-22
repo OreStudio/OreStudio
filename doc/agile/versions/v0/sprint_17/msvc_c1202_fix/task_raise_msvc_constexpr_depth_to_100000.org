@@ -35,7 +35,8 @@ Raise ores.trading.api's PUBLIC /constexpr:depth from 2048 to 100000 so it overr
 
 * Acceptance
 
--
+- Raise ores.trading.api's PUBLIC /constexpr:depth from 2048 to 100000 so it overrides the propagated lower limit that was winning the flag-ordering race in ores.qt.api.
+- PR #769 merged and landed on main.
 
 * Plan
 

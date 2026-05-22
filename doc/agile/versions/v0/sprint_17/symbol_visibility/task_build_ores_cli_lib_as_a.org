@@ -35,7 +35,8 @@ Convert ores.cli.lib from shared to STATIC to fix a Windows undefined-symbol lin
 
 * Acceptance
 
--
+- Convert ores.cli.lib from shared to STATIC to fix a Windows undefined-symbol link error without requiring explicit ORES_CLI_EXPORT annotations.
+- PR #774 merged and landed on main.
 
 * Plan
 

@@ -35,7 +35,8 @@ Strip the redundant ores_<service>_ prefix from 190+ PostgreSQL index and RLS po
 
 * Acceptance
 
--
+- Strip the redundant ores_<service>_ prefix from 190+ PostgreSQL index and RLS policy names to eliminate NAMEDATALEN truncation warnings, and update the Mustache templates to match.
+- PR #741 merged and landed on main.
 
 * Plan
 

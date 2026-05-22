@@ -35,7 +35,8 @@ Implement workspace as a first-class bitemporal entity with a complete NATS serv
 
 * Acceptance
 
--
+- Workspace bitemporal schema, service layer, and UI are implemented and integrated.
+- PR landed.
 
 * Plan
 

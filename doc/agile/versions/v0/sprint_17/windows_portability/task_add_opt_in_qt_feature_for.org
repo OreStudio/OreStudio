@@ -35,7 +35,8 @@ Expose Qt as an optional vcpkg manifest feature so Windows users can build the f
 
 * Acceptance
 
--
+- Expose Qt as an optional vcpkg manifest feature so Windows users can build the full Qt stack from a single manifest without requiring a system-wide Qt installation.
+- PR #717 merged and landed on main.
 
 * Plan
 

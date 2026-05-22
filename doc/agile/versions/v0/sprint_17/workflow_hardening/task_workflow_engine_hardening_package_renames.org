@@ -35,7 +35,8 @@ Add persisted materialised step lists, move workflow definitions to their owning
 
 * Acceptance
 
--
+- Add persisted materialised step lists, move workflow definitions to their owning API packages, and add per-step error reporting and dynamic step count to the workflow engine.
+- PR #742 merged and landed on main.
 
 * Plan
 

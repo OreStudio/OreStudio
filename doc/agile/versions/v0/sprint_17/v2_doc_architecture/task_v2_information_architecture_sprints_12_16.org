@@ -35,7 +35,8 @@ Complete the v0→v2 migration by porting sprints 12-16 (86 stories, 252 tasks) 
 
 * Acceptance
 
--
+- Complete the v0→v2 migration by porting sprints 12-16 (86 stories, 252 tasks) and marking v0 as RELEASED.
+- PR #781 merged and landed on main.
 
 * Plan
 

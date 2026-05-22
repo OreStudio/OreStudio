@@ -35,7 +35,8 @@ Bump the egor-tensin/setup-clang GitHub Action from 2.2 to 2.3.
 
 * Acceptance
 
--
+- Bump the egor-tensin/setup-clang GitHub Action from 2.2 to 2.3.
+- PR #762 merged and landed on main.
 
 * Plan
 

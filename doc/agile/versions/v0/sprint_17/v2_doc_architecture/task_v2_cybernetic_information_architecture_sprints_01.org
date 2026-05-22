@@ -35,7 +35,9 @@ Stand up the v2 cybernetic information architecture and migrate sprints 01-07 of
 
 * Acceptance
 
--
+- v2 information architecture is standing under =doc/v2/= with all meta-contract documents.
+- Sprints 01-07 are migrated with full sprint + stories + tasks trees and enriched task bodies.
+- Codegen scaffold (=generate_v2_doc.sh=) covers all v2 doc types.
 
 * Plan
 

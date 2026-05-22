@@ -35,7 +35,8 @@ Migrate all 35+ component documentation stubs to the v2 component_overview.org f
 
 * Acceptance
 
--
+- Migrate all 35+ component documentation stubs to the v2 component_overview.org format with accurate content across all 17 service families and 18 standalone components.
+- PR #779 merged and landed on main.
 
 * Plan
 

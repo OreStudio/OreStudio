@@ -35,7 +35,8 @@ Add :eval never to the list-presets sh source block to prevent the org-mode expo
 
 * Acceptance
 
--
+- Add :eval never to the list-presets sh source block to prevent the org-mode export pipeline from hanging CI with an interactive confirmation prompt.
+- PR #776 merged and landed on main.
 
 * Plan
 

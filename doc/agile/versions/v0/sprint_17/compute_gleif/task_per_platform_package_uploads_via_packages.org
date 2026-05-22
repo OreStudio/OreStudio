@@ -35,7 +35,9 @@ Add a Packages tab to the app version dialog with a lifecycle-tracking table wid
 
 * Acceptance
 
--
+- A Packages tab is present in the app version dialog with a lifecycle-tracking table widget.
+- File upload transitions through NoFile → Selected → Uploading → Uploaded/Failed states.
+- PR #703 landed.
 
 * Plan
 

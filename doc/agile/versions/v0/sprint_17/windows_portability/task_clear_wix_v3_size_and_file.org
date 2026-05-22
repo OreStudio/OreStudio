@@ -35,20 +35,22 @@ Clear the two WiX v3 CPack failures: exclude the oversized static debug archive 
 
 * Acceptance
 
--
+- =LGHT0263= and =LGHT0306= WiX v3 errors are resolved.
+- Windows installer builds without size or file-count errors.
+- PR #717 landed.
 
 * Plan
 
 * Notes
 
 ** Summary
-Short-term fixes from the WiX analysis in #710, clearing both remaining \=cpack\= errors on Windows.
+Short-term fixes from the WiX analysis in #710, clearing both remaining =cpack= errors on Windows.
 
-- *A.* Exclude \=ores.trading.core.lib\= from the installer on Windows. It is STATIC on Windows (PR #693) and its Debug build exceeds 2 GB — the WiX v3 single-file cabinet offset limit (\=LGHT0263\=). Nothing downstream needs it at runtime because consumer executables link it in statically.
-- *B.* Skip the \=package\= target on Windows Debug in \=CTest.cmake\=. Debug still builds and tests; only Release invokes \=cpack\=. Release is the sole Windows deliverable.
-- *E.* Turn off \=X_VCPKG_APPLOCAL_DEPS_INSTALL\= and replace it with a single \=install(DIRECTORY publish/bin/ ...)\= pass. The per-target \=applocal\=-install hook was registering one \=install(CODE ...)\= block per executable (~80 targets) and each copy of the Qt + OpenSSL + libpq closure piled files into the same cabinet, blowing past the WiX 65,535-file limit (\=LGHT0306\=). The build-time \=VCPKG_APPLOCAL_DEPS\= (still ON) already populates \=publish/bin/\= exactly once, so one directory install — minus our own binaries, tests, and build byproducts — produces the same runtime closure with a fraction of the file count.
+- *A.* Exclude =ores.trading.core.lib= from the installer on Windows. It is STATIC on Windows (PR #693) and its Debug build exceeds 2 GB — the WiX v3 single-file cabinet offset limit (=LGHT0263=). Nothing downstream needs it at runtime because consumer executables link it in statically.
+- *B.* Skip the =package= target on Windows Debug in =CTest.cmake=. Debug still builds and tests; only Release invokes =cpack=. Release is the sole Windows deliverable.
+- *E.* Turn off =X_VCPKG_APPLOCAL_DEPS_INSTALL= and replace it with a single =install(DIRECTORY publish/bin/ ...)= pass. The per-target =applocal=-install hook was registering one =install(CODE ...)= block per executable (~80 targets) and each copy of the Qt + OpenSSL + libpq closure piled files into the same cabinet, blowing past the WiX 65,535-file limit (=LGHT0306=). The build-time =VCPKG_APPLOCAL_DEPS= (still ON) already populates =publish/bin/= exactly once, so one directory install — minus our own binaries, tests, and build byproducts — produces the same runtime closure with a fraction of the file count.
 
-G from the analysis (exclude tests) turns out to be a no-op: no \=install(TARGETS)\= call in \=projects/*/tests/CMakeLists.txt\= was installing test binaries in the first place.
+G from the analysis (exclude tests) turns out to be a no-op: no =install(TARGETS)= call in =projects/*/tests/CMakeLists.txt= was installing test binaries in the first place.
 
 
 * Result

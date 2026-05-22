@@ -35,7 +35,8 @@ Expand ORE import convention coverage from 2 to 9 types by generating the full b
 
 * Acceptance
 
--
+- Expand ORE import convention coverage from 2 to 9 types by generating the full backend + Qt codegen stack for swap, ois, fra, ibor_index, overnight_index, fx, and cds.
+- PR #733 merged and landed on main.
 
 * Plan
 

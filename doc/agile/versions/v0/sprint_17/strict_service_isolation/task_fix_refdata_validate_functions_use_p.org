@@ -35,7 +35,8 @@ Fix three refdata validate functions that queried against the system tenant inst
 
 * Acceptance
 
--
+- Fix three refdata validate functions that queried against the system tenant instead of p_tenant_id, breaking Row Level Security for all non-system tenants.
+- PR #750 merged and landed on main.
 
 * Plan
 

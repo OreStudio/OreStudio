@@ -35,7 +35,8 @@ Fix two CI failures: export conversion_error with ORES_UTILITY_EXPORT to resolve
 
 * Acceptance
 
--
+- Fix two CI failures: export conversion_error with ORES_UTILITY_EXPORT to resolve macOS RTTI hidden-symbol failures, and raise the MSVC constexpr depth limit.
+- PR #751 merged and landed on main.
 
 * Plan
 

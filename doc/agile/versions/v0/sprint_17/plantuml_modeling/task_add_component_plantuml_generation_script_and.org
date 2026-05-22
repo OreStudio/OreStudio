@@ -35,7 +35,8 @@ Add generate_component_puml.py to create skeleton PlantUML class diagrams from p
 
 * Acceptance
 
--
+- Add generate_component_puml.py to create skeleton PlantUML class diagrams from project headers, and bulk-refresh all 85 component diagrams across the repository.
+- PR #770 merged and landed on main.
 
 * Plan
 

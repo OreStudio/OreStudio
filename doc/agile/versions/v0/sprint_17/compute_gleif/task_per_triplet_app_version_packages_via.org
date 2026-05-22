@@ -35,7 +35,9 @@ Replace the single per-app_version package blob with a per-triplet junction tabl
 
 * Acceptance
 
--
+- Per-app_version package blob is replaced by a per-triplet junction table.
+- Compute assignments are routed to triplet-scoped NATS subjects.
+- PR #702 landed.
 
 * Plan
 

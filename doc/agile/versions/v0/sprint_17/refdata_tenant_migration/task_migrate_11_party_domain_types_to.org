@@ -35,7 +35,8 @@ Replace std::string tenant_id with the utility::uuid::tenant_id strong type acro
 
 * Acceptance
 
--
+- Replace std::string tenant_id with the utility::uuid::tenant_id strong type across all 11 party-cluster domain types, mappers, and repositories.
+- PR #782 merged and landed on main.
 
 * Plan
 

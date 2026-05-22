@@ -35,7 +35,9 @@ Implement the DQ publish-from-DQ pattern with async workflow-based bundle public
 
 * Acceptance
 
--
+- DQ publish-from-DQ pattern uses async workflow-based bundle publication.
+- Wizard UX follows collect-then-execute pattern with IAM bootstrap logging.
+- PR #763 landed.
 
 * Plan
 

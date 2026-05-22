@@ -35,7 +35,8 @@ Raise the MSVC constexpr depth limit to 2048 in ores.trading.api (propagated PUB
 
 * Acceptance
 
--
+- Raise the MSVC constexpr depth limit to 2048 in ores.trading.api (propagated PUBLIC) to fix C1202 in ores.qt.api after the 1024 limit from #727 proved insufficient.
+- PR #729 merged and landed on main.
 
 * Plan
 

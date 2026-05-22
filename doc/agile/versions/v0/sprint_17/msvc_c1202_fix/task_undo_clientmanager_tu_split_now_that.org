@@ -35,7 +35,8 @@ Merge ClientManagerTradeDetail.cpp back into ClientManagerTrades.cpp now that tr
 
 * Acceptance
 
--
+- Merge ClientManagerTradeDetail.cpp back into ClientManagerTrades.cpp now that trade is decomposed into sub-structs of ≤7 fields, eliminating the C1202 that justified the split.
+- PR #763 merged and landed on main.
 
 * Plan
 

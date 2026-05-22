@@ -35,7 +35,8 @@ Add OreCurrencyComboBox and OreDateEdit custom widgets, wire flag icons into all
 
 * Acceptance
 
--
+- Add OreCurrencyComboBox and OreDateEdit custom widgets, wire flag icons into all currency combo boxes via ImageCache, and polish date pickers in the trade detail dialog.
+- PR #726 merged and landed on main.
 
 * Plan
 

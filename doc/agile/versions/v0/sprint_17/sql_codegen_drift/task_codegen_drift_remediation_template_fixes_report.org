@@ -35,7 +35,8 @@ Fix the missing SECURITY DEFINER search_path in the domain entity create templat
 
 * Acceptance
 
--
+- Fix the missing SECURITY DEFINER search_path in the domain entity create template, extend it with composite natural-key and prefix_columns support, and regenerate report_definitions.
+- PR #752 merged and landed on main.
 
 * Plan
 

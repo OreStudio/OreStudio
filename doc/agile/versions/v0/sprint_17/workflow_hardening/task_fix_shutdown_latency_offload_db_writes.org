@@ -35,7 +35,8 @@ Offload blocking libpqxx calls in process_supervisor to a thread pool to elimina
 
 * Acceptance
 
--
+- Offload blocking libpqxx calls in process_supervisor to a thread pool to eliminate the 7s-per-service shutdown serialisation that was exhausting the 30s grace period.
+- PR #760 merged and landed on main.
 
 * Plan
 

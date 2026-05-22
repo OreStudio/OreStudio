@@ -35,7 +35,9 @@ Replace the synchronous text-log results page in PublishDatasetsDialog with asyn
 
 * Acceptance
 
--
+- =PublishDatasetsDialog= dispatches results via =QFutureWatcher= and =WorkflowStepsWidget=.
+- No synchronous text-log results page remains in the publish datasets flow.
+- PR #769 landed.
 
 * Plan
 

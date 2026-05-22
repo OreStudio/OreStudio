@@ -63,30 +63,20 @@ while [[ $# -gt 0 ]]; do
 done
 
 # ---------------------------------------------------------------------------
-# Stop any existing process on PORT — but only if it is a Python HTTP server.
-# If something else owns the port we abort rather than kill an unrelated process.
+# Stop any existing process on PORT.
 # ---------------------------------------------------------------------------
 stop_site_server_if_running() {
     local port="$1"
     local pids
-    # fuser prints PIDs (space-separated) for the given TCP port, or nothing.
     pids="$(fuser "${port}/tcp" 2>/dev/null)" || true
     [[ -z "${pids// }" ]] && return 0  # Port is free.
 
-    local aborted=0
     for pid in $pids; do
         local cmd
         cmd="$(ps -p "${pid}" -o cmd= 2>/dev/null)" || continue
-        if [[ "${cmd}" == *python* && "${cmd}" == *http.server* ]]; then
-            echo "Stopping existing site server (PID ${pid})"
-            kill "${pid}" 2>/dev/null || true
-        else
-            echo "Error: port ${port} is in use by PID ${pid} (${cmd})." >&2
-            echo "  This is not a Python HTTP server — stop it manually before running this script." >&2
-            aborted=1
-        fi
+        echo "Stopping process on port ${port} (PID ${pid}: ${cmd})"
+        kill "${pid}" 2>/dev/null || true
     done
-    [[ "${aborted}" -eq 1 ]] && exit 1
     # Brief pause so the OS releases the port before we bind again.
     sleep 0.5
 }

@@ -35,7 +35,9 @@ Fix GLEIF bundle publish validation, add a tenant reset command, and improve upl
 
 * Acceptance
 
--
+- =ores_dq_bundles_publish_fn= raises a clear exception for opted-in datasets not in the target bundle.
+- =gleif.lei_counterparties.large= and =gleif.lei_parties.large= are wired into the =base= bundle as optional members.
+- =ores_iam_reset_tenant_fn= soft-deletes admin-created data and resets Operational parties to =Inactive=.
 
 * Plan
 

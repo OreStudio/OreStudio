@@ -35,7 +35,8 @@ Add ORES_REFDATA_SERVICE_EXPORT to the refdata parser class to ensure correct DL
 
 * Acceptance
 
--
+- Add ORES_REFDATA_SERVICE_EXPORT to the refdata parser class to ensure correct DLL symbol visibility when building as a shared library on Windows.
+- PR #791 merged and landed on main.
 
 * Plan
 

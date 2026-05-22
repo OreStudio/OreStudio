@@ -16,21 +16,9 @@
     }
   }
 
-  function nodeToOrgText(node) {
-    var lines = ['#+title: ' + (node.title || '(untitled)')]
-    if (node.tags && node.tags.length) {
-      lines.push('#+filetags: :' + Array.prototype.join.call(node.tags, ':') + ':')
-    }
-    lines.push('')
-    if (node.file) {
-      lines.push('[[' + node.file + '][Open page ↗]]')
-      lines.push('')
-    }
-    lines.push('/(Node content not available in static mode.)/\n')
-    return lines.join('\n')
-  }
-
-  // Intercept fetch() calls to localhost:35901/node/ and serve from cached graphdata
+  // Intercept fetch() calls to localhost:35901/node/ — fetch the published HTML
+  // page, extract #content, and return it wrapped in a #+begin_export html block
+  // so uniorg renders it as real HTML rather than escaped markup.
   var NativeFetch = window.fetch
   window.fetch = function (url, opts) {
     var urlStr = typeof url === 'string' ? url : (url && typeof url.url === 'string' ? url.url : '')
@@ -39,11 +27,24 @@
       var id
       try { id = decodeURIComponent(decodeURIComponent(encoded)) } catch (e) { id = encoded }
       var node = nodeById[id]
-      var body = node ? nodeToOrgText(node) : '(could not find node)'
-      return Promise.resolve(new Response(body, {
-        status: 200,
-        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-      }))
+      if (!node || !node.file) {
+        return Promise.resolve(new Response('', { status: 200,
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' } }))
+      }
+      return NativeFetch(node.file)
+        .then(function (r) { return r.text() })
+        .then(function (html) {
+          var doc = new DOMParser().parseFromString(html, 'text/html')
+          var el = doc.querySelector('#content')
+          var inner = el ? el.innerHTML : html
+          var orgText = '#+begin_export html\n' + inner + '\n#+end_export'
+          return new Response(orgText, { status: 200,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
+        })
+        .catch(function () {
+          return new Response('', { status: 200,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
+        })
     }
     return NativeFetch.apply(this, arguments)
   }

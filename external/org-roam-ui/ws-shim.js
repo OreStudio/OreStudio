@@ -31,20 +31,9 @@
         return Promise.resolve(new Response('', { status: 200,
           headers: { 'Content-Type': 'text/plain; charset=utf-8' } }))
       }
-      return NativeFetch(node.file)
-        .then(function (r) { return r.text() })
-        .then(function (html) {
-          var doc = new DOMParser().parseFromString(html, 'text/html')
-          var el = doc.querySelector('#content')
-          var inner = el ? el.innerHTML : html
-          var orgText = '#+begin_export html\n' + inner + '\n#+end_export'
-          return new Response(orgText, { status: 200,
-            headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
-        })
-        .catch(function () {
-          return new Response('', { status: 200,
-            headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
-        })
+      var body = (node.content && node.content !== true) ? node.content : ''
+      return Promise.resolve(new Response(body, { status: 200,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' } }))
     }
     return NativeFetch.apply(this, arguments)
   }

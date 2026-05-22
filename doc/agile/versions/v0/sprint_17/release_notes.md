@@ -1,0 +1,70 @@
+# **ORE Studio Sprint 17 – Release Notes**
+*May 2026*
+
+Harden the codebase's quality baseline: complete Windows/MSVC portability, migrate symbol
+visibility, enforce strict service table isolation, remediate SQL codegen drift, and land new
+features (workspace, DQ publish, ORE conventions import, ORE roundtrip) while porting the entire
+documentation history to the v2 cybernetic information architecture.
+
+---
+
+## ✅ **Highlights**
+
+- Windows portability work from sprint 16 paid forward: the MSVC C1202 root fix (trade struct decomposition) landed cleanly and the 14 hotfixes that preceded it are all now reversed or cleaned up.
+- Symbol visibility migration (=-fvisibility=hidden=) landed across the entire codebase in one sprint, including plugin isolation phase 1 that broke two cross-plugin compile-time dependencies.
+- Strict service table isolation completed: SECURITY DEFINER validators, NAMEDATALEN cleanup, IAM party cache via NATS (replacing direct cross-service DB reads), and dead DML grant removal — the service boundary is now enforced at every layer.
+- SQL codegen drift fully closed: every hand-crafted SQL file that had a live codegen model is now generated.
+- Workspace, DQ publish, and ORE conventions import all landed without regressions.
+- Entire documentation history (sprints 01-16) ported to v2 cybernetic information architecture in a single sprint.
+
+## 🛠️ **Key Improvements**
+
+### **Build & Portability**
+
+- **Windows portability fixes**: Close the first wave of Windows build breakages surfaced when Windows CI came on-line: WiX v3 size/file-count limits, libpq link ordering, OpenSSL dependency, PostgreSQL CMake imported-target hygiene, and a vcpkg opt-in feature for Qt.
+- **MSVC C1202 constexpr depth fixes**: Eliminate MSVC C1202 "constexpr evaluation exceeded" errors across all components.
+- **Symbol visibility migration**: Apply =-fvisibility=hidden= globally so that only explicitly exported symbols cross the shared-library boundary.
+
+### **Financial Features**
+
+- **FX forward E2E and equity per-type migration**: Wire FX forward ORE import end-to-end (instrument-bundle API, persistence, roundtrip).
+- **ORE conventions import**: Complete ORE conventions import: analyse and pilot zero_convention, implement deposit_convention (Phase 2 first type), generate full codegen stacks for seven convention types, and add the CLI conventions import handler (Phase 3).
+- **ORE domain roundtrip**: Implement the ORE domain roundtrip as Thing 3 Phase 5: a CLI command that exports to ORE XML, re-imports, and verifies fidelity.
+- **Import/export cleanup**: Clean up import/export code accumulated across sprints: extract composite legs, refactor to a pure parser, add batch fetches, split the trade list, and wrap bond/credit/commodity/scripted instruments in typed export_result structs.
+- **Workflow engine hardening**: Harden the workflow engine: rename packages for consistency, add ORE import error reporting and step-log display, fix the pg_notify pipeline and badge RLS, reset the system bootstrap sequence, and eliminate controller shutdown latency by offloading DB writes to a thread pool.
+- **Refdata tenant_id strong-type migration**: Migrate all 11 party domain types in ores.refdata from raw UUID tenant_id to the utility::uuid::tenant_id strong type, eliminating silent type confusion at service boundaries.
+
+### **Service Architecture**
+
+- **Strict service table isolation**: Enforce strict service table isolation: add SECURITY DEFINER to cross-service validators, eliminate NAMEDATALEN truncation warnings on indexes and RLS policies, replace IAM's direct DB reads on refdata party tables with a NATS-backed party cache (Phase 4.3), remove dead DML grants from workflow and ORE services (Phases 5.2/5.3), and fix refdata validate functions to use the correct tenant scope.
+- **SQL codegen drift remediation**: Eliminate all hand-crafted SQL files that have live codegen models: fix Categories A and B (template and profile issues), replace report_definitions and three other SQL files, fix entity model profile dispatch and composite natural-key indexes, and add cross-platform null device support for psql output redirection.
+- **Workspace**: Introduce the Workspace entity: bitemporal schema, service layer, CRUD UI, lifecycle operations, and codegen pipeline propagation for workspace_id (Phases 1-4 including controller wiring and the Data Workshop UI tab).
+- **DQ publish pattern**: Implement the DQ publish pattern end-to-end: trigger a workflow from the DQ wizard, track its progress via an async PublishDatasetsDialog with WorkflowStepsWidget live updates, and log IAM actions during the publish flow.
+
+### **New Features**
+
+- **Compute and GLEIF**: Wire large GLEIF counterparty bundle support, add per-triplet app_version packages via a junction table, expose per-platform package uploads in the Packages tab, and clean up the compute plugin (autogen leak, URI scheme, per-row Retry button).
+
+### **Qt UI**
+
+- **Qt UI polish**: Polish the Qt UI across several dimensions: require JWT for HTTP URL discovery (fail login on missing URL), add currency combos with flag icons and date pickers, add login environment filter and recent parties to the party picker, fix wt.service crash and trade dialog regressions, and simplify the menu structure.
+
+### **Documentation & Tooling**
+
+- **PlantUML and modeling refresh**: Add a script to generate PlantUML class diagrams for every component, bulk-refresh all existing component diagrams with the new script, and migrate all component_overview.org files to the v2 information architecture.
+- **v2 documentation architecture**: Port the entire sprint history (sprints 01-16) to the v2 cybernetic information architecture; enable and configure GitHub Pages; add dark CSS theme, sidebar TOC, and preamble; fix site build issues; close the v0 sprint history.
+- **Sprint 17 housekeeping**: Routine dependency maintenance: vcpkg submodule update, CI action bumps (ccache-action, get-cmake, setup-clang).
+
+## ⚠️ **Known Issues & Postponed**
+
+- None — all stories completed.
+
+## 📊 **Time Summary**
+
+**Total effort**: not tracked
+**PRs merged**: 93 (since v0.0.16, 2026-04-18 to 2026-05-21)
+**Sprint duration**: 2026-04-18 → 2026-05-21
+
+---
+
+*Next sprint: TBD.*

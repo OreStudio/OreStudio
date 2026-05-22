@@ -105,3 +105,7 @@ history to the v2 cybernetic information architecture.
 - ORE conventions are importable end-to-end (seven types, CLI Phase 3).
 - Documentation is fully v2 — all sprint retrospectives, stories, and
   component overviews ported.
+
+* Release Notes
+
+See [[file:release_notes.md][release_notes.md]] for the full narrative.

@@ -26,7 +26,9 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/WorkspaceMdiWindow.hpp"
 #include "ores.qt/WorkspaceDetailDialog.hpp"
@@ -44,9 +46,11 @@ WorkspaceController::WorkspaceController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
+    BadgeCache* badgeCache,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      badgeCache_(badgeCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -63,7 +67,7 @@ void WorkspaceController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new WorkspaceMdiWindow(clientManager_, username_);
+    listWindow_ = new WorkspaceMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_, &WorkspaceMdiWindow::statusChanged,
@@ -86,9 +90,10 @@ void WorkspaceController::showListWindow() {
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
         Icon::Database, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
-    listMdiSubWindow_->resize(listWindow_->sizeHint());
-
+    listMdiSubWindow_->setGeometryKey("WorkspaceListWindow");
     mdiArea_->addSubWindow(listMdiSubWindow_);
+    if (!UiPersistence::restoreMdiGeometry("WorkspaceListWindow", listMdiSubWindow_))
+        listMdiSubWindow_->resize(900, 400);
     listMdiSubWindow_->show();
 
     // Track window
@@ -240,6 +245,9 @@ void WorkspaceController::showAddWindow() {
     register_detachable_window(detailWindow);
 
     connect_dialog_close(detailDialog, detailWindow);
+    detailWindow->setGeometryKey("WorkspaceDetailDialog");
+    if (!UiPersistence::restoreMdiGeometry("WorkspaceDetailDialog", detailWindow))
+        detailWindow->resize(600, 450);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
@@ -299,6 +307,9 @@ void WorkspaceController::showDetailWindow(
     });
 
     connect_dialog_close(detailDialog, detailWindow);
+    detailWindow->setGeometryKey("WorkspaceDetailDialog");
+    if (!UiPersistence::restoreMdiGeometry("WorkspaceDetailDialog", detailWindow))
+        detailWindow->resize(600, 450);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
@@ -360,6 +371,9 @@ void WorkspaceController::showHistoryWindow(
         }
     });
 
+    historyWindow->setGeometryKey("WorkspaceHistoryDialog");
+    if (!UiPersistence::restoreMdiGeometry("WorkspaceHistoryDialog", historyWindow))
+        historyWindow->resize(750, 500);
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
@@ -453,6 +467,9 @@ void WorkspaceController::onRevertVersion(
     register_detachable_window(detailWindow);
 
     connect_dialog_close(detailDialog, detailWindow);
+    detailWindow->setGeometryKey("WorkspaceDetailDialog");
+    if (!UiPersistence::restoreMdiGeometry("WorkspaceDetailDialog", detailWindow))
+        detailWindow->resize(600, 450);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 

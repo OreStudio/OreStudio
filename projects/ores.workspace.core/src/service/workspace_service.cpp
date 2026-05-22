@@ -61,6 +61,7 @@ std::string workspace_service::create_workspace(const domain::workspace& ws) {
     }
     if (to_create.status_code.empty())
         to_create.status_code = "active";
+    to_create.modified_by = ctx_.actor();
 
     BOOST_LOG_SEV(lg(), debug) << "Creating workspace: " << to_create.name;
     repo_.write(ctx_, to_create);
@@ -73,7 +74,7 @@ void workspace_service::archive_workspace(const std::string& id,
     const std::string& change_commentary) {
 
     BOOST_LOG_SEV(lg(), debug) << "Archiving workspace: " << id;
-    repo_.archive(ctx_, id, modified_by, change_reason_code, change_commentary);
+    repo_.archive(ctx_, id, ctx_.actor(), change_reason_code, change_commentary);
 }
 
 void workspace_service::remove_workspace(const std::string& id) {

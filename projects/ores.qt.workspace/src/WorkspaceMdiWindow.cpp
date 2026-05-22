@@ -30,6 +30,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.workspace.api/messaging/workspace_protocol.hpp"
 
 namespace ores::qt {
@@ -39,10 +40,12 @@ using namespace ores::logging;
 WorkspaceMdiWindow::WorkspaceMdiWindow(
     ClientManager* clientManager,
     const QString& username,
+    BadgeCache* badgeCache,
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
       username_(username),
+      badgeCache_(badgeCache),
       toolbar_(nullptr),
       treeWidget_(nullptr),
       model_(nullptr),
@@ -60,6 +63,8 @@ WorkspaceMdiWindow::WorkspaceMdiWindow(
 }
 
 void WorkspaceMdiWindow::setupUi() {
+    setMinimumSize(700, 300);
+
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();
@@ -67,7 +72,7 @@ void WorkspaceMdiWindow::setupUi() {
     layout->addWidget(loadingBar());
 
     setupTree();
-    layout->addWidget(treeWidget_);
+    layout->addWidget(treeWidget_, 1);
 }
 
 void WorkspaceMdiWindow::setupToolbar() {
@@ -157,6 +162,24 @@ void WorkspaceMdiWindow::setupTree() {
     treeWidget_->setSelectionMode(QAbstractItemView::SingleSelection);
     treeWidget_->header()->setStretchLastSection(false);
     treeWidget_->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    treeWidget_->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    treeWidget_->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+
+    using cs = column_style;
+    auto* delegate = new EntityItemDelegate({
+        cs::text_left,       // Name
+        cs::badge_centered,  // Status
+        cs::text_left        // Modified By
+    }, treeWidget_);
+    delegate->set_badge_color_resolver(1, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+        static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+        if (!cache) return default_gray;
+        auto* def = cache->resolve("workspace_status", value.toStdString());
+        if (!def) return default_gray;
+        return {QColor(QString::fromStdString(def->background_colour)),
+                QColor(QString::fromStdString(def->text_colour))};
+    });
+    treeWidget_->setItemDelegate(delegate);
 }
 
 void WorkspaceMdiWindow::setupConnections() {

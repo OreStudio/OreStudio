@@ -24,6 +24,7 @@
 #include <QToolBar>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientWorkspaceModel.hpp"
@@ -55,6 +56,7 @@ public:
     explicit WorkspaceMdiWindow(
         ClientManager* clientManager,
         const QString& username,
+        BadgeCache* badgeCache = nullptr,
         QWidget* parent = nullptr);
     ~WorkspaceMdiWindow() override = default;
 
@@ -99,6 +101,7 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
+    BadgeCache* badgeCache_;
 
     QToolBar* toolbar_;
     QTreeWidget* treeWidget_;

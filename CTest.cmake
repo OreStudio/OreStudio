@@ -344,8 +344,15 @@ endif()
 #
 # Step: code coverage
 #
+# CAPTURE_CMAKE_ERROR prevents gcov/llvm-cov "no such file" errors on
+# vcpkg headers from propagating to ctest's exit code (which would
+# otherwise produce a spurious exit 255 even when all tests pass).
 if(WITH_COVERAGE AND configure_result EQUAL 0 AND build_result EQUAL 0)
-    ctest_coverage(QUIET)
+    ctest_coverage(QUIET CAPTURE_CMAKE_ERROR coverage_error)
+    if(coverage_error)
+        message(WARNING "Coverage collection encountered errors "
+            "(code: ${coverage_error}). Results may be incomplete.")
+    endif()
 endif()
 
 #

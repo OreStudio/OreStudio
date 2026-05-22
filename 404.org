@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: 4d3c2b1a-9e8f-4a7b-6c5d-3e2f1a0b9c8d
+:END:
+#+title: Page Not Found
+#+description: The page you requested could not be found on the ORE Studio site.
+#+type: meta
+#+level: cross
+#+filetags: :site:meta:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+options: toc:nil num:nil
+
+* 404 — Page Not Found
+
+The page you requested could not be found.
+
+You may have followed a broken link, or the page may have moved.
+
+** Find what you were looking for
+
+- [[/OreStudio/readme.html][Home]] — project overview and quick-start
+- [[/OreStudio/doc/orientation.html][Orientation]] — navigate the documentation by role or topic
+- [[/OreStudio/projects/modeling/system_model.html][Architecture]] — system design and component overview
+- [[/OreStudio/doc/recipes/recipes.html][Recipes]] — how-to guides for common tasks
+- [[/OreStudio/doc/skills/claude_code_skills.html][Skills]] — Claude Code skill reference
+- [[/OreStudio/graph/index.html][Knowledge Graph]] — interactive link explorer
+- [[https://github.com/OreStudio/OreStudio][GitHub]] — source code and issue tracker

@@ -18,13 +18,14 @@
 
 set -euo pipefail
 
-REQUIRED_ENV_VERSION=4
+REQUIRED_ENV_VERSION=5
 
 # Changelog:
 #   1: Initial env versioning; renamed ORES_COMPUTE_WRAPPER_USER -> ORES_DB_COMPUTE_WRAPPER_USER
 #   2: Removed ORES_WT_PORT; WT port is now owned by the controller via ORES_CONTROLLER_SERVICE_WT_PORT
 #   3: Added ORES_WORKSPACE_SERVICE_DB_* for new workspace service
 #   4: Added ORES_SITE_PORT for the local documentation site server
+#   5: Added org-roam knowledge graph integration to site build
 
 CURRENT_VERSION="${ORES_ENV_VERSION:-0}"
 

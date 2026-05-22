@@ -67,12 +67,15 @@
 
 ;; Initialize the package system
 (package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
+(condition-case err
+    (package-refresh-contents)
+  (error (message "Warning: could not refresh package archives (%s); using cached contents"
+                  (error-message-string err))))
 
 ;; Install dependencies
 (package-install 'htmlize)
 (package-install 'citeproc)
+(package-install 'org-roam)
 
 ;; Load the publishing system
 (require 'ox-publish)
@@ -126,6 +129,7 @@
     <a href='/OreStudio/doc/recipes/recipes.html'>Recipes</a>
     <a href='/OreStudio/doc/llm/skills/claude_code_skills.html'>Skills</a>
     <a href='/OreStudio/doc/agile/versions/versions.html'>Roadmap</a>
+    <a href='/OreStudio/graph/index.html'>Knowledge Graph</a>
     <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>
   </nav>
 </header>")
@@ -136,7 +140,7 @@
         ("site:pages"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\)/"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui"
          :publishing-function org-html-publish-to-html
          :publishing-directory "./build/output/site/OreStudio"
          :html-preamble ,site-html-preamble
@@ -148,22 +152,69 @@
         ("site:images"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\)/"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui"
          :base-extension "png\\|jpe?g\\|gif\\|svg"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:style"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\)/"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui"
          :base-extension "css"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:main" :components("site:pages" "site:images" "site:style"))))
 
+(defun ores-inject-site-nav (index-file preamble)
+  "Inject site CSS and PREAMBLE nav into the org-roam-ui INDEX-FILE."
+  (when (file-exists-p index-file)
+    (let* ((content (with-temp-buffer
+                      (insert-file-contents index-file)
+                      (buffer-string)))
+           (css-tag "<link rel=\"stylesheet\" href=\"/OreStudio/assets/style.css\">")
+           (fa-tag  "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css\">")
+           ;; Fix graph-page layout: float the header and undo the body flex/padding
+           ;; from style.css (org-roam-ui sizes its canvas to window inner dimensions).
+           (fix-tag "<style>#site-header{position:fixed;top:0;left:0;right:0;z-index:9999;}body{display:block;padding:0;align-items:unset;}</style>")
+           (patched (replace-regexp-in-string
+                     "</head>"
+                     (concat css-tag fa-tag fix-tag "</head>")
+                     (replace-regexp-in-string
+                      "<body>"
+                      (concat "<body>" preamble)
+                      content))))
+      (with-temp-file index-file
+        (insert patched)))
+    (message "Injected site nav into %s" index-file)))
+
+(defun ores-deploy-org-roam-ui (site-dir)
+  "Copy pre-built org-roam-ui static files to SITE-DIR/graph/."
+  (let ((src (expand-file-name "./external/org-roam-ui"))
+        (dst (expand-file-name "graph" site-dir)))
+    (if (not (file-directory-p src))
+        (message "Warning: external/org-roam-ui not found; skipping")
+      (make-directory dst t)
+      (copy-directory src dst nil t t)
+      (ores-inject-site-nav (expand-file-name "index.html" dst) site-html-preamble)
+      (message "org-roam-ui files copied to %s" dst))))
+
 (condition-case err
     (progn
       (org-publish-all t)
+      (ores-deploy-org-roam-ui "./build/output/site/OreStudio")
+      ;; Sync org-roam DB (mirrors .dir-locals.el project-local settings)
+      (setq org-roam-directory (expand-file-name "./"))
+      (setq org-roam-db-location (expand-file-name "./.org-roam.db"))
+      (setq org-roam-file-exclude-regexp
+            "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui")
+      (require 'org-roam)
+      (org-roam-db-sync)
+      (load-file (expand-file-name "~/.emacs.d/config/org-roam-export.el"))
+      (cunene/org-roam-export-graph-json
+       (expand-file-name "./.org-roam.db")
+       (expand-file-name "./build/output/site/OreStudio/graph/graphdata.json")
+       (expand-file-name "./")
+       "/OreStudio/")
       (message "Build succeeded.")
       (kill-emacs 0))
   (error

@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include "{{full_name}}/export.hpp"
 #include "{{full_name}}/config/options.hpp"
 
 namespace {{namespace}}::config {
@@ -17,7 +18,7 @@ namespace {{namespace}}::config {
  * Note on logging: logging is not available during parsing since the logger
  * is only initialised after options have been successfully parsed.
  */
-class parser final {
+class {{full_name_upper}}_EXPORT parser final {
 public:
     std::optional<options>
     parse(const std::vector<std::string>& arguments, std::ostream& info,

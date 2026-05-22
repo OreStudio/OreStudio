@@ -137,10 +137,10 @@ harness.  See [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]
 
 | Profile | Part | Files |
 |---|---|---|
-| =--profile component-api= | =ores.COMPONENT.api= | 9 (CMakeLists ×4, header, stub header+impl, test main+stub) |
-| =--profile component-core= | =ores.COMPONENT.core= | 9 (same set, core CMake deps) |
-| =--profile component-service= | =ores.COMPONENT.service= | 18 (core set + app/config headers+impls + main.cpp) |
-| =--profile component= | standalone (no split) | 9 (generic CMake deps) |
+| =--profile component-api= | =ores.COMPONENT.api= | 10 (CMakeLists ×4, export.hpp, header, stub header+impl, test main+stub) |
+| =--profile component-core= | =ores.COMPONENT.core= | 10 (same set, core CMake deps) |
+| =--profile component-service= | =ores.COMPONENT.service= | 19 (core set + export.hpp + app/config headers+impls + main.cpp) |
+| =--profile component= | standalone (no split) | 10 (generic CMake deps + export.hpp) |
 
 * Entry points
 

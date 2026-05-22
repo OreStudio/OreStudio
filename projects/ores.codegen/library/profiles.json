@@ -327,6 +327,10 @@
           "output": "projects/{component_full}/modeling/CMakeLists.txt"
         },
         {
+          "template": "cpp_export.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/export.hpp"
+        },
+        {
           "template": "cpp_component_header.hpp.mustache",
           "output": "projects/{component_full}/include/{component_full}/{component_full}.hpp"
         },
@@ -367,6 +371,10 @@
         {
           "template": "cmake_component_modeling.mustache",
           "output": "projects/{component_full}/modeling/CMakeLists.txt"
+        },
+        {
+          "template": "cpp_export.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/export.hpp"
         },
         {
           "template": "cpp_component_header.hpp.mustache",
@@ -411,6 +419,10 @@
           "output": "projects/{component_full}/modeling/CMakeLists.txt"
         },
         {
+          "template": "cpp_export.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/export.hpp"
+        },
+        {
           "template": "cpp_component_header.hpp.mustache",
           "output": "projects/{component_full}/include/{component_full}/{component_full}.hpp"
         },
@@ -451,6 +463,10 @@
         {
           "template": "cmake_component_modeling.mustache",
           "output": "projects/{component_full}/modeling/CMakeLists.txt"
+        },
+        {
+          "template": "cpp_export.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/export.hpp"
         },
         {
           "template": "cpp_component_header.hpp.mustache",

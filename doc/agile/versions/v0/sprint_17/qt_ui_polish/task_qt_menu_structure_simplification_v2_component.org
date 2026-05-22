@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-Qt menu structure simplification + V2 component documentation
+Restructure the Qt application menu bar into logical submenus (System, Analytics) and migrate all Qt plugin component overviews to the v2 documentation format.
 
 * Status
 
@@ -39,65 +39,58 @@ Qt menu structure simplification + V2 component documentation
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
 Two cohesive changes on one branch:
 
-### 1. Qt menu structure simplification (phases 1–5)
+*** 1. Qt menu structure simplification (phases 1–5)
 
 Restructures the application menu bar to reduce top-level menus and
 group related items more logically:
 
-- **Phase 1** — Admin items moved into System > Configuration and
+- *Phase 1* — Admin items moved into System > Configuration and
   System > Administration submenus; Identity renamed to Account
-- **Phase 2** — Pricing and Compute merged into a single Analytics menu
+- *Phase 2* — Pricing and Compute merged into a single Analytics menu
   (AnalyticsPlugin owns the menu; ComputePlugin contributes to it)
-- **Phase 3** — Reference Data absorbs Organisation (PartyPlugin
-  contributes to the Reference Data menu via `setup_menus`)
-- **Phase 4** — Operations menu created; Scheduler owns it, Workflow
+- *Phase 3* — Reference Data absorbs Organisation (PartyPlugin
+  contributes to the Reference Data menu via =setup_menus=)
+- *Phase 4* — Operations menu created; Scheduler owns it, Workflow
   contributes to it
-- **Phase 5** — Data Transfer renamed to Data Management; Workspace
+- *Phase 5* — Data Transfer renamed to Data Management; Workspace
   plugin contributes to it
 
 Implementation: all plugins now participate in a two-phase dispatch
-loop (`setup_menus` then `create_menus`) driven by `load_order()`.
-`shared_menus_context` extended with `analytics_menu`,
-`analytics_codes_menu`, `operations_menu`, `reference_data_menu`,
-`data_management_menu`.
+loop (=setup_menus= then =create_menus=) driven by =load_order()=.
+=shared_menus_context= extended with =analytics_menu=,
+=analytics_codes_menu=, =operations_menu=, =reference_data_menu=,
+=data_management_menu=.
 
-### 2. V2 component documentation for all Qt plugins
+*** 2. V2 component documentation for all Qt plugins
 
-Brings the 12 `ores.qt.*` plugin components into full V2 compliance:
+Brings the 12 =ores.qt.*= plugin components into full V2 compliance:
 
-- `component_overview.org` created for all 12 plugins (`admin`,
-  `analytics`, `api`, `compute`, `data_transfer`, `mktdata`, `party`,
-  `refdata`, `scheduler`, `trading`, `workflow`, `workspace`), each
+- =component_overview.org= created for all 12 plugins (=admin=,
+  =analytics=, =api=, =compute=, =data_transfer=, =mktdata=, =party=,
+  =refdata=, =scheduler=, =trading=, =workflow=, =workspace=), each
   with cross-references to their corresponding domain API components
-- `doc/v2/knowledge/qt/plugin_architecture.org` — IPlugin lifecycle,
-  `shared_menus_context`, `load_order`, two-phase menu sequence
-- `projects/ores.qt.api/docs/entity_controller_pattern.org` —
+- =doc/v2/knowledge/qt/plugin_architecture.org= — IPlugin lifecycle,
+  =shared_menus_context=, =load_order=, two-phase menu sequence
+- =projects/ores.qt.api/docs/entity_controller_pattern.org= —
   four-layer controller/window/dialog/model pattern
-- `doc/v2/knowledge/documentation/component_documentation_guide.org`
+- =doc/v2/knowledge/documentation/component_documentation_guide.org=
   — practical guide to writing good component overviews
-- `doc/v2/recipes/codegen/how_do_i_create_a_component_overview.org`
-- Updated `how_do_i_create_a_new_v2_doc.org`: correct component slug
-  (`component_overview`), inter-linked document workflow, `--id`
+- =doc/v2/recipes/codegen/how_do_i_create_a_component_overview.org=
+- Updated =how_do_i_create_a_new_v2_doc.org=: correct component slug
+  (=component_overview=), inter-linked document workflow, =--id=
   migration-only clarification
-- Updated `v2-doc-author` skill with the above
-- 12 `MISSING_OVERVIEW ores.qt.*` entries removed from
-  `docs_exceptions.txt`; all 88 components pass `validate_docs.sh`
-- 5 Qt plugin `CMakeLists.txt` files updated to include
-  `add_subdirectory(modeling)`
+- Updated =v2-doc-author= skill with the above
+- 12 =MISSING_OVERVIEW ores.qt.*= entries removed from
+  =docs_exceptions.txt=; all 88 components pass =validate_docs.sh=
+- 5 Qt plugin =CMakeLists.txt= files updated to include
+  =add_subdirectory(modeling)=
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

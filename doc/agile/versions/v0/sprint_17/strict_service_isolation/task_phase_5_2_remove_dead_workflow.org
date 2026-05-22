@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: ef97de72-004f-4c28-a957-7e6d6f936475
 :END:
-#+title: Task: [sql] Phase 5.2: remove dead workflow DML grants on IAM and refdata tables
+#+title: Task: Phase 5.2: remove dead workflow DML grants on IAM and refdata tables
 #+description: - Verifies `provision_parties` workflow routes all writes through NATS (`refdata.v1.parties.save`, `iam.v1.accounts.save
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[sql] Phase 5.2: remove dead workflow DML grants on IAM and refdata tables
+Verify the workflow service routes all party and IAM writes through NATS and remove the dead ores_iam_ and ores_refdata_parties DML grants from the workflow service registry.
 
 * Status
 
@@ -39,31 +39,24 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- Verifies `provision_parties` workflow routes all writes through NATS (`refdata.v1.parties.save`, `iam.v1.accounts.save`, `iam.v1.account-parties.save`) and never writes to IAM or refdata tables directly
-- Confirms `ores.workflow.core` links only API packages (`ores.iam.api.lib`, `ores.refdata.api.lib`), not core packages — no repository access possible
-- Removes dead `ores_iam_` and `ores_refdata_parties` DML grants from the workflow service registry entry
-- Regenerates SQL grants and populate files via codegen (`service-registry` profile)
-- Also picks up the Phase 4.3 leftover: `ores_refdata_parties` SELECT grant on the IAM service was never regenerated after Phase 4.3 landed; that is now cleaned up too
-- `validate_schemas.sh` passes: 210 tables, 0 warnings
+- Verifies =provision_parties= workflow routes all writes through NATS (=refdata.v1.parties.save=, =iam.v1.accounts.save=, =iam.v1.account-parties.save=) and never writes to IAM or refdata tables directly
+- Confirms =ores.workflow.core= links only API packages (=ores.iam.api.lib=, =ores.refdata.api.lib=), not core packages — no repository access possible
+- Removes dead =ores_iam_= and =ores_refdata_parties= DML grants from the workflow service registry entry
+- Regenerates SQL grants and populate files via codegen (=service-registry= profile)
+- Also picks up the Phase 4.3 leftover: =ores_refdata_parties= SELECT grant on the IAM service was never regenerated after Phase 4.3 landed; that is now cleaned up too
+- =validate_schemas.sh= passes: 210 tables, 0 warnings
 
-## Notes
+** Notes
 
-Steps 1–3 of Phase 5.2 (expose NATS APIs, replace direct writes) were already complete before this PR. The `provision_parties` workflow was implemented using NATS from the start. The DML grants in the service registry were dead leftovers. Only step 4 (grant removal + regeneration) was needed.
+Steps 1–3 of Phase 5.2 (expose NATS APIs, replace direct writes) were already complete before this PR. The =provision_parties= workflow was implemented using NATS from the start. The DML grants in the service registry were dead leftovers. Only step 4 (grant removal + regeneration) was needed.
 
 Part of the cross-service write decoupling plan:
-`doc/plans/2026-05-13-cross-service-write-decoupling.org`
+=doc/plans/2026-05-13-cross-service-write-decoupling.org=
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

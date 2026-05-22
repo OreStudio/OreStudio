@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-Add full codegen stack for seven ORE convention types
+Expand ORE import convention coverage from 2 to 9 types by generating the full backend + Qt codegen stack for swap, ois, fra, ibor_index, overnight_index, fx, and cds.
 
 * Status
 
@@ -39,24 +39,17 @@ Add full codegen stack for seven ORE convention types
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
 - Expands ORE import convention coverage from 2 (zero, deposit) to all 9 types: swap, ois, fra, ibor_index, overnight_index, fx, and cds
-- Seven new domain entity JSON models drive generation of the complete backend + Qt stack via `ores.codegen`
+- Seven new domain entity JSON models drive generation of the complete backend + Qt stack via =ores.codegen=
 - Replaces bare domain headers with full codegen output: JSON I/O, table I/O, generator, protocol, entity, mapper, repository, service, and NATS message handler (22 backend files × 7 = 154 files)
 - SQL create/drop scripts for all seven new tables with LISTEN/NOTIFY triggers (28 SQL files)
 - NATS registrar wires list/save/remove/history handlers for each of the 7 new types
 - Qt plugin adds controller, client model, MDI window, detail dialog, and history dialog for each type (12 Qt files × 7 = 84 files)
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

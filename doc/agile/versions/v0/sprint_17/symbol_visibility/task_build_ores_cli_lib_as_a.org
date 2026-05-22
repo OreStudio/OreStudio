@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 6371b4a7-62de-43f3-81ba-a343185b8b6c
 :END:
-#+title: Task: [cli] Build ores.cli.lib as a static library
+#+title: Task: Build ores.cli.lib as a static library
 #+description: - Fixes Windows link error: `undefined symbol: ores::cli::app::host::execute`
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[cli] Build ores.cli.lib as a static library
+Convert ores.cli.lib from shared to STATIC to fix a Windows undefined-symbol link error without requiring explicit ORES_CLI_EXPORT annotations.
 
 * Status
 
@@ -39,23 +39,16 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- Fixes Windows link error: `undefined symbol: ores::cli::app::host::execute`
-- Root cause: `CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS` was removed in the symbol visibility migration but `ores.cli.lib` was never given explicit `ORES_CLI_EXPORT` annotations
-- Fix: declare `ores.cli.lib` as `STATIC` — no other component consumes this library (only `ores.cli.exe` and `ores.cli.tests`), so using a shared library was never the right choice here; a static library for exe + testability is the standard pattern and requires no DLL export annotations
-- Also updates the install destination from `LIBRARY` to `ARCHIVE` to match static library convention
-- Drops the `SOVERSION` property which is meaningless for a static library
+- Fixes Windows link error: =undefined symbol: ores::cli::app::host::execute=
+- Root cause: =CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS= was removed in the symbol visibility migration but =ores.cli.lib= was never given explicit =ORES_CLI_EXPORT= annotations
+- Fix: declare =ores.cli.lib= as =STATIC= — no other component consumes this library (only =ores.cli.exe= and =ores.cli.tests=), so using a shared library was never the right choice here; a static library for exe + testability is the standard pattern and requires no DLL export annotations
+- Also updates the install destination from =LIBRARY= to =ARCHIVE= to match static library convention
+- Drops the =SOVERSION= property which is meaningless for a static library
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

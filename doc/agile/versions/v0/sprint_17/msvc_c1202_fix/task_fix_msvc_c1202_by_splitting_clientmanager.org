@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 41f6bbf2-ff6b-4892-a9ba-ac9bb4aea115
 :END:
-#+title: Task: [qt] Fix MSVC C1202 by splitting ClientManager into focused TUs
+#+title: Task: Fix MSVC C1202 by splitting ClientManager into focused TUs
 #+description: - MSVC `fatal error C1202` fires when `rfl` reflects too many complex types in a single translation unit — `ClientManage
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[qt] Fix MSVC C1202 by splitting ClientManager into focused TUs
+Split ClientManager.cpp into four focused translation units (connect/login, setup, trades, events) to keep each under MSVC's constexpr template depth budget.
 
 * Status
 
@@ -39,22 +39,15 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- MSVC `fatal error C1202` fires when `rfl` reflects too many complex types in a single translation unit — `ClientManager.cpp` accumulated `rfl::json::read` instantiations for IAM, session, HTTP, trading, and eventing types in one TU, hitting the constexpr depth limit in `rfl/internal/no_duplicate_field_names.hpp`
-- Split into four focused TUs, each carrying only the rfl instantiations relevant to its domain: `ClientManager.cpp` (connect/login/session), `ClientManagerSetup.cpp` (testConnection/signup), `ClientManagerTrades.cpp` (listTrades/getTradeDetail — the 25-field `trade` struct was the primary trigger), `ClientManagerEvents.cpp` (subscribeToEvent/unsubscribeFromEvent)
-- `GLOB_RECURSE` in `src/CMakeLists.txt` picks up the new files automatically; no CMakeLists.txt change needed
+- MSVC =fatal error C1202= fires when =rfl= reflects too many complex types in a single translation unit — =ClientManager.cpp= accumulated =rfl::json::read= instantiations for IAM, session, HTTP, trading, and eventing types in one TU, hitting the constexpr depth limit in =rfl/internal/no_duplicate_field_names.hpp=
+- Split into four focused TUs, each carrying only the rfl instantiations relevant to its domain: =ClientManager.cpp= (connect/login/session), =ClientManagerSetup.cpp= (testConnection/signup), =ClientManagerTrades.cpp= (listTrades/getTradeDetail — the 25-field =trade= struct was the primary trigger), =ClientManagerEvents.cpp= (subscribeToEvent/unsubscribeFromEvent)
+- =GLOB_RECURSE= in =src/CMakeLists.txt= picks up the new files automatically; no CMakeLists.txt change needed
 - No logic changes; all method signatures and behaviour are identical
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 4097525f-66b6-48d8-9ee1-6297fe896b40
 :END:
-#+title: Task: [qt.api] Move Cron widgets to qt.api to fix Windows link error
+#+title: Task: Move Cron widgets to qt.api to fix Windows link error
 #+description: - `lld-link: undefined symbol: ores::qt::CronExpressionWidget::staticMetaObject` when linking `ores.qt.scheduler.dll` on
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[qt.api] Move Cron widgets to qt.api to fix Windows link error
+Move CronExpressionWidget, CronEditorDialog, and CronFieldWidget from ores.qt.compute to ores.qt.api to fix a Windows DLL staticMetaObject export failure.
 
 * Status
 
@@ -39,21 +39,14 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
-- `lld-link: undefined symbol: ores::qt::CronExpressionWidget::staticMetaObject` when linking `ores.qt.scheduler.dll` on Windows.
-- The widget lives in `ores.qt.compute` but is consumed by both `ores.qt.compute` (ReportDefinitionDetailDialog) and `ores.qt.scheduler` (JobDefinitionDetailDialog). On Windows the Qt-MOC `staticMetaObject` was not exported across the compute DLL boundary for scheduler to pick up.
-- Move `CronExpressionWidget`, `CronEditorDialog`, and `CronFieldWidget` to `ores.qt.api` — the existing home for shared cross-plugin widgets (`PaginationWidget`, `ProvenanceWidget`). Both compute and scheduler already link `ores.qt.api.lib` publicly, so no consumer changes are required.
-- Add `ores.scheduler.api.lib` to `ores.qt.api` link libraries (needed by `CronExpressionWidget::isValid` which calls `scheduler::domain::cron_expression::from_string`).
+** Summary
+- =lld-link: undefined symbol: ores::qt::CronExpressionWidget::staticMetaObject= when linking =ores.qt.scheduler.dll= on Windows.
+- The widget lives in =ores.qt.compute= but is consumed by both =ores.qt.compute= (ReportDefinitionDetailDialog) and =ores.qt.scheduler= (JobDefinitionDetailDialog). On Windows the Qt-MOC =staticMetaObject= was not exported across the compute DLL boundary for scheduler to pick up.
+- Move =CronExpressionWidget=, =CronEditorDialog=, and =CronFieldWidget= to =ores.qt.api= — the existing home for shared cross-plugin widgets (=PaginationWidget=, =ProvenanceWidget=). Both compute and scheduler already link =ores.qt.api.lib= publicly, so no consumer changes are required.
+- Add =ores.scheduler.api.lib= to =ores.qt.api= link libraries (needed by =CronExpressionWidget::isValid= which calls =scheduler::domain::cron_expression::from_string=).
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

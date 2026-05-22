@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-Add login environment filter and recent parties to party picker
+Add a checkout-label filter to the login dialog that auto-tags environments by ORES_CHECKOUT_LABEL, and add recent-parties quick-pick to the party picker.
 
 * Status
 
@@ -39,38 +39,31 @@ Add login environment filter and recent parties to party picker
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- **Label filter on login dialog**: when `ORES_CHECKOUT_LABEL` is set (e.g. `local1`), environments whose `subject_prefix` ends with `.local1` are automatically tagged on startup. The login dialog shows a label filter combo when ≥2 distinct tags exist across environments/connections; the combo pre-selects the checkout label so developers only see relevant connections by default. Users with a single label or no labels see no change.
-- **`.env` version guard in `start-client.sh`**: sources `validate_env_version.sh` immediately after loading `.env`, giving a clear error when the file is stale.
-- **Recent parties in party picker**: the last 5 selected parties are persisted in a new `recent_parties` SQLite table (connections.db) and shown as a "Recent" section at the top of `PartyPickerDialog`, above "All Parties". The text/centre filter applies across both sections; the Recent header hides automatically when no matching recents exist.
+- *Label filter on login dialog*: when =ORES_CHECKOUT_LABEL= is set (e.g. =local1=), environments whose =subject_prefix= ends with =.local1= are automatically tagged on startup. The login dialog shows a label filter combo when ≥2 distinct tags exist across environments/connections; the combo pre-selects the checkout label so developers only see relevant connections by default. Users with a single label or no labels see no change.
+- *=.env= version guard in =start-client.sh=*: sources =validate_env_version.sh= immediately after loading =.env=, giving a clear error when the file is stale.
+- *Recent parties in party picker*: the last 5 selected parties are persisted in a new =recent_parties= SQLite table (connections.db) and shown as a "Recent" section at the top of =PartyPickerDialog=, above "All Parties". The text/centre filter applies across both sections; the Recent header hides automatically when no matching recents exist.
 
-## Changed files
+** Changed files
 
-**`ores.connections`**
-- `domain/recent_party.hpp` — new domain type
-- `repository/recent_party_{entity,mapper,repository}.hpp/.cpp` — upsert + prune-to-5 + sorted read
-- `repository/sqlite_context.cpp` — `CREATE TABLE IF NOT EXISTS recent_parties`, purge
-- `service/connection_manager.hpp/.cpp` — `get_recent_parties()` / `record_party_selection()`
+*=ores.connections=*
+- =domain/recent_party.hpp= — new domain type
+- =repository/recent_party_{entity,mapper,repository}.hpp/.cpp= — upsert + prune-to-5 + sorted read
+- =repository/sqlite_context.cpp= — =CREATE TABLE IF NOT EXISTS recent_parties=, purge
+- =service/connection_manager.hpp/.cpp= — =get_recent_parties()= / =record_party_selection()=
 
-**`ores.qt`**
-- `LoginDialog.hpp/.cpp` — `setConnectionManager()`; loads recents before picker, saves on accept
-- `MainWindow.cpp` — wires `setConnectionManager(connectionManager_)` on login widget
+*=ores.qt=*
+- =LoginDialog.hpp/.cpp= — =setConnectionManager()=; loads recents before picker, saves on accept
+- =MainWindow.cpp= — wires =setConnectionManager(connectionManager_)= on login widget
 
-**`ores.qt.api`**
-- `PartyPickerDialog.hpp/.cpp` — new `recent_ids` constructor param; sectioned `QTreeWidget` with `IsSectionHeaderRole` guard on click / double-click / filter / `firstVisibleItem()`
+*=ores.qt.api=*
+- =PartyPickerDialog.hpp/.cpp= — new =recent_ids= constructor param; sectioned =QTreeWidget= with =IsSectionHeaderRole= guard on click / double-click / filter / =firstVisibleItem()=
 
-**`build/scripts/start-client.sh`** — `.env` version validation
+*=build/scripts/start-client.sh=* — =.env= version validation
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

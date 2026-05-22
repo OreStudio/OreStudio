@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 30e9701e-fc42-4e9a-b486-980ab3a8fe3c
 :END:
-#+title: Task: [agile] Open Sprint 17
+#+title: Task: Open Sprint 17
 #+description: - Opens Sprint 17 for development.
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[agile] Open Sprint 17
+Open Sprint 17: bump the product version to 0.0.17 across CMake, vcpkg, workflow package paths, and readme badges.
 
 * Status
 
@@ -39,20 +39,13 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 - Opens Sprint 17 for development.
 - Bumps version to 0.0.17 across CMake, vcpkg, workflow package paths, and readme badges.
-- Adds `doc/agile/v0/sprint_backlog_17.org` and links it from `version_zero.org`.
+- Adds =doc/agile/v0/sprint_backlog_17.org= and links it from =version_zero.org=.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

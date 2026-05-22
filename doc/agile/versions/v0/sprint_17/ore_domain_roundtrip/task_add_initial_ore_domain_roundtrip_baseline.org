@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: ef0b846b-3406-4411-ab08-877514890b66
 :END:
-#+title: Task: [ore] Add initial ORE domain roundtrip baseline (Thing 3, Phase 5)
+#+title: Task: Add initial ORE domain roundtrip baseline (Thing 3, Phase 5)
 #+description: - Fixes `leg_type_from_string` in `swap_instrument_mapper.cpp`: only 6 of 17 `legType` enum values were mapped, causing 
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[ore] Add initial ORE domain roundtrip baseline (Thing 3, Phase 5)
+Fix leg_type_from_string gaps for inflation and commodity legs, then generate and commit the initial 1474-file domain roundtrip baseline from the ORE examples directory.
 
 * Status
 
@@ -39,21 +39,14 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- Fixes `leg_type_from_string` in `swap_instrument_mapper.cpp`: only 6 of 17 `legType` enum values were mapped, causing a throw on any inflation (CPI, YY) or commodity leg during roundtrip export. All 11 missing types added.
-- Generates and commits the initial `assets/test_data/domain_roundtrip/` baseline: 1474 portfolio XML files mirroring `external/ore/examples/`, produced by `ores.cli ore roundtrip`.
+- Fixes =leg_type_from_string= in =swap_instrument_mapper.cpp=: only 6 of 17 =legType= enum values were mapped, causing a throw on any inflation (CPI, YY) or commodity leg during roundtrip export. All 11 missing types added.
+- Generates and commits the initial =assets/test_data/domain_roundtrip/= baseline: 1474 portfolio XML files mirroring =external/ore/examples/=, produced by =ores.cli ore roundtrip=.
 - Baseline stats: 2480 trades analysed — 70.5% partial fidelity, 29.5% passthrough. Full fidelity is 0% at baseline; gaps represent mapper work yet to be done (preserved fields, envelope data, etc.).
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

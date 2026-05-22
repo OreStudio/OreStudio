@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-Fix missing export symbol definitions in trading.api and trading.core
+Add the missing ORES_TRADING_API_LIBRARY and ORES_TRADING_CORE_LIBRARY compile definitions that were omitted from the initial -fvisibility=hidden migration.
 
 * Status
 
@@ -39,21 +39,14 @@ Fix missing export symbol definitions in trading.api and trading.core
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- PR #738 added `ORES_X_LIBRARY` compile definitions and visibility flags to 43 libraries but missed `ores.trading.api` and `ores.trading.core`
-- Without `ORES_TRADING_API_LIBRARY` defined when building the library, `ORES_TRADING_API_EXPORT` resolves to `BOOST_SYMBOL_IMPORT` (`__declspec(dllimport)`) instead of `BOOST_SYMBOL_EXPORT`
-- This causes MSVC C4273 / Clang `-Winconsistent-dllimport` on Windows, failing the Continuous Windows CI run
+- PR #738 added =ORES_X_LIBRARY= compile definitions and visibility flags to 43 libraries but missed =ores.trading.api= and =ores.trading.core=
+- Without =ORES_TRADING_API_LIBRARY= defined when building the library, =ORES_TRADING_API_EXPORT= resolves to =BOOST_SYMBOL_IMPORT= (=__declspec(dllimport)=) instead of =BOOST_SYMBOL_EXPORT=
+- This causes MSVC C4273 / Clang =-Winconsistent-dllimport= on Windows, failing the Continuous Windows CI run
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

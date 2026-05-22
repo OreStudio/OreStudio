@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 593cd821-11b6-4667-a5b1-66f131e81765
 :END:
-#+title: Task: [doc] Fix broken org-mode links in identifier-length-cleanup plan
+#+title: Task: Fix broken org-mode links in identifier-length-cleanup plan
 #+description: - Three `[[*Special Cases]]` links in `doc/plans/2026-05-13-identifier-length-cleanup.org` failed to resolve during org-
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[doc] Fix broken org-mode links in identifier-length-cleanup plan
+Fix three broken org-mode internal links in the identifier-length-cleanup plan that used an incorrect heading anchor text.
 
 * Status
 
@@ -39,20 +39,13 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- Three `[[*Special Cases]]` links in `doc/plans/2026-05-13-identifier-length-cleanup.org` failed to resolve during org-html publishing because the target heading is `** Phase 5 — Special Cases`, not `Special Cases`. Org-mode requires an exact match on the heading text.
-- Updated all three link sites to `[[*Phase 5 — Special Cases]]`.
+- Three =[[*Special Cases]]= links in =doc/plans/2026-05-13-identifier-length-cleanup.org= failed to resolve during org-html publishing because the target heading is =** Phase 5 — Special Cases=, not =Special Cases=. Org-mode requires an exact match on the heading text.
+- Updated all three link sites to =[[*Phase 5 — Special Cases]]=.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: cdb7ec88-03cc-4456-90ae-6ce6c9bdc9f8
 :END:
-#+title: Task: [refdata] deposit_convention: Phase 2 first type
+#+title: Task: deposit_convention: Phase 2 first type
 #+description: Second convention type in the ORE import Phase 2 roll-out (after
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[refdata] deposit_convention: Phase 2 first type
+Add deposit_convention as the second codegen-driven ORE convention type, fixing the notify-trigger template to support domain_entity model syntax.
 
 * Status
 
@@ -39,45 +39,38 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
 Second convention type in the ORE import Phase 2 roll-out (after
-`zero_convention`). Follows the same five-commit shape established by
+=zero_convention=). Follows the same five-commit shape established by
 the pilot.
 
-1. `[codegen]` Wire the notify-trigger template into the `sql` profile
-   and fix it to use `{{#domain_entity}}` section syntax. Until now
-   the template used old-style `{{entity.*}}` placeholders, so it only
-   produced valid SQL for `_entity.json` models; new `_domain_entity`
+1. =[codegen]= Wire the notify-trigger template into the =sql= profile
+   and fix it to use ={{#domain_entity}}= section syntax. Until now
+   the template used old-style ={{entity.*}}= placeholders, so it only
+   produced valid SQL for =_entity.json= models; new =_domain_entity=
    types had their trigger file hand-authored. Phase 2 types now get
-   it from a single `--profile all` run.
-2. `[refdata]` Generate the `deposit_convention` domain type — SQL,
+   it from a single =--profile all= run.
+2. =[refdata]= Generate the =deposit_convention= domain type — SQL,
    domain, JSON I/O, table I/O, generator, protocol, repository,
    mapper, service, NATS handler, Qt model/window/detail/history/
-   controller/.ui. Fields: `id` (text PK), `index_based` (bool), plus
-   optionals `index`, `calendar`, `convention`, `end_of_month`,
-   `day_count_fraction`, `settlement_days`.
-3. `[sql]` Load `refdata_deposit_conventions_create.sql` and its
-   notify-trigger from `refdata_create.sql`, plus enable RLS with the
-   standard tenant-isolation policy in `refdata_rls_policies_create.sql`.
-4. `[refdata]` Register the NATS handler on
-   `refdata.v1.deposit_conventions.{list,save,delete,history}`.
-5. `[qt]` Register `DepositConventionController` in `RefdataPlugin`
+   controller/.ui. Fields: =id= (text PK), =index_based= (bool), plus
+   optionals =index=, =calendar=, =convention=, =end_of_month=,
+   =day_count_fraction=, =settlement_days=.
+3. =[sql]= Load =refdata_deposit_conventions_create.sql= and its
+   notify-trigger from =refdata_create.sql=, plus enable RLS with the
+   standard tenant-isolation policy in =refdata_rls_policies_create.sql=.
+4. =[refdata]= Register the NATS handler on
+   =refdata.v1.deposit_conventions.{list,save,delete,history}=.
+5. =[qt]= Register =DepositConventionController= in =RefdataPlugin=
    and add a "Deposit Conventions" entry under the existing
    Conventions submenu.
 
-Part of `doc/plans/2026-04-21-ore-import-conventions.org` — Phase 2
+Part of =doc/plans/2026-04-21-ore-import-conventions.org= — Phase 2
 (seven conventions remaining after this one).
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

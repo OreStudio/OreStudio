@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 3306beb8-6459-4819-8405-997bf7f5b442
 :END:
-#+title: Task: [qt] Remove non-existent MSVC constexpr pragmas
+#+title: Task: Remove non-existent MSVC constexpr pragmas
 #+description: - Remove `#pragma constexpr_depth` and `#pragma constexpr_steps` from `ClientManager.cpp` and `ClientManagerTrades.cpp`
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[qt] Remove non-existent MSVC constexpr pragmas
+Remove #pragma constexpr_depth and #pragma constexpr_steps from two TUs — these pragma names do not exist in MSVC and caused /WX hard build errors via C4068.
 
 * Status
 
@@ -39,22 +39,15 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- Remove `#pragma constexpr_depth` and `#pragma constexpr_steps` from `ClientManager.cpp` and `ClientManagerTrades.cpp`
-- These pragma directives do not exist in MSVC — `constexpr:depth` and `constexpr:steps` are command-line flags, not pragma names
-- MSVC emits C4068 (unknown pragma warning) which `/WX` promotes to a hard build error
-- The global CMake config already sets `/constexpr:depth100000 /constexpr:steps10000000` project-wide, so no per-TU adjustment is needed
+- Remove =#pragma constexpr_depth= and =#pragma constexpr_steps= from =ClientManager.cpp= and =ClientManagerTrades.cpp=
+- These pragma directives do not exist in MSVC — =constexpr:depth= and =constexpr:steps= are command-line flags, not pragma names
+- MSVC emits C4068 (unknown pragma warning) which =/WX= promotes to a hard build error
+- The global CMake config already sets =/constexpr:depth100000 /constexpr:steps10000000= project-wide, so no per-TU adjustment is needed
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

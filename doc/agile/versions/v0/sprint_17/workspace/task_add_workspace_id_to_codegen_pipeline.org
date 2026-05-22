@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-Add workspace_id to codegen pipeline (Phases 1-4)
+Propagate workspace_id through the C++ codegen pipeline (Phases 1-4): add the field to all models flagged has_workspace_id and fix generator template defects.
 
 * Status
 
@@ -39,26 +39,19 @@ Add workspace_id to codegen pipeline (Phases 1-4)
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- Phase 4: propagate `workspace_id` through the C++ codegen layer — adds `workspace_id` field to all domain entities flagged with `has_workspace_id` in their model JSON
-- Fix generator template to use `.value_or(tenant_id::system())` instead of `.value()` to avoid crash when `generation_context` has no valid UUID tenant_id string
-- Standardise `change_reason_code` to `"system.test"` in all generated generators (was inconsistently `"system.new"` in some)
-- Add `cpp.table_display` entries to `lifecycle_event`, `trade_identifier`, `trade`, and `report_definition` models; implement the previously-stub `convert_to_table` functions
-- Fix stale `get_books_request` usages in `ores.qt.trading` that referenced removed `offset`/`limit` fields and old `HistoryResult::versions` field
-- Fix `tenant_id` strong-type assignment in `organisation_publisher_integration_tests`
-- Add `${ORES_TEST_ENV_CMD}` prefix to `add_custom_target` COMMAND in all 12 test `CMakeLists.txt` files that were missing it, so `.env` DB credentials are injected when running `make rat`
-- Add codegen drift remediation plan at `doc/plans/2026-05-19-qt-trading-codegen-drift.org`
+- Phase 4: propagate =workspace_id= through the C++ codegen layer — adds =workspace_id= field to all domain entities flagged with =has_workspace_id= in their model JSON
+- Fix generator template to use =.value_or(tenant_id::system())= instead of =.value()= to avoid crash when =generation_context= has no valid UUID tenant_id string
+- Standardise =change_reason_code= to ="system.test"= in all generated generators (was inconsistently ="system.new"= in some)
+- Add =cpp.table_display= entries to =lifecycle_event=, =trade_identifier=, =trade=, and =report_definition= models; implement the previously-stub =convert_to_table= functions
+- Fix stale =get_books_request= usages in =ores.qt.trading= that referenced removed =offset=/=limit= fields and old =HistoryResult::versions= field
+- Fix =tenant_id= strong-type assignment in =organisation_publisher_integration_tests=
+- Add =${ORES_TEST_ENV_CMD}= prefix to =add_custom_target= COMMAND in all 12 test =CMakeLists.txt= files that were missing it, so =.env= DB credentials are injected when running =make rat=
+- Add codegen drift remediation plan at =doc/plans/2026-05-19-qt-trading-codegen-drift.org=
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

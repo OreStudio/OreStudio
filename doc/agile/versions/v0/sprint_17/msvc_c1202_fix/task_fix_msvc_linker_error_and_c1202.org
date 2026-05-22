@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: c3aeeee1-f1fc-4bce-a851-c322dbd2eec5
 :END:
-#+title: Task: [windows] Fix MSVC linker error and C1202 in trade variant
+#+title: Task: Fix MSVC linker error and C1202 in trade variant
 #+description: - Error 1 (LNK2001 – `ores.refdata.service`): `host::execute` was missing its Windows DLL export annotation. Added `expo
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[windows] Fix MSVC linker error and C1202 in trade variant
+Fix a Windows LNK2001 missing export on ores.refdata.service::host and a C1202 constexpr depth error in ores.qt.api using per-TU #pragma constexpr overrides.
 
 * Status
 
@@ -39,21 +39,14 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- **Error 1 (LNK2001 – `ores.refdata.service`)**: `host::execute` was missing its Windows DLL export annotation. Added `export.hpp` with `ORES_REFDATA_SERVICE_EXPORT` (pattern: `BOOST_SYMBOL_EXPORT`/`BOOST_SYMBOL_IMPORT` guarded by `ORES_REFDATA_SERVICE_LIBRARY`), annotated the `host` class, and added the `target_compile_definitions` to the lib CMake target. Same fix as PR for `ores.shell`.
+- *Error 1 (LNK2001 – =ores.refdata.service=)*: =host::execute= was missing its Windows DLL export annotation. Added =export.hpp= with =ORES_REFDATA_SERVICE_EXPORT= (pattern: =BOOST_SYMBOL_EXPORT=/=BOOST_SYMBOL_IMPORT= guarded by =ORES_REFDATA_SERVICE_LIBRARY=), annotated the =host= class, and added the =target_compile_definitions= to the lib CMake target. Same fix as PR for =ores.shell=.
 
-- **Error 2 (C1202 – `ores.qt.api`)**: `rfl::internal::no_duplicate_field_names` performs O(N²) constexpr field-name comparisons across all alternatives of `trade_instrument` (9 top-level, two of which are nested variants). This exhausts MSVC's default 100 000-step constexpr budget, triggering fatal error C1202. Added `#pragma constexpr_depth(1024)` and `#pragma constexpr_steps(1000000)` under `#ifdef _MSC_VER` before the problematic `rfl::json::read` call in `ClientManagerTrades.cpp`.
+- *Error 2 (C1202 – =ores.qt.api=)*: =rfl::internal::no_duplicate_field_names= performs O(N²) constexpr field-name comparisons across all alternatives of =trade_instrument= (9 top-level, two of which are nested variants). This exhausts MSVC's default 100 000-step constexpr budget, triggering fatal error C1202. Added =#pragma constexpr_depth(1024)= and =#pragma constexpr_steps(1000000)= under =#ifdef _MSC_VER= before the problematic =rfl::json::read= call in =ClientManagerTrades.cpp=.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

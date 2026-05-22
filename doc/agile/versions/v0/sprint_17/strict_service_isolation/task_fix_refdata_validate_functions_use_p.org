@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: c9248144-1c34-40f5-9eec-ba5c38ab360d
 :END:
-#+title: Task: [sql] Fix refdata validate functions: use p_tenant_id not system_tenant_id
+#+title: Task: Fix refdata validate functions: use p_tenant_id not system_tenant_id
 #+description: - `ores_refdata_validate_monetary_nature_fn`, `ores_refdata_validate_currency_market_tier_fn`, and `ores_refdata_validat
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[sql] Fix refdata validate functions: use p_tenant_id not system_tenant_id
+Fix three refdata validate functions that queried against the system tenant instead of p_tenant_id, breaking Row Level Security for all non-system tenants.
 
 * Status
 
@@ -39,23 +39,16 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- `ores_refdata_validate_monetary_nature_fn`, `ores_refdata_validate_currency_market_tier_fn`, and `ores_refdata_validate_rounding_type_fn` were querying with `tenant_id = ores_utility_system_tenant_id_fn()` (the max-UUID system tenant).
-- `ores_refdata_monetary_natures_tbl` and `ores_refdata_currency_market_tiers_tbl` have Row Level Security enabled (`tenant_id = ores_iam_current_tenant_id_fn()`). Service users cannot see rows from other tenants, including the system tenant.
-- When a provisioned test tenant's session inserts a currency: the bootstrap skip (`not exists … limit 1`) is bypassed because the test tenant's own monetary-nature rows are visible; the system-tenant validation query then returns zero rows (filtered by RLS); `string_agg` returns NULL; the exception fires: `ERROR: Invalid monetary_nature: fiat. Must be one of: <NULL>`.
+- =ores_refdata_validate_monetary_nature_fn=, =ores_refdata_validate_currency_market_tier_fn=, and =ores_refdata_validate_rounding_type_fn= were querying with =tenant_id = ores_utility_system_tenant_id_fn()= (the max-UUID system tenant).
+- =ores_refdata_monetary_natures_tbl= and =ores_refdata_currency_market_tiers_tbl= have Row Level Security enabled (=tenant_id = ores_iam_current_tenant_id_fn()=). Service users cannot see rows from other tenants, including the system tenant.
+- When a provisioned test tenant's session inserts a currency: the bootstrap skip (=not exists … limit 1=) is bypassed because the test tenant's own monetary-nature rows are visible; the system-tenant validation query then returns zero rows (filtered by RLS); =string_agg= returns NULL; the exception fires: =ERROR: Invalid monetary_nature: fiat. Must be one of: <NULL>=.
 
-**Fix:** Set `system_tenant_validation: false` in the three entity JSON models and regenerate. The validate functions now use `p_tenant_id` (the currency's own tenant). Each provisioned tenant already receives its own copy of these lookup tables via `ores_iam_provision_tenant_fn`, so validating against the caller's tenant is correct and RLS-safe.
+*Fix:* Set =system_tenant_validation: false= in the three entity JSON models and regenerate. The validate functions now use =p_tenant_id= (the currency's own tenant). Each provisioned tenant already receives its own copy of these lookup tables via =ores_iam_provision_tenant_fn=, so validating against the caller's tenant is correct and RLS-safe.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

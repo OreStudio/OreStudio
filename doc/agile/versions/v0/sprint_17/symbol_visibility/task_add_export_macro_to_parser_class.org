@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-Add export macro to parser class for DLL visibility
+Add ORES_REFDATA_SERVICE_EXPORT to the refdata parser class to ensure correct DLL symbol visibility when building as a shared library on Windows.
 
 * Status
 
@@ -39,25 +39,20 @@ Add export macro to parser class for DLL visibility
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
-Add the `ORES_REFDATA_SERVICE_EXPORT` macro to the `parser` class declaration to ensure proper symbol visibility when building as a shared library.
+** Summary
+Add the =ORES_REFDATA_SERVICE_EXPORT= macro to the =parser= class declaration to ensure proper symbol visibility when building as a shared library.
 
-## Changes
-- Include `ores.refdata.service/export.hpp` header in parser.hpp
-- Apply `ORES_REFDATA_SERVICE_EXPORT` macro to the `parser` class definition
+** Changes
+- Include =ores.refdata.service/export.hpp= header in parser.hpp
+- Apply =ORES_REFDATA_SERVICE_EXPORT= macro to the =parser= class definition
 
-## Details
-This change ensures that the `parser` class symbols are properly exported when the refdata service is built as a dynamic library, allowing external consumers to link against and use the parser class. The export macro is a standard pattern for managing symbol visibility across library boundaries.
+** Details
+This change ensures that the =parser= class symbols are properly exported when the refdata service is built as a dynamic library, allowing external consumers to link against and use the parser class. The export macro is a standard pattern for managing symbol visibility across library boundaries.
 
 https://claude.ai/code/session_01SiZDbJn3cgBNFDBbQy1wxq
-#+end_example
+
 
 * Result
 

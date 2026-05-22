@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7959c3c0-9846-400b-8d8f-104cf2f2e5c0
 :END:
-#+title: Task: [hotfix] Fix boost::diagnostic_information compile error in ClientManagerTradeDetail
+#+title: Task: Fix boost::diagnostic_information compile error in ClientManagerTradeDetail
 #+description: - `ClientManagerTradeDetail.cpp:75` calls `boost::diagnostic_information(e)` which requires `<boost/exception/diagnostic
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[hotfix] Fix boost::diagnostic_information compile error in ClientManagerTradeDetail
+Replace boost::diagnostic_information with e.what() in ClientManagerTradeDetail.cpp to fix a missing-header compile error on all Linux builds.
 
 * Status
 
@@ -39,22 +39,15 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- `ClientManagerTradeDetail.cpp:75` calls `boost::diagnostic_information(e)` which requires `<boost/exception/diagnostic_information.hpp>` — that header is not included in this TU, causing a compile error on all Linux builds
-- Fix: replace with `e.what()`, which is what `ClientManagerTrades.cpp` uses in the equivalent catch block
+- =ClientManagerTradeDetail.cpp:75= calls =boost::diagnostic_information(e)= which requires =<boost/exception/diagnostic_information.hpp>= — that header is not included in this TU, causing a compile error on all Linux builds
+- Fix: replace with =e.what()=, which is what =ClientManagerTrades.cpp= uses in the equivalent catch block
 
 Fixes CI run https://github.com/OreStudio/OreStudio/actions/runs/25983392216
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

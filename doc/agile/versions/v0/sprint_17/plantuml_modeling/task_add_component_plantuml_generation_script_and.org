@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-Add component PlantUML generation script and bulk-refresh all diagrams
+Add generate_component_puml.py to create skeleton PlantUML class diagrams from project headers, and bulk-refresh all 85 component diagrams across the repository.
 
 * Status
 
@@ -39,22 +39,15 @@ Add component PlantUML generation script and bulk-refresh all diagrams
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- Add `build/scripts/generate_component_puml.py`: a regex-based script that walks each project's `include/` headers and emits a skeleton PlantUML class diagram. Supports `--project NAME`, `--all`, and `--dry-run`. Idempotent via a sentinel line that preserves hand-authored sections on re-runs.
-- Run `--all` to create or refresh 85 component diagrams: 40+ new `modeling/` directories for projects that had none (all Qt plugins, trading API, IAM, refdata, etc.), populate 4 previously-empty placeholder files, and refresh all existing stubs.
-- Delete 13 legacy misnamed `.puml` files (e.g. `ores.ore.puml` inside `ores.ore.core/modeling/`) now superseded by correctly-named generated files. Fix 4 `CMakeLists.txt` targets that still pointed at the old names, resolving the `mad` build failure caused by an unsupported `struct` keyword in PlantUML 1.2020.02.
-- Mark 6 completed plans as DONE and add `doc/plans/2026-05-19-uml-model-refresh.org`.
+- Add =build/scripts/generate_component_puml.py=: a regex-based script that walks each project's =include/= headers and emits a skeleton PlantUML class diagram. Supports =--project NAME=, =--all=, and =--dry-run=. Idempotent via a sentinel line that preserves hand-authored sections on re-runs.
+- Run =--all= to create or refresh 85 component diagrams: 40+ new =modeling/= directories for projects that had none (all Qt plugins, trading API, IAM, refdata, etc.), populate 4 previously-empty placeholder files, and refresh all existing stubs.
+- Delete 13 legacy misnamed =.puml= files (e.g. =ores.ore.puml= inside =ores.ore.core/modeling/=) now superseded by correctly-named generated files. Fix 4 =CMakeLists.txt= targets that still pointed at the old names, resolving the =mad= build failure caused by an unsupported =struct= keyword in PlantUML 1.2020.02.
+- Mark 6 completed plans as DONE and add =doc/plans/2026-05-19-uml-model-refresh.org=.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

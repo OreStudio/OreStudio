@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: fbe4fc1e-38b7-4840-a1f4-a76294470aec
 :END:
-#+title: Task: [doc] Site theme: dark CSS + sidebar TOC + preamble + Pages enablement
+#+title: Task: Site theme: dark CSS + sidebar TOC + preamble + Pages enablement
 #+description: Adopts the dark CSS + sidebar-TOC approach from
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[doc] Site theme: dark CSS + sidebar TOC + preamble + Pages enablement
+Adopt a dark CSS theme with sidebar TOC, add a site-wide preamble with nav bar, and enable GitHub Pages deployment for the ORE Studio product website.
 
 * Status
 
@@ -39,74 +39,67 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
 Adopts the dark CSS + sidebar-TOC approach from
-`mcraveiro.github.io` for the ORE Studio product website, adds a
+=mcraveiro.github.io= for the ORE Studio product website, adds a
 site-wide preamble (banner + nav), fixes the missing GitHub Pages
 enablement flag, and adds a local-preview script.
 
-## Changes
+** Changes
 
-### CSS (`assets/style.css`)
+*** CSS (=assets/style.css=)
 
 - Replaces the dual light/dark theme with a single dark theme (deep
   matte background, crisp blue accent, system font stack).
-- Sidebar TOC layout via `#content:has(#table-of-contents)` — TOC
+- Sidebar TOC layout via =#content:has(#table-of-contents)= — TOC
   sits sticky on the left, content fills the right column. Falls
   back to single-column under 768px.
 - Tightened typography, table styling, code blocks, footnotes,
   blockquotes, note admonitions, badge wrapper.
 
-### `.build-site.el`
+*** =.build-site.el=
 
-- Adds `site-html-preamble` with the ORE Studio banner image + nav
+- Adds =site-html-preamble= with the ORE Studio banner image + nav
   (Home / Documentation / V2 Compass / Doxygen / GitHub).
 - Backquotes the publishing alist so the preamble variable
   substitutes in cleanly.
 
-### `.github/workflows/build-site.yml`
+*** =.github/workflows/build-site.yml=
 
-- Adds `with: enablement: true` on `actions/configure-pages`. This is
-  the missing setting vs `mcraveiro.github.io`'s yml — auto-enables
+- Adds =with: enablement: true= on =actions/configure-pages=. This is
+  the missing setting vs =mcraveiro.github.io='s yml — auto-enables
   GitHub Pages on first run.
 
-### TOC default flip
+*** TOC default flip
 
-- Flips `toc:nil` → `toc:t` across 124 org files in `doc/` +
-  `projects/`, plus the `v2_doc_skill.org.mustache` template.
-- `doc/doc.org` + `readme.org` stay `toc:nil` (top-level indexes).
-- Files without explicit `#+options:` continue to inherit
-  `:with-toc t` from the build script.
+- Flips =toc:nil= → =toc:t= across 124 org files in =doc/= +
+  =projects/=, plus the =v2_doc_skill.org.mustache= template.
+- =doc/doc.org= + =readme.org= stay =toc:nil= (top-level indexes).
+- Files without explicit =#+options:= continue to inherit
+  =:with-toc t= from the build script.
 - Org's TOC renders conditionally on whether the document has
-  headlines, so pure-list index files (e.g. `doc/recipes/recipes.org`)
-  still render without a TOC even with `toc:t` set.
+  headlines, so pure-list index files (e.g. =doc/recipes/recipes.org=)
+  still render without a TOC even with =toc:t= set.
 
-### `build/scripts/serve-site.sh`
+*** =build/scripts/serve-site.sh=
 
-- Adapted from `mcraveiro.github.io/serve.sh`. Wraps
-  `python3 -m http.server` over `build/output/site/`. Supports
-  `--compile` to rebuild first and `--port` (or `PORT` env var) to
+- Adapted from =mcraveiro.github.io/serve.sh=. Wraps
+  =python3 -m http.server= over =build/output/site/=. Supports
+  =--compile= to rebuild first and =--port= (or =PORT= env var) to
   pick the port.
 
-## Notes for review
+** Notes for review
 
 - Site builds clean locally.
-- Banner image is `assets/images/ore-studio-banner.png`, served at
-  `/OreStudio/assets/images/ore-studio-banner.png` via the preamble.
-- Other diffs vs `mcraveiro.github.io`'s yml (license header,
-  Doxygen step, `ubuntu-24.04` pin, `@v5.0.0` action pins) are
+- Banner image is =assets/images/ore-studio-banner.png=, served at
+  =/OreStudio/assets/images/ore-studio-banner.png= via the preamble.
+- Other diffs vs =mcraveiro.github.io='s yml (license header,
+  Doxygen step, =ubuntu-24.04= pin, =@v5.0.0= action pins) are
   intentional / kept.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

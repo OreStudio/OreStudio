@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 5b0c49bf-dbc8-442c-95aa-6ff739928e72
 :END:
-#+title: Task: [doc] v2 information architecture (sprints 08-11)
+#+title: Task: v2 information architecture (sprints 08-11)
 #+description: Migrates sprints 08-11 of v0 into the v2 cybernetic information architecture
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[doc] v2 information architecture (sprints 08-11)
+Migrate sprints 08-11 of v0 (43 stories, 114 tasks) into the v2 information architecture established in PR #771.
 
 * Status
 
@@ -39,20 +39,15 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
 Migrates sprints 08-11 of v0 into the v2 cybernetic information architecture
 landed in PR #771. Four sprints, 43 stories, 114 tasks under
 =doc/v2/versions/v0/sprint_{08,09,10,11}/=.
 
-### Sprint 08
+*** Sprint 08
 
 11 stories / 31 tasks. The biggest v0 sprint to date.
 
@@ -75,7 +70,7 @@ landed in PR #771. Four sprints, 43 stories, 114 tasks under
 - =observability_followup= — review-only pass; three implementations
   carried forward.
 
-### Sprint 09
+*** Sprint 09
 
 9 stories / 27 tasks.
 
@@ -98,7 +93,7 @@ landed in PR #771. Four sprints, 43 stories, 114 tasks under
   nightly valgrind.
 - =party_database_groundwork= — party table structure documented; postponed.
 
-### Sprint 10
+*** Sprint 10
 
 12 stories / 30 tasks.
 
@@ -118,7 +113,7 @@ landed in PR #771. Four sprints, 43 stories, 114 tasks under
   =librarian_polish=, =fpml_export_import_groundwork= (BACKLOG),
   =compute_grid_analysis= (BACKLOG).
 
-### Sprint 11
+*** Sprint 11
 
 11 stories / 26 tasks. The multi-tenancy sprint.
 
@@ -151,7 +146,7 @@ landed in PR #771. Four sprints, 43 stories, 114 tasks under
   unique indexes; Data Librarian cross-tenant publication; eventing
   tenant_id propagation + subscription filtering.
 
-### Notes for review
+*** Notes for review
 
 - Cross-sprint linkage is bidirectional (=#+predecessor= / =#+successor=
   with prose "Continued from/in:" lines):
@@ -168,8 +163,6 @@ landed in PR #771. Four sprints, 43 stories, 114 tasks under
   links.
 - Site builds clean after the rebase from main.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

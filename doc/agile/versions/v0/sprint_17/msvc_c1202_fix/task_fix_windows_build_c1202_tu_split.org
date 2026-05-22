@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: dfb3687c-d6d2-4c29-b345-8878eabfd206
 :END:
-#+title: Task: [hotfix] Fix Windows build: C1202 TU split and workflow.api export
+#+title: Task: Fix Windows build: C1202 TU split and workflow.api export
 #+description: Two Windows build failures fixed in this PR:
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[hotfix] Fix Windows build: C1202 TU split and workflow.api export
+Fix two Windows build failures: move getTradeDetail to a dedicated TU to clear a C1202 depth overflow, and add missing workflow.api DLL export annotations.
 
 * Status
 
@@ -39,27 +39,20 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
 Two Windows build failures fixed in this PR:
 
-**1. MSVC C1202 in ClientManagerTrades.cpp**
+*1. MSVC C1202 in ClientManagerTrades.cpp*
 
-`listTrades` (reflecting `vector<trade>`, 25 fields) and `getTradeDetail` (two-phase rfl parse: 22-field base + 8-alternative instrument variant) combined in one TU still exceeded MSVC's recursive template dependency depth budget (`C1202: recursive type or function dependency context too complex`). `getTradeDetail` is moved to a new `ClientManagerTradeDetail.cpp` so each function has its own TU with a single heavy rfl instantiation.
+=listTrades= (reflecting =vector<trade>=, 25 fields) and =getTradeDetail= (two-phase rfl parse: 22-field base + 8-alternative instrument variant) combined in one TU still exceeded MSVC's recursive template dependency depth budget (=C1202: recursive type or function dependency context too complex=). =getTradeDetail= is moved to a new =ClientManagerTradeDetail.cpp= so each function has its own TU with a single heavy rfl instantiation.
 
-**2. Linker errors: undefined `__declspec(dllimport)` symbols for workflow types**
+*2. Linker errors: undefined =__declspec(dllimport)= symbols for workflow types*
 
-`ores.workflow.api` is an INTERFACE (header-only) library — `ORES_WORKFLOW_API_LIBRARY` is never defined. The `export.hpp` was using the standard dllexport/dllimport pattern, so the macro always expanded to `__declspec(dllimport)` for all consumers. This caused lld-link to look for `workflow_registry`, `workflow_definition`, `workflow_step_def`, and `materialised_step` symbols in an external DLL that does not exist. Since all types are defined entirely in headers, no DLL decoration is needed — `ORES_WORKFLOW_API_EXPORT` is now defined as empty.
+=ores.workflow.api= is an INTERFACE (header-only) library — =ORES_WORKFLOW_API_LIBRARY= is never defined. The =export.hpp= was using the standard dllexport/dllimport pattern, so the macro always expanded to =__declspec(dllimport)= for all consumers. This caused lld-link to look for =workflow_registry=, =workflow_definition=, =workflow_step_def=, and =materialised_step= symbols in an external DLL that does not exist. Since all types are defined entirely in headers, no DLL decoration is needed — =ORES_WORKFLOW_API_EXPORT= is now defined as empty.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

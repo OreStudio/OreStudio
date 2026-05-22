@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-Import/export cleanup: composite legs, pure parser, batch fetches, trade list split
+Introduce a unified instrument variant hierarchy, fix composite legs being silently dropped on ORE import, and strip UUID minting out of the parser into the planner layer.
 
 * Status
 
@@ -39,23 +39,16 @@ Import/export cleanup: composite legs, pure parser, batch fetches, trade list sp
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- **Phase 1**: Unify instrument variant hierarchy — introduce `Instrument` concept, `with_legs<T,Leg>`, `trade_instrument` variant, `swap_instrument_data`, `composite_instrument_data`; replace all ad-hoc instrument carrier types
-- **Phase 2**: Fix composite legs gap in ORE importer — composite legs were silently dropped on import
-- **Phase 3**: Pure parser — strip UUID minting out of `import_portfolio_with_context`; move it to the planner layer; delete the context-free `import_portfolio` overload
-- **Phase 4**: Eliminate N+1 DB queries on bulk export — add `read_latest(ctx, ids)` batch overloads to all 30 instrument repositories, `get_TYPE_instruments(ids)` to all 30 services, and `get_swap_legs_batch` / `get_legs_batch` for the shared leg tables; replace per-trade `populate_instrument_for_trade` with `populate_instruments_for_trades` that groups by type and issues one DB call per type; fix `export_trades_to_storage` to page at 1000 instead of loading unbounded
-- **Phase 6**: Split trade list from trade detail — `get_trades_response` now returns metadata-only `vector<trade>>`; new `get_trade_detail_request` fetches a single trade's instrument on demand; Qt models cache `trade` not `trade_export_item`; `TradeController` fetches detail synchronously before opening the dialog
+- *Phase 1*: Unify instrument variant hierarchy — introduce =Instrument= concept, =with_legs<T,Leg>=, =trade_instrument= variant, =swap_instrument_data=, =composite_instrument_data=; replace all ad-hoc instrument carrier types
+- *Phase 2*: Fix composite legs gap in ORE importer — composite legs were silently dropped on import
+- *Phase 3*: Pure parser — strip UUID minting out of =import_portfolio_with_context=; move it to the planner layer; delete the context-free =import_portfolio= overload
+- *Phase 4*: Eliminate N+1 DB queries on bulk export — add =read_latest(ctx, ids)= batch overloads to all 30 instrument repositories, =get_TYPE_instruments(ids)= to all 30 services, and =get_swap_legs_batch= / =get_legs_batch= for the shared leg tables; replace per-trade =populate_instrument_for_trade= with =populate_instruments_for_trades= that groups by type and issues one DB call per type; fix =export_trades_to_storage= to page at 1000 instead of loading unbounded
+- *Phase 6*: Split trade list from trade detail — =get_trades_response= now returns metadata-only =vector<trade>>=; new =get_trade_detail_request= fetches a single trade's instrument on demand; Qt models cache =trade= not =trade_export_item=; =TradeController= fetches detail synchronously before opening the dialog
 
-🤖 Generated with [Claude Code](https://claude.ai/claude-code)
-#+end_example
 
 * Result
 

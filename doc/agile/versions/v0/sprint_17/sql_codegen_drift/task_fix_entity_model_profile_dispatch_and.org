@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: dc845b65-c7c0-4156-afff-ec968079cfce
 :END:
-#+title: Task: [codegen] Fix entity model profile dispatch and composite natural-key indexes
+#+title: Task: Fix entity model profile dispatch and composite natural-key indexes
 #+description: - Add `schema` model type to the `sql` profile in `profiles.json` so plain entity models (`*_entity.json`) are dispatche
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[codegen] Fix entity model profile dispatch and composite natural-key indexes
+Add the schema model type to the sql profile to enable automatic dispatch for plain entity models and fix composite natural-key index generation in the Mustache template.
 
 * Status
 
@@ -39,23 +39,16 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- Add `schema` model type to the `sql` profile in `profiles.json` so plain entity models (`*_entity.json`) are dispatched to `sql_schema_table_create.mustache` by the profile system — eliminating the need for any special-case skipping logic in the shell script
-- Update `generate_refdata_schema.sh` to use `--profile sql` instead of an explicit `--template` flag, making the profile system handle model-type dispatch automatically
-- Fix `sql_schema_domain_entity_create.mustache` + `generator.py`: when a domain entity declares multiple natural keys, the template was generating one unique index per key instead of a single composite unique index covering all keys together
+- Add =schema= model type to the =sql= profile in =profiles.json= so plain entity models (=*_entity.json=) are dispatched to =sql_schema_table_create.mustache= by the profile system — eliminating the need for any special-case skipping logic in the shell script
+- Update =generate_refdata_schema.sh= to use =--profile sql= instead of an explicit =--template= flag, making the profile system handle model-type dispatch automatically
+- Fix =sql_schema_domain_entity_create.mustache= + =generator.py=: when a domain entity declares multiple natural keys, the template was generating one unique index per key instead of a single composite unique index covering all keys together
 
-The composite-index bug affects 10 entities (book, business_unit, party, counterparty, party_identifier, counterparty_identifier, party_contact_information, counterparty_contact_information, tenant, dataset_bundle). The fix pre-computes `has_multiple_natural_keys`, `natural_keys_composite_columns`, and `natural_keys_composite_name` in the generator and branches in the template on that flag.
+The composite-index bug affects 10 entities (book, business_unit, party, counterparty, party_identifier, counterparty_identifier, party_contact_information, counterparty_contact_information, tenant, dataset_bundle). The fix pre-computes =has_multiple_natural_keys=, =natural_keys_composite_columns=, and =natural_keys_composite_name= in the generator and branches in the template on that flag.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

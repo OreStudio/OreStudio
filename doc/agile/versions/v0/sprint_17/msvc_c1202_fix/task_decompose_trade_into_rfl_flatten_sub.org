@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: caea4e7d-a6db-4716-83e5-6f47add7819d
 :END:
-#+title: Task: [trading] Decompose trade into rfl::Flatten sub-structs to fix MSVC C1202
+#+title: Task: Decompose trade into rfl::Flatten sub-structs to fix MSVC C1202
 #+description: - Root cause: MSVC C1202 fires in any TU that reflects both `get_trades_response` (a `vector<trade>`) and another large 
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[trading] Decompose trade into rfl::Flatten sub-structs to fix MSVC C1202
+Decompose the 25-field trade struct into five rfl::Flatten sub-structs to resolve MSVC C1202 caused by rfl's O(n²) constexpr field-uniqueness check exceeding the depth budget.
 
 * Status
 
@@ -39,42 +39,35 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- **Root cause**: MSVC C1202 fires in any TU that reflects both `get_trades_response` (a `vector<trade>`) and another large rfl type, because reflect-cpp's `no_duplicate_field_names.hpp` runs an O(n²) compile-time field-uniqueness check — at 25 fields `trade` blows the internal template depth limit.
-- **Fix**: Split `trading::domain::trade` into five sub-structs (`trade_identity`, `trade_parties`, `trade_classification`, `trade_lifecycle`, `trade_audit`) composed via `rfl::Flatten<T>`. The largest sub-struct has 7 fields. The flat JSON wire format is preserved. The SQL table and `trade_entity` (sqlgen) are unchanged — sqlgen never goes through rfl, so it was never affected.
-- **Codegen**: Added a new `field-group` model type that generates a single `.hpp` per sub-struct (no primary key, no audit columns, no DB entity, no mapper). Qt mustache templates extended with optional `*_access` override fields so flattened sub-struct access paths (`identity.get().id`) work for trade while all other entities fall back to flat access.
+- *Root cause*: MSVC C1202 fires in any TU that reflects both =get_trades_response= (a =vector<trade>=) and another large rfl type, because reflect-cpp's =no_duplicate_field_names.hpp= runs an O(n²) compile-time field-uniqueness check — at 25 fields =trade= blows the internal template depth limit.
+- *Fix*: Split =trading::domain::trade= into five sub-structs (=trade_identity=, =trade_parties=, =trade_classification=, =trade_lifecycle=, =trade_audit=) composed via =rfl::Flatten<T>=. The largest sub-struct has 7 fields. The flat JSON wire format is preserved. The SQL table and =trade_entity= (sqlgen) are unchanged — sqlgen never goes through rfl, so it was never affected.
+- *Codegen*: Added a new =field-group= model type that generates a single =.hpp= per sub-struct (no primary key, no audit columns, no DB entity, no mapper). Qt mustache templates extended with optional =*_access= override fields so flattened sub-struct access paths (=identity.get().id=) work for trade while all other entities fall back to flat access.
 
-## Changes
+** Changes
 
-**Codegen** (`bf4e09162`):
-- `cpp_field_group.hpp.mustache` — new template for plain sub-struct headers
-- `profiles.json` — new `field-group` profile
-- `generator.py` — detect `*_field_group.json`, wire into type detection, path resolution, dispatch, preprocessing
-- Qt templates (`cpp_qt_client_model`, `cpp_qt_controller`, `cpp_qt_detail_dialog`) — add `key_field_access`, `id_access`, `version_access`, `modified_by_access`, `performed_by_access`, `recorded_at_access`, `change_reason_code_access`, `change_commentary_access` with flat fallback
-- `trade_domain_entity.json` — annotated with all `*_access` fields
-- 5 new `trade_*_field_group.json` model files
+*Codegen* (=bf4e09162=):
+- =cpp_field_group.hpp.mustache= — new template for plain sub-struct headers
+- =profiles.json= — new =field-group= profile
+- =generator.py= — detect =*_field_group.json=, wire into type detection, path resolution, dispatch, preprocessing
+- Qt templates (=cpp_qt_client_model=, =cpp_qt_controller=, =cpp_qt_detail_dialog=) — add =key_field_access=, =id_access=, =version_access=, =modified_by_access=, =performed_by_access=, =recorded_at_access=, =change_reason_code_access=, =change_commentary_access= with flat fallback
+- =trade_domain_entity.json= — annotated with all =*_access= fields
+- 5 new =trade_*_field_group.json= model files
 
-**Trading** (`81d04b8fe`):
-- `trade.hpp` — replaced 80 lines of inline sub-struct definitions with 5 `#include`s; `trade final` struct unchanged
-- 5 generated sub-struct headers (`trade_identity/parties/classification/lifecycle/audit.hpp`)
-- Both `trade_mapper.cpp` files updated to populate sub-struct fields from flat pqxx rows
-- All call sites updated: `ores.ore.core` mapper/planner/tests, `ores.ore.service` message handler, all Qt trading views and dialogs
+*Trading* (=81d04b8fe=):
+- =trade.hpp= — replaced 80 lines of inline sub-struct definitions with 5 =#include=s; =trade final= struct unchanged
+- 5 generated sub-struct headers (=trade_identity/parties/classification/lifecycle/audit.hpp=)
+- Both =trade_mapper.cpp= files updated to populate sub-struct fields from flat pqxx rows
+- All call sites updated: =ores.ore.core= mapper/planner/tests, =ores.ore.service= message handler, all Qt trading views and dialogs
 
-## Notes
+** Notes
 
-- The `ClientManagerTrades.cpp` / `ClientManagerTradeDetail.cpp` TU split (PRs #754, #757) can be reunited once this is confirmed to fix C1202 on Windows CI.
-- Field access pattern: `t.identity.get().external_id`, `t.parties.get().book_id`, etc. — `rfl::Flatten::get()` returns a mutable/const reference.
+- The =ClientManagerTrades.cpp= / =ClientManagerTradeDetail.cpp= TU split (PRs #754, #757) can be reunited once this is confirmed to fix C1202 on Windows CI.
+- Field access pattern: =t.identity.get().external_id=, =t.parties.get().book_id=, etc. — =rfl::Flatten::get()= returns a mutable/const reference.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

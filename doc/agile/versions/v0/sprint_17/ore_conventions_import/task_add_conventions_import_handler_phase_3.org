@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: d3f0d24e-d687-42f0-a5b8-cd16e2ad4de1
 :END:
-#+title: Task: [cli] Add conventions import handler (Phase 3)
+#+title: Task: Add conventions import handler (Phase 3)
 #+description: - Adds `conventions` to the CLI entity enum so `--entity=conventions` is a valid import target
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[cli] Add conventions import handler (Phase 3)
+Wire the CLI conventions import handler (Phase 3): add --entity=conventions, implement application::import_conventions(), and route all nine convention types to their repositories.
 
 * Status
 
@@ -39,24 +39,17 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- Adds `conventions` to the CLI entity enum so `--entity=conventions` is a valid import target
-- Implements `application::import_conventions()` which calls `ore::xml::importer::import_conventions()` and writes all nine convention type vectors (zero, deposit, swap, ois, fra, ibor_index, overnight_index, fx, cds) through their respective refdata repositories
-- Adds `export` and `delete` stubs for the new entity to satisfy exhaustive switch coverage
+- Adds =conventions= to the CLI entity enum so =--entity=conventions= is a valid import target
+- Implements =application::import_conventions()= which calls =ore::xml::importer::import_conventions()= and writes all nine convention type vectors (zero, deposit, swap, ois, fra, ibor_index, overnight_index, fx, cds) through their respective refdata repositories
+- Adds =export= and =delete= stubs for the new entity to satisfy exhaustive switch coverage
 - Fixes missing RefdataPlugin controller registration for the seven convention types added in PR #733 (swap, ois, fra, ibor_index, overnight_index, fx, cds — accidentally omitted from that commit)
 
-This is Phase 3, item 1 of `doc/plans/2026-04-21-ore-import-conventions.org`.
+This is Phase 3, item 1 of =doc/plans/2026-04-21-ore-import-conventions.org=.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

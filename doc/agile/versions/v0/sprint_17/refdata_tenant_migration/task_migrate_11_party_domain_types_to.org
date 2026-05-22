@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7a34c5a4-abd4-4103-b82b-a25f2aef7da3
 :END:
-#+title: Task: [refdata] Migrate 11 party domain types to utility::uuid::tenant_id strong type
+#+title: Task: Migrate 11 party domain types to utility::uuid::tenant_id strong type
 #+description: - Replaces `std::string tenant_id` with `utility::uuid::tenant_id` across all 11 party-cluster domain types (`party`, `b
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[refdata] Migrate 11 party domain types to utility::uuid::tenant_id strong type
+Replace std::string tenant_id with the utility::uuid::tenant_id strong type across all 11 party-cluster domain types, mappers, and repositories.
 
 * Status
 
@@ -39,29 +39,22 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- Replaces `std::string tenant_id` with `utility::uuid::tenant_id` across all 11 party-cluster domain types (`party`, `business_unit`, `business_unit_type`, `counterparty`, `counterparty_identifier`, `counterparty_contact_information`, `party_contact_information`, `party_counterparty`, `party_country`, `party_currency`, `party_identifier`)
-- Mapper read side uses `.value()` — a malformed UUID in the DB is a data integrity bug, not a recoverable condition
-- Mapper write side uses `.to_string()` for the DB column
-- Generators use `.value_or(system())` to tolerate the `"system"` shorthand in generation contexts
-- `party_repository::read_system_party` manual row mapping updated accordingly
-- Four test files in `ores.refdata.core/tests/` and one in `ores.synthetic.core/tests/` updated to compile and pass with the strong type
-- Adds refdata C++ codegen activation plan (`doc/plans/2026-05-20-refdata-cpp-codegen-activation.org`) capturing the broader work needed to bring refdata domain files under codegen
+- Replaces =std::string tenant_id= with =utility::uuid::tenant_id= across all 11 party-cluster domain types (=party=, =business_unit=, =business_unit_type=, =counterparty=, =counterparty_identifier=, =counterparty_contact_information=, =party_contact_information=, =party_counterparty=, =party_country=, =party_currency=, =party_identifier=)
+- Mapper read side uses =.value()= — a malformed UUID in the DB is a data integrity bug, not a recoverable condition
+- Mapper write side uses =.to_string()= for the DB column
+- Generators use =.value_or(system())= to tolerate the ="system"= shorthand in generation contexts
+- =party_repository::read_system_party= manual row mapping updated accordingly
+- Four test files in =ores.refdata.core/tests/= and one in =ores.synthetic.core/tests/= updated to compile and pass with the strong type
+- Adds refdata C++ codegen activation plan (=doc/plans/2026-05-20-refdata-cpp-codegen-activation.org=) capturing the broader work needed to bring refdata domain files under codegen
 
-## Root cause
+** Root cause
 
-The party/counterparty cluster was implemented before `utility::uuid::tenant_id` was introduced. All other refdata domain types already carried the strong type; this PR closes the gap and makes the domain model internally consistent.
+The party/counterparty cluster was implemented before =utility::uuid::tenant_id= was introduced. All other refdata domain types already carried the strong type; this PR closes the gap and makes the domain model internally consistent.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

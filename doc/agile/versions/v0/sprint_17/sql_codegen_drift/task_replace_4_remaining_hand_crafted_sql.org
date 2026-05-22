@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: cf4b8da3-0b8f-41f9-a5f4-198efafdd1ff
 :END:
-#+title: Task: [sql] Replace 4 remaining hand-crafted SQL files with codegen
+#+title: Task: Replace 4 remaining hand-crafted SQL files with codegen
 #+description: - Extends `sql_schema_domain_entity_create.mustache` and `generator.py` with
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[sql] Replace 4 remaining hand-crafted SQL files with codegen
+Extend the SQL codegen Mustache template with six new capabilities and convert the four remaining hand-crafted Category A SQL files to generated output.
 
 * Status
 
@@ -39,50 +39,43 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- Extends `sql_schema_domain_entity_create.mustache` and `generator.py` with
+- Extends =sql_schema_domain_entity_create.mustache= and =generator.py= with
   six new template capabilities to handle the last four Category A files that
-  were previously marked DEFERRED in `doc/plans/2026-05-14-codegen-sql-debt.org`
-- All four files now carry the `AUTO-GENERATED FILE` header; every
-  `*_create.sql` file in `projects/ores.sql/create/` is now codegen-managed
+  were previously marked DEFERRED in =doc/plans/2026-05-14-codegen-sql-debt.org=
+- All four files now carry the =AUTO-GENERATED FILE= header; every
+  =*_create.sql= file in =projects/ores.sql/create/= is now codegen-managed
 
-## Files converted
+** Files converted
 
 | File | Model | New template features used |
 |------|-------|---------------------------|
-| `reporting/reporting_report_instances_create.sql` | `report_instance_domain_entity.json` | `fk_copy_validations`, `use_system_tenant` soft FK |
-| `trading/trading_trades_create.sql` | `trade_domain_entity.json` | `party_id_from_book_id`, `use_no_tenant` soft FK, nullable column validations |
-| `scheduler/scheduler_job_definitions_create.sql` | `job_definition_domain_entity.json` | `nullable_tenant_id` mode, null-safe version management and delete rule |
-| `iam/iam_tenants_create.sql` | `tenant_domain_entity.json` | `system_scope` mode, `text_code_validations`, `extra_delete_sets`, `skip_uuid_check` |
+| =reporting/reporting_report_instances_create.sql= | =report_instance_domain_entity.json= | =fk_copy_validations=, =use_system_tenant= soft FK |
+| =trading/trading_trades_create.sql= | =trade_domain_entity.json= | =party_id_from_book_id=, =use_no_tenant= soft FK, nullable column validations |
+| =scheduler/scheduler_job_definitions_create.sql= | =job_definition_domain_entity.json= | =nullable_tenant_id= mode, null-safe version management and delete rule |
+| =iam/iam_tenants_create.sql= | =tenant_domain_entity.json= | =system_scope= mode, =text_code_validations=, =extra_delete_sets=, =skip_uuid_check= |
 
-## Template extensions (generator.py + mustache)
+** Template extensions (generator.py + mustache)
 
-- **`system_scope`**: forces `tenant_id = system_tenant_id()` in trigger; tenant_id not in PK, EXCLUDE, or natural-key indexes
-- **`nullable_tenant_id`**: tenant_id column nullable; null-safe `(tenant_id = NEW.tenant_id OR (tenant_id IS NULL AND NEW.tenant_id IS NULL))` in version management and delete rule
-- **`has_tenant_in_pk`**: computed flag (`has_tenant_id AND NOT system_scope AND NOT nullable_tenant_id`) drives PK/EXCLUDE/index branching
-- **`fk_copy_validations`**: SELECT fields from FK table into declared vars, then conditionally copy to NEW row if target column is empty
-- **`party_id_from_book_id`**: validate book soft FK, denormalize `party_id` and capture `parent_portfolio_id`, validate portfolio soft FK, cross-check portfolio matches book's parent
-- **`text_code_validations`**: FK lookup against tables with a text code column (tenant type/status lookup tables)
-- **`extra_delete_sets`**: additional `SET` clauses in the soft-delete rule (sets `status = 'terminated'` on tenant soft-delete)
-- **`skip_uuid_check`**: suppresses the default `check (id <> nil_uuid_fn())` — needed for tenants because the system tenant's own id IS the nil UUID
-- **`use_no_tenant`**: soft FK check with no tenant filter (cross-component FSM states table)
-- **Bug fix**: `extra_delete_sets` template used `{{.}}` (HTML-encoding) instead of `{{{.}}}` (raw), which mangled single quotes in the value
+- *=system_scope=*: forces =tenant_id = system_tenant_id()= in trigger; tenant_id not in PK, EXCLUDE, or natural-key indexes
+- *=nullable_tenant_id=*: tenant_id column nullable; null-safe =(tenant_id = NEW.tenant_id OR (tenant_id IS NULL AND NEW.tenant_id IS NULL))= in version management and delete rule
+- *=has_tenant_in_pk=*: computed flag (=has_tenant_id AND NOT system_scope AND NOT nullable_tenant_id=) drives PK/EXCLUDE/index branching
+- *=fk_copy_validations=*: SELECT fields from FK table into declared vars, then conditionally copy to NEW row if target column is empty
+- *=party_id_from_book_id=*: validate book soft FK, denormalize =party_id= and capture =parent_portfolio_id=, validate portfolio soft FK, cross-check portfolio matches book's parent
+- *=text_code_validations=*: FK lookup against tables with a text code column (tenant type/status lookup tables)
+- *=extra_delete_sets=*: additional =SET= clauses in the soft-delete rule (sets =status = 'terminated'= on tenant soft-delete)
+- *=skip_uuid_check=*: suppresses the default =check (id <> nil_uuid_fn())= — needed for tenants because the system tenant's own id IS the nil UUID
+- *=use_no_tenant=*: soft FK check with no tenant filter (cross-component FSM states table)
+- *Bug fix*: =extra_delete_sets= template used ={{.}}= (HTML-encoding) instead of ={{{.}}}= (raw), which mangled single quotes in the value
 
-## Verification
+** Verification
 
-- `projects/ores.sql/utility/validate_schemas.sh` — passed (211 tables, 0 warnings)
-- `./projects/ores.sql/recreate_database.sh` — full database recreation succeeded with no errors
+- =projects/ores.sql/utility/validate_schemas.sh= — passed (211 tables, 0 warnings)
+- =./projects/ores.sql/recreate_database.sh= — full database recreation succeeded with no errors
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: d07e1889-fd0c-4f0b-ab3f-60d1519d08ba
 :END:
-#+title: Task: [cmake] Lift libpq Windows workaround to PostgreSQL imported target
+#+title: Task: Lift libpq Windows workaround to PostgreSQL imported target
 #+description: PRs #708 and #709 patched the Windows libpq link workaround (\`pgport\`, \`pgcommon\`, \`OpenSSL::SSL\`/\`Crypto\`, \`Se
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[cmake] Lift libpq Windows workaround to PostgreSQL imported target
+Consolidate the scattered Windows libpq link workaround into a single PostgreSQL CMake imported target so all downstream consumers pick it up automatically.
 
 * Status
 
@@ -39,20 +39,13 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
-PRs #708 and #709 patched the Windows libpq link workaround (\`pgport\`, \`pgcommon\`, \`OpenSSL::SSL\`/\`Crypto\`, \`Secur32\`, \`Wldap32\`) onto \`ores.database\`. That cleared the symptom there, but every other DLL that transitively pulls libpq in via \`sqlgen\` now reports the same undefined references — the latest failing build had \`ores.refdata.core.dll\` tripping over \`pg_tolower\`, \`pg_strong_random\`, \`gettimeofday\`, \`strlcpy\`, \`RAND_bytes\`, \`BIO_new\`, ... The per-target patch does not scale.
+** Summary
+PRs #708 and #709 patched the Windows libpq link workaround (\=pgport\=, \=pgcommon\=, \=OpenSSL::SSL\=/\=Crypto\=, \=Secur32\=, \=Wldap32\=) onto \=ores.database\=. That cleared the symptom there, but every other DLL that transitively pulls libpq in via \=sqlgen\= now reports the same undefined references — the latest failing build had \=ores.refdata.core.dll\= tripping over \=pg_tolower\=, \=pg_strong_random\=, \=gettimeofday\=, \=strlcpy\=, \=RAND_bytes\=, \=BIO_new\=, ... The per-target patch does not scale.
 
-**Fix**: lift the workaround to the root \`CMakeLists.txt\` and append the libraries directly onto the \`PostgreSQL::PostgreSQL\` imported target. \`sqlgen\`'s exported config already declares \`PostgreSQL::PostgreSQL\` in its \`INTERFACE_LINK_LIBRARIES\`, so every consumer — \`ores.database\`, \`ores.refdata.core\`, and any future one — picks the fix up through normal CMake transitivity with zero per-target edits. The per-target block in \`ores.database/src/CMakeLists.txt\` is removed as now-redundant.
+*Fix*: lift the workaround to the root \=CMakeLists.txt\= and append the libraries directly onto the \=PostgreSQL::PostgreSQL\= imported target. \=sqlgen\='s exported config already declares \=PostgreSQL::PostgreSQL\= in its \=INTERFACE_LINK_LIBRARIES\=, so every consumer — \=ores.database\=, \=ores.refdata.core\=, and any future one — picks the fix up through normal CMake transitivity with zero per-target edits. The per-target block in \=ores.database/src/CMakeLists.txt\= is removed as now-redundant.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0aa8c336-274c-4043-b41f-ecd012d41ae6
 :END:
-#+title: Task: [doc] Add :eval never to list-presets sh block to fix site build
+#+title: Task: Add :eval never to list-presets sh block to fix site build
 #+description: - Adds `:eval never` to the `#+begin_src sh` block in `how_do_i_list_available_presets.org`
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[doc] Add :eval never to list-presets sh block to fix site build
+Add :eval never to the list-presets sh source block to prevent the org-mode export pipeline from hanging CI with an interactive confirmation prompt.
 
 * Status
 
@@ -39,21 +39,14 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- Adds `:eval never` to the `#+begin_src sh` block in `how_do_i_list_available_presets.org`
-- The org-mode export pipeline runs Emacs in batch mode; without `:eval never`, Emacs prompts for confirmation before executing the sh block, which hangs CI with "End of file during parsing: Evaluate this sh code block (list-presets) on your system?"
-- No other sh blocks in `doc/v2/recipes/` have the same issue (one apparent match is inside an escaped `#+begin_src org` example block and is not evaluated)
+- Adds =:eval never= to the =#+begin_src sh= block in =how_do_i_list_available_presets.org=
+- The org-mode export pipeline runs Emacs in batch mode; without =:eval never=, Emacs prompts for confirmation before executing the sh block, which hangs CI with "End of file during parsing: Evaluate this sh code block (list-presets) on your system?"
+- No other sh blocks in =doc/v2/recipes/= have the same issue (one apparent match is inside an escaped =#+begin_src org= example block and is not evaluated)
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

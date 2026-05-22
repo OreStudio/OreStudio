@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 32991e7a-e3a7-40bb-b381-767e16f1d83a
 :END:
-#+title: Task: [qt,trading] Currency combos with flag icons, date pickers, and dialog polish
+#+title: Task: Currency combos with flag icons, date pickers, and dialog polish
 #+description: - OreCurrencyComboBox / OreDateEdit: new global-namespace custom widgets for uic compatibility. `OreDateEdit` shows `yyy
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[qt,trading] Currency combos with flag icons, date pickers, and dialog polish
+Add OreCurrencyComboBox and OreDateEdit custom widgets, wire flag icons into all currency combo boxes via ImageCache, and polish date pickers in the trade detail dialog.
 
 * Status
 
@@ -39,22 +39,15 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- **OreCurrencyComboBox / OreDateEdit**: new global-namespace custom widgets for uic compatibility. `OreDateEdit` shows `yyyy-MM-dd`, opens a calendar popup, and uses `specialValueText` for the blank state. `OreCurrencyComboBox` is a marker subclass that triggers flag-icon wiring.
-- **Flag icons on all currency combos**: `ImageCache` is now threaded from `TradingPlugin` → `TradeController` → `TradeDetailDialog` → `IInstrumentForm` via a new `setImageCache()` virtual. Every instrument form (FX forward, FX vanilla option, equity, credit, commodity, swap, bond) fetches currency codes async and wires flag icons through `setup_flag_combo` / `apply_flag_icons`.
-- **Adaptive dialog height**: `AdaptiveStackedWidget` overrides `sizeHint`/`minimumSizeHint` to report the *current* page's values instead of the maximum across all pages. `TradeDetailDialog` wraps the instrument stack in a `QScrollArea` (`widgetResizable=true`, horizontal bar suppressed) so large forms (commodity) scroll rather than forcing the dialog to grow; dialog geometry reduced from 680×600 to 680×480 (minimum 680×400).
-- **Fix spurious dirty state**: `setComboValue` in each form's async currency-population callback was called *after* `blockSignals(false)`, causing `currentTextChanged` to fire once the instrument was already loaded and setting the form dirty without any user interaction. Fixed in all six affected forms by moving `setComboValue` inside the signal-blocking scope.
+- *OreCurrencyComboBox / OreDateEdit*: new global-namespace custom widgets for uic compatibility. =OreDateEdit= shows =yyyy-MM-dd=, opens a calendar popup, and uses =specialValueText= for the blank state. =OreCurrencyComboBox= is a marker subclass that triggers flag-icon wiring.
+- *Flag icons on all currency combos*: =ImageCache= is now threaded from =TradingPlugin= → =TradeController= → =TradeDetailDialog= → =IInstrumentForm= via a new =setImageCache()= virtual. Every instrument form (FX forward, FX vanilla option, equity, credit, commodity, swap, bond) fetches currency codes async and wires flag icons through =setup_flag_combo= / =apply_flag_icons=.
+- *Adaptive dialog height*: =AdaptiveStackedWidget= overrides =sizeHint=/=minimumSizeHint= to report the *current* page's values instead of the maximum across all pages. =TradeDetailDialog= wraps the instrument stack in a =QScrollArea= (=widgetResizable=true=, horizontal bar suppressed) so large forms (commodity) scroll rather than forcing the dialog to grow; dialog geometry reduced from 680×600 to 680×480 (minimum 680×400).
+- *Fix spurious dirty state*: =setComboValue= in each form's async currency-population callback was called *after* =blockSignals(false)=, causing =currentTextChanged= to fire once the instrument was already loaded and setting the form dirty without any user interaction. Fixed in all six affected forms by moving =setComboValue= inside the signal-blocking scope.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

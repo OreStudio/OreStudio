@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 44f7c2af-35ce-4cff-b09a-e90b6024096f
 :END:
-#+title: Task: [qt,compute] Mop-up: autogen leak, URI scheme, per-row Retry
+#+title: Task: Mop-up: autogen leak, URI scheme, per-row Retry
 #+description: Cleanup follow-ups surfaced during the per-platform package work (#714, #719). Three independent commits, each its own s
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[qt,compute] Mop-up: autogen leak, URI scheme, per-row Retry
+Fix three follow-up defects from the per-platform package work: narrow AUTOUIC include to prevent stale generated-header leaks, normalise the NATS URI scheme, and add per-row Retry buttons to the Packages tab.
 
 * Status
 
@@ -39,27 +39,20 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
 Cleanup follow-ups surfaced during the per-platform package work (#714, #719). Three independent commits, each its own self-contained fix.
 
-- **`9cd834751`** — Narrow `ores.qt.lib`'s AUTOUIC include from PUBLIC to PRIVATE. This was leaking stale `ui_*.h` copies of moved dialogs to every downstream plugin lib; it bit #719 mid-PR when a stale `ui_AppVersionDetailDialog.h` shadowed the fresh compute one. Enabled by PIMPLing `MainWindow` (straight delete of an unused `#include` from the header — the pointer member already used a forward decl) and `AboutDialog` (swap `Ui::AboutDialog` by-value to `std::unique_ptr<Ui::AboutDialog>` with an out-of-line dtor so the `#include` can live in the `.cpp`).
-- **`0de3d0bb9`** — Unify the package URI scheme. The SQL seed wrote `/packages/{app_name}/{version}/{app_name}-{version}-{triplet}.tar.gz` (human-readable) while the Qt helper wrote `/packages/{uuid}/{triplet}.tar.gz` (UUID-based). Both worked because `storage_routes` is generic, but two schemes for the same blob was an unnecessary sharp edge. `compute_storage::package_key` (per-platform overload) now takes `(app_name, version, platform_code, ext)` so hand-seeded rows and UI uploads route to the same path. Qt dialog reads name from the already-loaded `appEntries_`.
-- **`ea5b5c089`** — Per-row Retry. If one package failed mid-Save, the user had to re-Browse (unnecessary file picker) or click Save again. Now the row's action button shows "Retry" when in `Failed` state, reusing `uploadPendingPackages` with its existing skip-if-Uploaded semantics so successful siblings aren't re-PUT.
+- *=9cd834751=* — Narrow =ores.qt.lib='s AUTOUIC include from PUBLIC to PRIVATE. This was leaking stale =ui_*.h= copies of moved dialogs to every downstream plugin lib; it bit #719 mid-PR when a stale =ui_AppVersionDetailDialog.h= shadowed the fresh compute one. Enabled by PIMPLing =MainWindow= (straight delete of an unused =#include= from the header — the pointer member already used a forward decl) and =AboutDialog= (swap =Ui::AboutDialog= by-value to =std::unique_ptr<Ui::AboutDialog>= with an out-of-line dtor so the =#include= can live in the =.cpp=).
+- *=0de3d0bb9=* — Unify the package URI scheme. The SQL seed wrote =/packages/{app_name}/{version}/{app_name}-{version}-{triplet}.tar.gz= (human-readable) while the Qt helper wrote =/packages/{uuid}/{triplet}.tar.gz= (UUID-based). Both worked because =storage_routes= is generic, but two schemes for the same blob was an unnecessary sharp edge. =compute_storage::package_key= (per-platform overload) now takes =(app_name, version, platform_code, ext)= so hand-seeded rows and UI uploads route to the same path. Qt dialog reads name from the already-loaded =appEntries_=.
+- *=ea5b5c089=* — Per-row Retry. If one package failed mid-Save, the user had to re-Browse (unnecessary file picker) or click Save again. Now the row's action button shows "Retry" when in =Failed= state, reusing =uploadPendingPackages= with its existing skip-if-Uploaded semantics so successful siblings aren't re-PUT.
 
-## Follow-ups (deferred)
+** Follow-ups (deferred)
 
-- `AppProvisionerWizard` still uses the legacy single-URI-for-all-platforms path (`package_path(id, ext)` overload retained for that reason). Per-platform wizard rework is a separate branch.
+- =AppProvisionerWizard= still uses the legacy single-URI-for-all-platforms path (=package_path(id, ext)= overload retained for that reason). Per-platform wizard rework is a separate branch.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

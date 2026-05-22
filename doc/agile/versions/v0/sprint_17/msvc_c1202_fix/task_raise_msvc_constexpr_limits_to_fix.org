@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: fad9f9ab-9bcf-4b63-9c4f-2031fcfd42fd
 :END:
-#+title: Task: [cmake] Raise MSVC constexpr limits to fix C1202 on rfl-reflected structs
+#+title: Task: Raise MSVC constexpr limits to fix C1202 on rfl-reflected structs
 #+description: - `fra_instrument` has 18 fields; `rfl`'s duplicate-field-names check performs an O(N²) constexpr expansion that exhaust
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[cmake] Raise MSVC constexpr limits to fix C1202 on rfl-reflected structs
+Add MSVC-only /constexpr:depth1024 and /constexpr:steps10000000 flags to fix C1202 in ClientManager.cpp caused by rfl's O(N²) field-uniqueness check on fra_instrument.
 
 * Status
 
@@ -39,21 +39,14 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- `fra_instrument` has 18 fields; `rfl`'s duplicate-field-names check performs an O(N²) constexpr expansion that exhausts MSVC's default depth (512) and step (100 000) budgets, producing `C1202: recursive type or function dependency context too complex` when compiling `ClientManager.cpp`
-- Added two MSVC-only flags to `projects/CMakeLists.txt`: `/constexpr:depth1024` and `/constexpr:steps10000000`
-- Flags are guarded by `$<$<CXX_COMPILER_ID:MSVC>:...>` so Linux/Clang builds are unaffected
+- =fra_instrument= has 18 fields; =rfl='s duplicate-field-names check performs an O(N²) constexpr expansion that exhausts MSVC's default depth (512) and step (100 000) budgets, producing =C1202: recursive type or function dependency context too complex= when compiling =ClientManager.cpp=
+- Added two MSVC-only flags to =projects/CMakeLists.txt=: =/constexpr:depth1024= and =/constexpr:steps10000000=
+- Flags are guarded by =$<$<CXX_COMPILER_ID:MSVC>:...>= so Linux/Clang builds are unaffected
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

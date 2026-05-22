@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 07dc7000-27da-459a-ab0d-8245a0fb20a1
 :END:
-#+title: Task: [shell] Fix missing ORES_SHELL_EXPORT on host class (Windows linker error)
+#+title: Task: Fix missing ORES_SHELL_EXPORT on host class (Windows linker error)
 #+description: - `ores::shell::app::host` was missing the `ORES_SHELL_EXPORT` macro, so `host::execute` was not exported from the `ores
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[shell] Fix missing ORES_SHELL_EXPORT on host class (Windows linker error)
+Add ORES_SHELL_EXPORT to ores::shell::app::host to fix the Windows undefined-symbol linker error on host::execute.
 
 * Status
 
@@ -39,21 +39,14 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- `ores::shell::app::host` was missing the `ORES_SHELL_EXPORT` macro, so `host::execute` was not exported from the `ores.shell` DLL on Windows
-- This caused a linker error when building `ores.shell.exe`: `undefined symbol: ores::shell::app::host::execute`
-- Fix: include `ores.shell/export.hpp` and annotate the class with `ORES_SHELL_EXPORT`, consistent with `ores::shell::app::repl` in the same project and `ores::cli::app::host` in `ores.cli`
+- =ores::shell::app::host= was missing the =ORES_SHELL_EXPORT= macro, so =host::execute= was not exported from the =ores.shell= DLL on Windows
+- This caused a linker error when building =ores.shell.exe=: =undefined symbol: ores::shell::app::host::execute=
+- Fix: include =ores.shell/export.hpp= and annotate the class with =ORES_SHELL_EXPORT=, consistent with =ores::shell::app::repl= in the same project and =ores::cli::app::host= in =ores.cli=
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

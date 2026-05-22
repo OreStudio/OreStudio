@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 970e36f2-dc20-45e4-b1b7-186f86f46650
 :END:
-#+title: Task: [hotfix] Restore two-phase rfl parse in getTradeDetail to fix MSVC C1202
+#+title: Task: Restore two-phase rfl parse in getTradeDetail to fix MSVC C1202
 #+description: PR #763 merged `getTradeDetail` back into `ClientManagerTrades.cpp` and replaced the two-phase rfl parse with a single `
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[hotfix] Restore two-phase rfl parse in getTradeDetail to fix MSVC C1202
+Restore the two-phase rfl parse in getTradeDetail to work around MSVC C1202 still triggered by the 8-alternative trade_instrument variant even after trade decomposition.
 
 * Status
 
@@ -39,25 +39,18 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-PR #763 merged `getTradeDetail` back into `ClientManagerTrades.cpp` and replaced the two-phase rfl parse with a single `rfl::json::read<get_trade_detail_response, rfl::AddTagsToVariants>`. This still hits MSVC C1202.
+PR #763 merged =getTradeDetail= back into =ClientManagerTrades.cpp= and replaced the two-phase rfl parse with a single =rfl::json::read<get_trade_detail_response, rfl::AddTagsToVariants>=. This still hits MSVC C1202.
 
-**Root cause**: even with `trade` decomposed into sub-structs, the combination of nested struct reflection + an 8-alternative tagged variant (`trade_instrument`) in a single rfl call exceeds MSVC's constexpr depth budget. The C1202 is driven by the variant, not by `trade`'s field count.
+*Root cause*: even with =trade= decomposed into sub-structs, the combination of nested struct reflection + an 8-alternative tagged variant (=trade_instrument=) in a single rfl call exceeds MSVC's constexpr depth budget. The C1202 is driven by the variant, not by =trade='s field count.
 
-## Fix
+** Fix
 
-Restore `get_trade_detail_response_base` and `get_trade_detail_instrument_wrapper` in `trade_protocol.hpp` and use the two-phase parse in `ClientManagerTrades.cpp`. Both functions remain in the same TU — only the deserialization is split, not the file.
+Restore =get_trade_detail_response_base= and =get_trade_detail_instrument_wrapper= in =trade_protocol.hpp= and use the two-phase parse in =ClientManagerTrades.cpp=. Both functions remain in the same TU — only the deserialization is split, not the file.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

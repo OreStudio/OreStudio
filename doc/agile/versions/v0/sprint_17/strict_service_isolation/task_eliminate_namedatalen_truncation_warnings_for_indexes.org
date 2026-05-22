@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 17aa65ad-d157-42c5-a312-43df0a421d38
 :END:
-#+title: Task: [sql] Eliminate NAMEDATALEN truncation warnings for indexes and RLS policies
+#+title: Task: Eliminate NAMEDATALEN truncation warnings for indexes and RLS policies
 #+description: - Strip redundant `ores_<service>_` prefix from all PostgreSQL index names and RLS policy names across the SQL schema (~
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[sql] Eliminate NAMEDATALEN truncation warnings for indexes and RLS policies
+Strip the redundant ores_<service>_ prefix from 190+ PostgreSQL index and RLS policy names to eliminate NAMEDATALEN truncation warnings, and update the Mustache templates to match.
 
 * Status
 
@@ -39,36 +39,29 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- Strip redundant `ores_<service>_` prefix from all PostgreSQL index names and RLS policy names across the SQL schema (~190+ NOTICE truncation warnings eliminated)
+- Strip redundant =ores_<service>_= prefix from all PostgreSQL index names and RLS policy names across the SQL schema (~190+ NOTICE truncation warnings eliminated)
 - Update 3 Mustache codegen templates to drop the prefix from generated index names; regenerate affected files (26 AUTO-GENERATED SQL files updated)
 - Apply mechanical sed transform to ~160 hand-written CREATE/DROP INDEX files and 31 RLS policy files (19 create + 12 drop)
 - Rename 3 index names that still exceeded 63 chars after prefix removal (targeted abbreviations)
-- Add `doc/plans/2026-05-14-codegen-sql-debt.org` cataloguing 24 hand-written SQL files that should be codegen-managed and 9 models with no SQL file (separate future work)
+- Add =doc/plans/2026-05-14-codegen-sql-debt.org= cataloguing 24 hand-written SQL files that should be codegen-managed and 9 models with no SQL file (separate future work)
 
-## Convention
+** Convention
 
 | Before | After |
 |--------|-------|
-| `ores_<service>_<table>_<cols>_idx` | `<table>_<cols>_idx` |
-| `ores_<service>_<table>_<type>_policy` | `<table>_<type>_policy` |
+| =ores_<service>_<table>_<cols>_idx= | =<table>_<cols>_idx= |
+| =ores_<service>_<table>_<type>_policy= | =<table>_<type>_policy= |
 
 RLS policies are table-scoped so the prefix is redundant. Index names embed the table name so schema-level uniqueness is preserved.
 
-## Validation
+** Validation
 
-`validate_schemas.sh`: 210 tables parsed, 0 warnings.
+=validate_schemas.sh=: 210 tables parsed, 0 warnings.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

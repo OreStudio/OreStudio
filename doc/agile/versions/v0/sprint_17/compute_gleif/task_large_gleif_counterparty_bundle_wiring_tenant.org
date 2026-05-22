@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: e8553690-dd3d-4818-8722-cf614f8bca4f
 :END:
-#+title: Task: [ores.sql/qt.compute] Large GLEIF counterparty bundle wiring, tenant reset, upload logging
+#+title: Task: Large GLEIF counterparty bundle wiring, tenant reset, upload logging
 #+description: Work from a bug-hunt session on the PartyProvisioningWizard's Large (~15k) counterparty import path.
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[ores.sql/qt.compute] Large GLEIF counterparty bundle wiring, tenant reset, upload logging
+Fix GLEIF bundle publish validation, add a tenant reset command, and improve upload logging in the PartyProvisioningWizard's Large (~15k) counterparty import path.
 
 * Status
 
@@ -39,26 +39,19 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
 Work from a bug-hunt session on the PartyProvisioningWizard's Large (~15k) counterparty import path.
 
-- **Bundle publish validation fixed.** `ores_dq_bundles_publish_fn` silently ignored `opted_in_datasets` entries that were not members of the target bundle, so selecting *Large* in the wizard (opting in `gleif.lei_counterparties.large`) succeeded as a no-op. It now raises a clear exception naming the offending entries, which flows through `publication_service`'s catch block into the wizard's error dialog.
-- **Large GLEIF variants wired into the base bundle.** Added `gleif.lei_counterparties.large` and `gleif.lei_parties.large` as optional members of `base` (display orders 204–205), mirroring the `.small` pattern, plus the matching dataset-dependency declarations.
-- **New `ores_iam_reset_tenant_fn`.** Soft-deletes admin-created data (counterparties, cp identifiers, cp contacts, party_counterparties, business units, portfolios, books, report definitions, scheduler job definitions) and flips Operational parties back to `Inactive` so the PartyProvisioningWizard re-triggers on next login. Tenant onboarding state (tenant record, accounts, roles, permissions, parties, `account_parties`, base-bundle refdata) is preserved. Uses a curated wipe list with a design-note header on the default-preserve vs default-delete trade-off.
-- **`run_sql.sh --user postgres|ddl` flag.** Lets callers run as the DDL user so writes through account-validating triggers (`ores_iam_validate_account_username_fn`) don't hit "Invalid modified_by: postgres".
-- **Backlog story** for the two-part proper fix to long-running bundle publishes (workflow saga + chunked SQL) — client currently times out at 5 minutes on `.large` imports. Story at `doc/agile/product_backlog.org` includes acceptance criteria and the interim timeout-bump workaround.
-- **Diagnostic logging for the HTTP upload URL path** (`ComputePlugin::on_login`, `ComputeConsoleController::setHttpBaseUrl`, `AppProvisionerWizard` ctor, `PackageUploadPage` ctor + `on_upload`) so the empty-URL case that drives "HTTP base URL is not configured. Cannot upload package." can be traced to its entry point.
+- *Bundle publish validation fixed.* =ores_dq_bundles_publish_fn= silently ignored =opted_in_datasets= entries that were not members of the target bundle, so selecting *Large* in the wizard (opting in =gleif.lei_counterparties.large=) succeeded as a no-op. It now raises a clear exception naming the offending entries, which flows through =publication_service='s catch block into the wizard's error dialog.
+- *Large GLEIF variants wired into the base bundle.* Added =gleif.lei_counterparties.large= and =gleif.lei_parties.large= as optional members of =base= (display orders 204–205), mirroring the =.small= pattern, plus the matching dataset-dependency declarations.
+- *New =ores_iam_reset_tenant_fn=.* Soft-deletes admin-created data (counterparties, cp identifiers, cp contacts, party_counterparties, business units, portfolios, books, report definitions, scheduler job definitions) and flips Operational parties back to =Inactive= so the PartyProvisioningWizard re-triggers on next login. Tenant onboarding state (tenant record, accounts, roles, permissions, parties, =account_parties=, base-bundle refdata) is preserved. Uses a curated wipe list with a design-note header on the default-preserve vs default-delete trade-off.
+- *=run_sql.sh --user postgres|ddl= flag.* Lets callers run as the DDL user so writes through account-validating triggers (=ores_iam_validate_account_username_fn=) don't hit "Invalid modified_by: postgres".
+- *Backlog story* for the two-part proper fix to long-running bundle publishes (workflow saga + chunked SQL) — client currently times out at 5 minutes on =.large= imports. Story at =doc/agile/product_backlog.org= includes acceptance criteria and the interim timeout-bump workaround.
+- *Diagnostic logging for the HTTP upload URL path* (=ComputePlugin::on_login=, =ComputeConsoleController::setHttpBaseUrl=, =AppProvisionerWizard= ctor, =PackageUploadPage= ctor + =on_upload=) so the empty-URL case that drives "HTTP base URL is not configured. Cannot upload package." can be traced to its entry point.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

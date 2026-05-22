@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 2e213dae-3fc7-4811-aa76-b8e9f844abae
 :END:
-#+title: Task: [vcpkg] Update submodule to latest master
+#+title: Task: Update submodule to latest master
 #+description: - Bump vcpkg submodule from `62159a45e` to `256acc6401` (latest microsoft/vcpkg master as of 2026-04-18).
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[vcpkg] Update submodule to latest master
+Bump the vcpkg submodule from 62159a45e to 256acc6401 (latest microsoft/vcpkg master).
 
 * Status
 
@@ -39,18 +39,11 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
-- Bump vcpkg submodule from `62159a45e` to `256acc6401` (latest microsoft/vcpkg master as of 2026-04-18).
+** Summary
+- Bump vcpkg submodule from =62159a45e= to =256acc6401= (latest microsoft/vcpkg master as of 2026-04-18).
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

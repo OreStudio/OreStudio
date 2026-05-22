@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: b923672f-7056-41e1-982d-2d7730e02aae
 :END:
-#+title: Task: [refdata] ORE import analysis and zero_convention pilot
+#+title: Task: ORE import analysis and zero_convention pilot
 #+description: Delivers Phase 1 of the ORE import conventions plan: a working end-to-end
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[refdata] ORE import analysis and zero_convention pilot
+Deliver Phase 1 of the ORE convention import plan: zero_convention end-to-end via codegen, establishing the pattern and fixing codegen defects for all remaining types.
 
 * Status
 
@@ -39,47 +39,40 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
 Delivers Phase 1 of the ORE import conventions plan: a working end-to-end
-`zero_convention` refdata type produced via `ores.codegen`, establishing
+=zero_convention= refdata type produced via =ores.codegen=, establishing
 the pattern to be rolled out to the eight remaining ORE convention types.
 Adds the plan document itself, a validator script for the ORE example
 corpus, and a clutch of codegen fixes that the pilot surfaced.
 
-### Zero convention pilot (Phase 1)
-- New `zero_convention` domain type across refdata.api / refdata.core / qt.refdata / sql (~50 generated files).
+*** Zero convention pilot (Phase 1)
+- New =zero_convention= domain type across refdata.api / refdata.core / qt.refdata / sql (~50 generated files).
 - NATS handler registered with the refdata service; Qt controller registered in the refdata plugin; entry in the new "Conventions" submenu.
-- Bi-temporal history via the standard repository + generated `HistoryDialog` path.
+- Bi-temporal history via the standard repository + generated =HistoryDialog= path.
 
-### Codegen infrastructure fixes
-`zero_convention` is the first refdata type with nullable non-string fields (`compounding: optional<string>`, `spot_lag: optional<int>`, `end_of_month: optional<bool>`), which exposed several gaps:
-- **Entity/mapper templates** double-wrapped `std::optional<T>` cpp_types in another `std::optional<>`; mapper then used `.value_or("")` and `.empty()` (invalid for `optional<int>` / `optional<bool>`). Added `is_already_optional` flag so the entity uses the cpp_type directly and mapper does plain assignments.
-- **Table template** streamed `std::optional<T>` into libfort (no `operator<<` for optional). Added `opt_str<T>` helper emitted when any displayed column is optional.
-- **Generator profile output path** hardcoded `/generator/` (singular) while template included from `/generators/` (plural); zero_convention files ended up split across both. Path now respects `{generator_facet_name}` placeholder.
-- **Qt client model and detail/history dialogs** called `QString::fromStdString()` directly on `std::optional<std::string>`. Added `is_optional_string` flag cross-referenced from domain columns, with unwrap branches in all three templates.
+*** Codegen infrastructure fixes
+=zero_convention= is the first refdata type with nullable non-string fields (=compounding: optional<string>=, =spot_lag: optional<int>=, =end_of_month: optional<bool>=), which exposed several gaps:
+- *Entity/mapper templates* double-wrapped =std::optional<T>= cpp_types in another =std::optional<>=; mapper then used =.value_or("")= and =.empty()= (invalid for =optional<int>= / =optional<bool>=). Added =is_already_optional= flag so the entity uses the cpp_type directly and mapper does plain assignments.
+- *Table template* streamed =std::optional<T>= into libfort (no =operator<<= for optional). Added =opt_str<T>= helper emitted when any displayed column is optional.
+- *Generator profile output path* hardcoded =/generator/= (singular) while template included from =/generators/= (plural); zero_convention files ended up split across both. Path now respects ={generator_facet_name}= placeholder.
+- *Qt client model and detail/history dialogs* called =QString::fromStdString()= directly on =std::optional<std::string>=. Added =is_optional_string= flag cross-referenced from domain columns, with unwrap branches in all three templates.
 
-### Handler method rename
-Renamed `del()` → `remove()` across 34 legacy NATS handlers (22 refdata, 5 iam, 4 reporting, 3 marketdata) to align with the name codegen already emits.
+*** Handler method rename
+Renamed =del()= → =remove()= across 34 legacy NATS handlers (22 refdata, 5 iam, 4 reporting, 3 marketdata) to align with the name codegen already emits.
 
-### Plan + tooling
-- `doc/plans/2026-04-21-ore-import-conventions.org` — three-phase plan (pilot done; roll-out; CLI wiring).
-- `scripts/validate_ore_examples.sh` — xmllint-based XSD validator for the ORE example corpus.
+*** Plan + tooling
+- =doc/plans/2026-04-21-ore-import-conventions.org= — three-phase plan (pilot done; roll-out; CLI wiring).
+- =scripts/validate_ore_examples.sh= — xmllint-based XSD validator for the ORE example corpus.
 
-### Follow-ups (next PRs)
-- **Phase 2**: eight remaining convention types (`deposit`, `swap`, `ois`, `fra`, `ibor_index`, `overnight_index`, `fx`, `cds`).
-- **Phase 3**: wire conventions, market data, and fixings into the CLI ORE import workflow alongside currencies.
-- Proper `check_box` / `spin_box` support in Qt detail dialog templates (currently the bool/int fields on `zero_convention` are display-only).
+*** Follow-ups (next PRs)
+- *Phase 2*: eight remaining convention types (=deposit=, =swap=, =ois=, =fra=, =ibor_index=, =overnight_index=, =fx=, =cds=).
+- *Phase 3*: wire conventions, market data, and fixings into the CLI ORE import workflow alongside currencies.
+- Proper =check_box= / =spin_box= support in Qt detail dialog templates (currently the bool/int fields on =zero_convention= are display-only).
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

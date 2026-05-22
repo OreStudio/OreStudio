@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-Bump lukka/get-cmake from 4.3.1 to 4.3.2
+Bump the lukka/get-cmake GitHub Action from 4.3.1 to 4.3.2.
 
 * Status
 
@@ -39,14 +39,9 @@ Bump lukka/get-cmake from 4.3.1 to 4.3.2
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-Bumps [lukka/get-cmake](https://github.com/lukka/get-cmake) from 4.3.1 to 4.3.2.
+Bumps [[https://github.com/lukka/get-cmake][lukka/get-cmake]] from 4.3.1 to 4.3.2.
 <details>
 <summary>Release notes</summary>
 <p><em>Sourced from <a href="https://github.com/lukka/get-cmake/releases">lukka/get-cmake's releases</a>.</em></p>
@@ -70,10 +65,9 @@ Bumps [lukka/get-cmake](https://github.com/lukka/get-cmake) from 4.3.1 to 4.3.2.
 </details>
 <br />
 
+[[https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=lukka/get-cmake&package-manager=github_actions&previous-version=4.3.1&new-version=4.3.2][![Dependabot compatibility score]]](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)
 
-[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=lukka/get-cmake&package-manager=github_actions&previous-version=4.3.1&new-version=4.3.2)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)
-
-Dependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.
+Dependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting =@dependabot rebase=.
 
 [//]: # (dependabot-automerge-start)
 [//]: # (dependabot-automerge-end)
@@ -85,16 +79,15 @@ Dependabot will resolve any conflicts with this PR as long as you don't alter it
 <br />
 
 You can trigger Dependabot actions by commenting on this PR:
-- `@dependabot rebase` will rebase this PR
-- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it
-- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency
-- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)
-- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)
-- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)
-
+- =@dependabot rebase= will rebase this PR
+- =@dependabot recreate= will recreate this PR, overwriting any edits that have been made to it
+- =@dependabot show <dependency name> ignore conditions= will show all of the ignore conditions of the specified dependency
+- =@dependabot ignore this major version= will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)
+- =@dependabot ignore this minor version= will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)
+- =@dependabot ignore this dependency= will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)
 
 </details>
-#+end_example
+
 
 * Result
 

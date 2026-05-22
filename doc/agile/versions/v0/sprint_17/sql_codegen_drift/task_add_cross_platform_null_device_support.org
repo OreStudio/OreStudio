@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-Add cross-platform null device support for psql output redirection
+Add platform-agnostic null device detection (/dev/null vs NUL) so psql output redirection works correctly in database setup scripts on both Unix and Windows/MINGW.
 
 * Status
 
@@ -39,31 +39,26 @@ Add cross-platform null device support for psql output redirection
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
-Add platform-agnostic null device detection to support database setup on both Unix-like systems and Windows/MINGW environments. This change enables psql output redirection (`\o`) to work correctly across different operating systems by using `/dev/null` on Unix and `NUL` on Windows.
+** Summary
+Add platform-agnostic null device detection to support database setup on both Unix-like systems and Windows/MINGW environments. This change enables psql output redirection (=\o=) to work correctly across different operating systems by using =/dev/null= on Unix and =NUL= on Windows.
 
-## Changes
-- **setup_database.sh**: Added platform detection logic to identify the appropriate null device (`/dev/null` vs `NUL`) and pass it as a psql variable
-- **All populate SQL scripts**: Replaced hardcoded `/dev/null` with the `:null_dev` psql variable in `\o` (output redirection) commands across 80+ SQL files in the following modules:
+** Changes
+- *setup_database.sh*: Added platform detection logic to identify the appropriate null device (=/dev/null= vs =NUL=) and pass it as a psql variable
+- *All populate SQL scripts*: Replaced hardcoded =/dev/null= with the =:null_dev= psql variable in =\o= (output redirection) commands across 80+ SQL files in the following modules:
   - crypto, dq, flags, fpml, iam, ip2country, iso, lei, ore, refdata, reporting, solvaris, testdata, variability
 
-## Implementation Details
+** Implementation Details
 The setup script now:
-1. Detects if `/dev/null` exists to determine the platform
-2. Sets `_null_dev` to either `/dev/null` (Unix) or `NUL` (Windows)
-3. Passes this value to psql via `-v null_dev="${_null_dev}"`
+1. Detects if =/dev/null= exists to determine the platform
+2. Sets =_null_dev= to either =/dev/null= (Unix) or =NUL= (Windows)
+3. Passes this value to psql via =-v null_dev="${_null_dev}"=
 
 All SQL populate scripts use the parameterized variable instead of hardcoded paths, ensuring compatibility across platforms without requiring separate script versions.
 
 https://claude.ai/code/session_019PvpcApb5mnTKuGRabiym4
-#+end_example
+
 
 * Result
 

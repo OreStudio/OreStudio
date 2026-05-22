@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-Workflow engine hardening + package renames
+Add persisted materialised step lists, move workflow definitions to their owning API packages, and add per-step error reporting and dynamic step count to the workflow engine.
 
 * Status
 
@@ -39,24 +39,17 @@ Workflow engine hardening + package renames
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- **Item 1**: Dynamic step lists — `workflow_instance` gains `step_count` and `materialised_steps_json` so the step sequence is persisted at instance start and survives service restarts
-- **Item 2**: Move workflow definitions to owning API packages — `workflow_step_def`, `materialised_step`, `workflow_definition`, and `workflow_registry` moved to `ores.workflow.api`; per-domain workflow definitions moved to `ores.refdata.api`, `ores.ore.api`, and `ores.reporting.api`
-- **Item 3**: Idempotency guard for workflow step handlers — domain services skip duplicate commands using the `X-Workflow-Step-Id` header
-- **Item 4**: Reusable `WorkflowStepsWidget` — Qt component for displaying live step progress, wired into the ORE import wizard's Done page
-- **Renames**: `ores.workflow` → `ores.workflow.core`, `ores.ore` → `ores.ore.core`, `ores.telemetry` → `ores.telemetry.core` to align with the standard `ores.*.core` naming convention
-- **Build**: Add sccache as compiler launcher across all CMake presets for shared compilation cache
+- *Item 1*: Dynamic step lists — =workflow_instance= gains =step_count= and =materialised_steps_json= so the step sequence is persisted at instance start and survives service restarts
+- *Item 2*: Move workflow definitions to owning API packages — =workflow_step_def=, =materialised_step=, =workflow_definition=, and =workflow_registry= moved to =ores.workflow.api=; per-domain workflow definitions moved to =ores.refdata.api=, =ores.ore.api=, and =ores.reporting.api=
+- *Item 3*: Idempotency guard for workflow step handlers — domain services skip duplicate commands using the =X-Workflow-Step-Id= header
+- *Item 4*: Reusable =WorkflowStepsWidget= — Qt component for displaying live step progress, wired into the ORE import wizard's Done page
+- *Renames*: =ores.workflow= → =ores.workflow.core=, =ores.ore= → =ores.ore.core=, =ores.telemetry= → =ores.telemetry.core= to align with the standard =ores.*.core= naming convention
+- *Build*: Add sccache as compiler launcher across all CMake presets for shared compilation cache
 
-🤖 Generated with [Claude Code](https://claude.ai/claude-code)
-#+end_example
 
 * Result
 

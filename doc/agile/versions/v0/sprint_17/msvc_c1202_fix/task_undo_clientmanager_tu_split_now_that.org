@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 3fa52c3e-e92f-4909-a88f-50b4498b86d8
 :END:
-#+title: Task: [qt] Undo ClientManager TU split now that trade is decomposed
+#+title: Task: Undo ClientManager TU split now that trade is decomposed
 #+description: - The C1202 TU split from PRs #754 and #757 isolated `listTrades` and `getTradeDetail` into separate files to stay under
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[qt] Undo ClientManager TU split now that trade is decomposed
+Merge ClientManagerTradeDetail.cpp back into ClientManagerTrades.cpp now that trade is decomposed into sub-structs of ≤7 fields, eliminating the C1202 that justified the split.
 
 * Status
 
@@ -39,26 +39,19 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
-- The C1202 TU split from PRs #754 and #757 isolated `listTrades` and `getTradeDetail` into separate files to stay under MSVC's constexpr template depth limit (triggered by reflecting `vector<trade>` with 25 fields).
-- With `domain::trade` now decomposed into five sub-structs of ≤7 fields each (PR #761), both functions fit in a single TU and the workaround is no longer needed.
+- The C1202 TU split from PRs #754 and #757 isolated =listTrades= and =getTradeDetail= into separate files to stay under MSVC's constexpr template depth limit (triggered by reflecting =vector<trade>= with 25 fields).
+- With =domain::trade= now decomposed into five sub-structs of ≤7 fields each (PR #761), both functions fit in a single TU and the workaround is no longer needed.
 
-## Changes
+** Changes
 
-- Delete `ClientManagerTradeDetail.cpp`; merge `getTradeDetail` back into `ClientManagerTrades.cpp`
-- Replace the two-phase rfl parse with a single `rfl::json::read<get_trade_detail_response, rfl::AddTagsToVariants>` call
-- Remove `get_trade_detail_response_base` and `get_trade_detail_instrument_wrapper` workaround types from `trade_protocol.hpp`
+- Delete =ClientManagerTradeDetail.cpp=; merge =getTradeDetail= back into =ClientManagerTrades.cpp=
+- Replace the two-phase rfl parse with a single =rfl::json::read<get_trade_detail_response, rfl::AddTagsToVariants>= call
+- Remove =get_trade_detail_response_base= and =get_trade_detail_instrument_wrapper= workaround types from =trade_protocol.hpp=
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

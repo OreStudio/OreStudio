@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0dee4230-d7fa-479e-9a22-91093b0eefcc
 :END:
-#+title: Task: [doc] v2 information architecture (sprints 12-16); close v0
+#+title: Task: v2 information architecture (sprints 12-16); close v0
 #+description: Completes the v0 → v2 information architecture migration begun in PR #771 + #775. Five sprints (12-16) bring the final 8
 #+type: task
 #+version: 2
@@ -20,7 +20,7 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Goal
 
-[doc] v2 information architecture (sprints 12-16); close v0
+Complete the v0→v2 migration by porting sprints 12-16 (86 stories, 252 tasks) and marking v0 as RELEASED.
 
 * Status
 
@@ -39,18 +39,13 @@ This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
-#+begin_example
-## Summary
+** Summary
 
 Completes the v0 → v2 information architecture migration begun in PR #771 + #775. Five sprints (12-16) bring the final 86 stories and 252 tasks across, and mark v0 as RELEASED.
 
-### Sprint 12 — Party + counterparty foundation
+*** Sprint 12 — Party + counterparty foundation
 
 20 stories / 62 tasks. The largest mid-v0 sprint.
 
@@ -61,7 +56,7 @@ Completes the v0 → v2 information architecture migration begun in PR #771 + #7
 - Tenant provisioning wizards (GLEIF + synthetic); books / portfolios / business units modelling.
 - FSM framework + trade-envelope schema; =ores.trade= → =ores.trading= rename.
 
-### Sprint 13 — Trade + scheduling foundations
+*** Sprint 13 — Trade + scheduling foundations
 
 16 stories / 22 tasks. Sprint mission: trade + scheduling support.
 
@@ -72,7 +67,7 @@ Completes the v0 → v2 information architecture migration begun in PR #771 + #7
 - FSM moves from stand-alone home into =ores.dq=.
 - Atomic batch save + delete across 23 entities.
 
-### Sprint 14 — Messaging infrastructure pivot
+*** Sprint 14 — Messaging infrastructure pivot
 
 13 stories / 21 tasks. Sprint mission: work on messaging infrastructure.
 
@@ -82,7 +77,7 @@ Completes the v0 → v2 information architecture migration begun in PR #771 + #7
 - Party codename for per-party queue isolation (with TOCTOU + sequence-based race fixes).
 - JWT moves into =ores.security= with RS256 asymmetric signing.
 
-### Sprint 15 — Compute grid
+*** Sprint 15 — Compute grid
 
 15 stories / 24 tasks. Sprint mission: implement compute grid.
 
@@ -93,7 +88,7 @@ Completes the v0 → v2 information architecture migration begun in PR #771 + #7
 - Unified =system_settings= (bool / int / string / JSON) replacing boolean-only =feature_flags=.
 - Four CDM instrument phases: rates / FX / bond / credit.
 
-### Sprint 16 — Final v0 sprint
+*** Sprint 16 — Final v0 sprint
 
 22 stories / 89 tasks. The largest sprint of v0; closes v0.
 
@@ -109,13 +104,13 @@ Completes the v0 → v2 information architecture migration begun in PR #771 + #7
 - UTC-everywhere timestamp policy enforced from DB to wire format.
 - ~20 Windows portability fixes (MSYS2, NATS certs, strptime, MOC dllimport, _wfopen_s, SIGQUIT, /FS, DLL export limit, MSVC PDB, xsd::vector, GLib dl-init, constexpr depth).
 
-### v0 closed
+*** v0 closed
 
 =doc/v2/versions/v0/version.org= status moves from STARTED to RELEASED.
 
 Final v0 totals (all 16 sprints): ~190 stories, ~480 tasks. Sprint sizes ranged from sprint 02's 6 stories to sprint 16's 22 stories / 89 tasks. The largest were 12 (62 tasks) and 16 (89 tasks).
 
-### Notes for review
+*** Notes for review
 
 - Cross-sprint linkage is bidirectional (=#+predecessor= / =#+successor= + prose "Continued from/in:" lines). Chains landed in this PR:
   - party_database_groundwork (09) → party_schemes_and_fpml_data (10) → party_database_and_domain (12) → party_isolation_books_portfolios_trades (13) → party_isolation_rls (16).
@@ -130,8 +125,6 @@ Final v0 totals (all 16 sprints): ~190 stories, ~480 tasks. Sprint sizes ranged 
 - BLOCKED state used for two tasks in sprint 12 (sqlgen_followup) with =blocked_on= / =blocked_since= frontmatter.
 - Site builds clean post-rebase.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-#+end_example
 
 * Result
 

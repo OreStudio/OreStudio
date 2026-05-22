@@ -158,12 +158,15 @@ case "${LABEL}" in
     *)      BASE_PORT=51000 ;;
 esac
 # Debug preset: HTTP=base+0, WT=base+2.  Release: HTTP=base+1, WT=base+3.
+# Site preview port: base+4 (debug) / base+5 (release), local-only.
 if [[ "${PRESET}" == *release* ]]; then
     HTTP_PORT=$((BASE_PORT + 1))
     WT_PORT=$((BASE_PORT + 3))
+    SITE_PORT=$((BASE_PORT + 5))
 else
     HTTP_PORT=$((BASE_PORT + 0))
     WT_PORT=$((BASE_PORT + 2))
+    SITE_PORT=$((BASE_PORT + 4))
 fi
 # Site preview port: 8000 for non-numeric labels; 8000+suffix for numeric ones
 # (e.g. local1→8001, local2→8002).  Preset-independent — always the same per checkout.

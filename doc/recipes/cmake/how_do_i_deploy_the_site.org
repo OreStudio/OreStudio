@@ -46,6 +46,7 @@ To rebuild and serve in one step:
 ./build/scripts/serve-site.sh --compile
 #+end_src
 
+Use =--kill= to kill any process already on the port before starting.
 Use =--port= to override the default port 8000, or set the =PORT= env var.
 
 ** Prerequisites

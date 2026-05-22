@@ -10,6 +10,18 @@
 #+created: 2026-05-18
 #+updated: 2026-05-18
 
+* Creating documents
+
+Never hand-write frontmatter or IDs. Use the generator:
+
+#+begin_src sh
+projects/ores.codegen/generate_v2_doc.sh --type <type> --slug <slug> \
+  --parent-dir <dir> --title "..." --description "..." --tags "..."
+#+end_src
+
+See [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] for copy-pasteable invocations per
+type. The contract each generated file follows is described below.
+
 * Standard frontmatter
 
 Every document under =doc/= begins with this block. Fields marked

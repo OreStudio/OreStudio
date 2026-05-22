@@ -61,6 +61,7 @@ std::string workspace_service::create_workspace(const domain::workspace& ws) {
     }
     if (to_create.status_code.empty())
         to_create.status_code = "active";
+    to_create.modified_by = ctx_.actor();
 
     BOOST_LOG_SEV(lg(), debug) << "Creating workspace: " << to_create.name;
     repo_.write(ctx_, to_create);
@@ -73,7 +74,7 @@ void workspace_service::archive_workspace(const std::string& id,
     const std::string& change_commentary) {
 
     BOOST_LOG_SEV(lg(), debug) << "Archiving workspace: " << id;
-    repo_.archive(ctx_, id, modified_by, change_reason_code, change_commentary);
+    repo_.archive(ctx_, id, ctx_.actor(), change_reason_code, change_commentary);
 }
 
 void workspace_service::remove_workspace(const std::string& id) {
@@ -99,6 +100,12 @@ void workspace_service::set_trade_scope(const std::string& workspace_id,
 void workspace_service::clear_trade_scope(const std::string& workspace_id) {
     BOOST_LOG_SEV(lg(), debug) << "Clearing trade scope for workspace: " << workspace_id;
     repo_.clear_trade_scope(ctx_, workspace_id);
+}
+
+std::vector<domain::workspace>
+workspace_service::get_workspace_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for workspace: " << id;
+    return repo_.read_history(ctx_, id);
 }
 
 }

@@ -85,6 +85,8 @@ private slots:
     void onDoubleClicked(const QModelIndex& index);
 
 protected:
+    void onWindowWorkspaceChanged(const WorkspaceContext& ctx) override;
+
     QString normalRefreshTooltip() const override {
         return tr("Refresh portfolios");
     }

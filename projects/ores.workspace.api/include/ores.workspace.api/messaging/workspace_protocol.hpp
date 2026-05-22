@@ -138,6 +138,23 @@ struct clear_trade_scope_response {
     std::string message;
 };
 
+// ---------------------------------------------------------------------------
+// Get workspace history
+// ---------------------------------------------------------------------------
+
+struct get_workspace_history_request {
+    using response_type = struct get_workspace_history_response;
+    static constexpr std::string_view nats_subject =
+        "workspace.v1.workspaces.history";
+    std::string id;  // UUID string
+};
+
+struct get_workspace_history_response {
+    std::vector<ores::workspace::domain::workspace> workspaces;
+    bool success = false;
+    std::string message;
+};
+
 }
 
 #endif

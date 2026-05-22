@@ -1,36 +1,45 @@
-{{! Template to generate Qt history dialog source for domain entities }}
-{{{cpp_license}}}
-#include "ores.qt/{{domain_entity.entity_pascal}}HistoryDialog.hpp"
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.qt/WorkspaceHistoryDialog.hpp"
 
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QtConcurrent>
 #include <QFutureWatcher>
-#include "ui_{{domain_entity.entity_pascal}}HistoryDialog.h"
+#include "ui_WorkspaceHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "{{domain_entity.qt.protocol_include}}"
-{{#domain_entity.qt.has_uuid_primary_key}}
+#include "ores.workspace.api/messaging/workspace_protocol.hpp"
 #include <boost/uuid/uuid_io.hpp>
-{{/domain_entity.qt.has_uuid_primary_key}}
-{{^domain_entity.qt.has_uuid_primary_key}}
-{{#domain_entity.qt.has_uuid_detail_fields}}
-#include <boost/uuid/uuid_io.hpp>
-{{/domain_entity.qt.has_uuid_detail_fields}}
-{{/domain_entity.qt.has_uuid_primary_key}}
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-{{#domain_entity.qt.has_uuid_primary_key}}
-{{domain_entity.entity_pascal}}HistoryDialog::{{domain_entity.entity_pascal}}HistoryDialog(
+WorkspaceHistoryDialog::WorkspaceHistoryDialog(
     const boost::uuids::uuid& id,
     const QString& code,
     ClientManager* clientManager,
     QWidget* parent)
     : QWidget(parent),
-      ui_(new Ui::{{domain_entity.entity_pascal}}HistoryDialog),
+      ui_(new Ui::WorkspaceHistoryDialog),
       id_(id),
       code_(code),
       clientManager_(clientManager),
@@ -43,32 +52,12 @@ using namespace ores::logging;
     setupToolbar();
     setupConnections();
 }
-{{/domain_entity.qt.has_uuid_primary_key}}
-{{^domain_entity.qt.has_uuid_primary_key}}
-{{domain_entity.entity_pascal}}HistoryDialog::{{domain_entity.entity_pascal}}HistoryDialog(
-    const QString& code,
-    ClientManager* clientManager,
-    QWidget* parent)
-    : QWidget(parent),
-      ui_(new Ui::{{domain_entity.entity_pascal}}HistoryDialog),
-      code_(code),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      openVersionAction_(nullptr),
-      revertAction_(nullptr) {
 
-    ui_->setupUi(this);
-    setupUi();
-    setupToolbar();
-    setupConnections();
-}
-{{/domain_entity.qt.has_uuid_primary_key}}
-
-{{domain_entity.entity_pascal}}HistoryDialog::~{{domain_entity.entity_pascal}}HistoryDialog() {
+WorkspaceHistoryDialog::~WorkspaceHistoryDialog() {
     delete ui_;
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::setupUi() {
+void WorkspaceHistoryDialog::setupUi() {
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
@@ -89,7 +78,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::setupUi() {
     ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::setupToolbar() {
+void WorkspaceHistoryDialog::setupToolbar() {
     toolbar_ = new QToolBar(this);
     toolbar_->setMovable(false);
     toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -115,54 +104,40 @@ void {{domain_entity.entity_pascal}}HistoryDialog::setupToolbar() {
     }
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::setupConnections() {
+void WorkspaceHistoryDialog::setupConnections() {
     connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged,
-            this, &{{domain_entity.entity_pascal}}HistoryDialog::onVersionSelected);
+            this, &WorkspaceHistoryDialog::onVersionSelected);
     connect(openVersionAction_, &QAction::triggered,
-            this, &{{domain_entity.entity_pascal}}HistoryDialog::onOpenVersionClicked);
+            this, &WorkspaceHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
-            this, &{{domain_entity.entity_pascal}}HistoryDialog::onRevertClicked);
+            this, &WorkspaceHistoryDialog::onRevertClicked);
     connect(ui_->closeButton, &QPushButton::clicked,
             this, [this]() { if (window()) window()->close(); });
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::loadHistory() {
+void WorkspaceHistoryDialog::loadHistory() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         emit errorOccurred("Not connected to server");
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for {{domain_entity.entity_singular_words}}: " << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for workspace: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
-    QPointer<{{domain_entity.entity_pascal}}HistoryDialog> self = this;
+    QPointer<WorkspaceHistoryDialog> self = this;
 
-    using HistoryResult = std::expected<{{domain_entity.qt.history_response_class}}, std::string>;
+    using HistoryResult = std::expected<workspace::messaging::get_workspace_history_response, std::string>;
 
-{{#domain_entity.qt.has_uuid_primary_key}}
     QFuture<HistoryResult> future =
         QtConcurrent::run([self, id_str = boost::uuids::to_string(id_)]() -> HistoryResult {
         if (!self || !self->clientManager_)
             return std::unexpected("Dialog closed");
-        {{domain_entity.qt.history_request_class}} request;
+        workspace::messaging::get_workspace_history_request request;
         request.id = id_str;
         auto result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!result) return std::unexpected(result.error());
         return std::move(*result);
     });
-{{/domain_entity.qt.has_uuid_primary_key}}
-{{^domain_entity.qt.has_uuid_primary_key}}
-    QFuture<HistoryResult> future =
-        QtConcurrent::run([self, code = code_.toStdString()]() -> HistoryResult {
-        if (!self || !self->clientManager_)
-            return std::unexpected("Dialog closed");
-        {{domain_entity.qt.history_request_class}} request;
-        request.{{domain_entity.primary_key.column}} = code;
-        auto result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!result) return std::unexpected(result.error());
-        return std::move(*result);
-    });
-{{/domain_entity.qt.has_uuid_primary_key}}
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
     connect(watcher, &QFutureWatcher<HistoryResult>::finished,
@@ -179,7 +154,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::loadHistory() {
             emit self->errorOccurred(QString::fromStdString(result->message));
             return;
         }
-        self->versions_ = std::move(result->{{domain_entity.qt.collection_name}});
+        self->versions_ = std::move(result->workspaces);
         self->updateVersionList();
         emit self->statusChanged(
             QString("Loaded %1 versions").arg(self->versions_.size()));
@@ -187,7 +162,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::loadHistory() {
     watcher->setFuture(future);
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::updateVersionList() {
+void WorkspaceHistoryDialog::updateVersionList() {
     ui_->versionListWidget->setRowCount(0);
 
     for (const auto& version : versions_) {
@@ -221,7 +196,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateVersionList() {
     }
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::onVersionSelected() {
+void WorkspaceHistoryDialog::onVersionSelected() {
     auto selected = ui_->versionListWidget->selectedItems();
     if (selected.isEmpty()) {
         updateActionStates();
@@ -234,7 +209,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::onVersionSelected() {
     updateActionStates();
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::updateChangesTable(int currentVersionIndex) {
+void WorkspaceHistoryDialog::updateChangesTable(int currentVersionIndex) {
     ui_->changesTableWidget->setRowCount(0);
 
     if (currentVersionIndex < 0 ||
@@ -266,66 +241,45 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateChangesTable(int curren
         ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
     };
 
-{{#domain_entity.qt.detail_fields}}
-    if (current.{{field}} != previous.{{field}}) {
-{{#is_optional_string}}
-        addChange("{{label}}",
-                  previous.{{field}} ? QString::fromStdString(*previous.{{field}}) : QString{},
-                  current.{{field}} ? QString::fromStdString(*current.{{field}}) : QString{});
-{{/is_optional_string}}
-{{#is_tristate}}
-        addChange("{{label}}",
-                  previous.{{field}} ? (*previous.{{field}} ? tr("true") : tr("false")) : tr("(unset)"),
-                  current.{{field}} ? (*current.{{field}} ? tr("true") : tr("false")) : tr("(unset)"));
-{{/is_tristate}}
-{{#is_check_box}}
-{{^is_tristate}}
-        addChange("{{label}}",
-                  previous.{{field}} ? tr("true") : tr("false"),
-                  current.{{field}} ? tr("true") : tr("false"));
-{{/is_tristate}}
-{{/is_check_box}}
-{{#is_nullable_int}}
-        addChange("{{label}}",
-                  previous.{{field}} ? QString::number(*previous.{{field}}) : tr("(unset)"),
-                  current.{{field}} ? QString::number(*current.{{field}}) : tr("(unset)"));
-{{/is_nullable_int}}
-{{#is_spin_box}}
-{{^is_nullable_int}}
-        addChange("{{label}}",
-                  QString::number(previous.{{field}}),
-                  QString::number(current.{{field}}));
-{{/is_nullable_int}}
-{{/is_spin_box}}
-{{^is_optional_string}}
-{{^is_check_box}}
-{{^is_spin_box}}
-{{#is_optional_uuid}}
+    if (current.name != previous.name) {
+        addChange("Name",
+                  QString::fromStdString(previous.name),
+                  QString::fromStdString(current.name));
+    }
+
+    if (current.description != previous.description) {
+        addChange("Description",
+                  QString::fromStdString(previous.description),
+                  QString::fromStdString(current.description));
+    }
+
+    if (current.source_path != previous.source_path) {
+        addChange("Source Path",
+                  QString::fromStdString(previous.source_path),
+                  QString::fromStdString(current.source_path));
+    }
+
+    if (current.parent_workspace_id != previous.parent_workspace_id) {
         {
             auto _to_s = [](const std::optional<boost::uuids::uuid>& o) {
                 return o ? QString::fromStdString(boost::uuids::to_string(*o)) : QString{};
             };
-            addChange("{{label}}", _to_s(previous.{{field}}), _to_s(current.{{field}}));
+            addChange("Parent", _to_s(previous.parent_workspace_id), _to_s(current.parent_workspace_id));
         }
-{{/is_optional_uuid}}
-{{^is_optional_uuid}}
-{{#is_uuid}}
-        addChange("{{label}}",
-                  QString::fromStdString(boost::uuids::to_string(previous.{{field}})),
-                  QString::fromStdString(boost::uuids::to_string(current.{{field}})));
-{{/is_uuid}}
-{{^is_uuid}}
-        addChange("{{label}}",
-                  QString::fromStdString(previous.{{field}}),
-                  QString::fromStdString(current.{{field}}));
-{{/is_uuid}}
-{{/is_optional_uuid}}
-{{/is_spin_box}}
-{{/is_check_box}}
-{{/is_optional_string}}
     }
 
-{{/domain_entity.qt.detail_fields}}
+    if (current.owner_id != previous.owner_id) {
+        addChange("Owner",
+                  QString::fromStdString(boost::uuids::to_string(previous.owner_id)),
+                  QString::fromStdString(boost::uuids::to_string(current.owner_id)));
+    }
+
+    if (current.status_code != previous.status_code) {
+        addChange("Status",
+                  QString::fromStdString(previous.status_code),
+                  QString::fromStdString(current.status_code));
+    }
+
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);
@@ -336,7 +290,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateChangesTable(int curren
     }
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::updateFullDetails(int versionIndex) {
+void WorkspaceHistoryDialog::updateFullDetails(int versionIndex) {
     if (versionIndex < 0 ||
         static_cast<size_t>(versionIndex) >= versions_.size()) {
         return;
@@ -344,53 +298,15 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateFullDetails(int version
 
     const auto& version = versions_[versionIndex];
 
-{{#domain_entity.qt.detail_fields}}
-{{#is_optional_string}}
-    ui_->{{value_widget}}->setText(version.{{field}}
-        ? QString::fromStdString(*version.{{field}})
+    ui_->nameValue->setText(QString::fromStdString(version.name));
+    ui_->descriptionValue->setText(QString::fromStdString(version.description));
+    ui_->sourcePathValue->setText(QString::fromStdString(version.source_path));
+    ui_->parentValue->setText(version.parent_workspace_id
+        ? QString::fromStdString(boost::uuids::to_string(*version.parent_workspace_id))
         : QString{});
-{{/is_optional_string}}
-{{#is_tristate}}
-    ui_->{{value_widget}}->setText(version.{{field}}
-        ? (*version.{{field}} ? tr("true") : tr("false"))
-        : tr("(unset)"));
-{{/is_tristate}}
-{{#is_check_box}}
-{{^is_tristate}}
-    ui_->{{value_widget}}->setText(version.{{field}} ? tr("true") : tr("false"));
-{{/is_tristate}}
-{{/is_check_box}}
-{{#is_nullable_int}}
-    ui_->{{value_widget}}->setText(version.{{field}}
-        ? QString::number(*version.{{field}})
-        : tr("(unset)"));
-{{/is_nullable_int}}
-{{#is_spin_box}}
-{{^is_nullable_int}}
-    ui_->{{value_widget}}->setText(QString::number(version.{{field}}));
-{{/is_nullable_int}}
-{{/is_spin_box}}
-{{^is_optional_string}}
-{{^is_check_box}}
-{{^is_spin_box}}
-{{#is_optional_uuid}}
-    ui_->{{value_widget}}->setText(version.{{field}}
-        ? QString::fromStdString(boost::uuids::to_string(*version.{{field}}))
-        : QString{});
-{{/is_optional_uuid}}
-{{^is_optional_uuid}}
-{{#is_uuid}}
-    ui_->{{value_widget}}->setText(
-        QString::fromStdString(boost::uuids::to_string(version.{{field}})));
-{{/is_uuid}}
-{{^is_uuid}}
-    ui_->{{value_widget}}->setText(QString::fromStdString(version.{{field}}));
-{{/is_uuid}}
-{{/is_optional_uuid}}
-{{/is_spin_box}}
-{{/is_check_box}}
-{{/is_optional_string}}
-{{/domain_entity.qt.detail_fields}}
+    ui_->ownerValue->setText(
+        QString::fromStdString(boost::uuids::to_string(version.owner_id)));
+    ui_->statusValue->setText(QString::fromStdString(version.status_code));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
@@ -398,7 +314,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateFullDetails(int version
         QString::fromStdString(version.change_commentary));
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::updateActionStates() {
+void WorkspaceHistoryDialog::updateActionStates() {
     auto selected = ui_->versionListWidget->selectedItems();
     bool hasSelection = !selected.isEmpty();
     bool isNotLatest = hasSelection && selected.first()->row() > 0;
@@ -407,7 +323,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateActionStates() {
     revertAction_->setEnabled(isNotLatest);
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::onOpenVersionClicked() {
+void WorkspaceHistoryDialog::onOpenVersionClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
     if (selected.isEmpty()) return;
 
@@ -417,7 +333,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::onOpenVersionClicked() {
     emit openVersionRequested(versions_[row], versions_[row].version);
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::onRevertClicked() {
+void WorkspaceHistoryDialog::onRevertClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
     if (selected.isEmpty()) return;
 

@@ -30,6 +30,7 @@
 
 namespace ores::qt {
 
+class BadgeCache;
 class WorkspaceMdiWindow;
 class DetachableMdiSubWindow;
 
@@ -58,6 +59,7 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
+        BadgeCache* badgeCache = nullptr,
         QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -74,12 +76,18 @@ protected:
 private slots:
     void onShowDetails(const workspace::domain::workspace& workspace);
     void onAddNewRequested();
+    void onShowHistory(const workspace::domain::workspace& workspace);
     void onWorkspaceActivated(const workspace::domain::workspace& workspace);
+    void onRevertVersion(const workspace::domain::workspace& workspace);
+    void onOpenVersion(const workspace::domain::workspace& workspace,
+                       int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const workspace::domain::workspace& workspace);
+    void showHistoryWindow(const workspace::domain::workspace& workspace);
 
+    BadgeCache* badgeCache_;
     WorkspaceMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

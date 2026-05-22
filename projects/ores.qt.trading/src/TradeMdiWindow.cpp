@@ -73,7 +73,7 @@ void TradeMdiWindow::setupUi() {
     layout->addWidget(tableView_);
 
     paginationWidget_ = new PaginationWidget(this);
-    layout->addWidget(paginationWidget_);
+    layout->addWidget(createBottomBar(paginationWidget_, clientManager_));
 }
 
 void TradeMdiWindow::setupToolbar() {
@@ -196,7 +196,13 @@ void TradeMdiWindow::setupConnections() {
 void TradeMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading trades";
     emit statusChanged(tr("Loading trades..."));
+    model_->setWorkspaceContext(windowWorkspaceContext_);
     model_->refresh();
+}
+
+void TradeMdiWindow::onWindowWorkspaceChanged(const WorkspaceContext& ctx) {
+    model_->setWorkspaceContext(ctx);
+    EntityListMdiWindow::onWindowWorkspaceChanged(ctx);
 }
 
 void TradeMdiWindow::onDataLoaded() {

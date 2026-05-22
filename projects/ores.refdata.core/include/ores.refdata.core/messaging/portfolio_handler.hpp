@@ -65,6 +65,9 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        BOOST_LOG_SEV(portfolio_handler_lg(), debug)
+            << "Listing portfolios: tenant_id=" << ctx.tenant_id().to_string()
+            << " workspace_id=" << ctx.workspace_id();
         service::portfolio_service svc(ctx);
         get_portfolios_response resp;
         try {
@@ -72,7 +75,8 @@ public:
             resp.total_available_count =
                 static_cast<int>(resp.portfolios.size());
             BOOST_LOG_SEV(portfolio_handler_lg(), debug)
-                << "Completed " << msg.subject;
+                << "Completed " << msg.subject
+                << ": returned " << resp.total_available_count << " portfolios";
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(portfolio_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

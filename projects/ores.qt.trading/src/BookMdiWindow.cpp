@@ -21,7 +21,6 @@
 
 #include <QVBoxLayout>
 #include <QHeaderView>
-#include <QSizePolicy>
 #include <QMessageBox>
 #include <optional>
 #include <QFile>
@@ -36,7 +35,6 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.qt/WorkspaceSelector.hpp"
 #include "ores.qt/ImportTradeDialog.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
@@ -90,7 +88,7 @@ void BookMdiWindow::setupUi() {
     layout->addWidget(tableView_);
 
     paginationWidget_ = new PaginationWidget(this);
-    layout->addWidget(paginationWidget_);
+    layout->addWidget(createBottomBar(paginationWidget_, clientManager_));
 }
 
 void BookMdiWindow::setupToolbar() {
@@ -167,11 +165,6 @@ void BookMdiWindow::setupToolbar() {
     connect(exportXmlAction_, &QAction::triggered, this,
             &BookMdiWindow::exportToXml);
 
-    // Workspace selector — flush-right in the toolbar
-    auto* spacer = new QWidget(this);
-    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    toolbar_->addWidget(spacer);
-    toolbar_->addWidget(createWorkspaceSelector(clientManager_));
 }
 
 void BookMdiWindow::setupTable() {

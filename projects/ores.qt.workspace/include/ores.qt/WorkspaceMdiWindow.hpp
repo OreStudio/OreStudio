@@ -24,9 +24,11 @@
 #include <QToolBar>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientWorkspaceModel.hpp"
+#include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.workspace.api/domain/workspace.hpp"
 
@@ -55,6 +57,7 @@ public:
     explicit WorkspaceMdiWindow(
         ClientManager* clientManager,
         const QString& username,
+        BadgeCache* badgeCache = nullptr,
         QWidget* parent = nullptr);
     ~WorkspaceMdiWindow() override = default;
 
@@ -62,6 +65,7 @@ signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void showWorkspaceDetails(const workspace::domain::workspace& workspace);
+    void showWorkspaceHistory(const workspace::domain::workspace& workspace);
     void addNewRequested();
     void workspaceDeleted(const QString& code);
     void workspaceActivated(const workspace::domain::workspace& workspace);
@@ -81,6 +85,7 @@ private slots:
     void onLoadError(const QString& error_message, const QString& details = {});
     void onSelectionChanged();
     void onItemDoubleClicked(QTreeWidgetItem* item, int column);
+    void onHistoryRequested();
 
 protected:
     QString normalRefreshTooltip() const override {
@@ -97,16 +102,19 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
+    BadgeCache* badgeCache_;
 
     QToolBar* toolbar_;
     QTreeWidget* treeWidget_;
     ClientWorkspaceModel* model_;
+    PaginationWidget* paginationWidget_;
 
     // Toolbar actions
     QAction* reloadAction_;
     QAction* addAction_;
     QAction* openAction_;
     QAction* editAction_;
+    QAction* historyAction_;
     QAction* archiveAction_;
     QAction* deleteAction_;
 };

@@ -207,7 +207,7 @@ void PortfolioExplorerMdiWindow::setupTradePanel() {
     right_layout->addWidget(tradeTableView_, 1);
 
     paginationWidget_ = new PaginationWidget(right_panel);
-    right_layout->addWidget(paginationWidget_);
+    right_layout->addWidget(createBottomBar(paginationWidget_, clientManager_));
 
     splitter_->addWidget(right_panel);
     splitter_->setStretchFactor(0, 1);

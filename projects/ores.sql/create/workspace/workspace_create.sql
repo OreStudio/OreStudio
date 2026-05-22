@@ -22,7 +22,7 @@ create table if not exists ores_workspaces_tbl (
     version             integer      not null,
     name                text         not null,
     description         text         not null default '',
-    source_path         text         not null default '',
+    source_path         text         null,
     parent_workspace_id uuid         null,
     scope_portfolio_id  uuid         null,
     owner_id            uuid         not null,

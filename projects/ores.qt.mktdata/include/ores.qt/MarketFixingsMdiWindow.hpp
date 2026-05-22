@@ -71,6 +71,8 @@ signals:
     void showMarketFixings(const marketdata::domain::market_series& series);
 
 protected:
+    void onWindowWorkspaceChanged(const WorkspaceContext& ctx) override;
+
     QString normalRefreshTooltip() const override {
         return tr("Refresh fixing series");
     }

@@ -69,7 +69,7 @@ void CurrencyMarketTierMdiWindow::setupUi() {
     layout->addWidget(tableView_);
 
     paginationWidget_ = new PaginationWidget(this);
-    layout->addWidget(paginationWidget_);
+    layout->addWidget(createBottomBar(paginationWidget_, clientManager_));
 }
 
 void CurrencyMarketTierMdiWindow::setupToolbar() {
@@ -181,7 +181,13 @@ void CurrencyMarketTierMdiWindow::setupConnections() {
 void CurrencyMarketTierMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading currency market tiers";
     emit statusChanged(tr("Loading currency market tiers..."));
+    model_->setWorkspaceContext(windowWorkspaceContext_);
     model_->refresh();
+}
+
+void CurrencyMarketTierMdiWindow::onWindowWorkspaceChanged(const WorkspaceContext& ctx) {
+    model_->setWorkspaceContext(ctx);
+    EntityListMdiWindow::onWindowWorkspaceChanged(ctx);
 }
 
 void CurrencyMarketTierMdiWindow::onDataLoaded() {

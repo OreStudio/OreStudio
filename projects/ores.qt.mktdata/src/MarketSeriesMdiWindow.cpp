@@ -80,7 +80,7 @@ void MarketSeriesMdiWindow::setupUi() {
         "MarketSeriesListWindow", {}, {1100, 600}, 1);
 
     verticalLayout_->addWidget(tableView_);
-    verticalLayout_->addWidget(paginationWidget_);
+    verticalLayout_->addWidget(createBottomBar(paginationWidget_, clientManager_));
 
     // Connections
     connect(model_.get(), &ClientMarketSeriesModel::dataLoaded,
@@ -177,7 +177,13 @@ void MarketSeriesMdiWindow::updateActionStates() {
 
 void MarketSeriesMdiWindow::doReload() {
     clearStaleIndicator();
+    model_->setWorkspaceContext(windowWorkspaceContext_);
     model_->refresh();
+}
+
+void MarketSeriesMdiWindow::onWindowWorkspaceChanged(const WorkspaceContext& ctx) {
+    model_->setWorkspaceContext(ctx);
+    EntityListMdiWindow::onWindowWorkspaceChanged(ctx);
 }
 
 void MarketSeriesMdiWindow::onDataLoaded() {

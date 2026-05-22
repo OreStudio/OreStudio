@@ -61,6 +61,9 @@ public:
 
     void remove(context ctx, const std::string& id);
 
+    std::vector<domain::workspace>
+    read_history(context ctx, const std::string& id);
+
     /**
      * @brief Returns all active workspaces ordered by name.
      */

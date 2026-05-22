@@ -27,7 +27,7 @@
         "cpp_type": "std::string",
         "description": "Human-readable name for this configuration.",
         "detail": "Unique per tenant. Examples: 'Standard', 'AMC', 'DeltaGamma', 'SABR'.",
-        "generator_expr": "std::string(\"config_\") + std::to_string(++counter)"
+        "generator_expr": "std::string(\"config\")"
       }
     ],
 

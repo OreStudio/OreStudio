@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 3ddb2afa-9caa-44a0-a91a-645a95320a5f
+:END:
+#+title: How do I deploy the settings?
+#+description: Regenerate .claude/settings.json from its literate org source using the deploy_settings CMake target.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :cmake:build:settings:claude_code:emacs:recipe:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+The authoritative source for =.claude/settings.json= is
+[[id:2d83251f-0e24-4b97-b736-08f710316634][Claude Code Settings]] (=doc/llm/claude_code_settings.org=). Never
+edit the JSON file directly. For CMake setup and preset names see
+[[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]].
+
+* Question
+
+How do I regenerate =.claude/settings.json= from its literate org source?
+
+* Answer
+
+The =deploy_settings= CMake target deletes the existing
+=.claude/settings.json= and runs Emacs in batch mode to tangle
+=doc/llm/claude_code_settings.org= in its place. The tangle
+output path is derived from =ores/repo-root= (defined in
+=projects/ores.lisp/ores-babel.el=), so no hardcoded relative path
+appears in the org source.
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-debug-ninja --target deploy_settings
+#+end_src
+
+Expected output:
+
+#+begin_example
+[1/1] Deploying ORE Studio Claude Code Settings to .claude/settings.json
+Removing settings file
+Loading …/projects/ores.lisp/ores-babel.el (source)...
+Tangled 1 code block from claude_code_settings.org
+Settings deployed to …/.claude/settings.json
+#+end_example
+
+This must be run outside the sandbox (Emacs, CMake, and the
+=ores-babel.el= project detection all need a full environment); use
+=dangerouslyDisableSandbox: true= on the Bash tool call.
+
+** Prerequisites
+
+- Emacs on =PATH=.
+- The project must be configured (=cmake --preset ...=).
+
+** Verify
+
+#+begin_src sh :results verbatim
+python3 -m json.tool .claude/settings.json
+#+end_src
+
+The output should be valid JSON with a =permissions.allow= array and a
+=sandbox= object. The number of allow entries is small by design (25 as
+of the initial version); if the count grows unexpectedly the source
+file should be audited.
+
+* Script
+
+=.build-settings.el= is the Emacs script the target invokes. It:
+
+1. Loads =projects/ores.lisp/ores-babel.el= to make =ores/repo-root=
+   available.
+2. Sets =org-babel-default-header-args:json= with the absolute tangle
+   target path derived from =ores/repo-root=, so the org file itself
+   carries no path.
+3. Calls =org-babel-tangle-file= on
+   =doc/llm/claude_code_settings.org=, which assembles the JSON
+   via noweb-referenced permission blocks.
+
+The CMake target definition lives in =CMakeLists.txt= near
+=add_custom_target(deploy_settings ...)=.
+
+* Tested by
+
+Manual. Run the target and verify =.claude/settings.json= is valid
+JSON. Tested 2026-05-22 against preset =linux-clang-debug-ninja=;
+CMake reconfiguration was not required on a warm build.
+
+* See also
+
+- [[id:2d83251f-0e24-4b97-b736-08f710316634][Claude Code Settings]] — the literate source; edit permissions here.
+- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — parallel target for Claude Code skills.
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset names and output layout.

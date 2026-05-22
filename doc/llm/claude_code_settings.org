@@ -1,0 +1,310 @@
+:PROPERTIES:
+:ID: 2d83251f-0e24-4b97-b736-08f710316634
+:END:
+#+title: Claude Code Settings
+#+description: Literate source for .claude/settings.json — permission allow-list and sandbox overrides, generated via org-babel tangle.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :claude_code:settings:permissions:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+* Summary
+
+This file is the single authoritative source for =.claude/settings.json=.
+It follows the literate programming style: every permission entry is
+accompanied by prose naming the operations it enables, the concrete
+command variations it covers, and the security reasoning behind the
+grant. Do not edit =.claude/settings.json= directly; regenerate it with
+the =deploy_settings= CMake target. Entries are kept to the minimum
+necessary; each wildcard is chosen to cover only the intended surface.
+
+* How to regenerate
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug-ninja --target deploy_settings
+#+end_src
+
+This invokes =.build-settings.el=, which tangles this file to
+=.claude/settings.json=. Requires Emacs on PATH and a configured build
+directory. Must be run outside the sandbox (compiler detection is needed
+by CMake during reconfiguration); use =dangerouslyDisableSandbox: true=
+on the Bash tool call.
+
+* Master settings block
+
+The master block assembles the final JSON from noweb references defined
+in the sections below. It carries no =:tangle= directive; the output
+path (=.claude/settings.json= under the repo root) is injected by
+=.build-settings.el= via =org-babel-default-header-args:json= using
+the =ores/repo-root= variable from =projects/ores.lisp/ores-babel.el=.
+Sections are separated by a trailing comma in the reference line; the
+last section in each array carries no comma.
+
+#+begin_src json :noweb yes
+{
+  "permissions": {
+    "allow": [
+<<perm-build>>,
+<<perm-sql>>,
+<<perm-codegen>>,
+<<perm-tests>>,
+<<perm-vcs>>,
+<<perm-web>>,
+<<perm-shell>>
+    ]
+  },
+  "sandbox": {
+<<sandbox-network>>,
+<<sandbox-filesystem>>
+  }
+}
+#+end_src
+
+* Permissions
+
+Permission strings use glob wildcards (=*=), not regular expressions.
+=*= matches any sequence of characters including spaces but not =/=,
+so it covers arguments but not sub-paths. A space before =*= enforces
+a word boundary: =Bash(make *)= matches =make -j2 foo= but not
+=make_something=. Each subsection documents the surface covered and
+the reason the grant is necessary.
+
+** Build tools
+
+The build system requires =make=, =cmake=, and (for non-compilation
+deploy targets) =emacs= in batch mode. All three are invoked with
+varying flags and targets depending on the operation.
+
+=Bash(make *)= is broader than a path-restricted form but narrower
+than an unconditional build allow. Any =make= invocation is a
+compilation or deployment action; no make-based attack vector exists
+in this project context beyond unintended compilation.
+
+=Bash(cmake *)= covers both configuration (=cmake --preset=) and build
+(=cmake --build=) steps. The wildcard is necessary because the preset
+name and target name vary.
+
+=Bash(emacs -Q --script *)= covers the deploy-family targets
+(=deploy_skills=, =deploy_settings=, =deploy_site=) which invoke Emacs
+in batch mode. The =-Q= flag disables user configuration; =--script=
+restricts execution to the named file. Only scripts checked into the
+repository are passed here.
+
+=Bash(build/scripts/build.sh *)= covers the project build wrapper,
+which selects the correct make preset and target.
+
+Common invocations:
+- =make -C build/output/linux-clang-debug-make -j2 ores.utility=
+- =cmake --build --preset linux-clang-debug-ninja --target deploy_skills=
+- =cmake --build --preset linux-clang-debug-ninja --target deploy_settings=
+- =emacs -Q --script .build-skills.el=
+- =emacs -Q --script .build-settings.el=
+- =build/scripts/build.sh ores.utility.tests=
+
+#+begin_src json :tangle no :noweb-ref perm-build
+      "Bash(make *)",
+      "Bash(cmake *)",
+      "Bash(emacs -Q --script *)",
+      "Bash(build/scripts/build.sh *)"
+#+end_src
+
+** SQL scripts
+
+Four scripts under =projects/ores.sql/= manage the local development
+database. Each is granted individually rather than via a directory
+wildcard (e.g. =Bash(projects/ores.sql/* *)=) to prevent accidental
+execution of other files in that tree.
+
+=run_sql.sh= executes a single SQL file against the database.
+=recreate_database.sh= drops and rebuilds the entire schema.
+=validate_schemas.sh= checks that the live schema matches expectations.
+=kill_db_connections.sh= terminates stale connections before a recreate.
+
+All four require =dangerouslyDisableSandbox: true= at the Bash tool
+level because the sandbox blocks outbound connections to
+=localhost:5432=. The =sandbox.network= entry below grants localhost
+access, which may make the per-call override unnecessary once Claude
+Code respects project-level sandbox overrides.
+
+Note: never prepend =PGPASSWORD= on the command line; these scripts
+source =.env= themselves.
+
+Common invocations:
+- =projects/ores.sql/run_sql.sh -f projects/ores.sql/schema/foo_create.sql=
+- =projects/ores.sql/recreate_database.sh=
+- =projects/ores.sql/utility/validate_schemas.sh=
+- =projects/ores.sql/utility/kill_db_connections.sh=
+
+#+begin_src json :tangle no :noweb-ref perm-sql
+      "Bash(projects/ores.sql/run_sql.sh *)",
+      "Bash(projects/ores.sql/recreate_database.sh *)",
+      "Bash(projects/ores.sql/utility/validate_schemas.sh *)",
+      "Bash(projects/ores.sql/utility/kill_db_connections.sh *)"
+#+end_src
+
+** Code generation
+
+Three codegen scripts live under =projects/ores.codegen/=:
+=generate_v2_doc.sh= scaffolds new v2 org documents; =run_generator.sh=
+drives the C++ code generator (Dogen); =plantuml_er_generate.sh=
+produces PlantUML ER diagrams. All three accept flags and arguments
+that vary per invocation.
+
+The grant is per-script rather than per-directory for the same reason
+as SQL: a directory wildcard would permit running arbitrary scripts in
+a large codegen tree.
+
+Common invocations:
+- =projects/ores.codegen/generate_v2_doc.sh --type memory --slug foo --parent-dir doc/memory ...=
+- =projects/ores.codegen/run_generator.sh=
+- =projects/ores.codegen/plantuml_er_generate.sh -i doc/plans/foo.org=
+
+#+begin_src json :tangle no :noweb-ref perm-codegen
+      "Bash(projects/ores.codegen/generate_v2_doc.sh *)",
+      "Bash(projects/ores.codegen/run_generator.sh *)",
+      "Bash(projects/ores.codegen/plantuml_er_generate.sh *)"
+#+end_src
+
+** Test execution
+
+Tests are run either through CTest (which dispatches to individual
+binaries) or by invoking binaries directly for focused runs. Test
+binary paths follow the pattern
+=build/output/<preset>/publish/bin/ores.<component>.tests=.
+
+=Bash(ctest *)= covers all CTest-mediated runs including the =rat=
+target (which runs all registered suites). The direct-binary pattern
+=Bash(build/output/*/publish/bin/ores.* *)= uses two wildcards: the
+first matches the preset directory name (e.g. =linux-clang-debug-make=)
+without crossing =/= boundaries; the second matches the component name
+suffix and any arguments (filter tags, verbosity flags).
+
+No wildcard is broad enough to execute arbitrary binaries outside the
+=publish/bin/ores.*= namespace.
+
+Common invocations:
+- =ctest --test-dir build/output/linux-clang-debug-make -R ores.utility=
+- =build/output/linux-clang-debug-make/publish/bin/ores.utility.tests=
+- =build/output/linux-clang-debug-make/publish/bin/ores.risk.tests "[generators]"=
+
+#+begin_src json :tangle no :noweb-ref perm-tests
+      "Bash(ctest *)",
+      "Bash(build/output/*/publish/bin/ores.* *)"
+#+end_src
+
+** Version control
+
+=Bash(git *)= covers all git subcommands. This is intentionally broad:
+every git operation (read-only introspection, branching, staging,
+committing, pushing, rebasing) shares the same prefix. Narrowing by
+subcommand would add many entries without meaningfully reducing risk,
+since all operations target the local repository or the authorised
+remote.
+
+=Bash(gh *)= covers all GitHub CLI subcommands including =gh pr=,
+=gh run=, =gh issue=, and =gh api=. The grant is conditional on the
+token being present in the OS keyring; the command requires
+=dangerouslyDisableSandbox: true= because the keyring is not
+accessible inside the sandbox.
+
+Common invocations:
+- =git add projects/ores.risk/src/domain/foo.cpp=
+- =git commit -m "[risk] Add foo entity"=
+- =git push --set-upstream origin feature/foo=
+- =git rebase main=
+- =gh pr create --title "[risk] Add foo" --body "$(cat <<'EOF' ... EOF)"=
+- =gh run view --log 12345=
+
+#+begin_src json :tangle no :noweb-ref perm-vcs
+      "Bash(git *)",
+      "Bash(gh *)"
+#+end_src
+
+** Web access
+
+=WebFetch(domain:*)= allows fetching from any domain. The sandbox
+network allowlist (see below) is the actual security boundary; the
+permission entry controls only whether Claude Code prompts. Domains
+not in the network allowlist remain unreachable regardless.
+
+=WebSearch= enables web search. No domain restriction is applied here;
+the search provider is fixed by the Claude Code runtime.
+
+#+begin_src json :tangle no :noweb-ref perm-web
+      "WebFetch(domain:*)",
+      "WebSearch"
+#+end_src
+
+** Shell utilities
+
+Read-only and data-processing utilities used in analysis pipelines,
+build inspection, and document generation. Each covers a standard
+POSIX tool; none can write files (output is captured, not redirected
+from within the permission string).
+
+=python3 *= is required for ad-hoc analysis scripts and codegen
+helpers (=src/v2_doc_generate.py=, etc.). =java *= is required for
+PlantUML, which is invoked as a JAR.
+
+Common invocations:
+- =find . -name "*.org" -newer doc/foo.org=
+- =grep -r "workspace_id" projects/ores.workspace/=
+- =python3 projects/ores.codegen/src/v2_doc_generate.py --help=
+- =java -jar /usr/share/plantuml/plantuml.jar -checkonly foo.puml=
+- =wc -l build/output/linux-clang-debug-make/publish/bin/ores.utility.tests=
+
+#+begin_src json :tangle no :noweb-ref perm-shell
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(python3 *)",
+      "Bash(java *)",
+      "Bash(echo *)",
+      "Bash(wc *)",
+      "Bash(sort *)",
+      "Bash(uniq *)"
+#+end_src
+
+* Sandbox overrides
+
+The sandbox restricts filesystem writes and outbound network
+connections beyond the defaults. These entries extend the allowlist
+at the project level; they are applied in addition to (not instead
+of) the global sandbox configuration in =~/.claude/settings.json=.
+
+** Network
+
+Grants outbound connections to =localhost=, required for PostgreSQL
+(port 5432) access from SQL scripts. Without this entry, =psql= calls
+fail with a connection refused error inside the sandbox and the
+scripts must be run with =dangerouslyDisableSandbox: true=.
+
+#+begin_src json :tangle no :noweb-ref sandbox-network
+    "network": {
+      "allowedHosts": ["localhost"]
+    }
+#+end_src
+
+** Filesystem
+
+Extends the write allowlist to include the =sccache= cache directory.
+The sandbox otherwise blocks writes to =~/.cache/sccache=, causing
+cache misses and forcing builds to recompile from scratch or requiring
+=dangerouslyDisableSandbox: true=. The path is expressed as an
+absolute pattern; adjust if the home directory differs from the
+default.
+
+#+begin_src json :tangle no :noweb-ref sandbox-filesystem
+    "filesystem": {
+      "allowWrite": [
+        "~/.cache/sccache"
+      ]
+    }
+#+end_src
+
+* See also
+
+- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — parallel deploy target.
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset names and output layout.
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — service table isolation and SQL script conventions.

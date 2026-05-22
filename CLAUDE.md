@@ -1,6 +1,6 @@
 # ORE Studio — Claude Code Instructions
 
-Read `doc/meta/llm_instructions.org` before acting. It is the
+Read `doc/llm/llm_instructions.org` before acting. It is the
 authoritative entry point: rules, links to architecture, build,
 code style, documentation conventions, database isolation, testing,
 git/PR conventions, and project memory.

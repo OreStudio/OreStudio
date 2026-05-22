@@ -124,7 +124,7 @@
     <a href='/OreStudio/doc/identity/product_identity.html'>Product</a>
     <a href='/OreStudio/projects/modeling/system_model.html'>Architecture</a>
     <a href='/OreStudio/doc/recipes/recipes.html'>Recipes</a>
-    <a href='/OreStudio/doc/skills/claude_code_skills.html'>Skills</a>
+    <a href='/OreStudio/doc/llm/skills/claude_code_skills.html'>Skills</a>
     <a href='/OreStudio/doc/agile/versions/versions.html'>Roadmap</a>
     <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>
   </nav>

@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 
 Every Claude Code [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skill]] used with ORE Studio lives at
-=doc/skills/<slug>/SKILL.org= and is listed below, grouped by area. Skills are
+=doc/llm/skills/<slug>/SKILL.org= and is listed below, grouped by area. Skills are
 /task-shaped/: each one is the playbook an LLM session loads to perform a
 specific unit of work end-to-end. Compare with [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], which is /role-shaped/.
 See [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]] for the deployment workflow or return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].

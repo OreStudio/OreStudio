@@ -163,7 +163,7 @@ skills do not own functions.
 :END:
 
 A concrete, executable capability — /how to do a kind of work/ — in Claude
-Code's skill format (=doc/skills/<slug>/SKILL.org=). Each skill is
+Code's skill format (=doc/llm/skills/<slug>/SKILL.org=). Each skill is
 self-contained: it describes when to use it, the procedure, and any artefacts it
 expects. A skill is /task-shaped/: invokable in one session to perform a unit of
 work. Contrast with [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], which is /role-shaped/: a description of what

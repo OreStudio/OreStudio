@@ -621,7 +621,7 @@ they draw on. Functions compose skills; skills don't own functions. A
 skill is loaded /into/ a session; a function /is/ the session's
 identity.
 
-- Folder :: =doc/skills/<slug>/SKILL.org= (the filename is fixed
+- Folder :: =doc/llm/skills/<slug>/SKILL.org= (the filename is fixed
   uppercase by Claude Code convention).
 - Level :: =cross=.
 - Slug :: =kebab-case= (matches existing =cmake-runner=, =v2-doc-author=).

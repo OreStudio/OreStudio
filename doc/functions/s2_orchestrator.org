@@ -86,7 +86,7 @@ The skills you invoke as orchestrator:
 - [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]] and [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — for
   validating before each PR.
 - [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — when a task touches
-  =doc/skills/=.
+  =doc/llm/skills/=.
 
 * Boundaries
 

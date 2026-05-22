@@ -229,7 +229,7 @@ gather steps can query book/portfolio scope and report parameters.
      may need them later.
 
 2. Create entity, mapper, and repository using the domain type creator
-   skill (=doc/skills/domain-type-creator/SKILL.org=):
+   [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator Skill]]:
    - Entity: =risk_report_config_entity.hpp=
    - Mapper: =risk_report_config_mapper.hpp=
    - Repository: =risk_report_config_repository.hpp= with:

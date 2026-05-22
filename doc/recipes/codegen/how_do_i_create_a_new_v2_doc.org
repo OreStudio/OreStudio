@@ -190,13 +190,13 @@ Use kebab-case for the slug (matches existing =cmake-runner=,
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type skill --slug my-new-skill \
-  --parent-dir doc/skills \
+  --parent-dir doc/llm/skills \
   --title "My New Skill" \
   --description "When and how to use the new skill." \
   --tags "skill"
 #+end_src
 
-Output: =doc/skills/my-new-skill/SKILL.org=.
+Output: =doc/llm/skills/my-new-skill/SKILL.org=.
 
 ** New product identity
 :PROPERTIES:

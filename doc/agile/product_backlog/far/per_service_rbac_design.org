@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 82a03a76-95a3-46ef-bd4b-873d8e162517
+:END:
+#+title: Design per-service RBAC role assignment
+#+description: Services currently accept any valid JWT regardless of role. Design and implement per-service role assignment so a service only accepts JWTs that carry the appropriate role.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :security:design:iam:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Services currently accept any valid JWT regardless of the caller's roles. The intended design (RBAC + HBAC):
+
+- Each service declares the roles that may call it (e.g. only =service_account= role may call internal service RPCs).
+- The JWT already carries roles (from IAM). The service's request-context validation checks that the caller holds an acceptable role.
+- Per-service role assignment is stored in IAM and pushed into the JWT at token issuance.
+
+Design questions:
+- Should this be a role (coarse) or a permission (fine-grained) check at the service entry-point?
+- How do service-to-service calls authenticate — a service JWT with a =service_account= role?
+
+Write a design note before implementing.

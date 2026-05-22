@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 81239bb2-c708-4c8f-87bb-b61382b63be8
+:END:
+#+title: Remove all stub files from the codebase
+#+description: Find all stub.hpp and stub_tests.cpp files. Remove stub.hpp outright; replace stub_tests.cpp only once real tests exist for the component.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:testing:housekeeping:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+The codebase contains placeholder stub files left over from code generation scaffolding:
+
+- =stub.hpp= — empty header stubs. These can be deleted outright.
+- =stub_tests.cpp= — skeleton test files. Delete only once the component has real tests in place; otherwise the test binary would have no test cases and might silently pass.
+
+Steps:
+1. =grep -r 'stub\.hpp' projects/= to find all includes of stub headers; remove the includes and the files.
+2. =find projects/ -name stub_tests.cpp= — for each, check whether a real =*_tests.cpp= exists alongside it; if so, delete the stub; if not, leave it until tests are written.

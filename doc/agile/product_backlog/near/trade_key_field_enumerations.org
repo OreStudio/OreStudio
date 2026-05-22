@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: a1105ed1-a491-4c76-ae0c-d320b989e397
+:END:
+#+title: Add proper enumerations for trade key fields
+#+description: Key trade fields (product type, call/put) currently use raw strings. Add typed enumerations backed by database tables; UI uses combo boxes populated from these tables.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:trades:ui:database:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Trade forms currently use raw strings for fields that should come from tables, including:
+
+- Product/instrument type (=FX Forward=, =Equity Option=, etc.)
+- Call / put direction
+- Position side (buy / sell)
+
+Changes:
+- Each field type gets a backing table and a corresponding domain type.
+- Call/put specifically should be driven by a =ores_trading_call_put_types_tbl= (or similar) seeded at database setup.
+- Qt forms use a combo box populated from a service query, not a hard-coded list.
+- Conditional field display: option-specific fields only appear when an option type is selected.

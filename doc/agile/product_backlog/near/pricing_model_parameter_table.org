@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: bbe74820-0aa6-44d4-ac05-b66519d0ba33
+:END:
+#+title: Add pricing model parameter validation table
+#+description: Add a table of valid pricing model parameters with their types; validate values on insertion; UI should offer available parameters for a model with type-appropriate fields.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:analytics:ui:database:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+=PricingModelConfig= models the =pricingengine.xml= file. Currently the parameters field is an unvalidated key-value blob:
+
+- There is no record of which parameters are valid for a given model type.
+- Parameter types are not enforced at insertion.
+- The UI does not guide the user to the correct fields for a chosen model.
+
+Proposed changes:
+- Add a =ores_analytics_pricing_model_parameters_tbl= table: =(model_type_code, parameter_name, parameter_type, is_required, description)=.
+- Seed it with known ORE pricing model parameters on database setup.
+- Validate inserted configs against the table via a DB trigger or service-layer check.
+- In the pricing model config form, when the user picks a model type, dynamically render only the relevant parameter fields with the correct input widget (text, number, date).

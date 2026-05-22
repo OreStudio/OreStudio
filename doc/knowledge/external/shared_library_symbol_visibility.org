@@ -151,9 +151,23 @@ Types shared *across* Qt plugins must live in =ores.qt.api= and be
 exported from there using =ORES_QT_API=.  Plugin-internal types are
 never exported.
 
-** Service executables (=ores.X.service=)
+** Service libraries and executables (=ores.X.service=)
 
-Executables export nothing.  Do not add an export header.
+Each service project produces two targets: a shared library
+(=ores.X.service.lib=) and an executable (=ores.X.service.exe=).
+
+The library target exports any class whose symbols must be visible to
+the test binary or to =main.cpp= after they cross the DLL boundary.
+In practice this means at minimum:
+
+- =config::parser= — called by both =main.cpp= and the test binary.
+- =app::host= — called by =main.cpp=.
+
+Add =export.hpp= to the project and annotate those classes with
+=ORES_X_SERVICE_EXPORT=.  Add =target_compile_definitions(... PRIVATE
+ORES_X_SERVICE_LIBRARY)= to the lib target in =src/CMakeLists.txt=.
+
+The executable target (=main.cpp= only) exports nothing.
 
 ** CLI and test executables
 

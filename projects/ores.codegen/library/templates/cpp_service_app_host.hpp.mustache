@@ -8,13 +8,14 @@
 #include <ostream>
 #include <boost/asio/awaitable.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "{{full_name}}/export.hpp"
 
 namespace {{namespace}}::app {
 
 /**
  * @brief Provides hosting services to the application.
  */
-class host {
+class {{full_name_upper}}_EXPORT host {
 private:
     inline static std::string_view logger_name = "{{full_name}}.app.host";
 

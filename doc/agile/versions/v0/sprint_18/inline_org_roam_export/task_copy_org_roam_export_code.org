@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 167c48a3-957b-4b58-92a5-e2938f925760
+:END:
+#+title: Task: Copy org-roam-export.el code into ores.lisp
+#+description: Inline the org-roam-export functions from ~/.emacs.d/config/org-roam-export.el into projects/ores.lisp (or wherever ores.lisp lives) so the site build does not depend on the runner's emacs config.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :site:ci:build:bug_fix:inline_org_roam_export:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a4bef88c-1372-46ce-864b-c30ac3be95eb][Inline org-roam export into ores.lisp]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Inline the org-roam export functions from
+=~/.emacs.d/config/org-roam-export.el= into =ores.lisp= so the
+CI site build no longer depends on a file outside the repository.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:a4bef88c-1372-46ce-864b-c30ac3be95eb][Inline org-roam export into ores.lisp]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- =org-roam-export.el='s contents are copied into =ores.lisp= (or a
+  sibling file loaded by =ores.lisp=).
+- The site-build script no longer =load=s
+  =~/.emacs.d/config/org-roam-export.el=.
+- CI site build is green.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* Result

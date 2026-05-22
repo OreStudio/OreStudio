@@ -27,9 +27,26 @@ The =deploy_site= CMake target invokes Emacs in batch mode against
 cmake --build --preset linux-clang-debug-ninja --target deploy_site
 #+end_src
 
-Output lands at =build/output/site/=. Open
-=build/output/site/readme.html= (or any other generated page) in a
-browser.
+Output lands at =build/output/site/=.
+
+** Previewing locally
+
+The site uses absolute =/OreStudio/= paths (matching GitHub Pages).
+Use the serve script to preview with the correct URL structure:
+
+#+begin_src sh :results verbatim
+./build/scripts/serve-site.sh
+#+end_src
+
+Then open =http://localhost:8000/OreStudio/= in a browser.
+
+To rebuild and serve in one step:
+
+#+begin_src sh :results verbatim
+./build/scripts/serve-site.sh --compile
+#+end_src
+
+Use =--port= to override the default port 8000, or set the =PORT= env var.
 
 ** Prerequisites
 

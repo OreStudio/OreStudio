@@ -43,6 +43,7 @@ TYPE_TO_TEMPLATE = {
     "product_identity": "v2_doc_product_identity.org.mustache",
     "capture": "v2_doc_capture.org.mustache",
     "memory": "v2_doc_memory.org.mustache",
+    "release_notes": "v2_doc_release_notes.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {
@@ -56,6 +57,7 @@ DEFAULT_INITIAL_STATE = {
     "skill": "",
     "product_identity": "",
     "capture": "",
+    "release_notes": "",
     "memory": "",
 }
 
@@ -71,7 +73,7 @@ PARENT_OF_TYPE = {
 # Types that don't take a parent (and aren't stateful).
 PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "skill", "product_identity",
-    "capture", "memory",
+    "capture", "memory", "release_notes",
 }
 
 

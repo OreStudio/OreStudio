@@ -27,6 +27,12 @@ sprints are now in the v2 cybernetic architecture.
 
 -----
 
+* 🎬 Demo
+
+[[https://youtu.be/NDxW12FNhrU][https://img.youtube.com/vi/NDxW12FNhrU/hqdefault.jpg]]
+
+[[https://youtu.be/NDxW12FNhrU][Watch the Sprint 17 demo on YouTube]].
+
 * ✅ Highlights
 
 - Windows portability work from sprint 16 was carried forward: the MSVC C1202

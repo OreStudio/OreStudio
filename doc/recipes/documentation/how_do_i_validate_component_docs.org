@@ -11,7 +11,7 @@
 #+updated: 2026-05-22
 
 Run this before committing any change that touches a =modeling/= folder or
-=component_overview.org=. See [[id:6c57a2a1-54f0-4b00-9524-e2a9218e9c09][Component documentation guide]] for the full
+=component_overview.org=. See [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component documentation guide]] for the full
 structure contract.
 
 * Question
@@ -51,6 +51,6 @@ validation workflow and the PR goes red if it exits non-zero.
 
 * See also
 
-- [[id:6c57a2a1-54f0-4b00-9524-e2a9218e9c09][Component documentation guide]] — what a correct =component_overview.org= looks like.
+- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component documentation guide]] — what a correct =component_overview.org= looks like.
 - [[id:23bcac49-325f-4083-b854-87ea747c2abe][How do I audit and fix document version tags?]] — fix missing =#+version:= tags.
 - [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][How do I fix a failing CI check?]] — if the check fails in CI.

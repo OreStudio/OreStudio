@@ -63,9 +63,9 @@ set(CTEST_CUSTOM_COVERAGE_EXCLUDE
   ".*/DesignerPlugins/.*"
   # exclude VCPKG headers
   "vcpkg_installed/.*"
-  # exclude headers staged into the CPack install prefix (build/output/projects/);
+  # exclude headers staged into the CPack install prefix (.../output/projects/);
   # these lack the preset directory component and are not instrumented sources
-  "build/output/projects/.*"
+  ".*/output/projects/.*"
   # exclude auto-generated version files
   ".*/version/version\\.cpp"
 )

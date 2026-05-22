@@ -46,9 +46,9 @@ do at the same time, before, or after.
    sprint openings are decoupled by design.
 
 5. /If requested, update the =vcpkg= submodule to latest/ as a
-   separate commit/PR — [[id:2a8f0d61-b3f9-4c20-9e76-1d92c8a47fb5][How do I update submodules to latest?]].
-   Like the version bump, this is build-side housekeeping that
-   pairs with sprint opening but rides its own PR.
+   separate commit on the same new-sprint PR —
+   [[id:2a8f0d61-b3f9-4c20-9e76-1d92c8a47fb5][How do I update submodules to latest?]]. This ships the
+   build-side housekeeping with the sprint open.
 
 6. /If the work moves to a new branch/, use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch
    Manager]]. Otherwise, raise the PR via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]].

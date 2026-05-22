@@ -71,9 +71,9 @@ folder, set its mission, and link it from the version manifest?
    is decoupled from sprint opening; do not couple them in one PR.
 
 8. /Update the =vcpkg= submodule to latest/ — see [[id:2a8f0d61-b3f9-4c20-9e76-1d92c8a47fb5][How do I update
-   submodules to latest?]]. Like the version bump, this is build-side
-   housekeeping that pairs with sprint opening but rides its own PR
-   so a broken vcpkg revision can be reverted in isolation.
+   submodules to latest?]]. Land it as a separate commit on the
+   same new-sprint PR so the build-side housekeeping ships with
+   the sprint open.
 
 * Script
 

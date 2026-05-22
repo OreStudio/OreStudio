@@ -55,11 +55,11 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
-        Id,
         Name,
-        Description,
         Status,
+        Version,
         ModifiedBy,
+        RecordedAt,
         ColumnCount
     };
 

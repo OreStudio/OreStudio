@@ -31,6 +31,8 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/PaginationWidget.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.workspace.api/messaging/workspace_protocol.hpp"
 
 namespace ores::qt {
@@ -49,6 +51,7 @@ WorkspaceMdiWindow::WorkspaceMdiWindow(
       toolbar_(nullptr),
       treeWidget_(nullptr),
       model_(nullptr),
+      paginationWidget_(nullptr),
       reloadAction_(nullptr),
       addAction_(nullptr),
       openAction_(nullptr),
@@ -73,6 +76,9 @@ void WorkspaceMdiWindow::setupUi() {
 
     setupTree();
     layout->addWidget(treeWidget_, 1);
+
+    paginationWidget_ = new PaginationWidget(this);
+    layout->addWidget(createBottomBar(paginationWidget_));
 }
 
 void WorkspaceMdiWindow::setupToolbar() {
@@ -153,8 +159,9 @@ void WorkspaceMdiWindow::setupTree() {
     model_ = new ClientWorkspaceModel(clientManager_, this);
 
     treeWidget_ = new QTreeWidget(this);
-    treeWidget_->setColumnCount(3);
-    treeWidget_->setHeaderLabels({tr("Name"), tr("Status"), tr("Modified By")});
+    treeWidget_->setColumnCount(5);
+    treeWidget_->setHeaderLabels({
+        tr("Name"), tr("Status"), tr("Version"), tr("Modified By"), tr("Recorded At")});
     treeWidget_->setRootIsDecorated(true);
     treeWidget_->setAnimated(true);
     treeWidget_->setAlternatingRowColors(true);
@@ -164,12 +171,16 @@ void WorkspaceMdiWindow::setupTree() {
     treeWidget_->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     treeWidget_->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     treeWidget_->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    treeWidget_->header()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+    treeWidget_->header()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
 
     using cs = column_style;
     auto* delegate = new EntityItemDelegate({
         cs::text_left,       // Name
         cs::badge_centered,  // Status
-        cs::text_left        // Modified By
+        cs::mono_center,     // Version
+        cs::text_left,       // Modified By
+        cs::mono_left        // Recorded At
     }, treeWidget_);
     delegate->set_badge_color_resolver(1, [cache = badgeCache_](const QString& value) -> badge_color_pair {
         static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
@@ -193,12 +204,29 @@ void WorkspaceMdiWindow::setupConnections() {
     connect(treeWidget_, &QTreeWidget::itemDoubleClicked,
             this, &WorkspaceMdiWindow::onItemDoubleClicked);
 
+    connect(paginationWidget_, &PaginationWidget::page_size_changed,
+            this, [this](std::uint32_t size) {
+        model_->set_page_size(size);
+        model_->refresh();
+    });
+    connect(paginationWidget_, &PaginationWidget::load_all_requested,
+            this, [this]() {
+        const auto total = model_->total_available_count();
+        if (total > 0 && total <= 1000) {
+            model_->set_page_size(total);
+            model_->refresh();
+        }
+    });
+    connect(paginationWidget_, &PaginationWidget::page_requested,
+            this, [this](std::uint32_t offset, std::uint32_t limit) {
+        model_->load_page(offset, limit);
+    });
+
     connectModel(model_);
 }
 
 void WorkspaceMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading workspaces";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading workspaces..."));
     model_->refresh();
 }
@@ -223,7 +251,9 @@ void addTreeItems(QTreeWidgetItem* parent,
         auto* item = new QTreeWidgetItem(parent);
         item->setText(0, QString::fromStdString(ws->name));
         item->setText(1, QString::fromStdString(ws->status_code));
-        item->setText(2, QString::fromStdString(ws->modified_by));
+        item->setText(2, QString::number(ws->version));
+        item->setText(3, QString::fromStdString(ws->modified_by));
+        item->setText(4, relative_time_helper::format(ws->recorded_at));
         item->setData(0, Qt::UserRole, id_str);
         addTreeItems(item, ws->id, children_map);
     }
@@ -263,7 +293,9 @@ void WorkspaceMdiWindow::buildTree() {
         auto* item = new QTreeWidgetItem(treeWidget_);
         item->setText(0, QString::fromStdString(ws->name));
         item->setText(1, QString::fromStdString(ws->status_code));
-        item->setText(2, QString::fromStdString(ws->modified_by));
+        item->setText(2, QString::number(ws->version));
+        item->setText(3, QString::fromStdString(ws->modified_by));
+        item->setText(4, relative_time_helper::format(ws->recorded_at));
         item->setData(0, Qt::UserRole, id_str);
         addTreeItems(item, ws->id, children_map);
     }
@@ -275,6 +307,10 @@ void WorkspaceMdiWindow::onDataLoaded() {
     const auto loaded = static_cast<int>(model_->workspaces().size());
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 workspaces").arg(loaded).arg(total));
+
+    paginationWidget_->update_state(loaded, total);
+    paginationWidget_->set_load_all_enabled(
+        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
 
     buildTree();
 }

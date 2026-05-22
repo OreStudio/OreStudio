@@ -83,16 +83,16 @@ QVariant ClientWorkspaceModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Id:
-            return QString::fromStdString(boost::uuids::to_string(workspace.id));
         case Name:
             return QString::fromStdString(workspace.name);
-        case Description:
-            return QString::fromStdString(workspace.description);
         case Status:
             return QString::fromStdString(workspace.status_code);
+        case Version:
+            return workspace.version;
         case ModifiedBy:
             return QString::fromStdString(workspace.modified_by);
+        case RecordedAt:
+            return relative_time_helper::format(workspace.recorded_at);
         default:
             return {};
         }
@@ -111,16 +111,16 @@ QVariant ClientWorkspaceModel::headerData(
         return {};
 
     switch (section) {
-    case Id:
-        return tr("ID");
     case Name:
         return tr("Name");
-    case Description:
-        return tr("Description");
     case Status:
         return tr("Status");
+    case Version:
+        return tr("Version");
     case ModifiedBy:
         return tr("Modified By");
+    case RecordedAt:
+        return tr("Recorded At");
     default:
         return {};
     }

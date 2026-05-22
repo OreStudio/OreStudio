@@ -28,6 +28,7 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientWorkspaceModel.hpp"
+#include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.workspace.api/domain/workspace.hpp"
 
@@ -106,6 +107,7 @@ private:
     QToolBar* toolbar_;
     QTreeWidget* treeWidget_;
     ClientWorkspaceModel* model_;
+    PaginationWidget* paginationWidget_;
 
     // Toolbar actions
     QAction* reloadAction_;

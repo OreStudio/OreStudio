@@ -67,12 +67,15 @@
 
 ;; Initialize the package system
 (package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
+(condition-case err
+    (package-refresh-contents)
+  (error (message "Warning: could not refresh package archives (%s); using cached contents"
+                  (error-message-string err))))
 
 ;; Install dependencies
 (package-install 'htmlize)
 (package-install 'citeproc)
+(package-install 'org-roam)
 
 ;; Load the publishing system
 (require 'ox-publish)
@@ -126,6 +129,7 @@
     <a href='/OreStudio/doc/recipes/recipes.html'>Recipes</a>
     <a href='/OreStudio/doc/llm/skills/claude_code_skills.html'>Skills</a>
     <a href='/OreStudio/doc/agile/versions/versions.html'>Roadmap</a>
+    <a href='/OreStudio/graph/index.html'>Knowledge Graph</a>
     <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>
   </nav>
 </header>")
@@ -136,7 +140,7 @@
         ("site:pages"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\)/"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui"
          :publishing-function org-html-publish-to-html
          :publishing-directory "./build/output/site/OreStudio"
          :html-preamble ,site-html-preamble
@@ -148,14 +152,14 @@
         ("site:images"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\)/"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui"
          :base-extension "png\\|jpe?g\\|gif\\|svg"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:style"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\)/"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui"
          :base-extension "css"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
@@ -174,11 +178,18 @@
 (condition-case err
     (progn
       (org-publish-all t)
-      (ores-deploy-org-roam-ui "./build/output/site")
+      (ores-deploy-org-roam-ui "./build/output/site/OreStudio")
+      ;; Sync org-roam DB (mirrors .dir-locals.el project-local settings)
+      (setq org-roam-directory (expand-file-name "./"))
+      (setq org-roam-db-location (expand-file-name "./.org-roam.db"))
+      (setq org-roam-file-exclude-regexp
+            "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui")
+      (require 'org-roam)
+      (org-roam-db-sync)
       (load-file (expand-file-name "~/.emacs.d/config/org-roam-export.el"))
       (cunene/org-roam-export-graph-json
        (expand-file-name "./.org-roam.db")
-       (expand-file-name "./build/output/site/graph/graphdata.json"))
+       (expand-file-name "./build/output/site/OreStudio/graph/graphdata.json"))
       (message "Build succeeded.")
       (kill-emacs 0))
   (error

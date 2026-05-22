@@ -55,7 +55,7 @@ configuring and running ORE — persistent storage for inputs and outputs,
 CRUD management, and a simple three-layer architecture (client / service /
 [[https://www.postgresql.org/][PostgreSQL]]) designed to be easy to understand and extend.
 
-[[./assets/images/ore_studio-v0.0.13.png]]
+[[./assets/images/ore_studio-v0.0.17.png]]
 
 The project is built for people who want to *learn quantitative finance by
 building*. All the heavy mathematical lifting stays in ORE and QuantLib; ORE

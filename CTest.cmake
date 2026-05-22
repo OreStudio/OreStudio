@@ -279,12 +279,14 @@ find_package(Git)
 set(CTEST_UPDATE_COMMAND "${GIT_EXECUTABLE}")
 
 # In CI, we do not actually want to run an update, just retrieve the current
-# version.
+# version. On PR builds the checkout is a detached HEAD merge ref so git has
+# no tracking branch; ctest_update() returns non-zero in that situation even
+# though nothing is wrong. Treat a non-zero result here as informational only.
 set(CTEST_UPDATE_VERSION_ONLY ON)
 ctest_update(RETURN_VALUE update_result)
 if(NOT update_result EQUAL 0)
-    message(WARNING "Failed to update source code from git.")
-    set(had_failures ON)
+    message(WARNING "ctest_update returned ${update_result} "
+        "(expected on detached-HEAD PR checkouts — not a build failure).")
 endif()
 
 # Setup the preset for configuration.

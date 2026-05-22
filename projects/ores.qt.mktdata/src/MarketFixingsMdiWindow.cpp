@@ -72,7 +72,7 @@ void MarketFixingsMdiWindow::setupUi() {
         "MarketFixingsListWindow", {}, {1100, 600}, 1);
 
     verticalLayout_->addWidget(tableView_);
-    verticalLayout_->addWidget(paginationWidget_);
+    verticalLayout_->addWidget(createBottomBar(paginationWidget_, clientManager_));
 
     // Connections
     connect(model_.get(), &ClientMarketSeriesModel::dataLoaded,
@@ -150,7 +150,13 @@ void MarketFixingsMdiWindow::updateActionStates() {
 
 void MarketFixingsMdiWindow::doReload() {
     clearStaleIndicator();
+    model_->setWorkspaceContext(windowWorkspaceContext_);
     model_->refresh();
+}
+
+void MarketFixingsMdiWindow::onWindowWorkspaceChanged(const WorkspaceContext& ctx) {
+    model_->setWorkspaceContext(ctx);
+    EntityListMdiWindow::onWindowWorkspaceChanged(ctx);
 }
 
 void MarketFixingsMdiWindow::onDataLoaded() {

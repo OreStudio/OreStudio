@@ -78,7 +78,7 @@ void PortfolioMdiWindow::setupUi() {
     layout->addWidget(tableView_);
 
     paginationWidget_ = new PaginationWidget(this);
-    layout->addWidget(paginationWidget_);
+    layout->addWidget(createBottomBar(paginationWidget_, clientManager_));
 }
 
 void PortfolioMdiWindow::setupToolbar() {
@@ -218,7 +218,13 @@ void PortfolioMdiWindow::setupConnections() {
 void PortfolioMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading portfolios";
     emit statusChanged(tr("Loading portfolios..."));
+    model_->setWorkspaceContext(windowWorkspaceContext_);
     model_->refresh();
+}
+
+void PortfolioMdiWindow::onWindowWorkspaceChanged(const WorkspaceContext& ctx) {
+    model_->setWorkspaceContext(ctx);
+    EntityListMdiWindow::onWindowWorkspaceChanged(ctx);
 }
 
 void PortfolioMdiWindow::onDataLoaded() {

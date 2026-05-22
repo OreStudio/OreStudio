@@ -20,6 +20,7 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 
 #include <QHeaderView>
+#include <QHBoxLayout>
 #include <QMenu>
 #include <QProgressBar>
 #include <QWidget>
@@ -27,6 +28,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/PaginationWidget.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.qt/WorkspaceSelector.hpp"
 
@@ -233,6 +235,19 @@ void EntityListMdiWindow::connectModel(AbstractClientModel* model) {
             this, &EntityListMdiWindow::endLoading);
     connect(model, &AbstractClientModel::loadError,
             this, [this](const QString&, const QString&) { endLoading(); });
+}
+
+QWidget* EntityListMdiWindow::createBottomBar(PaginationWidget* pagination,
+                                               ClientManager* cm) {
+    auto* bar = new QWidget(this);
+    auto* h = new QHBoxLayout(bar);
+    h->setContentsMargins(0, 0, 0, 0);
+    h->setSpacing(4);
+    if (cm)
+        h->addWidget(createWorkspaceSelector(cm));
+    if (pagination)
+        h->addWidget(pagination, 1);
+    return bar;
 }
 
 WorkspaceSelector* EntityListMdiWindow::createWorkspaceSelector(ClientManager* cm) {

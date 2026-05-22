@@ -37,6 +37,7 @@
 namespace ores::qt {
 
 class ClientManager;
+class PaginationWidget;
 
 /**
  * @brief Base class for entity list MDI windows providing stale indicator support.
@@ -195,16 +196,28 @@ protected:
     void connectModel(AbstractClientModel* model);
 
     /**
+     * @brief Create a bottom bar: optional workspace selector (left) + pagination (right).
+     *
+     * Call once in setupUi() after creating the pagination widget. Pass the
+     * returned widget to layout->addWidget() instead of adding paginationWidget_
+     * directly.
+     *
+     * The workspace selector is opt-in: pass a non-null ClientManager to include it.
+     * Subclasses that include the selector should override onWindowWorkspaceChanged
+     * to update their model before calling the base implementation.
+     *
+     * @param pagination  Pagination widget to place on the right (may be null).
+     * @param cm          If non-null, adds a workspace selector on the left.
+     * @return            A new QWidget owned by this window.
+     */
+    QWidget* createBottomBar(class PaginationWidget* pagination,
+                             ClientManager* cm = nullptr);
+
+    /**
      * @brief Create a workspace selector widget bound to this window.
      *
-     * The selector fetches the workspace list from the server, shows a
-     * searchable QComboBox, and emits workspaceChanged. Connect its signal
-     * to the window's onWindowWorkspaceChanged to propagate changes. Add the
-     * returned widget to the window's toolbar with an expanding spacer on its
-     * left so it sits flush-right.
-     *
-     * The window's windowWorkspaceContext_ is initialised to cm->workspaceContext()
-     * and kept in sync automatically as the user makes changes.
+     * Prefer createBottomBar() for new code. Use this only when embedding the
+     * selector in a non-standard location (e.g. inside a splitter panel).
      *
      * @param cm  The ClientManager (must outlive the returned widget).
      * @return    A new WorkspaceSelector* owned by this widget.

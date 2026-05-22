@@ -21,7 +21,6 @@
 
 #include <QVBoxLayout>
 #include <QHeaderView>
-#include <QSizePolicy>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -29,7 +28,6 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/BadgeCache.hpp"
-#include "ores.qt/WorkspaceSelector.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
@@ -81,7 +79,7 @@ void ReportDefinitionMdiWindow::setupUi() {
     layout->addWidget(tableView_);
 
     paginationWidget_ = new PaginationWidget(this);
-    layout->addWidget(paginationWidget_);
+    layout->addWidget(createBottomBar(paginationWidget_, clientManager_));
 }
 
 void ReportDefinitionMdiWindow::setupToolbar() {
@@ -156,10 +154,6 @@ void ReportDefinitionMdiWindow::setupToolbar() {
     connect(unscheduleAction_, &QAction::triggered, this,
             &ReportDefinitionMdiWindow::unscheduleSelected);
 
-    auto* spacer = new QWidget(this);
-    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    toolbar_->addWidget(spacer);
-    toolbar_->addWidget(createWorkspaceSelector(clientManager_));
 }
 
 void ReportDefinitionMdiWindow::setupTable() {

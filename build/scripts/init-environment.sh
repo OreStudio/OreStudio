@@ -47,8 +47,9 @@ ENV_FILE="${CHECKOUT_ROOT}/.env"
 #      "unrecognised option" crash on startup.
 #   3  Added ORES_WORKSPACE_SERVICE_DB_* for new workspace service.
 #   4  Added ORES_SITE_PORT for the local documentation site server.
+#   5  Added org-roam knowledge graph integration to site build.
 # ---------------------------------------------------------------------------
-ENV_VERSION=4
+ENV_VERSION=5
 
 # ---------------------------------------------------------------------------
 # Argument parsing

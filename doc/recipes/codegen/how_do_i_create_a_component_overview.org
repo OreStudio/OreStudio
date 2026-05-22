@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 0806c8fb-43d2-497e-900d-5f2e0b3472fd
+:END:
+#+title: How do I create a component overview?
+#+description: Use generate_v2_doc.sh to scaffold a component_overview.org and fill in each required section.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :codegen:component:documentation:recipe:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+
+See [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component Documentation Guide]] for what each section should contain
+and what separates a useful entry from a placeholder.
+
+* Question
+
+How do I create a =component_overview.org= for an ORE Studio component
+that is missing one?
+
+* Answer
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type component --slug component_overview \
+  --parent-dir projects/<comp>/modeling \
+  --title "<comp>" \
+  --description "<one-liner ≤ 120 chars>" \
+  --tags "qt,component"   # adjust tags to match the domain
+#+end_src
+
+The script writes =projects/<comp>/modeling/component_overview.org=
+with a fresh UUID, today's dates, and skeleton sections.
+
+Then fill in each section (values in parentheses are prompts, not
+literal content):
+
+1. *Summary* — 3–5 sentences: what it does and why it exists.
+2. *Inputs* — named data sources (NATS subjects, DB tables, config).
+3. *Outputs* — what it produces (MDI windows, NATS messages, records).
+4. *Entry points* — 3–6 key file paths with a one-line annotation each.
+5. *Dependencies* — =ores.*= slugs from the component's
+   =target_link_libraries= block; omit ubiquitous transitive deps.
+6. *See also* — at minimum one id-link to a sibling component; more for
+   knowledge docs and recipes. Use =[[id:UUID][label]]=.
+
+Finally, remove the component's =MISSING_OVERVIEW= entry from
+=projects/ores.codegen/docs_exceptions.txt= and run the validation:
+
+#+begin_src sh :results verbatim
+./projects/ores.codegen/validate_docs.sh
+#+end_src
+
+* Script
+
+=projects/ores.codegen/generate_v2_doc.sh= — the Mustache-based v2
+document generator. Full CLI reference at
+=projects/ores.codegen/docs/v2_doc_generator.md=.
+
+* Tested by
+
+Manual: run =validate_docs.sh= after creation and confirm no
+=MISSING_OVERVIEW= errors remain for the target component.
+
+* See also
+
+- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component Documentation Guide]] — what each section should contain.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — the general v2 doc creation recipe.
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — the formal spec every component doc follows.

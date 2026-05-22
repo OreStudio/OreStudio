@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: 639468ab-f141-413e-bfc1-3bd82f121b77
+:END:
+#+title: Get Currency History
+#+description: Get Currency History
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:currencies_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Retrieve version history for a currency.
+
+#+begin_src verb :wrap src json
+get /currencies/USD/history
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src

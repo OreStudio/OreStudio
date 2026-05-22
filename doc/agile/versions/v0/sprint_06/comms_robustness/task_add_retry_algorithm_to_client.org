@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 7a4ce6b9-06ef-42e2-bda1-fb69ed082dfe
+:END:
+#+title: Task: Add retry algorithm to client
+#+description: Exponential-backoff retry on transient failures; surface a give-up event so the UI can react.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :comms:reliability:retry:comms_robustness:sprint_06:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-10
+#+updated: 2025-12-10
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Exponential-backoff retry on transient failures; surface a give-up event so the UI can react.
+
+* Status
+
+| Field        | Value                                                         |
+|--------------+---------------------------------------------------------------|
+| State        | DONE                                                          |
+| Parent story | [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]] |
+| Now          | Completed 2025-12-10.                                         |
+| Waiting on   | None.                                                         |
+| Next         | None.                                                         |
+| Last touched | 2025-12-10                                                    |
+
+* Acceptance
+
+- Retry policy configurable per client.
+- Give-up event raised after the configured retry budget is exhausted.
+- UI shows a meaningful error rather than spinning forever.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- v0 noted that the initial implementation did not notify give-up; fixed in a same-sprint follow-up.
+
+* Result
+
+Client-side retry with give-up notification shipped.

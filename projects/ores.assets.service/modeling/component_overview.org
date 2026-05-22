@@ -4,10 +4,17 @@
 #+title: ores.assets.service
 #+description: NATS service entrypoint for the assets domain — wires handlers, repositories, and configuration.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :assets:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.assets.service component diagram
+#+caption: ores.assets.service
+[[file:ores.assets.service.png][file:ores.assets.service.png]]
 
 * Summary
 

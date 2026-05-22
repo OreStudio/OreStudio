@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: e1a68ed5-20cb-426c-91c6-97984a692505
+:END:
+#+title: How do I investigate a test failure?
+#+description: Run a failing suite with logging on, parse the results via parse_test_results.py, drill into the per-test logs, and add targeted logging if needed.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :cmake:tests:debugging:recipe:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+For the conventions tests follow (file structure, naming, helpers),
+see [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]]. To /enable/ logging, see [[id:4bf2516d-f37e-4e31-ad7b-124f2639b9ab][How do I
+enable test logging?]].
+
+* Question
+
+A unit test is failing. How do I find the root cause from the
+results XML and the per-test logs?
+
+* Answer
+
+1. /Scope the investigation/. Ask the user which suite(s) and
+   whether they want one specific failure or all failures in the
+   suite. Typical suites: =ores.accounts.tests=,
+   =ores.refdata.tests=, =ores.cli.tests=, or the =rat= meta-target
+   that runs everything.
+
+2. /Enable logging/. Off by default for performance. Per [[id:4bf2516d-f37e-4e31-ad7b-124f2639b9ab][How do I
+   enable test logging?]]:
+
+   #+begin_src sh :results verbatim
+   cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=debug
+   # or for more detail
+   cmake --preset linux-clang-debug-ninja \
+         -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON
+   #+end_src
+
+3. /Run the failing suite/. Run only what you need to keep noise
+   down:
+
+   #+begin_src sh :results verbatim
+   cmake --build --target test_ores.accounts.tests \
+         --preset linux-clang-debug-ninja
+   #+end_src
+
+   Replace =ores.accounts= with the target component. Use
+   =--target rat= to run everything.
+
+4. /Parse the results/. The script reads the test-result XML files
+   alongside their log files and prints a per-suite summary with
+   failure locations and the relevant log lines:
+
+   #+begin_src sh :results verbatim
+   ./scripts/parse_test_results.py \
+       build/output/linux-clang-debug-ninja/publish/bin
+   #+end_src
+
+   Output sections:
+
+   - /File summary/ — which XMLs were found and where logs live.
+   - /Per-suite results/ — per failed test: exception message,
+     test file:line, duration, links to the per-test log, and
+     any =[ERROR]= / =[WARN]= lines in the log.
+   - /Overall summary/ — total / pass / fail counts and rates.
+
+5. /Walk the investigation/ in this order:
+
+   1. Read the /Exception/ line — the assertion or thrown error.
+   2. Open the test file at the reported =file:line= to see what
+      the test expected.
+   3. Read the per-test log (under
+      =build/output/<preset>/publish/log/<suite>/<category>/<test>.log=)
+      for =[ERROR]= / =[WARN]= entries.
+   4. If the per-test log is not enough, read the suite-level log
+      one folder up.
+   5. /Crank the log level/ to =trace= and re-run (step 2 + 3).
+   6. As a last resort, add targeted =BOOST_LOG_SEV(lg, debug) <<=
+      lines into the code under test, rebuild, re-run.
+
+6. /Common surprises/:
+
+   - /"No test logs found"/ → logging is disabled; go back to
+     step 2.
+   - /XML parse error/ → the test binary crashed before writing
+     a clean result XML; the script dumps the full suite log so
+     you can find the crash site.
+
+7. /Disable logging when done/, to keep the test suite quick:
+
+   #+begin_src sh :results verbatim
+   cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=OFF
+   #+end_src
+
+* Script
+
+=scripts/parse_test_results.py= does the XML + log parsing and
+report layout.
+
+* Tested by
+
+Manual. The script is exercised every time tests go red.
+
+* See also
+
+- [[id:4bf2516d-f37e-4e31-ad7b-124f2639b9ab][How do I enable test logging?]] — the prerequisite knob.
+- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — the surrounding run loop.
+- [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] — what to read in the test file once
+  you find it.
+- [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][test-failure-investigator skill]] — the skill that drives this
+  recipe.

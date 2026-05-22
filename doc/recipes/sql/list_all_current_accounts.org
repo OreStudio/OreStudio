@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: e3a8668f-26e7-44f3-bd47-6255fc87aec0
+:END:
+#+title: List All Current Accounts
+#+description: List All Current Accounts
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Get all currently active accounts (where =valid_to= is infinity):
+
+#+begin_src sql
+select id, username, email, version, valid_from
+from ores.accounts
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by username;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+id	username	email	version	valid_from
+#+end_example

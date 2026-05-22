@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: c6758ab3-09f6-4f37-8b77-9984d8cc3c6d
+:END:
+#+title: Currency types: enum, management screen, combo box
+#+description: Currency types should be a proper database-backed enum. Add a management screen and tables; use a combo box in the currencies form.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :ui:database:domain:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Currency types are currently stored as raw strings. Full treatment:
+
+- Add =ores_refdata_currency_types_tbl= as a proper domain table with code, description, and the usual bitemporal + audit columns.
+- Seed it with standard types at database setup.
+- Add a Currency Types management screen (list + detail dialog) in the refdata module.
+- Replace any free-text currency-type input with a combo box.

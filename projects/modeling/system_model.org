@@ -2,18 +2,20 @@
 :ID: D773166D-0C91-8CB4-3323-42166BC07687
 :END:
 #+title: System Model
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+description: ORE Studio's four-layer architecture (foundation / infrastructure / domain / application) and the components in each layer.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :modeling:architecture:system_model:index:
+#+created: 2024-06-15
+#+updated: 2026-05-21
 #+startup: inlineimages
 
-This file documents the architecture of the [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]] system. ORE Studio
-provides a graphical interface and data management for [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine
-(ORE)]].
-
-ORE Studio is a C++23 application providing persistent storage, graphical user
-interface, and orchestration tools for quantitative risk analysis using ORE. The
-system is built on a layered architecture with clear separation of concerns. The
-objective of this page is to describe the system architecture.
+This file documents the architecture of the [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]] system —
+what /it is/ and what it's /for/ live in [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][Product identity]]. This
+page is the index from which each component's
+=component_overview.org= hangs, organised into the four
+architectural layers below.
 
 
 #+attr_html: :class note
@@ -191,12 +193,18 @@ path from service SQL functions; ordinary DML handlers must not query
 
 * General information
 
-- For detailed component documentation, see the individual components.
-- API documentation: https://orestudio.github.io/OreStudio/doxygen/html/index.html
-- Source code: https://github.com/OreStudio/OreStudio
-- Project website: https://orestudio.github.io/OreStudio
+- For detailed component documentation, see the individual
+  =component_overview.org= files co-located with each component's
+  source.
+- Source code: [[https://github.com/OreStudio/OreStudio][github.com/OreStudio/OreStudio]].
+- Project website: [[https://orestudio.github.io/OreStudio][orestudio.github.io/OreStudio]].
+- C++ API reference: see the Doxygen pointer from [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]].
 
-This project has no affiliation with Acadia, [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]], or
-[[https://www.quantlib.org/][QuantLib]]. See [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][Doxygen documentation]] for full context.
+This project has no affiliation with Acadia, [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][Open Source Risk
+Engine]], or [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]].
 
-| Previous: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] |
+* See also
+
+- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component documentation guide]] — how to write a
+  =component_overview.org= that satisfies the audit.
+- [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] — top of the project documentation tree.

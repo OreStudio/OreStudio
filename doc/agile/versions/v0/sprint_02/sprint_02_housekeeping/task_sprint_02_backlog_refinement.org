@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 5d22ecf9-0a43-43a7-a93d-bee7e09dc7d6
+:END:
+#+title: Task: Sprint and product backlog refinement
+#+description: Curate sprint 02 backlog and groom the product backlog as work progresses.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :agile:backlog:sprint_02_housekeeping:sprint_02:v0:
+#+owner: marco
+#+created: 2025-08-01
+#+updated: 2025-10-23
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:0fe2033d-180f-4195-a314-998917d570be][Sprint 02 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Maintain the sprint backlog through the sprint and groom the product
+backlog as discoveries surface.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:0fe2033d-180f-4195-a314-998917d570be][Sprint 02 housekeeping]] |
+| Now          | Completed at sprint close 2025-10-23.                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2025-10-23                                                          |
+
+* Acceptance
+
+- Sprint backlog reflects what is actually being worked on.
+- New ideas captured into the product backlog rather than dropped.
+
+* Notes
+
+- Continuous activity across the sprint; v0 logged it as a single
+  entry rather than per-day clocks.
+
+* Result
+
+- Backlog state at sprint close matched delivered work.

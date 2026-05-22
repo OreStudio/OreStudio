@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: b2982628-d398-4d98-a25f-eb21c1fccc94
+:END:
+#+title: Task: Implement party-level RLS isolation
+#+description: Second RLS layer scoped to party-subtree within a tenant. SQL: ores_refdata_visible_party_ids_fn (recursive CTE); ores_iam_current_party_id_fn + ores_iam_visible_party_ids_fn helpers. C++: extend tenant_aware_pool + context with party context; session_data + tenant_aware_handler carry party_id + visible_party_ids; login resolves party via account_parties. SQL: ores_refdata_party_counterparties_tbl as first party-scoped junction with dual (tenant + party) RLS.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :rls:party:security:sql:cpp:party_level_rls_isolation:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:c431b464-a3bc-4d9c-b33a-7c5b247ebea4][Party-level RLS isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a second RLS layer scoped to the party subtree within a tenant. System parties see all; operational parties see only their subtree.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:c431b464-a3bc-4d9c-b33a-7c5b247ebea4][Party-level RLS isolation]] |
+| Now          | Completed 2026-02-15.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2026-02-15                                                             |
+
+* Acceptance
+
+- SQL: =ores_refdata_visible_party_ids_fn= (recursive CTE traversing party hierarchy); =ores_iam_current_party_id_fn= + =ores_iam_visible_party_ids_fn= session helpers.
+- C++: =tenant_aware_pool= + =context= grow optional =party_id= + =visible_party_ids=; =SET app.current_party_id= + =SET app.visible_party_ids= on acquire.
+- =context::with_party()= creates a party-aware context.
+- =session_data= + =session_info= carry party context.
+- Login flow resolves party via =account_parties=; auto-select for single-party users; compute visible set via the SQL function.
+- =ores_refdata_party_counterparties_tbl= as the first party-scoped junction with dual (tenant + party) RLS.
+- Junction codegen fixes for tenant_id / UUID / schema / field naming / service-protocol exclusion.
+- Integration tests: system party sees all; leaf party sees only its subtree; cross-party data invisible.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Largest single piece of work in the sprint. Designed in =doc/plans/2026-02-09-party-isolation-and-tenant-types-design.org= + =projects/ores.refdata/modeling/multi_party.org=.
+
+* Result
+
+Party-level RLS isolation lands end-to-end.

@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: e8004b20-ae81-4d48-a677-cde07a300e92
+:END:
+#+title: Story: sqlgen follow-up
+#+description: Continue the sqlgen work started in sprint 11; bound parameters and raw-libpq removal remain blocked on upstream + vcpkg.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :sqlgen:libpq:upstream:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Continue the sqlgen work started in sprint 11. Bound-parameters
+adoption and raw-libpq removal both require a vcpkg release of the
+merged upstream features.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | BLOCKED                                                |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | BLOCKED on upstream + vcpkg release.                   |
+| Waiting on    | vcpkg picking up the sqlgen release.                   |
+| Next          | Resume once vcpkg has the release.                     |
+| Last touched  | 2026-02-20                                             |
+
+
+#+predecessor: 18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d
+
+Continued from: [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]] (sprint 11). The upstream work
+landed in sqlgen main, but vcpkg hasn't picked up a release yet, so
+both bound-parameters adoption and the raw-libpq removal remain
+blocked.
+
+* Acceptance
+
+- Native sqlgen bound parameters adopted; libpq escapes retired.
+- Raw libpq absent from ores.* code.
+
+* Tasks
+
+In execution order:
+
+- [[id:39dff131-19b6-49f9-ae2e-5879994d1870][Add bound parameters to sqlgen]]
+- [[id:fdc3a5ad-821e-4556-90ad-80fa93f54474][Remove uses of raw libpq]]
+
+* Decisions
+
+- /Track upstream releases through vcpkg/ :: avoids carrying local patches.
+
+* Out of scope
+
+- Forking sqlgen.
+
+* See also
+
+- [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]] (sprint 11) — predecessor.

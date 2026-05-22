@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: f0c71fe7-1920-44aa-b98f-9147aaa00032
+:END:
+#+title: Task: Audit for uses of raw libpq
+#+description: Sweep the codebase for libpq escapes Claude has snuck in; move all into ores.database; raise tickets on sqlgen for the gaps.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sqlgen:libpq:audit:cleanup:sqlgen_improvements:sprint_11:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Sweep the codebase for raw libpq escapes (Claude has a habit of sneaking these in) and route everything through ores.database.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]] |
+| Now          | Completed 2026-02-01.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2026-02-01                                                       |
+
+* Acceptance
+
+- All raw-libpq sites identified.
+- Code moved into =ores.database= where appropriate.
+- Remaining gaps raised as upstream sqlgen tickets.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Particularly attentive on bitemporal operations — that's where the temptation is highest.
+
+* Result
+
+Audit done; tickets filed against sqlgen for the gaps.

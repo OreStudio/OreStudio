@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 34b26c5f-205a-4261-b1e7-5676dfe0c5ed
+:END:
+#+title: Task: Generate release notes for previous sprint
+#+description: Two-step release-notes generation now that the sprint backlog bursts the LLM prompt window: summarise first, then write release notes from the summary.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :release_notes:llm:agile:process:sprint_13_housekeeping:sprint_13:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:90161bf2-67f0-4542-899c-5d844a3f6f95][Sprint 13 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Generate the previous sprint's release notes via a two-step process: summarise the backlog first, then write notes from the summary.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:90161bf2-67f0-4542-899c-5d844a3f6f95][Sprint 13 housekeeping]] |
+| Now          | Completed 2026-02-20.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-02-20                                                          |
+
+* Acceptance
+
+- Release notes for sprint 12 produced.
+- Process documented for future sprints (sprint backlogs now burst the LLM prompt window).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Volume of v0 sprint backlog content has crossed a threshold; release-notes generation now needs a summarise step.
+
+* Result
+
+Sprint 12 release notes produced; process noted for next time.

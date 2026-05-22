@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 4bf2516d-f37e-4e31-ad7b-124f2639b9ab
+:END:
+#+title: How do I enable test logging?
+#+description: Turn on test-suite logging — configure-time flags (ORES_TEST_LOG_LEVEL, ORES_TEST_LOG_CONSOLE) and equivalent runtime environment variables.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :cmake:build:tests:logging:recipe:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Test logging is /off/ by default for performance. The conceptual
+description lives in [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]]§"Test logging"; this recipe is
+the operational counterpart. To actually /run/ the tests once
+logging is configured, see [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]].
+
+* Question
+
+How do I enable test logging — choose a level, optionally mirror it
+to stdout — at configure time and at run time?
+
+* Answer
+
+There are two switches, each set at /configure/ time and overridable
+at /run/ time via environment variables.
+
+1. /Pick the level/ at configure time. Levels: =OFF= (default),
+   =trace=, =debug=, =info=, =warn=, =error=.
+
+   #+begin_src sh :results verbatim
+   cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=debug
+   #+end_src
+
+2. /Mirror logs to stdout/ as well as the log file (default =OFF=):
+
+   #+begin_src sh :results verbatim
+   cmake --preset linux-clang-debug-ninja \
+         -DORES_TEST_LOG_LEVEL=debug \
+         -DORES_TEST_LOG_CONSOLE=ON
+   #+end_src
+
+3. /Override at run time/ — the env vars override the configure-time
+   defaults without re-running CMake. Useful for a single test run
+   when you don't want to disturb the cached configuration:
+
+   #+begin_src sh :results verbatim
+   ORES_TEST_LOG_ENABLED=1 \
+   ORES_TEST_LOG_LEVEL=trace \
+   ORES_TEST_LOG_CONSOLE=1 \
+       ctest --preset linux-clang-debug-ninja
+   #+end_src
+
+4. /Turn it back off/ — set the level to =OFF= (or =unset= the env
+   var):
+
+   #+begin_src sh :results verbatim
+   cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=OFF
+   #+end_src
+
+* Script
+
+No wrapper — these are bare CMake/CTest invocations. The presets are
+listed by =./build/scripts/build.sh --list-presets= (see
+[[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]]).
+
+* Tested by
+
+Manual. The flags are consumed inside the per-component
+=CMakeLists.txt= test targets and read at runtime by the test
+harness; no dedicated CI check exercises them.
+
+* See also
+
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]]§"Test logging" — the architectural description of
+  the two switches and their defaults.
+- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — the run loop into which this logging
+  feeds.
+- [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]] — for the configure step
+  generally.

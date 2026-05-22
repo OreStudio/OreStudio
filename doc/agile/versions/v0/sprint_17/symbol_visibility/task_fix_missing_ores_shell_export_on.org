@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 07dc7000-27da-459a-ab0d-8245a0fb20a1
+:END:
+#+title: Task: Fix missing ORES_SHELL_EXPORT on host class (Windows linker error)
+#+description: - `ores::shell::app::host` was missing the `ORES_SHELL_EXPORT` macro, so `host::execute` was not exported from the `ores
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :symbol_visibility:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/780
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add ORES_SHELL_EXPORT to ores::shell::app::host to fix the Windows undefined-symbol linker error on host::execute.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] |
+| Now          | Completed 2026-05-20.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Add ORES_SHELL_EXPORT to ores::shell::app::host to fix the Windows undefined-symbol linker error on host::execute.
+- PR #780 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- =ores::shell::app::host= was missing the =ORES_SHELL_EXPORT= macro, so =host::execute= was not exported from the =ores.shell= DLL on Windows
+- This caused a linker error when building =ores.shell.exe=: =undefined symbol: ores::shell::app::host::execute=
+- Fix: include =ores.shell/export.hpp= and annotate the class with =ORES_SHELL_EXPORT=, consistent with =ores::shell::app::repl= in the same project and =ores::cli::app::host= in =ores.cli=
+
+
+* Result
+
+Landed.

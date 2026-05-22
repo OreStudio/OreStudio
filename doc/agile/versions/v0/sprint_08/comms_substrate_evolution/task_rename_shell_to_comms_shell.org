@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 443b546e-357b-4809-8c20-b804e62fa31e
+:END:
+#+title: Task: Rename ores.shell to ores.comms.shell
+#+description: The shell is specific to the binary comms protocol; namespaces, CMake targets, headers, and docs renamed.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :shell:comms:rename:refactor:comms_substrate_evolution:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:da77fb50-27e8-4b42-a826-cab289c7826e][Comms substrate evolution]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Rename =ores.shell= to =ores.comms.shell= so the component name reflects that it is the interactive shell for the binary comms protocol.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:da77fb50-27e8-4b42-a826-cab289c7826e][Comms substrate evolution]] |
+| Now          | Completed 2026-01-03.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2026-01-03                                                             |
+
+* Acceptance
+
+- File paths, CMake targets, header guards, namespaces renamed.
+- Docs (system UML, recipes) updated.
+- No stray references to =ores::shell= or =ores.shell= remain in live code.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Pairs with the broader =ores.comms.*= naming established in earlier sprints; the shell becomes a peer of =ores.comms.service= rather than a top-level component.
+
+* Result
+
+Component renamed; namespace tree consistent.

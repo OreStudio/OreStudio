@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: 8be7437e-0708-42b4-be8c-f907324be0da
+:END:
+#+title: Investigate the graphs used in dirstat
+#+description: Investigate the graphs used in dirstat
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Seems like a good way of showing deal contribution to position.
+
+Links:
+
+- [[https://github.com/shundhammer/qdirstat][GH qdirstat]]

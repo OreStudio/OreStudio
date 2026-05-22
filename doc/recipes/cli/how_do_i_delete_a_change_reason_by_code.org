@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: 0f0b77d2-d635-4ae1-bbba-3e0e9ec396c3
+:END:
+#+title: How do I delete a change reason by code?
+#+description: Delete a change reason by code
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:change_reasons:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Delete a change reason by code. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
+
+* Question
+
+How do I delete a change reason by code using =ores.cli=?
+
+* Answer
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli dq change-reasons delete ${db_args} ${log_args} \
+  --key "test_reason"
+#+end_src

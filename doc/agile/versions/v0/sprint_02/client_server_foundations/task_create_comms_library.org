@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 9c9b5954-e01c-495d-94e9-2de3cb10c75c
+:END:
+#+title: Task: Create a comms library
+#+description: Extract a comms library so the messaging types live in one place, separate from client and server domain code.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :client_server:comms:library:client_server_foundations:sprint_02:v0:
+#+owner: marco
+#+created: 2025-09-22
+#+updated: 2025-09-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Pull the messaging-type definitions and the framing/transport
+helpers out of both client and server code into a shared =comms=
+library. Prevents the messaging surface from leaking into domain
+code on either side.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] |
+| Now          | Completed 2025-09-25.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2025-09-25                                                             |
+
+* Acceptance
+
+- A =comms= library target exists in CMake.
+- Both server and client link against it; messaging types removed
+  from their private headers.
+- A basic message round-trip test covers the library.
+
+* Notes
+
+- The library boundary is the messaging-types layer, not transport
+  internals — cobalt-specific code stays in the server.
+
+* Result
+
+- =ores.comms= library committed; client and server consume it.

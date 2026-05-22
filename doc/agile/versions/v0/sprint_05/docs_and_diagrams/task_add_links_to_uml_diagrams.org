@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: c37dc0d8-f9fd-489d-a661-4b262f3037c5
+:END:
+#+title: Task: Add links to UML diagrams
+#+description: Each component model now links to its PlantUML diagram from the org-roam graph.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :uml:documentation:links:docs_and_diagrams:sprint_05:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-01
+#+updated: 2025-12-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:3a763afb-22f3-4e9a-b121-a71997221c3f][Documentation and diagrams]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each component model document should link to its PlantUML
+diagram so org-roam users can jump from prose to the picture (and back)
+with no friction.
+
+* Status
+
+| Field        | Value                                                                   |
+|--------------+-------------------------------------------------------------------------|
+| State        | DONE                                                                    |
+| Parent story | [[id:3a763afb-22f3-4e9a-b121-a71997221c3f][Documentation and diagrams]] |
+| Now          | Completed 2025-12-01.                                                   |
+| Waiting on   | None.                                                                   |
+| Next         | None.                                                                   |
+| Last touched | 2025-12-01                                                              |
+
+* Acceptance
+
+- Every =projects/<comp>/modeling/<comp>.org= has an inline link to its PlantUML diagram.
+- Diagrams render in the published site alongside the model doc.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- The diagrams themselves come from sprint 04's per-component PlantUML work.
+
+* Result
+
+Per-component model docs now link to their PlantUML diagrams.

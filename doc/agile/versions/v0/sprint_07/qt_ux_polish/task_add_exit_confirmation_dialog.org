@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 0d8ff34d-dfd1-4e4a-bfb9-e88ce41ff581
+:END:
+#+title: Task: Add exit confirmation dialog
+#+description: Prompt the user before quitting the application; avoid accidental data loss.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt:ux:qt_ux_polish:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:72f723f4-378c-4e0a-b6f1-6ba3c29f5bea][Qt UX polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Prompt the user before quitting the application to avoid accidental data loss.
+
+* Status
+
+| Field        | Value                                                     |
+|--------------+-----------------------------------------------------------|
+| State        | DONE                                                      |
+| Parent story | [[id:72f723f4-378c-4e0a-b6f1-6ba3c29f5bea][Qt UX polish]] |
+| Now          | Completed 2025-12-22.                                     |
+| Waiting on   | None.                                                     |
+| Next         | None.                                                     |
+| Last touched | 2025-12-22                                                |
+
+* Acceptance
+
+- Modal dialog on quit with /Quit/ and /Cancel/ buttons.
+- Suppressible per-session via a /don't ask again/ checkbox.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Standard Qt =QMessageBox= dialog; no custom widget.
+
+* Result
+
+Quitting is now a deliberate act.

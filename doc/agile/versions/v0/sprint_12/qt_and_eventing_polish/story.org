@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 5b48d17b-f510-4458-8fb9-95832f9782c2
+:END:
+#+title: Story: Qt and eventing polish
+#+description: Shell widget in Qt, name-based role management, connections-save fix, configurable icon theme, test-stdout, unsubscribe-before-logout, events for connect/login.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :qt:eventing:polish:ux:shell:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Round of unrelated Qt + eventing polish: shell widget, name-based
+role management, save-on-connections fix, configurable icons,
+test-stdout, unsubscribe-before-logout, and lifecycle events for
+comms + accounts.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-10.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-10                                             |
+
+* Acceptance
+
+- All seven items closed cleanly.
+- Protocol bump 26.2 for name-based roles.
+
+* Tasks
+
+In execution order:
+
+- [[id:1ec31677-32dc-44d8-ad89-3a6cee3fb31a][Add shell widget to ores.qt]]
+- [[id:b058ba4f-4f33-47af-a3ae-bf90d476bcf3][Add roles to account via codes]]
+- [[id:8fbed264-99f8-4f9a-a991-cca4cbe26d7f][Fix save on connections causes exit]]
+- [[id:1b67fdbb-e039-4f61-92d9-4de117379f34][Make icon theme configurable]]
+- [[id:b70593d8-65c2-4334-81ee-228c7911e067][Tests logging to stdout in github]]
+- [[id:cc057564-b85e-4872-bea2-b4a9730bd0ca][Unsubscribe before logout]]
+- [[id:104d17ea-b2a7-42f9-865a-0488db9cca81][Use events in comms and accounts]]
+
+* Decisions
+
+- /Name-based role assignment is the stable path/ :: UUIDs change across DB refreshes; names don't.
+
+* Out of scope
+
+- Full event-driven UI refactor — done piecewise as needed.
+
+* See also
+
+None.

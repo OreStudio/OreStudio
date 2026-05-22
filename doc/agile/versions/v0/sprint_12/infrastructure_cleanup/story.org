@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 74a0b830-2f12-406f-9550-961098c11dc6
+:END:
+#+title: Story: Infrastructure cleanup
+#+description: Merge admin and template databases away; fix OSX build with portable getopt.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :database:osx:ci:refactor:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Two unrelated infra cleanups: merge admin + template databases away
+in favour of RLS-based isolation; fix OSX CI with portable getopt.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-12.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-12                                             |
+
+* Acceptance
+
+- =ores_admin= + =ores_template= databases gone.
+- Two-phase create with least-privilege ddl user.
+- OSX CI green.
+
+* Tasks
+
+In execution order:
+
+- [[id:78304c42-6a95-4532-81e0-ed9f0972d6c8][Merge all databases into one]]
+- [[id:9262faf6-0b47-47a4-b351-43d22ba07aeb][Fix OSX build]]
+
+* Decisions
+
+- /RLS replaces template cloning/ :: now that RLS works, template cloning is dead weight.
+- /Portable bash, not GNU bash/ :: OSX CI matters; the script needs to work under BSD getopt too.
+
+* Out of scope
+
+- Containerising the dev DB.
+
+* See also
+
+None.

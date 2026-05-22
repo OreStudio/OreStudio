@@ -4,10 +4,17 @@
 #+title: ores.sql
 #+description: PostgreSQL schema, migration scripts, role provisioning, and database lifecycle management for ORE Studio.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :sql:database:schema:component:
 #+created: 2026-05-20
 #+updated: 2026-05-20
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.sql component diagram
+#+caption: ores.sql
+[[file:ores.sql.png][file:ores.sql.png]]
 
 * Summary
 

@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: d9d3bab0-bb95-41ce-b68e-655b0c3695b0
+:END:
+#+title: Task: Fix missing export symbol definitions in trading.api and trading.core
+#+description: - PR #738 added `ORES_X_LIBRARY` compile definitions and visibility flags to 43 libraries but missed `ores.trading.api` 
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :symbol_visibility:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/743
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add the missing ORES_TRADING_API_LIBRARY and ORES_TRADING_CORE_LIBRARY compile definitions that were omitted from the initial -fvisibility=hidden migration.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] |
+| Now          | Completed 2026-05-14.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Add the missing ORES_TRADING_API_LIBRARY and ORES_TRADING_CORE_LIBRARY compile definitions that were omitted from the initial -fvisibility=hidden migration.
+- PR #743 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- PR #738 added =ORES_X_LIBRARY= compile definitions and visibility flags to 43 libraries but missed =ores.trading.api= and =ores.trading.core=
+- Without =ORES_TRADING_API_LIBRARY= defined when building the library, =ORES_TRADING_API_EXPORT= resolves to =BOOST_SYMBOL_IMPORT= (=__declspec(dllimport)=) instead of =BOOST_SYMBOL_EXPORT=
+- This causes MSVC C4273 / Clang =-Winconsistent-dllimport= on Windows, failing the Continuous Windows CI run
+
+
+* Result
+
+Landed.

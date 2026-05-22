@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 5d48fec0-d23f-4b22-82c6-ef3353d15f1c
+:END:
+#+title: Task: Fix Windows and macOS builds
+#+description: Restore green Windows and macOS CI by fixing CMake errors and platform-specific build issues.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :build:ci:windows:macos:bug_fix:build_stabilisation:sprint_02:v0:
+#+owner: marco
+#+created: 2025-09-15
+#+updated: 2025-09-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore green builds on Windows and macOS. They had drifted out of
+sync as Linux work raced ahead.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] |
+| Now          | Completed 2025-09-25.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2025-09-25                                                       |
+
+* Acceptance
+
+- Windows CI build passes.
+- macOS CI build passes.
+- The fixes are documented in the relevant CMake / preset files.
+
+* Notes
+
+- The work landed across multiple commits, addressing CMake errors
+  separately on each platform. Treated here as one task for
+  historical fidelity.
+
+* Result
+
+- Windows + macOS CI pipelines green.

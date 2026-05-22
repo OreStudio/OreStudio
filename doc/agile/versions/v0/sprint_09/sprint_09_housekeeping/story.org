@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 1e7a8abc-1abc-4a37-bdce-1d8dfb9d21ff
+:END:
+#+title: Story: Sprint 09 housekeeping
+#+description: Sprint backlog refinement and notebook OCR scans.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :agile:housekeeping:sprint_09:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Recurring per-sprint housekeeping: keep the backlog honest and
+continue the notebook OCR thread.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]] |
+| Now           | Completed 2026-01-20.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-20                                             |
+
+* Acceptance
+
+- Sprint 09 backlog reflects reality at close.
+- Sprint 09's notebook pages OCRed and committed.
+
+* Tasks
+
+In execution order:
+
+- [[id:69888c3d-64d0-44ce-ae77-6d9a83dc17d8][Sprint and product backlog refinement]]
+- [[id:f3187f2d-d903-4674-8338-d83af02736ec][OCR scan notebooks for this sprint]]
+
+* Decisions
+
+- /AI summary omitted this sprint/ :: v0 didn't carry an explicit AI-summary task for sprint 09, so it isn't migrated as a task.
+
+* Out of scope
+
+- Backfilling AI summaries for prior sprints.
+
+* See also
+
+None.

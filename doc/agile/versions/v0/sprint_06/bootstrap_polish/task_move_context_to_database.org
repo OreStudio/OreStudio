@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 7850a146-bc92-4639-a6ba-ab810aedf3c8
+:END:
+#+title: Task: Move context to database
+#+description: The runtime context (session, user, request metadata) lived in memory; persist it to the database so it survives restarts.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :context:postgres:refactor:bootstrap_polish:sprint_06:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-13
+#+updated: 2025-12-13
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:50bb2acb-5687-4bad-b03a-12af606e8eab][Bootstrap polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The runtime context (session, user, request metadata) lived in memory; persist it to the database so it survives restarts.
+
+* Status
+
+| Field        | Value                                                         |
+|--------------+---------------------------------------------------------------|
+| State        | DONE                                                          |
+| Parent story | [[id:50bb2acb-5687-4bad-b03a-12af606e8eab][Bootstrap polish]] |
+| Now          | Completed 2025-12-13.                                         |
+| Waiting on   | None.                                                         |
+| Next         | None.                                                         |
+| Last touched | 2025-12-13                                                    |
+
+* Acceptance
+
+- Context schema persisted in Postgres.
+- Service rehydrates context on startup.
+- Existing in-memory APIs preserved as a read-through cache.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Builds on sprint 04's =implement_database_configuration= — now the configuration's runtime state is also persisted.
+
+* Result
+
+Context now durable across restarts.

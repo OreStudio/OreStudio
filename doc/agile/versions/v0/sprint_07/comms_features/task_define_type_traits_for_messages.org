@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 52bca570-dfe6-475d-90d9-86e3db7d241d
+:END:
+#+title: Task: Define type traits for message grouping
+#+description: Add type traits to group messages by component and concern; basis for cleaner dispatch tables.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :comms:refactor:traits:comms_features:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:b306f938-f939-44ca-9d69-6faedbf91c08][Comms features]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Define type traits that group comms messages by component and concern; basis for cleaner dispatch tables and per-component policies (auth, logging, audit).
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | DONE                                                        |
+| Parent story | [[id:b306f938-f939-44ca-9d69-6faedbf91c08][Comms features]] |
+| Now          | Completed 2025-12-25.                                       |
+| Waiting on   | None.                                                       |
+| Next         | None.                                                       |
+| Last touched | 2025-12-25                                                  |
+
+* Acceptance
+
+- Traits compile-time-classify every message.
+- Dispatch code reads the trait rather than open-coding a switch.
+- RBAC enforcement uses traits to find the required permission.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Pure refactor; no behavioural change but it removes a class of copy-paste bugs in the handler table.
+
+* Result
+
+Messages classified via traits; dispatch driven from them.

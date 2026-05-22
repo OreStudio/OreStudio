@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 05ef8ee3-b5b1-41e2-809d-edae9418edd3
+:END:
+#+title: Task: Weaving skills and documentation together
+#+description: Analyse how skills and project docs should link and overlap; capture the convention.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :claude_code:skills:documentation:analysis:claude_code_skills_intro:sprint_04:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-15
+#+updated: 2025-11-15
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:50b83ce1-6e12-44e7-afeb-f6bac09ddc14][Claude Code skills introduction]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Analyse how Claude Code skills, project docs, and source
+code should weave together. Following MASD (Model Assisted Software
+Development) principles: source code is the single source of truth;
+documentation is a /projection/ of the source; the same documentation
+serves both humans (via org-roam) and LLMs (via skills).
+
+* Status
+
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | DONE                                                                         |
+| Parent story | [[id:50b83ce1-6e12-44e7-afeb-f6bac09ddc14][Claude Code skills introduction]] |
+| Now          | Completed 2025-11-15.                                                        |
+| Waiting on   | None.                                                                        |
+| Next         | None.                                                                        |
+| Last touched | 2025-11-15                                                                   |
+
+* Acceptance
+
+- A written analysis captured.
+- Concrete follow-ups identified as separate tasks.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Total time spent in v0: ~0:46.
+- Reference: /Model Assisted Software Development/ (Craveiro), https://uhra.herts.ac.uk/id/eprint/17031/
+- Follow-ups identified for future sprints: a friendlier =index.org=; split readme into specialised pages; skills as org-mode docs under =doc/skills/=; CMake targets for site and skills (done in this sprint); PlantUML diagrams at component and project level; LLM-generated component model docs; skills guidance for domain-entity changes; taxonomic analysis aligned to MASD; PDF generation.
+
+* Result
+
+Weaving analysis captured; follow-ups become individual tasks across this sprint and successors.

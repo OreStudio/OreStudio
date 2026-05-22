@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: f752c290-2a7a-4bf7-a615-4cdc2a3e0de6
+:END:
+#+title: Task: Sprint and product backlog refinement
+#+description: Maintain sprint 10 backlog and groom the product backlog.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :agile:backlog:sprint_10_housekeeping:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:61f6ab0b-bb2e-43e7-9735-447a7e3d55de][Sprint 10 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Maintain the sprint 10 backlog and groom the product backlog as items emerge.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:61f6ab0b-bb2e-43e7-9735-447a7e3d55de][Sprint 10 housekeeping]] |
+| Now          | Completed 2026-01-27.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-01-27                                                          |
+
+* Acceptance
+
+- Sprint 10 backlog reflects what was actually planned and what landed.
+- Items discovered in flight added to the product backlog.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Backlog headline was still STARTED at sprint close (=2026-01-27 23:52= clocktable) — refinement is ongoing in spirit, /done enough/ in practice.
+
+* Result
+
+Backlog kept current; v0 sprint backlog file is the source of truth.

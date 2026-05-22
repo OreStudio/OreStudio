@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 03440980-7776-4c85-b51b-eaa9cdba2b4c
+:END:
+#+title: Enable All Compression
+#+description: Enable All Compression
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:compression:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Enable all compression algorithms.
+
+#+name: compression-on-all
+#+begin_src ores-shell :exports none
+compression on
+compression
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<compression-on-all>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> wrong command: compression on
+ores-shell> Compression: on (zlib, gzip, bzip2)
+ores-shell> Bye!
+#+end_example

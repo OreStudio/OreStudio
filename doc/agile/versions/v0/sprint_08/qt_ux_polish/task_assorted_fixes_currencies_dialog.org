@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: f1634788-2c13-4635-8ea4-cd9fe80b8b07
+:END:
+#+title: Task: Assorted fixes to currencies dialog (flag and history)
+#+description: Flag updates propagate after reload; flag changes visible in history; fix incorrect-version error on history revert.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt:currencies:history:polish:qt_ux_polish:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Address the residual currency-flag and history-revert issues.
+
+* Status
+
+| Field        | Value                                                     |
+|--------------+-----------------------------------------------------------|
+| State        | DONE                                                      |
+| Parent story | [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]] |
+| Now          | Completed 2026-01-09.                                     |
+| Waiting on   | None.                                                     |
+| Next         | None.                                                     |
+| Last touched | 2026-01-09                                                |
+
+* Acceptance
+
+- Flag update propagates after reload.
+- Flag changes visible in history.
+- Revert to a version in history no longer errors with /incorrect version/.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Distinct from the dialog-level fixes; these are data-flow bugs around the flag + history axes.
+
+* Result
+
+Currencies dialog flag and history paths green.

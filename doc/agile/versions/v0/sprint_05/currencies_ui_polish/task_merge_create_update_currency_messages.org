@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: c905ce58-8eb6-4713-8205-3e55ce7a3c70
+:END:
+#+title: Task: Merge update and create currency messages
+#+description: Bitemporal repositories always insert, so the create/update split was never semantically necessary. Collapse to a single save_currency message.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :currencies:protocol:refactor:currencies_ui_polish:sprint_05:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-28
+#+updated: 2025-11-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:9836e113-dea9-4605-ae1b-9b0c955b6b73][Currencies UI polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Collapse =create_currency_request/response= and
+=update_currency_request/response= into a single =save_currency=
+message pair. Bitemporal repositories always insert new versions, so
+the create/update distinction was never semantically necessary —
+removing it simplifies the protocol and the UI.
+
+* Status
+
+| Field        | Value                                                             |
+|--------------+-------------------------------------------------------------------|
+| State        | DONE                                                              |
+| Parent story | [[id:9836e113-dea9-4605-ae1b-9b0c955b6b73][Currencies UI polish]] |
+| Now          | Completed 2025-11-28.                                             |
+| Waiting on   | None.                                                             |
+| Next         | None.                                                             |
+| Last touched | 2025-11-28                                                        |
+
+* Acceptance
+
+- Protocol exposes only =save_currency_request/response= (0x1009/0x100A).
+- =update_currency_request/response= removed.
+- Qt =CurrencyDetailDialog= sends one message type regardless of add/edit mode.
+- Protocol version bumped to signal the breaking change.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Total time spent in v0: ~1:07.
+- Detailed migration plan captured in v0 (8 steps across messaging / domain / Qt / client / docs).
+- Breaking protocol change; documented for release notes. Prompted a parallel task on the uninformative protocol-version error in the Qt UI.
+
+* Result
+
+Currency messaging collapsed to =save_currency=; protocol version bumped.

@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 66f76398-519d-4ee1-aaad-ae7e0f6c6161
+:END:
+#+title: Task: Add a Qt hello world
+#+description: Create a trivial Qt application that exercises the build pipeline end-to-end.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt:ux:scaffold:qt_ui_scaffold:sprint_01:v0:
+#+owner: marco
+#+created: 2024-06-22
+#+updated: 2024-06-23
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Stand up the first Qt application binary in the project, even if it
+only shows a hello-world window. The point is to prove the CMake +
+vcpkg + Qt + CI chain works end-to-end.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | DONE                                                        |
+| Parent story | [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]] |
+| Now          | Completed 2024-06-23.                                       |
+| Waiting on   | None.                                                       |
+| Next         | None.                                                       |
+| Last touched | 2024-06-23                                                  |
+
+* Acceptance
+
+- A Qt application target exists and builds in CMake.
+- The binary launches and shows a window.
+- The build is exercised by CI on every push.
+
+* Notes
+
+- Total time spent in v0: ~3:08.
+- Established the =ores.qt= subproject as the home for Qt code.
+
+* Result
+
+- Qt project:
+  https://github.com/OreStudio/OreStudio/tree/main/projects/ores.qt

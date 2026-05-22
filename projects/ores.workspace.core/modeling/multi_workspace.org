@@ -2,6 +2,7 @@
 :ID: 7C2F8A41-3B91-4D82-B7E0-9E1A5D6C4F82
 :END:
 #+title: Multi-Workspace Architecture
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

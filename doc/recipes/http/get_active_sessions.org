@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: 082de5c9-b0e4-46be-b4fa-9a0b7610ed5b
+:END:
+#+title: Get Active Sessions
+#+description: Get Active Sessions
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:sessions_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Get currently active sessions.
+
+#+begin_src verb :wrap src json
+get /sessions/active
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src

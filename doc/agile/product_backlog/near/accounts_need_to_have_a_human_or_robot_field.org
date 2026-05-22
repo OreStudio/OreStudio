@@ -1,0 +1,15 @@
+:PROPERTIES:
+:ID: b76dd9e7-c581-4dd3-949a-7a9befd6111f
+:END:
+#+title: Accounts need to have a human or robot field
+#+description: Accounts need to have a human or robot field
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Look for correct terminology (actor type?).

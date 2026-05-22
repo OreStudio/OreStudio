@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: bd4110c2-fdf7-47b0-a726-f4cd83ded8e5
+:END:
+#+title: Story: FSM and trade support
+#+description: Generic FSM framework in Postgres; trade envelope schema (trades + identifiers + party roles); ORE envelope view; rename ores.trade → ores.trading.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :fsm:trade:postgres:refactor:modelling:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Add a generic FSM framework in Postgres and use it to land the
+trade-envelope schema. Rename =ores.trade= → =ores.trading= in the
+process.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-20.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-20                                             |
+
+
+#+successor: 6ac2981b-ba0a-4916-a2c1-6b5a816a9148
+
+Continued in: [[id:6ac2981b-ba0a-4916-a2c1-6b5a816a9148][FSM consolidation into DQ]] (sprint 13) — moves the FSM
+framework into the DQ layer where it conceptually belongs.
+
+* Acceptance
+
+- Generic FSM framework (machines / states / transitions) in Postgres.
+- Trade envelope: 4 refdata tables + 3 core tables + soft FK + RLS.
+- ores_trade_ore_envelope_vw flattens to ORE structure.
+- Convention drift fixed across 40 SQL files; codegen templates aligned.
+- Component renamed ores.trade → ores.trading consistently.
+
+* Tasks
+
+In execution order:
+
+- [[id:196729ef-6042-4b3d-8c91-96cfe6c67a5c][Add FSM support to Postgres]]
+- [[id:78c1bec5-d1f6-49ec-89f5-8b485ce8fb96][Add trade support]]
+
+* Decisions
+
+- /FSM lives in Postgres/ :: trade-lifecycle authority is the database.
+- /Trade envelope, not trade record/ :: holds identity + temporal versioning + party roles.
+- /Rename component/ :: =ores.trading= is more precise than =ores.trade=.
+
+* Out of scope
+
+- Trade computation (lives in =ores.ore= / =ores.compute=).
+
+* See also
+
+- [[id:27b76a70-df1d-4c66-89a9-fba3cb801353][Add ores.ore component]] (sprint 10) — supplies the ORE envelope structure this story flattens to.

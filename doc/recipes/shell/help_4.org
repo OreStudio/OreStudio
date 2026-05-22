@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 3a94a1cc-9134-494c-a036-a1ddbf3e0d5f
+:END:
+#+title: Help
+#+description: Help
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:change_reasons:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+name: help-change-reasons-exit
+#+begin_src ores-shell :exports none
+change-reasons
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-change-reasons-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> change-reasons> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - get
+	Retrieve all change reasons from the server
+ - add <string> <string> <string> <string>
+	Add a change reason (code description category_code "commentary")
+ - delete <string>
+	Delete a change reason by code
+ - history <string>
+	Get version history for a change reason by code
+ - ores-shell
+	(menu)
+change-reasons> Bye!
+#+end_example

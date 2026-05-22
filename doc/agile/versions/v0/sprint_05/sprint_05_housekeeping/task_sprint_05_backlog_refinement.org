@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 9e386deb-2dce-4f97-a0b9-c38240ec4752
+:END:
+#+title: Task: Sprint and product backlog refinement
+#+description: Maintain sprint 05 backlog and groom product backlog as work surfaces new items.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :agile:backlog:sprint_05_housekeeping:sprint_05:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-01
+#+updated: 2025-12-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:de3eee9f-331e-440c-b62c-abdefe1d87e2][Sprint 05 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Maintain the sprint backlog through the sprint and groom the
+product backlog as discoveries surface. Sprint 05 picked up two
+predecessor-linked stories (auth-bootstrap; Valgrind/OpenSSL), so the
+grooming pass had to keep the cross-sprint state in sync.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:de3eee9f-331e-440c-b62c-abdefe1d87e2][Sprint 05 housekeeping]] |
+| Now          | Completed 2025-12-01.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2025-12-01                                                          |
+
+* Acceptance
+
+- Sprint backlog reflects what is actually being worked on.
+- Discoveries are captured into the product backlog rather than dropped.
+- Successor stories with #+predecessor: linkage updated as work lands.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Total time spent in v0: ~3:21, spread across 10 sessions.
+
+* Result
+
+Sprint backlog state at close matched delivered work; predecessor links updated.

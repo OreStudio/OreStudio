@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: bd7f39d4-46b1-41ce-992b-7feedf0cc59d
+:END:
+#+title: Task: Add mapping artefact to population functions
+#+description: Hard-coded mapping moved into the artefact pipeline.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sql:populate:artefact:schema_polish:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove the hard-coded mapping in population functions; route it through the artefact pipeline.
+
+* Status
+
+| Field        | Value                                                      |
+|--------------+------------------------------------------------------------|
+| State        | DONE                                                       |
+| Parent story | [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]] |
+| Now          | Completed 2026-01-25.                                      |
+| Waiting on   | None.                                                      |
+| Next         | None.                                                      |
+| Last touched | 2026-01-25                                                 |
+
+* Acceptance
+
+- Mapping data ingested as an artefact.
+- Population functions consume the mapping from the artefact table.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Closes a /TODO: hard-coded/ noted earlier in the DQ work.
+
+* Result
+
+Mapping data is governed like everything else.

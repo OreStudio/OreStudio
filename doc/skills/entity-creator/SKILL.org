@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 0cba2f23-7f5f-433d-921a-d9c056bd9ca8
+:END:
+#+title: Entity Creator
+#+description: Create a complete full-stack ORE Studio entity across all layers via codegen — the orchestrator skill.
+#+type: skill
+#+version: 2
+#+level: cross
+#+filetags: :skills:claude_code:entity:codegen:orchestrator:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_export markdown
+---
+name: entity-creator
+description: Create a complete full-stack ORE Studio entity across all layers via codegen — the orchestrator skill.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When the user asks to "add a new entity", "create entity X", or any
+equivalent. A /regular/ ORE Studio entity requires *all* layers listed
+below — skipping any layer requires explicit user approval. This skill
+orchestrates the sub-skills in dependency order via =TaskCreate= tasks.
+
+* How to use this skill
+
+** Step 1 — Confirm or create the JSON model
+
+Confirm a model file exists in
+=projects/ores.codegen/models/{component}/{entity}_domain_entity.json=
+(or =*_junction.json= for association tables). If it does not exist,
+create it before proceeding. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for the model schema.
+
+** Step 2 — Create one task per layer
+
+Use =TaskCreate= to register a task for each layer. Execute them in
+the order shown. Do not skip a layer unless the user explicitly says
+it is out of scope for this entity.
+
+| # | Layer | Sub-skill | Codegen |
+|---|---|---|---|
+| 1 | Domain · SQL · repository · service · protocol · generator | [[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]] | =--profile all= |
+| 2 | Qt UI (model, windows, dialogs, controller) | [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][qt-entity-creator]] | =--profile qt= |
+| 3 | Qt plugin wiring (menus, toolbar) | [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][qt-entity-creator]] §wiring | see [[id:e44891dc-234c-42db-90e1-9421400abd1a][Qt menu and toolbar patterns]] |
+| 4 | HTTP REST endpoints | [[id:bdcc47d4-b050-409e-8c50-3d179843a274][http-entity-creator]] | ❌ GAP |
+| 5 | CLI commands | [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][cli-entity-creator]] | ❌ GAP |
+| 6 | Shell REPL commands | [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][shell-entity-creator]] | ❌ GAP |
+| 7 | Wt web UI | [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][wt-entity-creator]] | ❌ GAP |
+
+** Step 3 — Gap protocol
+
+When a layer is marked ❌ GAP:
+
+1. *Do not hand-code the layer.*
+2. Raise a sprint story: "Implement codegen profile for {layer}."
+3. Reference [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]]§"Codegen gaps" for what the profile must cover.
+4. Link the story to the entity task before marking the layer done.
+5. Once the profile exists, regenerate and discard any hand-written interim code.
+
+Until the gap is resolved the layer is incomplete.  The entity is not
+"done" while gap layers remain open.
+
+** Step 4 — Tests and diagrams
+
+After all layer tasks are green, create two more tasks:
+
+- *Tests*: invoke [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][unit-test-writer]] for domain, repository, and service layers.
+- *Diagrams*: invoke [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] and [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]].
+
+** Step 5 — PR strategy
+
+Each layer produces one or more PRs (see the layer skill for PR titles
+and phase boundaries). Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] between phases and
+[[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]] to open each PR.
+
+* Recipes
+
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — canonical file checklist, template inventory, layer diagram.
+
+* Reference
+
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, profile catalogue, =run_generator.sh= usage.
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — complete file checklist; links to every layer skill and pattern doc.
+- [[id:e44891dc-234c-42db-90e1-9421400abd1a][Qt menu and toolbar patterns]] — plugin wiring required for step 3.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 5766b918-7741-491a-95b5-707ace9c4169
+:END:
+#+title: Task: Create a skill for PlantUML documentation
+#+description: First Claude Code skill: how to author and refresh PlantUML diagrams within the project.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :claude_code:skills:plantuml:claude_code_skills_intro:sprint_04:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-15
+#+updated: 2025-11-15
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:50b83ce1-6e12-44e7-afeb-f6bac09ddc14][Claude Code skills introduction]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Author the first Claude Code skill: how to author and refresh
+PlantUML diagrams in this project. The skill is an org-mode document with a
+markdown export block; a build target turns it into the Claude Code skill
+format.
+
+* Status
+
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | DONE                                                                         |
+| Parent story | [[id:50b83ce1-6e12-44e7-afeb-f6bac09ddc14][Claude Code skills introduction]] |
+| Now          | Completed 2025-11-15.                                                        |
+| Waiting on   | None.                                                                        |
+| Next         | None.                                                                        |
+| Last touched | 2025-11-15                                                                   |
+
+* Acceptance
+
+- A PlantUML skill exists under =doc/skills/=.
+- The skill exports to the Claude Code format on demand.
+- Build target wired to refresh the skill bundle.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Total time spent in v0: ~2:48.
+- First instance of the skill pattern that later skills follow.
+
+* Result
+
+PlantUML skill shipped as the seed of the skills layer.

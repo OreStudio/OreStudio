@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: ba994ed5-8729-4005-a4ed-99f46293c7a2
+:END:
+#+title: Task: Add account management support to qt
+#+description: Qt UI for listing accounts, viewing account details, performing lock / reset actions.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :iam:qt:ux:accounts:qt_ux_polish:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:72f723f4-378c-4e0a-b6f1-6ba3c29f5bea][Qt UX polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a Qt UI for account management.
+
+* Status
+
+| Field        | Value                                                     |
+|--------------+-----------------------------------------------------------|
+| State        | DONE                                                      |
+| Parent story | [[id:72f723f4-378c-4e0a-b6f1-6ba3c29f5bea][Qt UX polish]] |
+| Now          | Completed 2025-12-21.                                     |
+| Waiting on   | None.                                                     |
+| Next         | None.                                                     |
+| Last touched | 2025-12-21                                                |
+
+* Acceptance
+
+- List accounts.
+- View account details.
+- Trigger lock / unlock / password-reset actions.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Pairs with the lock / reset / sign-up protocol additions from the IAM story.
+
+* Result
+
+Admins can manage accounts from Qt without going through the shell.

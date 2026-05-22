@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: e5b1798d-951f-444a-bf39-a42d9a104ff8
+:END:
+#+title: Missing session properties
+#+description: Missing session properties
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+- disconnect type: orphaned, client disconnect.
+- add version, commit, etc.

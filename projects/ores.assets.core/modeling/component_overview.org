@@ -4,10 +4,17 @@
 #+title: ores.assets.core
 #+description: Asset management — SVG images, tags, currency-image associations, and NATS message handlers.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :assets:core:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.assets.core component diagram
+#+caption: ores.assets.core
+[[file:ores.assets.core.png][file:ores.assets.core.png]]
 
 * Summary
 

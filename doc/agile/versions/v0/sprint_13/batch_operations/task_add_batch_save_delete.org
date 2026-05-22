@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 0dab990a-3fd6-4b8e-950e-3959a5990552
+:END:
+#+title: Task: Add batch support for saves and deletes
+#+description: save_*_request takes std::vector<entity>; save_*_response returns {bool success, std::string message}; delete uses SQL WHERE IN for atomicity across 23 entities in dq / refdata / trading / iam; new save_result.hpp (later removed); temporal guard for tenant_type / tenant_status batch deletes; protocol 46.0 (breaking).
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :protocol:batch:sql:atomic:refactor:batch_operations:sprint_13:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:0251593a-0d85-49c4-aee1-7aac673978b7][Batch operations]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make save + delete atomic at the batch level.
+
+* Status
+
+| Field        | Value                                                         |
+|--------------+---------------------------------------------------------------|
+| State        | DONE                                                          |
+| Parent story | [[id:0251593a-0d85-49c4-aee1-7aac673978b7][Batch operations]] |
+| Now          | Completed 2026-02-28.                                         |
+| Waiting on   | None.                                                         |
+| Next         | None.                                                         |
+| Last touched | 2026-02-28                                                    |
+
+* Acceptance
+
+- =save_*_request= takes =std::vector<entity>=; =save_*_response= returns =/{success, message/}= (single outcome).
+- Batch delete uses SQL =WHERE IN (...)= for atomicity across 23 entities in =ores.dq=, =ores.refdata=, =ores.trading=, =ores.iam=.
+- Repository, service, and message-handler layers all align with the new shape.
+- Temporal guard for IAM entities (=tenant_type=, =tenant_status=) — =valid_to = max= constraint preserves historical rows.
+- =save_result.hpp= introduced then later removed as dead code.
+- Protocol 46.0 (breaking).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Closes a class of partial-write bugs and aligns repository / service / handler conventions.
+
+* Result
+
+Batch operations atomic.

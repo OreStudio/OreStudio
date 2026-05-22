@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 84545fff-58e6-4c97-821c-0d3bb0375f08
+:END:
+#+title: Story: Advanced counterparty dialog
+#+description: Five-tab counterparty dialog (General / Identifiers / Contacts / Hierarchy / Metadata); refactor party + counterparty dialogs behind a strategy pattern.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :counterparty:party:qt:ux:refactor:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Reshape the counterparty dialog into a five-tab layout and refactor
+party + counterparty dialogs behind a strategy pattern.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-19.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-19                                             |
+
+* Acceptance
+
+- Five-tab counterparty dialog (General / Identifiers / Contacts / Hierarchy / Metadata).
+- Inline identifier + contact management.
+- Change-reason dialog on amendment.
+- Eventing for counterparty + identifier + contact info.
+- Strategy-pattern refactor collapses party + counterparty dialogs into one class with two strategies.
+
+* Tasks
+
+In execution order:
+
+- [[id:bc6a1b9e-253a-4727-badf-324d86a98313][Counterparty dialog: 5-tab layout]]
+- [[id:1b51b5e2-b0e2-4839-a911-50c1069300b4][Refactor party + counterparty dialogs]]
+
+* Decisions
+
+- /Five tabs from Gemini analysis + metadata/ :: matches industry pattern.
+- /Strategy pattern/ :: 80% of the two dialogs was identical; one class with two strategies kills the duplication.
+
+* Out of scope
+
+- Trading-limit + SSI tabs as functional surfaces (sketched only).
+
+* See also
+
+None.

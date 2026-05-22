@@ -1,4 +1,5 @@
 #+TITLE: PostgreSQL Identifier Length Cleanup
+#+version: 1
 #+SUBTITLE: Eliminate NAMEDATALEN truncation warnings for RLS policies and indexes
 #+DATE: 2026-05-13
 #+AUTHOR: ORE Studio Team

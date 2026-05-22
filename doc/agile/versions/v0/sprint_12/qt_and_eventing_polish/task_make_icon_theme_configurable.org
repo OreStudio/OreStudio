@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 1b67fdbb-e039-4f61-92d9-4de117379f34
+:END:
+#+title: Task: Make icon theme configurable
+#+description: Allow switching the icon theme without rebuilding; ideally without restarting.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt:theming:ux:icons:qt_and_eventing_polish:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the icon theme configurable at runtime so we can shop for a good theme without rebuilding.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]] |
+| Now          | Completed 2026-02-10.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-02-10                                                          |
+
+* Acceptance
+
+- Icon theme switchable without rebuilding.
+- Restart-only acceptable as a stopgap.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Pairs naturally with the Icon enum refactor from sprint 09.
+
+* Result
+
+Icon theme is configurable.

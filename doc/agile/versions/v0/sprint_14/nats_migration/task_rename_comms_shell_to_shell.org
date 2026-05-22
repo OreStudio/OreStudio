@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 6d8987a6-7f0b-40cb-8334-e149ea44b44b
+:END:
+#+title: Task: Rename ores.comms.shell to ores.shell
+#+description: With NATS replacing the binary comms protocol, the shell no longer needs the .comms namespace; rename completes the cleanup; NATS documentation rewritten across all 10 services with subject-based references.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :shell:rename:refactor:docs:nats:nats_migration:sprint_14:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Rename =ores.comms.shell= to =ores.shell= — the =.comms= namespace no longer applies once NATS replaces the binary comms protocol.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | DONE                                                        |
+| Parent story | [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]] |
+| Now          | Completed 2026-03-15.                                       |
+| Waiting on   | None.                                                       |
+| Next         | None.                                                       |
+| Last touched | 2026-03-15                                                  |
+
+* Acceptance
+
+- Rename completed across the codebase.
+- Considered + decided against renaming =ores.nats= to =ores.messaging=.
+- Protocol documents renamed to /messaging/.
+- NATS messaging protocol documentation rewritten for all 10 services with subject-based references (replacing old binary protocol references).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Closes the loop on the sprint-08 rename =ores.shell= → =ores.comms.shell= now that the binary-protocol coupling is gone.
+
+* Result
+
+Shell back to =ores.shell=; docs aligned.

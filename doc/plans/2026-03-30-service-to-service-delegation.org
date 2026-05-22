@@ -1,4 +1,5 @@
 #+TITLE: Service-to-Service JWT Delegation
+#+version: 1
 #+DATE: 2026-03-30
 #+AUTHOR: ORE Studio Team
 #+STATUS: DRAFT

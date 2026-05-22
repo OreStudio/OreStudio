@@ -1,4 +1,4 @@
-;;; .build-plan.el --- version_zero.org             -*- lexical-binding: t; -*-
+;;; .build-plan.el --- v0 version manifest          -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2025  Marco Craveiro
 
@@ -57,11 +57,11 @@
 (setq org-publish-project-alist
       '(
         ("plan"
-         :base-directory "./doc/agile/v0/"
+         :base-directory "./doc/agile/versions/v0/"
          :publishing-directory "./build/output/taskjuggler/"
          :publishing-function ores/org-publish-to-taskjuggler
          :base-extension "dummy"
-         :include ("version_zero.org")
+         :include ("version.org")
          :recursive nil)
         ))
 

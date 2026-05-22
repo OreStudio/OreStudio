@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 36c998ee-1171-468c-943f-80eefc88a8f4
+:END:
+#+title: Task: Add system account
+#+description: Non-login system account used for all initial population; publication uses the new admin account, not the system account.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :iam:system_account:bootstrap:audit:audit_trail_and_system_account:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a non-login system account for initial population so =modified_by= always maps to an existing account row.
+
+* Status
+
+| Field        | Value                                                                       |
+|--------------+-----------------------------------------------------------------------------|
+| State        | DONE                                                                        |
+| Parent story | [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]] |
+| Now          | Completed 2026-02-16.                                                       |
+| Waiting on   | None.                                                                       |
+| Next         | None.                                                                       |
+| Last touched | 2026-02-16                                                                  |
+
+* Acceptance
+
+- System account created (no login).
+- Initial population uses the system account.
+- Publication uses the new admin account, not the system account.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Closes the chicken-and-egg: bootstrap rows referenced a =modified_by= that didn't exist as an account.
+
+* Result
+
+System account in place; initial population audit-clean.

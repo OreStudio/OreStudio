@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 4776490d-d9b5-4465-9bd0-21afac83ca60
+:END:
+#+title: Task: Add NATS telemetry sampling
+#+description: nats.service that stores NATS samples for observability; question of renaming to messaging-service or moving to telemetry left open.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :nats:telemetry:observability:nats_migration:sprint_14:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add NATS telemetry sampling: an nats.service that stores samples for observability.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | DONE                                                        |
+| Parent story | [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]] |
+| Now          | Completed 2026-03-16.                                       |
+| Waiting on   | None.                                                       |
+| Next         | None.                                                       |
+| Last touched | 2026-03-16                                                  |
+
+* Acceptance
+
+- nats.service captures NATS samples.
+- Question of renaming to a messaging-service or moving into telemetry left open for later.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Open design question: /nats.service that does telemetry/ is a bit oddly named; resolution deferred.
+
+* Result
+
+NATS telemetry sampling in place.

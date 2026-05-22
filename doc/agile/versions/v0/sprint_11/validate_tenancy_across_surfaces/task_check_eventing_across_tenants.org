@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 10f2ee08-c4c4-4b2d-af8a-10898ff2d309
+:END:
+#+title: Task: Check eventing across tenants
+#+description: tenant_id propagated through SQL triggers → JSONB payloads → event bus → subscription_manager; subscription_manager::notify() filters by session tenant; backward-compatible broadcast when tenant absent; 5 new test cases.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :eventing:tenancy:validation:subscription:validate_tenancy_across_surfaces:sprint_11:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make sure events stay inside their tenant — a database trigger in tenant A must not reach subscribers in tenant B.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | DONE                                                                          |
+| Parent story | [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]] |
+| Now          | Completed 2026-02-06.                                                         |
+| Waiting on   | None.                                                                         |
+| Next         | None.                                                                         |
+| Last touched | 2026-02-06                                                                    |
+
+* Acceptance
+
+- SQL triggers embed =tenant_id= in JSONB notification payloads.
+- Event-bus + domain-event types carry =tenant_id= end-to-end.
+- =subscription_manager::notify()= filters by session tenant.
+- Backward-compatible broadcast when =tenant_id= is empty (pre-login sessions, unconfigured session service).
+- Five new test cases cover tenant matching, broadcast, cross-tenant isolation, pre-login, and no-session-service scenarios.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Final piece of /tenancy actually works/ — the eventing path was the easiest to leak through without anyone noticing.
+
+* Result
+
+Eventing tenant-aware end-to-end.

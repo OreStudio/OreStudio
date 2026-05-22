@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 241a6de6-8978-4daf-a052-7e1cf06a8fc8
+:END:
+#+title: Story: Party-level refdata restrictions
+#+description: Per-party visibility for currencies + countries via junction tables; framework in place but full enforcement postponed.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :rls:party:refdata:currency:country:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Lay the framework for per-party visibility of currencies + countries;
+junction tables in place but full enforcement deferred.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | BACKLOG                                                |
+| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Now           | Postponed in sprint 13; carried forward.               |
+| Waiting on    | A sprint with the slot.                                |
+| Next          | Return to this once a sprint has the budget.           |
+| Last touched  | 2026-02-28                                             |
+
+* Acceptance
+
+- party_currencies + party_countries junction tables.
+- Full stack via codegen (domain + repo + service + tests).
+- Service-layer list_*_for_party methods.
+- Bitemporal support.
+
+* Tasks
+
+In execution order:
+
+- [[id:f5ed48d0-31d1-409c-9bb7-672a16208b53][Add party-level currency and country restrictions (framework)]]
+
+* Decisions
+
+- /Framework now, enforcement later/ :: gets us a feel for party-level RLS at the refdata layer without paying the full implementation cost.
+
+* Out of scope
+
+- UI + protocol enforcement (carried forward).
+
+* See also
+
+- [[id:c431b464-a3bc-4d9c-b33a-7c5b247ebea4][Party-level RLS isolation]] (sprint 12) — the broader RLS framework this extends.

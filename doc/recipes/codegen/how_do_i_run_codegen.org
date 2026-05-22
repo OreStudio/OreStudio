@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 20d0a77d-e0c0-492e-b0ec-45c7638dd220
+:END:
+#+title: How do I run codegen?
+#+description: Invoke ores.codegen to generate code from a JSON model — set up the venv, run the wrapper, find the output.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :codegen:cmake:build:python:recipe:
+#+created: 2026-05-18
+#+updated: 2026-05-18
+
+For background on what the generator is and what it generates, see
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] (the component model).
+
+* Question
+
+How do I run the ORE Studio C++ code generator?
+
+* Answer
+
+1. /Set up the venv/ — once per checkout:
+
+   #+begin_src sh
+   cd projects/ores.codegen
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   #+end_src
+
+2. /Run the generator/ on a JSON model:
+
+   #+begin_src sh
+   ./run_generator.sh models/path/to/model.json
+   #+end_src
+
+   Or with a profile (set of templates for one facet, e.g. =qt=, =sql=):
+
+   #+begin_src sh
+   ./run_generator.sh models/path/to/model.json --profile qt
+   #+end_src
+
+   Or with a single template:
+
+   #+begin_src sh
+   ./run_generator.sh models/path/to/model.json --template cpp_protocol.hpp.mustache
+   #+end_src
+
+3. /Inspect the output/ — by default written to =output/= alongside the
+   script. Override with a second positional argument:
+
+   #+begin_src sh
+   ./run_generator.sh models/path/to/model.json custom_output/
+   #+end_src
+
+4. /List available profiles/ when you need to discover them:
+
+   #+begin_src sh
+   ./run_generator.sh --list-profiles
+   #+end_src
+
+* Script
+
+The wrapper itself is =projects/ores.codegen/run_generator.sh=. It
+sources the venv and invokes =src/generator.py= with the given
+arguments.
+
+* Tested by
+
+The generator's own test suite (under =projects/ores.codegen/=) and
+its use in the project build: when models change, regenerated output
+is committed and CI builds the result.
+
+* See also
+
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — uses the same codegen
+  infrastructure for org-mode document generation.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — what the generator is and what it generates.

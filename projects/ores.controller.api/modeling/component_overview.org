@@ -4,10 +4,17 @@
 #+title: ores.controller.api
 #+description: Domain types and NATS protocol schemas for the controller component.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :controller:api:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.controller.api component diagram
+#+caption: ores.controller.api
+[[file:ores.controller.api.png][file:ores.controller.api.png]]
 
 * Summary
 

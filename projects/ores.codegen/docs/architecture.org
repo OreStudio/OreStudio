@@ -4,6 +4,7 @@
 #+title: ores.codegen architecture
 #+description: Directory layout, internal modules, template system, model-template mapping, modeline configurations, and features of the code generator.
 #+type: knowledge
+#+version: 2
 #+level: cross
 #+filetags: :codegen:architecture:knowledge:
 #+created: 2026-05-18

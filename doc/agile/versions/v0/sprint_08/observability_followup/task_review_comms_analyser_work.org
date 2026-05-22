@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: b091715a-ffa2-4716-90d5-3431f5ff4532
+:END:
+#+title: Task: Review comms analyser work
+#+description: Validate the comms analyser; add a UI surface for it.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :comms:analyser:review:ux:observability_followup:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Review the comms-analyser component: validate the analyser works end-to-end and add a UI surface for it.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | BACKLOG                                                              |
+| Parent story | [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]] |
+| Now          | POSTPONED in sprint 08; carried forward to a later sprint.           |
+| Waiting on   | Nothing.                                                             |
+| Next         | Return to this once a sprint has the slot.                           |
+| Last touched | 2026-01-11                                                           |
+
+* Acceptance
+
+- Analyser exercised against representative comms traffic.
+- UI surface added (Qt panel) to inspect analysed traffic.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+POSTPONED in v0: short clock entry only, deferred to a later sprint.
+
+* Result
+
+Not completed in sprint 08; carried forward.

@@ -1,8 +1,14 @@
 :PROPERTIES:
 :ID: CB42DFE5-804B-E1C4-E1E3-0A6C4766609C
 :END:
-#+title: Ore Studio
-#+author: Marco Craveiro
+#+title: ORE Studio
+#+description: Graphical front-end for the Open Source Risk Engine (ORE), built for learning quantitative finance by doing.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :readme:
+#+created: 2024-06-15
+#+updated: 2026-05-21
 #+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
 
@@ -41,265 +47,35 @@
 #+html: <a href="https://deepwiki.com/OreStudio/OreStudio"><img alt="Ask DeepWiki" src="https://deepwiki.com/badge.svg"/></a>
 #+HTML: </div>
 
-* In a nutshell
+* What is ORE Studio?
 
-ORE Studio is a graphical wrapper around [[https://www.opensourcerisk.org/][Acadia's]] [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine (ORE)]],
-which itself builds atop of [[https://github.com/lballabio/QuantLib][QuantLib]]. Please note that this open source project
-has *no affiliation whatsoever* with ORE or QuantLib, but you cannot understand
-ORE Studio without at least a basic understanding of both of these projects.
+ORE Studio is a graphical front-end for the [[https://www.opensourcerisk.org/][Open Source Risk Engine]] (ORE),
+which itself builds on [[https://www.quantlib.org/][QuantLib]]. It provides a database-backed UI for
+configuring and running ORE — persistent storage for inputs and outputs,
+CRUD management, and a simple three-layer architecture (client / service /
+[[https://www.postgresql.org/][PostgreSQL]]) designed to be easy to understand and extend.
 
 [[./assets/images/ore_studio-v0.0.13.png]]
 
-QuantLib is defined as follows:
+The project is built for people who want to *learn quantitative finance by
+building*. All the heavy mathematical lifting stays in ORE and QuantLib; ORE
+Studio focuses on infrastructure, data management, and making the domain
+accessible to C++ developers without an institutional background.
 
-#+begin_quote
-The QuantLib project (https://www.quantlib.org) is aimed at providing a
-comprehensive software framework for quantitative finance. QuantLib is a
-free/open-source library for modeling, trading, and risk management in
-real-life.
-#+end_quote
+- *[[https://orestudio.github.io/OreStudio/doc/identity/product_identity.html][Product identity]]* — goals, audience, scope and what ORE Studio is not.
+- *[[https://orestudio.github.io/OreStudio/doc/orientation.html][Orientation]]* — how to navigate the documentation.
+- *[[https://orestudio.github.io/OreStudio/][Website]]* — full documentation, recipes, and architecture reference.
 
-ORE tells us that
+* Getting started
 
-#+begin_quote
-The [[https://www.opensourcerisk.org/][Open Source Risk]] project aims at establishing a transparent peer-reviewed
-framework for pricing and risk analysis that can serve as
+Binary packages for each release are available on [[https://github.com/OreStudio/OreStudio/releases][GitHub Releases]] (Linux,
+macOS, Windows — 64-bit). Per-commit packages are attached to the
+corresponding [[https://github.com/OreStudio/OreStudio/actions][GitHub Actions workflow run]].
 
-- a benchmarking, validation, training, teaching reference
-- an extensible foundation for tailored risk solutions
+To build from source, follow the
+[[https://orestudio.github.io/OreStudio/doc/recipes/cmake/how_do_i_set_up_a_dev_environment.html][How do I set up a development environment?]] recipe. Preset options and
+platform notes are in the [[https://orestudio.github.io/OreStudio/doc/recipes/cmake/cmake.html][CMake recipes]].
 
-Open Source Risk Engine (ORE) provides
+* Contributing
 
-- contemporary risk analytics and value adjustments (XVAs)
-- interfaces for trade/market data and system configuration (API and XML)
-- simple application launchers in Excel, LibreOffice, Python, Jupyter
-- various examples that demonstrate typical use cases
-- comprehensive test suites
-
-ORE is based on [[https://www.quantlib.org/][QuantLib]], the open source library for quantitative finance, and
-it extends QuantLib in terms of simulation models, financial instruments and
-pricing engines.
-#+end_quote
-
-/ORE Studio/ builds on top of ORE with the eventual aim of providing:
-
-- persistent database storage for all of its inputs and outputs, with basic [[https://en.wikipedia.org/wiki/Create,_read,_update_and_delete][CRUD]]
-  support;
-- graphical user interface both for data generation as well as data exploration;
-- ability to configure and orchestrate ORE execution.
-
-[[./assets/images/ore_studio_stack.png]]
-
-The remainder of this document describes our approach in greater detail.
-
-* Links
-
-- [[https://github.com/OreStudio/OreStudio][GitHub]]: Most project interaction for developers occurs via GitHub.
-- [[https://orestudio.github.io/OreStudio/][Website]]: Statically generated website with project documentation.
-
-* Project Overview
-
-The objective of this project is to create a simple User Interface for ORE, /for
-didactic purposes/. Significantly, our intent is *not* to create a professional
-tool for enterprise-grade use. We instead follow on the footsteps of those like
-[[https://x.com/karpathy/status/1756380066580455557?lang=en][Karpathy]], who view learning as deeply enmeshed with the act of building.
-
-With this in mind, our strategy is two-fold:
-
-- to learn by /creating the tool itself/; and
-- to create a tool specifically designed for others to learn, explore and
-  experiment within the domain of [[https://en.wikipedia.org/wiki/Quantitative_analysis_(finance)][quantitative finance]], both by using the tool
-  as well as by extending it for their own purposes.
-
-[[./assets/images/ore_studio-v0.0.12.png]]
-
-The next section explains how we intend to go on about it.
-
-** Approach
-
-To attain our goals we have decided to remove as many infrastructural moving
-parts as possible from the engineering stack. Most financial systems involve a
-myriad of micro-services, a veritable zoo of storage technologies, assorted
-messaging queues, orchestration engines and much, much more. Whilst these may be
-deemed necessary for enterprise systems, we find them counterproductive from a
-teaching perspective as they obscure considerably the underlying domain concepts
-they purport to implement.
-
-In stark contrast, ORE Studio will only ever have three layers: the /client/,
-the /service layer/ and the [[https://www.postgresql.org/][Postgres]] relational database. This simple
-architecture has several implications:
-
-- [[https://en.wikipedia.org/wiki/Business_logic][business logic]] will be divided between the service and database layers, as
-  required; it is to be located wherever the implementation can be done with the
-  least amount of complexity and the highest amount of clarity.
-- unlike with enterprise-grade software, performance and scalability come
-  /after/ clarity. That is to say that we shall try our best to make things fast
-  /within/ the stated constraints. The one exception is the interactive
-  experience, which is to be prioritised.
-- we shall focus /exclusively/ on the latest versions of [[https://github.com/OpenSourceRisk/Engine][ORE]] and [[https://github.com/lballabio/QuantLib][QuantLib]], and
-  will not support any other Quant libraries or engines. ORE Studio is designed
-  to be fused with these two technologies.
-- finally, all of the heavy quantitative / mathematical lifting will reside
-  exclusively within ORE and QuantLib; ORE Studio itself will contain as little
-  quant logic as possible, making it more accessible to regular developers. Our
-  focus is on [[https://en.wikipedia.org/wiki/Create,_read,_update_and_delete][CRUD]] infrastructure and graphical presentation.
-
-We did start with a monolithic architecture first, but then it became too
-complex. At any rate, our ultimate objective is to align ourselves with others
-such as Schmidt, and heed his call for [[https://www.radicalsimpli.city/]["Radical Simplicity in Technology"]]:
-
-#+begin_quote
-As developers we love complexity. We create complexity with SPAs, Vue/React,
-Transpiling, Typescript, Babel, Webpack, PureCSS, GraphQL, JSON, and on the
-backend with microservices, protobuf, Kafka, InfluxDB, or NoSQL databases. This
-complexity is accidental and not in the problem domain. This complexity slows us
-down and makes development tiresome. This complexity leads to shallow domains.
-Radical Simplicity makes development fast and joyful again.
-#+end_quote
-
-*** Technology
-
-The implementation language of choice is [[https://isocpp.org/][C++]], for somewhat arbitrary reasons.
-After many years of software engineering with it --- both [[https://github.com/MASD-Project/dogen][academically]] as well
-as professionally --- I have now found myself estranged from the language for
-the last few years. This project is thus an opportunity for me to catch up with
-the latest and greatest developments in the C++ ecosystem. Python would have
-been a suitable alternative, particularly given its popularity with [[https://en.wikipedia.org/wiki/Quantitative_analysis_(finance)][Quants]] and
-Quant Devs. However, in the interest of simplicity, we'll stick to just the
-/one/ language (other than [[https://en.wikipedia.org/wiki/SQL][SQL]] for the database, or course).
-
-*** About the Author
-
-I am the single maintainer of ORE Studio and thus its [[https://en.wikipedia.org/wiki/Benevolent_dictator_for_life][BFDL]]. If you want to know
-more about me, do have a peek at [[https://mcraveiro.github.io/][my personal website]] --- the [[https://mcraveiro.github.io/about.html][about section]] in
-particular. As with most open source projects, [[https://github.com/OreStudio/OreStudio/blob/main/CONTRIBUTING.md][PRs are welcome]] but they must be
-in the spirit of what has been described thus far. And you can always reach out
-to our [[https://discord.gg/gcrYsjW3pd][discord channel]] for a chat.
-
-* Project Documentation
-
-All documentation for this project is kept within [[https://git-scm.com/][git]], right next to its source
-code. It uses [[https://www.gnu.org/software/emacs/][Emacs]] and [[https://orgmode.org/][org-mode]] to [[https://github.com/OreStudio/OreStudio/actions/workflows/build-site.yml][automatically generate]] its [[https://orestudio.github.io/OreStudio/][website]], in a
-variation of [[https://en.wikipedia.org/wiki/Literate_programming][literate programming]]. We also use [[https://www.orgroam.com/][org-roam]] internally to organise
-our notes and [[https://orgmode.org/worg/org-contrib/babel/][org-babel]] to make code blocks executable where possible. Org-roam
-is an implementation of the [[https://en.wikipedia.org/wiki/Zettelkasten][Zettelkasten method]], though you need not care too
-much about it if you do not use Emacs; just browse through the content via [[https://orestudio.github.io/OreStudio/][the
-website]] and start with "[[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]]" as the entry point. Unfortunately this
-only works via the website, so you will not see some of the links within
-GitHub's rendering of the org-mode files.
-
-If you do use Emacs, you can make use of a much richer roam experience. The file
-[[https://github.com/OreStudio/OreStudio/blob/main/.dir-locals.el][.dir-locals.el]] is configured to generate a local roam database when you run:
-
-#+begin_src emacs-lisp
-(org-roam-db-sync)
-#+end_src
-
-This snippet, as well as many like it, is an executable snippet via org-babel.
-Once you run it, you can then jump through all the pages using the normal
-org-roam facilities.
-
-Lastly, you may notice that this content is somewhat academic in tone. Though we
-are not affiliated with any academic effort, I have kept a lot of bad habits
-from my [[https://masd-project.github.io/progen/docs/masd_academic_papers.html#ID-5FA85AF3-E55C-B174-D943-1E2246CAEB14][days at university]] and these inform the approach --- for example how we
-research prior art, organise the documentation, the use of [[https://github.com/OreStudio/OreStudio/blob/464525bd80e8cb5d69550bbcf06ed3da4e702966/doc/bibliography.bib][references]] and so on.
-Nonetheless, rather than a research model, the project intends to be useful to
-academics and practitioners alike, within its stated constraints. If you do want
-to use the project for research, a [[https://www.earthdata.nasa.gov/engage/doi-process][DOI]] will be made available in [[https://zenodo.org/][Zenodo]] when we
-do our first release. Once sufficient functionality has been implemented to
-justify the effort, we'll write a Technical Report describing the tool.
-
-* Binary Packages
-
-Binary packages are available for each release in [[https://github.com/OreStudio/OreStudio/releases][GitHub]], with the links shown
-at the end of each release note. The binaries cover [[https://www.debian.org/][Debian Linux]] (though they
-probably also work for [[https://ubuntu.com/][Ubuntu]] and other flavours), [[https://en.wikipedia.org/wiki/MacOS][MacOS]] and [[https://en.wikipedia.org/wiki/Microsoft_Windows][Windows]] --- all
-64-bit only. Packages are also generated per commit for each Operative System
-and stored with the corresponding [[https://github.com/OreStudio/OreStudio/actions][GitHub Workflow]]. Development is done from the
-[[https://github.com/OreStudio/OreStudio][main branch in git]], so latest should always be greatest; but you may want to use
-packages from the [[https://orestudio.github.io/OreStudio/doc/agile/agile.html][previous sprint]] rather than what is currently under
-development (see badges above).
-
-Notes:
-
-- Other than Linux, we do not test the packages frequently. If you find any
-  issues with a binary package, please [[https://github.com/OreStudio/OreStudio/issues][raise an issue]].
-- The OSX installer provides you with a DMG. Once you open it in Finder, it
-  mounts under =/Volumes/=, /e.g/.:
-
-#+begin_src sh
-/Volumes/OreStudio-${VERSION}-Darwin/orestudio.app/Contents/Resources/bin
-#+end_src
-
-Where =${VERSION}= is your ORE Studio version, such as =0.0.17=.
-
-* Building From Source
-
-In order to build ORE Studio you will need a modern [[https://en.wikipedia.org/wiki/C%2B%2B][C++]] [[https://en.wikipedia.org/wiki/Toolchain][toolchain]]. On Linux and
-OSX, you'll need a recent compiler with [[https://en.wikipedia.org/wiki/C%2B%2B20][C++ 20]] support, such as [[https://www.gnu.org/software/gcc/gcc-13][GCC 13]] or [[https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html][Clang
-14]], and [[https://ninja-build.org/manual.html][Ninja]] or [[https://www.gnu.org/software/make/][GNU Make]]. On Windows you'll need [[https://visualstudio.microsoft.com/vs/whatsnew/][Visual Studio 2022]]. On all
-platforms, we make extensive use of [[https://cmake.org/][CMake]]. Older compilers may work, but we try
-to always use the most recent releases. So, if you can, please try using to
-those.
-
-In terms of dependencies, though ORE Studio should build fine with
-package-manager supplied libraries or even with hand-built dependencies, the
-recommended way to setup a development environment on all supported platforms is
-by using [[https://github.com/Microsoft/vcpkg][vcpkg]], which is what this document describes. ORE Studio uses the
-"[[https://stackoverflow.com/questions/73967245/why-is-vcpkg-recommended-as-a-git-submodule][sub-module setup]]", whereby vcpkg is a git submodule of ORE Studio. All of the
-dependencies are declared in the [[https://github.com/OreStudio/OreStudio/blob/main/vcpkg.json][vcpkg.json]] file. Unfortunately, some of these
-packages also have dependencies --- particularly on Linux. If you are on Debian
-or Ubuntu, please run the script [[https://github.com/OreStudio/OreStudio/blob/main/build/scripts/install_debian_packages.sh][=build/scripts/install_debian_packages.sh=]]
-prior to building. See the next section for details.
-
-** First-time setup (Ubuntu, Debian, WSL)
-
-Clone with submodules, install the build dependencies, and initialise
-the database:
-
-#+begin_src sh
-git clone https://github.com/OreStudio/OreStudio.git --recurse-submodules
-cd OreStudio
-./build/scripts/install_debian_packages.sh --full-install
-./projects/ores.sql/recreate_database.sh
-#+end_src
-
-The install script pulls GCC, Clang, CMake, Ninja, PostgreSQL,
-=libpq-dev=, the Qt6 development packages, Valgrind, and the X11/GL
-headers --- all from the distro repositories. Nothing comes from
-third-party APT sources.
-
-** Building, testing, deploying
-
-Every CMake command — configuring with a preset, building, running the
-test suite, deploying the site, deploying skills, generating PlantUML
-diagrams — lives as an executable recipe under
-=doc/v2/recipes/cmake/=. Start from the [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner skill]], which
-indexes the seven recipes plus the [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] knowledge document
-(preset menu, output directory layout, parallel-build configuration,
-test-logging knobs).
-
-The fastest path on Linux:
-
-#+begin_src sh
-cmake --preset linux-clang-debug-ninja
-cmake --build --preset linux-clang-debug-ninja
-#+end_src
-
-* Updating vcpkg
-
-Occasionally we need to pull latest vcpkg from the remote. To do so:
-
-#+begin_src sh
-cd vcpkg
-git checkout master
-git pull origin master
-cd ..
-git add vcpkg
-#+end_src
-
-Check the branch and then commit the update:
-
-#+begin_src sh
-git commit -m "[vcpkg] Update to 2025.07.25-765-g7220a4eebf"
-#+end_src
+[[https://github.com/OreStudio/OreStudio/blob/main/CONTRIBUTING.md][PRs are welcome.]] Join the [[https://discord.gg/ztAaxmsnUJ][Discord]] for questions and discussion.

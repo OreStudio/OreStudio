@@ -1,4 +1,5 @@
 #+title: Unified Trade + Instrument Detail Dialog
+#+version: 1
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+STATUS: DONE
 

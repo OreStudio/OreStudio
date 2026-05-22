@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: d1b73897-ed9a-49a8-9fc6-8d77b941d1d2
+:END:
+#+title: Task: Review DQ metadata tables for multi-tenancy
+#+description: Audit: 11 DQ metadata tables have unique version indexes without tenant_id, blocking cross-tenant duplication; decision recorded; fix lands as part of the publish-across-tenants task.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :dq:tenancy:analysis:sql:validate_tenancy_across_surfaces:sprint_11:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Analyse the DQ metadata tables for multi-tenant correctness: their unique version indexes don't include =tenant_id=, which would block different tenants from carrying the same metadata.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | DONE                                                                          |
+| Parent story | [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]] |
+| Now          | Completed 2026-02-06.                                                         |
+| Waiting on   | None.                                                                         |
+| Next         | None.                                                                         |
+| Last touched | 2026-02-06                                                                    |
+
+* Acceptance
+
+- 11 DQ tables identified: =catalogs=, =change_reason_categories=, =change_reasons=, =coding_scheme_authority_types=, =data_domains=, =datasets=, =methodologies=, =nature_dimensions=, =origin_dimensions=, =subject_areas=, =treatment_dimensions=.
+- Design decision: DQ metadata is tenant-specific; add =tenant_id= to all version unique indexes.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Analysis pass; the fix lands as part of the Data Librarian publication task in the same story.
+
+* Result
+
+Issue scoped; fix scheduled.

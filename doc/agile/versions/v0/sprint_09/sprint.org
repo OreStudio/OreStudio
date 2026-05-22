@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: af0b027b-77bf-4794-810d-39ad49a5efad
+:END:
+#+title: Sprint 09
+#+description: Data Quality subsystem + Data Librarian; connection management; database naming refactor; security module; CLI entity coverage; engineering hygiene.
+#+type: sprint
+#+version: 2
+#+level: s3
+#+filetags: :dq:librarian:connections:refdata:security:sprint_09:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: STARTED | DONE
+
+This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 09*) of ORE Studio v0. It captures the
+sprint's mission, current status, and the stories that compose it. For the
+surrounding context — version goals, sprint order, and product identity — see
+[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+
+* Mission
+
+Originally /implement data management infrastructure/. Delivered:
+stood up Data Quality as a first-class subsystem (=ores.dq=) end to
+end — concept model, domain types + FpML, ER refactor, breaking
+protocol bump, Data Librarian UI, publication workflow, validated
+against a fake-world dataset. Around it: connection management (so the
+multi-environment agent workflow stops being painful), database
+naming made component-explicit, a dedicated security module, and CLI
+coverage of the entities that landed in earlier sprints.
+
+* Status
+
+| Field          | Value                                                                                                                                                      |
+|----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| State          | DONE                                                                                                                                                       |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                                  |
+| Now            | Sprint closed 2026-01-20. Two items carry forward: the per-entity documentation refactor (already mostly absorbed into v2) and the party-table groundwork. |
+| Waiting on     | None.                                                                                                                                                      |
+| Next           | Sprint 10 takes the next refdata entity and starts the party domain layer on top of the table-structure groundwork from this sprint.                       |
+| Last touched   | 2026-01-20                                                                                                                                                 |
+
+* Stories
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                  | State   | Start      | End        | Theme                                                                                   |
+|----------------------------------------------------------------------------------------+---------+------------+------------+-----------------------------------------------------------------------------------------|
+| [[id:1e7a8abc-1abc-4a37-bdce-1d8dfb9d21ff][Sprint 09 housekeeping]]                    | DONE    |            | 2026-01-20 | backlog + OCR.                                                                          |
+| [[id:09a8d544-22f3-491a-82a9-306b1aa7c756][CLI entity coverage]]                       | DONE    |            | 2026-01-12 | list/delete commands for the five entities the CLI was missing; helper-driven refactor. |
+| [[id:e7ddb653-ceaa-4922-b0f9-8bd5393a747e][Engineering hygiene]]                       | DONE    |            | 2026-01-14 | model refresh + pr-manager skill + valgrind fixes; documentation refactor postponed.    |
+| [[id:8c29b0e8-64ea-4f32-add0-59419769bcd4][Security module]]                           | DONE    |            | 2026-01-13 | ores.security with RAII OpenSSL.                                                        |
+| [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]]                     | DONE    |            | 2026-01-15 | ores.connections + Connection Browser MDI + modernised login dialog.                    |
+| [[id:61485635-64ba-4c31-a35b-2f60d7fb41aa][Database naming refactor]]                  | DONE    |            | 2026-01-14 | ores.risk → ores.refdata; =<component>_<entity>_<suffix>= across the schema.            |
+| [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] | DONE    |            | 2026-01-20 | the flagship of the sprint.                                                             |
+| [[id:abd80ec4-e7e4-4bb2-b5ae-4fc7f8c46fd3][Qt visual refresh]]                         | DONE    |            | 2026-01-20 | icon-enum + theme refactor.                                                             |
+| [[id:ef555d10-3fd3-4928-8e43-e63284d7706f][Party database groundwork]]                 | BACKLOG |            |            | table structure only; postponed.                                                        |
+
+* Retrospective
+
+** What went well
+
+- Data Quality landed as a coherent subsystem rather than piecemeal:
+  concept first, then domain types + FpML, then ER refactor, messaging,
+  UI, publication, and finally a fake-world validation pass.
+- Connection management unblocked the multi-environment agent workflow
+  the project has been operating under for the last few sprints.
+- Two big refactors — rename risk→refdata and the schema-wide naming
+  pass — landed cleanly thanks to the prefix pattern being mechanical.
+- The DQ subsystem migration of change-management messages out of IAM
+  forced a circular-dependency fix that improved layering more
+  broadly.
+
+** What hurt
+
+- The DQ protocol bump (21.3 → 22.0) is genuinely breaking; the cost
+  is paid up-front while client count is small, but it's still a cost.
+- Documentation-refactor scope overlapped substantially with v2; we
+  ended up postponing the v0 task because doing both would have been
+  duplicate work.
+- Boost.Graph as a build-time dependency is heavy for the one
+  topological-sort we need today; justified by the more-graphs-coming
+  argument but worth revisiting if that doesn't materialise.
+
+** What changed
+
+- =ores.security= is now the only place that knows about OpenSSL
+  primitives; =ores.iam= and =ores.connections= consume it.
+- =ores.risk= is gone — =ores.refdata= replaces it everywhere.
+- Schema-wide =<component>_<entity>_<suffix>= naming is now the
+  rule; new entities follow it by default.
+- =ores.dq= is the home of data-quality and change-management
+  machinery; messaging migrated accordingly.
+- Connection bookmarks live on the client (SQLite + AES-256-GCM)
+  rather than mixed into the server schema.

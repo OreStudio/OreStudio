@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: cee398aa-cc55-40f8-b264-0b721eb48719
+:END:
+#+title: Task: Raise MSVC constexpr limits for ores.qt.api to fix C1202
+#+description: - `ClientManagerTrades.cpp` calls `rfl::json::read` with the `trade_instrument` variant (8 non-monostate alternatives, ~
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :msvc_c1202_fix:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/768
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Raise the MSVC /constexpr:depth limit on ores.qt.api to 100000 to resolve C1202 in ClientManagerTrades.cpp caused by rfl's variant field-uniqueness check.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] |
+| Now          | Completed 2026-05-19.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Raise the MSVC /constexpr:depth limit on ores.qt.api to 100000 to resolve C1202 in ClientManagerTrades.cpp caused by rfl's variant field-uniqueness check.
+- PR #768 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- =ClientManagerTrades.cpp= calls =rfl::json::read= with the =trade_instrument= variant (8 non-monostate alternatives, ~150 combined fields with =rfl::AddTagsToVariants=)
+- =rfl::internal::no_duplicate_field_names= performs an O(n²) compile-time field-uniqueness check, exceeding MSVC's default =/constexpr:depth= limit of 512 and producing C1202
+- The two-phase parse introduced earlier (splitting trade and instrument into separate =rfl::json::read= calls) was not sufficient because the variant itself is the depth driver, not the trade struct
+- Rather than further decomposing the variant, raise =/constexpr:depth100000= and =/constexpr:steps10000000= on the =ores.qt.api= target — the only target in the codebase where this limit is hit
+
+
+* Result
+
+Landed.

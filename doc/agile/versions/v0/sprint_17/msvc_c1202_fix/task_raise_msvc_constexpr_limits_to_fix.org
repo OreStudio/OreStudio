@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: fad9f9ab-9bcf-4b63-9c4f-2031fcfd42fd
+:END:
+#+title: Task: Raise MSVC constexpr limits to fix C1202 on rfl-reflected structs
+#+description: - `fra_instrument` has 18 fields; `rfl`'s duplicate-field-names check performs an O(N²) constexpr expansion that exhaust
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :msvc_c1202_fix:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/727
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add MSVC-only /constexpr:depth1024 and /constexpr:steps10000000 flags to fix C1202 in ClientManager.cpp caused by rfl's O(N²) field-uniqueness check on fra_instrument.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] |
+| Now          | Completed 2026-05-05.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Add MSVC-only /constexpr:depth1024 and /constexpr:steps10000000 flags to fix C1202 in ClientManager.cpp caused by rfl's O(N²) field-uniqueness check on fra_instrument.
+- PR #727 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- =fra_instrument= has 18 fields; =rfl='s duplicate-field-names check performs an O(N²) constexpr expansion that exhausts MSVC's default depth (512) and step (100 000) budgets, producing =C1202: recursive type or function dependency context too complex= when compiling =ClientManager.cpp=
+- Added two MSVC-only flags to =projects/CMakeLists.txt=: =/constexpr:depth1024= and =/constexpr:steps10000000=
+- Flags are guarded by =$<$<CXX_COMPILER_ID:MSVC>:...>= so Linux/Clang builds are unaffected
+
+
+* Result
+
+Landed.

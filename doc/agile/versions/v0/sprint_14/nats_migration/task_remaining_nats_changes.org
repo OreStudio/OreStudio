@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: d900cdcc-3d94-46f4-b54e-94212902fe77
+:END:
+#+title: Task: Remaining NATS changes
+#+description: Tenant provisioning auto-creates system party + seeds bootstrap-mode flag; server-side UUID generation in tenant_handler::save(); account_handler uses make_request_context for tenant scoping; lei_entity_handler::summary() implementation calling new SQL functions; PQsetNoticeProcessor routes PL/pgSQL through Boost.Log; provisioning wizard parity restored (depth + contact + seed); performed_by audit field attributed to service account; ores.wt.service startup fix.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :nats:iam:provisioning:audit:wt:nats_migration:sprint_14:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Round of follow-up fixes after the NATS landing — tenant provisioning, RBAC, LEI handler, audit attribution, wt service startup.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | DONE                                                        |
+| Parent story | [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]] |
+| Now          | Completed 2026-03-18.                                       |
+| Waiting on   | None.                                                       |
+| Next         | None.                                                       |
+| Last touched | 2026-03-18                                                  |
+
+* Acceptance
+
+- Tenant provisioning auto-creates system party + seeds bootstrap-mode flag (triggers provisioning wizard on first login).
+- Server-side UUID generation in =tenant_handler::save()= when client omits it.
+- =account_handler= fixed to use =make_request_context= for tenant scoping.
+- =lei_entity_handler::summary()= calls new SQL functions =ores_dq_lei_entities_distinct_countries_fn()= + =ores_dq_lei_entities_summary_by_country_fn()= instead of inline SQL (DISTINCT ON (lei) dedup for GLEIF counterparty picker).
+- =PQsetNoticeProcessor= installed in =pg_connection_guard= so PL/pgSQL NOTICEs route through Boost.Log rather than stdout.
+- Provisioning wizard parity restored after NATS migration (depth controls, contact counts, reproducibility seed).
+- =performed_by= audit field correctly reflects the service account for service-initiated actions; =modified_by= continues to capture end-user.
+- =ores.wt.service= startup crash fixed (excluded from NATS service discovery to prevent env collisions; Wt-specific arguments correctly passed).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Follow-up sweep covering the things the big NATS PR couldn't catch in one pass.
+
+* Result
+
+NATS migration sweep closed cleanly.

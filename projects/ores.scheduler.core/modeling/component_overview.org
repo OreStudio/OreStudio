@@ -4,10 +4,17 @@
 #+title: ores.scheduler.core
 #+description: Job scheduling infrastructure — cron-based job definitions, execution, and scheduling for periodic operations.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :scheduler:core:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.scheduler.core component diagram
+#+caption: ores.scheduler.core
+[[file:ores.scheduler.core.png][file:ores.scheduler.core.png]]
 
 * Summary
 

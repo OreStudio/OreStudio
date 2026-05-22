@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 9ff8edca-06ca-4c31-9684-c79545775fbc
+:END:
+#+title: Show Status
+#+description: Show Status
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:compression:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Show current compression setting.
+
+#+name: compression-status
+#+begin_src ores-shell :exports none
+compression
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<compression-status>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> Compression: on (zlib, gzip, bzip2)
+ores-shell> Bye!
+#+end_example

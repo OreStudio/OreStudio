@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: ad9ab87a-b9fc-459c-b1ca-60e375adbe53
+:END:
+#+title: Task: Fix ORE import bugs
+#+description: ORE CurrencyType → DB code mapping (Metal → commodity, Crypto → synthetic, others → fiat) fixes Invalid monetary_nature: Crypto error; AddItemDialog subject_prefix field (editable on environments, read-only on connections); ConnectionBrowserMdiWindow size + splitter restoration fix; trade_status_service::resolve_status called before every trade write to avoid Invalid status_id: nil UUID; trading.v1.activity_types.list NATS endpoint replaces hardcoded lifecycle events in ORE Import Wizard; project version bumped to 0.0.15.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ore:import:bug_fix:qt:nats:trading:fix_ore_import_bugs:sprint_15:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:fd12bbd4-bd95-454a-a636-5f22c928c4d1][Fix ORE import bugs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the bugs that surfaced once the sprint-14 ORE Import Wizard met real ORE data.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:fd12bbd4-bd95-454a-a636-5f22c928c4d1][Fix ORE import bugs]] |
+| Now          | Completed 2026-03-19.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2026-03-19                                                       |
+
+* Acceptance
+
+- ORE CurrencyType → DB code mapping (Metal → commodity, Crypto → synthetic, others → fiat) closes Invalid monetary_nature: Crypto.
+- subject_prefix field on AddItemDialog (editable on environments, read-only on connections linked to envs).
+- ConnectionBrowserMdiWindow size + splitter position restoration fix.
+- trade_status_service::resolve_status() called before every trade write to ensure valid status IDs.
+- trading.v1.activity_types.list NATS endpoint replaces hardcoded lifecycle events in the wizard (fixes Unknown activity type code: New import).
+- Sprint 15 opened + project version bumped to 0.0.15.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Validates the sprint-14 wizard against real ORE samples; the bugs are unsurprising for a first-real-use shakedown.
+
+* Result
+
+ORE import works against real data.

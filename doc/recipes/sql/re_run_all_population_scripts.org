@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: a59b9a7c-b4c1-4084-aa21-c4ebac2764ba
+:END:
+#+title: Re-run All Population Scripts
+#+description: Re-run All Population Scripts
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:population_scripts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+To re-seed an existing database instance (idempotent - won't duplicate data):
+
+#+begin_src sql
+-- System data (RBAC + system flags)
+\ir '$project_sql_dir'/populate/populate.sql
+
+-- Reference data (currencies, flags, images)
+\ir '$project_sql_dir'/populate/reference_data.sql
+#+end_src

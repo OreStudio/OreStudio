@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: d7653a18-e5b2-4bf4-851d-539f5b827f36
+:END:
+#+title: Task: Fix code review comments for librarian
+#+description: PR review fixes: domain viewing/editing; dimension nodes in the tree as filters; dependency-message diagram check; country flags load after restart; header colour vs row colour; namespace crypto icons vs country flags (AE clash); publish-failure error visibility (raised as separate story).
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :librarian:qt:review:polish:librarian_polish:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:75442a55-dbbb-4bc1-875e-981679e05621][Librarian polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Address the PR-review feedback on the Data Librarian landed in sprint 09.
+
+* Status
+
+| Field        | Value                                                         |
+|--------------+---------------------------------------------------------------|
+| State        | DONE                                                          |
+| Parent story | [[id:75442a55-dbbb-4bc1-875e-981679e05621][Librarian polish]] |
+| Now          | Completed 2026-01-27.                                         |
+| Waiting on   | None.                                                         |
+| Next         | None.                                                         |
+| Last touched | 2026-01-27                                                    |
+
+* Acceptance
+
+- Domain view + edit work.
+- Tree exposes dimension nodes as filters.
+- Dependency diagram consumes the new message.
+- Country-flag mapping loads correctly after restart (force-load on first use).
+- Header colour distinct from row colour (raised as follow-up).
+- Publish-failure errors visible (raised as follow-up story).
+- Crypto vs country flag namespace clash (e.g. =AE=) raised.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Some review items raised in PR #348 ran out of Claude Code token budget; this task closes most of them, raises follow-ups for the rest.
+
+* Result
+
+Most review feedback addressed; the rest carry forward as named stories.

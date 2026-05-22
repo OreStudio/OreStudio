@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 6b57c190-4bb7-4f63-bf3d-7fb6d81d8d94
+:END:
+#+title: Story: Accounts to IAM
+#+description: Rename ores.accounts to ores.iam; land lock-account, password reset, sign-up workflow, session info persistence.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :iam:accounts:authentication:refactor:sprint_07:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Rename =ores.accounts= to =ores.iam= and broaden it from
+/accounts management/ into proper /Identity and Access Management/. Add
+the missing self-service surfaces — lock, password reset, sign-up — and
+leave the component ready for RBAC to land on top.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]] |
+| Now           | Completed 2025-12-25.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-12-25                                             |
+
+* Acceptance
+
+- Component renamed to =ores.iam= with no =ores.accounts= references in live code.
+- Lock account, password reset, and sign-up land end-to-end across protocol + handler + CLI/shell.
+- Build and tests green throughout.
+
+* Tasks
+
+In execution order:
+
+- [[id:f98ad7f0-2034-4982-9f1b-efc48e8150c9][Rename accounts to iam]]
+- [[id:c4f2b895-852b-4f29-b04f-d78f674609c1][Add lock account request]]
+- [[id:87ab0c65-f079-4988-bd25-4cf378950482][Add password reset functionality to accounts]]
+- [[id:7851dac6-9048-4c2b-b6bb-3167d55412f6][Add sign-up workflow]]
+
+* Decisions
+
+- /Rename first, then extend/ :: a pure-rename PR is cheap to review and gives the subsequent IAM work a stable home.
+- /In-app reset tokens/ :: defers the email-integration question to a later sprint without locking the protocol shape.
+
+* Out of scope
+
+- Email-based reset delivery (token transport is in-app for now).
+- OAuth / SSO.
+
+* See also
+
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] — the renamed component.
+- [[id:6255bc9f-95bc-4fc7-98c8-6060b8679b85][Roles and permissions]] — the sibling story that lands RBAC on top of IAM.

@@ -2,248 +2,57 @@
 :ID: 57b7d4d9-aaa5-427d-8d16-0e82da9d3763
 :END:
 #+title: PR Shepherd Skill
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
-#+startup: inlineimages
-#+export_exclude_tags: noexport
+#+description: After a PR is opened, drive it to green: poll CI, address review comments, fix failing checks, until everything is green and resolved.
+#+type: skill
+#+version: 2
+#+level: cross
+#+filetags: :skills:claude_code:github:pr:ci:
+#+created: 2024-09-01
+#+updated: 2026-05-21
 
 #+begin_export markdown
 ---
 name: pr-shepherd
-description: Autonomously monitor a PR after creation, addressing review comments and CI failures until the build is green.
+description: Autonomously monitor a PR after creation, addressing review comments and CI failures until the build is green and all review threads are resolved.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
 
-This skill manages the post-creation phase of a Pull Request autonomously.
-After a PR is raised it enters a watch-and-fix loop: wait for initial feedback,
-address any review comments, monitor CI, and fix any failures — repeating until
-CI passes green.
-
-* When to Use This Skill
-
-Use this skill immediately after a PR has been created and pushed, when you
-want to:
-
-- Automatically pick up and address reviewer comments without manual prompting.
-- Monitor CI continuously and fix build or test failures as they appear.
-- Drive a PR to a green state with minimal user intervention.
-
-* How to Use This Skill
-
-The preferred approach is the =pr-watch= background script, which polls GitHub
-cheaply using only the =gh= CLI and invokes Claude only when there is something
-actionable.  This avoids wasting Claude resources on idle polling.
-
-** Using pr-watch (recommended)
-
-Start the watcher immediately after the PR is created.  The script
-self-backgrounds, writes a log under =tmp/=, and exits once CI is green and all
-review threads are resolved.
-
-#+BEGIN_SRC sh
-./build/scripts/pr-watch.sh <PR_NUMBER>
-# e.g.
-./build/scripts/pr-watch.sh 574
-./build/scripts/pr-watch.sh 574 --interval 10   # poll every 10 minutes
-#+END_SRC
-
-Monitor progress:
-
-#+BEGIN_SRC sh
-tail -f tmp/pr-watch-<PR_NUMBER>.log
-#+END_SRC
-
-The script invokes =claude -p= with structured context whenever:
-
-- A CI check-run fails (logs included in the prompt).
-- A new unresolved review thread appears from an external reviewer.
-
-It exits cleanly and logs =PR #NNN is ready= when all checks pass and all
-threads are resolved.
-
-** Manual loop (fallback)
-
-If =pr-watch= is not suitable, run this skill directly and follow the
-[[*Detailed Instructions][Detailed Instructions]] below.
-
-See [[*Detailed Instructions][Detailed Instructions]] for the full loop behaviour.
-
-* Detailed Instructions
-
-** Overview
-
-Before starting the loop, ask the user for the polling interval:
-
-#+BEGIN_QUOTE
-How long should I wait between checks? (default: 10 minutes)
-#+END_QUOTE
-
-Accept any value in minutes. Use 10 minutes if the user does not specify.
-Convert to seconds for =sleep= (e.g. 5 minutes → =sleep 300=).
-
-The skill then runs a loop at that interval:
-
-1. Check CI status immediately — if the build is already red, fix it before
-   waiting.
-2. Wait the chosen interval for CI and reviewers to produce additional feedback.
-3. Fetch and address all open review comments.
-4. Check CI status again.
-   - *Green*: loop exits — PR is ready.
-   - *Still running*: wait another interval and repeat from step 3.
-   - *Red*: investigate failures, apply fixes, push, then wait and repeat.
-
-** Step 1: Check CI Before Sleeping
-
-Before the first sleep, check whether CI is already red.  A push can
-immediately trigger a pre-existing failure (e.g. a broken dependency or a
-lint check that fires on the new code).  Do not silently wait through a
-known-broken build.
-
-#+BEGIN_SRC sh
-gh pr checks
-#+END_SRC
-
-- If any check has already *failed*, go directly to [[*Step 5: Fix CI Failures][Step 5]] and fix it before
-  sleeping.
-- If checks are pending or all green, proceed to Step 2.
-
-** Step 2: Wait for Additional Feedback
-
-After confirming CI is not already red, pause for the chosen interval to allow
-CI to complete and reviewers to post comments.
-
-#+BEGIN_SRC sh
-sleep <interval_in_seconds>
-#+END_SRC
-
-** Step 3: Fetch and Address Review Comments
-
-Retrieve all unresolved review comments on the PR:
-
-#+BEGIN_SRC sh
-gh pr view --comments
-gh api repos/{owner}/{repo}/pulls/{pr_number}/comments
-#+END_SRC
-
-For each open comment:
-
-1. Read the comment carefully and understand the requested change.
-2. Apply the fix in the relevant source file(s).
-3. Stage and commit the change:
-
-#+BEGIN_SRC sh
-git add <modified-files>
-git commit -m "[component] Address review comment: <brief description>
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
-#+END_SRC
-
-4. Push all accumulated commits once all comments in the current batch are
-   addressed:
-
-#+BEGIN_SRC sh
-git push
-#+END_SRC
-
-5. *Required*: reply to each review comment on GitHub, referencing the fix
-   commit.  Do not skip this step — the reviewer must be able to see what
-   changed and in which commit.
-
-#+BEGIN_SRC sh
-gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
-  -X POST -f body="Fixed in commit <sha> — <brief description of what was changed>."
-#+END_SRC
-
-6. *Required*: resolve each review thread on GitHub using the GraphQL API.
-   Threads must be marked resolved so the PR dashboard shows no outstanding
-   comments.
-   First, get the thread IDs:
-
-#+BEGIN_SRC sh
-gh api graphql -f query='
-{
-  repository(owner: "{owner}", name: "{repo}") {
-    pullRequest(number: {pr_number}) {
-      reviewThreads(first: 50) {
-        nodes {
-          id
-          isResolved
-          comments(first: 1) { nodes { databaseId body } }
-        }
-      }
-    }
-  }
-}'
-#+END_SRC
-
-   Then resolve each unresolved thread:
-
-#+BEGIN_SRC sh
-gh api graphql -f query="mutation {
-  resolveReviewThread(input: {threadId: \"<thread_id>\"}) {
-    thread { isResolved }
-  }
-}"
-#+END_SRC
-
-*Important*: never amend existing commits — always create new commits for
-fixes. This preserves the review history.
-
-** Step 4: Check CI Status
-
-Query the current state of all CI checks on the PR:
-
-#+BEGIN_SRC sh
-gh pr checks
-#+END_SRC
-
-Interpret the result:
-
-| Outcome          | Action                                         |
-|------------------+------------------------------------------------|
-| All green (pass) | Loop exits. PR is ready to merge.              |
-| Pending/queued   | Wait the chosen interval, then return to Step 3. |
-| Any failure      | Investigate and fix (see Step 5), then repeat. |
-
-** Step 5: Fix CI Failures
-
-When one or more checks are red:
-
-1. Identify the failing check:
-
-#+BEGIN_SRC sh
-gh run list --branch <branch-name>
-gh run view <run-id> --log-failed
-#+END_SRC
-
-2. Read the failure output carefully. Common categories:
-
-   - *Compilation errors*: fix the offending source files.
-   - *Test failures*: fix or update the failing tests.
-   - *Linting / formatting*: apply the required formatting fixes.
-   - *Schema validation*: re-run =validate_schemas.sh= locally and fix warnings.
-
-3. Apply the fixes, commit, and push:
-
-#+BEGIN_SRC sh
-git add <modified-files>
-git commit -m "[component] Fix CI failure: <brief description>
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
-git push
-#+END_SRC
-
-4. Return to Step 2 (wait the chosen interval) and repeat the loop.
-
-** Loop Termination
-
-The loop terminates when =gh pr checks= reports all checks as passed. At that
-point inform the user:
-
-#+BEGIN_QUOTE
-All CI checks are green. The PR is ready to review and merge.
-#+END_QUOTE
+* When to use this skill
+
+Immediately after a PR is opened, when you want to drive it to a
+green state with minimal user intervention — automatically polling
+CI, addressing review comments, and fixing failures as they appear.
+
+* How to use this skill
+
+1. /Start the watcher/. Prefer the =pr-watch.sh= script — it polls
+   cheaply via =gh= and only invokes Claude when there is something
+   actionable. See [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][How do I monitor a PR until green?]] for both the
+   script and the manual fallback.
+2. /On each notification/, branch on what changed:
+   - /A check went red/ → run [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][How do I fix a failing CI check?]];
+     push the fix and return to monitoring.
+   - /A reviewer opened a new thread/ → run [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][How do I address PR
+     review comments?]]; reply + resolve each thread before
+     returning.
+3. /Stop when terminal/. The loop exits when CI is fully green and
+   no review thread is unresolved. Inform the user; hand off to
+   [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]]'s merge step.
+
+Never amend commits during this loop — fixes always go in as new
+commits so the review history is preserved.
+
+* Recipes
+
+- [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][How do I monitor a PR until green?]] — outer loop.
+- [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][How do I address PR review comments?]] — review-thread branch.
+- [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][How do I fix a failing CI check?]] — CI-failure branch.
+
+* Reference
+
+- [[id:fcf81f0b-afbf-4169-bd24-04dbd08180a9][GitHub recipes]] — the inventory.
+- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — sibling skill that opens and merges the PR.
 
 * Artefacts                                                        :noexport:
 

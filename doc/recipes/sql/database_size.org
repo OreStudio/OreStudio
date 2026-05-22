@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID: 2bf63848-718f-4388-ad09-759292ef65dc
+:END:
+#+title: Database Size
+#+description: Database Size
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:administrative:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select pg_size_pretty(pg_database_size(current_database())) as database_size;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| database_size |
+|---------------|
+| 12 MB         |
+#+end_example

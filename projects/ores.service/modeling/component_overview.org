@@ -4,10 +4,17 @@
 #+title: ores.service
 #+description: NATS domain service runner infrastructure — domain service lifecycle, heartbeat publishing, and handler helpers.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :service:infrastructure:component:
 #+created: 2026-05-20
 #+updated: 2026-05-20
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.service component diagram
+#+caption: ores.service
+[[file:ores.service.png][file:ores.service.png]]
 
 * Summary
 

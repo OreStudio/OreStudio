@@ -1,0 +1,170 @@
+:PROPERTIES:
+:ID: 0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2
+:END:
+#+title: Code Review Checklist
+#+description: The canonical category-by-category checklist ORE Studio reviewers apply — used both for PR-delta reviews and full-component audits.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:review:conventions:quality:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+The categories below are what every ORE Studio code review checks
+against. The [[id:04ca6bd9-7739-4213-a9dc-17aaace43252][code-review-pr]] skill applies them to a PR delta
+(changed files only); the [[id:dadf4117-757a-4eef-a137-cc2ee8023c73][code-review-component]] skill applies them
+to a whole component (every file plus the structure). Return to
+[[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Headers & licensing
+
+| Check            | Description                                                  |
+|------------------+--------------------------------------------------------------|
+| Copyright header | Every =.hpp= and =.cpp= file has the standard GPL header.    |
+| Mode line        | Files have the Emacs mode line at the top.                   |
+| Include guards   | Headers use =ORES_COMPONENT_FACET_FILE_HPP= pattern.         |
+
+* Naming & style
+
+| Check               | Description                                              |
+|---------------------+----------------------------------------------------------|
+| snake_case (non-Qt) | Classes, methods, variables use snake_case.              |
+| CamelCase (Qt only) | =ores.qt= uses CamelCase per Qt convention.              |
+| File / class match  | File names match the class they declare.                 |
+| Namespace pattern   | =ores::component::facet= structure.                      |
+| Include order       | Standard library → third-party → project headers.        |
+
+* Comment quality
+
+| Check                | Description                                              |
+|----------------------+----------------------------------------------------------|
+| No stale comments    | No historical, deprecated, or no-longer-relevant TODOs.  |
+| Useful only          | Comments explain /why/, not /what/.                      |
+| No commented-out code| Remove dead code; trust version control.                 |
+| Doxygen on public API| Public classes / methods have =@brief= comments.         |
+
+* Platform isolation
+
+| Check             | Description                                                |
+|-------------------+------------------------------------------------------------|
+| Platform macros   | =_WIN32=, =__linux__=, =__APPLE__= only in =ores.platform=.|
+| Platform headers  | =<windows.h>=, =<unistd.h>= only in =ores.platform=.       |
+| Abstraction usage | Other components consume =ores.platform= abstractions.     |
+
+* Code locality
+
+| Check                 | Description                                              |
+|-----------------------+----------------------------------------------------------|
+| Utility placement     | Generic helpers in =ores.utility= or =ores.platform=.    |
+| Duplication           | Check for similar code patterns across components.       |
+| Function extraction   | Repetitive code factored into functions.                 |
+| Single responsibility | Classes and functions do one thing.                      |
+
+* C++23 idioms
+
+| Pattern              | Preferred form                                              |
+|----------------------+-------------------------------------------------------------|
+| Error handling       | =std::expected= over exceptions for expected failures.      |
+| Ownership            | =std::unique_ptr= / =std::shared_ptr=, not raw.             |
+| Manual loops         | Ranges and views where they read cleanly.                   |
+| Template constraints | Concepts.                                                   |
+| String formatting    | =std::format= over stream concatenation.                    |
+| Null pointers        | =nullptr=, never =NULL=.                                    |
+| Type aliases         | =using=, never =typedef=.                                   |
+| Casts                | =static_cast= / =dynamic_cast=, never C-style.              |
+| Substring checks     | =str.contains()= over =find() != npos=.                     |
+
+* Domain types
+
+For each new or modified domain type, verify the [[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]]
+contract is complete:
+
+| Check        | Description                                              |
+|--------------+----------------------------------------------------------|
+| Struct shape | =struct final= with public fields and Doxygen comments.  |
+| JSON I/O     | =_json_io.hpp/.cpp= using reflect-cpp.                   |
+| Table I/O    | =_table_io.hpp/.cpp= using libfort.                      |
+| Generator    | =_generator.hpp/.cpp= in =generators= facet.             |
+| Repository   | If persisted: entity, mapper, repository, =sql()= method.|
+| Temporality  | =recorded_by= / =recorded_at= fields; mapper covers them.|
+
+* Protocol / messaging
+
+For NATS protocol changes:
+
+| Check              | Description                                              |
+|--------------------+----------------------------------------------------------|
+| Subject convention | =<domain>.v1.<entity>.<operation>=.                      |
+| Request / response | Reflect-cpp types end =_request= / =_response=.          |
+| Versioning         | =v1= namespace bump only for breaking changes.           |
+| Handler            | Each request has a handler in =ores.service=.            |
+| Authorisation      | Server-side checks for privileged operations.            |
+
+* Unit tests
+
+See [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] for the full set; the review-time
+subset:
+
+| Check                | Description                                              |
+|----------------------+----------------------------------------------------------|
+| Coverage             | Changed code has corresponding test coverage.            |
+| Naming               | Files follow =layer_class_tests.cpp=; cases use =snake_case= verbs. |
+| No SECTIONs          | Separate =TEST_CASE= instead of Catch2 =SECTION= blocks. |
+| Logging              | =BOOST_LOG_SEV(lg, info) << sut;= per case.              |
+| Generators           | Use generators for synthetic data, not hand-built.       |
+| Database helper      | Repository tests use =database_helper= or =scoped_database_helper=. |
+
+* Error handling
+
+| Check                          | Description                                  |
+|--------------------------------+----------------------------------------------|
+| =std::expected= for failable   | Operations that can fail return =std::expected=. |
+| No silent failures             | Errors logged or propagated, never ignored.  |
+| Meaningful messages            | Error messages descriptive and actionable.   |
+| Exceptions are exceptional     | Reserve exceptions for truly unexpected cases. |
+
+* Security
+
+| Check                       | Description                                          |
+|-----------------------------+------------------------------------------------------|
+| No hardcoded secrets        | Passwords / keys / tokens never in source.           |
+| Input validation            | External input validated before use.                 |
+| Authorisation               | Server-side checks on privileged operations.         |
+| No client-provided identity | Identity from session, not request fields.           |
+| Secure hashing              | Scrypt / argon2 for passwords (see [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]]).      |
+
+* Component-only checks
+
+These apply to whole-component reviews (=code-review-component=) but
+not to PR-delta reviews:
+
+| Check                    | Description                                       |
+|--------------------------+---------------------------------------------------|
+| Folder structure         | =include= / =src= / =tests= / =modeling= present. |
+| Include nesting          | =include/ores.COMPONENT/=, single folder.         |
+| Facet symmetry           | Same facets in =include= and =src=.               |
+| CMake setup              | Four =CMakeLists.txt= files (root, src, tests, modeling). |
+| PlantUML diagram         | =modeling/<component>.puml= up to date, compiles. |
+| Component overview       | =modeling/component_overview.org= passes audit.   |
+
+* Severity buckets
+
+When filing findings, classify each issue:
+
+- *Critical (must fix)* — security, data corruption, undefined
+  behaviour, broken functionality.
+- *Important (should fix)* — architecture problems, missing test
+  coverage, convention violations, technical debt.
+- *Minor (nice to have)* — style, refactoring suggestions,
+  documentation polish.
+
+Group related issues into stories per [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]]; use
+=:code:= for fixes, =:doc:= for documentation issues.
+
+* See also
+
+- [[id:04ca6bd9-7739-4213-a9dc-17aaace43252][code-review-pr skill]] — applies this checklist to a PR delta.
+- [[id:dadf4117-757a-4eef-a137-cc2ee8023c73][code-review-component skill]] — applies it to a whole component.
+- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component documentation guide]] — companion checks for the
+  =component_overview.org= file.
+- [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] — the deeper test-side reference.

@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: d495a1b3-7677-4884-935f-1b6e6d65c983
+:END:
+#+title: ORE Sample Data
+#+description: ORE Sample Data
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We added examples and XSDs from ORE. We should consider some improvements to
+this dataset:
+
+- remove unnecessary files (notebooks, pngs, pdfs, etc).

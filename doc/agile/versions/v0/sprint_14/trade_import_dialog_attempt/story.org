@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 05cfef69-f80b-437f-aeee-3881e4fe96f1
+:END:
+#+title: Story: Trade import mapping dialog (second attempt)
+#+description: Second attempt at the Qt trade-import dialog (sprint-13 carry-over). Postponed again; ORE Import Wizard supersedes some of the goal.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :trade:import:qt:carry_over:sprint_14:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Second attempt at the Qt trade-import dialog — carry-over from
+sprint 13. Postponed again.
+
+* Status
+
+| Field         | Value                                                                              |
+|---------------+------------------------------------------------------------------------------------|
+| State         | BACKLOG                                                                            |
+| Parent sprint | [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]]                             |
+| Now           | Postponed in sprint 14; carried forward.                                           |
+| Waiting on    | A sprint with the slot — or a decision to drop in favour of the ORE Import Wizard. |
+| Next          | Revisit alongside the ORE Import Wizard work.                                      |
+| Last touched  | 2026-03-19                                                                         |
+
+
+#+predecessor: f8caa6ce-a36f-464c-a9a2-058e796a0f81
+
+Continued from: [[id:f8caa6ce-a36f-464c-a9a2-058e796a0f81][Trade import mapping dialog]] (sprint 13). Second
+attempt; 4h39m of work landed but the story was postponed again.
+The =ORE Import Wizard= ([[id:f80bad05-2e66-458d-9223-1db0a83ef694][ore_import_wizard]]) covers a broader
+shape that subsumes some of the goal.
+
+* Acceptance
+
+- Dialog accessible from book list toolbar.
+- Trade preview + counterparty mapping + book selection + confirmation.
+- Successful import creates trades; visible in trade list.
+
+* Tasks
+
+In execution order:
+
+- [[id:7b2dd252-3f02-4c6e-bc9c-3555e5e8c971][Add trade import mapping dialog (carry-over)]]
+
+* Decisions
+
+- /Hand off again/ :: 4h39m of work landed in sprint 14; the ORE Import Wizard from this sprint covers a lot of the same ground though, so the carry-over may end up being closed via the wizard in a later sprint.
+
+* Out of scope
+
+- Batch-import configuration (separate).
+
+* See also
+
+- [[id:f8caa6ce-a36f-464c-a9a2-058e796a0f81][Trade import mapping dialog]] (sprint 13) — predecessor (first attempt).
+- [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]] — the broader-scope story that may subsume this one.

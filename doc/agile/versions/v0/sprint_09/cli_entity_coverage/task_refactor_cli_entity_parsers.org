@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 61fb71d8-9fd2-4739-a20a-7cadb3f83f4a
+:END:
+#+title: Task: Refactor CLI entity parsers with generic helper
+#+description: Introduce simple_entity_config + handle_simple_entity_command in parser_helpers; refactor the five new entity parsers behind it. Net reduction ~314 lines.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :cli:refactor:helper:cli_entity_coverage:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:09a8d544-22f3-491a-82a9-306b1aa7c756][CLI entity coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Refactor the five new entity parsers behind a generic helper to remove boilerplate.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:09a8d544-22f3-491a-82a9-306b1aa7c756][CLI entity coverage]] |
+| Now          | Completed 2026-01-12.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2026-01-12                                                       |
+
+* Acceptance
+
+- =simple_entity_config= + =handle_simple_entity_command= in =parser_helpers=.
+- All five entity parsers refactored to use the helper.
+- ~314 line reduction.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Direct response to PR review feedback on the first version of these parsers.
+
+* Result
+
+Boilerplate gone; future list/delete entities follow the helper.

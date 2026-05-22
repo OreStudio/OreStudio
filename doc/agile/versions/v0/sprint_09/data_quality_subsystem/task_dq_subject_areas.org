@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 293a5704-3138-40d4-9903-6d09b67f3456
+:END:
+#+title: Task: DQ subject areas management
+#+description: SubjectAreaController + Detail + History dialogs; menu integration; version history with revert; read-only versioned view.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :dq:subject_areas:qt:history:data_quality_subsystem:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a dedicated subject-area management surface for the DQ subsystem.
+
+* Status
+
+| Field        | Value                                                                                  |
+|--------------+----------------------------------------------------------------------------------------|
+| State        | DONE                                                                                   |
+| Parent story | [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] |
+| Now          | Completed 2026-01-19.                                                                  |
+| Waiting on   | None.                                                                                  |
+| Next         | None.                                                                                  |
+| Last touched | 2026-01-19                                                                             |
+
+* Acceptance
+
+- =SubjectAreaController= manages the lifecycle of subject-area windows.
+- =SubjectAreaDetailDialog= covers create / view / edit / delete.
+- =SubjectAreaHistoryDialog= shows the version timeline with revert + read-only-at-version views.
+- Main window integration: action enabled on login; status-bar signals wired.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Subject areas sit between domains and catalogs in the hierarchy; the UI mirrors that.
+
+* Result
+
+Subject-area management complete end-to-end.

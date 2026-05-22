@@ -1,0 +1,23 @@
+:PROPERTIES:
+:ID: 5a832213-3df9-4c5e-9630-bc0d86ca492c
+:END:
+#+title: Reduce duplicated Qt code and clean up technical debt
+#+description: Reduce duplicated Qt code and clean up technical debt
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Several areas of duplicated code and legacy artefacts that should be cleaned up.
+
+- Qt network error message processing is duplicated across dialogs; extract into
+  shared utility.
+- Merge common functionality between entities in =ores.qt=.
+- Raw SQL in image repository should be replaced with a database function.
+- Remove legacy password salt field from accounts.
+- Add =ores.analyser= to system model documentation.
+- Bootstrap mode flag change does not generate a new version; fix versioning.

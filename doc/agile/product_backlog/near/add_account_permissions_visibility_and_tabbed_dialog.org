@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: a05a2a2b-63a9-460d-aec9-ff3257e5195d
+:END:
+#+title: Add account permissions visibility and tabbed dialog
+#+description: Add account permissions visibility and tabbed dialog
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Users have no way to see what permissions an account has. The accounts dialog
+also needs a tabbed layout to display all available information.
+
+- Add a permissions tab showing effective permissions for the account.
+- Use tabbed dialog layout (General, Permissions, Sessions, etc.).
+- Clicking on a user should show profile details: admin sees full details, others
+  see only key fields (email, etc.).

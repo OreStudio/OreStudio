@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 6aaea401-96a8-4027-8887-375b978771b3
+:END:
+#+title: Story: Qt column handling centralisation
+#+description: Centralise column metadata across all list windows behind a ColumnMetadata struct.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :qt:refactor:columns:ux:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Centralise column metadata for every Qt list window so column
+configuration lives in one place per entity.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-19.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-19                                             |
+
+* Acceptance
+
+- ColumnMetadata struct + helpers used across all list windows.
+- 24 Client*Model + 24 *MdiWindow files aligned.
+- column_style enum relocated; inline literals gone.
+
+* Tasks
+
+In execution order:
+
+- [[id:9d02285a-ef43-4a80-9a10-ba67e75ddd5b][Improve column handling in list widgets]]
+
+* Decisions
+
+- /Static constexpr arrays per model/ :: cheap and works with the type system.
+
+* Out of scope
+
+- User-configurable column visibility — separate.
+
+* See also
+
+None.

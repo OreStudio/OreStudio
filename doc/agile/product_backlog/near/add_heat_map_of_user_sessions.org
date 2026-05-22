@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: b84e61ba-a712-4f84-91b9-54175ea6c23d
+:END:
+#+title: Add heat map of user sessions
+#+description: Add heat map of user sessions
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Things to measure:
+
+- duration of sessions (once we have session table).
+- bytes sent/received per session (possibly 3-D plot?). Also good for anomaly
+  detection.
+- mine github for ideas.

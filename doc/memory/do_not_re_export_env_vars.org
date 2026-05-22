@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: f9b796df-2c06-42ef-aacf-d69e53621ff9
+:END:
+#+title: Do not re-export ORES_* env vars in Bash tool calls
+#+description: The user has already exported ORES_* env vars in their shell session — don't prepend them to commands run via the Bash tool.
+#+type: memory
+#+memory_subtype: feedback
+#+version: 2
+#+level: cross
+#+filetags: :memory:feedback:claude_code:bash:
+#+created: 2026-03-13
+#+updated: 2026-05-21
+
+The user pre-exports =ORES_TEST_DB_*= and other =ORES_*= environment
+variables in their shell session before starting Claude Code. Do not
+prepend these to Bash commands the tool runs.
+
+*Why:* Re-exporting variables the user has already set is redundant
+and adds noise to every command. The user explicitly fed this back
+in early sessions.
+
+*How to apply:* Run test binaries and other commands directly, e.g.
+=./publish/bin/ores.nats.tests=, never with a =ORES_TEST_DB_USER=x=
+prefix. Same rule for any other =ORES_*= variable.

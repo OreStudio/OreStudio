@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: d40d5971-c864-4449-91ad-ca8ab949a4a6
+:END:
+#+title: Story: System and customer party
+#+description: System-party design lands end-to-end; customer-party flag via optional dataset members in the publish-bundle wizard.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :party:system_party:customer:wizard:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Land system-party design end-to-end; let users opt into / out of
+LEI and similar via optional dataset bundle members.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-11.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-11                                             |
+
+* Acceptance
+
+- Internal party type + WRLD business centre; Root Tenant / System Party renames.
+- Optional dataset members; OptionalDatasetsPage in publish wizard; protocol 28.0 → 29.0.
+
+* Tasks
+
+In execution order:
+
+- [[id:c769c040-4ed8-4c3d-aa44-fbdd27dccca1][Add system party support]]
+- [[id:61f94da2-5c29-442a-9ab8-1c4066b7d45b][Add customer party support]]
+
+* Decisions
+
+- /'System Party' vs 'Root Party' naming/ :: previous ambiguity removed.
+- /Optional members at the bundle/ :: keeps the user in control without proliferating bundle definitions.
+
+* Out of scope
+
+- Tenant lifecycle re-design — separate workstream.
+
+* See also
+
+None.

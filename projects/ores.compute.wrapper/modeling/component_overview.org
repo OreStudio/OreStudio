@@ -4,10 +4,17 @@
 #+title: ores.compute.wrapper
 #+description: Compute worker wrapper — executes ORE risk runs and reports results to ores.compute.core.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :compute:wrapper:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.compute.wrapper component diagram
+#+caption: ores.compute.wrapper
+[[file:ores.compute.wrapper.png][file:ores.compute.wrapper.png]]
 
 * Summary
 

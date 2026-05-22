@@ -4,10 +4,17 @@
 #+title: ores.reporting.core
 #+description: Report management and ORE risk execution — report types, definitions, instances, and scheduling.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :reporting:core:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.reporting.core component diagram
+#+caption: ores.reporting.core
+[[file:ores.reporting.core.png][file:ores.reporting.core.png]]
 
 * Summary
 

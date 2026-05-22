@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 055e7245-1d4e-4044-b12e-93f407aea1df
+:END:
+#+title: List All Feature Flags
+#+description: List All Feature Flags
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:feature_flags:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select name, enabled, description, version
+from ores.feature_flags
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by name;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| name                                 | enabled | description                                                                                                         | version |
+|--------------------------------------+---------+---------------------------------------------------------------------------------------------------------------------+---------|
+| system.bootstrap_mode                |       1 | Indicates whether the system is in bootstrap mode (waiting for initial admin account).                              |       1 |
+| system.disable_password_validation   |       0 | When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.                                    |       1 |
+| system.signup_requires_authorization |       0 | Controls whether new signups require admin authorization. NOT YET IMPLEMENTED - enabling will cause signup to fail. |       1 |
+| system.user_signups                  |       0 | Controls whether user self-registration is allowed.                                                                 |       1 |
+#+end_example

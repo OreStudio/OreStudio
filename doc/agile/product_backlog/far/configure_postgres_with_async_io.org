@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: baf70dc8-e0b2-407c-a345-127f0bfd8dbf
+:END:
+#+title: Configure postgres with async IO
+#+description: Configure postgres with async IO
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Links:
+
+- [[https://neon.com/postgresql/postgresql-18/asynchronous-io][PostgreSQL 18 Asynchronous I/O]]

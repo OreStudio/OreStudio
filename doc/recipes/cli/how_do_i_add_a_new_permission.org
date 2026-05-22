@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: a30a46fe-f2b7-46da-b1fb-698acecc5f09
+:END:
+#+title: How do I add a new permission?
+#+description: Add a new permission
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:permissions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Add a new permission. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
+
+* Question
+
+How do I add a new permission using =ores.cli=?
+
+* Answer
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam permissions add ${db_args} ${log_args} \
+  --code "currencies:audit" \
+  --description "Permission to audit currency changes"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Successfully added permission: currencies:audit
+#+end_src

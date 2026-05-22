@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 24a4b36b-31fb-41dd-bf95-83af769b5e2e
+:END:
+#+title: Count Active Accounts
+#+description: Count Active Accounts
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select count(*) as active_accounts
+from ores.accounts
+where valid_to = '9999-12-31 23:59:59'::timestamptz;
+#+end_src

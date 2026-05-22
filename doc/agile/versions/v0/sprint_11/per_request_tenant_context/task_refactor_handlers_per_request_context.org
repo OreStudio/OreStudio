@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: f4793f16-278e-4274-8727-b33c7062e1a6
+:END:
+#+title: Task: Refactor message handlers for per-request tenant context
+#+description: tenant_aware_handler base class; per-request database contexts from session.tenant_id; type-safe utility::uuid::tenant_id wrapper; system tenant changes from nil UUID to max UUID (RFC 9562); fixes cross-tenant data leakage.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :tenancy:security:handlers:rls:refactor:per_request_tenant_context:sprint_11:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:976a2745-6728-435e-970e-d1205d46dc7a][Per-request tenant context]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the cross-tenant data-leakage risk: message handlers must build their database context from the session's tenant_id per request, not at construction time.
+
+* Status
+
+| Field        | Value                                                                   |
+|--------------+-------------------------------------------------------------------------|
+| State        | DONE                                                                    |
+| Parent story | [[id:976a2745-6728-435e-970e-d1205d46dc7a][Per-request tenant context]] |
+| Now          | Completed 2026-02-06.                                                   |
+| Waiting on   | None.                                                                   |
+| Next         | None.                                                                   |
+| Last touched | 2026-02-06                                                              |
+
+* Acceptance
+
+- =tenant_aware_handler= base class encapsulates per-request context creation.
+- Type-safe =utility::uuid::tenant_id= wrapper with factories =system()=, =from_uuid()=, =from_string()= that reject nil UUIDs.
+- System tenant identifier changes from nil UUID (=00000000...=) to max UUID (=ffffffff...=) per RFC 9562 to avoid confusion with uninitialised =boost::uuids::uuid= values.
+- Serialisation helpers for =tenant_id= in binary protocol + JSON.
+- All handlers refactored: accounts, risk, dq, assets, telemetry, variability.
+- Multi-tenant concurrent integration test + ThreadSanitizer build.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Real security bug — without per-request context, any user from tenant B making a request could end up reading tenant A's data via the cached context. The max-UUID switch came up here because nil-UUID's default-construct semantics kept biting.
+
+* Result
+
+Tenant isolation hardened across the protocol surface.

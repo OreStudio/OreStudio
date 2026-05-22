@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 7b45be68-3970-4657-b2a3-f24151156ac7
+:END:
+#+title: Story: pgmq queue management and messaging UI
+#+description: Initial MQ subsystem on top of pgmq: protocol 0xB000-0xB013 messages; metrics hypertable; Qt monitor UI.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :mq:pgmq:protocol:qt:sprint_14:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Stand up a queue-management subsystem on top of pgmq with a full Qt
+monitoring UI.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]] |
+| Now           | Completed 2026-03-03.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-03                                             |
+
+* Acceptance
+
+- Protocol messages 0xB000-0xB013 for queue management + messaging.
+- Metrics hypertable + pg_cron scrape job.
+- Qt monitor UI (list + detail + chart).
+- Protocol 46.3.
+
+* Tasks
+
+In execution order:
+
+- [[id:48e29288-2b7b-4c13-a037-195bdb4f3c0e][Add pgmq queue management and messaging UI]]
+
+* Decisions
+
+- /Build on pgmq first/ :: a known-good external extension; replace later if needed (which we do, in the very next story).
+
+* Out of scope
+
+- JetStream-style stream concepts — pgmq is queue-only here.
+
+* See also
+
+- [[id:ed082d5a-4afb-4bf9-81db-8712f881dde3][Custom MQ tables and in-process scheduler]] — the immediate successor (pgmq + pg_cron get replaced).

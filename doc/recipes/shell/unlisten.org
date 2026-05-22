@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 81e40906-7f17-4688-80e5-9aba0d63e3e2
+:END:
+#+title: Unlisten
+#+description: Unlisten
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:events:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Unsubscribe from notifications.
+
+#+name: events-unlisten
+#+begin_src ores-shell :exports none
+events listen ores.refdata.currency_changed
+events unlisten ores.refdata.currency_changed
+events subscriptions
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<events-unlisten>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Listening on ores.refdata.currency_changed
+ores-shell> ✓ Stopped listening on ores.refdata.currency_changed
+ores-shell> No active subscriptions.
+ores-shell> Bye!
+#+end_example

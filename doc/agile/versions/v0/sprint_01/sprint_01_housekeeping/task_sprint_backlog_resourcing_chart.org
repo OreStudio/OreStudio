@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 237d992b-9901-4003-9d39-1acf13c2f1de
+:END:
+#+title: Task: Use a bar chart for sprint resourcing cost
+#+description: Produce a per-story resourcing bar chart from the sprint's clocktable for the sprint report.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :agile:reporting:instrumentation:sprint_01_housekeeping:sprint_01:v0:
+#+owner: marco
+#+created: 2024-07-15
+#+updated: 2024-07-21
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:bca419e2-dff2-474b-969e-cfbd19e7c832][Sprint 01 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the sprint's resourcing breakdown legible at a glance: each
+story as a bar, length proportional to time spent.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:bca419e2-dff2-474b-969e-cfbd19e7c832][Sprint 01 housekeeping]] |
+| Now          | Completed 2024-07-21.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2024-07-21                                                          |
+
+* Acceptance
+
+- The sprint backlog contains a generated PNG bar chart showing per-
+  story resourcing.
+- The chart is regenerated from the clocktable on export.
+
+* Notes
+
+- Total time spent in v0: ~2:57.
+- Implemented via an org-babel R block embedded in the sprint
+  backlog file; output is committed alongside the PNG.
+
+* Result
+
+- =sprint_backlog_01_stories.png= committed; visible in the rendered
+  sprint report.

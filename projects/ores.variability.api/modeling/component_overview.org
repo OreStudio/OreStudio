@@ -4,10 +4,17 @@
 #+title: ores.variability.api
 #+description: Domain types and NATS protocol schemas for the variability component.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :variability:api:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.variability.api component diagram
+#+caption: ores.variability.api
+[[file:ores.variability.api.png][file:ores.variability.api.png]]
 
 * Summary
 

@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 27e66a7c-ba13-40ec-9a0f-2d89a459d3e9
+:END:
+#+title: Task: Extract domain-specific plugin libraries
+#+description: Steps 2-8: IPlugin + PluginRegistry + plugin_context + LegacyPlugin; extract ores.qt.admin / compute / refdata / party / mktdata / trading plugins; migrate to QPluginLoader shared libraries; restore menus + toolbar via setup_menus().
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt:plugins:architecture:refactor:domain:qt_plugin_architecture:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:38c972e1-2dd2-41ae-a770-800fee90d1e6][Qt plugin architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Steps 2-8: IPlugin + PluginRegistry + plugin_context + LegacyPlugin; extract ores.qt.admin / compute / refdata / party / mktdata / trading plugins; migrate to QPluginLoader shared libraries; restore menus + toolbar via setup_menus().
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:38c972e1-2dd2-41ae-a770-800fee90d1e6][Qt plugin architecture]] |
+| Now          | Completed 2026-04-09.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-04-09                                                          |
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =git log= for the per-PR breakdown.
+
+* Result
+
+Landed.

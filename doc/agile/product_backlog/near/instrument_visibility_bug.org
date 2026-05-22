@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 4941a490-0d66-4f09-9b1f-3bc928022a41
+:END:
+#+title: Fix: instruments not visible in UI
+#+description: Instruments cannot be seen in the UI. Investigate whether they are being imported and surfaced correctly; fix the import or display path.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :bug:trades:ui:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Instruments do not appear in the instruments view after the equity per-type migration. Possible causes:
+
+- The read path for some instrument types may not yet be wired to the Qt service layer.
+- The import pipeline may not trigger a refresh of the instruments list.
+- RLS visibility rules may exclude the logged-in party from seeing the instruments.
+
+Steps:
+1. Confirm whether instruments are present in the database after import.
+2. Trace the Qt service call for the instruments list and verify the response.
+3. Fix whichever layer is missing: service wiring, RLS policy, or UI refresh.

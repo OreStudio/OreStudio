@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 9f2b0585-3c63-4a3e-97a3-fea97b51727a
+:END:
+#+title: Task: Symbol visibility migration: -fvisibility=hidden across all shared libraries
+#+description: - Applies `-fvisibility=hidden` to all 18 shared library targets and removes the `CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS` glob
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :symbol_visibility:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/738
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Apply -fvisibility=hidden to all 18 shared libraries, add per-library export.hpp headers with ORES_X_EXPORT macros, and annotate all public API symbols.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] |
+| Now          | Completed 2026-05-14.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Apply -fvisibility=hidden to all 18 shared libraries, add per-library export.hpp headers with ORES_X_EXPORT macros, and annotate all public API symbols.
+- PR #738 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- Applies =-fvisibility=hidden= to all 18 shared library targets and removes the =CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS= global flag, fixing the Windows PE 65,535 named-export limit
+- Adds =export.hpp= headers (with =ORES_X_EXPORT= / =ORES_X_IMPORT= macros via =BOOST_SYMBOL_EXPORT=) to every library that lacked one
+- Annotates all classes and free functions that cross =.so= boundaries with the correct =ORES_X_EXPORT= macro, covering foundation, infrastructure, variability, IAM, DQ, refdata, analytics, assets, compute, controller, marketdata, trading, reporting, scheduler, workflow, synthetic, eventing, telemetry, and ORE domain layers
+
+** Motivation
+
+Windows DLLs cap named exports at 65,535 symbols. The existing =CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS= workaround exports every symbol, which hits that limit as the codebase grows. The fix is explicit visibility control: hide everything by default, export only what crosses library boundaries.
+
+
+* Result
+
+Landed.

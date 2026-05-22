@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: c64ba4b3-8e3c-4ab8-a605-06b2a4f2ee7d
+:END:
+#+title: View Seeded Roles
+#+description: View Seeded Roles
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:population_scripts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List all roles seeded by =roles_populate.sql=:
+
+#+begin_src sql
+select name, description
+from ores.roles
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by name;
+#+end_src

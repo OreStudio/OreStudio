@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 7030ab78-b8f1-425c-83ef-a6f9ebf218a8
+:END:
+#+title: Story: Workflow engine hardening
+#+description: Package renames, ORE import error reporting and step log, pg_notify pipeline fix, badge RLS, system reset, controller shutdown latency fix.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :workflow:ore:controller:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Harden the workflow engine: rename packages for consistency, add ORE import
+error reporting and step-log display, fix the pg_notify pipeline and badge
+RLS, reset the system bootstrap sequence, and eliminate controller shutdown
+latency by offloading DB writes to a thread pool.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-05-19.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-05-19                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- [[id:a4bc5ab1-4f4e-4bfc-a8a8-152379e6ce7e][Task: Workflow engine hardening + package renames]]
+- [[id:526f6418-b4f0-4d7a-a29b-7cc67fe10a0e][Task: [workflow] ORE import error reporting, step log, and service isolation]]
+- [[id:2018f6e5-95f7-443b-9406-9d941ce3934a][Task: [controller] Fix shutdown latency: offload DB writes to thread pool]]
+- [[id:24b4ae53-ad80-455c-8a6d-6d4d5c7793a8][Task: Fix pg_notify pipeline, badge RLS, and system reset]]
+* Decisions
+
+- /Thread pool for DB writes/ :: offloading DB writes on shutdown removes the
+  O(n) blocking call that caused multi-second latency when the controller had
+  many open connections.
+
+* Out of scope
+
+- Workflow engine generalisation (completed in sprint 16).
+
+* See also
+
+=doc/plans/2026-05-14-workflow-engine-hardening.org=

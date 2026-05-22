@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 90161bf2-67f0-4542-899c-5d844a3f6f95
+:END:
+#+title: Story: Sprint 13 housekeeping
+#+description: Sprint backlog refinement and release-notes generation for the previous sprint.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :agile:housekeeping:release_notes:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Recurring per-sprint housekeeping plus the new two-step release-notes
+process that's now required because the sprint backlog bursts the LLM
+prompt window.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Now           | Completed 2026-02-24.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-24                                             |
+
+* Acceptance
+
+- Sprint 13 backlog reflects reality at close.
+- Sprint 12 release notes produced via the new summarise-then-write flow.
+
+* Tasks
+
+In execution order:
+
+- [[id:f58a9a29-fa89-43af-bd4d-864448cfbb33][Sprint and product backlog refinement]]
+- [[id:34b26c5f-205a-4261-b1e7-5676dfe0c5ed][Generate release notes for previous sprint]]
+
+* Decisions
+
+- /Two-step release notes/ :: summarise the backlog first; write the notes from the summary. Single-step generation no longer fits.
+
+* Out of scope
+
+- Notebook OCR — no v0 task for this sprint.
+
+* See also
+
+None.

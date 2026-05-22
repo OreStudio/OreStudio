@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: f9ebca64-3021-4747-a8ee-8ce70b6286af
+:END:
+#+title: Add new flag to change reasons in Qt UI
+#+description: Change reasons have a new flag in the database but it is not surfaced in the Qt UI. Add the field to the change reason form.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :ui:bug:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+The =ores_change_reason_categories_tbl= and =ores_change_reasons_tbl= have an =is_new= (or equivalent) flag that controls whether a change reason appears as a "new" option in workflows. This flag is not exposed in the Qt change-reason management dialog.
+
+Add a checkbox or toggle for the flag in the create and edit forms; ensure it round-trips through the service layer.

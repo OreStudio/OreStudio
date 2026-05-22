@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d
+:END:
+#+title: Story: sqlgen improvements
+#+description: Audit raw libpq use; upstream NOTICE logging support to sqlgen; bound parameters proposed (blocked upstream).
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :sqlgen:sql:upstream:refactor:sprint_11:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Tighten the sqlgen surface so the project doesn't need to keep raw
+libpq for the cases sqlgen doesn't yet cover.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Now           | Completed 2026-02-06.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-06                                             |
+
+
+#+successor: e8004b20-ae81-4d48-a677-cde07a300e92
+
+Continued in: [[id:e8004b20-ae81-4d48-a677-cde07a300e92][sqlgen follow-up]] (sprint 12) — the upstream PRs
+merged but vcpkg hasn't picked up a release; adoption work remains
+blocked there.
+
+* Acceptance
+
+- Codebase swept for raw libpq use; remaining cases moved to ores.database.
+- NOTICE logging support raised upstream and PR opened.
+- Bound-parameter support tracked upstream (blocked on the fix landing).
+
+* Tasks
+
+In execution order:
+
+- [[id:f0c71fe7-1920-44aa-b98f-9147aaa00032][Audit for uses of raw libpq]]
+- [[id:db4461dd-a98e-4847-9b16-a76cfd1afcbe][Add NOTICE logging support to sqlgen]]
+- [[id:a6d63825-d592-47bb-a1c6-b6e9564fd55c][Add bound parameters to sqlgen]]
+
+* Decisions
+
+- /Upstream-first for sqlgen gaps/ :: avoid carrying long-running local patches.
+
+* Out of scope
+
+- Forking sqlgen.
+
+* See also
+
+None.

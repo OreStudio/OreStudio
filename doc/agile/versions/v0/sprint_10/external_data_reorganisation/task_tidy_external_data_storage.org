@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 3038f1e7-97b6-4b5b-bda0-50fcb71c0810
+:END:
+#+title: Task: Tidy up external data storage
+#+description: Restructure populate/ into domain-specific subdirectories (fpml/, crypto/, flags/, solvaris/); manifest.json files; code generators for flags/crypto/solvaris; relocate external data to external/.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :data:external:manifests:structure:external_data_reorganisation:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ebc22454-356d-4b6c-a3be-e8edfd858fca][External data reorganisation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Consolidate the scattered external data under =external/= and reorganise =populate/= into domain-specific subdirectories with manifests.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:ebc22454-356d-4b6c-a3be-e8edfd858fca][External data reorganisation]] |
+| Now          | Completed 2026-01-23.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2026-01-23                                                                |
+
+* Acceptance
+
+- =populate/= split into =fpml/=, =crypto/=, =flags/=, =solvaris/=.
+- =manifest.json= per domain (external sources tracked, internal sources tracked).
+- Dedicated code generators for flags / crypto / solvaris metadata SQL.
+- External data physically moved to =external/= with methodology docs.
+- Master include files: =fpml.sql=, =crypto.sql=, =flags.sql=, =solvaris.sql=.
+- Population ordering fixes (dataset dependency resolution).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Provenance becomes greppable: every chunk of external data has a manifest naming its source.
+
+* Result
+
+External data is organised + tracked; populate scripts modular.

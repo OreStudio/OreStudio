@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 7d84e735-7dfe-4215-af00-a1f4c9323bda
+:END:
+#+title: Story: Windows portability fixes
+#+description: WiX installer size limits, libpq/OpenSSL linking, libpq PostgreSQL CMake target, vcpkg Qt feature flag.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :windows:cmake:vcpkg:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Close the first wave of Windows build breakages surfaced when Windows CI came
+on-line: WiX v3 size/file-count limits, libpq link ordering, OpenSSL
+dependency, PostgreSQL CMake imported-target hygiene, and a vcpkg opt-in
+feature for Qt.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-04-22.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-04-22                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- [[id:4097525f-66b6-48d8-9ee1-6297fe896b40][Task: [qt.api] Move Cron widgets to qt.api to fix Windows link error]]
+- [[id:b64c5983-f243-4380-a2db-5e55830ee0af][Task: [qt.api/database] Fix Windows MSVC export and libpq link]]
+- [[id:40c6968a-7d60-44f0-9b14-b2887a0525ab][Task: [database] Link OpenSSL for libpq on Windows]]
+- [[id:f099eeeb-345d-419e-a0a3-f7bccaf4a7b2][Task: [backlog] Analyse Windows WiX installer size and file-count limits]]
+- [[id:25886210-f144-4243-a741-7607243726ce][Task: [cpack/windows] Clear WiX v3 size and file-count limits]]
+- [[id:d07e1889-fd0c-4f0b-ab3f-60d1519d08ba][Task: [cmake] Lift libpq Windows workaround to PostgreSQL imported target]]
+- [[id:9d673cfc-3396-4d61-950f-4888d19f1bd9][Task: [vcpkg] Add opt-in qt feature for Windows users]]
+* Decisions
+
+- /Lift to imported target/ :: the libpq workaround that existed in multiple CMake files was consolidated into a single PostgreSQL imported target definition to avoid drift.
+
+* Out of scope
+
+- MSVC C1202 constexpr depth issues (carried in msvc_c1202_fix story).
+- Symbol visibility migration (carried in symbol_visibility story).
+
+* See also
+
+None.

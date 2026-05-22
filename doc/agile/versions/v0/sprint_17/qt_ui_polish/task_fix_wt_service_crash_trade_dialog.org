@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 91acdecb-a296-4b26-a441-ab99bc9b9c08
+:END:
+#+title: Task: Fix wt.service crash, trade dialog UI, geometry persistence, and IAM party cache
+#+description: - [iam] Fix party cache cold-start and bootstrap gaps: warm cache for all active tenants at startup; handle missing entr
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt_ui_polish:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/755
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d148b46a-ad14-4391-8b64-46dcfe95c5f1][Qt UI polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the wt.service startup crash caused by a stale ORES_WT_PORT env var, close IAM party cache cold-start gaps, and fix a black-strip rendering defect in the trade detail dialog.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:d148b46a-ad14-4391-8b64-46dcfe95c5f1][Qt UI polish]] |
+| Now          | Completed 2026-05-17.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Fix the wt.service startup crash caused by a stale ORES_WT_PORT env var, close IAM party cache cold-start gaps, and fix a black-strip rendering defect in the trade detail dialog.
+- PR #755 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- *[iam]* Fix party cache cold-start and bootstrap gaps: warm cache for all active tenants at startup; handle missing entries gracefully
+- *[env]* Remove stale =ORES_WT_PORT= from =.env= and =init-environment.sh=; bump env version to 2 — this variable was mapped to an unregistered option by the wt.service parser, causing an "unrecognised option" crash on startup; add =validate_env_version.sh= call to =start-services.sh=
+- *[qt]* Fix black strip above trade detail tabs: set MDI window flags before =addSubWindow=, not after, to avoid re-decoration
+- *[qt]* Add geometry persistence for trade detail dialog via =setGeometryKey= on =DetachableMdiSubWindow= — saves safely from =closeEvent= rather than the unsafe =destroyed= signal
+- *[qt]* Make workflow step details dialog non-modal and persist its size across sessions
+- *[qt]* Fix =LeiEntityPicker= losing its selection when the filter changes
+- *[qt]* Improve =TenantProvisioningWizard= LEI logging; handle no-LEI publish path cleanly
+- *[ore]* Fix =nats_call= error propagation: when a response parses successfully but =success == false=, populate =out_error= from =result->message=; guard with =if constexpr requires= for list-style responses that have no =success= field
+- *[trading]* Propagate bearer token to FSM transition fetches in =trade_handler=
+- *[doc]* Rewrite trade import plan as Provisional Blotter design — supersedes the =import_failed= FSM approach; introduces a source-agnostic staging area between any import source and live books
+
+
+* Result
+
+Landed.

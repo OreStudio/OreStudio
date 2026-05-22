@@ -4,10 +4,17 @@
 #+title: ores.variability.core
 #+description: System variability and configuration management — feature flags, settings, and temporal change tracking.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :variability:core:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.variability.core component diagram
+#+caption: ores.variability.core
+[[file:ores.variability.core.png][file:ores.variability.core.png]]
 
 * Summary
 

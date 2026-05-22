@@ -1,0 +1,26 @@
+:PROPERTIES:
+:ID: 1edaeb0f-16b4-4fb4-b806-7bee9175cff1
+:END:
+#+title: Get Currency Details
+#+description: Get Currency Details
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:currencies:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select iso_code, name, symbol, fraction_symbol,
+       fractions_per_unit, rounding_type, rounding_precision, format
+from ores.currencies
+where iso_code = 'USD'
+      and valid_to = '9999-12-31 23:59:59'::timestamptz;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| iso_code | name      | symbol | fraction_symbol | fractions_per_unit | rounding_type | rounding_precision | format    |
+|----------+-----------+--------+-----------------+--------------------+---------------+--------------------+-----------|
+| USD      | US Dollar | $      | ¢               |                100 | standard      |                  2 | $#,##0.00 |
+#+end_example

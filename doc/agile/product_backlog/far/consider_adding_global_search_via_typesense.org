@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 5b0bf2a0-912d-4501-8ca0-ed4e0f6acce3
+:END:
+#+title: Consider adding "global search" via typesense
+#+description: Consider adding "global search" via typesense
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Typesense:
+
+#+begin_quote
+Typesense is a fast, typo-tolerant search engine for building delightful search
+experiences.
+#+end_quote
+
+We could pump specially crafted documents into typesense with IDs and types and
+then let users search across any type of entity.
+
+
+Links:
+
+- [[https://github.com/typesense/typesense][GH typesense]]
+- [[https://github.com/timescale/pg_textsearch][GH pg_textsearch]]: Modern ranked text search for Postgres.
+  - Simple syntax: ORDER BY content <@> 'search terms'
+  - BM25 ranking with configurable parameters (k1, b)
+  - Works with Postgres text search configurations (english, french, german, etc.)
+  - Supports partitioned tables
+  - Goal: state-of-the-art performance and scalability

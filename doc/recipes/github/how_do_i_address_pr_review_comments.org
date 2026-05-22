@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 26c1dc06-82d2-46c4-94d6-df9231ba171b
+:END:
+#+title: How do I address PR review comments?
+#+description: Read open review comments via gh, apply fixes as new commits (never amend), reply to each comment, and resolve the review thread.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :github:pr:review:gh:recipe:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This is one rung of the PR lifecycle indexed by [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] and
+exercised continuously by [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]] while monitoring.
+
+* Question
+
+How do I read open review comments on the current PR, apply the
+requested fixes, and close the review threads?
+
+* Answer
+
+1. /Read the open comments/:
+
+   #+begin_src sh :results verbatim
+   gh pr view --comments
+   gh api repos/{owner}/{repo}/pulls/{pr_number}/comments
+   #+end_src
+
+   For multi-line review threads (line-level comments), the API
+   call gives you the thread structure that =gh pr view= flattens.
+
+2. /Apply fixes per comment/. One logical fix per commit:
+
+   #+begin_src sh :results verbatim
+   git add <modified-files>
+   git commit -m "[component] Address review comment: <brief description>"
+   #+end_src
+
+   *Never amend* existing commits — that destroys the review history
+   and confuses the reviewer.
+
+3. /Push the batch/ when all comments in the round are addressed:
+
+   #+begin_src sh :results verbatim
+   git push
+   #+end_src
+
+4. /Reply to each review comment/ on GitHub, referencing the fix
+   commit. Skipping this leaves reviewers guessing.
+
+   #+begin_src sh :results verbatim
+   gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
+     -X POST -f body="Fixed in commit <sha> — <brief description>."
+   #+end_src
+
+5. /Resolve each review thread/ via GraphQL. First get the thread
+   IDs:
+
+   #+begin_src sh :results verbatim
+   gh api graphql -f query='
+   {
+     repository(owner: "{owner}", name: "{repo}") {
+       pullRequest(number: {pr_number}) {
+         reviewThreads(first: 50) {
+           nodes {
+             id
+             isResolved
+             comments(first: 1) { nodes { databaseId body } }
+           }
+         }
+       }
+     }
+   }'
+   #+end_src
+
+   Then resolve each unresolved thread:
+
+   #+begin_src sh :results verbatim
+   gh api graphql -f query="mutation {
+     resolveReviewThread(input: {threadId: \"<thread_id>\"}) {
+       thread { isResolved }
+     }
+   }"
+   #+end_src
+
+* Conventions
+
+- /One commit per logical fix/. Squash later if you want, but never
+  on a PR under active review.
+- /Reply + resolve/ are required, not optional. The PR dashboard
+  shows unresolved threads as outstanding work; reviewers expect
+  zero before merge.
+
+* Script
+
+Bare =gh= CLI; no wrapper.
+
+* Tested by
+
+Manual. PR Shepherd automates the loop around this recipe.
+
+* See also
+
+- [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][How do I monitor a PR until green?]] — the outer loop.
+- [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][How do I fix a failing CI check?]] — the sibling failure mode.
+- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]].

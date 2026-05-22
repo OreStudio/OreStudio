@@ -4,10 +4,17 @@
 #+title: ores.iam.service
 #+description: NATS service entrypoint for the IAM domain — wires handlers, repositories, and configuration.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :iam:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.iam.service component diagram
+#+caption: ores.iam.service
+[[file:ores.iam.service.png][file:ores.iam.service.png]]
 
 * Summary
 

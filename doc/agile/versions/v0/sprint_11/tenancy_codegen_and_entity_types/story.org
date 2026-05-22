@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 467e909e-ceac-4829-8688-d43179d38f18
+:END:
+#+title: Story: Tenancy codegen and entity types
+#+description: Update codegen templates for tenant-aware tables; introduce pgTAP; C++ tenant entities; protocol bump 26.1.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :codegen:tenancy:pgtap:protocol:sprint_11:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Take the schema-level tenancy plumbed in by the foundation story and
+push it through the rest of the stack: codegen, C++ entities, shell
+commands, protocol bump.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Now           | Completed 2026-02-03.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-03                                             |
+
+* Acceptance
+
+- Codegen templates emit tenant-aware tables by default.
+- pgTAP testing skill section + per-entity pgTAP tests.
+- Utility scripts for refdata schema gen + entity recreate.
+- C++ tenant + tenant_status + tenant_type entities present.
+- Protocol 26.1 bump.
+- Shell tenants command + tenant-aware bootstrap/login.
+- Principal parsing supports =username@hostname=.
+
+* Tasks
+
+In execution order:
+
+- [[id:4bec02dc-52c4-4d2d-b2cb-6142dfd4ff70][Update codegen for tenancy]]
+- [[id:eec6cea6-4f37-4f23-b88a-1f505eb9cbc0][Add entity types for tenants]]
+
+* Decisions
+
+- /Tenancy is the codegen default/ :: tenant-less tables are the exception now, not the rule.
+- /Enum/lookup tables on tenant 0/ :: consistent data model rather than carving out a separate /tenant-less/ category.
+- /pgTAP for database-level tests/ :: complements C++-level tests with a layer that catches schema-only regressions.
+
+* Out of scope
+
+- Per-component C++ enum codegen rollout — the message-types enum is the proof.
+
+* See also
+
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the component this story extends.

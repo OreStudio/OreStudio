@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 8a04de16-6bdd-4696-9f04-122c92692d59
+:END:
+#+title: Story: Portfolio explorer
+#+description: Combined PortfolioBookTreeMdiWindow: hierarchical tree + filtered trade table; breadcrumb scope; trade counts; eventing for book + portfolio changes; protocol 43.0.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :qt:portfolio:trades:explorer:protocol:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Combine portfolios + books + trades into one navigable tree-and-table
+view scoped to the session party.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Now           | Completed 2026-02-25.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-25                                             |
+
+* Acceptance
+
+- PortfolioBookTreeMdiWindow with horizontal splitter (tree left, trade table right).
+- Distinct icons for real / virtual portfolios and trading / banking books.
+- Selecting a node filters trades to that subtree.
+- Breadcrumb shows the path.
+- Trade counts aggregate up.
+- Settings + splitter state persist; stale indicators on changes.
+- Trade protocol gains book_id + portfolio_id filters with recursive CTE; protocol 43.0.
+
+* Tasks
+
+In execution order:
+
+- [[id:7d893b67-08f2-4f7b-9522-73dd8811e704][Add portfolio explorer]]
+
+* Decisions
+
+- /Tree + filtered table, not two windows/ :: navigation flow is inherently /pick a node, see its trades/.
+- /Recursive CTE for subtree filtering/ :: cheaper than client-side filtering and matches RLS semantics.
+
+* Out of scope
+
+- Direct trade editing from the explorer.
+
+* See also
+
+- [[id:956fcd0e-41c3-46e4-9895-b64b4c143e6d][Account-party management and login]] — supplies the party-on-session binding the explorer scopes by.

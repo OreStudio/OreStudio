@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 47bcd022-22c8-4504-a4e9-c4e7cee76cb5
+:END:
+#+title: How do I list compute app versions?
+#+description: List compute app versions via =ores.cli=
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:compute_app_versions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List compute app versions via =ores.cli=. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
+
+* Question
+
+How do I list compute app versions?
+
+* Answer
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute app-versions list ${db_args} ${log_args} --format table
+#+end_src

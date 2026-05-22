@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 05422ca3-6af9-493f-b3cd-b2ea00707370
+:END:
+#+title: Task: Badges to database (phase 1 infrastructure)
+#+description: Codegen models for badge_severity + code_domain + badge_definition + badge_mapping junction; integrate generated SQL + C++ artefacts; population seed data from hardcoded colours; BadgeCache in ores.qt wired into client startup. Foundation that lets Wt reuse the same metadata.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :badges:database:codegen:qt:wt:reuse:badges_to_database:sprint_15:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2aa3562a-9e27-4efc-a2a0-492098f9ebbb][Badges to database (phase 1)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Phase 1: lay the database infrastructure for DB-driven badge metadata that Qt + Wt can both consume.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:2aa3562a-9e27-4efc-a2a0-492098f9ebbb][Badges to database (phase 1)]] |
+| Now          | Completed 2026-03-28.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2026-03-28                                                                |
+
+* Acceptance
+
+- Codegen models: badge_severity_domain_entity.json, code_domain_domain_entity.json, badge_definition_domain_entity.json, badge_mapping_junction.json.
+- Generated SQL + C++ artefacts integrated.
+- Population seed data extracted from hardcoded colours.
+- BadgeCache implemented in ores.qt + wired into client startup.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Phase 1 only; later phases (Wt consumption, dynamic CRUD) deferred.
+
+* Result
+
+Badge metadata in database; cache in Qt.

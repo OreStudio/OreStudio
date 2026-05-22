@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd
+:END:
+#+title: Execution Model
+#+description: How LLMs and agents operate the information architecture during a working session.
+#+type: meta
+#+version: 2
+#+level: cross
+#+filetags: :meta:execution:llm:agents:
+#+created: 2026-05-18
+#+updated: 2026-05-21
+
+This page describes /how/ the [[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic information architecture]] is
+actually operated in a session — who reads what, who writes what, how
+LLMs fork subprocesses, how blocking and task-switching work. It is
+the runtime view of the architecture; the static contract lives in
+[[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] and the role definitions in [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][functions]]. Read this when
+you want to know what concretely happens when a sprint is in flight.
+
+* Roles
+
+The actors involved in a working session. Each role maps onto a
+cybernetic system — load the linked [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][function]] doc for the priming
+context that role uses.
+
+#+ATTR_HTML: :class hug-leading
+| Role             | Maps to                                                    | What it does                                                                                                                            |
+|------------------+------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------|
+| User             | —                                                          | Assigns stories to orchestrators; invokes [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] / [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] / [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]] sessions on demand; reviews story-level outcomes. |
+| Agent            | [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]] ([[id:b544713a-ba23-4d5a-9cee-084212d7c8ba][S1 Agent]] function)                          | A Claude subagent that picks up a single task, implements it, returns when the task is =DONE= or =BLOCKED=.                            |
+| Orchestrator LLM | [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] ([[id:eeca6981-3240-44d9-ada7-4b8c64a76b44][S2 Orchestrator]] function)                  | Coordinates one assigned story. Forks agents, reviews their output, triages discovered work.                                            |
+| System 3 session | [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] ([[id:f1d99662-c6b1-4839-92e1-d061ccf6b83f][S3 Sprint Planner]] function)                | LLM session invoked on demand that reasons about sprint coherence — opening, running, and closing a sprint.                             |
+| System 4 session | [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] ([[id:66eb6824-52b8-4603-b302-f805da9ec443][S4 Version Planner]] function)               | LLM session invoked on demand that reasons about version coherence — sprint sequencing, release scope.                                  |
+| System 5 session | [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]] ([[id:5cad21da-21fb-460b-9286-8998b4c6ef52][S5 Identity Steward]] function)              | LLM session, usually with the user collaborating, that reasons about identity — what is in or out of scope.                             |
+| Audit jobs       | [[id:ed29c99b-1507-49c9-9937-d296fffe428e][System 3*]] ([[id:049b086e-f131-4d7a-8244-c1b2ff297ab6][S3* Auditor]] function)                     | Scripts run periodically (e.g. nightly) plus on-demand sessions; enforce invariants from outside the operational hierarchy.             |
+
+* Story execution loop (the [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] orchestrator)
+
+1. User assigns a story. Orchestrator reads the story document, the
+   sprint mission, and any linked knowledge. It moves the story's
+   Status TODO from =BACKLOG= to =STARTED=.
+2. Orchestrator breaks the story into tasks if not already broken.
+   Each task is created as =BACKLOG= under the story folder.
+3. Orchestrator picks the next task. Sets the task's TODO to
+   =STARTED=, fills =#+owner=, =#+branch=, =#+blocked_on: none=,
+   updates the =** Now= / =** Next= / =** Last touched= subheadings.
+   Spawns an agent with the task as input.
+4. Orchestrator monitors the agent. When the agent reports done:
+   1. Reads the agent's task notes and the produced PR.
+   2. Reviews the change against the task's =* Acceptance= criteria.
+   3. If satisfied: moves the task TODO to =DONE=, fills =* Result=.
+   4. If not: TODO stays at =STARTED= (or returns there from =BLOCKED=)
+      with review feedback in =* Notes=; or the task is split into
+      smaller tasks.
+5. Orchestrator processes any tasks the agent filed as =DISCOVERED=:
+   triages each one (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
+6. Loops to step 3 until every task in the story is =DONE= or
+   =ABANDONED=.
+7. Orchestrator distils the plan(s) into the story's =* Decisions=,
+   archives or deletes the plan files, and moves the story TODO to
+   =DONE=.
+
+* Concurrency rules
+
+- One orchestrator per story at a time.
+- An orchestrator may run multiple agents in parallel /only if/ their
+  tasks touch disjoint files. The orchestrator is responsible for
+  proving disjointness before spawning.
+- Discovered work is /never/ implemented opportunistically by an
+  agent. It is filed as =DISCOVERED= for orchestrator triage.
+
+* Blocking and task switching
+
+Wall-clock waste comes from blocking, not active work: PR review, CI
+runs, local builds. The orchestrator should keep multiple of its
+story's tasks in flight so that when one blocks, another can advance.
+
+** When an orchestrator blocks on a task
+
+1. Move the task TODO from =STARTED= to =BLOCKED=.
+2. Set =#+blocked_on= to the cause (=review=, =ci=, =local_build=,
+   =external=). Set =#+blocked_since= to now. Update =** Waiting on=
+   in the Status subheadings, leave a one-sentence =** Now= describing
+   what was just done, set =** Next= to the action that will resume
+   once unblocked.
+3. Update =#+updated= and =** Last touched=.
+4. Move attention to another =STARTED=-eligible task in the same
+   story. If none exist, pick the next =BACKLOG= task and start it.
+5. If every task in the story is =BLOCKED=, report to the user and
+   stop.
+
+** When an orchestrator returns to a blocked task
+
+1. Check whether the blocker has cleared (review posted, CI green,
+   build passed).
+2. If cleared: move TODO back to =STARTED=, clear =#+blocked_on=
+   (=none=) and =#+blocked_since=, update Status, resume the planned
+   =** Next= action.
+3. If not cleared: refresh =** Last touched=, leave the task, switch
+   away.
+
+** The active-branches view
+
+Audit ([[id:ed29c99b-1507-49c9-9937-d296fffe428e][System 3*]]) generates =audit/reports/active_branches.org= by
+grepping every task document for =^\* STARTED Status= and
+=^\* BLOCKED Status=, then reading the task's frontmatter. The output
+is a table: =task | owner | branch | pr | todo | blocked_on |
+blocked_since=. This is what a user opens to see what is in flight and
+where the time is going.
+
+* The task document as live status
+
+Opening a single task document must answer four questions: /what is
+this task, what is the LLM doing right now, what is it waiting for,
+what is next/. The =* Status= headline carries the TODO state and its
+subheadings carry the operational detail. See =task= in
+[[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] for the structure.
+
+The implication for the orchestrator and agent: /every meaningful
+action updates Status and =#+updated= before control yields/. This is
+a hard discipline. Tasks that fall out of sync with reality are how
+the v0 system rotted; audit enforces freshness here so it cannot
+recur.
+
+* When [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]], [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][4]], [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][5]] run
+
+On demand, in their own sessions:
+- /[[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]/ — when planning or closing a sprint, or when the user
+  senses the sprint is drifting from its mission.
+- /[[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]]/ — when planning a version, sequencing sprints, or
+  considering release scope.
+- /[[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]]/ — when a far story arrives, when the product identity
+  needs refinement, or when a candidate version is being shaped.
+
+These sessions read and write the relevant documents but do not spawn
+agents. They produce structural changes (mission rewrites, story
+re-prioritisation, scope decisions) that subsequent [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] sessions
+inherit.
+
+* What this model does not yet have
+
+- Automated orchestrator dispatch — the user manually starts
+  orchestrators today.
+- A queue or lock — we rely on the user to avoid assigning conflicting
+  stories to parallel orchestrators.
+- Multi-user coordination — single-user assumption.

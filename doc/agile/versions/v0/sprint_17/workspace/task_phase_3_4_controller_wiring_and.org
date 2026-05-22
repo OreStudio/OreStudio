@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 15c29ef8-6012-480f-8d11-81701591921e
+:END:
+#+title: Task: Phase 3+4: controller wiring and Data Workshop UI
+#+description: Completes the remaining workspace propagation work after PR #773 (codegen) was merged.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :workspace:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/778
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Complete workspace propagation: wire EntityController to forward workspace context via NATS X-Workspace-Id headers, and add the Data Workshop UI tab.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]] |
+| Now          | Completed 2026-05-20.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Workspace controller is wired for phases 3 and 4.
+- PR landed.
+
+* Plan
+
+* Notes
+
+** Summary
+
+Completes the remaining workspace propagation work after PR #773 (codegen) was merged.
+
+*** Step 11 — EntityController workspace wiring
+- =EntityController= installs an event filter on its =mdiArea_= at construction time
+- When =mdiArea_->setProperty("ores_workspace_context", ...)= is called anywhere, every plugin controller automatically forwards the new context to =clientManager_->setWorkspaceContext()=
+- This makes the =X-Workspace-Id= NATS header active without any per-controller boilerplate
+
+*** Phase 4 — Data Workshop UI
+- *WorkspaceMdiWindow*: replaces flat =QTableView= with =QTreeWidget= showing parent/child workspace hierarchy; adds "Open" toolbar action
+- *WorkspaceController*: =onWorkspaceActivated= resolves the resolution order via =workspace.v1.workspaces.resolve=, builds a =WorkspaceContext=, and sets it on the MDI area property — triggering the Step 11 event filter across all open plugin controllers
+- *WorkspaceDetailDialog*: adds "Inherits from:" read-only field showing the parent workspace UUID
+- *ClientWorkspaceModel*: exposes =workspaces()= accessor for tree building
+
+*** End-to-end flow
+1. User opens Workspaces window, selects a workspace, clicks Open
+2. =WorkspaceController= resolves the ancestor chain via NATS
+3. Sets =ores_workspace_context= on the MDI area
+4. =EntityController= event filter fires in all plugin controllers → =clientManager_->setWorkspaceContext()=
+5. All subsequent NATS requests carry =X-Workspace-Id: <uuid>=
+6. Repository =read_latest()= filters data by =workspace_id=
+
+Marks =2026-05-19-workspace-id-codegen-propagation.org= as Complete.
+
+
+* Result
+
+Landed.

@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 4a704351-6959-4806-b164-ef8554724ac5
+:END:
+#+title: Task: Add a message queue
+#+description: Basic queue infrastructure for asynchronous processing — sets up the foundation that the scheduling subsystem and future trade-import paths will both consume.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :messaging:queue:async:infrastructure:scheduling_subsystem:sprint_13:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a0b6c877-2fad-457a-b0c2-000d3f707a5b][Scheduling subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add basic message-queue infrastructure for asynchronous processing.
+
+* Status
+
+| Field        | Value                                                             |
+|--------------+-------------------------------------------------------------------|
+| State        | DONE                                                              |
+| Parent story | [[id:a0b6c877-2fad-457a-b0c2-000d3f707a5b][Scheduling subsystem]] |
+| Now          | Completed 2026-02-27.                                             |
+| Waiting on   | None.                                                             |
+| Next         | None.                                                             |
+| Last touched | 2026-02-27                                                        |
+
+* Acceptance
+
+- Queue primitives in place.
+- Consumed by the scheduling subsystem; future trade import + bulk operations can use the same pattern.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Foundation work; the queue interface is intentionally minimal.
+
+* Result
+
+Message queue available.

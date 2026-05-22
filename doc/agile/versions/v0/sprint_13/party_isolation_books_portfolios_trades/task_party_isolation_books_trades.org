@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 7864c825-dcbd-4f86-8609-c4739d250239
+:END:
+#+title: Task: Party isolation for books, portfolios, trades
+#+description: Strict RLS policies on books / portfolios / trades restrict visibility to the session party; session_data carries party context; update_session_party() + make_request_context() enforce party-level RLS; party shown in portfolio detail dialog; pre-populate party_id in create mode; parent-portfolio selectors in portfolio + book dialogs; FlagIconHelper centralises flag icon setup.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :rls:party:trading:sql:qt:party_isolation_books_portfolios_trades:sprint_13:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:df3b299e-7fed-4411-b257-125ed35c3a9e][Party isolation for books, portfolios, trades]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extend party-level RLS to books, portfolios, and trades — they were previously visible across all parties in a tenant.
+
+* Status
+
+| Field        | Value                                                                                      |
+|--------------+--------------------------------------------------------------------------------------------|
+| State        | DONE                                                                                       |
+| Parent story | [[id:df3b299e-7fed-4411-b257-125ed35c3a9e][Party isolation for books, portfolios, trades]] |
+| Now          | Completed 2026-02-24.                                                                      |
+| Waiting on   | None.                                                                                      |
+| Next         | None.                                                                                      |
+| Last touched | 2026-02-24                                                                                 |
+
+* Acceptance
+
+- Strict RLS policies on books / portfolios / trades scoped to session party.
+- =session_data= grows party context; =update_session_party()= + =make_request_context()= enforce party-level RLS.
+- Portfolio detail dialog displays party name; =party_id= pre-populated in create mode.
+- Parent-portfolio selectors added to portfolio + book detail dialogs.
+- =FlagIconHelper= centralises flag icon setup (was scattered per-dialog lambdas).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Builds directly on sprint-12's party-level RLS foundation (=party_counterparties= was the first scoped junction).
+
+* Result
+
+Books / portfolios / trades party-scoped.

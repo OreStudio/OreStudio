@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 2dd0aa0d-9eff-4aca-b1fc-b8bd47270620
+:END:
+#+title: Get Permissions for a Role
+#+description: Get Permissions for a Role
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:rbac_roles_and_permissions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select r.name as role_name, p.code as permission_code, p.description
+from ores.role_permissions rp
+join ores.roles r on r.id = rp.role_id
+  and r.valid_to = '9999-12-31 23:59:59'::timestamptz
+join ores.permissions p on p.id = rp.permission_id
+  and p.valid_to = '9999-12-31 23:59:59'::timestamptz
+where rp.valid_to = '9999-12-31 23:59:59'::timestamptz
+  and r.name = 'Admin'
+order by p.code;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| role_name | permission_code | description                   |
+|-----------+-----------------+-------------------------------|
+| Admin     | *               | Full access to all operations |
+#+end_example

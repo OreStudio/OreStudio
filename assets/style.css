@@ -180,6 +180,25 @@ th, td {
     border-bottom: 1px solid var(--border-color);
 }
 
+/* Opt-in: narrow leading columns hug their content; only the trailing
+   column wraps. Apply by attaching class="hug-leading" to the <table>
+   (in org-mode: #+ATTR_HTML: :class hug-leading). Suitable when the
+   last column is the only wide / wrappy one. */
+table.hug-leading th:not(:last-child),
+table.hug-leading td:not(:last-child) {
+    white-space: nowrap;
+}
+
+/* Anchor injected before headings that carry an :ID: property — see the
+   org-html headline advice in .build-site.el. Targets [[id:UUID]] links
+   so they scroll to the right heading. Invisible by design. */
+a.id-anchor {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
 th {
     background-color: var(--bg-accent);
     color: #ffffff;
@@ -340,18 +359,62 @@ li {
 }
 
 /* Info / note admonition box */
+.note,
+.warning,
+.tip {
+    border-radius: 0 6px 6px 0;
+    padding: 1rem 1.25rem 1rem 3rem;
+    margin: 1.5rem 0;
+    font-size: 0.95rem;
+    position: relative;
+}
+
+.note p:last-child,
+.warning p:last-child,
+.tip p:last-child {
+    margin-bottom: 0;
+}
+
+/* Font Awesome 6 Free, solid (weight 900) — already loaded via the html-header. */
+.note::before,
+.warning::before,
+.tip::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    font-size: 1.1rem;
+}
+
 .note {
     background-color: rgba(88, 166, 255, 0.07);
     border: 1px solid rgba(88, 166, 255, 0.25);
     border-left: 3px solid var(--accent);
-    border-radius: 0 6px 6px 0;
-    padding: 1rem 1.25rem;
-    margin: 1.5rem 0;
-    font-size: 0.95rem;
+}
+.note::before {
+    content: "\f05a";          /* info-circle */
+    color: var(--accent);
 }
 
-.note p:last-child {
-    margin-bottom: 0;
+.warning {
+    background-color: rgba(255, 191, 0, 0.08);
+    border: 1px solid rgba(255, 191, 0, 0.30);
+    border-left: 3px solid #ffbf00;
+}
+.warning::before {
+    content: "\f071";          /* triangle-exclamation */
+    color: #ffbf00;
+}
+
+.tip {
+    background-color: rgba(46, 204, 113, 0.08);
+    border: 1px solid rgba(46, 204, 113, 0.30);
+    border-left: 3px solid #2ecc71;
+}
+.tip::before {
+    content: "\f0eb";          /* lightbulb */
+    color: #2ecc71;
 }
 
 /* Badges / shields */

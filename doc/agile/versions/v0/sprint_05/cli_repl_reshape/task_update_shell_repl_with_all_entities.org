@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 7f80b71d-b377-472f-8537-d1801556ee3f
+:END:
+#+title: Task: Update ores.shell with REPL commands for all entities
+#+description: Expand the REPL so every domain entity has the standard verb set (list, add, delete, import, export).
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :shell:repl:cli:cli_repl_reshape:sprint_05:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-25
+#+updated: 2025-11-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Match the CLI's new entity-first shape inside =ores.shell=
+(the REPL): every domain entity gets the standard verb set.
+
+* Status
+
+| Field        | Value                                                           |
+|--------------+-----------------------------------------------------------------|
+| State        | DONE                                                            |
+| Parent story | [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]] |
+| Now          | Completed 2025-11-25.                                           |
+| Waiting on   | None.                                                           |
+| Next         | None.                                                           |
+| Last touched | 2025-11-25                                                      |
+
+* Acceptance
+
+- REPL exposes =currencies=, =accounts=, =feature_flags= as top-level entries with the same verb set as the CLI.
+- Help text consistent with the CLI.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Renamed from /client/ to /repl/ as part of this work — see the dedicated task.
+
+* Result
+
+REPL aligned with the entity-first CLI shape.

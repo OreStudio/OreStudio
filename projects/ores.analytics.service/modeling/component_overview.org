@@ -4,10 +4,17 @@
 #+title: ores.analytics.service
 #+description: NATS service entrypoint for the analytics domain.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :analytics:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.analytics.service component diagram
+#+caption: ores.analytics.service
+[[file:ores.analytics.service.png][file:ores.analytics.service.png]]
 
 * Summary
 

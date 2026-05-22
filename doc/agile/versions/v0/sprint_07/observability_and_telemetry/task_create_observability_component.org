@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: af82e4cf-125d-4c32-b52a-cc1cd4ac5246
+:END:
+#+title: Task: Create the observability component
+#+description: Stand up ores.observability as a peer of ores.logging: structured event capture, retention, query surface.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :observability:component:observability_and_telemetry:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Stand up =ores.observability= as a peer of =ores.logging=: structured event capture, retention, query surface.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] |
+| Now          | Completed 2025-12-26.                                                    |
+| Waiting on   | None.                                                                    |
+| Next         | None.                                                                    |
+| Last touched | 2025-12-26                                                               |
+
+* Acceptance
+
+- Component scaffolded with the standard layout.
+- Event types defined for the first set of observability concerns (session, request, error).
+- Retention policy documented.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Distinct from logging: logging is human-readable text, observability is structured events for machines.
+
+* Result
+
+Component present and emitting events.

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: bfac3a00-1684-4546-b10b-5ba358b5a867
+:END:
+#+title: Story: Unified system_settings (replace feature_flags)
+#+description: Replace boolean-only ores_variability_feature_flags_tbl with ores_variability_system_settings_tbl supporting bool / int / string / JSON; migration across SQL, domain, service, NATS protocol, shell, CLI, HTTP, Qt UI; legacy files removed.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :variability:settings:refactor:protocol:qt:sprint_15:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Replace the boolean-only feature_flags table with a unified
+system_settings table supporting bool / int / string / JSON. Touch
+every layer (SQL through Qt) and remove the legacy files.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Now           | Completed 2026-03-20.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-20                                             |
+
+* Acceptance
+
+- New ores_variability_system_settings_tbl with typed value types.
+- Typed accessors (get_bool / get_int / get_string / get_json) in the service.
+- NATS protocol variability.v1.settings.*.
+- system_setting_changed_event in eventing.
+- Shell + CLI + HTTP + Qt all migrated; cross-module consumers updated.
+- Legacy files (29 + 5 + 4) removed; 14 Qt files renamed.
+
+* Tasks
+
+In execution order:
+
+- [[id:dfcdfd40-5c49-4122-8f44-e18ea4ba9d12][Replace feature_flags with unified system_settings]]
+
+* Decisions
+
+- /Typed accessors over generic Value/ :: keeps call sites readable.
+- /JSON as a first-class type/ :: supports the iam.token.* settings landed in the JWT refresh work without needing a separate table.
+
+* Out of scope
+
+- User-editable schemas for settings (future).
+
+* See also
+
+- [[id:169b15a7-442b-44fd-8e54-436fec8340a6][JWT refresh]] — first real consumer of typed system settings (iam.token.*).

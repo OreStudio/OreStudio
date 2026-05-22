@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: a7c737f4-ca5e-4e23-b93d-a2a061b97d32
+:END:
+#+title: Drop database roles before recreating the database
+#+description: recreate_database.sh does not drop roles before re-creating the database. Add role-drop logic to ensure a clean slate.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :database:infrastructure:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+=recreate_database.sh= drops and re-creates the database but does not drop roles first. On re-run, =CREATE ROLE= fails with "role already exists" for any role that survived the drop. Add a =DROP ROLE IF EXISTS= block at the top of the setup sequence, before =CREATE DATABASE=, to ensure a clean slate.

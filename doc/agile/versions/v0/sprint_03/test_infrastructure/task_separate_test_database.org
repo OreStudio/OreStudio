@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 5e739596-d2b8-4206-b2bf-5171ccc9b954
+:END:
+#+title: Task: Separate test database from application
+#+description: Use a dedicated Postgres database for tests so they don't collide with the dev/app database.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :testing:postgres:isolation:test_infrastructure:sprint_03:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-01
+#+updated: 2025-12-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Stop tests from sharing the application's Postgres database. Each
+test run gets isolated state — no more deleting accounts or currencies
+out from under the running app, and no more tests trampling each
+other.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]] |
+| Now          | Completed 2025-12-01.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2025-12-01                                                       |
+
+* Acceptance
+
+- Tests target a separate database from the application.
+- Tests use a distinct env-var prefix (so the program-options binding doesn't trample the runtime config).
+- Existing import / export commands still work after the split.
+
+* Notes
+
+- Total time spent in v0: ~3:33.
+- Env-var collision was a real concern: the program-options binding picks up =ORES_*= from the environment, which was the same prefix the tests used. v0 settled on =TEST_ORES_*= (or similar) for the test path to keep them disjoint.
+- Carries a pre-existing =boost::bad_any_cast= on import (unrelated to this work) that v0 explicitly flagged as out of scope.
+- Recipes for client interaction were split into their own org-mode file as part of the cleanup.
+
+* Result
+
+Tests run against an isolated database with no overlap into the
+application's state; env-var namespaces no longer collide.

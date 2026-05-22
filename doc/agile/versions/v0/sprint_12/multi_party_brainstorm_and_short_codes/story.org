@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: d0e2fb0d-24f0-4fa4-a403-872e01e60fb6
+:END:
+#+title: Story: Multi-party brainstorm and short codes
+#+description: Brainstorm multi-party design; party pagination; mnemonic short-code generation; separate party identifiers into junction table; list UI polish.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :party:design:short_codes:pagination:qt:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Design multi-party support, ship party pagination, generate proper
+short codes, separate identifiers into a junction, polish list UI.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-14.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-14                                             |
+
+* Acceptance
+
+- Multi-party brainstorm document + design captured.
+- Mnemonic short-code SQL utilities live in =ores.utility=.
+- transliterated_name plumbed end-to-end.
+- Party identifiers in a dedicated table.
+- List UI shows country flag, capitalised categories, BC combo box.
+
+* Tasks
+
+In execution order:
+
+- [[id:3ec1360a-fa8d-4ef3-b545-1bee0fad4bab][Brainstorm multi-party support]]
+- [[id:bc07172b-d362-413f-bd9e-d00531425ea2][Polish party and counterparty list UI]]
+- [[id:23ba1502-d6a9-422a-9ddf-32d13acfb30d][Add proper party short codes]]
+- [[id:0fb53451-a686-4479-98bf-433c69a15932][Separate party identifiers into a dedicated table]]
+
+* Decisions
+
+- /Consonant-heavy mnemonics with collision suffix/ :: industry standard for trading short codes.
+- /LEI demoted from primary code/ :: internal parties have no LEI; identifiers belong in a junction.
+- /Pagination + transliteration land in one PR/ :: protocol bump 31 → 32.
+
+* Out of scope
+
+- Multi-party RLS implementation (separate story).
+
+* See also
+
+None.

@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 4c526597-c668-486b-a4ab-95775c01089a
+:END:
+#+title: How do I refresh org-babel results?
+#+description: Run emacs in batch mode to execute org-babel src blocks in a file and save the updated #+RESULTS back to disk.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :emacs:org_mode:babel:recipe:
+#+created: 2026-05-18
+#+updated: 2026-05-18
+
+For the convention on which recipes should carry a =#+RESULTS:=
+snapshot, see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] (the recipe section).
+
+* Question
+
+How do I re-run the org-babel source blocks in a recipe and update its
+=#+RESULTS:= snapshots on disk, without opening emacs interactively?
+
+* Answer
+
+Use =emacs --batch= with =ob-shell= loaded and
+=org-confirm-babel-evaluate= silenced.
+
+** Refresh a single named block (recommended)
+
+Give the source block you want kept fresh a =#+name:= header. Then
+refresh just that block by name:
+
+#+begin_src org
+,#+name: list-presets
+,#+begin_src sh :results verbatim :exports both
+cmake --list-presets
+,#+end_src
+#+end_src
+
+#+begin_src sh :results verbatim
+FILE=doc/recipes/cmake/how_do_i_list_available_presets.org
+emacs --batch -Q \
+  --eval "(require 'org)" \
+  --eval "(require 'ob-shell)" \
+  --eval "(setq org-confirm-babel-evaluate nil)" \
+  --visit "$FILE" \
+  --eval "(org-babel-goto-named-src-block \"list-presets\")" \
+  -f org-babel-execute-src-block \
+  -f save-buffer
+#+end_src
+
+This is the safe default: only the block named =list-presets= runs.
+Other blocks (which may invoke long-running build commands) are left
+alone.
+
+** Refresh every block in a file
+
+For a file where /every/ block is meant to be runnable on refresh:
+
+#+begin_src sh :results verbatim
+FILE=doc/recipes/some_recipe.org
+emacs --batch -Q \
+  --eval "(require 'org)" \
+  --eval "(require 'ob-shell)" \
+  --eval "(setq org-confirm-babel-evaluate nil)" \
+  --visit "$FILE" \
+  -f org-babel-execute-buffer \
+  -f save-buffer
+#+end_src
+
+Mark blocks that should /never/ run automatically (e.g. =cmake --build=)
+with =:eval no= so they're skipped:
+
+#+begin_src org
+,#+begin_src sh :results verbatim :eval no
+cmake --build --preset linux-clang-debug-ninja
+,#+end_src
+#+end_src
+
+* Script
+
+The =emacs --batch= invocations above. No wrapper at the moment — if
+this becomes a frequent operation, fold it into a script under
+=build/scripts/=.
+
+* Tested by
+
+Used during the v2 information-architecture rollout to populate the
+=#+RESULTS:= snapshot in [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]]. Not yet
+exercised in CI.
+
+* See also
+
+- [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]] — uses a captured =#+RESULTS:=
+  snapshot.
+- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — the publish pipeline also runs emacs in
+  batch mode against the org tree.
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] — recipe section, where the snapshot convention
+  is defined.

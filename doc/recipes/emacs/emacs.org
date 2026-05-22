@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: 74bac855-ec3e-49a7-832f-d0eae85c1b14
+:END:
+#+title: Emacs recipes
+#+description: Inventory of emacs recipes.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :recipe:emacs:index:knowledge:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Recipes related to *emacs*. Each entry below is
+a single how-do-I question with executable steps.
+
+* Recipes
+
+- [[id:4c526597-c668-486b-a4ab-95775c01089a][How do I refresh org-babel results?]]

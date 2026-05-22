@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 3ed3ca4d-8709-4f70-a1a8-1ff287adb8bf
+:END:
+#+title: Story: Compute grid implementation
+#+description: BOINC-inspired distributed compute grid across the whole stack: ores.compute domain library + service + wrapper executables; NATS JetStream lifecycle; PostgreSQL trigger eventing; HTTP endpoints; CLI; Qt UI.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :compute:grid:boinc:nats:jetstream:sprint_15:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Implement the BOINC-inspired distributed compute grid end-to-end
+across the ORE Studio stack — the sprint's mission.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Now           | Completed 2026-03-21.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-21                                             |
+
+
+#+predecessor: 85f8dc6c-1acd-4610-a877-b0fdba871254
+
+Continued from: [[id:85f8dc6c-1acd-4610-a877-b0fdba871254][Compute grid analysis (BOINC-based)]] (sprint 10).
+That story produced the design sketch (Postgres central state machine,
+PGMQ hot dispatch, TimescaleDB telemetry); this sprint implements the
+grid end-to-end (with NATS JetStream replacing PGMQ).
+
+* Acceptance
+
+- ores.compute domain library + service executable + wrapper executable.
+- SQL schema for grid entities.
+- NATS JetStream lifecycle transitions; Postgres trigger eventing (no PGMQ + pg_cron).
+- Messaging protocol + HTTP endpoints + CLI commands + Qt list windows.
+- Documentation updated; legacy plan docs removed.
+
+* Tasks
+
+In execution order:
+
+- [[id:ab561c59-1b3e-4897-a14b-aee04c8f423d][Add BOINC-inspired distributed compute grid]]
+
+* Decisions
+
+- /NATS JetStream over PGMQ/ :: the sprint-14 NATS migration ate the PGMQ assumption; JetStream provides the lifecycle messaging.
+- /PostgreSQL triggers for eventing/ :: consistent with how the rest of the system handles change notifications.
+
+* Out of scope
+
+- Distributed-trust validators (future).
+- GPU resource scheduling (future).
+
+* See also
+
+- [[id:85f8dc6c-1acd-4610-a877-b0fdba871254][Compute grid analysis (BOINC-based)]] (sprint 10) — predecessor design sketch.
+- [[id:679da033-934a-4330-951f-5016675cc8af][Compute grid observability]] — the telemetry + RAG dashboard built on top.
+- [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]] — the polish round that makes it production-shaped.

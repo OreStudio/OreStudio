@@ -1,0 +1,322 @@
+:PROPERTIES:
+:ID: 3153aa4b-23d4-4111-9710-5a4971102edc
+:END:
+#+title: How do I create a new v2 doc?
+#+description: Use generate_v2_doc.sh to create any v2 document type with frontmatter, UUID, and skeleton sections pre-filled.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :codegen:v2_docs:templates:agile:recipe:
+#+created: 2026-05-18
+#+updated: 2026-05-20
+
+For the contract every generated document follows (frontmatter, sections, TODO
+vocabulary), see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]. For background on the generator itself, see
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].
+
+* Question
+
+How do I create a new v2 information-architecture document — [[id:b7fa729c-2d42-408a-9424-b6aa90eb16b4][task]], [[id:6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752][story]],
+[[id:f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12][sprint]], [[id:8fc15ea1-ab30-47be-993f-ed624a57f761][version]], [[id:0a28b9ca-dc07-4a1d-9942-7843eabf8a40][component]], [[id:0c57932d-d13a-480f-b426-49525aa8ba3d][recipe]], [[id:f497aa0a-f604-436a-8555-c17b14302c99][knowledge]], [[id:6054cc20-5f41-482f-a587-759512577b1d][skill]], [[id:f1311596-b8ed-43ad-8c46-76c58c0194c7][product identity]], or
+[[id:978e0a8f-197c-48da-a405-457e0aee91d9][capture]], or [[id:32b3a055-63fa-4edf-8dcc-901e9d883f22][memory]] — without hand-writing the
+frontmatter?
+
+* Answer
+
+Call =projects/ores.codegen/generate_v2_doc.sh= with the type, slug, parent
+directory, and the document's title and description. The script fills in a fresh
+UUID, today's dates, the required frontmatter (including =#+version: 2= and the
+glossary-linked blurb), a =* Status= table at the type's default state where
+applicable, and the skeleton sections — leaving only the content for you to fill
+in.
+
+For =task= and =story=, the codegen automatically prepends =Task: = / =Story: =
+to the title you supply (idempotent: passing =--title "Task: Foo"= won't
+double-prefix). Sprints and versions keep the title as-given.
+
+For task / story / sprint, parent =:ID:=, title and slug are auto-detected from
+=<parent-dir>/<parent-type>.org= so you usually don't need to pass them. Run the
+script from a terminal and it prompts for any missing required field.
+
+** New task
+:PROPERTIES:
+:ID: b7fa729c-2d42-408a-9424-b6aa90eb16b4
+:END:
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type task --slug fix_broken_link \
+  --parent-dir doc/agile/versions/v0/sprint_17/audit_tooling \
+  --title "Fix broken id-links surfaced by audit" \
+  --description "Audit reports two unresolved id-links; fix them." \
+  --tags "audit,bug_fix"
+#+end_src
+
+Parent story info is auto-detected from
+=doc/agile/versions/v0/sprint_17/audit_tooling/story.org=.
+
+** New story
+:PROPERTIES:
+:ID: 6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752
+:END:
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type story --slug audit_tooling \
+  --parent-dir doc/agile/versions/v0/sprint_17 \
+  --title "Audit tooling" \
+  --description "Scripts that enforce the v2 information-architecture invariants." \
+  --tags "audit,scripts"
+#+end_src
+
+** New story continuing from a previous sprint
+:PROPERTIES:
+:ID: 084ec5b7-8174-482e-83e5-3c22e0b57329
+:END:
+
+Add =--predecessor-id= and =--predecessor-title=. The script renders
+=#+predecessor:= in the frontmatter and a =Continued from:= line in
+the body:
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type story --slug currencies_temporal_continued \
+  --parent-dir doc/agile/versions/v0/sprint_17 \
+  --title "Currencies temporal (continued)" \
+  --description "Pick up where sprint 02 left off." \
+  --tags "currencies,temporal,reference_data" \
+  --predecessor-id ed5bc735-fb54-4ce0-9a08-6dab88c242d0 \
+  --predecessor-title "Currencies temporal and export"
+#+end_src
+
+After the script runs, /manually/ update the predecessor story: add
+=#+successor: <new-uuid>= to its frontmatter and a
+=Continued in: [[id:<new-uuid>][...]]= note in its =* Decisions=
+section.
+
+** New sprint
+:PROPERTIES:
+:ID: f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12
+:END:
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type sprint --slug sprint_17 \
+  --parent-dir doc/agile/versions/v0 \
+  --title "Sprint 17" \
+  --description "Sprint 17 — describe its mission in one sentence." \
+  --tags "v0"
+#+end_src
+
+** New version
+:PROPERTIES:
+:ID: 8fc15ea1-ab30-47be-993f-ed624a57f761
+:END:
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type version --slug v1 \
+  --parent-dir doc/agile/versions \
+  --title "Version 1" \
+  --description "First production release." \
+  --tags "v1"
+#+end_src
+
+** New component model
+:PROPERTIES:
+:ID: 0a28b9ca-dc07-4a1d-9942-7843eabf8a40
+:END:
+
+Component overview files are always named =component_overview.org=.
+Use =--slug component_overview= (not the component name):
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type component --slug component_overview \
+  --parent-dir projects/ores.example/modeling \
+  --title "ores.example" \
+  --description "One-line summary of what the component does." \
+  --tags "example,component"
+#+end_src
+
+Output: =projects/ores.example/modeling/component_overview.org=.
+See [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] for how to fill in each section.
+
+** New recipe
+:PROPERTIES:
+:ID: 0c57932d-d13a-480f-b426-49525aa8ba3d
+:END:
+
+Use the =how_do_i_<thing>= slug convention. The output is
+=<parent-dir>/how_do_i_<thing>.org=:
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type recipe --slug how_do_i_clear_the_cache \
+  --parent-dir doc/recipes/cmake \
+  --title "How do I clear the cache?" \
+  --description "Remove the CMake binary cache to force a clean re-configure." \
+  --tags "cmake,build,recipe"
+#+end_src
+
+When the recipe's =* Answer= involves a shell command, write it in
+an =#+begin_src sh :results verbatim= block so the recipe is
+executable in emacs (=C-c C-c=) — see [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]]
+for an example that also captures a =#+RESULTS:= snapshot.
+
+** New knowledge document
+:PROPERTIES:
+:ID: f497aa0a-f604-436a-8555-c17b14302c99
+:END:
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type knowledge --slug build_system_decisions \
+  --parent-dir doc/knowledge/architecture \
+  --title "Build system decisions" \
+  --description "Why we picked Ninja over Make as the default generator." \
+  --tags "build,architecture,knowledge"
+#+end_src
+
+** New Claude Code skill
+:PROPERTIES:
+:ID: 6054cc20-5f41-482f-a587-759512577b1d
+:END:
+
+Use kebab-case for the slug (matches existing =cmake-runner=,
+=v2-doc-author=). The slug becomes both the folder name and the
+=name:= field in the skill's markdown frontmatter:
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type skill --slug my-new-skill \
+  --parent-dir doc/skills \
+  --title "My New Skill" \
+  --description "When and how to use the new skill." \
+  --tags "skill"
+#+end_src
+
+Output: =doc/skills/my-new-skill/SKILL.org=.
+
+** New product identity
+:PROPERTIES:
+:ID: f1311596-b8ed-43ad-8c46-76c58c0194c7
+:END:
+
+There is one product identity document per product (=product_identity.org=
+under =doc/identity/=). The codegen scaffolds a fresh one — useful
+mostly when bootstrapping a new product or migrating an existing
+identity into v2 form.
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type product_identity --slug product_identity \
+  --parent-dir doc/identity \
+  --title "ORE Studio product identity" \
+  --description "The durable statement of what ORE Studio is and is not." \
+  --tags "identity,vision"
+#+end_src
+
+** New capture
+:PROPERTIES:
+:ID: 978e0a8f-197c-48da-a405-457e0aee91d9
+:END:
+
+Captures live in the product backlog under =doc/agile/product_backlog/=
+in either the =near/= bucket (candidate work for the next version) or
+=far/= (longer-term wishlist). The =--parent-dir= picks the bucket.
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type capture --slug add_uptime_screen \
+  --parent-dir doc/agile/product_backlog/near \
+  --title "Add an uptime screen" \
+  --description "Surface live service health in the Qt UI." \
+  --tags "ui,observability"
+#+end_src
+
+The blurb in the generated file automatically picks up the bucket
+name from the =--parent-dir= basename.
+
+** New memory
+:PROPERTIES:
+:ID: 3b7156cd-3a8d-49e5-bf89-a5f6f2486596
+:END:
+
+Memories live under =doc/memory/=. Pass =--memory-subtype= to pick
+the kind of memory (=feedback= / =user= / =project= / =reference=
+— default =feedback=). The =memory= filetag is auto-injected so
+the catalogue is greppable.
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type memory --slug do_not_re_export_env_vars \
+  --parent-dir doc/memory \
+  --title "Do not re-export ORES_* env vars in Bash tool calls" \
+  --description "The user already exports them; prepending is noise." \
+  --memory-subtype feedback
+#+end_src
+
+For the LLM-side decision flow (when to write vs push back), see
+the [[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory skill]]; for the standalone recipe with body
+conventions, see [[id:391b9231-dba8-4e8c-97ab-a75e2b9fea07][How do I create a memory?]].
+
+** Creating a set of inter-linked documents
+
+When creating multiple documents that will link to each other (e.g. a
+knowledge doc and several component overviews that reference it), the
+correct order is:
+
+1. *Generate all skeleton files first.* Each call mints a fresh UUID.
+   Do not pre-assign or guess UUIDs before running the script — they
+   will not match.
+
+   #+begin_src sh :results verbatim
+   projects/ores.codegen/generate_v2_doc.sh --type knowledge ...
+   projects/ores.codegen/generate_v2_doc.sh --type component --slug component_overview ...
+   projects/ores.codegen/generate_v2_doc.sh --type component --slug component_overview ...
+   #+end_src
+
+2. *Collect the generated IDs.*
+
+   #+begin_src sh :results verbatim
+   grep "^:ID:" projects/ores.foo/modeling/component_overview.org \
+                doc/knowledge/topic/my_knowledge.org
+   #+end_src
+
+3. *Fill in the content of each file*, using the actual IDs in
+   =[[id:UUID][label]]= links.
+
+The =--id= flag is for *migration only* — preserving an existing UUID
+when reformatting a document that already has one. Never use it to
+pre-assign an ID to a brand-new document.
+
+* What the script does
+
+- Generates a fresh UUID and puts it in =:ID:=.
+- Sets =#+created= and =#+updated= to today.
+- Adds =--parent-slug= as a filetag, so the parent-tag invariant holds.
+- Auto-detects parent =:ID:= and =#+title:= from
+  =<parent-dir>/<parent-type>.org= for task/story/sprint.
+- Renders the type's Mustache template from
+  =projects/ores.codegen/library/templates/=.
+- Writes the file (path varies by type — see the table in
+  =projects/ores.codegen/docs/v2_doc_generator.md=).
+- Refuses to overwrite an existing file unless =--force= is passed.
+
+* Tested by
+
+Manual smoke tests during initial development. No automated test yet
+— [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] does not currently exercise the v2-doc generator in CI.
+
+* See also
+
+- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — component-specific workflow
+  with section-by-section guidance.
+- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component Documentation Guide]] — what makes a good component doc.
+- [[id:20d0a77d-e0c0-492e-b0ec-45c7638dd220][How do I run codegen?]] — the C++ model-driven generator on the same
+  infrastructure.
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] — the contract every generated document follows.
+- [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] — cross-sprint stories use =#+predecessor=/=#+successor=.
+- =projects/ores.codegen/docs/v2_doc_generator.md= — full CLI
+  reference.

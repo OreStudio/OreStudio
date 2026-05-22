@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: d148b46a-ad14-4391-8b64-46dcfe95c5f1
+:END:
+#+title: Story: Qt UI polish
+#+description: JWT HTTP URL discovery, currency combos with flag icons, login environment filter, party picker recent entries, trade dialog fixes, menu structure simplification.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :qt:ux:menu:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Polish the Qt UI across several dimensions: require JWT for HTTP URL
+discovery (fail login on missing URL), add currency combos with flag icons
+and date pickers, add login environment filter and recent parties to the
+party picker, fix wt.service crash and trade dialog regressions, and
+simplify the menu structure.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-05-20.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-05-20                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- [[id:ac9b906b-7650-4df3-93b3-df24de0f00a9][Task: [http,qt] Require JWT for HTTP URL discovery; fail login on missing URL]]
+- [[id:32991e7a-e3a7-40bb-b381-767e16f1d83a][Task: [qt,trading] Currency combos with flag icons, date pickers, and dialog polish]]
+- [[id:fdea8162-00ca-4de8-b1cc-d901d494c2c4][Task: Add login environment filter and recent parties to party picker]]
+- [[id:91acdecb-a296-4b26-a441-ab99bc9b9c08][Task: Fix wt.service crash, trade dialog UI, geometry persistence, and IAM party cache]]
+- [[id:03bfb2e5-5bdd-46ee-9e7e-8a41e130d4b4][Task: Qt menu structure simplification + V2 component documentation]]
+* Decisions
+
+- /Menu simplification/ :: the menu hierarchy was analysed and flattened;
+  redundant submenus collapsed.
+
+* Out of scope
+
+- Full menu redesign (deferred).
+
+* See also
+
+=doc/plans/2026-05-15-login-environment-filter.org= and
+=doc/plans/2026-05-18-menu-structure-simplification.org=

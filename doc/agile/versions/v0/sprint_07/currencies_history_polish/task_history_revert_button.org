@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: c391add5-af47-49d7-b6bb-720064d41f52
+:END:
+#+title: Task: History should have a revert button
+#+description: Add a revert action to the history dialog so a user can roll the currency back to a prior version.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :currencies:qt:ux:history:revert:currencies_history_polish:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:818b6261-1780-4fb3-aa89-da02c91da363][Currencies history polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a /revert/ action to the currency history dialog so the user can roll back to a prior version.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:818b6261-1780-4fb3-aa89-da02c91da363][Currencies history polish]] |
+| Now          | Completed 2025-12-19.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2025-12-19                                                             |
+
+* Acceptance
+
+- Revert button on each history row.
+- Click prompts for confirmation and then writes a new version equal to the selected past one.
+- Audit trail preserved (revert creates a new row rather than deleting subsequent history).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Revert-by-write-new-version keeps history monotonic and matches how the repository handles updates.
+
+* Result
+
+Users can roll back any currency without database surgery.

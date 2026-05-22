@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: bc195cb4-4cbf-4d9d-8685-8ce3304da3fe
+:END:
+#+title: Story: Engineering hygiene
+#+description: sccache CI cache bloat fix; tenant_id fix in system-settings repository tests; dev environment setup scripts (ORES_PRESET in .env, start-client.sh).
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :ci:sccache:tests:dev_env:scripts:sprint_15:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Three unrelated hygiene strands: sccache cache-bloat CI fix;
+tenant_id fix in system-settings tests; dev-environment scripts
+(ORES_PRESET in .env + start-client.sh).
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Now           | Completed 2026-03-25.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-25                                             |
+
+* Acceptance
+
+- CI cache size back under the 10 GB repo limit; cold rebuilds gone.
+- system-settings tests pass with proper tenant_id.
+- ORES_PRESET centralised in .env; start-client.sh launches Qt with custom colors + names.
+
+* Tasks
+
+In execution order:
+
+- [[id:d89d5322-3305-4438-bf79-0dc92e4f6bf2][Fix sccache cache bloat causing slow/cold builds]]
+- [[id:2290bab5-8f2f-4d43-b33b-23a6a8b1f485][Fix missing tenant_id in system settings tests]]
+- [[id:b081370c-c11c-4463-994f-74f06c93a59a][Add ORES_PRESET to .env + start-client.sh]]
+
+* Decisions
+
+- /ORES_PRESET as single source of truth/ :: removes hardcoded defaults across multiple scripts.
+- /Multi-coloured Qt instances/ :: tiny dev-quality-of-life win for people running two clients side-by-side.
+
+* Out of scope
+
+- Migrating off GitHub Actions cache.
+
+* See also
+
+None.

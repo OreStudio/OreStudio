@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: d3857fe6-8b07-4276-ad2a-8f32efb3755e
+:END:
+#+title: How do I add a new country?
+#+description: Add a new country
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:countries:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Add a new country. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
+
+* Question
+
+How do I add a new country using =ores.cli=?
+
+* Answer
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli refdata countries add ${db_args} ${log_args} \
+  --alpha2-code "XX" \
+  --alpha3-code "XXX" \
+  --name "Test Country" \
+  --numeric-code "999" \
+  --official-name "The Republic of Test Country" \
+  --recorded-by admin \
+  --change-reason-code "system.new_record" \
+  --change-commentary "Adding test country via CLI"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+#+end_src

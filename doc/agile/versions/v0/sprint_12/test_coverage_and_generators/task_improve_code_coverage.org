@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 59eab06a-fb3a-44fd-9109-78947b30797d
+:END:
+#+title: Task: Improve code coverage
+#+description: Coverage dipped below 50%; add ~110 new test cases (~1900 lines) across CLI parsers, DQ generators, IAM authorization, refdata generators, synthetic data, logging utilities.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :tests:coverage:qa:test_coverage_and_generators:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bring code coverage back over 50%; add tests across the modules with the lowest coverage.
+
+* Status
+
+| Field        | Value                                                                              |
+|--------------+------------------------------------------------------------------------------------|
+| State        | DONE                                                                               |
+| Parent story | [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] |
+| Now          | Completed 2026-02-10.                                                              |
+| Waiting on   | None.                                                                              |
+| Next         | None.                                                                              |
+| Last touched | 2026-02-10                                                                         |
+
+* Acceptance
+
+- ~110 new test cases across 12 new test files (~1900 lines).
+- Coverage of: CLI parser helpers, DQ generators + publication_mode enum, refdata generators, IAM authorization, synthetic data generation, logging utilities.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Coverage had dipped below 50% as the codebase grew faster than tests; this restores it.
+
+* Result
+
+Coverage back above 50%.

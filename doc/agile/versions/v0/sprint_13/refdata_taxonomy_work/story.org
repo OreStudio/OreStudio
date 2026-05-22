@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 7ae49d47-624c-41c6-8c07-cdbeb71d85ec
+:END:
+#+title: Story: Refdata taxonomy work
+#+description: Rounding type as a refdata entity; currency taxonomy split into asset_class + market_tier; asset-class naming cleaned up.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :refdata:currency:rounding:protocol:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Three pieces of taxonomy hygiene: promote rounding type from a
+string to a proper refdata entity; split currency_type into
+asset_class + market_tier; rename asset-class values to avoid the
+trading-domain overload.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Now           | Completed 2026-02-24.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-24                                             |
+
+* Acceptance
+
+- rounding_type a first-class refdata entity end-to-end.
+- currency_type retired in favour of asset_class + market_tier (protocol 41.0).
+- Asset-class naming pass clearer.
+
+* Tasks
+
+In execution order:
+
+- [[id:48715de8-2882-45a0-b45f-208603a1dd23][Add rounding type entity]]
+- [[id:36ff8e82-a350-4ae1-a96a-0c644a5e5045][Enhance currency taxonomy]]
+- [[id:7efd1dcf-2729-4e98-bd2d-712f55bdd83d][Rename currency asset classes]]
+
+* Decisions
+
+- /Promote free text to refdata/ :: every promotion adds governance + history + audit.
+- /Two dimensions, not one/ :: =asset_class= + =market_tier= captures what =currency_type= was conflating.
+
+* Out of scope
+
+- Migration of historical free-text data to the new taxonomy.
+
+* See also
+
+None.

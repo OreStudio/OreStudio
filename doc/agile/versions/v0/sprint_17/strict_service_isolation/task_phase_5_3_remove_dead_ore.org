@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 6281bab9-40bc-42ab-b0f2-386e345ecc2b
+:END:
+#+title: Task: Phase 5.3: remove dead ORE DML grant and workflow.core link
+#+description: - Verifies `ore_import_handler` submits workflows exclusively via `nats_.js_publish(start_workflow_message::nats_subject
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :strict_service_isolation:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/746
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Verify ore_import_handler dispatches workflows via NATS only and remove the dead ores_workflow_ DML grant and ores.workflow.core.lib link from ores.ore.service.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]] |
+| Now          | Completed 2026-05-15.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Verify ore_import_handler dispatches workflows via NATS only and remove the dead ores_workflow_ DML grant and ores.workflow.core.lib link from ores.ore.service.
+- PR #746 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- Verifies =ore_import_handler= submits workflows exclusively via =nats_.js_publish(start_workflow_message::nats_subject, data)= — no direct DB writes to workflow tables
+- Confirms =ores.ore.service= includes no =ores.workflow.core= headers (link was dead)
+- Removes =ores_workflow_= DML grant from the ORE service registry entry (entry now has empty =dml_prefixes=)
+- Removes =ores.workflow.core.lib= from =ores.ore.service= CMakeLists
+- Regenerates SQL grants via codegen (=service-registry= profile)
+- Also picks up the Phase 4.3 SQL leftover: =ores_refdata_parties= grant on the IAM service was never regenerated after Phase 4.3 landed on main
+- =validate_schemas.sh= passes: 210 tables, 0 warnings
+
+** Notes
+
+Steps 1–2 of Phase 5.3 (expose workflow NATS API, replace direct writes) were already complete before this PR. The ORE service has been using NATS for workflow submission from the start. The DML grant and CMake link were dead leftovers. Only step 3 (removal + regeneration) was needed.
+
+This completes all three phases of the cross-service write decoupling plan:
+=doc/plans/2026-05-13-cross-service-write-decoupling.org=
+
+*Note on sequencing*: this PR is independent of #745 (Phase 5.2) and may merge first. If #745 merges first, the SQL grants file will have a clean three-way merge as the two PRs remove different lines.
+
+
+* Result
+
+Landed.

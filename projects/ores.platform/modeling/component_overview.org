@@ -4,10 +4,17 @@
 #+title: ores.platform
 #+description: Cross-platform OS abstractions for environment variables, filesystem paths, and network/hardware identity.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :platform:os:component:
 #+created: 2026-05-20
 #+updated: 2026-05-20
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.platform component diagram
+#+caption: ores.platform
+[[file:ores.platform.png][file:ores.platform.png]]
 
 * Summary
 

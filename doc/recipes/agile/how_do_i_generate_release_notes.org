@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 9f274ee4-3cab-47fd-bb6e-449d8b789d8c
+:END:
+#+title: How do I generate release notes?
+#+description: Combine merged-PR data with the closing sprint's stories into a one-page release-notes Markdown file, then tag main and open a draft GitHub release.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :agile:release:notes:github:recipe:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This recipe is what the [[id:7d72a9da-984f-4130-bff6-97b66b233907][Sprint closure]] phase calls into. The
+companion sprint-opening flow is [[id:1e666848-a785-437e-a463-3d5a0da0765f][How do I open a new sprint?]].
+
+* Question
+
+I'm closing a sprint. How do I assemble release notes from the
+merged PRs and the sprint's stories, then cut a draft GitHub
+release?
+
+* Answer
+
+1. /Prepare a fresh branch/. Run on a branch (e.g.
+   =feature/release-N=) rather than =main=:
+
+   #+begin_src sh :results verbatim
+   git fetch origin main
+   git checkout -b feature/release-<N> origin/main
+   #+end_src
+
+2. /Collect merged-PR data/ since the last release tag. The script
+   uses =gh= to enumerate PRs and pulls out reviewer-bot overviews
+   for each:
+
+   #+begin_src sh :results verbatim
+   python3 build/scripts/collect_release_pr_data.py
+   #+end_src
+
+   Output: =tmp/release_pr_data/pr_<N>.json= per PR, plus a
+   =summary.json= index. The script auto-detects the previous
+   =v*= tag via =git tag --sort=-v:refname=; override with
+   =--since-tag v0.0.<N>= if needed. =gh= must be authenticated.
+
+3. /Read the closing sprint/. The sprint's =sprint.org= holds the
+   mission, =* Stories= table, and the per-story states
+   (=DONE= / =STARTED= / =BLOCKED= / =ABANDONED=). PRs alone are
+   not authoritative — the sprint backlog tells you what /should/
+   have shipped; PRs tell you what /did/ ship; the release notes
+   reconcile both.
+
+4. /Draft the notes/ in the ORE Studio template (one page, four
+   sections):
+
+   - *Highlights* — 3–5 major outcomes, outcome-oriented.
+   - *Key Improvements* — thematic sub-sections (architecture, UI,
+     testing, infrastructure, ...); group related PRs.
+   - *Known Issues & Postponed* — anything =BLOCKED= or
+     =ABANDONED=, with a short reason.
+   - *Time Summary* — total effort and the dominant component
+     mix. If the sprint did not track time, say so explicitly
+     rather than inventing numbers.
+
+   Use the emoji headers (✅ 🛠️ ⚠️ 📊) for visual rhythm. Keep
+   under one page; do not invent details not present in the input.
+
+5. /Save the notes/ at
+   =doc/agile/versions/v0/sprint_<N>/release_notes.md=. Stage and
+   commit.
+
+6. /Open the PR/ via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]]. Merge once green.
+
+7. /Tag main and open a draft GitHub release/. The release stays
+   in draft so a human can add screenshots/binaries and publish:
+
+   #+begin_src sh :results verbatim
+   git checkout main && git pull --ff-only origin main
+   git tag -s v0.0.<N> -m "Sprint <N>"
+   git push origin v0.0.<N>
+
+   gh release create v0.0.<N> \
+     --draft \
+     --title "Sprint <N>" \
+     --notes-file doc/agile/versions/v0/sprint_<N>/release_notes.md
+   #+end_src
+
+* Template skeleton
+
+#+begin_src markdown
+# **ORE Studio Sprint N – Release Notes**
+*Month Year*
+
+One-paragraph summary of the sprint's focus and outcomes.
+---
+
+## ✅ **Highlights**
+
+- ...
+
+## 🛠️ **Key Improvements**
+
+### **Theme A**
+- ...
+
+### **Theme B**
+- ...
+
+## ⚠️ **Known Issues & Postponed**
+
+- ...
+
+## 📊 **Time Summary**
+
+**Total effort**: Xh Ym
+**Code**: A% | **Infra**: B% | **Agile/Analysis/Doc**: C%
+
+---
+
+*Next sprint: one sentence summarising the upcoming mission.*
+#+end_src
+
+* Script
+
+=build/scripts/collect_release_pr_data.py= for PR data; bare =git=
+and =gh= for the tag and draft release.
+
+* Tested by
+
+Manual. The script is exercised every sprint closure.
+
+* See also
+
+- [[id:7d72a9da-984f-4130-bff6-97b66b233907][Sprint closure]] phase — the surrounding lifecycle step.
+- [[id:1e666848-a785-437e-a463-3d5a0da0765f][How do I open a new sprint?]] — the sibling flow on the other
+  side of closure.
+- [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][Release Notes Generator]] — the skill that drives this recipe.
+- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — the PR-lifecycle skill for the notes PR.

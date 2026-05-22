@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 0ce4e5fe-8b94-4c05-9d5a-2b5341bc3be4
+:END:
+#+title: Task: Set up vcpkg and CMake
+#+description: Configure a basic CMake build that resolves its dependencies through vcpkg.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :build:vcpkg:cmake:bootstrap:project_bootstrap:sprint_01:v0:
+#+owner: marco
+#+created: 2024-06-22
+#+updated: 2024-06-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:64e55e42-12eb-46cf-8269-6b30da277a1b][Project bootstrap]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Wire up CMake with vcpkg so the project can declare external
+dependencies and build them as part of the local build, without manual
+package installation.
+
+* Status
+
+| Field        | Value                                                          |
+|--------------+----------------------------------------------------------------|
+| State        | DONE                                                           |
+| Parent story | [[id:64e55e42-12eb-46cf-8269-6b30da277a1b][Project bootstrap]] |
+| Now          | Completed 2024-06-22.                                          |
+| Waiting on   | None.                                                          |
+| Next         | None.                                                          |
+| Last touched | 2024-06-22                                                     |
+
+* Acceptance
+
+- A =vcpkg.json= manifest sits at the project root.
+- =cmake= configures the project using the vcpkg toolchain.
+- A clean build succeeds locally.
+
+* Context
+
+Direct successor to =Create GitHub repository=. Both are prerequisites
+for any meaningful project work.
+
+* Notes
+
+- Total time spent in v0: ~1:21.
+- vcpkg was chosen over Conan for first-class CMake integration.
+
+* Result
+
+- vcpkg config in repository:
+  [[https://github.com/OreStudio/OreStudio/]]

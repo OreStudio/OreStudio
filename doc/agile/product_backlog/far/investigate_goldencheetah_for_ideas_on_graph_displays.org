@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: ab600500-47ef-410a-85cf-6f8e6d404cbe
+:END:
+#+title: Investigate GoldenCheetah for ideas on graph displays
+#+description: Investigate GoldenCheetah for ideas on graph displays
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Seems particularly useful for report overviews and headline positions.
+
+Links:
+
+- [[https://github.com/GoldenCheetah/GoldenCheetah][GH GoldenCheetah]]: "GoldenCheetah is a desktop application for cyclists and
+  triathletes and coaches."

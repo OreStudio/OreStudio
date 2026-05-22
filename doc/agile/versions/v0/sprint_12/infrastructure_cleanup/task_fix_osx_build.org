@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 9262faf6-0b47-47a4-b351-43d22ba07aeb
+:END:
+#+title: Task: Fix OSX build
+#+description: Replace GNU getopt with portable while/case parsing in recreate_database.sh + recreate_env.sh; BSD getopt incompatibility resolved.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :osx:ci:bash:bug_fix:infrastructure_cleanup:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:74a0b830-2f12-406f-9550-961098c11dc6][Infrastructure cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace GNU getopt with portable while/case argument parsing in recreate scripts so OSX CI works.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:74a0b830-2f12-406f-9550-961098c11dc6][Infrastructure cleanup]] |
+| Now          | Completed 2026-02-12.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-02-12                                                          |
+
+* Acceptance
+
+- =recreate_database.sh= + =recreate_env.sh= use portable argument parsing.
+- All existing flags preserved.
+- OSX CI green.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+BSD getopt doesn't support long options; CI on OSX was broken since the multi-tenant work landed.
+
+* Result
+
+OSX CI back to green.

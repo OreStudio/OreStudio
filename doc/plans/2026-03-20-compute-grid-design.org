@@ -1,5 +1,6 @@
 # -*- mode: org; indent-tabs-mode: nil -*-
 #+TITLE: Compute Grid Design Plan
+#+version: 1
 #+DATE: 2026-03-20
 #+AUTHOR: Marco Craveiro
 #+STATUS: COMPLETED

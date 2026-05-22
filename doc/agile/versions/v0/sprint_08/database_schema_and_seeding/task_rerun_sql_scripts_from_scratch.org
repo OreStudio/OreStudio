@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 27768a0e-d9dc-4958-9731-adef4385f23e
+:END:
+#+title: Task: Rerun SQL scripts from scratch
+#+description: Validate schema bring-up from a clean slate; add TimescaleDB license-tier detection and per-database extension install; document the schema.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sql:timescaledb:bootstrap:database_schema_and_seeding:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:42e6c351-795f-48aa-a435-eb3d1c9b6704][Database schema and seeding overhaul]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Validate the SQL schema by rebuilding from scratch; in passing, make TimescaleDB integration adaptive to the available license tier and install extensions per-database.
+
+* Status
+
+| Field        | Value                                                                             |
+|--------------+-----------------------------------------------------------------------------------|
+| State        | DONE                                                                              |
+| Parent story | [[id:42e6c351-795f-48aa-a435-eb3d1c9b6704][Database schema and seeding overhaul]] |
+| Now          | Completed 2025-12-31.                                                             |
+| Waiting on   | None.                                                                             |
+| Next         | None.                                                                             |
+| Last touched | 2025-12-31                                                                        |
+
+* Acceptance
+
+- Schema bring-up succeeds on a clean database.
+- TimescaleDB license tier (Apache vs Timescale) detected at runtime; advanced features (compression, retention, continuous aggregates) skipped under Apache.
+- PostgreSQL extensions installed per-database, including the template.
+- Schema documentation updated (=ores.sql.org=) plus component docs for =ores.assets= and =ores.comms.analyser=.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+TimescaleDB function calls now use the =public.= schema prefix so they don't break when =search_path= is =ores=.
+
+* Result
+
+Schema fully reproducible from scratch under both Timescale tiers.

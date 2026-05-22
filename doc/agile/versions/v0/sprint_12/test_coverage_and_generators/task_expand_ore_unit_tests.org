@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: f8bb67a5-8975-4967-9751-0ca9550e237f
+:END:
+#+title: Task: Expand unit test coverage for ORE codegened types
+#+description: XML round-trip tests for 9 ORE domain types; file I/O round-trip tests; xsdcpp substitution-group support landed. Adds read_system_party path.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :tests:ore:xsdcpp:xml:test_coverage_and_generators:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Expand unit-test coverage on the xsdcpp-generated ORE types.
+
+* Status
+
+| Field        | Value                                                                              |
+|--------------+------------------------------------------------------------------------------------|
+| State        | DONE                                                                               |
+| Parent story | [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] |
+| Now          | Completed 2026-02-11.                                                              |
+| Waiting on   | None.                                                                              |
+| Next         | None.                                                                              |
+| Last touched | 2026-02-11                                                                         |
+
+* Acceptance
+
+- XML round-trip tests for 9 ORE domain types (simulation, crossAssetModel, creditsimulation, sensitivityanalysis, stresstesting, ore, calendaradjustment, counterpartyInformation, nettingsetdefinitions, collateralBalances).
+- load_file / save_file round-trip tests for currencyConfig, simulation, todaysmarket.
+- ores.ore currency mapper unit tests.
+- xsdcpp upgrade adds substitution-group support; ORE domain regenerated.
+- New =read_system_party= in party repository + =ores_refdata_read_system_party_fn= SQL function.
+- Unused =parsing_error= class removed.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Pairs naturally with the sprint-10 xsdcpp work; the new substitution-group support unlocks more types.
+
+* Result
+
+ORE codegen-generated types substantially tested.

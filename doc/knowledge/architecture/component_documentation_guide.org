@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: b9d3d469-9e59-465f-8c18-34546b680d13
+:END:
+#+title: Component Documentation Guide
+#+description: Practical guide to writing component_overview.org files: what each section means, how to fill it in, and what makes a good entry.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :documentation:component:knowledge:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+
+Every component in ORE Studio carries a =component_overview.org=
+co-located in its =modeling/= directory. It is a 50–100 line index
+— not a reference manual — that tells a reader what the component
+does, what it consumes and produces, how to enter it, and where to
+look for deeper material. This document explains how to fill in
+each section and what separates a useful entry from a placeholder.
+The cross-component index is the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]], which lists every
+component grouped by architectural layer. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Detail
+
+** The six required sections
+
+*** Summary (3–5 sentences)
+
+Answer: /What does this component do and why does it exist?/ Do not describe
+the technology stack; describe the /purpose/. A good summary can be read in
+isolation and still convey value.
+
+- Bad :: "This component uses Qt and NATS."
+- Good :: "=ores.qt.trading= provides the Qt UI for managing portfolios, books,
+  and trades. It renders instrument-specific forms for FX, rates, credit,
+  equity, and commodity trades, and drives the Portfolio Explorer and Org
+  Explorer MDI windows."
+
+*** Inputs
+
+What does the component consume? List data sources, dependency contracts,
+configuration, or trigger events — not function signatures. One bullet per
+distinct source.
+
+Examples:
+- NATS responses from a named domain service (note the subject range)
+- PostgreSQL tables owned by the component
+- Configuration loaded at startup (env vars, config files)
+- User interactions or commands
+
+*** Outputs
+
+What does the component produce? This is the symmetric counterpart to Inputs.
+For a Qt plugin: rendered MDI windows, NATS request messages sent. For a
+service: persisted records, NATS response messages, emitted events.
+
+*** Entry points
+
+Key files a developer opens first. Keep to 3–6 items. Prefer:
+- The main plugin/service class header
+- The aggregate include header (=ores.<comp>.hpp= if it exists)
+- The messaging registrar (for services)
+- The application entry point (=main.cpp= for services and apps)
+
+Use repo-relative paths so they remain clickable.
+
+*** Dependencies
+
+List other ORE Studio components and significant third-party libraries this
+component links against. Use the component slug (=ores.refdata.api=) rather
+than the CMake target name (=ores.refdata.api.lib=). Omit ubiquitous
+transitive dependencies (=ores.logging=, =Qt6=) unless there is a specific
+reason to call them out.
+
+The CMakeLists.txt =target_link_libraries= block is the authoritative source
+for direct dependencies; copy the non-transient entries.
+
+*** See also
+
+This is the most valuable section for navigation and the most commonly left
+empty. Link to:
+- Sibling components (=ores.<domain>.api= for Qt plugins; =*.service= for
+  =*.core= components)
+- Knowledge documents that provide architectural depth
+- Recipes for operating on the component
+
+Use org-roam id-links: =[[id:<UUID>][human-readable text]]=. Never use file
+paths; IDs survive renames.
+
+** What makes a good entry vs. a skeleton
+
+A skeleton has placeholder text and empty bullets. A good entry is /closed/:
+a reader who only looks at this file knows where to start and where to go
+next, without digging through the code.
+
+| Section | Skeleton | Good |
+|---------+----------+------|
+| Summary | "does things" | Concrete purpose; mentions domain |
+| Inputs | "-" | Named data source and format |
+| Outputs | "-" | Named artifact and consumer |
+| Entry points | "-" | Real file paths with 1-line annotation |
+| Dependencies | "-" | Named ores.* slugs from CMakeLists |
+| See also | "-" | At least one id-link to a sibling component |
+
+** Common mistakes
+
+- /Over-long entries./ If the component section is growing past 100 lines,
+  extract the depth into a linked knowledge document in =projects/<comp>/docs/=
+  and keep the overview as an index.
+- /See also left empty./ At minimum, link from a Qt plugin to its domain API
+  (=ores.<domain>.api=) and back from the API to the Qt plugin.
+- /File path links instead of id-links./ File paths break on rename.
+  Always use =[[id:UUID][label]]=.
+- /Describing the implementation, not the contract./ Summary should describe
+  /what it does for callers/, not /how it is implemented/.
+
+* See also
+
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — the formal spec for component document structure.
+- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — the recipe that scaffolds the file.
+- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — example of a complete component overview.
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — another example with a well-populated See also section.

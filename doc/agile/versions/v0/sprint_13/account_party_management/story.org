@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 956fcd0e-41c3-46e4-9895-b64b4c143e6d
+:END:
+#+title: Story: Account-party management and login
+#+description: Multi-party login flow: link accounts to multiple parties, server returns choices, client picks (or auto-selects); AccountPartiesWidget in account detail dialog; protocol 38.0.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :party:iam:login:protocol:qt:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Add the multi-party login picker and the UI for managing
+account-party assignments. This is the future-story note from sprint
+12's party-RLS work.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Now           | Completed 2026-02-23.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-23                                             |
+
+
+#+predecessor: c431b464-a3bc-4d9c-b33a-7c5b247ebea4
+
+Continued from: [[id:c431b464-a3bc-4d9c-b33a-7c5b247ebea4][Party-level RLS isolation]] (sprint 12). That story
+laid the schema + RLS + session plumbing and noted that the
+multi-party login picker was a future story; this is that story.
+
+* Acceptance
+
+- Login picker handles single + multi-party accounts.
+- AccountPartiesWidget covers add/remove.
+- Server-side handlers in place.
+- Initial admin auto-assigned to the system party.
+- Protocol 38.0 (breaking).
+- multi_party.org doc explains the flow.
+
+* Tasks
+
+In execution order:
+
+- [[id:ad223e7d-033f-4162-b376-560a07c70c61][Add account-party management and login support]]
+
+* Decisions
+
+- /Server returns choices, client picks/ :: avoids client-side party knowledge before authentication.
+- /System party auto-assigned to initial admin/ :: closes the bootstrap chicken-and-egg.
+
+* Out of scope
+
+- Party picker UX polish (deferred).
+
+* See also
+
+- [[id:c431b464-a3bc-4d9c-b33a-7c5b247ebea4][Party-level RLS isolation]] (sprint 12) — predecessor.

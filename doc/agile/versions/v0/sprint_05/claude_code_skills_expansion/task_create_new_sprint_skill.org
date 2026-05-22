@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 79b815f3-9a40-49d5-a7dc-de2eb1099934
+:END:
+#+title: Task: Create a Claude Code skill to open a new sprint
+#+description: Skill that updates version strings, copies the backlog template, and creates the next sprint backlog file.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :claude_code:skills:agile:claude_code_skills_expansion:sprint_05:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-17
+#+updated: 2025-11-17
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create a Claude Code skill that opens a new sprint:
+copy the backlog template, update version strings across CMake / vcpkg /
+README / GitHub packages, build everything once to confirm green.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]] |
+| Now          | Completed 2025-11-17.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2025-11-17                                                                |
+
+* Acceptance
+
+- A =new-sprint= skill exists and exports to Claude Code format.
+- Skill captures the full open-a-sprint checklist.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- From v0: "Created, just needs to be tested at the end of this sprint."
+
+* Result
+
+=new-sprint= skill shipped; later sprints exercise it on the first commit.

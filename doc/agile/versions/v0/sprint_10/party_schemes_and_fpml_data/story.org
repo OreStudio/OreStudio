@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 700d4325-2ad1-4e0d-b6af-900abbe1a66e
+:END:
+#+title: Story: Party schemes and FPML reference data
+#+description: Implement the 13 party-related reference-data types via FPML codegen + DQ artefact workflow; ingest GLEIF subset.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :party:fpml:refdata:codegen:gleif:sprint_10:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Implement the 13 reference-data types party requires before its
+domain layer can land. Drive the work from FpML XML through codegen
+and the DQ artefact workflow.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Now           | Completed 2026-01-23.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-23                                             |
+
+
+#+predecessor: ef555d10-3fd3-4928-8e43-e63284d7706f
+#+successor: 253ce971-c0f3-43c3-980c-276233250b86
+
+Continued from: [[id:ef555d10-3fd3-4928-8e43-e63284d7706f][Party database groundwork]] (sprint 09) — that story
+documented the party table; this one lands the 13 reference-data
+types needed before party can be implemented.
+
+Continued in: [[id:253ce971-c0f3-43c3-980c-276233250b86][GLEIF data integration]] (sprint 12) — turns the
+download script + CSV subsets into proper datasets. Also followed
+by [[id:76d84778-4544-4ee6-a17a-033019dbacb0][Party database and domain]] (sprint 12), which finally
+implements party + counterparty on top of these reference-data types.
+
+* Acceptance
+
+- Party-identifier schemes catalogued.
+- 13 reference-data types implemented end-to-end via FpML codegen + DQ artefact workflow.
+- GLEIF Golden Copy subset available for development.
+- Business centres linked to country flags for visual identity.
+
+* Tasks
+
+In execution order:
+
+- [[id:53b62f83-fb48-42ed-aa25-851259b0341c][Party identifier scheme analysis]]
+- [[id:99881550-e3d4-4692-a07d-a63ef5e2fd03][Implement party-related schemes via FPML codegen]]
+- [[id:c4a49d31-7c01-477f-b988-63ada3be4c64][Download and split GLEIF data]]
+
+* Decisions
+
+- /Drive from FpML XML/ :: hand-writing 13 reference tables wasn't realistic in one sprint; codegen makes it tractable.
+- /Per-entity SQL files, not concatenated/ :: improves modularity and matches the prefix-naming convention.
+
+* Out of scope
+
+- Party domain layer itself — this story unblocks it but doesn't implement it.
+
+* See also
+
+- [[id:ef555d10-3fd3-4928-8e43-e63284d7706f][Party database groundwork]] (sprint 09) — predecessor (party table structure).

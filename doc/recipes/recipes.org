@@ -2,17 +2,38 @@
 :ID: 46F5ED07-9E63-77B4-2783-E0147EFF45D0
 :END:
 #+title: Recipes
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
-#+startup: inlineimages
+#+description: Index of operational how-to recipes, grouped by topic. Each topic has its own inventory.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :recipes:index:knowledge:
+#+created: 2024-06-15
+#+updated: 2026-05-21
 
-Notebooks on how to use ORE Studio.
+Recipes are short, tested, executable how-to documents. Each one
+answers exactly one question (=how do I X?=). Topics group related
+recipes; each topic has its own inventory that lists its recipes.
 
-- [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI Recipes]]: How to use the CLI tool with new entity-based syntax.
-- [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][ORE Studio Shell Recipes]]: How to use the client REPL.
-- [[id:10408305-f864-4152-8fca-8132179f4df4][HTTP Recipes]]: Exercise the HTTP API using Emacs verb mode.
-- [[id:C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F][SQL Recipes]]: Direct SQL queries for the ORES database.
-- [[id:ADF4D1EB-5A83-4E14-B2FD-D204DBC91E8E][Comms Analyser Recipes]]: Analyse session recording files (.ores).
-- [[id:B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44][Git Recipes]]: Tips and tricks for Git.
+* Topics
 
-| Previous: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] |
+- [[id:571cc11b-e2a2-47c0-ae13-8bd4b974f0c3][Agile recipes]] — open sprints, generate release notes.
+- [[id:5720a0fb-e510-4f25-99cb-410d42062799][CMake recipes]] — build, test, deploy.
+- [[id:69796171-66f4-4459-913d-01523fc27e54][Codegen recipes]] — run the C++ generator, scaffold v2 docs.
+- [[id:95ff6af4-2320-4cb6-a007-b016b7da16ed][Documentation recipes]] — find docs, inspect links, author new
+  recipes.
+- [[id:74bac855-ec3e-49a7-832f-d0eae85c1b14][Emacs recipes]] — org-babel and other emacs-specific workflows.
+- [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI recipes]] — using the CLI tool with entity-based syntax.
+- [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][Shell recipes]] — using the client REPL.
+- [[id:10408305-f864-4152-8fca-8132179f4df4][HTTP recipes]] — exercising the HTTP API.
+- [[id:C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F][SQL recipes]] — direct SQL queries against the ORE Studio database.
+- [[id:B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44][Git recipes]] — pure git workflows (branches, submodules).
+- [[id:fcf81f0b-afbf-4169-bd24-04dbd08180a9][GitHub recipes]] — =gh= CLI, PRs, CI checks, review threads.
+- [[id:51fe4df6-d12f-4cf3-a32f-e793979aa68b][LLM prompt recipes]] — reusable prompts for LLM chat interfaces.
+
+* See also
+
+- The [[id:b9d3d469-9e59-465f-8c18-34546b680d13][component documentation guide]] — how to write a
+  =component_overview.org= that passes audit.
+- [[id:A3F7B2D1-E4C9-4A8F-B6D3-7E1C5A9F2B4E][New service checklist]] — multi-step procedure for introducing a
+  new domain service. Treated as one document rather than a set of
+  recipes because the steps are sequential and inter-dependent.

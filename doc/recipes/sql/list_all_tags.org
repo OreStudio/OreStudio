@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: 4fcb5abb-cce6-4ed2-a7e6-f6014b071faf
+:END:
+#+title: List All Tags
+#+description: List All Tags
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:images_and_tags:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select tag_id, name, description
+from ores.tags
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by name;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| tag_id                               | name | description                    |
+|--------------------------------------+------+--------------------------------|
+| d932c1f5-37fd-48fd-b592-7e7450afded0 | flag | Country and region flag images |
+#+end_example

@@ -4,10 +4,17 @@
 #+title: ores.fpml
 #+description: FpML processing infrastructure for parsing, validating, and archiving derivatives trade representations.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :fpml:finance:component:
 #+created: 2026-05-20
 #+updated: 2026-05-20
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.fpml component diagram
+#+caption: ores.fpml
+[[file:ores.fpml.png][file:ores.fpml.png]]
 
 * Summary
 

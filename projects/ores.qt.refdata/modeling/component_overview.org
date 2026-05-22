@@ -4,10 +4,17 @@
 #+title: ores.qt.refdata
 #+description: Qt plugin for reference data UI — currencies, countries, trading conventions, coding schemes, datasets, and the data catalogue.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :qt:refdata:ui:component:
 #+created: 2026-05-20
 #+updated: 2026-05-20
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.refdata component diagram
+#+caption: ores.qt.refdata
+[[file:ores.qt.refdata.png][file:ores.qt.refdata.png]]
 
 * Summary
 

@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: db4461dd-a98e-4847-9b16-a76cfd1afcbe
+:END:
+#+title: Task: Add NOTICE logging support to sqlgen
+#+description: Upstream PR getml/sqlgen#120 + proposal #118 — Postgres notice processor hook.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sqlgen:upstream:logging:postgres:sqlgen_improvements:sprint_11:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add Postgres NOTICE-processor support to sqlgen so PL/pgSQL =RAISE NOTICE= surfaces in client logs.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]] |
+| Now          | Completed 2026-02-01.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2026-02-01                                                       |
+
+* Acceptance
+
+- Upstream proposal raised: =getml/sqlgen#118=.
+- Implementation PR open upstream: =getml/sqlgen#120=.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Closes a long-standing visibility gap — PL/pgSQL functions were emitting useful diagnostic NOTICEs that nothing on the client side ever saw.
+
+* Result
+
+Upstream PR open; waiting for review.

@@ -1,4 +1,5 @@
 #+TITLE: Workflow Engine Hardening
+#+version: 1
 #+SUBTITLE: Dynamic steps, ownership relocation, idempotency, and a reusable step widget
 #+DATE: 2026-05-14
 #+AUTHOR: ORE Studio Team

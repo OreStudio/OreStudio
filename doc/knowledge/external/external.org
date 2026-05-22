@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11
+:END:
+#+title: External knowledge
+#+description: Reference docs about external systems and domain concepts ORE Studio does not own — libraries, file formats, and platform features.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:external:index:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Reference material about systems and concepts ORE Studio /uses but
+does not own/. The rule of thumb: if the doc would exist (in roughly
+the same form) even if ORE Studio did not, it lives here. Docs about
+/how we use/ an external system stay in the [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][knowledge root]] — for
+example, =ORE Model Configuration= captures /our/ patterns, even
+though it references [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]].
+
+* Risk and pricing libraries
+
+- [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][Open Source Risk Engine (ORE)]] — the upstream risk-analytics
+  library ORE Studio wraps.
+- [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]] — the open-source quantitative-finance library ORE
+  itself builds on.
+
+* File formats and protocols
+
+- [[id:FCC3BBA5-DFA3-17F4-69B3-B7958C05B1F8][Financial Products Markup Language (FpML)]] — industry XML
+  standard for representing financial products.
+- [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding schemes]] — FpML mechanism for restricting fields to a
+  known set of values.
+
+* Domain concepts
+
+- [[id:0929B047-1A31-3514-9EDB-EF7B4F012C5D][Standing settlement instructions]] — what SSIs are and how they
+  flow through the trading lifecycle.
+
+* Platform features
+
+- [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] — RLS at the database level. Our
+  application of it is described in [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]].
+- [[id:A1C3E5F7-92B4-4D6A-B8C2-3F1D7E9A0B5C][Shared library symbol visibility]] — visibility annotations and
+  hidden-by-default at the compiler/linker level.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the cross-cutting index this folder hangs off.

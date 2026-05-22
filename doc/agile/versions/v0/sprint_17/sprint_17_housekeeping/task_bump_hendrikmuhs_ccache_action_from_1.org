@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: fc5897ea-d1b6-4081-b3d5-d2d788c38f10
+:END:
+#+title: Task: Bump hendrikmuhs/ccache-action from 1.2.22 to 1.2.23
+#+description: Bumps [hendrikmuhs/ccache-action](https://github.com/hendrikmuhs/ccache-action) from 1.2.22 to 1.2.23.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sprint_17_housekeeping:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/723
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a5abed76-b4f5-4e37-8ccc-220d360501b4][Sprint 17 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bump the hendrikmuhs/ccache-action GitHub Action from 1.2.22 to 1.2.23.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:a5abed76-b4f5-4e37-8ccc-220d360501b4][Sprint 17 housekeeping]] |
+| Now          | Completed 2026-04-28.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Bump the hendrikmuhs/ccache-action GitHub Action from 1.2.22 to 1.2.23.
+- PR #723 merged and landed on main.
+
+* Plan
+
+* Notes
+
+Bumps [[https://github.com/hendrikmuhs/ccache-action][hendrikmuhs/ccache-action]] from 1.2.22 to 1.2.23.
+<details>
+<summary>Release notes</summary>
+<p><em>Sourced from <a href="https://github.com/hendrikmuhs/ccache-action/releases">hendrikmuhs/ccache-action's releases</a>.</em></p>
+<blockquote>
+<h2>v1.2.23</h2>
+<h2>What's Changed</h2>
+<ul>
+<li>Bump handlebars from 4.7.8 to 4.7.9 by <a href="https://github.com/dependabot"><code>@​dependabot</code></a>[bot] in <a href="https://redirect.github.com/hendrikmuhs/ccache-action/pull/436">hendrikmuhs/ccache-action#436</a></li>
+<li>Bump <code>@​types/node</code> from 25.5.0 to 25.6.0 by <a href="https://github.com/dependabot"><code>@​dependabot</code></a>[bot] in <a href="https://redirect.github.com/hendrikmuhs/ccache-action/pull/440">hendrikmuhs/ccache-action#440</a></li>
+<li>Update ccache to 4.13.3 by <a href="https://github.com/crueter"><code>@​crueter</code></a> in <a href="https://redirect.github.com/hendrikmuhs/ccache-action/pull/441">hendrikmuhs/ccache-action#441</a></li>
+<li>Bump brace-expansion by <a href="https://github.com/dependabot"><code>@​dependabot</code></a>[bot] in <a href="https://redirect.github.com/hendrikmuhs/ccache-action/pull/438">hendrikmuhs/ccache-action#438</a></li>
+<li>Support platforms without upstream ccache/sccache releases by <a href="https://github.com/luhenry"><code>@​luhenry</code></a> in <a href="https://redirect.github.com/hendrikmuhs/ccache-action/pull/439">hendrikmuhs/ccache-action#439</a></li>
+</ul>
+<h2>New Contributors</h2>
+<ul>
+<li><a href="https://github.com/luhenry"><code>@​luhenry</code></a> made their first contribution in <a href="https://redirect.github.com/hendrikmuhs/ccache-action/pull/439">hendrikmuhs/ccache-action#439</a></li>
+</ul>
+<p><strong>Full Changelog</strong>: <a href="https://github.com/hendrikmuhs/ccache-action/compare/v1.2.22...v1.2.23">https://github.com/hendrikmuhs/ccache-action/compare/v1.2.22...v1.2.23</a></p>
+</blockquote>
+</details>
+<details>
+<summary>Commits</summary>
+<ul>
+<li><a href="https://github.com/hendrikmuhs/ccache-action/commit/d62db5f07c26379fc4b4e0916f098a92573c3b03"><code>d62db5f</code></a> Support platforms without upstream ccache/sccache releases (<a href="https://redirect.github.com/hendrikmuhs/ccache-action/issues/439">#439</a>)</li>
+<li><a href="https://github.com/hendrikmuhs/ccache-action/commit/05e1c04f70f450688c8bf36082e71050cda33fff"><code>05e1c04</code></a> update code</li>
+<li><a href="https://github.com/hendrikmuhs/ccache-action/commit/46cafa7d86381b309fd628848dc9a06f6b62fa84"><code>46cafa7</code></a> Bump brace-expansion (<a href="https://redirect.github.com/hendrikmuhs/ccache-action/issues/438">#438</a>)</li>
+<li><a href="https://github.com/hendrikmuhs/ccache-action/commit/1f2fc71e6bcde2d2239527d286615b056034631d"><code>1f2fc71</code></a> Update ccache to 4.13.3 (<a href="https://redirect.github.com/hendrikmuhs/ccache-action/issues/441">#441</a>)</li>
+<li><a href="https://github.com/hendrikmuhs/ccache-action/commit/a488765c244f03fddbbccc93de3f64abdb389e59"><code>a488765</code></a> Bump <code>@​types/node</code> from 25.5.0 to 25.6.0 (<a href="https://redirect.github.com/hendrikmuhs/ccache-action/issues/440">#440</a>)</li>
+<li><a href="https://github.com/hendrikmuhs/ccache-action/commit/c97afba725c6d99ed1e7395257fb02cc412236d5"><code>c97afba</code></a> Bump handlebars from 4.7.8 to 4.7.9 (<a href="https://redirect.github.com/hendrikmuhs/ccache-action/issues/436">#436</a>)</li>
+<li>See full diff in <a href="https://github.com/hendrikmuhs/ccache-action/compare/v1.2.22...v1.2.23">compare view</a></li>
+</ul>
+</details>
+<br />
+
+[[https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=hendrikmuhs/ccache-action&package-manager=github_actions&previous-version=1.2.22&new-version=1.2.23][![Dependabot compatibility score]]](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)
+
+Dependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting =@dependabot rebase=.
+
+[//]: # (dependabot-automerge-start)
+[//]: # (dependabot-automerge-end)
+
+---
+
+<details>
+<summary>Dependabot commands and options</summary>
+<br />
+
+You can trigger Dependabot actions by commenting on this PR:
+- =@dependabot rebase= will rebase this PR
+- =@dependabot recreate= will recreate this PR, overwriting any edits that have been made to it
+- =@dependabot show <dependency name> ignore conditions= will show all of the ignore conditions of the specified dependency
+- =@dependabot ignore this major version= will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)
+- =@dependabot ignore this minor version= will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)
+- =@dependabot ignore this dependency= will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)
+
+</details>
+
+
+* Result
+
+Landed.

@@ -22,14 +22,23 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 BUILD_DIR="$REPO_ROOT/build/output/site"
-PORT="${PORT:-8000}"
+DOTENV="$REPO_ROOT/.env"
+
+# ---------------------------------------------------------------------------
+# Resolve port: --port flag > PORT env var > ORES_SITE_PORT from .env > 8000
+# ---------------------------------------------------------------------------
+_dotenv_port=""
+if [[ -f "$DOTENV" ]]; then
+    _dotenv_port="$(grep '^ORES_SITE_PORT=' "$DOTENV" | cut -d'=' -f2-)" || true
+fi
+PORT="${PORT:-${_dotenv_port:-8000}}"
 
 usage() {
     cat <<EOF
 Usage: $(basename "$0") [--compile] [--port PORT]
 
   --compile   Rebuild the site (emacs -Q --script .build-site.el) before serving.
-  --port      Port to serve on (default: 8000; can also be set via PORT env var).
+  --port      Port to serve on (overrides ORES_SITE_PORT in .env and PORT env var).
   -h, --help  Show this help.
 EOF
     exit 1
@@ -53,6 +62,27 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# ---------------------------------------------------------------------------
+# Stop any existing process on PORT.
+# ---------------------------------------------------------------------------
+stop_site_server_if_running() {
+    local port="$1"
+    local pids
+    pids="$(fuser "${port}/tcp" 2>/dev/null)" || true
+    [[ -z "${pids// }" ]] && return 0  # Port is free.
+
+    for pid in $pids; do
+        local cmd
+        cmd="$(ps -p "${pid}" -o cmd= 2>/dev/null)" || continue
+        echo "Stopping process on port ${port} (PID ${pid}: ${cmd})"
+        kill "${pid}" 2>/dev/null || true
+    done
+    # Brief pause so the OS releases the port before we bind again.
+    sleep 0.5
+}
+
+stop_site_server_if_running "${PORT}"
+
 if [[ $COMPILE -eq 1 ]]; then
     echo "Building site..."
     (cd "$REPO_ROOT" && emacs -Q --script .build-site.el)
@@ -64,14 +94,6 @@ if [[ ! -d "$BUILD_DIR" ]]; then
     exit 1
 fi
 
-# The site preamble uses absolute /OreStudio/ paths (matches the GitHub
-# Pages URL structure: orestudio.github.io/OreStudio/). To make local
-# preview links resolve, serve from a tmpdir that mirrors that prefix
-# via a symlink to the build output.
-PREVIEW_TMP_DIR=$(mktemp -d)
-trap 'rm -rf "$PREVIEW_TMP_DIR"' EXIT
-ln -s "$BUILD_DIR" "$PREVIEW_TMP_DIR/OreStudio"
-
 echo "Serving $BUILD_DIR on http://localhost:$PORT/OreStudio/"
-cd "$PREVIEW_TMP_DIR"
+cd "$BUILD_DIR"
 exec python3 -m http.server "$PORT"

@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: f9ad7932-8e11-433c-a812-b57dbc9bf5d8
+:END:
+#+title: LLM Instructions
+#+description: Entry point for LLM sessions: the rules and links every AI assistant must load before working on ORE Studio.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :meta:llm:instructions:claude:agents:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+This is the entry point for every LLM session on ORE Studio. Read it in
+full before acting. Each section below names the rule and links to the
+canonical document; follow the link for depth. Non-negotiable rules are
+inlined rather than linked.
+
+* Non-negotiable rules
+
+These apply in every session, with no exceptions:
+
+- /UNIX line endings/ — all new files use LF, never CRLF.
+- /New org docs via codegen only/ — never write =.org= frontmatter by hand.
+  Always use =projects/ores.codegen/generate_v2_doc.sh=.
+  See [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]].
+- /Check recipes first/ — before searching for how to do anything, open
+  [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] and find the matching topic.
+- /Every new =.org= file must carry =#+version: 2=/ — the CI gate rejects
+  files without it. See [[id:23bcac49-325f-4083-b854-87ea747c2abe][How do I audit and fix document version tags?]].
+
+* Orientation
+
+Read these first on a new contact:
+
+- [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] — top-level map of =doc/=; the entry point.
+- [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] — navigation guide by reader intent.
+- [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][Glossary]] — definitions for task, story, sprint, version, function, recipe.
+- [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] — current version and sprint at a glance.
+
+* Build
+
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset names, output layout, build types.
+- [[id:49f7da81-adb7-44ed-be7e-06dbfbb32a84][How do I set up a development environment?]] — fresh-install bootstrap.
+- [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]] — =cmake --preset= step.
+- [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]] — day-to-day build command.
+- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — =cmake --build ... --target rat=.
+
+* Code style
+
+- [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]] — naming (snake_case / CamelCase-Qt), include
+  order, comment quality, platform isolation, and all review categories.
+
+* Architecture
+
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System model]] — four-layer architecture and component inventory.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — cross-cutting reference: entity patterns, SQL schema,
+  Qt/Wt patterns, CLI/shell patterns, unit-test conventions.
+
+* Documentation
+
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — v2 frontmatter contract, version tagging, and the
+  touch-it-to-port-it rule for v1 files.
+- [[id:6ac06a04-eb95-4925-8488-c7a47c6a451f][How do I validate component documentation before committing?]] —
+  =validate_docs.sh= before every push that touches =modeling/=.
+- [[id:23bcac49-325f-4083-b854-87ea747c2abe][How do I audit and fix document version tags?]] — =doc_version_audit.py=
+  for checking and stamping =#+version:= tags.
+
+* Database isolation
+
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — component overview; the strict service-table isolation
+  invariant lives under "Service Table Isolation" in this doc.
+- Rule: each service user holds DML only on its own =ores_<service>_*=
+  tables. Do not add cross-service grants without documented justification.
+  Trigger functions that SELECT across services must be
+  =SECURITY DEFINER SET search_path = public, pg_temp=.
+
+* Testing
+
+- [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer Skill]] — Catch2 conventions, file structure, naming,
+  table-driven patterns.
+- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — test command.
+
+* Git and pull requests
+
+- [[id:cc928252-e0c5-4c3c-a7a8-d613593e4e37][How do I create a PR?]] — title format (=[COMPONENT] Description=),
+  body structure, and the no-test-plan rule.
+- [[id:1882d6df-4012-4c6e-bf62-0d943ef805b0][How do I generate a PR summary?]] — assemble the body before =gh pr create=.
+
+* Memory
+
+- [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][Project memory]] — catalogue of session-feedback memories; read and write
+  here to persist durable facts across conversations.
+- [[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory skill]] — LLM-side procedure for adding memories.
+
+* See also
+
+- [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][Execution model]] — how LLMs and agents operate within the cybernetic
+  information architecture during a sprint.
+- [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] — full index of operational how-tos by topic.

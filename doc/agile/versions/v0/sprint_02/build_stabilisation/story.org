@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: ac14558d-a526-4be2-adb6-81bcfe0e7292
+:END:
+#+title: Story: Build stabilisation
+#+description: Bring Windows and macOS builds to green; sort vcpkg binary caching; remove ImGui; suppress Valgrind noise.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :build:ci:windows:macos:vcpkg:sprint_02:v0:
+#+created: 2025-08-01
+#+updated: 2026-05-18
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Bring multi-platform CI back to green and reduce the noise that
+fills the daily build reports — Valgrind false positives, vcpkg
+warnings, and the ImGui experiment that had bit-rotted.
+
+* Status
+
+| Field         | Value                                                                                                                      |
+|---------------+----------------------------------------------------------------------------------------------------------------------------|
+| State         | DONE                                                                                                                       |
+| Parent sprint | [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]                                                                     |
+| Now           | Story closed; Windows and macOS builds green, vcpkg binary caching working, Valgrind suppressions in place, ImGui removed. |
+| Waiting on    | None.                                                                                                                      |
+| Next          | None.                                                                                                                      |
+| Last touched  | 2025-10-23                                                                                                                 |
+
+* Acceptance
+
+- Windows and macOS builds pass on push.
+- vcpkg binary caching enabled and working.
+- Valgrind output free of known false positives.
+- ImGui removed cleanly.
+
+* Tasks
+
+In execution order:
+
+- [[id:5d48fec0-d23f-4b22-82c6-ef3353d15f1c][Fix Windows and macOS builds]]
+- [[id:494eb23e-8d38-4372-bf1b-7d23ff07473a][Fix vcpkg binary caching]]
+- [[id:13b90143-aafd-4381-9e9d-3bccb88b8d3b][Add Valgrind suppressions]]
+
+Additional tasks belonging to this story in v0 but not migrated in
+the drive-test:
+
+- Fix ImGui broken build.
+- Remove ImGui support.
+- Restore Qt setup.
+- Windows builds have CMake errors.
+- Fix broken builds.
+- Update vcpkg to latest.
+- Investigate build warning for vcpkg binary caching.
+- POSTPONED: Investigate build warning for qtbase.
+
+* Decisions
+
+- /Remove ImGui rather than fix it/ :: ImGui was an experiment for a
+  parallel UI; once the Qt direction was confirmed, the maintenance
+  cost did not justify keeping it.
+- /Binary caching via GitHub Actions cache/ :: simpler than
+  self-hosted, sufficient until the project grows further.
+
+* Out of scope
+
+- Code signing on Windows (deferred to a later sprint).
+- macOS notarisation (deferred).
+- Longer-tail Windows / dynamic-library / Valgrind issues — picked up
+  in sprint 03's [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]].
+
+* See also
+
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — the vcpkg-caching and Valgrind details this story
+  established.
+- [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]] / [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — recipes
+  that exercise the stabilised pipelines.
+- [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] (sprint 01) — predecessor story this builds on.

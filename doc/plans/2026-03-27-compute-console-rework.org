@@ -1,4 +1,5 @@
 #+TITLE: Compute Console Rework
+#+version: 1
 #+DATE: 2026-03-27
 #+AUTHOR: Marco Craveiro
 

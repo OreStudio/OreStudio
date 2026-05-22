@@ -4,10 +4,17 @@
 #+title: ores.workflow.service
 #+description: NATS service entrypoint for the workflow domain.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :workflow:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.workflow.service component diagram
+#+caption: ores.workflow.service
+[[file:ores.workflow.service.png][file:ores.workflow.service.png]]
 
 * Summary
 

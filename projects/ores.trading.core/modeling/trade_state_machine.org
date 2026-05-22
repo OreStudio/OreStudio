@@ -2,6 +2,7 @@
 :ID: B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D
 :END:
 #+title: Trade Status State Machine
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

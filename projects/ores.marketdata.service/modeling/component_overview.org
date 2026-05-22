@@ -4,10 +4,17 @@
 #+title: ores.marketdata.service
 #+description: NATS service entrypoint for the market-data domain.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :marketdata:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.marketdata.service component diagram
+#+caption: ores.marketdata.service
+[[file:ores.marketdata.service.png][file:ores.marketdata.service.png]]
 
 * Summary
 

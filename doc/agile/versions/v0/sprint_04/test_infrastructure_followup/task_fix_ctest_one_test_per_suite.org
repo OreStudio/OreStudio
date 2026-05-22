@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: bf65a7a2-e271-4275-b0b3-81d6662c2867
+:END:
+#+title: Task: CTest shows only one test per test suite
+#+description: Resolve the CTest-only-shows-one-test-per-suite behaviour that was BLOCKED in sprint 03.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :testing:ctest:bug_fix:test_infrastructure_followup:sprint_04:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-20
+#+updated: 2025-11-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a9055a54-ae06-4cc4-8b51-2cb9627e0d5a][Test infrastructure follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Resolve the BLOCKED-from-sprint-03 issue where CTest only
+surfaces one test per Catch2 suite. Need per-test visibility (and the
+individual failure messages) on the dashboard.
+
+* Status
+
+| Field        | Value                                                                      |
+|--------------+----------------------------------------------------------------------------|
+| State        | DONE                                                                       |
+| Parent story | [[id:a9055a54-ae06-4cc4-8b51-2cb9627e0d5a][Test infrastructure follow-up]] |
+| Now          | Completed 2025-11-20.                                                      |
+| Waiting on   | None.                                                                      |
+| Next         | None.                                                                      |
+| Last touched | 2025-11-20                                                                 |
+
+* Acceptance
+
+- Each individual Catch2 test case shows as its own CTest entry.
+- Per-test failure messages reach the dashboard.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Carry-over from sprint 03's =test_infrastructure= story (BLOCKED there).
+- Raised CMake issue =kitware/cmake#27363= (Uploading generated JUnit XML from the test harness).
+- Also see CDash mailing list thread =2015-February/001544= for the JUnit-to-CDash workflow.
+
+* Result
+
+Per-test visibility restored; sprint 03's blocked item closed.

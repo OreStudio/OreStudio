@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 9c3c142a-92b0-4771-9bb5-725e62a9b870
+:END:
+#+title: Task: Fix Windows CI break due to XSD codegen
+#+description: MSVC C1128 on domain_xsd.hpp; add /bigobj to the ores.ore target for MSVC builds.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ore:windows:msvc:bug_fix:ore_xml_codegen:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Resolve the MSVC C1128 break on =domain_xsd.hpp= introduced by the larger generated object files.
+
+* Status
+
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | DONE                                                         |
+| Parent story | [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]] |
+| Now          | Completed 2026-01-26.                                        |
+| Waiting on   | None.                                                        |
+| Next         | None.                                                        |
+| Last touched | 2026-01-26                                                   |
+
+* Acceptance
+
+- =/bigobj= added to the =ores.ore= target for MSVC builds.
+- Windows CI green.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Predictable consequence of XSD-generated code being template-heavy on Windows.
+
+* Result
+
+Windows CI green again.

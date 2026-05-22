@@ -1,0 +1,15 @@
+:PROPERTIES:
+:ID: adbbcf2d-2d17-4650-948d-13d30a221374
+:END:
+#+title: Improve error message boxes
+#+description: Improve error message boxes
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Rename show details to just details. Icon should be red?

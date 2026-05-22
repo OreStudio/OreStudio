@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: f923319e-1c9d-4ea5-b824-54a08e31a6f0
+:END:
+#+title: Upload Workunit Input
+#+description: Upload Workunit Input
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:compute_file_storage_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Upload the input data bundle for a workunit.
+
+#+begin_src verb :wrap src text
+post http://localhost:8080/api/v1/compute/workunits/{{(verb-var workunit_id)}}/input
+Content-Type: application/octet-stream
+
+<<input-data.bin
+#+end_src

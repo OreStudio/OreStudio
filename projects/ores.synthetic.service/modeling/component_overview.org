@@ -4,10 +4,17 @@
 #+title: ores.synthetic.service
 #+description: NATS service entrypoint for synthetic data generation.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :synthetic:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.synthetic.service component diagram
+#+caption: ores.synthetic.service
+[[file:ores.synthetic.service.png][file:ores.synthetic.service.png]]
 
 * Summary
 

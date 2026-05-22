@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 69c49095-a91f-41d9-9d7e-0e9478143e93
+:END:
+#+title: Story: Valgrind leaks follow-up
+#+description: Resolve the BLOCKED OpenSSL leaks from sprint 03 plus sqlgen and comms-test leaks discovered since.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :valgrind:observability:bug_fix:sprint_05:v0:
+#+created: 2025-11-25
+#+updated: 2025-11-25
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:2429db80-ec7b-482c-9ff3-4d1933035863][Sprint 05]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Close out the BLOCKED OpenSSL leaks from sprint 03's
+=logging_and_observability=, and clean up the new leaks discovered
+since (sqlgen residuals, real leaks in =ores.comms= tests).
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:2429db80-ec7b-482c-9ff3-4d1933035863][Sprint 05]] |
+| Now           | Completed 2025-11-25.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-11-25                                             |
+
+
+#+predecessor: 1a411b50-2c3a-4248-9ae7-59a835ef6774
+
+Continued from: [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observability]].
+
+* Acceptance
+
+- OpenSSL initialisation leaks suppressed (LLM-confirmed as
+  benign).
+- Residual sqlgen leaks understood; suppressed or upstream-fixed.
+- =ores.comms.tests= runs clean under Valgrind.
+
+* Tasks
+
+In execution order:
+
+- [[id:c4aafe26-a61f-48c1-9f8d-00c64898ca17][Resolve all of the OpenSSL leaks in Valgrind]]
+- [[id:7d95a76c-f755-44c4-84fa-a00c0e263573][Investigate Valgrind leak on sqlgen]]
+- [[id:0cd5f988-f59c-47a4-869f-7fec3b5416ec][Fix Valgrind leaks for comms tests]]
+
+* Decisions
+
+- /Suppress, don't chase/ :: OpenSSL initialisation memory lives
+  until process exit. Suppress with a documented reason rather than
+  chasing a non-leak.
+- /Real leaks fixed at source/ :: =ores.comms= test leaks are ours;
+  fix them rather than suppress.
+
+* Out of scope
+
+- Sanitizer (ASan / TSan) coverage — separate concern.
+
+* See also
+
+- [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observability]] (sprint 03) — predecessor story.
+- [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] (sprint 02) — first added Valgrind
+  suppressions.

@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a
+:END:
+#+title: Story: Tenant provisioning wizards
+#+description: Enforce root party uniqueness; new tenant provisioning wizard (incl. synthetic); gate wizard steps by tenant type; UX polish; evaluation-tenant onboarding on first login.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :tenants:wizard:qt:provisioning:synthetic:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Polish the tenant-provisioning experience: enforce root-party
+invariants; introduce the new wizard with GLEIF or synthetic paths;
+gate by tenant type; round of UX polish; first-login onboarding for
+evaluation tenants.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Now           | Completed 2026-02-16.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-16                                             |
+
+* Acceptance
+
+- Root-party invariant enforced (exactly two: system + operational).
+- Wizard supports GLEIF or synthetic flow; ores.synthetic component in place.
+- Party/counterparty wizard steps gated by tenant type.
+- Wizard UX polished (naming, defaults, password indicator, etc.).
+- First-login onboarding wizard for evaluation tenants.
+
+* Tasks
+
+In execution order:
+
+- [[id:58dcd34b-3ef5-4aa3-b7f2-d531661db110][Enforce root party uniqueness constraints]]
+- [[id:45641916-c11d-4810-ac9d-1298f5e42ab7][Add setup-new-tenant wizard]]
+- [[id:3023b0ec-b07e-4bb5-b981-064e2f49d31f][Gate party + counterparty wizard steps by tenant type]]
+- [[id:3af3a647-67a6-450d-abbf-2777bf967595][Improve tenant provisioning wizard UX]]
+- [[id:8ef061d5-9f21-4610-91b7-610a52da4c75][Add evaluation-tenant onboarding wizard on first login]]
+
+* Decisions
+
+- /Evaluation-only paths surfaced clearly/ :: the wizard now states /this is for evaluation tenants/.
+- /Synthetic + GLEIF as alternatives/ :: not all evaluations want LEI-based data.
+
+* Out of scope
+
+- Production-tenant onboarding workflow.
+
+* See also
+
+- [[id:8aa7657f-a37f-4ab7-85f0-95868cdfd8f3][System Provisioner Wizard]] (sprint 10) — predecessor wizard pattern.

@@ -4,10 +4,17 @@
 #+title: ores.marketdata.api
 #+description: Domain types and NATS protocol schemas for the market-data component.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :marketdata:api:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.marketdata.api component diagram
+#+caption: ores.marketdata.api
+[[file:ores.marketdata.api.png][file:ores.marketdata.api.png]]
 
 * Summary
 

@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 27f234f3-87e2-4e79-84a2-6cae0366044a
+:END:
+#+title: Task: Sprint and product backlog refinement
+#+description: Maintain sprint 14 backlog and groom the product backlog.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :agile:backlog:sprint_14_housekeeping:sprint_14:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7dcf008e-33a5-4493-8ff2-abe1e7d78053][Sprint 14 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Maintain the sprint 14 backlog and groom the product backlog.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:7dcf008e-33a5-4493-8ff2-abe1e7d78053][Sprint 14 housekeeping]] |
+| Now          | Completed 2026-03-12.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-03-12                                                          |
+
+* Acceptance
+
+- Sprint 14 backlog reflects what was planned and what landed.
+- Carry-over rationales captured (rename currency asset classes; alert for unsaved modified entities — both /implemented in previous sprint/).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Long sprint (3 weeks) driven by the messaging-infrastructure migration; the backlog re-refined multiple times as the approach pivoted.
+
+* Result
+
+Backlog kept current across the pivots.

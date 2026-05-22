@@ -1,0 +1,240 @@
+:PROPERTIES:
+:ID: 46dfe47f-967b-4c24-95bf-3e21f97cfd20
+:END:
+#+title: Agile process
+#+description: How the project's agile loop runs — backlog refinement, opening a sprint, sizing tasks, closing a sprint, and closing a version.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :agile:process:sprint:backlog:knowledge:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This doc describes how the agile loop runs in practice — distinct from
+the generic [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] (which covers TODO state transitions across
+every stateful document type). Lifecycle is the state machine on each
+document; this is the rhythm /around/ those documents: how ideas move
+from the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]] into a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] as [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][stories]], how those stories
+decompose into [[id:31c868b9-306e-4282-ba8c-07e647021b34][tasks]], and how a sprint opens, runs, and closes.
+
+* The loop
+
+A single turn of the loop:
+
+1. /Refine/ the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]] — keep the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] bucket honest as
+   candidates change shape, and let new ideas land in [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]].
+2. /Plan/ a new sprint — define the [[id:198da730-d9fb-4bde-b1c0-b930cd019917][sprint mission]] first (it
+   orientates which stories to pull), then choose a small set of
+   [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]] from near that fit the mission and promote each into a
+   [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]]. Break stories into one-PR-sized tasks.
+3. /Execute/ — agents pick up =BACKLOG= tasks, transition to =STARTED=,
+   open a PR, land it, mark =DONE=. The heartbeat rule keeps Status
+   fresh.
+4. /Close/ the sprint — fill the retrospective, generate release
+   notes, cut a release if applicable, transition every story to
+   =DONE= / =ABANDONED= / carried, the sprint itself to =DONE=.
+5. /Next/ sprint opens. New captures discovered during execution have
+   already landed in the backlog and surface in the next refinement.
+
+A version is the outer loop: a coherent group of sprints with a
+shared mission. It opens when its first sprint opens, and closes when
+the version's [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Definition of done]] is met.
+
+* Detail
+
+** Backlog refinement
+
+*Owned by* [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] (sprint coherence drives whether near is honest).
+Captures are filed by [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] when discovered during execution.
+Identity-fit calls are referred to [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]]; near↔far moves for the
+next version are driven by [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]].
+
+Refinement is the cheap, ongoing work that keeps the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] bucket
+usable. It is /not/ a meeting — it is small touches whenever a
+capture is touched:
+
+- New ideas land via =generate_v2_doc.sh --type capture=. Pick the
+  bucket using the rules in [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]].
+- A capture's body may be tightened (description, tags) as a sprint
+  approaches and it becomes a serious candidate.
+- A capture moves =git mv= between buckets when its horizon changes
+  (e.g. a "far" idea becomes "near" because its blocking dependency
+  landed; a "near" idea drops to "far" because the next version's
+  focus shifted).
+- Captures that are no longer interesting are *deleted*, not
+  archived. The product backlog is not an artefact museum.
+
+A capture file carries no Status table — there is nothing to update
+during refinement except its body and bucket.
+
+** Sprint phases
+
+A sprint moves through three phases. Each phase is a distinct mode of
+work; the phase boundaries are sharp.
+
+*** Sprint planning
+:PROPERTIES:
+:ID: f5426198-acaf-41da-a043-ff15785e4a1d
+:END:
+
+*Owned by* [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]. [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]] vets each candidate against the
+[[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product vision]]; [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] sanity-checks the sprint mission
+against the version mission; [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] decomposes each promoted
+story into tasks.
+
+A sprint exists when its folder exists. To open sprint N+1:
+
+1. *Define the sprint mission.* One sentence: what this sprint exists
+   to achieve. The mission is the /filter/ that decides whether
+   borderline captures make it in. Write it before looking at the
+   backlog so the choice of stories is led by the mission, not the
+   other way round. See [[id:198da730-d9fb-4bde-b1c0-b930cd019917][sprint mission]].
+2. *Choose stories.* Look at the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] bucket; pick captures whose
+   combined size fits one sprint's budget (see /Sizing/ below) /and/
+   whose theme matches the mission. Captures that don't fit the
+   mission stay in the bucket.
+3. *Create the sprint folder.* Use the v2 codegen: =generate_v2_doc.sh
+   --type sprint --parent-dir doc/agile/versions/<version>=. Slug is
+   =sprint_NN=.
+4. *Promote each chosen capture.* For each:
+   - =git mv= the capture file from its bucket into
+     =doc/agile/versions/<version>/<sprint_NN>/<slug>/story.org=.
+   - Flip =#+type:= from =capture= to =story=. The =:ID:= is preserved.
+   - Apply the v2 story shape: blurb, =* Goal=, =* Status= (table,
+     state =BACKLOG=), =* Acceptance=, =* Tasks= (empty), =* Decisions=,
+     =* Out of scope=.
+   - Re-run =regenerate_backlog_indexes.py=; the entry disappears from
+     the bucket index automatically.
+5. *Decompose stories into tasks.* Each task is one PR; see /Sizing/.
+   Generate task files with =generate_v2_doc.sh --type task
+   --parent-dir <story-dir>=. Order them in the story's =* Tasks=
+   table by execution order. Tasks start =BACKLOG=.
+6. *Regenerate the version's sprint table* on the version page.
+
+*** Sprint execution
+:PROPERTIES:
+:ID: 227958a5-0f78-4cc6-a116-b83988592b68
+:END:
+
+*Owned by* [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]] (does the work). [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] reviews S1 output and
+triages discovered tasks; [[id:ed29c99b-1507-49c9-9937-d296fffe428e][System 3*]] audits the heartbeat
+invariant and id-link integrity.
+
+Agents pick up =BACKLOG= tasks and run them through the [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]
+state machine: =BACKLOG → STARTED → (maybe BLOCKED → STARTED) → DONE=.
+Each task is one PR.
+
+The /heartbeat rule/ applies: every time an orchestrator or agent
+acts on a task or story, it updates the document's Status rows
+(=Now / Waiting on / Next / Last touched=) and =#+updated= before
+yielding control. Audit flags =STARTED= or =BLOCKED= documents whose
+=#+updated= has gone stale.
+
+Discovered tasks during execution land in =DISCOVERED= state at the
+sprint's =inbox/= if they don't fit any existing story, or under the
+current story if they do. They must leave =DISCOVERED= within one
+orchestrator session (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
+
+*** Sprint closure
+:PROPERTIES:
+:ID: 7d72a9da-984f-4130-bff6-97b66b233907
+:END:
+
+*Owned by* [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] (drives the sequence). [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] resolves each
+story (=DONE= / =ABANDONED= / carried); [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] weighs in on whether
+to cut a release.
+
+Closure is more than transitioning to =DONE=. The sequence is:
+
+1. *Resolve every story.* Every story in the sprint is =DONE=,
+   =ABANDONED=, or has been explicitly carried to a successor (see
+   /Cross-sprint continuations/).
+2. *Generate the release notes* if a release is being cut. The notes
+   are produced from the closed tasks' =* Result= sections and the
+   PRs that landed.
+3. *Cut the release* (tag, build, publish artefacts) when the version
+   warrants it. Not every sprint produces a release; many sprints
+   land mid-version. See [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] for what the release tag means in
+   terms of CMake major/minor.
+4. *Run the post-mortem.* Fill the sprint's =* Retrospective= section
+   — what went well, what hurt, what changed. Past sprints under
+   =doc/agile/versions/v0/sprint_*/= are the template.
+5. *Transition the sprint* itself to =DONE= and update =Last touched=
+   on the Status row.
+
+Sprint closure ends when all five steps are complete; the next
+sprint's planning phase can then begin.
+
+** Closing a version
+
+A version closes when its [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Definition of done]] is met. The version
+file's Status moves =STARTED → RELEASED=, =:CLOSED:= is stamped, and
+the Sprints table on the version page is the historical record.
+
+** Cross-sprint continuations
+
+A story belongs to exactly /one/ sprint. When work doesn't fit:
+
+1. Close the story in sprint N as =DONE= reflecting what landed.
+2. Tasks that didn't make it are recorded in the predecessor's
+   =* Out of scope= or moved to the successor's =BACKLOG=.
+3. Create a /successor/ story in sprint N+1 with:
+   - A fresh =:ID:=; slug suffixed =_continued=, =_phase_2=, or similar.
+   - =#+predecessor:= frontmatter pointing at the prior story.
+   - A =Continued from:= line under the parent-sprint link.
+4. Update the predecessor:
+   - =#+successor:= frontmatter pointing forward.
+   - =Continued in:= note in =* Decisions=.
+
+Audit verifies the bidirectional link.
+
+The same pattern applies across version boundaries.
+
+** Sizing
+
+Hard rule: *one task = one PR*. Soft limits per task:
+
+- ≤ ~10 files changed.
+- ≤ ~400 LOC delta.
+- One coherent concept — a reviewer can hold the change in their head.
+
+Tasks exceeding any of these split into multiple tasks, or — if the
+work is genuinely one outcome and just large — promote to a story
+whose tasks are the natural decomposition.
+
+Stories are sized by their tasks: a story with more than ~10 tasks is
+usually two stories.
+
+Sprints are time-boxed at roughly one mission's worth of work. The
+specific budget is empirical (look at past sprints' task counts and
+elapsed days under =doc/agile/versions/v0/=) rather than a fixed
+hour-count.
+
+** "Ready" and "Done" at each level
+
+A document is /ready/ to leave =BACKLOG= when:
+
+- *Task* — Goal and Acceptance are filled; parent story exists.
+- *Story* — Goal, Acceptance, and at least the first few Tasks are
+  filled; parent sprint exists.
+- *Sprint* — Mission is filled; at least one story is BACKLOG-ready.
+
+A document is /done/ when:
+
+- *Task* — PR merged; =* Result= filled; Status row "Last touched"
+  matches the close date.
+- *Story* — Every task is =DONE= / =ABANDONED= / carried; Acceptance
+  re-read and still holds.
+- *Sprint* — Every story is closed; Retrospective filled; release
+  notes generated if applicable.
+- *Version* — Definition of done met; final sprint closed; release
+  cut.
+
+* See also
+
+- [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][Lifecycle]] — the generic TODO state machine on each document.
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — per-type frontmatter and section contract.
+- [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]] — what the backlog is and how near/far buckets work.
+- [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][Glossary]] — definitions of every term used here.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — the recipe used at every promotion
+  step above.

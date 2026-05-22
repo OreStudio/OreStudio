@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: b8298a05-9e0f-48bc-a36a-8a9ef73fcf6b
+:END:
+#+title: Task: Break cross-plugin symbol dependencies (plugin isolation phase 1)
+#+description: - Add `IBusinessUnitBrowser` abstract interface to `ores.qt.api`; `BusinessUnitController` implements it. `OrgExplorerMd
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :symbol_visibility:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/749
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Break compile-time inter-plugin dependencies by introducing IBusinessUnitBrowser in ores.qt.api and moving 8 DQ catalogue controllers from DataTransferPlugin to RefdataPlugin.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] |
+| Now          | Completed 2026-05-16.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Break compile-time inter-plugin dependencies by introducing IBusinessUnitBrowser in ores.qt.api and moving 8 DQ catalogue controllers from DataTransferPlugin to RefdataPlugin.
+- PR #749 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- Add =IBusinessUnitBrowser= abstract interface to =ores.qt.api=; =BusinessUnitController= implements it. =OrgExplorerMdiWindow= now stores =IBusinessUnitBrowser*= instead of =BusinessUnitController*=, removing the =ores.qt.trading → ores.qt.party= compile-time link.
+- Move the 8 DQ catalogue controllers (DataDomain, SubjectArea, Catalog, DatasetBundle, Methodology, OriginDimension, NatureDimension, TreatmentDimension) from =DataTransferPlugin= into =RefdataPlugin= where they logically belong. =RefdataPlugin::setup_menus()= builds the Data Catalogue submenu on =smc.data_transfer_menu=. =DataTransferPlugin= is reduced to a thin shell that only owns the menu handle, removing the =ores.qt.data_transfer → ores.qt.refdata= compile-time link.
+
+Both are Category 2 violations from =doc/plans/2026-05-15-qt-plugin-isolation.org=.
+
+
+* Result
+
+Landed.

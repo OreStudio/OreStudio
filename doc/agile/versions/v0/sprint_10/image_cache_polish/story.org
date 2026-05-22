@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 2a572d8a-644c-40d9-87d2-7a49a9c07d1b
+:END:
+#+title: Story: Image cache polish
+#+description: Reload on new datasets; incremental loading via =modified_since=.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :qt:assets:images:protocol:sprint_10:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Fix the image cache surfaced by DQ publication: it didn't reload on
+new datasets, and a full reload was expensive.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Now           | Completed 2026-01-23.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-23                                             |
+
+* Acceptance
+
+- Cache reloads on image dataset publication.
+- Reload is incremental via =modified_since=.
+- No UI flashing on reload.
+- Backward-compatible protocol change.
+
+* Tasks
+
+In execution order:
+
+- [[id:8153e98e-839f-4c19-9517-8fd41ac7052b][Image cache reloads on new datasets]]
+- [[id:f8794373-3e9c-4ee2-912a-43f7bf33a446][Incremental image cache loading with modified_since]]
+
+* Decisions
+
+- /=modified_since= as the incremental key/ :: =recorded_at= was already on every image; =modified_since= is the natural pairing.
+- /Optional protocol field, server defaults to all/ :: backward compatible by construction.
+
+* Out of scope
+
+- Generalising the pattern to other caches — handled when the next cache needs it.
+
+* See also
+
+None.

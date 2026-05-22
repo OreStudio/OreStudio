@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 898723ad-a564-4458-94a3-7b5dad08a6c3
+:END:
+#+title: How do I get help for the CLI iam permissions command?
+#+description: Show available operations under =ores.cli iam permissions=
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:permissions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Show available operations under =ores.cli iam permissions=. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
+
+* Question
+
+How do I get help for the CLI iam permissions command?
+
+* Answer
+
+#+begin_src sh :wrap src text
+./ores.cli iam permissions --help
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+permissions - Manage permissions
+
+Usage: ores.cli permissions <operation> [options]
+
+Available operations:
+   list           List permissions as JSON or table
+   delete         Delete a permission by ID
+   add            Add a new permission
+
+For operation-specific options, use: permissions <operation> --help
+#+end_src

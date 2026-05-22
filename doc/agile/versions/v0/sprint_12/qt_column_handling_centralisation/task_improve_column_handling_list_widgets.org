@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 9d02285a-ef43-4a80-9a10-ba67e75ddd5b
+:END:
+#+title: Task: Improve column handling in list widgets
+#+description: ColumnMetadata struct + helpers; 24 Client*Model headers + 24 *MdiWindow.cpp aligned; column_style enum relocated; initializeTableSettings takes string_view.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt:refactor:columns:ux:qt_column_handling_centralisation:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:6aaea401-96a8-4027-8887-375b978771b3][Qt column handling centralisation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Centralise column metadata across all Qt list windows.
+
+* Status
+
+| Field        | Value                                                                          |
+|--------------+--------------------------------------------------------------------------------|
+| State        | DONE                                                                           |
+| Parent story | [[id:6aaea401-96a8-4027-8887-375b978771b3][Qt column handling centralisation]] |
+| Now          | Completed 2026-02-19.                                                          |
+| Waiting on   | None.                                                                          |
+| Next         | None.                                                                          |
+| Last touched | 2026-02-19                                                                     |
+
+* Acceptance
+
+- =ColumnMetadata= struct + helpers.
+- 24 =Client*Model= headers define column styles, default window sizes, settings group names.
+- 24 =*MdiWindow.cpp= files consume column config from their model header (no inline literals).
+- =column_style= enum moved to =ColumnMetadata.hpp=.
+- =initializeTableSettings= signature uses =std::string_view=.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Removes scattered string + size literals across every list window — single source of truth.
+
+* Result
+
+Column config centralised.

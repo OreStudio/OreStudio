@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 83dcdf42-74fa-4c71-b9c6-a31b4e0cc30c
+:END:
+#+title: Task: Use sqlgen for Postgres
+#+description: Replace hand-written Postgres CRUD with sqlgen-generated code.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :storage:postgres:sqlgen:codegen:modernise_serialisation_and_storage:sprint_02:v0:
+#+owner: marco
+#+created: 2025-10-05
+#+updated: 2025-10-10
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the project's hand-written Postgres CRUD code with sqlgen-
+generated adapters, keeping schema shape and C++ types in sync
+without manual marshalling.
+
+* Status
+
+| Field        | Value                                                                            |
+|--------------+----------------------------------------------------------------------------------|
+| State        | DONE                                                                             |
+| Parent story | [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]] |
+| Now          | Completed 2025-10-10.                                                            |
+| Waiting on   | None.                                                                            |
+| Next         | None.                                                                            |
+| Last touched | 2025-10-10                                                                       |
+
+* Acceptance
+
+- sqlgen integrated into the build.
+- Existing repository code regenerated from sqlgen.
+- All repository tests pass.
+
+* Notes
+
+- Total time spent in v0: ~7:23 — the largest single entry in
+  sprint 02. Migrating each existing repository was the bulk of
+  the time.
+
+* Result
+
+- Postgres CRUD now generated; manual marshalling removed.

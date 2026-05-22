@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 14e1981e-2032-46b7-a050-a6cff9311ed4
+:END:
+#+title: How do I delete a feature flag by key?
+#+description: Delete a feature flag by key
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:feature_flags:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Delete a feature flag by key. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
+
+* Question
+
+How do I delete a feature flag by key using =ores.cli=?
+
+* Answer
+
+#+begin_src sh  :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli variability feature-flags delete ${db_args} ${log_args} \
+  --key "Test feature3"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Feature flag deleted successfully: Test feature3
+#+end_src

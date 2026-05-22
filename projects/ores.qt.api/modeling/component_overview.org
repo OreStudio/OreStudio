@@ -4,10 +4,17 @@
 #+title: ores.qt.api
 #+description: Shared Qt infrastructure — IPlugin interface, base controllers/windows/dialogs, ClientManager, caches, and entity UI patterns.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :qt:ui:api:component:
 #+created: 2026-05-20
 #+updated: 2026-05-20
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.api component diagram
+#+caption: ores.qt.api
+[[file:ores.qt.api.png][file:ores.qt.api.png]]
 
 * Summary
 

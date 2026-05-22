@@ -2,6 +2,7 @@
 :ID: 9f3c2d87-5b14-4e8a-b6d1-0a7c3f921e45
 :END:
 #+title: ORE Market Data Domain Model
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

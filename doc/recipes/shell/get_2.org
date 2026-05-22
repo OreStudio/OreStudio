@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 8ab40575-d912-4a89-a653-314a7610b43c
+:END:
+#+title: Get
+#+description: Get
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:roles:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Get details for a specific role.
+
+#+name: get-role
+#+begin_src ores-shell :exports none
+roles get Admin
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<get-role>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
+Role Details
+============
+ID:            f60d8103-0283-4d46-aa4c-aa6bb50934d9
+Name:          Admin
+Description:   Full administrative access to all system functions
+Version:       1
+Change Reason: system.new_record
+Commentary:    System seed data
+Recorded By:   system
+Recorded At:   2026-01-09 16:37:36.000000000
+
+Permissions (1):
+-------------
+  - *
+
+ores-shell> Bye!
+#+end_example

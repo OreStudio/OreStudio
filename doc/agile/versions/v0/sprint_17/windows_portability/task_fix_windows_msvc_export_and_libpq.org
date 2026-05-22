@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: b64c5983-f243-4380-a2db-5e55830ee0af
+:END:
+#+title: Task: Fix Windows MSVC export and libpq link
+#+description: Two Windows-only fixes from the latest main CI run:
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :windows_portability:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/708
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add ORES_QT_API export annotations to the three moved Cron widgets, and fix the libpq link order (pgport, pgcommon before libpq) for MSVC.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] |
+| Now          | Completed 2026-04-18.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- MSVC export declarations are correct and =libpq= links cleanly on Windows.
+- No undefined symbol errors remain for the affected DLLs on Windows.
+- PR #708 landed.
+
+* Plan
+
+* Notes
+
+** Summary
+Two Windows-only fixes from the latest main CI run:
+
+*** 1. MSVC export of Cron widget staticMetaObject
+PR #706 moved the three cron widgets (=CronExpressionWidget=, =CronEditorDialog=, =CronFieldWidget=) from =ores.qt.compute= to the shared =ores.qt.api=, but did not decorate them with the =ORES_QT_API= macro that every other Q_OBJECT class in the module uses. Clang/lld on Windows auto-exports via =llvm-nm=, which hid the oversight; MSVC honours =__declspec(dllexport/dllimport)= strictly, so =ores.qt.compute='s =ReportDefinitionDetailDialog= could not find =staticMetaObject= when linking.
+
+*** 2. Explicit =pgport=/=pgcommon= link for libpq on Windows
+The vcpkg bump in PR #707 ships libpq as a static archive whose internal calls to =pg_tolower=, =pg_vsnprintf=, =gettimeofday=, =pgwin32_fopen=, etc. come from the PostgreSQL portability libs =libpgport= and =libpgcommon=. vcpkg's =libpq/vcpkg-cmake-wrapper.cmake= only appends these when =VCPKG_LIBRARY_LINKAGE= is =static=; the dynamic =x64-windows= triplet skips them. Any DLL that pulls libpq in transitively (here: =ores.database.dll= via =sqlgen=) fails to link. Add a Windows-only block in =ores.database/src/CMakeLists.txt= that finds and attaches =pgport=/=pgcommon= plus the Windows system libs (=Secur32=, =Wldap32=) required by libpq's crypto paths.
+
+Keeps us on latest vcpkg.
+
+
+* Result
+
+Landed.

@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 0933396a-54e5-4496-ac82-3ec2b0151f2e
+:END:
+#+title: Task: Assorted fixes to currency dialog
+#+description: Non-maximisable details, column trimming, revert-icon fix, attach-flag on creation; refactor reload logic into common entity code.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt:currencies:ux:polish:qt_ux_polish:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Address the first set of currency-dialog snags surfaced during validation.
+
+* Status
+
+| Field        | Value                                                     |
+|--------------+-----------------------------------------------------------|
+| State        | DONE                                                      |
+| Parent story | [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]] |
+| Now          | Completed 2026-01-06.                                     |
+| Waiting on   | None.                                                     |
+| Next         | None.                                                     |
+| Last touched | 2026-01-06                                                |
+
+* Acceptance
+
+- Details windows non-maximisable.
+- Less-useful columns hidden from the list (symbol, fraction) but kept in the detail view.
+- Wrong revert icon fixed in currency history.
+- Reload available in history.
+- Flag attachable on creation.
+- Common reload logic refactored into shared entity code.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+The reload-logic refactor will continue to pay back as more entity dialogs follow the same shape.
+
+* Result
+
+Currency dialog usable; common reload logic shared.

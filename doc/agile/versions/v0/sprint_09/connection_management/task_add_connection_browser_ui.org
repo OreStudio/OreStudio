@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 581b2714-84ae-43ff-99db-f77003e4e0cd
+:END:
+#+title: Task: Add Connection Browser MDI window
+#+description: Hierarchical tree view of folders and environments; master-password support; full CRUD for folders and environments; database purge; pre-fill login from saved connection with auto-submit.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt:connections:ux:connection_management:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Provide a Qt UI for managing the saved-connections store.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]] |
+| Now          | Completed 2026-01-13.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2026-01-13                                                         |
+
+* Acceptance
+
+- MDI window with hierarchical tree view of folders + environments.
+- Master-password support: create / change / unlock encrypted credentials.
+- Full CRUD for folders and environments.
+- Database purge action.
+- Login dialog pre-fills + auto-submits from a selected entry when credentials available.
+- Icon-guidelines doc extended with Delete-Dismiss / Key-Multiple / Server-Link.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Master password is the thing that gates the encrypted-credentials store; without it the dialog stays empty.
+
+* Result
+
+Connection browser usable from Qt.

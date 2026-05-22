@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: e40f0dab-8e2f-4f2e-bf0a-ca1dfd9a681e
+:END:
+#+title: Get All Tenants
+#+description: Get All Tenants
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:tenants:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Retrieve all tenants from the server.
+
+#+name: tenants-get-all
+#+begin_src ores-shell :exports none
+tenants get-all
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<tenants-get-all>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++------------------------------------------------------------+------------------------------------------------------------+----------+----------------------------------------------------------------------+------------+-------------+---------+
+| Code                                                       | Name                                                       | Type     | Hostname                                                             | Status     | Recorded By | Version |
++------------------------------------------------------------+------------------------------------------------------------+----------+----------------------------------------------------------------------+------------+-------------+---------+
+| system                                                     | System                                                     | platform | localhost                                                            | active     | postgres    | 1       |
+| ores.database.tests_20260205_150835_3067033_9329           | ores.database.tests_20260205_150835_3067033_9329           | test     | ores.database.tests_20260205_150835_3067033_9329.localhost           | terminated | postgres    | 1       |
+| ores.eventing.tests_20260205_151018_3071471_7620           | ores.eventing.tests_20260205_151018_3071471_7620           | test     | ores.eventing.tests_20260205_151018_3071471_7620.localhost           | active     | postgres    | 1       |
+| ores.platform.tests_20260205_150829_3066426_1928           | ores.platform.tests_20260205_150829_3066426_1928           | test     | ores.platform.tests_20260205_150829_3066426_1928.localhost           | terminated | postgres    | 1       |
+| ores.telemetry.database.tests_20260205_150851_3067790_9672 | ores.telemetry.database.tests_20260205_150851_3067790_9672 | test     | ores.telemetry.database.tests_20260205_150851_3067790_9672.localhost | terminated | postgres    | 1       |
+| ores.telemetry.tests_20260205_150845_3067263_8272          | ores.telemetry.tests_20260205_150845_3067263_8272          | test     | ores.telemetry.tests_20260205_150845_3067263_8272.localhost          | terminated | postgres    | 1       |
+| ores.utility.tests_20260205_150615_3063963_9208            | ores.utility.tests_20260205_150615_3063963_9208            | test     | ores.utility.tests_20260205_150615_3063963_9208.localhost            | active     | postgres    | 1       |
+| ores.utility.tests_20260205_150704_3065209_2957            | ores.utility.tests_20260205_150704_3065209_2957            | test     | ores.utility.tests_20260205_150704_3065209_2957.localhost            | terminated | postgres    | 1       |
+| ores.variability.tests_20260205_150853_3067957_1182        | ores.variability.tests_20260205_150853_3067957_1182        | test     | ores.variability.tests_20260205_150853_3067957_1182.localhost        | terminated | postgres    | 1       |
++------------------------------------------------------------+------------------------------------------------------------+----------+----------------------------------------------------------------------+------------+-------------+---------+
+
+
+ores-shell> Bye!
+#+end_example

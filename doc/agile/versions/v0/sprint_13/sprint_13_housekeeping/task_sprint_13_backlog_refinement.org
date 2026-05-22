@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: f58a9a29-fa89-43af-bd4d-864448cfbb33
+:END:
+#+title: Task: Sprint and product backlog refinement
+#+description: Maintain sprint 13 backlog and groom the product backlog.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :agile:backlog:sprint_13_housekeeping:sprint_13:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:90161bf2-67f0-4542-899c-5d844a3f6f95][Sprint 13 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Maintain the sprint 13 backlog and groom the product backlog.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:90161bf2-67f0-4542-899c-5d844a3f6f95][Sprint 13 housekeeping]] |
+| Now          | Completed 2026-02-24.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-02-24                                                          |
+
+* Acceptance
+
+- Sprint 13 backlog reflects what was planned and what landed.
+- Items discovered in flight added to the product backlog.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+v0 sprint 13 has no OCR task — that strand paused for this sprint.
+
+* Result
+
+Backlog kept current.

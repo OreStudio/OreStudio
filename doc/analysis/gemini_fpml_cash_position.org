@@ -1,3 +1,4 @@
+#+version: 1
 I am working on a trivial example for ORE, the open source risk engine. Manual available here https://github.com/OpenSourceRisk/Engine/blob/master/Docs%2Fuserguide.pdf my idea was just to start by supporting historic cash positions which should not do much in the risk engine. But this should allow me to test the entire workflow from getting the data in ORE format, running ORE and then processing the outputs. I need your help to brainstorm the approach. First how is historic cash modelled in ORE? Second what report would be suitable? Perhaps a basic PV. Give me your thoughts on the whole idea.
 
 Implementing a "historic cash" position is a clever way to verify your ORE (Open Source Risk Engine) pipeline without introducing complex valuation logic. Since ORE is primarily a derivative and fixed-income engine, it doesn't have a specific "Bank Balance" trade type by default, but you can effectively model it using existing building blocks.

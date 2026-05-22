@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 4e142df7-d208-453d-bc44-25f92f6d5934
+:END:
+#+title: Task: Implement the event bus
+#+description: Add an in-process event bus so components can publish/subscribe without coupling — basis for the upcoming Postgres-listener-driven notifications.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :eventing:infrastructure:infrastructure_features:sprint_06:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-15
+#+updated: 2025-12-15
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add an in-process event bus so components can publish/subscribe without coupling — basis for the upcoming Postgres-listener-driven notifications.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | DONE                                                                 |
+| Parent story | [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]] |
+| Now          | Completed 2025-12-15.                                                |
+| Waiting on   | None.                                                                |
+| Next         | None.                                                                |
+| Last touched | 2025-12-15                                                           |
+
+* Acceptance
+
+- Event bus exposes publish + subscribe with typed events.
+- At least one consumer wired (variability or sessions).
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Future basis for the Postgres LISTEN/NOTIFY work (cancelled in this sprint but on the roadmap).
+
+* Result
+
+Event bus operational; first consumers wired.

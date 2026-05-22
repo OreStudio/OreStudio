@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: b5d90461-980a-4bbc-9a1c-15be795be9c6
+:END:
+#+title: Task: Add ore roundtrip command and retire Thing 2 coverage check
+#+description: - Phase 1 (`ores.ore`): Implements `exporter::roundtrip_portfolio` — walks a directory of ORE portfolio XMLs recursively
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ore_domain_roundtrip:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/730
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:66109ae6-1c44-405d-b4d6-08164c457c25][ORE domain roundtrip]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Implement 'ore roundtrip' as a DB-free CLI command that imports and re-exports a directory of ORE portfolio XMLs, returning a roundtrip_summary.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:66109ae6-1c44-405d-b4d6-08164c457c25][ORE domain roundtrip]] |
+| Now          | Completed 2026-05-07.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Implement 'ore roundtrip' as a DB-free CLI command that imports and re-exports a directory of ORE portfolio XMLs, returning a roundtrip_summary.
+- PR #730 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- *Phase 1* (=ores.ore=): Implements =exporter::roundtrip_portfolio= — walks a directory of ORE portfolio XMLs recursively, imports each through =importer::import_portfolio_with_context=, exports back via =exporter::export_portfolio=, and writes mirrored outputs. Returns a =roundtrip_summary= (total files, skipped, written, mapped, passthrough).
+- *Phase 2* (=ores.cli=): Adds =ores.cli ore roundtrip <input-dir> --output-dir <dir>= — a DB-free command that calls the above and prints the summary. Includes the =ore= domain parser, =ore_roundtrip_options= struct, and intercept in =host.cpp= before =application= is constructed.
+- *Phase 3* (=scripts/=): Adds =ore_domain_roundtrip_check.py= — diffs committed roundtrip outputs against ORE originals, reporting per-trade-type fidelity (full/partial/passthrough). Replaces =ore_coverage_check.py=.
+- *Phase 4* (CMake): Adds =ore-domain-roundtrip= custom target for dev regeneration.
+- *Phase 6* (CI): Updates =ore_coverage.yml= to run =ore_domain_roundtrip_check.py= instead of =ore_coverage_check.py=. Deletes =ore_coverage_check.py= and the =assets/test_data/golden_dataset/= tree.
+
+Phase 5 (generate and commit the initial baseline outputs) is a follow-on developer action after this PR merges.
+
+
+* Result
+
+Landed.

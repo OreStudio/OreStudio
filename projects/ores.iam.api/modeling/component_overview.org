@@ -4,10 +4,17 @@
 #+title: ores.iam.api
 #+description: Domain types, JSON/table I/O, and NATS protocol schemas for the IAM component.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :iam:api:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.iam.api component diagram
+#+caption: ores.iam.api
+[[file:ores.iam.api.png][file:ores.iam.api.png]]
 
 * Summary
 

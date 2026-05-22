@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 32991e7a-e3a7-40bb-b381-767e16f1d83a
+:END:
+#+title: Task: Currency combos with flag icons, date pickers, and dialog polish
+#+description: - OreCurrencyComboBox / OreDateEdit: new global-namespace custom widgets for uic compatibility. `OreDateEdit` shows `yyy
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt_ui_polish:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/726
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d148b46a-ad14-4391-8b64-46dcfe95c5f1][Qt UI polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add OreCurrencyComboBox and OreDateEdit custom widgets, wire flag icons into all currency combo boxes via ImageCache, and polish date pickers in the trade detail dialog.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:d148b46a-ad14-4391-8b64-46dcfe95c5f1][Qt UI polish]] |
+| Now          | Completed 2026-05-04.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Add OreCurrencyComboBox and OreDateEdit custom widgets, wire flag icons into all currency combo boxes via ImageCache, and polish date pickers in the trade detail dialog.
+- PR #726 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- *OreCurrencyComboBox / OreDateEdit*: new global-namespace custom widgets for uic compatibility. =OreDateEdit= shows =yyyy-MM-dd=, opens a calendar popup, and uses =specialValueText= for the blank state. =OreCurrencyComboBox= is a marker subclass that triggers flag-icon wiring.
+- *Flag icons on all currency combos*: =ImageCache= is now threaded from =TradingPlugin= → =TradeController= → =TradeDetailDialog= → =IInstrumentForm= via a new =setImageCache()= virtual. Every instrument form (FX forward, FX vanilla option, equity, credit, commodity, swap, bond) fetches currency codes async and wires flag icons through =setup_flag_combo= / =apply_flag_icons=.
+- *Adaptive dialog height*: =AdaptiveStackedWidget= overrides =sizeHint=/=minimumSizeHint= to report the *current* page's values instead of the maximum across all pages. =TradeDetailDialog= wraps the instrument stack in a =QScrollArea= (=widgetResizable=true=, horizontal bar suppressed) so large forms (commodity) scroll rather than forcing the dialog to grow; dialog geometry reduced from 680×600 to 680×480 (minimum 680×400).
+- *Fix spurious dirty state*: =setComboValue= in each form's async currency-population callback was called *after* =blockSignals(false)=, causing =currentTextChanged= to fire once the instrument was already loaded and setting the form dirty without any user interaction. Fixed in all six affected forms by moving =setComboValue= inside the signal-blocking scope.
+
+
+* Result
+
+Landed.

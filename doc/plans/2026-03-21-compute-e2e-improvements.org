@@ -2,6 +2,7 @@
 :ID: 7a4e9c1b-3f2d-4e8a-b6d5-0c1e2f3a4b5c
 :END:
 #+title: Compute Grid End-to-End Improvements
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

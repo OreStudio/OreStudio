@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 46879465-eb8e-46aa-83da-a9acff512150
+:END:
+#+title: Update Email
+#+description: Update Email
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:current_user_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Update the current user's email address.
+
+#+begin_src verb :wrap src json
+put /me/email
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "new_email": "mynewemail@example.com"
+}
+#+end_src

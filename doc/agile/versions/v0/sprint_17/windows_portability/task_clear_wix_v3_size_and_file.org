@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 25886210-f144-4243-a741-7607243726ce
+:END:
+#+title: Task: Clear WiX v3 size and file-count limits
+#+description: Short-term fixes from the WiX analysis in #710, clearing both remaining \`cpack\` errors on Windows.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :windows_portability:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/711
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Clear the two WiX v3 CPack failures: exclude the oversized static debug archive from the installer, and skip the package target on Windows Debug in CTest.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] |
+| Now          | Completed 2026-04-20.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- =LGHT0263= and =LGHT0306= WiX v3 errors are resolved.
+- Windows installer builds without size or file-count errors.
+- PR #717 landed.
+
+* Plan
+
+* Notes
+
+** Summary
+Short-term fixes from the WiX analysis in #710, clearing both remaining =cpack= errors on Windows.
+
+- *A.* Exclude =ores.trading.core.lib= from the installer on Windows. It is STATIC on Windows (PR #693) and its Debug build exceeds 2 GB — the WiX v3 single-file cabinet offset limit (=LGHT0263=). Nothing downstream needs it at runtime because consumer executables link it in statically.
+- *B.* Skip the =package= target on Windows Debug in =CTest.cmake=. Debug still builds and tests; only Release invokes =cpack=. Release is the sole Windows deliverable.
+- *E.* Turn off =X_VCPKG_APPLOCAL_DEPS_INSTALL= and replace it with a single =install(DIRECTORY publish/bin/ ...)= pass. The per-target =applocal=-install hook was registering one =install(CODE ...)= block per executable (~80 targets) and each copy of the Qt + OpenSSL + libpq closure piled files into the same cabinet, blowing past the WiX 65,535-file limit (=LGHT0306=). The build-time =VCPKG_APPLOCAL_DEPS= (still ON) already populates =publish/bin/= exactly once, so one directory install — minus our own binaries, tests, and build byproducts — produces the same runtime closure with a fraction of the file count.
+
+G from the analysis (exclude tests) turns out to be a no-op: no =install(TARGETS)= call in =projects/*/tests/CMakeLists.txt= was installing test binaries in the first place.
+
+
+* Result
+
+Landed.

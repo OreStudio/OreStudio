@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 3d83489c-f7e5-43e9-b42d-fa45ee9afaf4
+:END:
+#+title: Books must belong to a business unit; portfolio explorer toggle
+#+description: Books need a business unit FK. The portfolio explorer should have a show/hide option for business unit nodes in the tree.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :ui:domain:database:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Two related gaps:
+
+1. *Book → Business Unit FK* — books currently have a =party_id= but no =business_unit_id=. Add the FK (nullable for migration safety) and enforce it in new creates.
+2. *Portfolio explorer toggle* — the portfolio explorer tree mixes books, portfolios, and potentially business units. Add a toolbar toggle "Show Business Units" that inserts business-unit nodes between the party level and the book/portfolio level when enabled.

@@ -2,6 +2,7 @@
 :ID: C2B3D4E5-F6A7-8901-BCDE-F12345678901
 :END:
 #+title: ores.refdata Messaging Reference
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: overview

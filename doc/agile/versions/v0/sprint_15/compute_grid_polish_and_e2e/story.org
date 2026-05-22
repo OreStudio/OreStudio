@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 0dcedae5-e5f0-4af8-ae85-37c7618237a6
+:END:
+#+title: Story: Compute grid polish and E2E fixes
+#+description: Loading-lifecycle refactor (AbstractClientModel); change-reason symmetry; UUID generation fix; AppVersion multi-platform support; result processing, host_id persistence, outcome codes, file extensions, service dashboard polish.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :compute:qt:polish:e2e:refactor:sprint_15:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Round of compute-grid polish based on real-data testing, plus the
+loading-lifecycle refactor that the missing endLoading() calls
+forced into the broader codebase.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Now           | Completed 2026-03-26.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-26                                             |
+
+* Acceptance
+
+- AbstractClientModel + standard dataLoaded()/loadError() signals wired through EntityListMdiWindow.
+- Change-reason prompting centralised; applies_to_new on change reason domain.
+- Compute RLS + UUID generation + ReflectCPP workaround.
+- app_version multi-platform via junction table; combo boxes replace UUID text fields.
+- Service dashboard offline threshold, version display, status-services.sh.
+- Wrapper heartbeat, ores.platform::datetime, result_handler::submit fix.
+- Outcome code mapping, host_id persistence, file-extension preservation in URIs.
+- AppVersion double-slash + SIGSEGV fixes.
+- Result UI pill badges; MainWindow geometry persistence; wrapper RAII + terminate guard.
+
+* Tasks
+
+In execution order:
+
+- [[id:7daa4131-019b-4191-802d-cb67b22d102f][E2E compute testing fixes and loading lifecycle refactor]]
+- [[id:0761a4ec-66d1-4c3e-b46f-36d18b3d3cfa][End-to-end fixes for grid work]]
+
+* Decisions
+
+- /AbstractClientModel base in the polish task/ :: surfaced through the compute-grid loading bug but applies broadly; cascades into the loading-indicator story.
+- /multi-platform app_version via junction/ :: the previous single-string platform field couldn't represent /works on Linux + macOS/.
+
+* Out of scope
+
+- Re-test of the full compute grid under load (future).
+
+* See also
+
+- [[id:3ed3ca4d-8709-4f70-a1a8-1ff287adb8bf][Compute grid implementation]] — the foundational PR.
+- [[id:7b5e0c11-8c1f-4d91-adea-2596197cd0d4][Loading indicator on entity list windows]] — consumes the AbstractClientModel pattern from this story.

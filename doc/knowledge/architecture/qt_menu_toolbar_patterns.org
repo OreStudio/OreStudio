@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: e44891dc-234c-42db-90e1-9421400abd1a
+:END:
+#+title: Qt menu and toolbar patterns
+#+description: Plugin registration, on_login() menu wiring, and MDI window toolbar construction for ores.qt entities.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:qt:entity:menu:toolbar:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Every ORE Studio Qt entity appears in two places: a shared menu
+(registered in =setup_menus()=) and the MDI window toolbar (built in
+=setupToolbar()= inside the generated =MdiWindow=).  The two are
+wired through the controller: the menu action calls
+=showListWindow()=; the toolbar actions call slots on the =MdiWindow=
+itself.  The ground truth for both is in the mustache templates
+=cpp_qt_controller.cpp.mustache= and =cpp_qt_mdi_window.cpp.mustache=.
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Plugin registration (on_login / setup_menus)
+
+A Qt plugin registers its entity in two stages:
+
+1. *=on_login=*: create the controller, passing
+   =ctx_.main_window=, =ctx_.mdi_area=, =ctx_.client_manager=, and
+   =ctx_.username=.  Connect its =statusMessage= and =errorMessage=
+   signals to the plugin's own =statusMessage= signal.
+
+2. *=setup_menus=*: receive a =shared_menus_context=; add a separator
+   and then =addAction(icon, label)= to the target menu
+   (typically =smc.data_management_menu=).  Connect the action's
+   =triggered= signal to =workspaceController_->showListWindow()=
+   (via a guarded lambda that checks the controller is non-null).
+
+Use =IconUtils::createRecoloredIcon(Icon::X, IconUtils::DefaultIconColor)=
+for the menu icon.  Icon selection is in [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]].
+
+The plugin file lives at =src/{Component}Plugin.cpp=.  See
+[[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] for the =PluginBase= contract and lifecycle.
+
+* MDI window toolbar
+
+The =setupToolbar()= method in every generated =MdiWindow= follows a
+fixed pattern (encoded in =cpp_qt_mdi_window.cpp.mustache=):
+
+1. Create =QToolBar=, call =setMovable(false)= and
+   =setToolButtonStyle(Qt::ToolButtonTextUnderIcon)=.
+2. Add *Reload* — connects to =EntityListMdiWindow::reload=; also
+   drives the stale indicator via =initializeStaleIndicator=.
+3. Add a separator.
+4. Add *Add* — connects to =addNew()=; tooltip "Add new {entity}".
+5. Add *Edit* — connects to =editSelected()=; disabled until a row
+   is selected.
+6. Add *Delete* — connects to =deleteSelected()=; disabled until a
+   row is selected.
+7. Add *History* — connects to =showHistory()=; disabled until a row
+   is selected.
+
+All icons use =IconUtils::createRecoloredIcon(Icon::X, IconUtils::DefaultIconColor)=.
+Edit/Delete/History are enabled/disabled from the selection-changed
+signal of the =QTableView=.
+
+* Templates
+
+The controller and MdiWindow templates are the authoritative source.
+
+| Template | Covers |
+|---|---|
+| =cpp_qt_controller.hpp.mustache= | Controller class declaration |
+| =cpp_qt_controller.cpp.mustache= | =on_login= wiring + =showListWindow= |
+| =cpp_qt_mdi_window.hpp.mustache= | MdiWindow class declaration |
+| =cpp_qt_mdi_window.cpp.mustache= | =setupToolbar()= — the full toolbar pattern |
+
+* See also
+
+- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] — =PluginBase= contract, plugin lifecycle, menu sections.
+- [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] — icon selection for menu and toolbar actions.
+- [[id:2fddc2f6-c510-4a86-8c50-d79c83eddfff][Qt entity patterns]] — ClientModel, list window, dialog shapes.
+- [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][qt-entity-creator]] — skill that orchestrates Qt UI creation.

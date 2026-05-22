@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 3d098827-07d6-4d73-89bc-87980365b10d
+:END:
+#+title: Table Sizes
+#+description: Table Sizes
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:administrative:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select schemaname, tablename,
+       pg_size_pretty(pg_total_relation_size(schemaname || '.' || tablename)) as size
+from pg_tables
+where schemaname = 'ores'
+order by pg_total_relation_size(schemaname || '.' || tablename) desc;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| schemaname | tablename        | size    |
+|------------+------------------+---------|
+| ores       | images           | 1232 kB |
+| ores       | image_tags       | 176 kB  |
+| ores       | currencies       | 96 kB   |
+| ores       | currency_images  | 88 kB   |
+| ores       | roles            | 72 kB   |
+| ores       | tags             | 72 kB   |
+| ores       | role_permissions | 64 kB   |
+| ores       | permissions      | 56 kB   |
+| ores       | feature_flags    | 56 kB   |
+| ores       | sessions         | 48 kB   |
+| ores       | accounts         | 48 kB   |
+| ores       | account_roles    | 40 kB   |
+| ores       | login_info       | 32 kB   |
+| ores       | ip2country       | 16 kB   |
+#+end_example

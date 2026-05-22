@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: a1673d39-4165-4607-bf65-93c78c436297
+:END:
+#+title: Task: Polish business centre UI and data quality
+#+description: city_name column derived from descriptions; hard-code US for NYFD/NYSE; WRLD = UN flag + Internal source; default columns: Code, Country (with flag), City; Description + Coding Scheme hidden by default; recorded_at narrower; country combo non-editable; protocol bump to 38.0.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :business_centres:ux:data_quality:sql:protocol:business_centre_polish:sprint_13:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:19ee14c8-952d-42d6-9ae1-ecea45a5efcf][Business centre polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Data-quality + UI polish round on business centres.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:19ee14c8-952d-42d6-9ae1-ecea45a5efcf][Business centre polish]] |
+| Now          | Completed 2026-02-22.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-02-22                                                          |
+
+* Acceptance
+
+- =city_name= column added to business centres; derived from descriptions during population.
+- NYFD + NYSE hard-coded to country = US in the FpML artefact.
+- WRLD system business centre: =source = Internal=, UN flag.
+- Business centres list view default columns: Code, Country (with flag), City.
+- Description + Coding Scheme hidden by default.
+- =recorded_at= column width tightened.
+- Country combo box in detail dialog made non-editable; derived city name visible.
+- C++ + protocol updates for =city_name=; protocol bump to 38.0.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+The city derivation logic is fragile but pragmatic — FpML descriptions are inconsistent.
+
+* Result
+
+Business-centre UI presentable; data tidier.

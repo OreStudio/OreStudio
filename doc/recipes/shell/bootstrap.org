@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: a89f12b0-c212-4fd4-b034-f102fc6cff68
+:END:
+#+title: Bootstrap
+#+description: Bootstrap
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Create the initial admin account.
+
+#+name: initial-bootstrap
+#+begin_src ores-shell :exports none
+bootstrap newuser3 Secure-Password-123 newuser3@test.com
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<initial-bootstrap>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+
+⚠ WARNING: System is in BOOTSTRAP MODE
+  System in BOOTSTRAP MODE - awaiting initial admin account creation
+  Use 'bootstrap <username> <password> <email>' to create the initial admin account.
+
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Initial admin account created successfully!
+  Account ID: 019c3245-5f29-7b86-8630-28988275db8a
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
+  You can now login with the credentials provided.
+ores-shell> Bye!
+#+end_example

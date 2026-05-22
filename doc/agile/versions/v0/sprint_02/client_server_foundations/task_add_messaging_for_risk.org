@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 3afa8a40-2b03-4317-8ff0-96ef5e2b9249
+:END:
+#+title: Task: Add messaging for risk
+#+description: Wire the risk module as the first consumer of the comms library — request/response over cobalt.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :client_server:risk:messaging:client_server_foundations:sprint_02:v0:
+#+owner: marco
+#+created: 2025-09-26
+#+updated: 2025-09-30
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Use the risk module as the first real consumer of the comms layer:
+define a small request/response surface, implement it on both
+client and server, and prove it works end-to-end.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] |
+| Now          | Completed 2025-09-30.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2025-09-30                                                             |
+
+* Acceptance
+
+- Risk message types defined in =ores.comms=.
+- Client can send a risk request and receive a response.
+- Server-side handler invokes the risk module and returns results.
+- An end-to-end test exercises one request/response pair.
+
+* Notes
+
+- This is the first time the architecture's value is visible to a
+  user-facing module; the pattern propagates to later modules.
+
+* Result
+
+- Risk request/response operational over cobalt.

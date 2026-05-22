@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: f9ffc44e-5937-42b6-925c-9c45d3c4576e
+:END:
+#+title: Task: Investigate how performed by is being set
+#+description: Audit the source of performed_by; should be the database account.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :audit:iam:analysis:audit_trail_and_system_account:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Audit the source of =performed_by= in the codebase to ensure it's always the database account.
+
+* Status
+
+| Field        | Value                                                                       |
+|--------------+-----------------------------------------------------------------------------|
+| State        | DONE                                                                        |
+| Parent story | [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]] |
+| Now          | Completed 2026-02-16.                                                       |
+| Waiting on   | None.                                                                       |
+| Next         | None.                                                                       |
+| Last touched | 2026-02-16                                                                  |
+
+* Acceptance
+
+- All sites assigning =performed_by= surveyed.
+- Outcome: =performed_by= comes from the database account; client-supplied values rejected.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Sets up the follow-up: messages-should-not-set-modified-by.
+
+* Result
+
+performed_by sourcing standardised.

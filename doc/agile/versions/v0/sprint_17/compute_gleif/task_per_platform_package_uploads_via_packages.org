@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 39d52674-0d37-41a5-8c8a-42402b883fd5
+:END:
+#+title: Task: Per-platform package uploads via Packages tab
+#+description: Follow-up to #714. That PR moved package_uri to the junction and introduced vcpkg triplets; this one makes the Qt dialog
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compute_gleif:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/719
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e16beabb-cc59-4d6c-b216-dacc1e922047][Compute and GLEIF]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a Packages tab to the app version dialog with a lifecycle-tracking table widget for per-platform file upload (NoFile → Selected → Uploading → Uploaded/Failed).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:e16beabb-cc59-4d6c-b216-dacc1e922047][Compute and GLEIF]] |
+| Now          | Completed 2026-04-24.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- A Packages tab is present in the app version dialog with a lifecycle-tracking table widget.
+- File upload transitions through NoFile → Selected → Uploading → Uploaded/Failed states.
+- PR #703 landed.
+
+* Plan
+
+* Notes
+
+** Summary
+
+Follow-up to #714. That PR moved package_uri to the junction and introduced vcpkg triplets; this one makes the Qt dialog usable end-to-end, aligns the sample tarball with the new convention, and covers the junction sync path with tests.
+
+- *Packages tab (=4e190b3a2=)* — new tab with a =QTableWidget= showing one row per assigned platform (Platform / File / Status / Browse…). Each row tracks a lifecycle: =NoFile → Selected → Uploading → Uploaded/Failed=. Edit mode pre-seeds rows as =Uploaded= from =list_app_version_platforms= so existing versions don't have to re-upload. Rows sync with the Platforms tab's assigned list; add/remove there adds/removes here.
+- *Save+Upload collapsed* — the old two-button dance (Upload Package vs Save) made ordering implicit and easy to get wrong with per-triplet blobs. Save now uploads every pending file in parallel, then fires =save_app_version_request= once all PUTs succeed. Validation requires a file or remote URI on every assigned row.
+- *Package rename (=405b6c225=)* — =external/ore/packages/ore_1.8.15.0.tar.gz= → =ore-1.8.15.0-x64-linux.tar.gz=; binary inside renamed to match (=ore-1.8.15.0-x64-linux=); =manifest.json= updated. SQL seed already expected this name.
+- *Integration tests (=ca491a015=, =49599a15b=)* — new =ores.compute.core.tests= cover =app_version_platform_repository=: initial insert, swap (partial overlap), empty-set drop, idempotent re-save (exercises the gist exclusion constraint on =tstzrange(valid_from, valid_to)=), unknown-id list, and filtering by =app_version_id=. All 25 assertions green locally.
+
+** Follow-ups (deferred)
+
+- =ores.qt.lib= exposes its =_autogen/include= as a PUBLIC include, which leaks stale =ui_*.h= copies from previously-moved dialogs to downstream targets. It bit us during this branch (stale =ui_AppVersionDetailDialog.h= shadowed the fresh compute one). Long-term fix is to move =ui_*.h= includes from =MainWindow.hpp=/=AboutDialog.hpp= to their =.cpp= via pimpl so the autogen dir can go PRIVATE.
+- Handler-level tests for =save_app_version_request= (round-trip through NATS) aren't here — they'd cover what the repository tests already do from a different angle, so deferring unless behaviour starts drifting.
+
+
+* Result
+
+Landed.

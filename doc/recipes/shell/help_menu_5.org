@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: a9e5d960-d1dc-43b5-84e9-f7730d927080
+:END:
+#+title: Help Menu
+#+description: Help Menu
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:currencies:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+name: help-currencies-exit
+#+begin_src ores-shell :exports none
+currencies
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-currencies-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> currencies> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - get
+	Retrieve currencies from the server (paginated)
+ - add <string> <string> <string> <string> <string> <string> <string>
+	Add a currency (iso_code name numeric_code symbol fractions reason_code "commentary")
+ - delete <string>
+	Delete a currency by ISO code
+ - history <string>
+	Get version history for a currency by ISO code
+ - ores-shell
+	(menu)
+currencies> Bye!
+#+end_example

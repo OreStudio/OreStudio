@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 0e9d3dcd-0e8d-4f5a-a675-c88e9bc125d1
+:END:
+#+title: Logout
+#+description: Logout
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Explicit logout.
+
+#+name: explicit-logout
+#+begin_src ores-shell :exports none
+accounts login newuser3 Secure-Password-123
+accounts logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<explicit-logout>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Login successful!
+  User: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ores-shell> ✓ Logged out successfully.
+ores-shell> Bye!
+#+end_example

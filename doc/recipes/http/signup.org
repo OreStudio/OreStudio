@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 88104df6-6db1-4ee9-a572-7bbc7cf67d86
+:END:
+#+title: Signup
+#+description: Signup
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:authentication_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Create a new account (when self-registration is enabled).
+
+#+begin_src verb :wrap src json
+post /auth/signup
+Accept: application/json
+Content-Type: application/json
+
+{
+    "username": "newuser100",
+    "email": "newuser@example.com",
+    "password": "MyP@ssword456"
+}
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+Content-Length: 37
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "error": "User signups are disabled"
+}
+#+end_src

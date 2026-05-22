@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 15ea20f9-ce64-49b8-b64a-5337f040192d
+:END:
+#+title: Task: Create an icon for the application
+#+description: Design an application icon for ORE Studio and embed it in the Qt resources and the OS package metadata.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt:ux:branding:icon:ui_polish_and_branding:sprint_04:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-22
+#+updated: 2025-11-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2a9269e4-049a-49c3-9354-f26c95390e1f][UI polish and branding]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the placeholder application icon (a copy of Dogen's)
+with one made for ORE Studio. Embed in Qt resources and the OS package
+metadata so it shows up in window managers and installers.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:2a9269e4-049a-49c3-9354-f26c95390e1f][UI polish and branding]] |
+| Now          | Completed 2025-11-22.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2025-11-22                                                          |
+
+* Acceptance
+
+- Project-specific icon designed and committed.
+- Embedded in Qt resources.
+- OS package metadata uses the new icon.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- From the v0 entry: "We copied the Dogen icon to get us going. We should really grab our own logo."
+
+* Result
+
+ORE Studio application icon in place across Qt resources and packaging.

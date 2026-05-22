@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 3cc3a006-31a6-424f-8176-a1ba8ca9a2b5
+:END:
+#+title: Help
+#+description: Help
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:countries:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+name: help-countries-exit
+#+begin_src ores-shell :exports none
+countries
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-countries-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> countries> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - get
+	Retrieve all countries from the server
+ - add <string> <string> <string> <string> <string> <string> <string>
+	Add a country (alpha2 alpha3 numeric name official_name reason_code "commentary")
+ - delete <string>
+	Delete a country by alpha-2 code
+ - history <string>
+	Get version history for a country by alpha-2 code
+ - ores-shell
+	(menu)
+countries> Bye!
+#+end_example

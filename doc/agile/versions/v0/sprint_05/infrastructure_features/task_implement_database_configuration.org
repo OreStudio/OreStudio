@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 1d788878-759e-402b-a948-0f035cda9bf2
+:END:
+#+title: Task: Implement database configuration
+#+description: Replace hard-coded database settings with configuration: CLI flags + env vars + config file, in both console and Qt UI.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :configuration:postgres:cli:infrastructure_features:sprint_05:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-20
+#+updated: 2025-11-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:645df0b4-51b5-40bc-be07-0ab986111653][Infrastructure features]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace hard-coded database settings in both the console and
+Qt UI with proper configuration: CLI flags + environment variables + a
+config file, with sensible defaults.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | DONE                                                                 |
+| Parent story | [[id:645df0b4-51b5-40bc-be07-0ab986111653][Infrastructure features]] |
+| Now          | Completed 2025-11-20.                                                |
+| Waiting on   | None.                                                                |
+| Next         | None.                                                                |
+| Last touched | 2025-11-20                                                           |
+
+* Acceptance
+
+- Console accepts =--database-*= flags / env vars.
+- Qt UI reads the same configuration mechanism.
+- Defaults are wired through =boost::program_options=, not ad-hoc code.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Closes a thread that started in sprint 03 (=Add database command-line arguments to service=) and finishes the UI side.
+
+* Result
+
+Database configuration unified across console and Qt UI.

@@ -2,6 +2,7 @@
 :ID: 9392f2f3-6ecf-4bd7-82d8-9b88175abfba
 :END:
 #+title: Generation Context Design
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

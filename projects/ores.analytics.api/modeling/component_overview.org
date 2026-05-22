@@ -4,10 +4,17 @@
 #+title: ores.analytics.api
 #+description: Domain types and NATS protocol schemas for the analytics component.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :analytics:api:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.analytics.api component diagram
+#+caption: ores.analytics.api
+[[file:ores.analytics.api.png][file:ores.analytics.api.png]]
 
 * Summary
 

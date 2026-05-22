@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 0af167ee-420c-427c-9eda-88a41951eda7
+:END:
+#+title: Task: Fix broken Windows build due to local time
+#+description: Resolve a Windows-only build break triggered by a local-time API mismatch.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :build:windows:bug_fix:build_and_packaging:sprint_04:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-20
+#+updated: 2025-11-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:c2e401c5-3f2b-4910-a91a-82dcf1b826e1][Build and packaging]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix a Windows-only build break caused by =std::localtime=
+being deprecated under MSVC's secure-CRT rules. Route via =localtime_s= on
+Windows / =localtime_r= elsewhere.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:c2e401c5-3f2b-4910-a91a-82dcf1b826e1][Build and packaging]] |
+| Now          | Completed 2025-11-20.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2025-11-20                                                       |
+
+* Acceptance
+
+- Windows clang build compiles =-Werror= cleanly.
+- Behaviour unchanged on Linux / macOS.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Error: =error: 'localtime' is deprecated: This function or variable may be unsafe. Consider using localtime_s instead.=
+- Adopted a =safe_localtime= helper that picks =localtime_s= on Windows and =localtime_r= elsewhere.
+
+* Result
+
+Windows clang build green.

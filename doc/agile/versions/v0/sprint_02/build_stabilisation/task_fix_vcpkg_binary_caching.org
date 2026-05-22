@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 494eb23e-8d38-4372-bf1b-7d23ff07473a
+:END:
+#+title: Task: Fix vcpkg binary caching
+#+description: Get vcpkg binary caching working so CI doesn't rebuild every dependency on every push.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :build:vcpkg:caching:ci:bug_fix:build_stabilisation:sprint_02:v0:
+#+owner: marco
+#+created: 2025-10-01
+#+updated: 2025-10-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+vcpkg binary caching was disabled or misconfigured, so every CI run
+rebuilt the dependency closure. Restore caching so dependencies are
+fetched from a cache hit on most runs.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] |
+| Now          | Completed 2025-10-08.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2025-10-08                                                       |
+
+* Acceptance
+
+- vcpkg cache hit rate visible and high on subsequent CI runs.
+- Build warnings about binary caching resolved.
+- Documentation of cache configuration committed.
+
+* Notes
+
+- Root cause analysis was the bulk of the time: separating
+  "warning is the problem" from "caching is actually off".
+
+* Result
+
+- vcpkg binary caching restored; CI dependency stage drops from
+  minutes to seconds on cache hit.

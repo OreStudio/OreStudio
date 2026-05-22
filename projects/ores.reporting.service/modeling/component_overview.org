@@ -4,10 +4,17 @@
 #+title: ores.reporting.service
 #+description: NATS service entrypoint for the reporting domain.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :reporting:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.reporting.service component diagram
+#+caption: ores.reporting.service
+[[file:ores.reporting.service.png][file:ores.reporting.service.png]]
 
 * Summary
 

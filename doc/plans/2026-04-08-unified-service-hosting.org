@@ -1,4 +1,5 @@
 #+TITLE: Unified Service Hosting: Normalise All Services to ores.service Infrastructure
+#+version: 1
 #+DATE: 2026-04-08
 #+AUTHOR: Marco Craveiro
 #+STATUS: IN PROGRESS

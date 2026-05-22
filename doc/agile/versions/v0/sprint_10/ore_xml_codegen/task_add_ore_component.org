@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 27b76a70-df1d-4c66-89a9-fba3cb801353
+:END:
+#+title: Task: Add ores.ore component for import/export
+#+description: Dedicated component for ORE (Open Source Risk Engine) import/export work; directory + CMake + stubs + arch docs updated.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ore:component:import_export:ore_xml_codegen:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a dedicated =ores.ore= component to host ORE (Open Source Risk Engine) import + export work.
+
+* Status
+
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | DONE                                                         |
+| Parent story | [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]] |
+| Now          | Completed 2026-01-25.                                        |
+| Waiting on   | None.                                                        |
+| Next         | None.                                                        |
+| Last touched | 2026-01-25                                                   |
+
+* Acceptance
+
+- Component scaffolded: directory + CMake + modeling + test stubs.
+- Build green from the start.
+- System architecture diagrams updated.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+FPML analysis found that import/export code scattered across components; concentrating it here makes the boundaries cleaner.
+
+* Result
+
+Component in place, ready for the xsdcpp work.

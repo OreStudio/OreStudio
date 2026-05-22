@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: fec5735e-857f-487d-86a2-9f039dbf4e0d
+:END:
+#+title: Task: Fix NATS cert SAN generation on Windows
+#+description: Replace process substitution with temporary file for OpenSSL SAN extension; ensure compatibility with MSYS2/Git Bash; cleanup on openssl failure.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :windows:nats:certs:openssl:san:windows_portability_fixes:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace process substitution with temporary file for OpenSSL SAN extension; ensure compatibility with MSYS2/Git Bash; cleanup on openssl failure.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] |
+| Now          | Completed 2026-04-11.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2026-04-11                                                             |
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =git log= for the per-PR breakdown.
+
+* Result
+
+Landed.

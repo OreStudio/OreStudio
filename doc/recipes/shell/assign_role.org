@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 67378649-0c9d-40d0-b348-dbc83ac90928
+:END:
+#+title: Assign Role
+#+description: Assign Role
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Assign a role to an account.
+
+#+name: assign-role
+#+begin_src ores-shell :exports none
+roles list
+accounts assign-role 019c2d92-8448-7158-90d0-ccb8b5f7e812 24a02cd6-1a74-4bdf-9169-408227402106
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<assign-role>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++--------------------------------------+-------------+---------------------------------------------------------------+--------------------------------------------------------------------------------------+-------------+---------+
+| ID (UUID)                            | Name        | Description                                                   | Permissions                                                                          | Recorded By | Version |
++--------------------------------------+-------------+---------------------------------------------------------------+--------------------------------------------------------------------------------------+-------------+---------+
+| 24a02cd6-1a74-4bdf-9169-408227402106 | Operations  | Operations - currency management and account viewing          | iam::accounts:read, refdata::currencies:create, refdata::currencies:delete (+4 more) | postgres    | 1       |
+| abc8bc10-01d7-496f-a48b-3160e868b514 | Sales       | Sales operations - read-only currency access                  | refdata::currencies:read, variability::flags:read                                    | postgres    | 1       |
+| 43edf938-fb1e-4d0c-b752-a94362f5f194 | SuperAdmin  | Platform super administrator with tenant management access    | *, iam::tenants:create, iam::tenants:delete (+5 more)                                | postgres    | 1       |
+| fbd1640c-3d8b-4aff-baae-7db0e34e54f5 | Support     | Support - read-only access to all resources and admin screens | iam::accounts:read, iam::login_info:read, iam::roles:read (+3 more)                  | postgres    | 1       |
+| 2831ee60-87d8-4ac1-b559-4744d8e609d8 | TenantAdmin | Tenant administrator with full access within a tenant         | *                                                                                    | postgres    | 1       |
+| cb3ff98c-f3e8-4f63-a091-2df4c5516123 | Trading     | Trading operations - currency read access                     | refdata::currencies:history, refdata::currencies:read, variability::flags:read       | postgres    | 1       |
+| 05121548-c4c7-47c6-8d43-384177672a4a | Viewer      | Viewer - basic read-only access to domain data                | refdata::currencies:read, variability::flags:read                                    | postgres    | 1       |
++--------------------------------------+-------------+---------------------------------------------------------------+--------------------------------------------------------------------------------------+-------------+---------+
+
+
+ores-shell> V Role assigned successfully!
+  Account ID: 019c2d92-8448-7158-90d0-ccb8b5f7e812
+  Role ID:    24a02cd6-1a74-4bdf-9169-408227402106
+ores-shell> Bye!
+#+end_example

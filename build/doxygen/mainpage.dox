@@ -1,59 +1,23 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 
 /**
- * @mainpage ORE Studio
+ * @mainpage ORE Studio — C++ API reference
  *
- * @brief **ORE Studio** is a graphical wrapper around Acadia's [Open Source
- * Risk Engine (ORE)](https://github.com/OpenSourceRisk/Engine), which itself is
- * built on top of [QuantLib](https://github.com/lballabio/QuantLib). This
- * open-source project has **no affiliation whatsoever** with Acadia, ORE, or
- * QuantLib.
+ * This site is the low-level, auto-generated C++ API reference for the
+ * ORE Studio codebase. The conceptual material — architecture,
+ * components, agile process, recipes, glossary — lives in the project
+ * documentation at:
  *
- * @section overview_section Overview
+ * - <a href="https://orestudio.github.io/OreStudio/doc/doc.html">orestudio.github.io/OreStudio/doc/doc.html</a>
  *
- * ORE Studio is a C++23 application providing persistent storage, graphical
- * user interface, and orchestration tools for quantitative risk analysis using
- * ORE. The system extends ORE with:
+ * Start there if you arrived expecting prose. This site is for browsing
+ * namespaces, classes, files, and the inheritance graph after you know
+ * /what/ you are looking at.
  *
- * - **Persistent Storage**: PostgreSQL database with temporal versioning
- * - **Graphical Interface**: Qt 6-based desktop application
- * - **Web Interface**: Wt-based browser access
- * - **REST API**: HTTP server for web clients and integrations
- * - **Import/Export**: CLI tools for JSON, XML, and CSV formats
- * - **Client-Server**: SSL/TLS secured binary protocol
+ * @section quick_links Quick links
  *
- * @section documentation_section Documentation
- *
- * @subsection architecture System Architecture
- *
- * For system architecture, component dependencies, and layer organization, see
- * the [System Model](https://orestudio.github.io/OreStudio/projects/modeling/system_model.html).
- *
- * @subsection building Building from Source
- *
- * For build instructions including CMake presets and common targets, see the
- * [CMake Runner Skill](https://orestudio.github.io/OreStudio/doc/skills/cmake-runner/skill.html).
- *
- * @subsection explore_api Explore the API
- *
- * Start with these key namespaces:
- *
- * - ores::risk - Core ORE domain types (currencies, countries, etc.)
- * - ores::iam - User account management and authentication
- * - ores::comms - Client-server communication protocol
- * - ores::qt - Qt GUI application components
- * - ores::database - PostgreSQL connectivity and repository helpers
- *
- * @section resources_section Resources
- *
- * - **Website**: [ORE Studio](https://orestudio.github.io/OreStudio/index.html)
- * - **Source Code**: [GitHub](https://github.com/OreStudio/OreStudio)
- * - **Agile Updates**: [Sprint Notes](https://orestudio.github.io/OreStudio/doc/agile/agile.html)
- *
- * @subsection related_projects Related Projects
- *
- * - **QuantLib**: [quantlib.org](https://www.quantlib.org)
- * - **Open Source Risk**: [opensourcerisk.org](https://www.opensourcerisk.org)
- * - **ORE GitHub**: [OpenSourceRisk/Engine](https://github.com/OpenSourceRisk/Engine)
+ * - <a href="https://orestudio.github.io/OreStudio/doc/doc.html">Project documentation</a> — entry point.
+ * - <a href="https://orestudio.github.io/OreStudio/index.html">ORE Studio home page</a>.
+ * - <a href="https://github.com/OreStudio/OreStudio">GitHub repository</a>.
  *
  */

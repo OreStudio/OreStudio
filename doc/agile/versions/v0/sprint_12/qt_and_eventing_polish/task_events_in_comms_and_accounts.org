@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 104d17ea-b2a7-42f9-865a-0488db9cca81
+:END:
+#+title: Task: Use events in comms and accounts
+#+description: Emit events for connect, disconnect, retry, login, logout via the new event bus.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :eventing:comms:accounts:qt_and_eventing_polish:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Use the new event bus to emit lifecycle events for comms and accounts.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]] |
+| Now          | Completed 2026-02-10.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-02-10                                                          |
+
+* Acceptance
+
+- Events for connect, disconnect, retry.
+- Events for login, logout.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Now that the event bus exists, downstream UI can subscribe instead of polling.
+
+* Result
+
+Lifecycle events flow through the event bus.

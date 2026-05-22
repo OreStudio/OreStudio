@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 06c56ca2-9846-4dc9-b2f3-271bf4f084ce
+:END:
+#+title: Story: CLI entity syntax follow-up
+#+description: Clean up the snags left by sprint 05's entity-first CLI/REPL reshape; add top-level login and logout commands in the shell.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :cli:shell:repl:sprint_06:v0:
+#+created: 2025-12-13
+#+updated: 2025-12-13
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Tidy the loose ends left by sprint 05's entity-first CLI/REPL
+reshape, and surface login/logout as top-level shell commands rather
+than under the IAM entity submenu.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]] |
+| Now           | Completed 2025-12-13.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-12-13                                             |
+
+
+#+predecessor: 7be09d1c-e25a-4783-a911-c37dec55cc43
+
+Continued from: [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]].
+
+* Acceptance
+
+- Argument-validation edge cases addressed.
+- Help text consistent across entities.
+- =login= and =logout= work as top-level shell commands.
+
+* Tasks
+
+In execution order:
+
+- [[id:25290cbf-79ac-4841-89b5-1d660d24859d][Entity syntax refactor snags]]
+- [[id:e95678aa-8849-4706-a985-f5d4d31238f1][Add top-level login and logout commands in shell]]
+
+Additional v0 entries belonging here, not migrated as full tasks:
+
+- Retest all recipes after latest changes.
+
+* Decisions
+
+- /Login / logout get top-level placement/ :: the entity-first rule
+  is good but these are too frequent to hide in a submenu.
+
+* See also
+
+- [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]] (sprint 05) — predecessor.
+- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] and [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the components polished here.

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 293a6f5a-5027-41c0-ac4e-00e4140a0f44
+:END:
+#+title: Task: Add workspace_id to codegen pipeline (Phases 1-4)
+#+description: - Phase 4: propagate `workspace_id` through the C++ codegen layer — adds `workspace_id` field to all domain entities fla
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :workspace:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/773
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Propagate workspace_id through the C++ codegen pipeline (Phases 1-4): add the field to all models flagged has_workspace_id and fix generator template defects.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]] |
+| Now          | Completed 2026-05-19.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Workspace ID is propagated through the codegen pipeline end-to-end.
+- PR landed.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- Phase 4: propagate =workspace_id= through the C++ codegen layer — adds =workspace_id= field to all domain entities flagged with =has_workspace_id= in their model JSON
+- Fix generator template to use =.value_or(tenant_id::system())= instead of =.value()= to avoid crash when =generation_context= has no valid UUID tenant_id string
+- Standardise =change_reason_code= to ="system.test"= in all generated generators (was inconsistently ="system.new"= in some)
+- Add =cpp.table_display= entries to =lifecycle_event=, =trade_identifier=, =trade=, and =report_definition= models; implement the previously-stub =convert_to_table= functions
+- Fix stale =get_books_request= usages in =ores.qt.trading= that referenced removed =offset=/=limit= fields and old =HistoryResult::versions= field
+- Fix =tenant_id= strong-type assignment in =organisation_publisher_integration_tests=
+- Add =${ORES_TEST_ENV_CMD}= prefix to =add_custom_target= COMMAND in all 12 test =CMakeLists.txt= files that were missing it, so =.env= DB credentials are injected when running =make rat=
+- Add codegen drift remediation plan at =doc/plans/2026-05-19-qt-trading-codegen-drift.org=
+
+
+* Result
+
+Landed.

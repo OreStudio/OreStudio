@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: ef555d10-3fd3-4928-8e43-e63284d7706f
+:END:
+#+title: Story: Party database groundwork
+#+description: First-cut party table structure at the database layer; FpML business-center anchored.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :party:sql:fpml:sprint_09:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Lay the first SQL table for =party= so subsequent sprints can build
+the domain layer + UI on top. Postponed within sprint 09.
+
+* Status
+
+| Field         | Value                                                             |
+|---------------+-------------------------------------------------------------------|
+| State         | BACKLOG                                                           |
+| Parent sprint | [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]]            |
+| Now           | Postponed in sprint 09; carried forward.                          |
+| Waiting on    | A sprint with the slot to land the table + domain layer together. |
+| Next          | Return alongside the party domain layer work.                     |
+| Last touched  | 2026-01-20                                                        |
+
+
+#+successor: 700d4325-2ad1-4e0d-b6af-900abbe1a66e
+
+Continued in: [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] (sprint 10) —
+lands the 13 reference-data types needed before party can be
+implemented.
+
+* Acceptance
+
+- =party_tbl= column list documented and reviewed.
+- FK targets identified (tenant, party_type scheme, business_center).
+- Task ready to pick up in a later sprint.
+
+* Tasks
+
+In execution order:
+
+- [[id:992aad62-c371-4e93-b3d2-311d250aa41a][Party table structure]]
+
+* Decisions
+
+- /Postpone rather than half-do/ :: only 20 minutes of v0 work landed; better to roll the table-creation into the sprint that also tackles the domain layer.
+
+* Out of scope
+
+- Party domain layer (C++).
+- Party UI.
+
+* See also
+
+None.

@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: b6496640-b87d-4f86-bfcb-a693171a42c7
+:END:
+#+title: Upload Workunit Config
+#+description: Upload Workunit Config
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:compute_file_storage_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Upload the engine config file (e.g. ORE XML) for a workunit.
+
+#+begin_src verb :wrap src text
+post http://localhost:8080/api/v1/compute/workunits/{{(verb-var workunit_id)}}/config
+Content-Type: application/octet-stream
+
+<<ore-config.xml
+#+end_src

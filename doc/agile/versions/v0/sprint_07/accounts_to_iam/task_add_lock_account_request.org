@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: c4f2b895-852b-4f29-b04f-d78f674609c1
+:END:
+#+title: Task: Add lock account request
+#+description: Add a protocol message + service handler to lock an account (administrative action, separate from auto-lock on failed logins).
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :iam:protocol:security:accounts_to_iam:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:6b57c190-4bb7-4f63-bf3d-7fb6d81d8d94][Accounts to IAM]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add an explicit /lock account/ protocol message + handler so an administrator can lock an account (distinct from automatic lock-on-too-many-failed-logins).
+
+* Status
+
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | DONE                                                         |
+| Parent story | [[id:6b57c190-4bb7-4f63-bf3d-7fb6d81d8d94][Accounts to IAM]] |
+| Now          | Completed 2025-12-22.                                        |
+| Waiting on   | None.                                                        |
+| Next         | None.                                                        |
+| Last touched | 2025-12-22                                                   |
+
+* Acceptance
+
+- Protocol message defined and round-trips client↔server.
+- Handler updates account state in Postgres.
+- CLI / shell entry point exercises the path.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Pairs with the failed-login auto-lock from a prior sprint; this one is the manual surface.
+
+* Result
+
+Admins can lock accounts on demand.

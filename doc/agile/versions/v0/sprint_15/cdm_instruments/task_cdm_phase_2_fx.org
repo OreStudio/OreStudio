@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 4def3837-b3d1-488d-afa5-c247b04f13bd
+:END:
+#+title: Task: CDM Phase 2: FX instrument domain model
+#+description: FX instruments: FxForward, FxSwap, FxOption. SQL: ores_trading_fx_instruments_tbl (bought/sold currencies + amounts, value_date, settlement, option fields). Domain + repo + service + Qt UI (Model + MDI + Detail + History + Controller).
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :cdm:fx:trading:instrument:domain:qt:sql:cdm_instruments:sprint_15:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Phase 2: FX instruments (FxForward, FxSwap, FxOption).
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]] |
+| Now          | Completed 2026-03-27.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2026-03-27                                                                |
+
+* Acceptance
+
+- SQL: ores_trading_fx_instruments_tbl + notify trigger (bought/sold currencies + amounts, value_date, settlement, option fields for FxOption); trading_create.sql + drop_trading.sql.
+- Domain: fx_instrument struct with JSON + table I/O + generator + protocol.
+- Repository: entity + mapper + repository; fx_instrument_service.
+- Server: messaging handler + registrar.
+- Qt UI: ClientFxInstrumentModel + FxInstrumentMdiWindow + FxInstrumentDetailDialog + FxInstrumentHistoryDialog + FxInstrumentController + MainWindow integration.
+- Database recreate required to pick up the new table.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Phase 2 of the four-phase CDM-inspired rollout; database recreate is the deferred follow-up.
+
+* Result
+
+FX instruments complete.

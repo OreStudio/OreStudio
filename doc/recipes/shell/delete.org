@@ -1,0 +1,26 @@
+:PROPERTIES:
+:ID: 51b7adaa-2673-444e-a4ac-9367c4add568
+:END:
+#+title: Delete
+#+description: Delete
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:currencies:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Delete a currency by ISO code.
+
+#+name: currencies-delete
+#+begin_src ores-shell :exports none
+currencies delete TEST700
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<currencies-delete>>
+EOF
+#+end_src

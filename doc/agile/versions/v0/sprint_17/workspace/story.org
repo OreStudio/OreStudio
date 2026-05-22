@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 77bf049f-ed38-4998-afa3-672e25895f9a
+:END:
+#+title: Story: Workspace
+#+description: Bitemporal schema, service layer, UI, lifecycle operations, workspace_id codegen propagation (Phases 1-4), controller wiring, and Data Workshop UI.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :workspace:codegen:qt:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Introduce the Workspace entity: bitemporal schema, service layer, CRUD UI,
+lifecycle operations, and codegen pipeline propagation for workspace_id
+(Phases 1-4 including controller wiring and the Data Workshop UI tab).
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-05-20.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-05-20                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- [[id:7ec6a5b1-5e00-44f3-ba8b-8143621667b2][Task: Workspace: bitemporal schema, service layer, UI, and lifecycle operations]]
+- [[id:293a6f5a-5027-41c0-ac4e-00e4140a0f44][Task: Add workspace_id to codegen pipeline (Phases 1-4)]]
+- [[id:15c29ef8-6012-480f-8d11-81701591921e][Task: [workspace] Phase 3+4: controller wiring and Data Workshop UI]]
+- [[id:e56d4ae5-9d91-4943-ac74-f7d9d3a95987][Task: docs: Update workspace design plan with Phase 3–4 progress]]
+* Decisions
+
+- /Bitemporal from day one/ :: the workspace schema uses bitemporal tracking
+  (valid_from / valid_to) to support audit trails and rollback without a
+  separate event log.
+
+* Out of scope
+
+- Workspace sharing / permissions (deferred to a later sprint).
+
+* See also
+
+=doc/plans/2026-05-17-workspace-design.org= and
+=doc/plans/2026-05-19-workspace-id-codegen-propagation.org=

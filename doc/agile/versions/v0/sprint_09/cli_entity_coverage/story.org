@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 09a8d544-22f3-491a-82a9-306b1aa7c756
+:END:
+#+title: Story: CLI entity coverage
+#+description: Add list/delete CLI commands for roles, permissions, countries, change reasons, change-reason categories; refactor parsers behind a generic helper.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :cli:refactor:entity_coverage:sprint_09:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Bring the CLI up to date with the entities added in earlier sprints,
+then refactor the resulting parsers behind a generic helper to remove
+boilerplate.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]] |
+| Now           | Completed 2026-01-12.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-12                                             |
+
+* Acceptance
+
+- list + delete commands cover roles, permissions, countries, change_reasons, change_reason_categories.
+- Parsers refactored behind =simple_entity_config= + =handle_simple_entity_command=.
+- Net reduction ~314 lines across the five parsers.
+
+* Tasks
+
+In execution order:
+
+- [[id:3d5f5bb6-056a-4533-9b18-7222d9b9b84f][Add missing entities to CLI]]
+- [[id:61fb71d8-9fd2-4739-a20a-7cadb3f83f4a][Refactor CLI entity parsers with generic helper]]
+
+* Decisions
+
+- /Write all five, then extract the helper/ :: rule-of-three lets us see the shape clearly before generalising.
+
+* Out of scope
+
+- Full CRUD on these entities — only list + delete in this pass.
+
+* See also
+
+- [[id:de76313f-3c9e-441a-aa5e-6212a3841eed][CLI entity creator skill]] (sprint 08) — the skill this story exercises.

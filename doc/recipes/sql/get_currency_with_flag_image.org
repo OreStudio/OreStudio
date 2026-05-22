@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 96eed88d-58c1-487a-8df4-16021b211b36
+:END:
+#+title: Get Currency with Flag Image
+#+description: Get Currency with Flag Image
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:currencies:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select c.iso_code, c.name, c.symbol, i.key as flag_key
+from ores.currencies c
+left join ores.currency_images ci on ci.iso_code = c.iso_code
+  and ci.valid_to = '9999-12-31 23:59:59'::timestamptz
+left join ores.images i on i.image_id = ci.image_id
+  and i.valid_to = '9999-12-31 23:59:59'::timestamptz
+where c.valid_to = '9999-12-31 23:59:59'::timestamptz
+  and c.iso_code = 'GBP';
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| iso_code | name                   | symbol | flag_key |
+|----------+------------------------+--------+----------|
+| GBP      | British Pound Sterling | £      | gb       |
+#+end_example

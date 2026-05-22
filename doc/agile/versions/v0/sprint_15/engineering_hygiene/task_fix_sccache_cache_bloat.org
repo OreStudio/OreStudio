@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: d89d5322-3305-4438-bf79-0dc92e4f6bf2
+:END:
+#+title: Task: Fix sccache cache bloat causing slow/cold builds
+#+description: GitHub Actions cache had hit 11.5 GB (over the 10 GB repo limit), causing LRU eviction of sccache entries and forcing cold full rebuilds (>2h CI). Root causes: per-PR sccache saves (12 entries × ~1 GB), sccache limit too small (1000M caused within-build eviction for 1,362 files), no cross-PR cache sharing meant Qt + sccache duplicated per PR.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ci:sccache:cache:performance:engineering_hygiene:sprint_15:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:bc195cb4-4cbf-4d9d-8685-8ce3304da3fe][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the GitHub Actions cache bloat that was forcing CI builds to start cold from sccache.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:bc195cb4-4cbf-4d9d-8685-8ce3304da3fe][Engineering hygiene]] |
+| Now          | Completed 2026-03-24.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2026-03-24                                                       |
+
+* Acceptance
+
+- GitHub cache size dropped back below the 10 GB repo limit (was at 11.5 GB).
+- Per-PR sccache saves rationalised.
+- sccache limit increased to avoid within-build LRU eviction across 1,362 source files.
+- Cross-PR cache sharing avoids Qt + sccache duplication.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+CI was taking 2+ hours for trivial single-file changes; the cache bloat was the root cause.
+
+* Result
+
+CI builds back to expected times.

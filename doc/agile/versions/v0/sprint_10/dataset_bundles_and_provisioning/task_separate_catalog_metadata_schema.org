@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 1b78d767-89d3-4646-93db-c8297a66b093
+:END:
+#+title: Task: Separate catalog metadata schema from production data
+#+description: Split the monolithic ores schema into metadata (dq_*, change_control) and production (refdata_*, iam_*, assets_*, geo_*, variability_*, telemetry_*); schema-qualified references; ER generator updated; data-flow documented (unidirectional metadata → production).
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sql:schema:refactor:bootstrap:dataset_bundles_and_provisioning:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2d3d3854-748e-4df7-8bbe-e6498c598c2d][Dataset bundles and provisioning]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Split the monolithic =ores= PostgreSQL schema into =metadata=, =production=, and =public= to resolve the bootstrap chicken-and-egg.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | DONE                                                                          |
+| Parent story | [[id:2d3d3854-748e-4df7-8bbe-e6498c598c2d][Dataset bundles and provisioning]] |
+| Now          | Completed 2026-01-27.                                                         |
+| Waiting on   | None.                                                                         |
+| Next         | None.                                                                         |
+| Last touched | 2026-01-27                                                                    |
+
+* Acceptance
+
+- =metadata= schema: governance + classification + staging (=dq_*=, change_control).
+- =production= schema: operational data (=refdata_*=, =iam_*=, =assets_*=, =geo_*=, =variability_*=, =telemetry_*=).
+- All SQL uses schema-qualified names; cross-schema FK validations work.
+- Population functions correctly reference tables across schemas.
+- ER diagram generator updated for multi-schema.
+- Data-flow documented: unidirectional from metadata → production.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Without this split the bootstrap wizard can't work — catalog definitions have to exist before provisioning fills the production tables.
+
+* Result
+
+Schema split landed; bootstrap paradox resolved.

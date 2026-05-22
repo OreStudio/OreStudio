@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 8b56e6d2-03ff-4958-a086-8ddedd45a9ba
+:END:
+#+title: List Sessions
+#+description: List Sessions
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:sessions_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List session history.
+
+#+begin_src verb :wrap src json
+get /sessions?offset=0&limit=10
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 31
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "sessions": [],
+  "total_count": 0
+}
+#+end_src

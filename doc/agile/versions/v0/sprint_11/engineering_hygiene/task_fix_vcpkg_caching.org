@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 760fa2b8-3005-494c-aced-53c2d605351d
+:END:
+#+title: Task: Fix vcpkg caching (x-gha removed upstream)
+#+description: Replace the silently-removed x-gha vcpkg binary-cache backend with the files provider backed by actions/cache@v4 across 5 workflow files; saves ~21 min per build.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ci:vcpkg:cache:build:engineering_hygiene:sprint_11:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:0a69cb02-19df-4df7-bedd-81c57a604737][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore vcpkg binary caching across all five CI workflows after the =x-gha= backend was silently removed upstream.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:0a69cb02-19df-4df7-bedd-81c57a604737][Engineering hygiene]] |
+| Now          | Completed 2026-02-06.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2026-02-06                                                       |
+
+* Acceptance
+
+- =x-gha= backend replaced with =files= provider backed by =actions/cache@v4=.
+- All 5 workflows updated: canary-linux, continuous-linux, continuous-windows, continuous-macos, nightly-linux.
+- First run populates the cache; subsequent runs drop =vcpkg install= from ~21 min to seconds.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Silent upstream removal meant /every/ CI run was rebuilding 120 packages from source. The cache hit-rate is the load-bearing piece of CI speed.
+
+* Result
+
+CI back to expected times; no more 21-min vcpkg installs.

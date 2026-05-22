@@ -1,0 +1,187 @@
+:PROPERTIES:
+:ID: A1C3E5F7-92B4-4D6A-B8C2-3F1D7E9A0B5C
+:ROAM_ALIASES: symbol visibility DLL exports
+:END:
+#+title: Shared Library Symbol Visibility
+#+description: Symbol visibility at the compiler/linker level — hidden-by-default policy, boost/config.hpp export macros, and the per-library export.hpp convention.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:external:linker:visibility:cpp:
+#+created: 2024-06-15
+#+updated: 2026-05-21
+
+/Symbol visibility/ controls which names compiled into a shared
+library (=.dll= on Windows, =.so= on Linux, =.dylib= on macOS) are
+accessible to other code that links against it. The default in ORE
+Studio is /hidden-by-default/: only symbols explicitly annotated for
+export are visible to consumers. Everything else is an internal
+implementation detail. Return to [[id:cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Why it matters
+
+Correct visibility control solves three problems simultaneously:
+
+- *Windows DLL export-table limit.* The PE format caps the named-export
+  table at 65 535 entries.  A large library that exports every symbol
+  (the lazy approach) can exceed this limit and fail to link.
+- *Link-time size and speed.* Consumers only see the surface area they
+  need; the linker does not have to resolve thousands of internal names.
+- *ABI hygiene.* Unexported symbols cannot be accidentally depended on by
+  external code, making it safe to refactor internals without a binary
+  break.
+
+* Mechanism
+
+ORE Studio uses =boost/config.hpp= macros together with a per-library
+export header.  This is the same mechanism already used by
+=ores.qt.api= and is the canonical approach.
+
+** The export header
+
+Each shared library that exports symbols has an =export.hpp= file:
+
+#+begin_src c++
+// include/ores.X.COMPONENT/export.hpp
+#pragma once
+#include <boost/config.hpp>
+
+#ifdef ORES_X_COMPONENT_LIBRARY
+#  define ORES_X_COMPONENT_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_X_COMPONENT_EXPORT BOOST_SYMBOL_IMPORT
+#endif
+#+end_src
+
+=BOOST_SYMBOL_EXPORT= expands to =__declspec(dllexport)= on MSVC /
+Clang-CL and =__attribute__((visibility("default")))= on GCC/Clang.
+=BOOST_SYMBOL_IMPORT= expands to =__declspec(dllimport)= on MSVC /
+Clang-CL and the same visibility attribute on GCC/Clang.
+
+** Marking exported types
+
+Apply the macro to every class, function, or variable that must cross
+the DLL boundary:
+
+#+begin_src c++
+#include "ores.X.COMPONENT/export.hpp"
+
+struct ORES_X_COMPONENT_EXPORT my_type { ... };
+
+ORES_X_COMPONENT_EXPORT void my_function();
+#+end_src
+
+** CMakeLists.txt changes
+
+Two changes are required in the library's =src/CMakeLists.txt=:
+
+1. Define the build-side symbol so =export.hpp= expands to
+   =BOOST_SYMBOL_EXPORT=:
+
+#+begin_src cmake
+target_compile_definitions(${lib_target_name} PRIVATE
+    ORES_X_COMPONENT_LIBRARY)
+#+end_src
+
+2. Enable the visibility-hidden default on GCC/Clang so non-annotated
+   symbols are hidden automatically:
+
+#+begin_src cmake
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
+#+end_src
+
+Once all libraries carry these annotations, remove the global flag in
+the root =CMakeLists.txt=:
+
+#+begin_src cmake
+# Remove this:
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+#+end_src
+
+* Architectural rules
+
+** API libraries (=ores.X.api=)
+
+Export *all* public-facing types:
+
+- Domain structs and enums (=domain/= headers).
+- Messaging protocol types (=messaging/= headers).
+- Generator classes (=generators/= headers).
+- Table I/O types (=*_table*= headers).
+
+These types cross DLL boundaries whenever any consumer links against the
+library.  Mark every class and free function in the public headers with
+=ORES_X_API_EXPORT=.
+
+** Core libraries (=ores.X.core=)
+
+Export *only* the registration entry point.
+
+=ores.X.core= contains the implementation: repositories, services,
+mappers, and NATS message handlers.
+
+Export every symbol that crosses a shared-library boundary, determined
+empirically by linker =undefined reference= errors.  In practice this
+includes repositories, services, and any helper classes used directly
+by service executables, test binaries, or =ores.cli=.  Entity structs
+and mapper helpers that remain internal to the =.core= library itself
+do not need export annotations.
+
+The handler-registration entry point is always exported:
+
+#+begin_src c++
+ORES_X_CORE_EXPORT void register_message_handlers(
+    ores::nats::connection&);
+#+end_src
+
+Entity structs (DB row types) and mapper classes are internal
+implementation details and should *not* be exported unless a linker
+error proves otherwise.
+
+** Qt plugin DLLs (=ores.qt.X=)
+
+Qt plugin DLLs load via =QPluginLoader=.  The only required export is
+the Qt plugin factory function, which Qt's macro system handles
+automatically via =Q_PLUGIN_METADATA= and =Q_EXPORT_PLUGIN2=.
+
+Types shared *across* Qt plugins must live in =ores.qt.api= and be
+exported from there using =ORES_QT_API=.  Plugin-internal types are
+never exported.
+
+** Service executables (=ores.X.service=)
+
+Executables export nothing.  Do not add an export header.
+
+** CLI and test executables
+
+CLI (=ores.cli=) and test binaries are executables.  They may link
+against =ores.X.core= to exercise the DB layer directly, but they do
+not export symbols.
+
+* Dependency rules
+
+A consumer should link against *the lowest layer that provides what it
+needs*:
+
+| Consumer | Link against |
+|----------+-------------------------------|
+| Qt plugin | =ores.X.api= |
+| HTTP handler | =ores.X.api= |
+| Wt service | =ores.X.api= |
+| Service executable | =ores.X.core= (and thus =ores.X.api= transitively) |
+| CLI | =ores.X.core= (exercises DB directly) |
+| Test executable | =ores.X.core= or =ores.X.api= as needed |
+
+Linking a Qt plugin or HTTP handler directly to =ores.X.core= is an
+architectural violation: it bypasses the service boundary and couples
+UI/HTTP code to database implementation details.
+
+* See also
+
+- [[id:B5D2A1F3-7E94-4C8B-A2D6-G3B84F0E1567][Qt QPluginLoader Architecture Migration]] — established the pattern in
+  =ores.qt.api=.
+- [[id:F2A4C6E8-B1D3-4E5F-A7B9-2C4D6E8F0A1B][Symbol Visibility Migration Plan]] — phased rollout across all
+  libraries.

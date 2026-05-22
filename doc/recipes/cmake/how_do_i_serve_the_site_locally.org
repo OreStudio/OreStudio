@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: d560fc97-03a3-4169-aa5a-2761e9c017ec
+:END:
+#+title: How do I serve the site locally?
+#+description: Use build/scripts/serve-site.sh to compile and preview the org-mode site before pushing.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :cmake:build:site:website:recipe:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Run =build/scripts/serve-site.sh= to compile (optionally) and preview
+the org-mode site locally before pushing.  The equivalent CMake target
+is in [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]].
+
+* Question
+
+How do I preview the ORE Studio documentation site on my local machine?
+
+* Answer
+
+*Compile and serve in one step (most common):*
+
+#+begin_src sh :results verbatim
+build/scripts/serve-site.sh --compile
+#+end_src
+
+Then open =http://localhost:8000/OreStudio/= in a browser.
+
+*Serve a previously compiled build without recompiling:*
+
+#+begin_src sh :results verbatim
+build/scripts/serve-site.sh
+#+end_src
+
+*Use a different port:*
+
+#+begin_src sh :results verbatim
+build/scripts/serve-site.sh --compile --port 9000
+# or via env var:
+PORT=9000 build/scripts/serve-site.sh --compile
+#+end_src
+
+* How it works
+
+=--compile= runs =emacs -Q --script .build-site.el= from the repo root,
+which publishes every =.org= file to HTML under =build/output/site/=.
+
+After compiling (or if the build directory already exists), the script
+creates a temporary directory with a =OreStudio/= symlink pointing at
+=build/output/site/=, then starts =python3 -m http.server= from that
+directory.  The symlink is needed because the site's preamble uses
+absolute =/OreStudio/= paths to match the GitHub Pages URL structure
+(=orestudio.github.io/OreStudio/=), so local navigation only works when
+served under that prefix.
+
+* Prerequisites
+
+Emacs must be on =PATH= (for =--compile=). No CMake configure step
+required — the script runs independently of the build system.
+
+* Tested by
+
+Manual preview before pushing documentation changes.  The
+=build-site.yml= GitHub Action publishes the site on every push to
+=main= and is the integration test for the full pipeline.
+
+* See also
+
+- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — the CMake =deploy_site= target (same
+  Emacs step, no HTTP server).
+- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — publish Claude Code skills alongside
+  the site.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — add org files that will appear in the
+  compiled site.

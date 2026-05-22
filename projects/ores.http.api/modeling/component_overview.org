@@ -4,10 +4,17 @@
 #+title: ores.http.api
 #+description: HTTP server library — Boost.Beast server, JWT authentication, routing, and OpenAPI support.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :http:api:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.http.api component diagram
+#+caption: ores.http.api
+[[file:ores.http.api.png][file:ores.http.api.png]]
 
 * Summary
 

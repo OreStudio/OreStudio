@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 82c51a8d-3d26-45ec-955a-aae46028a05d
+:END:
+#+title: Task: Per-type equity instrument tables
+#+description: Per-type equity instrument tables for options, forwards, swaps, positions; SQL schemas + repository layer + NATS handlers; per-type check constraints + typed error reply.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :trading:equity:sql:nats:refactor:domain:per_type_instrument_tables:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ce26e56b-944f-4c89-b5a9-e0dabf521908][Per-type instrument tables]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Per-type equity instrument tables for options, forwards, swaps, positions; SQL schemas + repository layer + NATS handlers; per-type check constraints + typed error reply.
+
+* Status
+
+| Field        | Value                                                                   |
+|--------------+-------------------------------------------------------------------------|
+| State        | DONE                                                                    |
+| Parent story | [[id:ce26e56b-944f-4c89-b5a9-e0dabf521908][Per-type instrument tables]] |
+| Now          | Completed 2026-04-10.                                                   |
+| Waiting on   | None.                                                                   |
+| Next         | None.                                                                   |
+| Last touched | 2026-04-10                                                              |
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =git log= for the per-PR breakdown.
+
+* Result
+
+Landed.

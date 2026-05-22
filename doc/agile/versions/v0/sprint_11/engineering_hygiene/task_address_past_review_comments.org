@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 12f3d5ed-fb2b-41e6-8cc5-15392522c2c0
+:END:
+#+title: Task: Address past review comments
+#+description: Clear backlog of review comments from PRs #389 and #387: header-state restoration, DataLibrarianWindow optimisation, bundle validation messages, dataset_protocol helpers extracted, ORE CMake dependency cleanup, doc pruning.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :review:qt:dq:ore:polish:engineering_hygiene:sprint_11:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:0a69cb02-19df-4df7-bedd-81c57a604737][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Clear the backlog of review comments from PRs #389 and #387 across Qt, DQ, and ORE.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:0a69cb02-19df-4df7-bedd-81c57a604737][Engineering hygiene]] |
+| Now          | Completed 2026-01-29.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2026-01-29                                                       |
+
+* Acceptance
+
+- Qt MDI windows (ChangeReasonCategory, ChangeReason, Country, Currency, DataLibrarian, DatasetBundle, OriginDimension) restore header state robustly; fall back gracefully when settings are corrupted.
+- =DataLibrarianWindow::getDatasetsUnderNode= optimised to avoid redundant iterations.
+- Dataset-bundle validation pinpoints the missing field.
+- Batch-delete error messages include the failing bundle codes.
+- DQ =write_dataset= / =read_dataset= helpers moved from anonymous namespace into =dataset_protocol.hpp= (200 lines of duplicated serialisation gone).
+- ORE CMake deps cleaned up: removed =ores.variability.lib=, =ores.comms.lib=, =sqlgen::sqlgen=, =faker-cxx=, =libfort::fort=; added =ores.logging.lib= + =ores.platform.lib=.
+- Doc/agile cleanup: pruned outdated entries from =product_backlog.org=.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+First task of the sprint; clears the technical-debt headwind before the multi-tenant work starts.
+
+* Result
+
+Past review comments addressed; codebase ready for the tenancy work.

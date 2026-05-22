@@ -1,4 +1,5 @@
 #+TITLE: Tenant and System Bootstrap Reset
+#+version: 1
 #+SUBTITLE: Dev-cycle reset from shell scripts through to system-admin UI
 #+DATE: 2026-05-17
 #+AUTHOR: ORE Studio Team

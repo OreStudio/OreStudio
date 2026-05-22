@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: cac9fd66-1d57-4d2c-af27-cbb8064508cf
+:END:
+#+title: Create Account
+#+description: Create Account
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:accounts_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Create a new user account (admin only).
+
+#+begin_src verb :wrap src json
+post /accounts
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "username": "newuser10",
+    "email": "newuser10@example.com",
+    "password": "Secure-Password-123"
+}
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+Content-Length: 32
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "error": "Invalid request body"
+}
+#+end_src

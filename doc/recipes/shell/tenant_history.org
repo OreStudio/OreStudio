@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 4406cc4d-23bf-4a8f-ab95-ffed42437ed7
+:END:
+#+title: Tenant History
+#+description: Tenant History
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:tenants:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Get version history for a specific tenant.
+
+#+name: tenants-history
+#+begin_src ores-shell :exports none
+tenants history 00000000-0000-0000-0000-000000000000
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<tenants-history>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> History for tenant 00000000-0000-0000-0000-000000000000 (1 versions):
+--------------------------------------------------------------------------------
+  Version 1
+    Code: system
+    Name: System
+    Type: system_tenant
+    Hostname: localhost
+    Status: active
+    Recorded: 2026-02-02 19:24:23 by system
+    Reason: system.new_record - System tenant created during database initialization
+
+ores-shell> Bye!
+#+end_example

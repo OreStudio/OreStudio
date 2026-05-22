@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 11c9dbfb-943a-47d4-9e7c-7ce10c77a604
+:END:
+#+title: View Role-Permission Assignments
+#+description: View Role-Permission Assignments
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:population_scripts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List which permissions are assigned to each role:
+
+#+begin_src sql
+select r.name as role_name, p.code as permission
+from ores.role_permissions rp
+join ores.roles r on r.id = rp.role_id
+  and r.valid_to = '9999-12-31 23:59:59'::timestamptz
+join ores.permissions p on p.id = rp.permission_id
+  and p.valid_to = '9999-12-31 23:59:59'::timestamptz
+where rp.valid_to = '9999-12-31 23:59:59'::timestamptz
+order by r.name, p.code;
+#+end_src

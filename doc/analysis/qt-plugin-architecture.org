@@ -2,6 +2,7 @@
 :ID: A3F9B2C1-4E72-4D8A-B1C5-F2A73E9D0456
 :END:
 #+title: ORE Studio Qt Plugin Architecture Analysis
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

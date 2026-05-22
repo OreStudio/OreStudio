@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 3908decc-a581-4bde-9d76-d064410ab953
+:END:
+#+title: Download Package
+#+description: Download Package
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:compute_file_storage_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Download the engine package bundle for a given app version.
+
+#+begin_src verb :wrap src text
+get http://localhost:8080/api/v1/compute/packages/{{(verb-var app_version_id)}}
+#+end_src

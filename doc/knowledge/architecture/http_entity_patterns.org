@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 579910d3-89ff-4820-9a9b-57508ff39096
+:END:
+#+title: HTTP entity patterns
+#+description: REST route structure, handler skeleton, and CRUD conventions for ores.http.server entity endpoints.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:architecture:http:entity:rest:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+HTTP entity endpoints live in =ores.http.server= under
+=src/routes/{domain}_routes.cpp=. Every entity gets a routes class
+that registers list, save, delete, and history handlers with the
+async router. All handlers are =boost::asio::awaitable= coroutines;
+authentication and authorisation are declared on the route builder,
+not inside the handler body. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Codegen gap
+
+⚠ *No codegen profile exists for this layer.* Before creating HTTP
+endpoints for any new entity:
+
+1. Create mustache templates in =projects/ores.codegen/library/templates/=.
+2. Add an =http= profile entry to =projects/ores.codegen/library/profiles.json=.
+3. Validate against an existing entity (e.g. =currency=).
+4. Only then use codegen to generate the layer.
+
+Until the profile exists, see the recipes for the manual path — but
+treat this as a workaround, not the target state.
+
+* Route structure
+
+Each entity routes class exposes a standard set of endpoints:
+
+| Method | Path | Handler | Notes |
+|---|---|---|---|
+| =GET= | =/api/v1/{entities}= | =handle_get_{entities}= | Paginated list; =offset= + =limit= query params |
+| =POST= | =/api/v1/{entities}= | =handle_save_{entity}= | Upsert; body is the domain object as JSON |
+| =DELETE= | =/api/v1/{entities}= | =handle_delete_{entities}= | Batch delete by ID array in body |
+| =GET= | =/api/v1/{entities}/{id}/history= | =handle_get_{entity}_history= | All versions of a single entity |
+
+Phase 1 delivers list + save; Phase 2 delivers delete + history;
+Phase 3 adds recipe docs.
+
+* Handler skeleton
+
+Key conventions for every handler:
+- Class is =final=; constructor takes =database::context= + shared services.
+- Logger: =inline static std::string_view logger_name= with fully
+  qualified path; static accessor returns a local singleton.
+- All handler declarations go in the =private= section of the header.
+- Include =<rfl/json.hpp>= and =ores.utility/rfl/reflectors.hpp= for
+  request/response serialisation.
+- Return =co_return http_response::ok(body)= or =co_return http_response::error(...)=.
+
+* Authorisation hooks
+
+Declare auth and roles on the route builder, not in the handler:
+call =.auth_required()= and =.roles(...)= on the route, then add
+=.query_param(...)= for pagination parameters (=offset=, =limit=)
+and =.response<...>()= for the response type.
+
+* File locations
+
+| File | Path |
+|---|---|
+| Header | =projects/ores.http.server/include/ores.http.server/routes/{domain}_routes.hpp= |
+| Implementation | =projects/ores.http.server/src/routes/{domain}_routes.cpp= |
+| Registration | =projects/ores.http.server/src/application.cpp= |
+
+* See also
+
+- [[id:bdcc47d4-b050-409e-8c50-3d179843a274][http-entity-creator]] — skill that drives this workflow.
+- [[id:c9eeaad1-1e78-4775-a05f-19573e669bd9][How do I create HTTP endpoints for a new entity?]] — recipe walkthrough.
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.

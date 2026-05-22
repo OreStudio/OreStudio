@@ -1,4 +1,5 @@
 #+title: Login Dialog Label Filter
+#+version: 1
 #+date: 2026-05-15
 #+author: Marco Craveiro
 

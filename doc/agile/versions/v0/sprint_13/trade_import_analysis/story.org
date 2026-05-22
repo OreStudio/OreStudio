@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 68c577a4-b33e-47cb-953f-f3d90a4440d6
+:END:
+#+title: Story: Trade import mapping analysis
+#+description: Document the mapping requirements between ORE portfolio XML and the ORES model (counterparty resolution, book assignment, portfolio mapping, batch configuration).
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :trade:ore:xml:analysis:import:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Document the mapping requirements between ORE portfolio XML and the
+ORES model; design the approach for resolving string-based ORE
+references.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Now           | Completed 2026-02-25.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-25                                             |
+
+
+#+successor: f80bad05-2e66-458d-9223-1db0a83ef694
+
+Continued in: [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]] (sprint 14) — the analysis here
+surfaced that a directory-scanning wizard was the right shape; the
+wizard implements that.
+
+* Acceptance
+
+- Mapping requirements documented.
+- Counterparty / book / portfolio resolution decisions captured.
+- Mapping-dialog design ready for implementation.
+
+* Tasks
+
+In execution order:
+
+- [[id:9c80f9df-31b6-4bb8-8972-ce5569541eda][Analyse ORE trade import mapping requirements]]
+
+* Decisions
+
+- /Mapping dialog over config file/ :: tighter feedback loop for evaluation users; config can come later.
+
+* Out of scope
+
+- Implementation (sibling story; postponed).
+
+* See also
+
+- [[id:f8caa6ce-a36f-464c-a9a2-058e796a0f81][Trade import mapping dialog (Qt UI)]] — the implementation story (BACKLOG).

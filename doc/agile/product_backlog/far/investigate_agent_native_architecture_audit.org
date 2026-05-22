@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: f7c5ad58-f45d-4819-a1c3-05422fd6d164
+:END:
+#+title: Investigate Agent-Native Architecture Audit
+#+description: Investigate Agent-Native Architecture Audit
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+#+begin_quote
+Conduct a comprehensive review of the codebase against agent-native architecture
+principles, launching parallel sub-agents for each principle and producing a
+scored report.
+
+Core Principles to Audit:
+
+- Action Parity - "Whatever the user can do, the agent can do"
+- Tools as Primitives - "Tools provide capability, not behavior"
+- Context Injection - "System prompt includes dynamic context about app state"
+- Shared Workspace - "Agent and user work in the same data space"
+- CRUD Completeness - "Every entity has full CRUD (Create, Read, Update, Delete)"
+- UI Integration - "Agent actions immediately reflected in UI"
+- Capability Discovery - "Users can discover what the agent can do"
+- Prompt-Native Features - "Features are prompts defining outcomes, not code"
+#+end_quote
+
+Links:
+
+- [[https://github.com/EveryInc/compound-engineering-plugin/blob/main/plugins/compound-engineering/commands/agent-native-audit.md][Agent-Native Architecture Audit]]

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: e0bf1e20-9cee-43bb-9c0e-325088de368c
+:END:
+#+title: Assign Role By Name
+#+description: Assign Role By Name
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Assign a role to an account using a principal (=username@hostname=) and role
+name instead of UUIDs. The server resolves the principal to an account and
+the role name to a role ID.
+
+#+name: assign-role-by-name
+#+begin_src ores-shell :exports none
+accounts assign-role newuser60@example.com DataPublisher
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<assign-role-by-name>>
+EOF
+#+END_SRC

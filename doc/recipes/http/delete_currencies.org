@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 5b72ec63-dfed-4d75-9e3f-4ee43b3dfb3f
+:END:
+#+title: Delete Currencies
+#+description: Delete Currencies
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:currencies_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Delete one or more currencies (admin only).
+
+#+begin_src verb :wrap src json
+delete /currencies
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "iso_codes": ["TST"]
+}
+#+end_src

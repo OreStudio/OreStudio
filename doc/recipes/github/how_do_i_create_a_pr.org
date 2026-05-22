@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: cc928252-e0c5-4c3c-a7a8-d613593e4e37
+:END:
+#+title: How do I create a PR?
+#+description: Open a pull request via the gh CLI with a structured title and HEREDOC body — and the conventions ORE Studio follows on title format.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :github:pr:gh:recipe:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+The body content should be assembled via [[id:1882d6df-4012-4c6e-bf62-0d943ef805b0][How do I generate a PR
+summary?]] before running the =gh= command here.
+
+* Question
+
+How do I open a pull request from my current feature branch, with a
+correctly-formatted title and a structured body?
+
+* Answer
+
+1. /Push the branch/ first if it isn't on the remote yet:
+
+   #+begin_src sh :results verbatim
+   git push -u origin "$(git branch --show-current)"
+   #+end_src
+
+2. /Create the PR/ with =gh pr create=. Use a HEREDOC for the body
+   so newlines are preserved:
+
+   #+begin_src sh :results verbatim
+   gh pr create --title "[component] One-line description" \
+     --body "$(cat <<'EOF'
+   ## Summary
+
+   Brief paragraph.
+
+   ## Changes
+
+   - First change
+   - Second change
+   EOF
+   )"
+   #+end_src
+
+3. /Confirm the PR URL/ that =gh= prints; verify the title format
+   matches =[COMPONENT] Description=.
+
+* Conventions
+
+- /No "Test plan" section/ in the body.
+- /Title format/ is =[COMPONENT] Description=. Multi-component PRs
+  use =[a,b,c]=.
+- Body sections may be expanded (Notes, Decisions, Follow-ups), but
+  Summary and Changes are the load-bearing pair.
+
+* Script
+
+Bare =gh= CLI; no wrapper. The CLI must be authenticated (=gh auth
+login=) once per checkout.
+
+* Tested by
+
+Manual. Reviewers verify the PR shape; =gh pr checks= reports CI.
+
+* See also
+
+- [[id:1882d6df-4012-4c6e-bf62-0d943ef805b0][How do I generate a PR summary?]] — assemble the body.
+- [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][How do I monitor a PR until green?]] — what to do once it's open.
+- [[id:95d560c6-3551-4810-9d11-55f9f82b483c][How do I merge a PR?]] — close it out.
+- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — full lifecycle.

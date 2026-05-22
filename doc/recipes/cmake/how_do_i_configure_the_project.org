@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 7c44751e-54c0-4cb7-b489-1d3ec609a4e3
+:END:
+#+title: How do I configure the project?
+#+description: Pick a CMake preset and configure — this is the once-per-checkout step before building.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :cmake:build:configure:presets:recipe:
+#+created: 2026-05-18
+#+updated: 2026-05-18
+
+For the preset menu and what each axis means, see [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]].
+
+* Question
+
+How do I configure ORE Studio with CMake?
+
+* Answer
+
+From the project root, pick a preset and configure with it:
+
+#+begin_src sh :results verbatim
+cmake --preset linux-clang-debug-ninja
+#+end_src
+
+For a release build:
+
+#+begin_src sh :results verbatim
+cmake --preset linux-clang-release-ninja
+#+end_src
+
+Configure once per preset; the preset's build directory is created at
+=build/output/<preset>/=. To list available presets see
+[[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]].
+
+** Re-configuring with options
+
+To enable test logging or any other option, pass =-D<NAME>=<VALUE>= to
+the same command. The build directory is reused; CMake re-configures
+in place:
+
+#+begin_src sh :results verbatim
+cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=debug
+#+end_src
+
+* Script
+
+The commands above. No wrapper.
+
+* Tested by
+
+CI workflows configure every preset on every push.
+
+* See also
+
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset naming, build types.
+- [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]]
+- [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]] — next step after configure.

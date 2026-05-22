@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 8a51eb28-5527-46af-8188-0cc511add15b
+:END:
+#+title: Task: Add central-bank-related LEIs
+#+description: ~93 GLEIF-verified LEIs (33 sovereign issuers, 51 central banks, 9 supranationals); CENTRAL_BANK sector keyword detection with multilingual support; 3x financial-priority sampling.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :gleif:central_banks:leis:refdata:gleif_data_integration:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:253ce971-c0f3-43c3-980c-276233250b86][GLEIF data integration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Expand the GLEIF anchor list with sovereign issuers, central banks, and supranationals.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:253ce971-c0f3-43c3-980c-276233250b86][GLEIF data integration]] |
+| Now          | Completed 2026-02-11.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-02-11                                                          |
+
+* Acceptance
+
+- ~93 GLEIF-verified LEIs added (33 sovereign, 51 central banks, 9 supranational).
+- =CENTRAL_BANK= sector keyword detection with 20 multilingual keywords.
+- 3× financial-priority sampling for central banks.
+- Subsets regenerated from January golden copy; stale February subsets removed.
+- =methodology.txt= updated.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Without these anchors a representative subset was missing financial-system load-bearing entities.
+
+* Result
+
+Subset coverage substantially better.

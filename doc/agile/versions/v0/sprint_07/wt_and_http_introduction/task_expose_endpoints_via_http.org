@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 9bd1200f-241f-4153-b804-6e7095da56de
+:END:
+#+title: Task: Consider exposing endpoints via HTTP
+#+description: Add an HTTP entry point on the comms layer so non-Qt clients can talk to the service.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :http:comms:api:wt_and_http_introduction:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:db625c07-811a-4a61-8de8-910b29913744][Wt and HTTP introduction]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add an HTTP entry point on the comms layer so non-Qt clients can talk to the service.
+
+* Status
+
+| Field        | Value                                                                 |
+|--------------+-----------------------------------------------------------------------|
+| State        | DONE                                                                  |
+| Parent story | [[id:db625c07-811a-4a61-8de8-910b29913744][Wt and HTTP introduction]] |
+| Now          | Completed 2025-12-30.                                                 |
+| Waiting on   | None.                                                                 |
+| Next         | None.                                                                 |
+| Last touched | 2025-12-30                                                            |
+
+* Acceptance
+
+- HTTP endpoint with at least one read and one write path.
+- Same authentication / authorization as the cobalt-socket path.
+- Tested with =curl=.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Re-uses the same handlers as the socket path via the type-traits dispatch landed earlier in this sprint.
+
+* Result
+
+Service is reachable over HTTP for read and write paths.

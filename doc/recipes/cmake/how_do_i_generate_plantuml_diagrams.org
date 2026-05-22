@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: f51360fc-24db-4276-b137-c59d118922ac
+:END:
+#+title: How do I generate PlantUML diagrams?
+#+description: Build all PlantUML diagrams with the `mad` target, or a single component's diagram with `generate_<comp>_diagram`.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :cmake:build:plantuml:diagrams:recipe:
+#+created: 2026-05-18
+#+updated: 2026-05-18
+
+For the broader CMake setup, see [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]].
+
+* Question
+
+How do I (re)generate the PlantUML diagrams the project uses in its
+docs and site?
+
+* Answer
+
+** All diagrams
+
+The =mad= target ("make all diagrams") builds every PlantUML diagram
+declared in the build:
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-debug-ninja --target mad
+#+end_src
+
+** A single component's diagram
+
+Component diagrams follow =generate_<component>_diagram= where
+=<component>= uses dots, just like the component name:
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-debug-ninja --target generate_ores.refdata_diagram
+#+end_src
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-debug-ninja --target generate_ores.comms_diagram
+#+end_src
+
+** The system-level diagram
+
+For the whole-project view used on the home page:
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-debug-ninja --target generate_ores_diagram
+#+end_src
+
+** Prerequisites
+
+- PlantUML on PATH (typically via =apt install plantuml=).
+- The project must be configured (=cmake --preset ...=).
+
+* Script
+
+The targets above are wired in =CMakeLists.txt= via the project's
+PlantUML helpers; the source =.puml= files live alongside the
+component models under =projects/<comp>/modeling/= and at
+=projects/modeling/=.
+
+* Tested by
+
+Manual — the diagrams are regenerated when their =.puml= sources
+change.
+
+* See also
+
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]]
+- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — picks up the regenerated diagrams.

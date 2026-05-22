@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 1075b79e-fe84-4a88-8045-0dcd57ddd6c8
+:END:
+#+title: Task: Add LEI-to-BIC dataset
+#+description: Mapping dataset for BIC settlements; CSV in external/, dataset + populate scripts + publisher; download from GLEIF mapping site.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :gleif:bic:dataset:settlement:gleif_data_integration:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:253ce971-c0f3-43c3-980c-276233250b86][GLEIF data integration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add the LEI-to-BIC mapping as a dataset so settlement simulations can resolve BICs from LEIs.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:253ce971-c0f3-43c3-980c-276233250b86][GLEIF data integration]] |
+| Now          | Completed 2026-02-13.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-02-13                                                          |
+
+* Acceptance
+
+- CSV added under =external/=.
+- Dataset definition + populate script + publisher.
+- Source: GLEIF mapping download.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Bridges the GLEIF (LEI) world with the SWIFT (BIC) world.
+
+* Result
+
+BIC mapping dataset published.

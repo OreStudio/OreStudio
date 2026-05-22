@@ -4,10 +4,17 @@
 #+title: ores.controller.service
 #+description: NATS service entrypoint for the controller domain.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :controller:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.controller.service component diagram
+#+caption: ores.controller.service
+[[file:ores.controller.service.png][file:ores.controller.service.png]]
 
 * Summary
 

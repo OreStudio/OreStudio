@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 455ae1aa-57b2-4952-9e1e-e71d047c3b31
+:END:
+#+title: List All Images
+#+description: List All Images
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:images_and_tags:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select image_id, key, description, version
+from ores.images
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by key
+limit 20;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| image_id                             | key   | description         | version |
+|--------------------------------------+-------+---------------------+---------|
+| a6ac20cb-f45f-4375-9082-4673bb1f453a | ad    | Flag for code AD    |       1 |
+| 31cafad9-db0c-4359-ada8-da331f08949e | ae    | Flag for code AE    |       1 |
+| 1116a6b0-7511-4fda-869f-b4f9946c15b4 | af    | Flag for code AF    |       1 |
+| c056bd53-7c7b-4313-990c-7b9d1d80828d | ag    | Flag for code AG    |       1 |
+| 31959ae1-6f64-4534-9e1a-fd3dd34ef84d | ai    | Flag for code AI    |       1 |
+| 458d56d5-e535-477c-8af5-32bc6097c24b | al    | Flag for code AL    |       1 |
+| 9e01af37-ac88-4488-a857-81843736cf21 | am    | Flag for code AM    |       1 |
+| fcdb0cd7-6184-4bfa-bad0-180cebeb2224 | ao    | Flag for code AO    |       1 |
+| 762567e8-d165-4a57-b818-63d21fbe5748 | aq    | Flag for code AQ    |       1 |
+| 85de14d6-5556-410b-83dc-c0c92098d5db | ar    | Flag for code AR    |       1 |
+| 495b0456-03da-4c9b-b1b9-110a0d8e06f8 | arab  | Flag for code ARAB  |       1 |
+| 04bf011e-5cd2-4715-9707-31ce93a9cb2a | as    | Flag for code AS    |       1 |
+| 81cf090b-2cdb-4b95-b530-9144bb3246c3 | asean | Flag for code ASEAN |       1 |
+| f3d3f779-ed01-4bf2-85fe-99ba62596647 | at    | Flag for code AT    |       1 |
+| beb9ef9e-ba7c-438d-9282-85298a083347 | au    | Flag for code AU    |       1 |
+| 9dfc69aa-fe57-4518-a988-0e089f58e390 | aw    | Flag for code AW    |       1 |
+| e866518b-5625-433d-b2dc-f107af7a222b | ax    | Flag for code AX    |       1 |
+| 5e0b55f6-83df-4fda-862a-0d1ab3d5139e | az    | Flag for code AZ    |       1 |
+| aa21e9e2-eac2-44dd-a927-7eef3c9ffa30 | ba    | Flag for code BA    |       1 |
+| 05f4a87e-b481-4953-b6cd-9e9b5d3fc7a6 | bb    | Flag for code BB    |       1 |
+#+end_example

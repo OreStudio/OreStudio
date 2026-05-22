@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 35555992-6f01-40f5-a1a7-1ef0fa6fcab3
+:END:
+#+title: Account Permissions
+#+description: Account Permissions
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List effective permissions for an account.
+
+#+name: account-permissions
+#+begin_src ores-shell :exports none
+accounts permissions 019c2d92-8448-7158-90d0-ccb8b5f7e812
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<account-permissions>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
+Effective Permissions for Account: 019c2d92-8448-7158-90d0-ccb8b5f7e812
+=======================================================================
+
+  - *
+  - iam::tenants:create
+  - iam::tenants:delete
+  - iam::tenants:impersonate
+  - iam::tenants:read
+  - iam::tenants:suspend
+  - iam::tenants:terminate
+  - iam::tenants:update
+
+Total: 8 item(s)
+ores-shell> Bye!
+#+end_example

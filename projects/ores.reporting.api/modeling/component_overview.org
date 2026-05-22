@@ -4,10 +4,17 @@
 #+title: ores.reporting.api
 #+description: Domain types and NATS protocol schemas for the reporting component.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :reporting:api:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.reporting.api component diagram
+#+caption: ores.reporting.api
+[[file:ores.reporting.api.png][file:ores.reporting.api.png]]
 
 * Summary
 

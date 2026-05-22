@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: dc91a742-8c16-45dc-9689-7cd122b9e48a
+:END:
+#+title: Add
+#+description: Add
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:change_reason_categories:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Add a new change reason category.
+
+#+name: change-reason-categories-add
+#+begin_src ores-shell :exports none
+change-reason-categories add TEST_CATEGORY "Test category for recipes" "New test category."
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reason-categories-add>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Category added successfully!
+ores-shell> Bye!
+#+end_example

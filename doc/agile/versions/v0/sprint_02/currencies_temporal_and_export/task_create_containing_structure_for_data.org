@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: acb832a6-da5e-4463-83a8-4bfa06bd607f
+:END:
+#+title: Task: Create a containing structure for data
+#+description: Introduce a top-level container for ORE example data so groups of related files can be loaded together.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :data:examples:structure:currencies_temporal_and_export:sprint_02:v0:
+#+owner: marco
+#+created: 2025-08-15
+#+updated: 2025-08-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ORE example data is naturally grouped (an example has Input,
+ExpectedOutput, etc). Introduce a top-level container that
+represents this grouping in the project so a user can load/save an
+example as a unit.
+
+* Status
+
+| Field        | Value                                                                       |
+|--------------+-----------------------------------------------------------------------------|
+| State        | DONE                                                                        |
+| Parent story | [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] |
+| Now          | Completed 2025-08-25.                                                       |
+| Waiting on   | None.                                                                       |
+| Next         | None.                                                                       |
+| Last touched | 2025-08-25                                                                  |
+
+* Acceptance
+
+- A container type exists representing an ORE example.
+- The container can be loaded from disk and persisted to disk.
+- A test exercises loading a sample container.
+
+* Notes
+
+- Carried over from sprint 01 where it was POSTPONED. The v0 record
+  has design notes about naming (environment / workspace / sandbox)
+  and the inner-container choice (namespace / package).
+- The chosen name was =workspace= for the outer container.
+
+* Result
+
+- Containing structure committed; ORE examples loadable as units.

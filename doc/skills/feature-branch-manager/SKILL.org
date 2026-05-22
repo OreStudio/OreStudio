@@ -1,198 +1,64 @@
 :PROPERTIES:
 :ID: 6DAFFC2F-7F94-403B-87D0-2A56C4669B7F
 :END:
-#+title: Feature Branch Manager
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
-#+startup: inlineimages
-#+export_exclude_tags: noexport
+#+title: Feature Branch Manager Skill
+#+description: Manage multi-phase feature work — open each phase on a fresh branch from main, transition cleanly between phases, retire old branches.
+#+type: skill
+#+version: 2
+#+level: cross
+#+filetags: :skills:claude_code:git:branch:
+#+created: 2024-09-01
+#+updated: 2026-05-21
 
 #+begin_export markdown
 ---
 name: feature-branch-manager
-description: Manage feature branches across multi-phase implementations with clean git history.
+description: Plan and run multi-phase feature work — branch naming, phase transitions on a fresh main, branch cleanup after merge — to keep git history readable.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
 
 * When to use this skill
 
-When working on multi-phase implementations that require multiple PRs. Use this
-skill to transition between phases while maintaining a clean git history.
-
-Typical scenarios:
-- A PR for the current phase has been merged to main.
-- You need to start work on the next phase of an implementation.
-- You want to clean up old feature branches after merge.
+When a piece of work is too large for a single PR and needs to be
+split into a sequence of phase-sized PRs. The skill keeps each
+phase on its own branch from a fresh =main= so the history stays
+linear and each phase is reviewable in isolation.
 
 * How to use this skill
 
-1. Confirm the current PR has been merged to main.
-2. Follow the phase transition procedure to create a fresh branch.
-3. Continue with the next phase of work.
+1. /Plan the phases up front/. A typical entity implementation
+   splits as e.g. domain type → generator → repository → tests, or
+   the Qt sequence model+window → detail dialog → history dialog →
+   controller. Each phase is one branch, one PR.
 
-* Detailed instructions
+2. /Name branches consistently/:
+   =feature/<entity>_<phase_description>=. Examples:
+   - =feature/currency_domain_type=
+   - =feature/currency_generator=
+   - =feature/session_history_dialog=
 
-** Branch naming conventions
+3. /Run one phase to merge/ via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] (open) and [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR
+   Shepherd]] (watch until green and merge).
 
-Feature branches should follow this naming pattern:
+4. /Transition to the next phase/ — once the current PR is merged,
+   use [[id:479e7e27-4060-4bfd-ac38-f11efa3bb306][How do I start a new feature branch phase?]]. This stashes
+   any WIP, branches from the freshly-fetched main, restores the
+   stash, and deletes the old branch both locally and on the
+   remote.
 
-#+begin_example
-feature/<entity>_<phase_description>
-#+end_example
+5. /Never rebase + force-push/ — confuses reviewers, breaks the
+   per-phase history this skill exists to maintain.
 
-Examples:
-- =feature/currency_domain_type= - Phase 1: Domain class and I/O
-- =feature/currency_generator= - Phase 2: Test data generator
-- =feature/currency_repository= - Phase 3: Repository support
-- =feature/currency_tests= - Phase 4: Tests and documentation
+* Recipes
 
-For Qt entity implementations:
-- =feature/session_model_window= - Phase 1: Model and list window
-- =feature/session_detail_dialog= - Phase 2: Detail dialog
-- =feature/session_history_dialog= - Phase 3: History dialog
-- =feature/session_controller= - Phase 4: Controller and integration
+- [[id:479e7e27-4060-4bfd-ac38-f11efa3bb306][How do I start a new feature branch phase?]] — the transition
+  procedure.
 
-** Phase transition procedure
+* Reference
 
-Execute the following steps to transition between phases:
-
-*** Step 1: Note the current branch name
-
-#+begin_src sh
-git branch --show-current
-#+end_src
-
-Store this for cleanup in later steps.
-
-*** Step 2: Check if current branch PR has been merged
-
-Use the GitHub CLI to check if the PR for the current branch has been merged:
-
-#+begin_src sh
-gh pr view --json state,mergedAt
-#+end_src
-
-If the PR is merged, you'll see =state: MERGED= and a =mergedAt= timestamp.
-
-Alternative using git (if gh is not available):
-
-#+begin_src sh
-git fetch origin main
-git branch --contains $(git rev-parse HEAD) -r | grep origin/main
-#+end_src
-
-If the current branch's HEAD commit is contained in =origin/main=, the PR has
-been merged.
-
-*Important*: Only proceed if the PR has been merged. If not merged, inform the
-user and stop.
-
-*** Step 3: Stash uncommitted changes (if any)
-
-Check for uncommitted changes and stash them:
-
-#+begin_src sh
-git status --short
-#+end_src
-
-If there are changes:
-
-#+begin_src sh
-git stash push -m "WIP: Transitioning to next phase"
-#+end_src
-
-*** Step 4: Fetch latest main
-
-If you used the =gh= command in Step 2, you must now fetch the latest changes
-from main. If you used the git alternative (which includes a fetch), this step
-ensures you have the most recent state.
-
-#+begin_src sh
-git fetch origin main
-#+end_src
-
-*** Step 5: Create new feature branch
-
-Create a new branch from the updated main for the next phase:
-
-#+begin_src sh
-git checkout -b feature/<entity>_<next_phase> origin/main
-#+end_src
-
-*** Step 6: Restore stashed changes (if any)
-
-If changes were stashed in Step 3:
-
-#+begin_src sh
-git stash pop
-#+end_src
-
-*Note*: If =git stash pop= results in merge conflicts, you must resolve them
-before proceeding. Use =git status= to see conflicted files and resolve them
-manually.
-
-*** Step 7: Delete old local branch
-
-#+begin_src sh
-git branch -d <old_branch_name>
-#+end_src
-
-Use =-D= (force delete) only if the branch wasn't fully merged (rare).
-
-*** Step 8: Delete old remote branch
-
-#+begin_src sh
-git push origin --delete <old_branch_name>
-#+end_src
-
-This keeps the remote repository clean.
-
-** Complete example
-
-Transitioning from Phase 1 (domain type) to Phase 2 (generator) for currency:
-
-#+begin_src sh
-# Step 1: Note current branch
-git branch --show-current
-# Output: feature/currency_domain_type
-
-# Step 2: Check if PR has been merged
-gh pr view --json state,mergedAt
-# Output: {"mergedAt":"2025-01-10T14:30:00Z","state":"MERGED"}
-
-# Step 3: Stash any uncommitted changes
-git status --short
-# Output: M doc/agile/v0/sprint_backlog_08.org
-git stash push -m "WIP: Transitioning to next phase"
-
-# Step 4: Fetch latest main (includes the merged PR)
-git fetch origin main
-
-# Step 5: Create new branch for Phase 2
-git checkout -b feature/currency_generator origin/main
-
-# Step 6: Restore stashed changes
-git stash pop
-
-# Step 7: Delete old local branch
-git branch -d feature/currency_domain_type
-
-# Step 8: Delete old remote branch
-git push origin --delete feature/currency_domain_type
-#+end_src
-
-** Important notes
-
-- *Never rebase and force push* - This creates confusing history and can cause
-  issues for reviewers.
-- *Always start from fresh main* - Each phase gets a clean branch from the
-  latest main, which includes all previously merged work.
-- *Delete branches after merge* - Keeps both local and remote repositories clean.
-- *Use descriptive branch names* - Makes it easy to identify what phase/work the
-  branch represents.
-- *Stash handling is automatic* - Uncommitted changes are preserved across phase
-  transitions.
+- [[id:B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44][Git recipes]] — sibling pure-git recipes.
+- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] / [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]] — drive each phase's PR.
 
 * Artefacts                                                        :noexport:
 

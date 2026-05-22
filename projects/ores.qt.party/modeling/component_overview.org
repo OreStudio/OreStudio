@@ -4,10 +4,17 @@
 #+title: ores.qt.party
 #+description: Qt plugin for party/organisation UI — parties, counterparties, business units, business centres, and organisation codes.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :qt:party:organisation:ui:component:
 #+created: 2026-05-20
 #+updated: 2026-05-20
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.party component diagram
+#+caption: ores.qt.party
+[[file:ores.qt.party.png][file:ores.qt.party.png]]
 
 * Summary
 

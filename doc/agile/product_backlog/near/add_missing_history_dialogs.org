@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: 3bb12053-1522-412e-99f3-73cb645002b0
+:END:
+#+title: Add missing history dialogs
+#+description: Add missing history dialogs
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We have an inventory of missing features across entities. Check to see if it
+covers history as well.

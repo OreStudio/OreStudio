@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 5a5507a2-f855-4825-b91a-99fb957c7d51
+:END:
+#+title: Task: Refactor drop/ and populate/ directory structure
+#+description: 56 files relocated into component subdirectories with git-history preserved; consistent naming (drop_COMPONENT.sql, populate_COMPONENT.sql); monolithic seed_upsert_functions split per component.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sql:refactor:structure:convention:sql_directory_refactor:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:38b6dddf-c02b-4072-b599-41ab3bcc9c28][SQL directory refactor]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Apply the same component-subdirectory pattern to =drop/= and =populate/=.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:38b6dddf-c02b-4072-b599-41ab3bcc9c28][SQL directory refactor]] |
+| Now          | Completed 2026-01-24.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-01-24                                                          |
+
+* Acceptance
+
+- =drop/= split into =assets/=, =dq/=, =geo/=, =iam/=, =refdata/=, =seed/=, =telemetry/=, =utility/=, =variability/=.
+- 56 files relocated with git-history preserved.
+- Master files named =drop_COMPONENT.sql= / =populate_COMPONENT.sql=.
+- =drop_all.sql= removed; =drop/drop.sql= replaces it.
+- Monolithic =seed_upsert_functions_drop.sql= split per component.
+- All =populate/= masters renamed to the new convention.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Pairs naturally with the =create/= refactor; the trio is now consistent.
+
+* Result
+
+drop/ + populate/ aligned with create/.

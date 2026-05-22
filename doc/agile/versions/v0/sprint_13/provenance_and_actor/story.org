@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 7b926ace-57f6-414d-8f3e-568175041f87
+:END:
+#+title: Story: Provenance and actor stamping
+#+description: Tighten performed_by + modified_by stamping; remove the current_user escape hatch; route actor through app.current_actor GUC.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :audit:iam:provenance:sql:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Get audit stamping honest: remove the =current_user= escape hatch,
+route the actor through =app.current_actor= GUC, validate every
+=modified_by= / =performed_by= site.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Now           | Completed 2026-02-21.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-02-21                                             |
+
+* Acceptance
+
+- Escape hatch in =ores_iam_validate_account_username_fn= removed.
+- Foundation populate ordered so service accounts seed first.
+- =ores_iam_current_actor_fn= reads the GUC; fallback explicit.
+- Silent =current_user= defaults for =assigned_by= replaced with validated calls.
+
+* Tasks
+
+In execution order:
+
+- [[id:f04113fc-16ab-44d2-9545-54ca632c45e9][Fix performed_by and modified_by stamping]]
+
+* Decisions
+
+- /Bootstrap-aware validation/ :: rather than a global escape hatch, validation knows about bootstrap explicitly.
+- /Actor via GUC, not parameter/ :: keeps the signature surface small; sessions populate the GUC on acquire.
+
+* Out of scope
+
+- Audit-trail UI surface.
+
+* See also
+
+- [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]] (sprint 12) — predecessor work.

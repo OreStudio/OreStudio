@@ -1,4 +1,5 @@
 #+TITLE: Codegen IAM Permissions and Roles Population
+#+version: 1
 #+DATE: 2026-05-18
 #+AUTHOR: ORE Studio Team
 #+STATUS: PROPOSED

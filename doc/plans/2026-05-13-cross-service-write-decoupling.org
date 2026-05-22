@@ -1,4 +1,5 @@
 #+TITLE: Cross-Service Write Decoupling
+#+version: 1
 #+SUBTITLE: IAM party cache + NATS write APIs for workflow/ORE
 #+DATE: 2026-05-13
 #+AUTHOR: ORE Studio Team

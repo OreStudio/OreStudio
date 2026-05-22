@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 7a34c5a4-abd4-4103-b82b-a25f2aef7da3
+:END:
+#+title: Task: Migrate 11 party domain types to utility::uuid::tenant_id strong type
+#+description: - Replaces `std::string tenant_id` with `utility::uuid::tenant_id` across all 11 party-cluster domain types (`party`, `b
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :refdata_tenant_migration:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/782
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cc9a5f89-ea6e-46ec-9f95-8891bd1c1a8e][Refdata tenant_id strong-type migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace std::string tenant_id with the utility::uuid::tenant_id strong type across all 11 party-cluster domain types, mappers, and repositories.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:cc9a5f89-ea6e-46ec-9f95-8891bd1c1a8e][Refdata tenant_id strong-type migration]] |
+| Now          | Completed 2026-05-20.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Replace std::string tenant_id with the utility::uuid::tenant_id strong type across all 11 party-cluster domain types, mappers, and repositories.
+- PR #782 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- Replaces =std::string tenant_id= with =utility::uuid::tenant_id= across all 11 party-cluster domain types (=party=, =business_unit=, =business_unit_type=, =counterparty=, =counterparty_identifier=, =counterparty_contact_information=, =party_contact_information=, =party_counterparty=, =party_country=, =party_currency=, =party_identifier=)
+- Mapper read side uses =.value()= — a malformed UUID in the DB is a data integrity bug, not a recoverable condition
+- Mapper write side uses =.to_string()= for the DB column
+- Generators use =.value_or(system())= to tolerate the ="system"= shorthand in generation contexts
+- =party_repository::read_system_party= manual row mapping updated accordingly
+- Four test files in =ores.refdata.core/tests/= and one in =ores.synthetic.core/tests/= updated to compile and pass with the strong type
+- Adds refdata C++ codegen activation plan (=doc/plans/2026-05-20-refdata-cpp-codegen-activation.org=) capturing the broader work needed to bring refdata domain files under codegen
+
+** Root cause
+
+The party/counterparty cluster was implemented before =utility::uuid::tenant_id= was introduced. All other refdata domain types already carried the strong type; this PR closes the gap and makes the domain model internally consistent.
+
+
+* Result
+
+Landed.

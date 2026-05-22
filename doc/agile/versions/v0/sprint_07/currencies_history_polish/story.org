@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 818b6261-1780-4fb3-aa89-da02c91da363
+:END:
+#+title: Story: Currencies history polish
+#+description: Make the currencies history dialog usable: visually distinguish the latest version, add revert/reload buttons, add flag icons.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :currencies:qt:ux:history:sprint_07:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Polish the currencies-with-history UX: make the active version stand
+out, add a revert action, and add country flags.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]] |
+| Now           | Completed 2025-12-20.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2025-12-20                                             |
+
+* Acceptance
+
+- Active version visually distinct in list and history views.
+- Revert action available from the history dialog; creates a new version equal to the selected past one.
+- Country flags rendered alongside currencies.
+
+* Tasks
+
+In execution order:
+
+- [[id:88f8a3c7-1ed3-43a6-9396-1766896e6586][Latest currencies should have different colour]]
+- [[id:c391add5-af47-49d7-b6bb-720064d41f52][History should have a revert button]]
+- [[id:9d242dec-6526-4714-8159-04ba03b8214b][Add flags for currencies]]
+
+* Decisions
+
+- /Revert by writing a new version/ :: keeps history monotonic; matches how the repository handles updates.
+- /Ship flag artwork with the bundle/ :: avoids a runtime download and keeps the offline-only story intact.
+
+* Out of scope
+
+- Visual changes to other domain entities — those land in their own polish stories.
+
+* See also
+
+- [[id:72f723f4-378c-4e0a-b6f1-6ba3c29f5bea][Qt UX polish]] — sibling polish story for the rest of the UI.

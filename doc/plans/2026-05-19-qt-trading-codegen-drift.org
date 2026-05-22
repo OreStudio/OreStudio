@@ -1,4 +1,5 @@
 #+TITLE: Qt Trading Codegen Drift Remediation
+#+version: 1
 #+DATE: 2026-05-19
 #+AUTHOR: ORE Studio Team
 #+STATUS: IN PROGRESS

@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 12a0c4c2-ae7b-40ad-9098-c7f193a8f932
+:END:
+#+title: Task: Form map + trade type flags + create-mode instrument
+#+description: Phase 5 + 6: trade type cache; activateForm helper; instrument form visibility during trade creation; thread-safety + magic numbers + error handling improvements.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt:trade:instrument:cache:refactor:trade_detail_dialog_unification:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1490e130-08f9-4d43-8f80-d7e0f5022fbd][Trade detail dialog unification]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Phase 5 + 6: trade type cache; activateForm helper; instrument form visibility during trade creation; thread-safety + magic numbers + error handling improvements.
+
+* Status
+
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | DONE                                                                         |
+| Parent story | [[id:1490e130-08f9-4d43-8f80-d7e0f5022fbd][Trade detail dialog unification]] |
+| Now          | Completed 2026-04-07.                                                        |
+| Waiting on   | None.                                                                        |
+| Next         | None.                                                                        |
+| Last touched | 2026-04-07                                                                   |
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =git log= for the per-PR breakdown.
+
+* Result
+
+Landed.

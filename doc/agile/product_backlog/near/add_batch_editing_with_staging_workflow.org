@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: 7b9f27e1-9815-451c-9a37-7084e39e4947
+:END:
+#+title: Add batch editing with staging workflow
+#+description: Add batch editing with staging workflow
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :analysis:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Investigate a workflow where users can "locally modify" multiple entities and
+then save the batch in a single operation. Similar to git's staging concept. Need
+to determine appropriate terminology and iconography for this feature. Consider:
+what do we call the staged state? What icon represents "stage for save"?

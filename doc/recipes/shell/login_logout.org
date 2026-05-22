@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: e8da8b33-81d9-4f22-8439-216d7d916093
+:END:
+#+title: Login logout
+#+description: Login logout
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+name: login-alias
+#+begin_src ores-shell :exports none
+connect localhost 51004 test
+login newuser3 Secure-Password-123
+logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<login-alias>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Connected to :51004
+ores-shell> ✓ Login successful!
+  User: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ores-shell> ✓ Logged out successfully.
+ores-shell> Bye!
+#+end_example

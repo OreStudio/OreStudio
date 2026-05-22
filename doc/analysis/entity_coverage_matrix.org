@@ -2,6 +2,7 @@
 :ID: A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C
 :END:
 #+title: Entity Coverage Matrix
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: overview

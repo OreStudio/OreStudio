@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: beb4fd46-b362-4c2d-b7cf-f385539b783e
+:END:
+#+title: Task: Add messaging to variability
+#+description: Wire the variability service onto the comms layer so clients can list / toggle feature flags.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :variability:messaging:comms:variability_service:sprint_06:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-08
+#+updated: 2025-12-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:55c35962-46a0-4353-93ad-fc15bf847c7e][Variability service]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Wire the variability service onto the comms layer so clients can list / toggle feature flags.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:55c35962-46a0-4353-93ad-fc15bf847c7e][Variability service]] |
+| Now          | Completed 2025-12-08.                                            |
+| Waiting on   | None.                                                            |
+| Next         | None.                                                            |
+| Last touched | 2025-12-08                                                       |
+
+* Acceptance
+
+- Variability messages registered in the protocol.
+- Client can list and toggle feature flags via REPL and Qt UI.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Closes the loop on the feature-flags thread that started as POSTPONED in sprint 03.
+
+* Result
+
+Variability messaging end-to-end; flags reachable from REPL and Qt UI.

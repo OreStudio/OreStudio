@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: a1571428-c1bd-4fd1-9434-21ce5b1a6154
+:END:
+#+title: Story: ORE XML codegen
+#+description: New ores.ore component; generate C++ for ORE via xsdcpp; round-trip tests; Windows MSVC build fix.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :ore:xml:xsdcpp:codegen:windows:sprint_10:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Add a dedicated =ores.ore= component and generate the C++ for ORE
+XML configuration via xsdcpp, with the fixes needed to make real ORE
+samples round-trip.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Now           | Completed 2026-01-27.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-27                                             |
+
+* Acceptance
+
+- =ores.ore= component present.
+- xsdcpp integrated; manually-written types replaced.
+- xs:group ref expansion + xs:choice maxOccurs unbounded handled.
+- XML round-trip tests against real ORE sample files.
+- Windows MSVC build green (/bigobj).
+
+* Tasks
+
+In execution order:
+
+- [[id:27b76a70-df1d-4c66-89a9-fba3cb801353][Add ores.ore component for import/export]]
+- [[id:2a497ceb-40e2-47ad-8cf5-cfb40226dfbd][Generate C++ code for ORE via xsdcpp]]
+- [[id:755c3e7e-372b-4014-8698-41f6404255f2][Fix issues with xsdcpp when generating ORE code]]
+- [[id:9c3c142a-92b0-4771-9bb5-725e62a9b870][Fix Windows CI break due to XSD codegen]]
+
+* Decisions
+
+- /xsdcpp over codesynthesis/ :: vcpkg availability tips the balance; codesynthesis would have introduced a runtime library we don't want.
+- /Round-trip tests as the regression net/ :: cheap to author, catches both schema and generator regressions.
+- /Document remaining gaps explicitly/ :: =ore_xsd_schema_gaps.md= becomes the work list rather than leaving the gaps invisible.
+
+* Out of scope
+
+- FPML XSD codegen — separate story.
+- Streaming XML parser support.
+
+* See also
+
+None.

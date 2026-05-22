@@ -2,6 +2,7 @@
 :ID: D3C4E5F6-A7B8-9012-CDEF-123456789012
 :END:
 #+title: ores.iam Messaging Reference
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: overview

@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: eb6a1f72-6dc5-4461-be83-d76c1e80cc72
+:END:
+#+title: Improvements to detail dialogs
+#+description: Improvements to detail dialogs
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We've implemented most of these but check:
+
+- For most dialogs, pressing escape should be the same as closing it.
+- We should also add a "cancel" button to dialogs, makes it a bit more "normal".
+- New dialogs use toolbars instead of buttons at the bottom.

@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 4960fbb8-43bd-4936-b407-a1d9c797d7be
+:END:
+#+title: Task: Add write_one to repository
+#+description: Add a single-row write entry point to the repository alongside batch writes.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :repository:postgres:api:postgres_currency_persistence:sprint_03:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-25
+#+updated: 2025-11-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:3f819ee3-0834-4522-8b01-df4a7d09e77f][Postgres-backed currency persistence]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a =write_one= entry point to the repository API alongside the
+existing batch =write_many=. The current API forces callers to build a
+vector for a single insert; mirroring MongoDB's pattern of having both
+is more honest about the call sites.
+
+* Status
+
+| Field        | Value                                                                             |
+|--------------+-----------------------------------------------------------------------------------|
+| State        | DONE                                                                              |
+| Parent story | [[id:3f819ee3-0834-4522-8b01-df4a7d09e77f][Postgres-backed currency persistence]] |
+| Now          | Completed 2025-11-25.                                                             |
+| Waiting on   | None.                                                                             |
+| Next         | None.                                                                             |
+| Last touched | 2025-11-25                                                                        |
+
+* Acceptance
+
+- Repository exposes both =write_one= and =write_many=.
+- Existing call sites that previously wrapped single rows in a vector are updated to use =write_one=.
+
+* Notes
+
+- From the v0 entry: "We should follow the mongo patterns and have a write one and write many repository methods. At present we have to create a vector just to write a single entity."
+
+* Result
+
+=write_one= available across repositories; redundant single-element vectors
+removed from call sites.

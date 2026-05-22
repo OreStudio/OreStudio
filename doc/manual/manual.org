@@ -1,4 +1,5 @@
 #+title: ORE Studio Manual
+#+version: 1
 #+author: Marco Craveiro
 #+options: date:nil <:nil c:nil todo:nil H:7 ^:{}
 #+latex_class: article

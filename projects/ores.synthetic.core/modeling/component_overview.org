@@ -4,10 +4,17 @@
 #+title: ores.synthetic.core
 #+description: Synthetic DQ catalog generation — produces realistic test data structures compatible with ores.dq.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :synthetic:core:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.synthetic.core component diagram
+#+caption: ores.synthetic.core
+[[file:ores.synthetic.core.png][file:ores.synthetic.core.png]]
 
 * Summary
 

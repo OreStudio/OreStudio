@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: a9c3a711-97ba-4d8d-95ae-2c09d0843158
+:END:
+#+title: Get Role
+#+description: Get Role
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:rbac_role_based_access_control_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Get a specific role by ID.
+
+#+begin_src verb :wrap src json
+get /roles/{{(verb-var role_id)}}
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src

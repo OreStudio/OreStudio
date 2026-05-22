@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: b7b55734-cd7d-4eaa-b0d2-5262a05c6438
+:END:
+#+title: Create Account on Tenant
+#+description: Create Account on Tenant
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:tenants:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Creates new user accounts on system tenant.
+
+#+name: create-account-tenant
+#+begin_src ores-shell :exports none
+accounts create newuser60@example.com Secure-Password-123 567 newuser60@example.com
+accounts create newuser61@acme.com Secure-Password-123 567 newuser61@acme.com
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<create-account-tenant>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Account created with ID: 019c3245-e0d3-7fd2-9883-c335b920b797
+ores-shell> ✓ Account created with ID: 019c3245-e15f-73dc-b843-3c131b96872f
+ores-shell> Bye!
+#+end_example

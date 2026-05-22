@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 2d8ecbdf-6896-4dc1-b38e-cc7cfc479fe2
+:END:
+#+title: Lock
+#+description: Lock
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Lock an account to prevent login.
+
+#+name: lock-account
+#+begin_src ores-shell :exports none
+accounts lock 019c2a9d-ea3a-76f5-a152-cf85f2adce9f
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<lock-account>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Account locked successfully!
+  Account ID: 019c2a9d-ea3a-76f5-a152-cf85f2adce9f
+ores-shell> Bye!
+#+end_example

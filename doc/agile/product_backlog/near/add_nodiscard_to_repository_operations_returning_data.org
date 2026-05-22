@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: 8e2e9915-a9be-4265-a7c8-51bde725906b
+:END:
+#+title: Add =[[nodiscard]]= to repository operations returning data
+#+description: Add =[[nodiscard]]= to repository operations returning data
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+At present we can create an account and ignore the result, etc. We should be
+forced to look at the result.

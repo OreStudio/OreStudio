@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: ef2d7edc-4470-4976-8a29-4189103cdc15
+:END:
+#+title: Add
+#+description: Add
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:currencies:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Add a new currency.
+
+#+name: currencies-add
+#+begin_src ores-shell :exports none
+currencies add TEST700 Test700 700 A 100
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<currencies-add>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✗ Failed to add currency: Failed to save currency: Repository error: Executing INSERT failed: ERROR:  new row for relation "currencies" violates check constraint "currencies_change_reason_code_check"
+DETAIL:  Failing row contains (TEST700, 1, Test700, 700, A, , 100, Nearest, 2, , fiat, null, newuser3, , , 2026-01-11 18:59:25.874112+00, 9999-12-31 23:59:59+00).
+
+ores-shell> Bye!
+#+end_example

@@ -17,7 +17,7 @@ Behaviour at a glance:
 - Components live directly under their parent dir as =<slug>.org=;
   everything else gets its own =<slug>/<type>.org=.
 
-See =doc/v2/meta/document_types.org= for the contract every generated
+See =doc/meta/document_types.org= for the contract every generated
 document is expected to follow.
 """
 
@@ -40,6 +40,9 @@ TYPE_TO_TEMPLATE = {
     "recipe": "v2_doc_recipe.org.mustache",
     "knowledge": "v2_doc_knowledge.org.mustache",
     "skill": "v2_doc_skill.org.mustache",
+    "product_identity": "v2_doc_product_identity.org.mustache",
+    "capture": "v2_doc_capture.org.mustache",
+    "memory": "v2_doc_memory.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {
@@ -51,6 +54,9 @@ DEFAULT_INITIAL_STATE = {
     "recipe": "",
     "knowledge": "",
     "skill": "",
+    "product_identity": "",
+    "capture": "",
+    "memory": "",
 }
 
 # Composition: each type's direct parent type.
@@ -58,11 +64,15 @@ PARENT_OF_TYPE = {
     "task": "story",
     "story": "sprint",
     "sprint": "version",
-    # version, component, recipe, knowledge, skill have no composition parent.
+    # version, component, recipe, knowledge, skill, product_identity have no
+    # composition parent.
 }
 
 # Types that don't take a parent (and aren't stateful).
-PARENTLESS_TYPES = {"version", "component", "recipe", "knowledge", "skill"}
+PARENTLESS_TYPES = {
+    "version", "component", "recipe", "knowledge", "skill", "product_identity",
+    "capture", "memory",
+}
 
 
 def build_filetags(tags_input, ancestor_slugs):
@@ -131,7 +141,14 @@ def read_parent_info(parent_file):
         if stripped.startswith(":ID:") and "id" not in info:
             info["id"] = stripped[len(":ID:"):].strip()
         elif stripped.lower().startswith("#+title:") and "title" not in info:
-            info["title"] = stripped[len("#+title:"):].strip()
+            title = stripped[len("#+title:"):].strip()
+            # Parent titles in tasks/stories carry a "Task: " / "Story: "
+            # prefix; strip it so links read naturally in child docs.
+            for prefix in ("Task:", "Story:"):
+                if title.lower().startswith(prefix.lower()):
+                    title = title[len(prefix):].strip()
+                    break
+            info["title"] = title
         if "id" in info and "title" in info:
             break
     return info
@@ -213,6 +230,10 @@ def parse_args(argv=None):
                         help="Use this UUID for :ID: instead of generating a fresh one. "
                              "Pass an existing document's UUID to preserve org-roam links "
                              "when migrating a file to v2 format.")
+    parser.add_argument("--memory-subtype", default="feedback",
+                        choices=["feedback", "user", "project", "reference"],
+                        help="For --type memory: subtype of memory being stored. "
+                             "Default feedback. Ignored for other types.")
     parser.add_argument("--force", action="store_true",
                         help="Overwrite the output file if it already exists.")
     return parser.parse_args(argv)
@@ -253,6 +274,14 @@ def main(argv=None):
     args.description = fill_required("description", args.description,
                                      prompt_label="Description (one-liner)")
 
+    # Tasks and stories carry a "Task: " / "Story: " prefix in their
+    # #+title so v1 and v2 docs are easy to tell apart at a glance.
+    # Only add the prefix when not already present.
+    if args.type == "task" and not args.title.lower().startswith("task:"):
+        args.title = "Task: " + args.title
+    elif args.type == "story" and not args.title.lower().startswith("story:"):
+        args.title = "Story: " + args.title
+
     # Optional fields.
     args.tags = fill_optional("tags", args.tags,
                               prompt_label="Tags (comma-separated, optional)")
@@ -282,6 +311,18 @@ def main(argv=None):
     today = date.today().isoformat()
     new_id = args.id if args.id else str(uuid.uuid4())
 
+    # Captures derive their bucket (near | far) from the parent-dir name.
+    bucket = parent_dir.name if args.type == "capture" else ""
+
+    # Memories carry a subtype (feedback / user / project / reference) that
+    # both lands as a filetag and appears in #+memory_subtype. The literal
+    # "memory" tag is also injected so :memory: is greppable across the set.
+    memory_subtype = args.memory_subtype if args.type == "memory" else ""
+    if memory_subtype:
+        injected = f"memory,{memory_subtype}"
+        args.tags = f"{args.tags},{injected}" if args.tags else injected
+        filetags = build_filetags(args.tags, ancestor_slugs)
+
     variables = {
         "id": new_id,
         "slug": args.slug,
@@ -295,6 +336,8 @@ def main(argv=None):
         "parent_title": args.parent_title,
         "predecessor_id": args.predecessor_id or "",
         "predecessor_title": args.predecessor_title or "",
+        "bucket": bucket,
+        "memory_subtype": memory_subtype,
     }
 
     template_path = TEMPLATE_DIR / TYPE_TO_TEMPLATE[args.type]
@@ -317,7 +360,11 @@ def main(argv=None):
         leaf = args.slug if args.slug.startswith("task_") else f"task_{args.slug}"
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
-    elif args.type in ("component", "recipe", "knowledge"):
+    elif args.type in ("component", "recipe", "knowledge", "product_identity",
+                       "capture", "memory"):
+        # Captures live at agile/product_backlog/<bucket>/<slug>.org. The
+        # caller passes --parent-dir as that bucket directory; we validate
+        # the bucket name only loosely (audit can tighten later).
         out_dir = parent_dir
         out_file = out_dir / f"{args.slug}.org"
     elif args.type == "skill":

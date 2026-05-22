@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 08d2b499-53ce-4b1c-92cf-a7c26d036ec9
+:END:
+#+title: Story: Reporting and analytics
+#+description: Source report definitions from DQ artefact table; improved party picker; report execution workflow pipeline; analytics pricing engine configuration; analytics CRUD UI; analytics repository integration tests.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :reporting:analytics:dq:workflow:qt:sprint_16:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Source report definitions from DQ artefact table; improved party picker; report execution workflow pipeline; analytics pricing engine configuration; analytics CRUD UI; analytics repository integration tests.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Now           | Completed 2026-04-07.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-04-07                                             |
+
+
+#+predecessor: 84559b48-546b-4724-bdd0-53dbfca2c24a
+
+Continued from: [[id:84559b48-546b-4724-bdd0-53dbfca2c24a][Reporting subsystem]] (sprint 14). Sprint 14 stood up ores.reporting; this sprint sources report definitions from the DQ artefact table, adds the report execution workflow pipeline, and lands the analytics pricing engine.
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- [[id:c609652a-0266-4cd7-b748-096924688502][Add Analytics CRUD UI and restructure DQ project layout]]
+- [[id:551be8ac-5f16-4b9a-b0f3-050053eee129][Add analytics pricing engine configuration]]
+- [[id:aa89b17b-0cee-4786-82d9-747b20879f14][Add repository integration tests for all analytics entities]]
+- [[id:81acec3a-b462-4521-91d5-ed30e4b5a508][Add report execution workflow pipeline]]
+- [[id:f5996410-16cd-4cec-b747-3a0ae13f5d4e][Source report definitions from DQ + improve party picker]]
+- [[id:590899c4-d760-4865-a41c-afaa63f6b018][Source report definitions from DQ artefact table]]
+
+* Decisions
+
+- /Final v0 sprint/ :: capture everything landed under v0 honestly; this is the closing chapter of v0.
+
+* Out of scope
+
+- Anything explicitly carried forward to v1.
+
+* See also
+
+None.

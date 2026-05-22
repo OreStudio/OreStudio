@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: b5766b0e-24f0-45c3-b35d-e762bbab5206
+:END:
+#+title: ORES Recipe Sync Skill
+#+description: Keep recipe documentation in sync with the source it describes — CLI parsers, HTTP routes, shell commands, or any other recipe topic.
+#+type: skill
+#+version: 2
+#+level: cross
+#+filetags: :skills:claude_code:recipes:documentation:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_export markdown
+---
+name: ores-recipe-sync
+description: Compare a recipe topic's source-of-truth (CLI parsers, HTTP routes, shell commands, SQL scripts, ...) against the recipes that document it; add missing recipes, retire dead ones, fix drift. Replaces the per-topic recipe-sync skills.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When the user asks you to refresh the recipes for a topic — CLI, HTTP,
+shell, SQL, cmake, etc. — because the source has drifted. Symptoms:
+
+- The user added commands, routes, or scripts and the recipes do not
+  yet describe them.
+- An existing command/route/script has changed signature and the
+  recipe is stale.
+- A capability has been removed and the recipe still references it.
+
+* How to use this skill
+
+The procedure is the same across topics. Only the source-of-truth
+location changes.
+
+1. /Pick the topic and identify its source/. Common topics in this
+   repo:
+
+   | Topic    | Source-of-truth                                              | Recipe folder       |
+   |----------+--------------------------------------------------------------+---------------------|
+   | =cli=    | =projects/ores.cli/src/config/entity_parsers/=               | =doc/recipes/cli/=  |
+   | =http=   | =projects/ores.http.core/src/routes/= (and =ores.http.api=)  | =doc/recipes/http/= |
+   | =shell=  | =projects/ores.shell/src/app/commands/=                      | =doc/recipes/shell/= |
+   | =sql=    | =projects/ores.sql/schema/=                                  | =doc/recipes/sql/= |
+   | =cmake=  | =CMakeLists.txt= + presets in =CMakePresets.json=            | =doc/recipes/cmake/= |
+   | =git=    | (none — convention-only)                                     | =doc/recipes/git/= |
+   | =github= | =gh= CLI capabilities + this repo's PR/CI conventions        | =doc/recipes/github/= |
+
+   For any other topic, read the topic's =doc/recipes/<topic>/<topic>.org=
+   inventory to see what is currently documented.
+
+2. /Enumerate what the source actually provides/. Use whichever
+   pattern fits — parser registries, route tables, command tables.
+   Produce a flat list of /things the recipe set should cover/.
+
+3. /Enumerate the current recipes/ for the topic:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.codegen/doc_list.sh \
+       --tag <topic> --type recipe --sort path
+   #+end_src
+
+4. /Diff/. Bucket each item:
+
+   - In source but not in recipes → /missing/, schedule new recipe.
+   - In recipes but not in source → /retired/, schedule deletion.
+   - In both, but with drift → /stale/, schedule update.
+
+5. /Apply changes/, one at a time:
+
+   - New recipe → scaffold via [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] §"New
+     recipe", then write the body per [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]].
+     The filename, =#+title:=, and =* Question= must all agree as
+     the same NLP question.
+   - Retired recipe → =git rm= the file, remove its row from the
+     topic inventory.
+   - Stale recipe → bump =#+updated:= when you fix the body; for
+     non-trivial drift, also refresh the =* Answer= example output.
+
+6. /Sync the inventory/. Open =doc/recipes/<topic>/<topic>.org= and
+   make sure every recipe in the folder appears, grouped under a
+   sensible sub-heading.
+
+7. /Run the audit/ before committing:
+
+   #+begin_src sh :results verbatim
+   python3 projects/ores.codegen/scripts/doc_version_audit.py --check
+   #+end_src
+
+* Recipes
+
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — scaffold a new recipe file.
+- [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]] — body conventions, question form,
+  executable babel blocks.
+- [[id:d1ae0786-5f2f-4437-8449-0e480c278a1b][How do I find docs matching a pattern?]] — enumerate the recipes
+  currently in a topic.
+- [[id:e8231c22-cb31-4d85-a9c0-7602953764ff][How do I show a doc by UUID?]] — inspect a single recipe to see
+  what it currently claims.
+
+* Reference
+
+- [[id:117a95f9-b03d-490b-bb74-da9fe74537e2][Recipe]] (glossary) — the contract.
+- [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] — the top-level inventory listing every topic.
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]]§=recipe= — required sections and conventions.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

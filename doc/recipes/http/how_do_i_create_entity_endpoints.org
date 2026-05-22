@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: c9eeaad1-1e78-4775-a05f-19573e669bd9
+:END:
+#+title: How do I create HTTP endpoints for a new entity?
+#+description: Walk through list, save, delete, and history routes for a new entity in ores.http.server.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:entity:rest:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Route structure, handler skeleton, and auth conventions are in
+[[id:579910d3-89ff-4820-9a9b-57508ff39096][HTTP entity patterns]]. The [[id:bdcc47d4-b050-409e-8c50-3d179843a274][http-entity-creator]] skill drives this process.
+
+* Question
+
+How do I add HTTP REST endpoints for a new entity in =ores.http.server=?
+
+* Answer
+
+*Phase 1 — list and save* (PR title: =[http] Add {entity} list and save endpoints=):
+
+1. Add handler declarations to =include/ores.http.server/routes/{domain}_routes.hpp=
+   (or create the routes class if it doesn't exist).
+2. Implement =handle_get_{entities}= (paginated GET) and
+   =handle_save_{entity}= (POST upsert) in =src/routes/{domain}_routes.cpp=.
+3. Register both routes in =register_routes()= using the router builder
+   (=.auth_required()=, =.roles(...)=, =.query_param(...)=, =.response<T>()=).
+4. Register the routes class in =src/application.cpp=.
+5. Build: =cmake --build --preset linux-clang-debug-ninja --target ores.http.server.lib=
+
+*Phase 2 — delete and history* (PR title: =[http] Add {entity} delete and history=):
+
+1. Add =handle_delete_{entities}= (DELETE batch) and
+   =handle_get_{entity}_history= (GET /{id}/history) declarations.
+2. Implement both handlers; register routes in =register_routes()=.
+3. Build and verify.
+
+*Phase 3 — recipe docs* (PR title: =[doc] Add {entity} HTTP endpoint recipes=):
+
+1. Add per-operation recipe files under =doc/recipes/http/= (one per
+   endpoint, following the =how_do_i_*.org= naming convention).
+
+* Tested by
+
+Build =ores.http.server.lib= cleanly and run the HTTP integration tests.
+
+* See also
+
+- [[id:579910d3-89ff-4820-9a9b-57508ff39096][HTTP entity patterns]] — route structure, handler conventions, auth hooks.
+- [[id:bdcc47d4-b050-409e-8c50-3d179843a274][http-entity-creator]] — skill that drives this workflow.
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.

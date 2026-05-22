@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 3e57dcdc-f728-4b42-b262-74dfc751d04a
+:END:
+#+title: Task: Add account support
+#+description: Domain type, repository, and end-to-end import/export path for user accounts.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :login:accounts:reference_data:login_and_sessions:sprint_03:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-20
+#+updated: 2025-12-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:b09e0d06-0314-4424-ad57-2da31a335d99][Login and sessions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Introduce the =account= domain type with its repository, JSON / XML
+codecs, and the end-to-end import/export path. Lays the foundation for
+session-based authentication and any later authorisation work.
+
+* Status
+
+| Field        | Value                                                           |
+|--------------+-----------------------------------------------------------------|
+| State        | DONE                                                            |
+| Parent story | [[id:b09e0d06-0314-4424-ad57-2da31a335d99][Login and sessions]] |
+| Now          | Completed 2025-12-20.                                           |
+| Waiting on   | None.                                                           |
+| Next         | None.                                                           |
+| Last touched | 2025-12-20                                                      |
+
+* Acceptance
+
+- =account= domain type defined.
+- Repository supports CRUD via sqlgen.
+- Account-locking behaviour wired (n failed attempts → locked account).
+- Round-trip tests for the JSON / XML codecs.
+
+* Notes
+
+- Locking behaviour requires writing booleans back to Postgres; a known sqlgen issue blocks direct boolean updates (=getml/sqlgen #74=). v0 worked around it by representing the locked flag as an integer.
+- Reference reading collected at the time: AzerothCore's account model (creating accounts; account record); MongoDB built-in roles.
+- Carries the longer-tail authentication-bootstrap workflow as POSTPONED to a successor sprint.
+
+* Result
+
+Account domain type, repository, and round-trip path land. Lockout logic
+in place via integer-as-bool workaround.

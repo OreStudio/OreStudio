@@ -1,0 +1,23 @@
+:PROPERTIES:
+:ID: be3a4e89-63aa-4372-8ad1-331cdcdfde2c
+:END:
+#+title: Review skills in claude code templates
+#+description: Review skills in claude code templates
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+#+begin_quote
+Ready-to-use configurations for Anthropic's Claude Code. A comprehensive
+collection of AI agents, custom commands, settings, hooks, external integrations
+(MCPs), and project templates to enhance your development workflow.
+#+end_quote
+
+Links:
+
+- [[https://github.com/davila7/claude-code-templates][GH: claude-code-templates]]

@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: f835c004-ce6b-4e7a-903b-30433fe3e85d
+:END:
+#+title: Get Images by Tag
+#+description: Get Images by Tag
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:images_and_tags:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select i.key, i.description
+from ores.images i
+join ores.image_tags it on it.image_id = i.image_id
+  and it.valid_to = '9999-12-31 23:59:59'::timestamptz
+join ores.tags t on t.tag_id = it.tag_id
+  and t.valid_to = '9999-12-31 23:59:59'::timestamptz
+where i.valid_to = '9999-12-31 23:59:59'::timestamptz
+  and t.name = 'flag'
+order by i.key
+limit 20;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| key   | description         |
+|-------+---------------------|
+| ad    | Flag for code AD    |
+| ae    | Flag for code AE    |
+| af    | Flag for code AF    |
+| ag    | Flag for code AG    |
+| ai    | Flag for code AI    |
+| al    | Flag for code AL    |
+| am    | Flag for code AM    |
+| ao    | Flag for code AO    |
+| aq    | Flag for code AQ    |
+| ar    | Flag for code AR    |
+| arab  | Flag for code ARAB  |
+| as    | Flag for code AS    |
+| asean | Flag for code ASEAN |
+| at    | Flag for code AT    |
+| au    | Flag for code AU    |
+| aw    | Flag for code AW    |
+| ax    | Flag for code AX    |
+| az    | Flag for code AZ    |
+| ba    | Flag for code BA    |
+| bb    | Flag for code BB    |
+#+end_example

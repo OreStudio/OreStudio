@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: cc6fe132-8476-4fe9-bfba-f080cc7afdad
+:END:
+#+title: Upload Result Output
+#+description: Upload Result Output
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:compute_file_storage_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Upload the result output file after job completion (PUT semantics).
+
+#+begin_src verb :wrap src text
+put http://localhost:8080/api/v1/compute/results/{{(verb-var result_id)}}/output
+Content-Type: application/octet-stream
+
+<<output-data.bin
+#+end_src

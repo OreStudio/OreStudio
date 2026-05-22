@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 1d0fd3d8-fdee-463b-b0c3-f4e3155f8249
+:END:
+#+title: Task: Split scheduler / assets / variability / synthetic / trading / reporting (Phase 2)
+#+description: Six more service libraries refactored into *.api + *.core. New ores.assets.api + ores.reporting.api + ores.scheduler.api modules added with their CMake configs; existing modules renamed to .core. All ten service libraries now follow the three-layer api / core / service pattern.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :architecture:refactor:api:core:scheduler:assets:variability:synthetic:trading:reporting:api_core_migration:sprint_15:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Phase 2: split the remaining six service libraries into .api + .core.
+
+* Status
+
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | DONE                                                                         |
+| Parent story | [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]] |
+| Now          | Completed 2026-03-23.                                                        |
+| Waiting on   | None.                                                                        |
+| Next         | None.                                                                        |
+| Last touched | 2026-03-23                                                                   |
+
+* Acceptance
+
+- Modules: ores.scheduler, ores.assets, ores.variability, ores.synthetic, ores.trading, ores.reporting.
+- New ores.assets.api, ores.reporting.api, ores.scheduler.api modules added with CMake configs.
+- Existing modules renamed to .core.
+- Numerous CMakeLists.txt + C++ source/header files updated.
+- All 10 service libraries now follow the three-layer api / core / service pattern.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Phase 2 completes the migration; the pattern is now the convention.
+
+* Result
+
+Architecture migration done across all 10 services.

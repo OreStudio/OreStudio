@@ -1,0 +1,213 @@
+:PROPERTIES:
+:ID: 271f40da-d0ea-4d08-a4f8-3d2b835df5e7
+:END:
+#+title: PlantUML class diagram conventions
+#+description: How ORE Studio writes PlantUML class diagrams — skeleton, namespaces, class styling, members, relationships, layout, and test-suite blocks.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:architecture:plantuml:diagrams:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+ORE Studio's class diagrams follow consistent rules so that any two
+components' diagrams look comparable. This doc captures /how a
+diagram should look/. The [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] skill drives the
+authoring; [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] runs the build.
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* File locations
+
+| Diagram          | Path                                              |
+|------------------+---------------------------------------------------|
+| Component        | =projects/<component>/modeling/<component>.puml=  |
+| System (top)     | =projects/modeling/ores.puml=                     |
+
+Create the modeling folder with =mkdir -p= if missing; each modeling
+dir also carries a =CMakeLists.txt= that adds the diagram target.
+
+* Skeleton
+
+#+begin_src plantuml
+' GPL header (copy from any existing .puml)
+@startuml
+set namespaceSeparator ::
+
+' <<< BODY GOES HERE >>>
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar <FILE>.puml"
+' End:
+@enduml
+#+end_src
+
+Bump the copyright year as needed.
+
+* Namespaces
+
+- Nest =namespace= blocks. Top-level =ores= carries /no/ note;
+  every other namespace adds a note sourced from =<namespace>.hpp=
+  if one exists.
+- No relationship arrows touch a namespace block.
+
+| Namespace name | Colour    | Stereotype |
+|----------------+-----------+------------|
+| =database=     | =#C6F0D8= | =<<orm>>=  |
+| /any other/    | =#F2F2F2= | (none)     |
+
+* Class & struct styling
+
+Apply the first matching rule:
+
+| Condition                                                              | Colour    | Stereotype       | Kind         |
+|------------------------------------------------------------------------+-----------+------------------+--------------|
+| Ends with =_entity= / =_mapper= / =_repository= and in =repository/=   | =#99CB99= | =<<orm>>=        | class/struct |
+| Ends with =_option= and in =config/=                                   | =#FFC072= | =<<config>>=     | struct       |
+| Ends with =_request= or =_response= and in =messaging/=                | =#E1F5FF= | =<<message>>=    | struct       |
+| Ends with =_exception=                                                 | =#D6B19F= | =<<exception>>=  | class        |
+| Default struct                                                         | =#F7E5FF= | (none)           | struct       |
+| Default class                                                          | =#ECECEC= | (none)           | class        |
+
+Stereotype goes /after/ the class name: =class foo <<orm>> #99CB99=.
+
+* Members and notes
+
+- Include methods and fields with visibility markers (=+= / =-= /
+  =#=). Prefix fields with ={field}= (PlantUML disambiguation).
+- /Skip/: =operator<<=, default values, logging members, trivial
+  getters/setters.
+- Always attach a /note top of <name>/ — the first line is a one
+  sentence "what is this for", followed by one line per field
+  (=type name // comment=).
+- ORM structs with =schema= / =tablename= members omit those
+  members from the class body and add them to the note instead:
+
+  #+begin_example
+  ORM Settings:
+  - Schema:    my_schema
+  - Tablename: my_table
+  #+end_example
+
+* Relationships
+
+- Use /fully qualified/ names (=ores::component::class=).
+- Ignore external-component types entirely.
+- /Always/ show inheritance.
+- Arrow vocabulary:
+
+  | Relation     | Arrow    | Notes                                         |
+  |--------------+----------+-----------------------------------------------|
+  | Inheritance  | =-up-\|>= | =derived -up-\|> base= (forces parent on top)   |
+  | Composition  | =*--=    | Strong ownership.                             |
+  | Aggregation  | =o--=    | Weak ownership / reference.                   |
+  | Association  | =--=     | Plain "knows about".                          |
+  | Dependency   | =..>=    | Label =: uses=, =: creates=, =: generates=.   |
+
+- Use directional variants (=-up-=, =-down-=, =-left-=, =-right-=)
+  to control layout when the default flow is ugly.
+
+* Implementation-file dependencies
+
+Scan =.cpp= files for /architecturally significant/ patterns:
+
+- Static method calls on component classes.
+- Instantiation of non-member helpers.
+- Message-handler patterns (=deserialize()=, response construction).
+
+Only model these as =A ..> B : uses= if they are load-bearing for
+the design; otherwise leave them out.
+
+* Enumerations
+
+#+begin_src plantuml
+enum example #F2DAFD {
+    VALUE_1
+    VALUE_2
+}
+#+end_src
+
+* Generators
+
+Functions in =generators/= whose name starts with =generate_= use
+the generator stereotype:
+
+#+begin_src plantuml
+class generate_foo <<generator>> #D89EF1 {}
+note top of generate_foo
+Generates a foo.
+end note
+generate_foo --> ores::foo::bar : generates
+#+end_src
+
+* Test suites
+
+Test classes give the diagram visibility into test coverage. They
+live in a =tests= namespace at the component level. One class per
+test file (=foo_tests.cpp= → =foo_tests=); methods list each
+=TEST_CASE= as a public =void= method.
+
+Styling:
+
+| Property        | Value                                  |
+|-----------------+----------------------------------------|
+| Stereotype      | =<<test suite>>=                       |
+| Colour          | =#C5E1A5= (light green)                |
+| Namespace color | =#F2F2F2= (same as other namespaces)   |
+
+Each test class gets a note describing what it covers, and a
+=..> ores::component::class : tests= dependency arrow to the
+classes under test. No relationship arrows to external types.
+
+* Layout
+
+PlantUML defaults can spread a diagram horizontally; aim for an
+aspect ratio between 2:1 and 3:1. Tools:
+
+- /together blocks/ — group related classes (request/response
+  pairs, entity/mapper/repository chains, related test suites).
+- /Hidden relationships/ (=-[hidden]down-=) — stack vertically
+  within or between =together= blocks.
+- /Layout engine/ — try =!pragma layout smetana= after =@startuml=
+  if the default GraphViz engine misplaces classes outside their
+  namespaces.
+
+Place groupings and hidden relationships at the top of each
+namespace, before the class definitions.
+
+* System-level diagram
+
+The system-level diagram (=projects/modeling/ores.puml=) uses
+PlantUML's component syntax (not class syntax) with packages per
+architectural layer:
+
+| Layer          | Colour         |
+|----------------+----------------|
+| Foundation     | =#LIGHTBLUE=   |
+| Infrastructure | =#LIGHTGREEN=  |
+| Domain         | =#LIGHTYELLOW= |
+| Application    | =#LIGHTCORAL=  |
+
+For each component, place its =note right of <component>= inside
+the package block, immediately after the component definition.
+Source the description from the namespace =@brief= in
+=projects/<component>/include/<component>/<component>.hpp=.
+
+Component dependencies come from =target_link_libraries= in each
+=projects/<component>/src/CMakeLists.txt=; ignore external
+libraries.
+
+* Evaluation checklist
+
+| Check                        | How                                                     |
+|------------------------------+---------------------------------------------------------|
+| No class-to-namespace arrows | Search for =namespace= in arrow lines.                  |
+| Correct stereotype order     | =class name <<stereo>> #COLOR=.                         |
+| Consistent colours           | Match the styling table above.                          |
+| Syntax valid                 | =cmake --build --target generate_<component>_diagram=. |
+
+* See also
+
+- [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler skill]] — drives the authoring.
+- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — runs the build.
+- [[id:496dc90b-8951-42a6-a63e-b1762df496c6][PlantUML ER diagram conventions]] — sibling, for SQL schema.
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the system-level diagram lives here.

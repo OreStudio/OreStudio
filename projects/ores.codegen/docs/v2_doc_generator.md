@@ -3,7 +3,7 @@
 `generate_v2_doc.sh` creates a new v2 information-architecture document
 (task, story, sprint, or version) from a Mustache template, producing a
 file that already follows the contract in
-`doc/v2/meta/document_types.org`.
+`doc/meta/document_types.org`.
 
 ## What it generates
 
@@ -20,8 +20,10 @@ file that already follows the contract in
 
 Each output has a fresh UUID in `:ID:` (or a caller-supplied UUID via
 `--id` — see below), today's date in `#+created` and `#+updated`, the
-standard frontmatter for its type, an initial `* Status` headline at
-the type's default TODO state, and skeleton sections.
+standard frontmatter for its type (including `#+version: 2` for the
+type-bearing templates; `#+version: 1` for the skill template, which
+predates the v2 contract), an initial `* Status` headline at the
+type's default TODO state, and skeleton sections.
 
 ## Usage
 
@@ -55,7 +57,7 @@ typically only need `--type`, `--slug`, `--parent-dir`, `--title`,
 you.
 
 For example, when creating a task with
-`--parent-dir doc/v2/versions/v0/sprint_17/audit_tooling`, the script
+`--parent-dir doc/agile/versions/v0/sprint_17/audit_tooling`, the script
 reads `.../audit_tooling/story.org`, picks up its `:ID:` and
 `#+title:`, and uses `audit_tooling` as the parent slug (from the
 folder basename).
@@ -98,7 +100,7 @@ description, and tags.
 ```sh
 projects/ores.codegen/generate_v2_doc.sh \
   --type recipe --slug how_do_i_clear_the_cache \
-  --parent-dir doc/v2/recipes/cmake \
+  --parent-dir doc/recipes/cmake \
   --title "How do I clear the cache?" \
   --description "Remove the CMake binary cache to force a clean re-configure." \
   --tags "cmake,build,recipe"
@@ -109,7 +111,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 ```sh
 projects/ores.codegen/generate_v2_doc.sh \
   --type knowledge --slug build_system_decisions \
-  --parent-dir doc/v2/knowledge/architecture \
+  --parent-dir doc/knowledge/architecture \
   --title "Build system decisions" \
   --description "Why we picked Ninja over Make as the default generator." \
   --tags "build,architecture,knowledge"
@@ -149,7 +151,7 @@ Components have no parent in the composition tree, so `--parent-id`,
 ```sh
 projects/ores.codegen/generate_v2_doc.sh \
   --type sprint --slug sprint_17 \
-  --parent-dir doc/v2/versions/v0 \
+  --parent-dir doc/agile/versions/v0 \
   --title "Sprint 17" \
   --description "Sprint 17 — describe its mission in one sentence." \
   --tags "v0" \
@@ -163,7 +165,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 ```sh
 projects/ores.codegen/generate_v2_doc.sh \
   --type story --slug improve_audit_signals \
-  --parent-dir doc/v2/versions/v0/sprint_17 \
+  --parent-dir doc/agile/versions/v0/sprint_17 \
   --title "Improve audit signals" \
   --description "Surface stale tasks, orphan plans, and broken links." \
   --tags "audit,scripts" \
@@ -177,7 +179,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 ```sh
 projects/ores.codegen/generate_v2_doc.sh \
   --type story --slug currencies_temporal_continued \
-  --parent-dir doc/v2/versions/v0/sprint_17 \
+  --parent-dir doc/agile/versions/v0/sprint_17 \
   --title "Currencies temporal (continued)" \
   --description "Pick up where sprint 02 left off." \
   --tags "currencies,temporal,reference_data" \

@@ -4,10 +4,17 @@
 #+title: ores.trading.api
 #+description: Protocol types, domain entities, JSON/table I/O, and NATS message schemas for the trading component.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :trading:api:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.trading.api component diagram
+#+caption: ores.trading.api
+[[file:ores.trading.api.png][file:ores.trading.api.png]]
 
 * Summary
 

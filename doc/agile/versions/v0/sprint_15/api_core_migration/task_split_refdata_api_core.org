@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 11b6e2e3-e097-43ed-8201-494cea57a9f0
+:END:
+#+title: Task: Split ores.refdata into api + core
+#+description: ores.refdata.api for public contracts (domain types + eventing + messaging + CSV support); ores.refdata.core for internal logic (handlers + repositories + generators + services). All dependent modules updated. .env loads ORES_TEST_DB_* credentials during CMake configure.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :architecture:refactor:api:core:refdata:api_core_migration:sprint_15:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Split ores.refdata into .api (public contracts) and .core (internal logic).
+
+* Status
+
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | DONE                                                                         |
+| Parent story | [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]] |
+| Now          | Completed 2026-03-22.                                                        |
+| Waiting on   | None.                                                                        |
+| Next         | None.                                                                        |
+| Last touched | 2026-03-22                                                                   |
+
+* Acceptance
+
+- ores.refdata.api: domain types, eventing, messaging, CSV support.
+- ores.refdata.core: handlers, repositories, generators, services.
+- ores.cli, ores.qt, ores.ore, ores.http.server, ores.wt.service, ores.iam.core, ores.eventing all updated to reference the right module.
+- Load ORES_TEST_DB_* credentials from .env during CMake configure.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Continues the pattern from iam + compute.
+
+* Result
+
+refdata split landed.

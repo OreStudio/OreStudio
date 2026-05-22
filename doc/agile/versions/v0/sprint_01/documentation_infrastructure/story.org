@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: c85f2dca-f7d6-40ae-b796-8b4cf84a7093
+:END:
+#+title: Story: Documentation infrastructure
+#+description: Establish the documentation pipeline — project site, Doxygen, README, and the seed domain notes.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :documentation:site:doxygen:sprint_01:v0:
+#+created: 2024-06-22
+#+updated: 2026-05-18
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Bring up a documentation pipeline that produces a project site from
+the org-mode sources, integrates API documentation via Doxygen, and
+hosts the seed domain notes that the rest of the project will build
+on.
+
+* Status
+
+| Field         | Value                                                                     |
+|---------------+---------------------------------------------------------------------------|
+| State         | DONE                                                                      |
+| Parent sprint | [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]                    |
+| Now           | Story closed; project site live, Doxygen integrated, domain notes seeded. |
+| Waiting on    | None.                                                                     |
+| Next          | None.                                                                     |
+| Last touched  | 2024-07-28                                                                |
+
+* Acceptance
+
+- A basic project site is generated and published.
+- Code syntax highlighting works in the site output.
+- The README serves as the site's index (no separate index file).
+- A project objective is stated in the README.
+- Doxygen runs over the source and the output is linked from the
+  site.
+- Initial domain notes are imported from the legacy source.
+
+* Tasks
+
+In execution order:
+
+- [[id:7c6151b0-3a3b-4562-83fe-e0ec2459aeae][Add basic site]]
+- [[id:6030cced-00fd-4375-8798-fed75d2385cd][Generate Doxygen documentation and add it to the site]]
+- [[id:c098d15a-156b-4195-a1ef-575289d89770][Copy domain notes on core concepts]]
+
+Additional tasks belonging to this story in v0 but not migrated in
+the drive-test:
+
+- Fix code syntax highlighting in site.
+- Merge index with README.
+- Add project objective to README.
+- Convert PlantUML diagrams to org-babel (postponed).
+
+* Decisions
+
+- /Org-mode as source of truth/ :: site is generated from the
+  org-mode files in =doc/=. No second documentation system.
+- /Doxygen for the API surface/ :: industry standard, integrates with
+  CMake, no custom tooling required.
+- /README is the site index/ :: avoids drift between two top-level
+  entry points.
+
+* Out of scope
+
+- Internationalised docs.
+- A separate developer manual vs. user manual (deferred — handled by
+  generated views in v2).
+
+* See also
+
+- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — recipe for the =deploy_site= CMake
+  target that this story stood up.
+- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — sibling pipeline for the Claude Code
+  skill bundle.
+- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — the diagram pipeline that
+  later replaced the abandoned org-babel PlantUML conversion.
+- =doc/doc.org= — the top-level v1 documentation index that the basic
+  site renders.
+- [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] (v2 entry point) — successor of the org-publish driven site
+  for the new information architecture.

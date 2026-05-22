@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 43f68b11-1870-46db-bfc3-c5fbc83fe6cf
+:END:
+#+title: Story: ORE golden roundtrip tests
+#+description: Golden file XML roundtrip tests for Commodity + BondOption, Credit + Equity, and Exotic + Hybrid + Scripted instruments.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :ore:tests:golden:roundtrip:xml:sprint_16:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Golden file XML roundtrip tests for Commodity + BondOption, Credit + Equity, and Exotic + Hybrid + Scripted instruments.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Now           | Completed 2026-03-31.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-31                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- [[id:f97fe9a7-7363-46fd-96ec-d1b84a54cab8][Commodity and BondOption golden roundtrip tests]]
+- [[id:bf7e3677-4b74-49d0-8ce9-e05eae564e8c][Credit and Equity golden roundtrip tests]]
+- [[id:9030ea6e-6231-4a98-84f5-d94e6298f785][Exotic, Hybrid, and Scripted golden roundtrip tests]]
+
+* Decisions
+
+- /Final v0 sprint/ :: capture everything landed under v0 honestly; this is the closing chapter of v0.
+
+* Out of scope
+
+- Anything explicitly carried forward to v1.
+
+* See also
+
+None.

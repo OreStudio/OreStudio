@@ -4,10 +4,17 @@
 #+title: ores.compute.service
 #+description: NATS service entrypoint for the compute domain.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :compute:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.compute.service component diagram
+#+caption: ores.compute.service
+[[file:ores.compute.service.png][file:ores.compute.service.png]]
 
 * Summary
 

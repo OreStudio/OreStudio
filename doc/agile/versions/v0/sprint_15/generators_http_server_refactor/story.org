@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 4837265a-934c-4cfc-9f7a-edc3f86f37c6
+:END:
+#+title: Story: Generators to api layer + http.server split
+#+description: Move synthetic generators from core to api across IAM / refdata / trading / reporting / compute; move HTTP route handlers into domain core modules; ores.http.server retains generic server infrastructure only.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :refactor:generators:http:architecture:sprint_15:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Close the api/core migration by relocating two cross-cutting
+concerns into the right modules: synthetic generators (api) and
+domain-specific HTTP route handlers (core).
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Now           | Completed 2026-03-25.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-25                                             |
+
+* Acceptance
+
+- Generators moved to api layers across trading + reporting + iam + refdata + compute.
+- auth_session_service relocated from iam.core to iam.api.
+- HTTP route handlers moved into domain core modules.
+- ores.http.server retains generic server infrastructure only.
+- Generator directory standardised to generators/ (plural).
+- faker-cxx added as private dep on affected api libs.
+
+* Tasks
+
+In execution order:
+
+- [[id:afcd8728-5bd6-4fa5-8aa6-5eb5cd6b78f0][Move generators to api layer; split http.server]]
+
+* Decisions
+
+- /Generators in api layer/ :: generated values are part of the contract surface; tests + clients can use them.
+- /HTTP routes near the domain core/ :: removes the cross-component coupling that http.server-monolith created.
+
+* Out of scope
+
+- Splitting ores.http further (already covered by the env-isolation story).
+
+* See also
+
+- [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]] — sibling.

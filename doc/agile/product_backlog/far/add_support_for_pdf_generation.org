@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: 161ce661-b7a8-477e-a2dc-badca65d79fc
+:END:
+#+title: Add support for PDF generation
+#+description: Add support for PDF generation
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+A lot of legal documents require PDF support. This story keeps track of useful
+PDF libraries.
+
+Links:
+
+- [[https://github.com/libharu/libharu][GH libharu]]: "Haru is a free, cross platform, open-sourced software library for
+  generating PDF. It supports the following features."

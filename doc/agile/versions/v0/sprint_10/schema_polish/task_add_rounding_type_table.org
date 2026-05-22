@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 850e10f2-d84c-4a25-b30b-0328edb33ae8
+:END:
+#+title: Task: Add rounding type table
+#+description: Rounding values aligned with FpML RoundingDirectionEnum: Up, Down, Closest, Floor, Ceiling. Currency validates against this table.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :refdata:rounding:fpml:currency:schema_polish:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a reference table for currency rounding types, aligned with FpML's =RoundingDirectionEnum=.
+
+* Status
+
+| Field        | Value                                                      |
+|--------------+------------------------------------------------------------|
+| State        | DONE                                                       |
+| Parent story | [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]] |
+| Now          | Completed 2026-01-26.                                      |
+| Waiting on   | None.                                                      |
+| Next         | None.                                                      |
+| Last touched | 2026-01-26                                                 |
+
+* Acceptance
+
+- Values: Up, Down, Closest, Floor, Ceiling.
+- Currency validates =rounding_type= against the table.
+- Mapping table consumed by mappers.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Considered banker's rounding / half-up; kept the FpML enum's tight set so we don't have to translate when we export FpML.
+
+* Result
+
+Rounding types are a first-class reference-data entity.

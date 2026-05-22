@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: d159db0f-ad62-4268-b4cf-a30aa55fe1c5
+:END:
+#+title: Task: Strict service table isolation: SECURITY DEFINER validators + mandatory role drops
+#+description: This PR implements the strict service table isolation invariant described in
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :strict_service_isolation:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/737
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Enforce the strict service table isolation invariant: SECURITY DEFINER validators for cross-service FK checks, and mandatory role drops on database recreate.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]] |
+| Now          | Completed 2026-05-14.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Enforce the strict service table isolation invariant: SECURITY DEFINER validators for cross-service FK checks, and mandatory role drops on database recreate.
+- PR #737 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+This PR implements the strict service table isolation invariant described in
+=doc/plans/2026-05-12-strict-service-table-isolation.org=. Each domain service
+user (=ores_<env>_<service>_service=) now holds DML only on its own
+=ores_<service>_*= tables, with no cross-component SELECT grants.
+
+*** Phase 0 — Mandatory role drops
+
+=recreate_database.sh= now drops all =ores_<env>_*= cluster-level roles before
+recreating them. Previously, historical group memberships silently masked missing
+per-service GRANTs, making the system non-reproducible across machines.
+
+Adds =projects/ores.sql/utility/show_roles.sh= to verify role lifecycle before
+and after =recreate_database.sh=.
+
+*** Phase 1 — SECURITY DEFINER validators + grant cleanup
+
+=ores_iam_validate_tenant_fn= and =ores_dq_validate_change_reason_fn= converted
+to =SECURITY DEFINER=. These trigger-called validators now run as the DDL owner,
+so no calling service user needs =SELECT ON ores_iam_tenants_tbl= or
+=SELECT ON ores_dq_change_reasons_tbl=.
+
+24 cross-component SELECT grants removed from the service registry and the
+generated grants file.
+
+*** Phase 2.1 — IAM reads variability settings via SECURITY DEFINER function
+
+New =ores_variability_get_system_settings_fn(p_tenant_id uuid)= function
+(=SECURITY DEFINER=, =SET search_path = public, pg_temp=) wraps the SELECT on
+=ores_variability_system_settings_tbl=. =system_settings_service::refresh()=
+branches on =tenant_id_= being set: when set it calls =read_for_tenant= (the
+SECURITY DEFINER path); otherwise it reads directly (DDL user path).
+
+IAM service user no longer holds =SELECT ON ores_variability_system_settings_tbl=.
+
+Note: =ores_variability_system_settings_tbl= has RLS filtering by session context;
+the SECURITY DEFINER function bypasses RLS (runs as DDL owner), so an explicit
+=WHERE tenant_id = p_tenant_id= filter is applied inside the function.
+
+*** Phase 2.2 — Provisioner returns system_party_id
+
+=ores_iam_provision_tenant_fn= changed from =RETURNS uuid= to two OUT parameters
+=(tenant_id uuid, system_party_id uuid)=. The =system_party_id= is now minted
+inside the function and returned to the caller.
+
+=bootstrap_handler.hpp= now reads both values via
+=unnest(ARRAY[tenant_id::text, system_party_id::text])= and no longer calls
+=party_repository.read_system_party()= after provisioning. The IAM service user
+no longer needs a DML grant on =ores_refdata_parties= for the bootstrap path.
+
+Drop script updated to match the new six-argument signature.
+
+*** Phase 3 — SECURITY DEFINER on trading trigger functions
+
+Five trading trigger functions that contained inline =SELECT= statements against
+refdata tables were already marked =SECURITY DEFINER= in some cases or needed
+=SET search_path = public, pg_temp= added. Each is now:
+
+- =ores_trading_trades_insert_fn=
+- =ores_trading_identifiers_insert_fn=
+- =ores_trading_party_roles_insert_fn=
+- =ores_trading_get_book_ids_by_business_unit_fn=
+- Three functions in =trading_trades_functions_create.sql=
+
+The broad =SELECT ON ores_refdata_*= prefix grant for the trading service user
+has been removed from the service registry and regenerated grants file.
+
+*** Phase 4 — Invariant locked; documentation updated
+
+=system_model.org= updated to reflect the three remaining cross-component grants
+(IAM↔refdata parties, workflow↔IAM/refdata, ORE↔workflow) which require NATS
+write APIs and are deferred to the new =doc/plans/2026-05-13-cross-service-write-decoupling.org=.
+
+=strict-service-table-isolation.org= and its sequencing table updated to COMPLETE
+for all six phases.
+
+** Remaining deferred items
+
+Three cross-component DML grants remain and are tracked in
+=doc/plans/2026-05-13-cross-service-write-decoupling.org=:
+
+| Grant | Owner | Deferred phase |
+|---|---|---|
+| DML on =ores_refdata_parties= | IAM | 4.3 (in-process party cache) |
+| DML on =ores_iam_*= + =ores_refdata_parties= | Workflow | 5.2 |
+| DML on =ores_workflow_*= | ORE | 5.3 |
+
+** Key architectural notes
+
+- FK constraints do not require =SELECT= on the referenced table at runtime.
+  PostgreSQL enforces FKs internally; the =REFERENCES= privilege is only needed
+  at DDL time (DDL user).
+- All new =SECURITY DEFINER= functions include =SET search_path = public, pg_temp=
+  to prevent search-path injection.
+- The synthetic service (=role: "tooling"=) retains broad SELECT on all domains
+  and is a permanent exception.
+
+
+* Result
+
+Landed.

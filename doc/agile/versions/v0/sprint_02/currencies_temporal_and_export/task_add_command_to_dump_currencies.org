@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 562ed395-d245-4e05-b8ae-22f8ff689f59
+:END:
+#+title: Task: Add command to dump currencies
+#+description: Add an ORE Studio CLI command that dumps currency reference data to a file in JSON or XML.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :currencies:cli:export:reference_data:currencies_temporal_and_export:sprint_02:v0:
+#+owner: marco
+#+created: 2025-09-11
+#+updated: 2025-09-15
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a CLI subcommand that dumps the current currency reference data
+to a file, in either JSON or XML. Useful for diffing what is in the
+database against an ORE example.
+
+* Status
+
+| Field        | Value                                                                       |
+|--------------+-----------------------------------------------------------------------------|
+| State        | DONE                                                                        |
+| Parent story | [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] |
+| Now          | Completed 2025-09-15.                                                       |
+| Waiting on   | None.                                                                       |
+| Next         | None.                                                                       |
+| Last touched | 2025-09-15                                                                  |
+
+* Acceptance
+
+- =ores.cli currencies dump --format json|xml= writes a file.
+- Output round-trips through the import path.
+- An integration test covers both formats.
+
+* Notes
+
+- Output uses reflect-cpp so the dump format matches what we read.
+
+* Result
+
+- =currencies dump= command shipped; integration tests green.

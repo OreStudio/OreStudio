@@ -2,6 +2,7 @@
 :ID: F4A17B30-FE81-11F0-A3C4-40B0768014EB
 :END:
 #+title: ORE Market Data File Types — Phase 1 (ores.ore)
+#+version: 1
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 * Overview

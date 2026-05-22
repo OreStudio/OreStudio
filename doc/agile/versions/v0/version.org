@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: e6fd30ed-963e-4705-b414-91bf471c23d0
+:END:
+#+title: Version 0
+#+description: The pre-1.0 alpha version. Establishes architecture, models all ORE inputs/outputs, and adds GUI for all data operations.
+#+type: version
+#+version: 2
+#+level: s4
+#+filetags: :v0:alpha:
+#+created: 2024-06-15
+#+updated: 2026-05-21
+#+todo: STARTED | RELEASED
+
+This page documents *v0* — the pre-1.0 alpha [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]] of ORE Studio. It
+captures v0's identity, mission, definition of done, current status,
+and the sprints that compose it. For the durable, version-independent
+statement of what ORE Studio is, see the [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product vision]].
+
+* Identity
+
+Version 0 is the alpha line — the pre-1.0 effort that lays down the
+architectural foundations and brings every ORE input and output into a
+persistent, GUI-driven environment. It is not feature-complete; it is the
+version where the shape of ORE Studio is settled.
+
+What makes v0 distinct from v1.0: v0 is allowed to be incomplete and to
+break compatibility freely. The product identity (what we are building)
+is durable; the implementation in v0 is not — for the durable statement
+see [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][ORE Studio product vision]].
+
+* Mission
+
+- Establish the main architectural tiers (database, services, UI).
+- Model all ORE XML inputs and outputs.
+- Add GUI support for every data operation.
+
+* Definition of done
+
+V0 closes when a user can load any ORE sample, execute it, and view the
+results graphically inside ORE Studio.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | STARTED                                                     |
+| Now          | Sprint 17 in flight; closing v0.                            |
+| Waiting on   | Nothing.                                                    |
+| Next         | Close remaining v0 sprints, then cut v1.0.                  |
+| Last touched | 2026-05-21                                                  |
+
+* Sprints
+
+In lexicographic order. The lexicographically highest sprint folder is
+the current sprint; the rest are closed.
+
+#+ATTR_HTML: :class hug-leading
+| Sprint                                                            | Start      | End        | Theme                                                                          |
+|-------------------------------------------------------------------+------------+------------+--------------------------------------------------------------------------------|
+| [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]] | 2024-06-22 | 2024-07-28 | Project bootstrap; currencies end-to-end.                                      |
+| [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]] | 2025-02-02 | 2025-10-23 | Client/server foundations; serialisation and storage modernisation.            |
+| [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]] | 2025-10-23 | 2025-12-31 | Sockets in the UI; login, accounts, sessions.                                  |
+| [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]] | 2025-11-07 | 2025-11-30 | LLM code review; currencies UI; Claude Code skills layer.                      |
+| [[id:2429db80-ec7b-482c-9ff3-4d1933035863][Sprint 05]] | 2025-11-16 | 2025-12-01 | Authentication bootstrap; CLI/REPL reshape; skills layer growth.               |
+| [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]] | 2025-12-02 | 2025-12-15 | Session cancellation; variability service; comms robustness.                   |
+| [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]] | 2025-12-13 | 2025-12-30 | Accounts → IAM; RBAC; Wt + HTTP; observability and telemetry.                  |
+| [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] | 2025-12-31 | 2026-01-11 | Database overhaul; ISO countries; Qt UX polish; entity-creator skills.         |
+| [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]] | 2026-01-11 | 2026-01-20 | Data Quality + Data Librarian; connection management; =ores.security=.         |
+| [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] | 2026-01-20 | 2026-01-27 | Codegen infrastructure; FPML reference data; ORE XML codegen via xsdcpp.       |
+| [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] | 2026-01-28 | 2026-02-06 | Multi-tenant end-to-end: tenancy foundation, codegen, test isolation.          |
+| [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] | 2026-02-06 | 2026-02-20 | Party / counterparty / business-centre; GLEIF; party-level RLS; FSM.           |
+| [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] | 2026-02-20 | 2026-02-28 | Trade + scheduling; =ores.scheduler= over =pg_cron=; atomic batches.           |
+| [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]] | 2026-03-01 | 2026-03-19 | Messaging pivot to NATS (~107k LOC); ORE Import Wizard; reporting; JWT RS256.  |
+| [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] | 2026-03-19 | 2026-03-30 | Compute grid (BOINC-style) + RAG dashboard; api/core split; CDM instruments.   |
+| [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] | 2026-03-30 | 2026-04-17 | ORE import e2e; workflow engine; market data; Qt plugins; Windows portability. |
+| [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] | 2026-04-18 |            | Windows/MSVC portability, symbol visibility, ORE conventions, workspace, DQ publish, service isolation, SQL codegen, Qt UI, v2 docs. |
+
+* Release scope
+
+In scope for v0:
+
+- All ORE XML input types modelled and importable.
+- All ORE output types displayable in the GUI.
+- Persistent storage for every data operation.
+- A working Qt UI that exercises the end-to-end pipeline.
+
+Deferred to later versions:
+
+- Performance optimisation beyond "fast enough to demo".
+- Multi-user / multi-tenant features beyond the minimum scaffolding.
+- Cloud deployment.

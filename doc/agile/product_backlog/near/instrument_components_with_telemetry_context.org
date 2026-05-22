@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 16dba07f-a062-428b-b43a-32905b5988c8
+:END:
+#+title: Instrument components with telemetry context
+#+description: Instrument components with telemetry context
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Now that logging has been integrated with telemetry, the next step is to
+instrument key components with the =TLOG_SEV= macro to enable trace correlation.
+
+Tasks:
+
+- Instrument =server_session= with root span on connection, child spans per
+  request.
+- Instrument =client_session= with spans for outgoing requests.
+- Pass =telemetry_context= through message handlers in ores.iam, ores.refdata, etc.
+- Add spans for database operations in ores.database.

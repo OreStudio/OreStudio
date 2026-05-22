@@ -4,10 +4,17 @@
 #+title: ores.compute.core
 #+description: Compute cluster management — app registration, batch dispatch, and result collection for risk compute jobs.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :compute:core:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.compute.core component diagram
+#+caption: ores.compute.core
+[[file:ores.compute.core.png][file:ores.compute.core.png]]
 
 * Summary
 

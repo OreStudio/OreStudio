@@ -1,0 +1,911 @@
+:PROPERTIES:
+:ID: 6ef42145-cee7-4035-806a-a4200a3e003a
+:END:
+#+title: Icon guidelines
+#+description: ORE Studio's visual language reference — variants, sizes, the full icon inventory grouped by semantic category.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:ui:icons:design:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+ORE Studio's icon catalogue lives here as a single visual-language
+reference. Pick an icon by its semantic category, then match the
+variant (Regular for default / Filled for active) to the UI state.
+The [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] skill drives icon selection; for the broader
+UI design context see [[id:6743f6e3-578c-4e4b-9dd6-d5a0df6734c8][UI design principles]]. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Icon System Overview
+
+ORE Studio uses *Microsoft Fluent UI System Icons*. All icons follow the naming
+convention:
+
+#+begin_example
+ic_fluent_{concept}_{size}_{variant}.svg
+#+end_example
+
+** Variants
+
+- *Regular*: Outline style, used for default/passive states and secondary
+  actions.
+- *Filled*: Solid style, used for active states, emphasis, and primary actions.
+
+** Sizes
+
+- *16px*: Compact UI, inline with text, dense tables.
+- *20px*: Standard UI elements, buttons, navigation.
+- *32px*: Headers, emphasis areas.
+- *48px*: Large feature icons, onboarding, empty states.
+
+** Usage Principles
+
+1. *Consistency*: Use the same icon for the same concept throughout the app.
+2. *Clarity over decoration*: If removing an icon loses no meaning, remove it.
+3. *Paired variants*: Use regular for default, filled for hover/active/selected.
+4. *Adequate spacing*: Give icons room to breathe, minimum 4px from text.
+
+* Icon Inventory
+
+** Actions
+
+Icons representing user-initiated operations.
+
+*** Add
+
+Create new items, add to lists, insert content.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_add_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_add_20_filled.svg]]
+
+*Usage*: "New" buttons, add to list, create actions.
+
+*** Copy
+
+Copy an item, creating a duplicate with the same content.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_copy_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_copy_20_filled.svg]]
+
+*Usage*: "Copy" toolbar buttons and context menu actions that create a
+copy of the selected item (e.g. folder, environment, connection). The copy
+gets the original name suffixed with " (copy)".
+
+*** Delete
+Remove items, clear content, destructive actions.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_delete_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_delete_20_filled.svg]]
+
+*Usage*: Delete buttons, remove from list. Use filled variant sparingly to
+indicate destructive nature.
+
+*** Delete Dismiss
+Purge data, clear all, destructive bulk action with finality.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_delete_dismiss_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_delete_dismiss_20_filled.svg]]
+
+*Usage*: Purge database actions, clear all data, bulk delete operations.
+Combines delete (trash can) with dismiss (X) to indicate permanent removal
+with no undo. Always require confirmation before use.
+
+*** Edit
+Modify existing content, enter edit mode.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_edit_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_edit_20_filled.svg]]
+
+*Usage*: Edit buttons, modify actions, pencil metaphor.
+
+*** Save
+Persist changes, commit data.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_save_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_save_20_filled.svg]]
+
+*Usage*: Save buttons, apply changes.
+
+*** Checkmark
+Confirm action, indicate completion, accept.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_checkmark_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_checkmark_20_filled.svg]]
+
+*Usage*: Confirmation buttons, success indicators, selected state in lists.
+
+*** Dismiss
+Close dialogs, cancel operations, clear notifications.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_dismiss_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_dismiss_20_filled.svg]]
+
+*Usage*: Close buttons, cancel actions, clear/dismiss.
+
+*** Star
+Favorite, bookmark, rate.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_star_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_star_20_filled.svg]]
+
+*Usage*: Regular for "not favorited", filled for "favorited" state.
+
+*** Terminal
+Interactive command shell, console, REPL.
+
+- Fluent Regular: ic_fluent_window_console_20_regular.svg
+- Fluent Filled: ic_fluent_window_console_20_filled.svg
+- Solar Linear: programming.svg
+- Solar Bold: programming.svg
+
+*Usage*: Shell widget, console windows, command-line interfaces.
+
+*** Wand
+Generate synthetic data, auto-fill, magic create.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_wand_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_wand_20_filled.svg]]
+
+*Usage*: Generate buttons, auto-fill actions, create synthetic/test data.
+
+*** Record
+Start recording, capture session.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_record_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_record_20_filled.svg]]
+
+*Usage*: Recording controls. Filled indicates actively recording.
+
+*** Publish
+Deploy data to production, upload, send to target system.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_20_filled.svg]]
+
+*Usage*: Publish buttons, deploy actions, upload data to production tables.
+Represents sending data "upward" to a target system.
+
+*** Reload
+Refresh data from server, reload content.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_clockwise_16_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_clockwise_16_filled.svg]]
+
+*Usage*: Reload buttons, refresh from server, update data. Use 16px size for
+toolbar buttons. Distinct from Sync (bidirectional) - Reload implies fetching
+fresh data from source.
+
+*** Redo
+Redo last undone action, restore previous state.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_clockwise_16_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_clockwise_16_filled.svg]]
+
+*Usage*: Redo buttons in edit contexts. Pairs with Undo
+(arrow_rotate_counterclockwise). Both Reload and Redo use the same icon; context
+determines meaning.
+
+** Navigation
+
+Icons for directional movement and navigation controls.
+
+*** Arrow Left
+Navigate back, move left.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_left_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_left_20_filled.svg]]
+
+*Usage*: Back navigation, left scroll controls.
+
+*** Arrow Right
+Navigate forward, move right.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_right_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_right_20_filled.svg]]
+
+*Usage*: Forward navigation, right scroll controls, proceed actions.
+
+*** Arrow Previous
+Step to previous item in sequence.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_previous_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_previous_20_filled.svg]]
+
+*Usage*: Pagination, stepper controls, previous item.
+
+*** Arrow Next
+Step to next item in sequence.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_next_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_next_20_filled.svg]]
+
+*Usage*: Pagination, stepper controls, next item.
+
+*** Arrow Download
+Download content, export data.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_download_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_download_20_filled.svg]]
+
+*Usage*: Download buttons, export actions.
+
+*** Arrow Download CSV
+Import CSV data.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_download_csv_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_download_csv_20_filled.svg]]
+
+*Usage*: Import CSV actions, clearly labeled with text overlay.
+
+*** Arrow Download FPML
+Import FPML data.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_download_fpml_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_download_fpml_20_filled.svg]]
+
+*Usage*: Import FPML actions, clearly labeled with text overlay.
+
+*** Arrow Download ORE
+Import ORE data.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_download_ore_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_download_ore_20_filled.svg]]
+
+*Usage*: Import ORE actions, clearly labeled with text overlay.
+
+*** Arrow Upload CSV
+Export CSV data.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_csv_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_csv_20_filled.svg]]
+
+*Usage*: Export CSV actions, clearly labeled with text overlay.
+
+*** Arrow Upload FPML
+Export FPML data.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_fpml_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_fpml_20_filled.svg]]
+
+*Usage*: Export FPML actions, clearly labeled with text overlay.
+
+*** Arrow Upload ORE
+Export ORE data.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_ore_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_ore_20_filled.svg]]
+
+*Usage*: Export ORE actions, clearly labeled with text overlay.
+
+*** Arrow Sync
+Synchronize data, refresh with server.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_sync_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_sync_20_filled.svg]]
+
+*Usage*: Sync buttons, bidirectional refresh.
+
+*** Arrow Trending
+Trades, financial market movement, trending data.
+
+- Fluent Regular: ic_fluent_arrow_trending_20_regular.svg
+- Fluent Filled: ic_fluent_arrow_trending_20_filled.svg
+- Solar Linear: transfer-horizontal.svg
+- Solar Bold: transfer-horizontal.svg
+
+*Usage*: Trades management (=ActionTrades= toolbar/menu). An upward-trending arrow
+represents financial market activity and transaction flow. Solar fallback:
+~transfer-horizontal.svg~.
+
+*** Arrow Clockwise (16px)
+Rotate clockwise, redo action.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_clockwise_16_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_clockwise_16_filled.svg]]
+
+*Usage*: Redo buttons, clockwise rotation controls.
+
+*** Arrow Rotate Counterclockwise
+Undo action, rotate counterclockwise.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_rotate_counterclockwise_20_filled.svg]]
+
+*Usage*: Undo buttons, counterclockwise rotation, revert changes.
+
+** Status & Feedback
+
+Icons communicating system state and user feedback.
+
+*** Info
+Informational message, help content, details.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_info_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_info_20_filled.svg]]
+
+*Usage*: Info tooltips, help buttons, informational banners.
+
+*** Warning
+Caution, potential issue, requires attention.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_warning_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_warning_20_filled.svg]]
+
+*Usage*: Warning messages, caution indicators. Pair with amber/yellow color.
+
+*** Error Circle
+Error state, failed operation, critical issue.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_error_circle_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_error_circle_20_filled.svg]]
+
+*Usage*: Error messages, validation failures, blocked states. Pair with red color.
+
+*** Question
+Help, unknown state, requires clarification.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_question_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_question_20_filled.svg]]
+
+*Usage*: Help buttons, FAQ links, contextual help triggers.
+
+** Users & Identity
+
+Icons representing people and account management.
+
+*** Person
+Single user, current user, profile.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_person_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_person_20_filled.svg]]
+
+*Usage*: User profile, account menu, single user reference.
+
+*** Person Add
+Invite user, create account, add team member.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_person_add_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_person_add_20_filled.svg]]
+
+*Usage*: Invite buttons, add user actions, registration.
+
+*** Person Accounts
+Multiple users, team, user management.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_person_accounts_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_person_accounts_20_filled.svg]]
+
+*Usage*: Team views, user management, multi-user contexts.
+
+** Security & Access
+
+Icons for authentication and authorization concepts.
+
+*** Lock Closed
+Secured, protected, authentication required.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_lock_closed_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_lock_closed_20_filled.svg]]
+
+*Usage*: Locked content, secure areas, login required indicators.
+
+*** Lock Open
+Unlocked, accessible, public.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_lock_open_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_lock_open_20_filled.svg]]
+
+*Usage*: Unlocked state, public content, access granted.
+
+*** Password Reset (48px)
+Reset credentials, forgot password flow.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_password_reset_48_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_password_reset_48_filled.svg]]
+
+*Usage*: Password reset screens, credential recovery flows. Large size for
+feature prominence.
+
+*** Key Multiple
+Change master password, manage encryption keys.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_key_multiple_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_key_multiple_20_filled.svg]]
+
+*Usage*: Change master password actions, encryption key management, password
+vault operations.
+
+*** Keyboard
+Manual data entry, type input, user-typed values.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_keyboard_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_keyboard_20_filled.svg]]
+
+*Usage*: Manual entry options in combo boxes or dialogs where the user will
+type all values themselves (as opposed to selecting from a saved connection or
+environment). Conveys "I will type this myself".
+
+** Connection Status
+
+Icons indicating connectivity and network state.
+
+*** Plug Connected
+Connected to server, online, link established.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_plug_connected_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_plug_connected_20_filled.svg]]
+
+*Usage*: Connection status indicators showing active connection.
+
+*** Plug Disconnected
+Disconnected, offline, no connection.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_plug_disconnected_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_plug_disconnected_20_filled.svg]]
+
+*Usage*: Disconnected state, offline mode, connection lost.
+
+*** Plug Connected Checkmark
+Connection verified, authenticated connection.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_plug_connected_checkmark_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_plug_connected_checkmark_20_filled.svg]]
+
+*Usage*: Verified connection, authenticated session, secure link confirmed.
+
+*** Server Link
+Server connection bookmark, saved connection, connection browser.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_server_link_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_server_link_20_filled.svg]]
+
+*Usage*: Connection browser window, saved server connections, bookmark management.
+Opens the Connection Browser MDI window for managing server connection bookmarks.
+
+** Files & Documents
+
+Icons for file system and document operations.
+
+*** Folder
+Directory, container, file group.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_folder_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_folder_20_filled.svg]]
+
+*Usage*: Folder navigation, directory listings.
+
+*** Folder Open
+Open folder, expanded directory, selected container.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_folder_open_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_folder_open_20_filled.svg]]
+
+*Usage*: Expanded folder state in tree views, selected folder.
+
+*** Document Table
+Tabular data, spreadsheet, structured document.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_document_table_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_document_table_20_filled.svg]]
+
+*Usage*: Table views, data documents, spreadsheet-like content.
+
+*** Document Code (16px)
+Source code, script, technical document.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_document_code_16_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_document_code_16_filled.svg]]
+
+*Usage*: Code files, scripts, configuration files.
+
+*** Notepad
+Log viewers, text output panes, ORE log content.
+
+- Fluent Regular: ic_fluent_notepad_20_regular.svg
+- Fluent Filled: ic_fluent_notepad_20_filled.svg
+- Solar Linear: solar_notepad.svg  (mapped from document-text.svg)
+- Solar Bold: solar_notepad.svg    (mapped from document-text.svg)
+
+*Usage*: "Logs" toolbar button in the Compute Console Tasks tab and any other
+action that opens a log or text-output viewer. Distinct from Terminal
+(interactive shell), DocumentCode (source code), and DocumentTable (tabular
+data).
+
+** Organisation & Entities
+
+Icons representing organisational structure and business entities.
+
+*** Organization
+Internal parties, legal entities within the firm.
+
+- Fluent Regular: ic_fluent_organization_20_regular.svg
+- Fluent Filled: ic_fluent_organization_20_filled.svg
+- Solar Linear: buildings-2.svg
+- Solar Bold: buildings-2.svg
+
+*Usage*: Party management (internal legal entities). Shows an org-chart/hierarchy
+symbol representing corporate structure.
+
+*** Handshake
+External counterparties, trading relationships.
+
+- Fluent Regular: ic_fluent_handshake_20_regular.svg
+- Fluent Filled: ic_fluent_handshake_20_filled.svg
+- Solar Linear: hand-shake.svg
+- Solar Bold: hand-shake.svg
+
+*Usage*: Counterparty management. Represents external business relationships.
+
+*** People Team
+Business units, organisational divisions.
+
+- Fluent Regular: ic_fluent_people_team_20_regular.svg
+- Fluent Filled: ic_fluent_people_team_20_filled.svg
+- Solar Linear: structure.svg
+- Solar Bold: structure.svg
+
+*Usage*: Business unit management. Shows a team/group of people, distinct from the
+building icons used for centres and tenants.
+
+*** Building Bank
+Financial centres, business centres (London, New York, Tokyo).
+
+- Fluent Regular: ic_fluent_building_bank_20_regular.svg
+- Fluent Filled: ic_fluent_building_bank_20_filled.svg
+- Solar Linear: buildings-3.svg
+- Solar Bold: buildings-3.svg
+
+*Usage*: Business centre reference data. A bank/institutional building representing
+financial centres where business operations occur.
+
+*** Building Skyscraper
+Tenants, enterprise organisations.
+
+- Fluent Regular: ic_fluent_building_skyscraper_20_regular.svg
+- Fluent Filled: ic_fluent_building_skyscraper_20_filled.svg
+- Solar Linear: buildings.svg
+- Solar Bold: buildings.svg
+
+*Usage*: Tenant management (admin). A tall building/skyscraper representing an
+enterprise-level organisation.
+
+*** Building
+Generic building, general infrastructure.
+
+- Fluent Regular: ic_fluent_building_20_regular.svg
+- Fluent Filled: ic_fluent_building_20_filled.svg
+- Solar Linear: buildings.svg
+- Solar Bold: buildings.svg
+
+*Usage*: Reserved for generic building contexts. Avoid using for specific entity
+types; prefer the specialised variants above.
+
+*** Briefcase
+Portfolios, investment collections.
+
+- Fluent Regular: ic_fluent_briefcase_20_regular.svg
+- Fluent Filled: ic_fluent_briefcase_20_filled.svg
+- Solar Linear: case-round.svg
+- Solar Bold: case-round.svg
+
+*Usage*: Portfolio management. A briefcase representing a collection of investments
+or financial instruments.
+
+*** Book Open
+Books, trading books, accounting books.
+
+- Fluent Regular: ic_fluent_book_open_20_regular.svg
+- Fluent Filled: ic_fluent_book_open_20_filled.svg
+- Solar Linear: book-2.svg
+- Solar Bold: book-2.svg
+
+*Usage*: Book management. An open book representing trading/accounting books. Distinct
+from the closed Book icon used for methodologies and reference materials.
+
+** Data & Finance
+
+Icons for numerical data and financial concepts.
+
+*** Chart Multiple
+Report definitions, report templates with multiple visualisation types.
+
+- Fluent Regular: ic_fluent_chart_multiple_20_regular.svg
+- Fluent Filled: ic_fluent_chart_multiple_20_filled.svg
+- Solar Linear: presentation-graph.svg
+- Solar Bold: presentation-graph.svg
+
+*Usage*: Report Definition management (=ActionReportDefinitions=). Multiple chart
+types on one icon conveys "a template that can generate various report formats".
+Distinct from the histogram icon used for data analytics. Solar fallback:
+~presentation-graph.svg~.
+
+*** Database
+Data storage, datasets, data dimensions.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_database_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_database_20_filled.svg]]
+
+*Usage*: Dataset views, data dimensions (Origin, Nature, Treatment), data assets.
+
+*** Code
+Coding schemes, classification systems, identifier schemes.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_code_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_code_20_filled.svg]]
+
+*Usage*: Coding scheme management (LEI, ISIN, etc.), classification systems.
+
+*** Book
+Methodologies, documentation, reference materials.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_book_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_book_20_filled.svg]]
+
+*Usage*: Methodology views, data processing documentation, reference guides.
+
+*** Clipboard Number 123 (16px)
+Numeric data, ID reference, sequence.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_clipboard_number_123_16_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_clipboard_number_123_16_filled.svg]]
+
+*Usage*: ID fields, numeric references, serial numbers.
+
+*** Currency Dollar Euro
+Financial data, multi-currency, monetary values.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_currency_dollar_euro_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_currency_dollar_euro_20_filled.svg]]
+
+*Usage*: Currency fields, financial data, monetary transactions.
+
+** Time & History
+
+Icons for temporal concepts.
+
+*** Clock (16px)
+Time, schedule, duration.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_clock_16_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_clock_16_filled.svg]]
+
+*Usage*: Time fields, timestamps, schedule indicators.
+
+*** History
+Activity history, past actions, audit trail.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_history_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_history_20_filled.svg]]
+
+*Usage*: History views, recent items, activity logs.
+
+*** Calendar Clock
+
+Scheduler, scheduled jobs, cron tasks.
+
+-   Regular: [[proj:projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_clock_20_regular.svg]]
+-   Filled: [[proj:projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_clock_20_filled.svg]]
+
+*Usage*: Scheduler menu entries, job definition list window title, any UI
+element representing scheduled/recurring work. Solar fallback: `calendar.svg`.
+
+*** Calendar Add
+
+Schedule a new job, create a scheduled task.
+
+-   Regular: [[proj:projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_add_20_regular.svg]]
+-   Filled: [[proj:projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_add_20_filled.svg]]
+
+*Usage*: "Schedule Job" button in job definition list toolbar. Use instead of
+generic `Add` when the action specifically creates a scheduled task. Solar
+fallback: `calendar-add.svg`.
+
+*** Calendar Cancel
+
+Unschedule a job, deactivate a scheduled task.
+
+-   Regular: [[proj:projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_cancel_20_regular.svg]]
+-   Filled: [[proj:projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_cancel_20_filled.svg]]
+
+*Usage*: "Unschedule" button in job definition list toolbar and detail dialog.
+Semantically distinct from `Delete` (which implies permanent removal) —
+unschedule removes from pg_cron while retaining the definition. Solar fallback:
+`alarm-remove.svg`.
+
+*** Tasks App
+Job definitions list, task management application.
+
+- Fluent Regular: ic_fluent_tasks_app_20_regular.svg
+- Fluent Filled: ic_fluent_tasks_app_20_filled.svg
+- Solar Linear: clipboard-list.svg
+- Solar Bold: clipboard-list.svg
+
+*Usage*: Job Definition management (=ActionJobDefinitions= toolbar/menu). Represents a
+task management application — a list of scheduled jobs/tasks to execute. Distinct
+from =CalendarClock= (used for scheduler-concept menu entries and window titles)
+— use =TasksApp= for the job definitions list window and toolbar button. Solar
+fallback: ~clipboard-list.svg~.
+
+** Text & Formatting
+
+Icons for text manipulation and formatting.
+
+*** Text ABC Underline Double (32px)
+Text validation, spell check, language processing.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_text_abc_underline_double_32_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_text_abc_underline_double_32_filled.svg]]
+
+*Usage*: Spell check, text validation, language tools.
+
+* Quick Reference Table
+
+| Concept              | Icon Name                        | Regular | Filled |
+|----------------------+----------------------------------+---------+--------|
+| Add/Create           | add_20                           | Default | Active |
+| Copy                 | copy_20                          | Default | Active |
+| Delete/Remove        | delete_20                        | Default | Danger |
+| Purge/Clear All      | delete_dismiss_20                | Default | Danger |
+| Edit/Modify          | edit_20                          | Default | Active |
+| Save                 | save_20                          | Default | Active |
+| Confirm/Check        | checkmark_20                     | Default | Done   |
+| Cancel/Close         | dismiss_20                       | Default | Active |
+| Favorite             | star_20                          | Off     | On     |
+| Generate             | wand_20                          | Default | Active |
+| Reload               | arrow_clockwise_16               | Default | Active |
+| Redo                 | arrow_clockwise_16               | Default | Active |
+| Back                 | arrow_left_20                    | Default | Active |
+| Forward              | arrow_right_20                   | Default | Active |
+| Download             | arrow_download_20                | Default | Active |
+| Sync                 | arrow_sync_20                    | Default | Active |
+| Trades               | arrow_trending_20                | Default | Active |
+| Undo                 | arrow_rotate_counterclockwise_20 | Default | Active |
+| Info                 | info_20                          | Default | Active |
+| Warning              | warning_20                       | Default | Alert  |
+| Error                | error_circle_20                  | Default | Alert  |
+| Help                 | question_20                      | Default | Active |
+| User                 | person_20                        | Default | Active |
+| Add User             | person_add_20                    | Default | Active |
+| Team                 | person_accounts_20               | Default | Active |
+| Locked               | lock_closed_20                   | Default | Active |
+| Unlocked             | lock_open_20                     | Default | Active |
+| Change Password      | key_multiple_20                  | Default | Active |
+| Manual Entry         | keyboard_20                      | Default | Active |
+| Connected            | plug_connected_20                | Default | Active |
+| Disconnected         | plug_disconnected_20             | Default | Alert  |
+| Verified Connection  | plug_connected_checkmark_20      | Default | Active |
+| Server Link          | server_link_20                   | Default | Active |
+| Folder               | folder_20                        | Closed  | Active |
+| Folder Open          | folder_open_20                   | Open    | Active |
+| Table Document       | document_table_20                | Default | Active |
+| Code Document        | document_code_16                 | Default | Active |
+| Code/Scheme          | code_20                          | Default | Active |
+| Database/Dataset     | database_20                      | Default | Active |
+| Book/Methodology     | book_20                          | Default | Active |
+| Book Open/Books      | book_open_20                     | Default | Active |
+| Briefcase/Portfolio  | briefcase_20                     | Default | Active |
+| Building (generic)   | building_20                      | Default | Active |
+| Building Bank/Centre | building_bank_20                 | Default | Active |
+| Building Skyscraper  | building_skyscraper_20           | Default | Active |
+| Organization/Party   | organization_20                  | Default | Active |
+| Handshake/Cpty       | handshake_20                     | Default | Active |
+| People Team/BU       | people_team_20                   | Default | Active |
+| Currency             | currency_dollar_euro_20          | Default | Active |
+| Time                 | clock_16                         | Default | Active |
+| History              | history_20                       | Default | Active |
+| Scheduler/Jobs       | calendar_clock_20                | Default | Active |
+| Schedule Job         | calendar_add_20                  | Default | Active |
+| Unschedule Job       | calendar_cancel_20               | Default | Active |
+| Job Definitions List | tasks_app_20                     | Default | Active |
+| Report Definitions   | chart_multiple_20                | Default | Active |
+| Import CSV           | arrow_download_csv_20            | Default | Active |
+| Import FPML          | arrow_download_fpml_20           | Default | Active |
+| Import ORE           | arrow_download_ore_20            | Default | Active |
+| Export CSV           | arrow_upload_csv_20              | Default | Active |
+| Export FPML          | arrow_upload_fpml_20             | Default | Active |
+| Export ORE           | arrow_upload_ore_20              | Default | Active |
+| Publish              | arrow_upload_20                  | Default | Active |
+| Terminal             | window_console_20                | Default | Active |
+| Notepad (Log Viewer) | notepad_20                       | Default | Active |
+
+* Adding New Icons
+
+When adding a new icon to ORE Studio, follow these steps:
+
+** Step 1: Locate Icons in Source Repositories
+
+ORE Studio supports two icon sets:
+
+- *Fluent UI System Icons*: ~/Development/fluentui-system-icons-main/assets/
+- *Solar Icons*: ~/Development/solar-icons/packages/core/svgs/
+
+Search for a semantically appropriate icon in both sets. For Fluent UI, look for
+20px variants (regular and filled). For Solar, look for Linear and Bold variants.
+
+Example search:
+#+begin_example
+find ~/Development/fluentui-system-icons-main/assets -name "*upload*20*"
+find ~/Development/solar-icons/packages/core/svgs -name "*upload*"
+#+end_example
+
+** Step 2: Copy Icons to Project
+
+Copy the icons to the correct locations:
+
+#+begin_example
+# Fluent UI icons (regular and filled variants)
+cp ".../Arrow Upload/SVG/ic_fluent_arrow_upload_20_regular.svg" \
+   projects/ores.qt/resources/icons/
+
+cp ".../Arrow Upload/SVG/ic_fluent_arrow_upload_20_filled.svg" \
+   projects/ores.qt/resources/icons/
+
+# Solar icons (Linear and Bold variants)
+cp ".../arrows-action/Linear/upload-square.svg" \
+   projects/ores.qt/resources/icons/solarized/Linear/
+
+cp ".../arrows-action/Bold/upload-square.svg" \
+   projects/ores.qt/resources/icons/solarized/Bold/
+#+end_example
+
+** Step 3: Update Resource File
+
+Add the new icons to =projects/ores.qt/resources/resources.qrc=:
+
+#+begin_src xml
+<!-- Fluent UI icons -->
+<file>icons/ic_fluent_arrow_upload_20_regular.svg</file>
+<file>icons/ic_fluent_arrow_upload_20_filled.svg</file>
+
+<!-- Solar icons -->
+<file>icons/solarized/Linear/upload-square.svg</file>
+<file>icons/solarized/Bold/upload-square.svg</file>
+#+end_src
+
+** Step 4: Add Enum Entry
+
+Add the new icon to the =Icon= enum in =IconUtils.hpp=:
+
+#+begin_src cpp
+enum class Icon {
+    // ... existing entries (alphabetically sorted)
+    PlugDisconnected,
+    Publish,       // <- New entry
+    Question,
+    // ...
+};
+#+end_src
+
+** Step 5: Add Icon Mapping
+
+Add the mapping in =IconUtils.cpp= in the =getIconDef()= function:
+
+#+begin_src cpp
+case Icon::Publish: return {"ic_fluent_arrow_upload_20", "upload-square.svg"};
+#+end_src
+
+The mapping format is:
+- First string: Fluent UI icon base name (without =_regular.svg= / =_filled.svg=)
+- Second string: Solar icon filename
+- Optional third parameter: =true= to force filled/bold variant
+
+** Step 6: Use the Icon
+
+Use the new icon in code:
+
+#+begin_src cpp
+action->setIcon(IconUtils::createRecoloredIcon(
+    Icon::Publish, IconUtils::DefaultIconColor));
+#+end_src
+
+** Step 7: Document the Icon
+
+Update this skill document:
+1. Add the icon to the appropriate category in the Icon Inventory section
+2. Add an entry to the Quick Reference Table
+
+
+* See also
+
+- [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines skill]] — the task-shaped entry point.
+- [[id:6743f6e3-578c-4e4b-9dd6-d5a0df6734c8][UI design principles]] — broader design language.

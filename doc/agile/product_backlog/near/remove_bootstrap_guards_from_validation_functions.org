@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: f96991cd-fded-4c7d-b82d-91188d0ff622
+:END:
+#+title: Remove bootstrap guards from validation functions
+#+description: Remove bootstrap guards from validation functions
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+The codegen template =sql_schema_table_create.mustache= generates a bootstrap
+guard in every validation function:
+
+#+begin_src sql
+if not exists (select 1 from X limit 1) then
+    return p_value;
+end if;
+#+end_src
+
+This pattern silently skips validation when the lookup table is empty, which was
+originally intended to avoid errors during initial population. However, correct
+population ordering in =foundation_populate.sql= makes these guards unnecessary.
+Worse, they mask real errors: if a lookup table is accidentally empty, inserts
+silently succeed with invalid data instead of failing loudly.
+
+There are 20 instances across the codebase (16 in refdata, 1 in dq, 3 in iam).
+
+Tasks:
+
+- Update =sql_schema_table_create.mustache= to stop generating the bootstrap
+  guard in the validation function template.
+- Regenerate all affected SQL files.
+- Remove bootstrap guards from any hand-written validation functions.
+- Verify =foundation_populate.sql= ordering ensures all lookup tables are seeded
+  before any dependent table triggers fire.
+- Run full schema recreation and pgTAP tests to confirm nothing breaks.

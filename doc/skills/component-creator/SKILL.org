@@ -2,293 +2,78 @@
 :ID: 59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9
 :END:
 #+title: Component Creator
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
-#+startup: inlineimages
-#+export_exclude_tags: noexport
+#+description: Scaffold a new ORE Studio component (api/core/service) via codegen profiles.
+#+type: skill
+#+version: 2
+#+level: cross
+#+filetags: :skills:claude_code:component:codegen:cmake:
+#+created: 2024-09-01
+#+updated: 2026-05-21
 
 #+begin_export markdown
 ---
 name: component-creator
-description: Guide for creating new components that follow our project structure..
+description: Scaffold a new ORE Studio component (api/core/service) via codegen profiles.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
 
 * When to use this skill
 
-When the user requests the creation of new components for ORE Studio.
-/Components/ in ORE Studio terminology, are the projects under the =projects=
-directory. Example of existing components: =ores.accounts=, =ores.refdata=.
-
-* Component split: api / core / service
-
-Most domain components in ORE Studio are split into three sibling projects:
-
-| Project               | Role                                                                                      |
-|-----------------------+-------------------------------------------------------------------------------------------|
-| =ores.COMPONENT.api=  | Public domain types, interfaces, generators, and messaging protocols. No heavy deps.      |
-| =ores.COMPONENT.core= | Internal implementation: repositories, services, DB access. Depends on =.api=.            |
-| =ores.COMPONENT.service= | Runnable service: message handlers, startup, hosting. Depends on =.core=.              |
-
-*Facet placement by split:*
-
-| Facet        | api | core | service |
-|--------------+-----+------+---------|
-| =domain=     | ✓   |      |         |
-| =generators= | ✓   |      |         |
-| =messaging=  | ✓   |      |         |
-| =eventing=   | ✓   |      |         |
-| =repository= |     | ✓    |         |
-| =service=    |     | ✓    |         |
-| =app=        |     |      | ✓       |
-| =config=     |     |      | ✓       |
-
-*Typical CMake dependency chain:*
-
-- =ores.COMPONENT.api.lib= links: =ores.eventing.lib=, =ores.platform.lib= (PUBLIC)
-- =ores.COMPONENT.core.lib= links: =ores.COMPONENT.api.lib=, =ores.database.lib=, =sqlgen= (PRIVATE)
-- =ores.COMPONENT.service= links: =ores.COMPONENT.core.lib=
-
-Not every component needs all three parts. A pure lookup/reference component may
-only need =.api=; a component with no service boundary may stop at =.core=.
+When the user asks to create a new ORE Studio component — a new
+project under =projects/=.  Most domain components are split into
+=.api=, =.core=, and =.service= parts; decide which parts are needed
+before starting.  See [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]] for the split rules,
+facet placement, and CMake dependency chain.
 
 * How to use this skill
 
-*Important*: Use the codegen system to scaffold new components. Do *not* create
-files manually — the =component= profile in =ores.codegen= generates all
-boilerplate automatically and ensures consistency with the rest of the codebase.
+Codegen is *mandatory* for all boilerplate.  Do not hand-write
+CMakeLists or stub files.
 
-1. Gather information about the new component (name, purpose, etc).
-2. Decide which parts are needed (=.api=, =.core=, =.service=, or a subset).
-3. Create one component model JSON file per part.
-4. Run the code generator with the =component= profile for each part.
-5. Register each part in =projects/CMakeLists.txt=.
-6. Add the PlantUML diagram stub for each part.
-7. Build and test.
+1. /Gather requirements/: component short name, parts needed
+   (=.api=, =.core=, =.service=, or a subset), one-line brief, longer
+   description.
 
-* Detailed instructions
+2. /Create a JSON model per part/ under
+   =projects/ores.codegen/models/COMPONENT/= using the schema in
+   [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]].  Name the files
+   =ores_COMPONENT_{api,core,service}_component.json=.
 
-** Step 1: Gather requirements
+3. /Run codegen/ for each part:
+   =cd projects/ores.codegen && ./run_generator.sh models/COMPONENT/ores_COMPONENT_api_component.json --profile component-api=
+   Repeat with =--profile component-core= and =--profile component-service= as needed.
 
-Before starting, gather the following information from the user:
+4. /Register/ each part in =projects/CMakeLists.txt= in dependency
+   order (=.api= → =.core= → =.service=).
 
-- *Component name*: the short name (e.g., =trading= for =ores.trading.*=).
-- *Parts needed*: which of =.api=, =.core=, =.service= are required.
-- *Brief*: a one-line description of the component.
-- *Description*: a longer description of the component's purpose and responsibilities.
+5. /Add a PlantUML stub/ (=modeling/ores.COMPONENT.PART.puml=) for each
+   part — codegen does not yet produce this.  See
+   [[id:b0b99088-d88e-4980-a4ee-7d6a9a8e96a5][component-model-creator]] for the diagram conventions.
 
-Component names must follow the convention =ores.COMPONENT= where =COMPONENT=
-is all lower case and ideally just one word (though exceptions exist, e.g.
-=ores.http.server=). Each part is a separate project: =ores.COMPONENT.api=,
-=ores.COMPONENT.core=, =ores.COMPONENT.service=.
+6. /Build and verify/ the stub tests with [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]]:
+   =cmake --build --preset linux-clang-debug-ninja --target ores.COMPONENT.api.tests=
 
-** Step 2: Create the component model files
+7. /Document the architecture/ using [[id:b0b99088-d88e-4980-a4ee-7d6a9a8e96a5][component-model-creator]].
 
-Create one JSON model file per part under
-=projects/ores.codegen/models/COMPONENT/=.
+* Templates
 
-For =ores.COMPONENT.api=:
+Scaffold profiles (each generates 9 files for =.api=/=.core=; 18 for =.service=):
 
-#+begin_src json
-{
-  "component": {
-    "name": "COMPONENT.api",
-    "full_name": "ores.COMPONENT.api",
-    "brief": "Public API for COMPONENT",
-    "description": "Domain types, generators, messaging protocols and eventing for COMPONENT."
-  }
-}
-#+end_src
+| Profile | Key templates |
+|---|---|
+| =--profile component-api= | =cmake_component_root.mustache= + =cmake_component_api_src.mustache= + 7 others |
+| =--profile component-core= | =cmake_component_root.mustache= + =cmake_component_core_src.mustache= + 7 others |
+| =--profile component-service= | =cmake_component_root.mustache= + =cmake_component_service_src.mustache= + 16 others |
 
-For =ores.COMPONENT.core=:
+Full template list is in [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]]§"Profile catalogue".
 
-#+begin_src json
-{
-  "component": {
-    "name": "COMPONENT.core",
-    "full_name": "ores.COMPONENT.core",
-    "brief": "Core implementation for COMPONENT",
-    "description": "Repositories, services and database access for COMPONENT. Depends on ores.COMPONENT.api."
-  }
-}
-#+end_src
+* Reference
 
-For =ores.COMPONENT.service= (if needed):
-
-#+begin_src json
-{
-  "component": {
-    "name": "COMPONENT.service",
-    "full_name": "ores.COMPONENT.service",
-    "brief": "Service host for COMPONENT",
-    "description": "Message handlers, startup and hosting for COMPONENT. Depends on ores.COMPONENT.core."
-  }
-}
-#+end_src
-
-** Step 3: Run the code generator
-
-From the =projects/ores.codegen= directory, use the matching profile for each
-part:
-
-#+begin_src bash
-./run_generator.sh models/COMPONENT/ores_COMPONENT_api_component.json --profile component-api
-./run_generator.sh models/COMPONENT/ores_COMPONENT_core_component.json --profile component-core
-./run_generator.sh models/COMPONENT/ores_COMPONENT_service_component.json --profile component-service
-#+end_src
-
-Each profile generates files tailored to its role. The =.api= and =.core=
-profiles both produce 9 files; =component-service= produces 18:
-
-| Generated file                                                  | api | core | service |
-|-----------------------------------------------------------------+-----+------+---------|
-| =CMakeLists.txt=                                                | ✓   | ✓    | ✓       |
-| =src/CMakeLists.txt= (deps vary per profile)                    | ✓   | ✓    | ✓       |
-| =tests/CMakeLists.txt=                                          | ✓   | ✓    | ✓       |
-| =modeling/CMakeLists.txt=                                       | ✓   | ✓    | ✓       |
-| =include/ores.COMPONENT.PART/ores.COMPONENT.PART.hpp=           | ✓   | ✓    | ✓       |
-| =include/ores.COMPONENT.PART/domain/stub.hpp=                   | ✓   | ✓    |         |
-| =src/domain/stub.cpp=                                           | ✓   | ✓    |         |
-| =tests/main.cpp=                                                | ✓   | ✓    | ✓       |
-| =tests/stub_tests.cpp=                                          | ✓   | ✓    | ✓       |
-| =include/ores.COMPONENT.service/app/application*.hpp= (×3)      |     |      | ✓       |
-| =include/ores.COMPONENT.service/config/*.hpp= (×3)              |     |      | ✓       |
-| =src/app/application.cpp=, =src/app/host.cpp=                   |     |      | ✓       |
-| =src/config/options.cpp=, =src/config/parser.cpp=               |     |      | ✓       |
-| =src/main.cpp=                                                   |     |      | ✓       |
-
-The generated =src/CMakeLists.txt= deps per profile:
-
-| Profile             | PUBLIC deps                                      | PRIVATE deps                                               |
-|---------------------+--------------------------------------------------+------------------------------------------------------------|
-| =component-api=     | =ores.eventing.lib=, =ores.platform.lib=         | =ores.utility.lib=, =faker-cxx=, =libfort=                 |
-| =component-core=    | =ores.COMPONENT.api.lib=, =ores.nats.lib=        | =ores.service.lib=, =ores.platform.lib=, =ores.utility.lib=, =ores.security.lib=, =faker-cxx=, =libfort= |
-| =component-service= | =ores.service.lib=, =ores.security.lib=, =ores.COMPONENT.core.lib=, =ores.eventing.lib=, =ores.nats.lib=, =ores.database.lib=, =ores.utility.lib=, =ores.telemetry.lib= | |
-
-After generation, adjust the =target_link_libraries= in =src/CMakeLists.txt= to
-match the actual dependencies of your component.
-
-** Step 4: Register in =projects/CMakeLists.txt=
-
-Add each part to =projects/CMakeLists.txt= in dependency order (=.api= before
-=.core= before =.service=), inserted after their nearest dependency:
-
-#+begin_src cmake
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.refdata)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.COMPONENT.api)   # new
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.COMPONENT.core)  # new
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.COMPONENT.service)  # new (if applicable)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.assets)
-#+end_src
-
-** Step 5: Add PlantUML diagram stub
-
-The code generator does not yet produce the PlantUML diagram content. Manually
-create one =.puml= file per part, e.g. =projects/ores.COMPONENT.api/modeling/ores.COMPONENT.api.puml=:
-
-#+begin_src plantuml
-' -*- mode: plantuml; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-'
-' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
-'
-' This program is free software; you can redistribute it and/or modify it under
-' the terms of the GNU General Public License as published by the Free Software
-' Foundation; either version 3 of the License, or (at your option) any later
-' version.
-'
-' This program is distributed in the hope that it will be useful, but WITHOUT
-' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-'
-' You should have received a copy of the GNU General Public License along with
-' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
-' Street, Fifth Floor, Boston, MA 02110-1301, USA.
-'
-@startuml
-
-title ores.COMPONENT Component
-
-set namespaceSeparator ::
-
-namespace ores #F2F2F2 {
-    namespace COMPONENT #F2F2F2 {
-        ' Domain types to be added.
-    }
-}
-
-@enduml
-#+end_src
-
-** Step 6: Build and test
-
-Using the [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner Skill]]:
-
-1. Build and run the tests for each part:
-   #+begin_src bash
-   cmake --build --preset linux-clang-debug-ninja --target ores.COMPONENT.api.tests
-   cmake --build --preset linux-clang-debug-ninja --target ores.COMPONENT.core.tests
-   cmake --build --preset linux-clang-debug-ninja --target ores.COMPONENT.service.tests
-   #+end_src
-2. Confirm the stub test passes for each part.
-3. Commit all your changes:
-   #+begin_src
-   [analytics] Add ores.COMPONENT.{api,core,service} component scaffolds
-   #+end_src
-
-* Reference: Component structure
-
-** Component parts
-
-Standard components are made up of the following well-known parts (directories):
-
-| Part name  | Description                                        |
-|------------+----------------------------------------------------|
-| =include=  | Contains the C++ header files.                     |
-| =modeling= | Contains the PlantUML source and PNG for diagrams. |
-| =src=      | Contains the C++ implementation files.             |
-| =tests=    | Contains the Catch2 tests for the component.       |
-
-** Facets
-
-Within =include= and =src=, code is organised into facets:
-
-| Facet name   | Description                                                                                                         |
-|--------------+---------------------------------------------------------------------------------------------------------------------|
-| =domain=     | C++ domain types (POCOs) and associated services (JSON, table I/O, etc.)                                            |
-| =generators= | C++ generators for domain types, used in testing and production.                                                    |
-| =messaging=  | Network messaging: requests, responses, handlers, protocol types.                                                   |
-| =repository= | Database support via sqlgen: repositories, entities, mappers.                                                       |
-| =eventing=   | Event-related classes.                                                                                              |
-| =service=    | Standalone types with domain operations that do not fit into a domain type.                                         |
-| =app=        | Executable infrastructure: hosting, startup, etc.                                                                   |
-| =config=     | Top-level configuration; command-line parser for executable components.                                             |
-| =net=        | Network utilities: client/server infrastructure, network interface info.                                            |
-| =orexml=     | ORE (Open Source Risk Engine) import/export support.                                                                |
-| =csv=        | CSV import/export support.                                                                                          |
-
-** CMake dependency visibility
-
-When customising =src/CMakeLists.txt= dependencies, use the correct visibility:
-
-- *PUBLIC*: dependency headers exposed in component's public headers; consumers
-  also link this dependency.
-- *PRIVATE*: dependency only used in =.cpp= files; consumers do not see it.
-- *INTERFACE*: expose a dependency to consumers without linking it directly
-  (use to avoid duplicate library warnings on macOS).
-
-Common transitive dependencies (do *not* add these explicitly):
-- =reflectcpp= comes from =ores.platform.lib= (PUBLIC via =ores.utility.lib=)
-- =Boost::program_options= comes from =ores.telemetry.lib= (PUBLIC)
-
-** Component model documentation
-
-Once the scaffold is working, document the component's architecture using the
-[[id:b0b99088-d88e-4980-a4ee-7d6a9a8e96a5][Component Model Creator]] skill. This produces:
-
-- =modeling/ores.COMPONENT.org= — Component architecture documentation
-- =modeling/ores.COMPONENT.puml= — Refined class diagram
-- =modeling/ores.COMPONENT.png= — Generated diagram image
+- [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]] — split rules, facet placement, CMake dep chain.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, profiles, =run_generator.sh= usage.
+- [[id:b0b99088-d88e-4980-a4ee-7d6a9a8e96a5][component-model-creator]] — write the architecture docs once scaffold is working.
+- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]] — build and test commands.
 
 * Artefacts                                                        :noexport:
 

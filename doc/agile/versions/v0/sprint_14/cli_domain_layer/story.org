@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 4d9869da-72ce-4b92-bb19-91c274ca7a2b
+:END:
+#+title: Story: CLI domain sub-menu layer
+#+description: Introduce refdata / iam / dq / variability domain categories; ores.cli command syntax becomes <domain> <entity> <op>.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :cli:refactor:structure:sprint_14:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Reshape the CLI command syntax with a domain sub-menu layer so the
+tree scales as entities multiply.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]] |
+| Now           | Completed 2026-03-03.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-03-03                                             |
+
+* Acceptance
+
+- Four domains: refdata / iam / dq / variability.
+- Command syntax: ores.cli <domain> <entity> <op>.
+- All entity parsers + docs + tests aligned.
+
+* Tasks
+
+In execution order:
+
+- [[id:544b0c6e-b1d2-426c-88ea-8302634101ee][Add domain sub-menu layer to CLI]]
+
+* Decisions
+
+- /Domain first, entity second/ :: matches how users actually think about the commands.
+
+* Out of scope
+
+- Trading + reporting domains (deferred).
+
+* See also
+
+- [[id:de76313f-3c9e-441a-aa5e-6212a3841eed][CLI entity creator skill]] (sprint 08) — the skill the domain layer extends.

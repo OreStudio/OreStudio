@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: 85c2e902-c3e1-4434-b867-0c2cdd9a207a
+:END:
+#+title: Get Session Statistics
+#+description: Get Session Statistics
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:sessions_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Get aggregated session statistics.
+
+#+begin_src verb :wrap src json
+get /sessions/statistics
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src

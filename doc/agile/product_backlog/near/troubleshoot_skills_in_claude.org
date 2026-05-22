@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: f8a114f8-2f70-4786-9c05-7a722df062ef
+:END:
+#+title: Troubleshoot skills in claude
+#+description: Troubleshoot skills in claude
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :infra:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We don't seem to be able to use skills reliably.
+
+Links:
+
+- [[https://code.claude.com/docs/en/skills][Claude: Agent Skills]]
+- [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
+- [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]

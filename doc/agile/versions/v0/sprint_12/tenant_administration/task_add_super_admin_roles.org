@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 8b3e7d8a-d3be-48d1-8fb1-369754c9c95a
+:END:
+#+title: Task: Add roles for Super Admin
+#+description: Distinguish Super Admin from Tenant Admin via separate roles.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :iam:roles:super_admin:tenant_administration:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:00e6e192-a255-4c94-8fcc-15826f7e33ae][Tenant administration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Distinguish Super Admin from Tenant Admin via separate roles.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:00e6e192-a255-4c94-8fcc-15826f7e33ae][Tenant administration]] |
+| Now          | Completed 2026-02-12.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2026-02-12                                                         |
+
+* Acceptance
+
+- Super Admin role added.
+- Tenant Admin role retained.
+- Different permission sets enforced.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Closes a gap: we had only Tenant Admin, which meant cross-tenant operations had no proper role.
+
+* Result
+
+Super Admin role available.

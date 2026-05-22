@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: c82409f0-2ded-4134-b5e2-98e51ad9cfcf
+:END:
+#+title: History
+#+description: History
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:change_reasons:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Get version history for a change reason.
+
+#+name: change-reasons-history
+#+begin_src ores-shell :exports none
+change-reasons history system.initial_load
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reasons-history>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++---------------------+----------+---------------------------------------+-------+--------+--------------+-------+-------------+---------+
+| Code                | Category | Description                           | Amend | Delete | Req. Comment | Order | Recorded By | Version |
++---------------------+----------+---------------------------------------+-------+--------+--------------+-------+-------------+---------+
+| system.initial_load | system   | Initial system bootstrap or migration | N     | N      | N            | 0     | system      | 1       |
++---------------------+----------+---------------------------------------+-------+--------+--------------+-------+-------------+---------+
+
+
+ores-shell> Bye!
+#+end_example

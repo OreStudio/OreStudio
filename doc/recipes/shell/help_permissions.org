@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 329950a6-28df-4a63-ac55-12286fedffbb
+:END:
+#+title: Help Permissions
+#+description: Help Permissions
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:permissions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+name: help-permissions-exit
+#+begin_src ores-shell :exports none
+permissions
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-permissions-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> permissions> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - list
+	List all permissions in the system
+ - ores-shell
+	(menu)
+permissions> Bye!
+#+end_example

@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 80b50b7c-f56a-4af3-a7ab-a469d8715891
+:END:
+#+title: Task: Restructure components to follow the Dogen approach
+#+description: Reorganise component layouts to match the Dogen project's modeling-first convention.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :refactor:architecture:dogen:llm_code_review_and_refactor:sprint_04:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-28
+#+updated: 2025-11-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:f8d6459d-71d3-4bae-8ece-43201cd2b8ba][LLM code review and refactor]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Reorganise component layout to follow Dogen's
+=component/{src,modeling,tests}= shape. The previous split (tests separate
+from source) was becoming unwieldy as models entered the picture.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:f8d6459d-71d3-4bae-8ece-43201cd2b8ba][LLM code review and refactor]] |
+| Now          | Completed 2025-11-28.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2025-11-28                                                                |
+
+* Acceptance
+
+- Every component reorganised to =component/{src,modeling,tests}=.
+- Builds and tests continue to pass.
+- Project-structure expectations captured in a skill.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Total time spent in v0: ~2:54.
+- Public / private include split deferred — left under =src= for now.
+- Spawned a skill describing the expected project structure.
+
+* Result
+
+Components reshaped under the Dogen layout; skill captures the convention.

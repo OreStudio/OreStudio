@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 9c80f9df-31b6-4bb8-8972-ce5569541eda
+:END:
+#+title: Task: Analyse ORE trade import mapping requirements
+#+description: Document how ORE XML trade references (CounterParty string, NettingSetId, PortfolioIds) map to ORES UUID-keyed entities. Decide: auto-create vs mapping dialog vs config file for counterparties; how to assign books (no ORE equivalent); whether to map PortfolioIds or ignore; batch import configurations.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :trade:ore:xml:analysis:import:design:trade_import_analysis:sprint_13:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:68c577a4-b33e-47cb-953f-f3d90a4440d6][Trade import mapping analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Document the mapping requirements between ORE portfolio XML and the ORES model.
+
+* Status
+
+| Field        | Value                                                                      |
+|--------------+----------------------------------------------------------------------------|
+| State        | DONE                                                                       |
+| Parent story | [[id:68c577a4-b33e-47cb-953f-f3d90a4440d6][Trade import mapping analysis]] |
+| Now          | Completed 2026-02-25.                                                      |
+| Waiting on   | None.                                                                      |
+| Next         | None.                                                                      |
+| Last touched | 2026-02-25                                                                 |
+
+* Acceptance
+
+- Counterparty resolution decision documented (auto-create vs mapping dialog vs config).
+- Book assignment approach captured (ORE has no book concept).
+- Portfolio mapping decision: map =PortfolioIds= or ignore.
+- Batch import configuration question raised.
+- Mapping-dialog design ready for implementation.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Analysis-only pass; the implementation follows in the next story (which is postponed).
+
+* Result
+
+Mapping requirements documented.

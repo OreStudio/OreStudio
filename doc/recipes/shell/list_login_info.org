@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 784cd3c0-1267-4b0a-ac31-4e3ae8794e6f
+:END:
+#+title: List Login Info
+#+description: List Login Info
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Lists login information.
+
+#+name: list-login-info
+#+begin_src ores-shell :exports none
+accounts list-logins
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+<<list-login-info>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
+| Account ID                           | Last IP   | Last Attempt IP | Failed | Locked | Online | Last Login          |
++--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
+| 019c2d92-8448-7158-90d0-ccb8b5f7e812 | 127.0.0.1 | 127.0.0.1       | 0      | N      | Y      | 2026-02-05 11:32:44 |
+| 019c2d93-20bf-7750-acdb-2b34d97ecfca | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019c2d93-213a-7800-a9e3-9093a7af2d5d | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
++--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
+
+
+ores-shell> Bye!
+#+end_example

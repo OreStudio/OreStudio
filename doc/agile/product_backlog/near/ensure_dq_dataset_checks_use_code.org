@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: b97f6ddc-ec94-402e-8249-8a0120c185f8
+:END:
+#+title: Ensure DQ dataset checks use code
+#+description: Ensure DQ dataset checks use code
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We are still checking for Name:
+
+#+begin_src sql
+    -- Get the flags dataset ID (for linking images)
+    select id into v_flags_dataset_id
+    from ores.dq_datasets_tbl
+    where name = 'Country Flag Images'
+      and subject_area_name = 'Country Flags'
+      and domain_name = 'Reference Data'
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_flags_dataset_id is null then
+        raise exception 'Dataset not found: Country Flag Images';
+    end if;
+#+end_src

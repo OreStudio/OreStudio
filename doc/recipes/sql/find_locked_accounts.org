@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: f844d680-ee16-42e2-a054-4238bde8d26c
+:END:
+#+title: Find Locked Accounts
+#+description: Find Locked Accounts
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:login_info:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select li.account_id, a.username, li.failed_logins, li.last_attempt_ip
+from ores.login_info li
+join ores.accounts a on a.id = li.account_id
+  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
+where li.locked = 1;
+#+end_src

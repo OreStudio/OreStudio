@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 970b8f52-0560-430f-a4ff-cfa83fc25545
+:END:
+#+title: Enable Specific Algorithm
+#+description: Enable Specific Algorithm
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:compression:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Enable a specific compression algorithm (zlib, gzip, or bzip2).
+
+#+name: compression-on-zlib
+#+begin_src ores-shell :exports none
+compression on zlib
+compression
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<compression-on-zlib>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> Compression enabled with zlib only.
+Setting takes effect on next connection.
+ores-shell> Compression: on (zlib)
+ores-shell> Bye!
+#+end_example

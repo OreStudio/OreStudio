@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: da77fb50-27e8-4b42-a826-cab289c7826e
+:END:
+#+title: Story: Comms substrate evolution
+#+description: Composable CLI options/parser; rename ores.shell to ores.comms.shell; dynamic notification-channel discovery.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :comms:cli:shell:refactor:sprint_08:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Continue evolving the comms substrate: composable CLI options across
+binaries, rename =ores.shell= to reflect its scope, and replace the
+hardcoded channel list with server-side discovery.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] |
+| Now           | Completed 2026-01-11.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-01-11                                             |
+
+* Acceptance
+
+- All binaries share the composable options classes; standardised flags.
+- =ores.shell= renamed to =ores.comms.shell= consistently.
+- Channels discovered dynamically; shell consumes the registry.
+
+* Tasks
+
+In execution order:
+
+- [[id:fdeb08b4-fd95-46df-b868-eb57ae4666c6][Refactor options and parser]]
+- [[id:443b546e-357b-4809-8c20-b804e62fa31e][Rename ores.shell to ores.comms.shell]]
+- [[id:410ef5b4-9e13-4357-8b20-d78c63419572][Discover notification channels dynamically]]
+
+* Decisions
+
+- /Compose options rather than inherit/ :: small focused classes keep each binary's option set explicit while sharing the common bits.
+- /Server-side channel registry/ :: clients no longer need code changes when a new channel is added; subscriptions follow the registry.
+
+* Out of scope
+
+- Splitting the shell into per-binary subcommands.
+- Channel-level authorization (covered by RBAC in sprint 07).
+
+* See also
+
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.comms.shell]] — the renamed component.
+- [[id:13fbe901-b255-49f7-88c3-13b2a2506bf3][Wt and HTTP review]] — the HTTP entry point that consumes the same dispatch.

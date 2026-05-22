@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: 525e49f8-8e68-43d2-bc1d-2e925f36a00a
+:END:
+#+title: Multi-select LEI picker for PartyProvisionPage
+#+description: Multi-select LEI picker for PartyProvisionPage
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+=LeiEntityPicker= currently supports single selection. Extend to multi-select
+so the tenant admin can pick the full GLEIF hierarchy (root + subsidiaries)
+in one pass, creating one =provision_party_input= entry per selected LEI.
+See Phase 4 in
+[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] Extend =LeiEntityPicker= to support multi-select mode
+- [ ] =PartyProvisionPage=: iterate selected LEIs, build one input row per LEI
+- [ ] Derive =principal= per party (=username_base + "_" + short_code=)
+- [ ] Show per-party rows in the page with optional credential override fields
+- [ ] Summary page: list all provisioned usernames and their party names

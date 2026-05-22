@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 69796171-66f4-4459-913d-01523fc27e54
+:END:
+#+title: Codegen recipes
+#+description: Inventory of codegen recipes.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :recipe:codegen:index:knowledge:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Recipes related to *codegen* — the model-driven C++ generator and the
+v2 documentation scaffold. Some entries below appear in both this
+inventory and [[id:95ff6af4-2320-4cb6-a007-b016b7da16ed][Documentation recipes]] because they operate on docs
+/through/ codegen; the file's path tells you where it physically
+lives.
+
+* Scaffolding documents (via codegen)
+
+These recipes drive =generate_v2_doc.sh= — the codegen-side wrapper
+that produces v2 documents. They also appear in [[id:95ff6af4-2320-4cb6-a007-b016b7da16ed][Documentation
+recipes]] under "Authoring documents".
+
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — generic flow for every doctype.
+- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — component-specific flow.
+- [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]] — recipe-specific conventions and
+  inventory wiring; physically under =recipes/documentation/=.
+- [[id:391b9231-dba8-4e8c-97ab-a75e2b9fea07][How do I create a memory?]] — memory-specific conventions;
+  physically under =recipes/documentation/=.
+
+* Running codegen
+
+- [[id:20d0a77d-e0c0-492e-b0ec-45c7638dd220][How do I run codegen?]]

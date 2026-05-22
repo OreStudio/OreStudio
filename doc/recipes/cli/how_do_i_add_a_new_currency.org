@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 71cabb20-a7b2-46c3-9a19-f8c0662a5422
+:END:
+#+title: How do I add a new currency?
+#+description: Add a new currency
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:currencies:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Add a new currency. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
+
+* Question
+
+How do I add a new currency using =ores.cli=?
+
+* Answer
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli refdata currencies add ${db_args} ${log_args} --iso-code ABCDE --name "New Currency" \
+    --numeric-code 1234 --modified-by test --currency-type major
+./ores.cli refdata currencies list ${db_args} ${log_args} \
+  --format table --key ABCDE
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Successfully added currency: ABCDE
+
++----------+---------+--------------+--------+-------+----------------+-----------+-------------+---------------------+---------------------+
+| ISO Code | Version | Name         | Symbol | Type  | Fractions/Unit | Precision | Modified By | Valid From          | Valid To            |
++----------+---------+--------------+--------+-------+----------------+-----------+-------------+---------------------+---------------------+
+| ABCDE    | 2       | New Currency |        | major | 100            | 2         | test        | 2025-12-11 23:51:36 | 2025-12-11 23:51:36 |
++----------+---------+--------------+--------+-------+----------------+-----------+-------------+---------------------+---------------------+
+
+
+#+end_src

@@ -1,4 +1,5 @@
 #+TITLE: NATS Idiomatic Architecture: Drop Binary Protocol, Adopt MessagePack + JetStream
+#+version: 1
 #+DATE: 2026-03-14
 #+AUTHOR: ORE Studio Team
 #+STATUS: COMPLETED

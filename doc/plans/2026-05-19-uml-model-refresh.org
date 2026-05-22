@@ -1,4 +1,5 @@
 #+TITLE: UML Model Refresh
+#+version: 1
 #+SUBTITLE: Bring all component class diagrams up to date; introduce a generation script
 #+DATE: 2026-05-19
 #+AUTHOR: ORE Studio Team

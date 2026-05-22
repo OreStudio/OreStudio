@@ -1,0 +1,23 @@
+:PROPERTIES:
+:ID: 32ddf8d9-8c81-4d9e-9b0d-e8ff48f72e7f
+:END:
+#+title: Get Account by Username
+#+description: Get Account by Username
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select id, username, email, version, valid_from
+from ores.accounts
+where username = 'admin'
+  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+id	username	email	version	valid_from
+#+end_example

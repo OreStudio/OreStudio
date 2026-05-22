@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 1914d31e-4cd9-453b-9800-49b6851244b8
+:END:
+#+title: Help Menu
+#+description: Help Menu
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:general:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+name: help-exit
+#+begin_src ores-shell :exports none
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - change-reason-categories
+	(menu)
+ - change-reasons
+	(menu)
+ - connect <string> <string> <string>
+	Connect to server (optional: host port identifier)
+ - disconnect
+	Disconnect from server
+ - countries
+	(menu)
+ - currencies
+	(menu)
+ - accounts
+	(menu)
+ - bootstrap <string> <string> <string>
+	Create initial admin (principal password email) - principal is username@hostname or username
+ - login <string> <string>
+	Login with principal (username@hostname or username) and password
+ - logout
+	Logout the current user (alias for 'accounts logout')
+ - variability
+	(menu)
+ - compression <string> <string>
+	Set compression: 'compression off', 'compression on', 'compression on <algo>' (zlib/gzip/bzip2)
+ - compression
+	Show current compression setting
+ - events
+	(menu)
+ - permissions
+	(menu)
+ - roles
+	(menu)
+ - tenants
+	(menu)
+ - next
+	Show next page of the last listed entity
+ - prev
+	Show previous page of the last listed entity
+ - first
+	Jump to first page of the last listed entity
+ - last
+	Jump to last page of the last listed entity
+ - page-size
+	Show current page size
+ - page-size <int>
+	Set page size (e.g., 'page-size 10')
+ores-shell> Bye!
+#+end_example

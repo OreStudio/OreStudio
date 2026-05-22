@@ -76,9 +76,7 @@ build/nats/
 
 .bash_profile
 .bashrc
-.claude/agents
-.claude/commands
-.claude/settings.json
+.claude/
 .gitconfig
 .mcp.json
 .profile

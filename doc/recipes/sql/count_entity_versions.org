@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: be785e49-3af0-4086-918d-efc261fcae4b
+:END:
+#+title: Count Entity Versions
+#+description: Count Entity Versions
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:temporal_queries:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select username, count(*) as version_count
+from ores.accounts
+group by username
+having count(*) > 1
+order by version_count desc;
+#+end_src

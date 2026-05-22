@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 665dc710-e8a1-4c1f-9f66-2ee30aa94849
+:END:
+#+title: Task: Add temporal support to currencies
+#+description: Add validity-time and transaction-time columns to currencies so changes are tracked over time.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :currencies:temporal:bitemporal:sql:currencies_temporal_and_export:sprint_02:v0:
+#+owner: marco
+#+created: 2025-08-26
+#+updated: 2025-09-10
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the currency table bitemporal: each row carries both validity
+time (when the fact is true in the world) and transaction time
+(when we recorded it). Establishes the pattern every later
+reference-data type uses.
+
+* Status
+
+| Field        | Value                                                                       |
+|--------------+-----------------------------------------------------------------------------|
+| State        | DONE                                                                        |
+| Parent story | [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] |
+| Now          | Completed 2025-09-10.                                                       |
+| Waiting on   | None.                                                                       |
+| Next         | None.                                                                       |
+| Last touched | 2025-09-10                                                                  |
+
+* Acceptance
+
+- Currency rows have validity_start, validity_end, tx_start,
+  tx_end columns.
+- An "as of" query returns the row that was current at a given
+  point.
+- Updates produce new versions rather than overwriting.
+
+* Notes
+
+- Postgres 18's native temporal support was investigated but
+  deferred (separate investigation task) — the project pins to a
+  current LTS, so we do bitemporality in application code.
+
+* Result
+
+- Currency table bitemporal; pattern propagated to other reference
+  types in later sprints.

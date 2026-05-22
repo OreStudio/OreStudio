@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 8d7be70d-aeef-443e-8a8e-4f078feff833
+:END:
+#+title: Task: Add code generation support for domain types SQL
+#+description: Generate the SQL for domain types from the central model rather than hand-writing them.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :codegen:sql:domain_types:codegen_infrastructure:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:49a3b815-b5e9-4b3d-9213-100bf96c266d][Codegen infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Use the new codegen to emit the SQL for domain types from the central model rather than hand-writing each table.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:49a3b815-b5e9-4b3d-9213-100bf96c266d][Codegen infrastructure]] |
+| Now          | Completed 2026-01-22.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-01-22                                                          |
+
+* Acceptance
+
+- SQL for domain types comes out of codegen.
+- Output respects the =<component>_<entity>_<suffix>= convention.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+First real workload for the simple-code-generator; pays back with every new domain type.
+
+* Result
+
+Domain-type SQL is generated.

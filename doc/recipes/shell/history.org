@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 887af33e-e237-417a-9636-5006881a6790
+:END:
+#+title: History
+#+description: History
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Get version history for an account.
+
+#+name: account-history
+#+begin_src ores-shell :exports none
+accounts history newuser41
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<account-history>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> +---------+-----------+-----------------------+-------------------+-------------+-------------------------------+----------------+
+| Version | Username  | Email                 | Change Reason     | Recorded By | Recorded At                   | Change Summary |
++---------+-----------+-----------------------+-------------------+-------------+-------------------------------+----------------+
+| 1       | newuser41 | newuser41@example.com | system.new_record | postgres    | 2026-02-05 11:32:23.000000000 | Version 1      |
++---------+-----------+-----------------------+-------------------+-------------+-------------------------------+----------------+
+
+ores-shell> Bye!
+#+end_example

@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: e10ad67b-fb97-4a39-af79-37c087094157
+:END:
+#+title: Task: Add AI-generated sprint summary
+#+description: Produce sprint 07's summary via the AI-summary skill.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :agile:llm:summary:sprint_07_housekeeping:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a5060b3b-a3c0-40ff-b5d3-36ed1e74b609][Sprint 07 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Generate sprint 07's AI summary using the sprint-summariser skill.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:a5060b3b-a3c0-40ff-b5d3-36ed1e74b609][Sprint 07 housekeeping]] |
+| Now          | Completed 2025-12-30.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2025-12-30                                                          |
+
+* Acceptance
+
+- Summary committed alongside the v0 backlog.
+- Highlights notable wins, postponed items, and discovered work.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Same workflow as previous sprints — feed the sprint backlog to the summariser, edit lightly, commit.
+
+* Result
+
+AI summary present at the bottom of the v0 sprint 07 backlog.

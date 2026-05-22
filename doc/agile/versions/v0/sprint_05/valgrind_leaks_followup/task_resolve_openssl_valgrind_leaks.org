@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: c4aafe26-a61f-48c1-9f8d-00c64898ca17
+:END:
+#+title: Task: Resolve all of the OpenSSL leaks in Valgrind
+#+description: Suppress the OpenSSL initialisation leaks (LLM-confirmed as benign) — closes sprint 03's BLOCKED follow-up.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :valgrind:openssl:observability:bug_fix:valgrind_leaks_followup:sprint_05:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-25
+#+updated: 2025-11-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close out the BLOCKED OpenSSL leaks from sprint 03's
+=logging_and_observability=. LLMs confirm the remaining leaks are OpenSSL
+initialisation state that lives until process exit — add suppressions
+rather than chase them.
+
+* Status
+
+| Field        | Value                                                                 |
+|--------------+-----------------------------------------------------------------------|
+| State        | DONE                                                                  |
+| Parent story | [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]] |
+| Now          | Completed 2025-11-25.                                                 |
+| Waiting on   | None.                                                                 |
+| Next         | None.                                                                 |
+| Last touched | 2025-11-25                                                            |
+
+* Acceptance
+
+- OpenSSL initialisation leaks suppressed.
+- Suppression file documents what each entry covers and why.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- From v0: "all the leaks left are just initialisation and can be ignored. Added them to suppression."
+- Closes the cross-sprint thread that started in sprint 03.
+
+* Result
+
+OpenSSL leaks suppressed; Valgrind output now signal, not noise.

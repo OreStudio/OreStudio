@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 784e38a9-a447-4836-95ad-99ac95699c51
+:END:
+#+title: Task: Bump lukka/get-cmake from 4.3.1 to 4.3.2
+#+description: Bumps [lukka/get-cmake](https://github.com/lukka/get-cmake) from 4.3.1 to 4.3.2.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sprint_17_housekeeping:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/724
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a5abed76-b4f5-4e37-8ccc-220d360501b4][Sprint 17 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bump the lukka/get-cmake GitHub Action from 4.3.1 to 4.3.2.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:a5abed76-b4f5-4e37-8ccc-220d360501b4][Sprint 17 housekeeping]] |
+| Now          | Completed 2026-04-28.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Bump the lukka/get-cmake GitHub Action from 4.3.1 to 4.3.2.
+- PR #724 merged and landed on main.
+
+* Plan
+
+* Notes
+
+Bumps [[https://github.com/lukka/get-cmake][lukka/get-cmake]] from 4.3.1 to 4.3.2.
+<details>
+<summary>Release notes</summary>
+<p><em>Sourced from <a href="https://github.com/lukka/get-cmake/releases">lukka/get-cmake's releases</a>.</em></p>
+<blockquote>
+<h2>CMake v4.3.2</h2>
+<p>The <code>get-cmake</code> action downloads and caches CMake and Ninja on your workflows. Versions can be specified using <a href="https://docs.npmjs.com/about-semantic-versioning">semantic versioning ranges</a> using <a href="https://github.com/lukka/get-cmake/blob/latest/action.yml#L13"><code>cmakeVersion</code></a> and <a href="https://github.com/lukka/get-cmake/blob/latest/action.yml#L16"><code>ninjaVersion</code></a> inputs.</p>
+<p>Changes:</p>
+<ul>
+<li><code>latest</code> is now using CMake version <code>v4.3.2</code>, use this one-liner e.g.:
+<code>uses: lukka/get-cmake@latest</code></li>
+</ul>
+<p>Enjoy!</p>
+</blockquote>
+</details>
+<details>
+<summary>Commits</summary>
+<ul>
+<li><a href="https://github.com/lukka/get-cmake/commit/7bfc9baacbbdcb5e37957ad05c3546b3e222be3c"><code>7bfc9ba</code></a> New CMake version(s): cmake-v4.3.2</li>
+<li>See full diff in <a href="https://github.com/lukka/get-cmake/compare/v4.3.1...v4.3.2">compare view</a></li>
+</ul>
+</details>
+<br />
+
+[[https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=lukka/get-cmake&package-manager=github_actions&previous-version=4.3.1&new-version=4.3.2][![Dependabot compatibility score]]](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)
+
+Dependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting =@dependabot rebase=.
+
+[//]: # (dependabot-automerge-start)
+[//]: # (dependabot-automerge-end)
+
+---
+
+<details>
+<summary>Dependabot commands and options</summary>
+<br />
+
+You can trigger Dependabot actions by commenting on this PR:
+- =@dependabot rebase= will rebase this PR
+- =@dependabot recreate= will recreate this PR, overwriting any edits that have been made to it
+- =@dependabot show <dependency name> ignore conditions= will show all of the ignore conditions of the specified dependency
+- =@dependabot ignore this major version= will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)
+- =@dependabot ignore this minor version= will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)
+- =@dependabot ignore this dependency= will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)
+
+</details>
+
+
+* Result
+
+Landed.

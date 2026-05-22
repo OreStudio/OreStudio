@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 9723ed40-7424-4f44-bdb7-79c6c019b3e9
+:END:
+#+title: Task: CDM Phase 1: Rates instrument domain model
+#+description: Rates instruments: Swap, CrossCurrencySwap, CapFloor, Swaption. SQL: ores_trading_instruments_tbl + ores_trading_swap_legs_tbl + notify triggers + drop files. Domain: instrument + swap_leg structs with JSON I/O + table I/O + generator + protocol. Repository + service layer. Qt UI: ClientInstrumentModel + InstrumentMdiWindow + InstrumentDetailDialog + InstrumentHistoryDialog + InstrumentController.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :cdm:rates:trading:instrument:domain:qt:sql:cdm_instruments:sprint_15:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Phase 1 of the CDM-inspired instrument design: rates instruments (Swap, CrossCurrencySwap, CapFloor, Swaption).
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]] |
+| Now          | Completed 2026-03-26.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2026-03-26                                                                |
+
+* Acceptance
+
+- SQL: ores_trading_instruments_tbl + ores_trading_swap_legs_tbl + notify triggers + drop files; trading_create.sql + populate_trading.sql + seed data.
+- Domain: instrument + swap_leg structs with JSON + table I/O + generator + protocol.
+- Repository: entities + mappers + repositories + services.
+- Server: messaging handler + registrar.
+- Qt UI: ClientInstrumentModel + InstrumentMdiWindow + InstrumentDetailDialog + InstrumentHistoryDialog + InstrumentController + MainWindow integration.
+- CLI commands deferred to a follow-up story.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+PR #569. CLI deferred but otherwise complete.
+
+* Result
+
+Rates instruments first slice complete.

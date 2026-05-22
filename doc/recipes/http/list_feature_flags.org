@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: c143e2d1-3efb-4192-8c18-96eaf70d415b
+:END:
+#+title: List Feature Flags
+#+description: List Feature Flags
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:feature_flags_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Retrieve all feature flags in the system.
+
+#+begin_src verb :wrap src json
+get /feature-flags
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src

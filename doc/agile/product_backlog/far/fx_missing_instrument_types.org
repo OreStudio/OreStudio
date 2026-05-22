@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 76b891f5-750c-4ea7-80f1-d840a0af0e20
+:END:
+#+title: Implement missing FX instrument types
+#+description: Not yet implemented: FX_Swap, FX_KIKO_Barrier_Option, Exotic_FxGenericBarrierOption, FX_WorstOfBasketSwap, Exotic_FXWorstOfBasketSwap.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:trades:fx:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+The following FX instrument types are not yet implemented end-to-end (ORE XML → domain → DB → UI):
+
+- =FX_Swap.xml= (=FxSwap=)
+- =FX_KIKO_Barrier_Option.xml= (=FxKIKOBarrierOption=)
+- =Exotic_FxGenericBarrierOption.xml=
+- =FX_WorstOfBasketSwap.xml=
+- =Exotic_FXWorstOfBasketSwap.xml=
+
+Each requires: ORE parser, domain type, DB table(s), service layer, and Qt form.

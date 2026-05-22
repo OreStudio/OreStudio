@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: A19D2750-D97D-09A4-BD2B-5218D9654E56
+:ROAM_ALIASES: DQ
+:END:
+#+title: Data Quality
+#+description: The DQ-6 dimensions, related industry bodies, and the provenance fields every reference-data entity carries — the conceptual foundation for the ores.dq.* subsystem.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:domain:dq:data_quality:
+#+created: 2024-06-15
+#+updated: 2026-05-21
+
+Data Quality (DQ) is the measure of how well a dataset satisfies the
+requirements of its intended business use. In financial markets,
+high-quality data is defined as being accurate, complete, timely, and
+traceable, ensuring that automated trading decisions and risk
+calculations are based on a "single version of the truth" rather than
+corrupted or ambiguous artefacts. The patterns described here back
+[[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq.core]] (domain logic) and its service / API siblings
+([[id:fa64a6de-7010-4fd8-a1f8-d153b3cd96a9][ores.dq.service]], [[id:ffcfc860-204d-4f48-ae34-d3e382d7a02b][ores.dq.api]]). Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* The Standard Dimensions - The "DQ 6"
+
+There are six industry-standard dimensions used by [[https://en.wikipedia.org/wiki/ISO_8000][ISO 8000]] and [[https://en.wikipedia.org/wiki/Data_Management_Association][DAMA]]:
+
+- *Accuracy*: The degree to which data values match the "Golden Source" (e.g.,
+  a Bloomberg price vs. your sample).
+- *Completeness*: The presence of all mandatory attributes (e.g., no missing
+  ISIN or Strike Price).
+- *Consistency*: The absence of contradictions across different tables or
+  systems (e.g., USD/EUR rate is the same in your "Sample" and "Derived"
+  tables).
+- *Timeliness*: The readiness of data for its specific window (e.g., "T+0"
+  real-time vs. "T+1" end-of-day).
+- *Validity*: Adherence to business rules and formats (e.g., Currency codes must
+  follow ISO 4217).
+- *Uniqueness*: Ensuring no duplicate records exist for the same entity and
+  timestamp.
+
+* Relevant Industry bodies and standards
+
+** DAMA-DMBOK (Data Management Body of Knowledge)
+
+- Focus: Best practices and principles for managing data as a strategic asset
+  (including Data Governance, Data Quality, Data Modeling, etc.).
+- Role: Provides detailed practices for Data Architecture, encompassing data
+  modeling and integration, and defines how these elements align with specific
+  business requirements.
+
+** TOGAF (The Open Group Architecture Framework)
+
+- Focus: Design, planning, implementation, and governance of Enterprise
+  Architecture, ensuring IT alignment with strategic business goals.
+- Role: Features a dedicated Data Architecture phase (Phase C), which leverages
+  DAMA principles to build a scalable data ecosystem that fits within the
+  broader organizational structure.
+
+* Key domain concepts
+
+- *Dataset*: A logical collection of sample records (e.g., a set of trades,
+  portfolios, or market data snapshots).
+- *Record*: An individual row or entity within a dataset (optional granularity;
+  lineage may be tracked at dataset or record level).
+- *Provenance*: The origin of the data—external vendor, internal system, or
+  synthetic generator.
+- *Classification*: Categorizes the nature of the data for compliance and usage
+  control.
+- *Lineage*: Directed acyclic graph (DAG) linking derived data to its upstream
+  sources.
+- *Temporal Context*: Captures both business time (=as_of_date=) and system time
+  (=ingestion_timestamp=), supporting bi-temporal reasoning.
+- *Data Passport*: A self-contained metadata manifest (relational or
+  document-based) that answers the 5 Ws of data governance.
+- *Quality metrics*: Define and store validation rules and quality measurements.
+- *Change Management*: Maintain history of data changes (who did what, when and
+  for what reason).
+- *Data profiling*: Store statistical metadata about data characteristics.
+- [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]]
+
+* Record Provenance Fields
+
+Every reference data entity in ORE Studio carries six standard provenance fields
+that together answer the "who, when, and why" of the last change. These fields
+are set by a combination of the application layer and the database trigger.
+
+| C++ Field          | UI Label      | Set By      | Meaning                                                        |
+|--------------------+---------------+-------------+----------------------------------------------------------------|
+| =version=          | Version       | DB trigger  | Monotonically increasing integer; starts at 1, incremented on each update |
+| =modified_by=      | Modified By   | Application | Username of the account that submitted the change request      |
+| =performed_by=     | Performed By  | Application | Username on whose behalf the change was performed (may differ from modified_by in delegated workflows) |
+| =recorded_at=      | Recorded At   | DB trigger  | Wall-clock timestamp (UTC) when the database row was last written |
+| =change_reason_code= | Change Reason | Application | Optional code referencing a =change_reason= record explaining the business justification |
+| =change_commentary=  | Commentary    | Application | Optional free-text note accompanying the change (displayed in a multi-line area in the UI) |
+
+** Relation to SQL temporal columns
+
+These provenance fields live in the current ("live") table alongside the entity
+data. The database trigger also writes a copy of every version into a companion
+=_history= table, where each row has additional =valid_from= / =valid_to= columns
+that bound its lifespan in the system (system-time bitemporality).
+
+** Qt UI presentation
+
+In the Qt UI all six fields are displayed in a =ProvenanceWidget= (a promoted
+=QWidget= containing a read-only form layout). The widget lives in a dedicated
+*Provenance* tab of each detail dialog. The tab is disabled (greyed out, not
+hidden) in create mode because provenance data does not yet exist for a record
+that has not been saved.

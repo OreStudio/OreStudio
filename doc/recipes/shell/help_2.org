@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 307f49c9-6738-43ed-a233-241d6e0c4e08
+:END:
+#+title: Help
+#+description: Help
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:roles:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+name: help-roles-exit
+#+begin_src ores-shell :exports none
+roles
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-roles-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> roles> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - list
+	List all roles in the system
+ - get <string>
+	Get role details (role_name or role_id)
+ - ores-shell
+	(menu)
+roles> Bye!
+#+end_example

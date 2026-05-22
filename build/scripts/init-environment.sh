@@ -45,8 +45,10 @@ ENV_FILE="${CHECKOUT_ROOT}/.env"
 #      the wt.service launch template as {wt_port}.  ORES_WT_PORT was being
 #      mapped to an unknown option name by the wt.service parser, causing an
 #      "unrecognised option" crash on startup.
+#   3  Added ORES_WORKSPACE_SERVICE_DB_* for new workspace service.
+#   4  Added ORES_SITE_PORT for the local documentation site server.
 # ---------------------------------------------------------------------------
-ENV_VERSION=3
+ENV_VERSION=4
 
 # ---------------------------------------------------------------------------
 # Argument parsing
@@ -162,6 +164,13 @@ if [[ "${PRESET}" == *release* ]]; then
 else
     HTTP_PORT=$((BASE_PORT + 0))
     WT_PORT=$((BASE_PORT + 2))
+fi
+# Site preview port: 8000 for non-numeric labels; 8000+suffix for numeric ones
+# (e.g. local1→8001, local2→8002).  Preset-independent — always the same per checkout.
+if [[ -n "${LABEL_SUFFIX}" ]]; then
+    SITE_PORT=$((8000 + LABEL_SUFFIX))
+else
+    SITE_PORT=8000
 fi
 NATS_STORE_DIR="${CHECKOUT_ROOT}/build/nats/${LABEL}/jetstream"
 
@@ -409,6 +418,7 @@ ORES_DATABASE_NAME=${DB_NAME}
 ORES_HTTP_PORT=${HTTP_PORT}
 ORES_CONTROLLER_SERVICE_HTTP_PORT=${HTTP_PORT}
 ORES_CONTROLLER_SERVICE_WT_PORT=${WT_PORT}
+ORES_SITE_PORT=${SITE_PORT}
 ORES_NATS_PORT=${NATS_PORT}
 ORES_NATS_URL=${NATS_URL}
 ORES_NATS_MONITOR_PORT=${NATS_MONITOR_PORT}

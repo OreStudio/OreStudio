@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 2018f6e5-95f7-443b-9406-9d941ce3934a
+:END:
+#+title: Task: Fix shutdown latency: offload DB writes to thread pool
+#+description: - `monitor_process()` and `do_launch()` were running blocking libpqxx calls on the single-threaded `io_context`, seriali
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :workflow_hardening:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/760
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Offload blocking libpqxx calls in process_supervisor to a thread pool to eliminate the 7s-per-service shutdown serialisation that was exhausting the 30s grace period.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] |
+| Now          | Completed 2026-05-17.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Offload blocking libpqxx calls in process_supervisor to a thread pool to eliminate the 7s-per-service shutdown serialisation that was exhausting the 30s grace period.
+- PR #760 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- =monitor_process()= and =do_launch()= were running blocking libpqxx calls on the single-threaded =io_context=, serialising all service-exit notifications during shutdown — 7s per service observed, causing the 30s grace period to expire and the controller to be killed
+- Add =boost::asio::thread_pool db_pool_{1}= to =process_supervisor=; switch to its executor before each blocking DB section with =co_await boost::asio::post(bind_executor(db_pool_.get_executor(), use_awaitable))=, then switch back to =ioc_= before any =processes_= map access or =co_spawn= — no locks needed since all shared-state access stays on the io_context thread
+- Add elapsed-time logging at the end of =start_all()=: ="All services started in Xs."=
+- Add =wait_for_string_in_log= helper in =start-services.sh= that waits for that line before printing the final =Time:= summary, giving accurate wall-clock time-to-ready instead of the ~2s controller-launch time
+
+Expected outcome: shutdown completes in ~5–8s with a clean exit; startup =Time:= reflects true time-to-ready.
+
+Plan: =doc/plans/2026-05-16-controller-shutdown-latency.org=
+
+
+* Result
+
+Landed.

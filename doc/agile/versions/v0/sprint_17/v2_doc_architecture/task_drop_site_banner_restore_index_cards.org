@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 119d103a-81df-4aad-9106-214080bfcc53
+:END:
+#+title: Task: Drop site banner, restore index cards, GitHub icon in nav
+#+description: - Drop the oversized banner image from the site preamble — leaves the nav band alone at the top of every page.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :v2_doc_architecture:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/787
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Drop the oversized site banner, restore dark-theme styles for the index page hero and feature cards, and add the GitHub icon to the site nav.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] |
+| Now          | Completed 2026-05-20.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Drop the oversized site banner, restore dark-theme styles for the index page hero and feature cards, and add the GitHub icon to the site nav.
+- PR #787 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- Drop the oversized banner image from the site preamble — leaves the nav band alone at the top of every page.
+- Restore the dark-theme styles for =.hero=, =.btn=, =.grid=, =.card=, and =footer= that the index page (=index.org=) needs for the splash hero and the three feature cards (QuantLib Inside / ORE Powered / Visual Workflow); these were lost when the site CSS was rewritten in #784.
+- Hero box now hugs the splash image edge-to-edge (capped at the image's native 964px, image clipped by the hero's rounded corners).
+- Swap the GitHub nav entry to the FontAwesome github mark (CDN already loaded in =html-header=).
+- Drop the now-redundant inline =<header><div class="nav">…</div></header>= block from =index.org= since the site-wide preamble nav replaces it.
+- Switch the stylesheet href from the hardcoded production URL to =/OreStudio/assets/style.css= so local previews via =build/scripts/serve-site.sh= pick up CSS changes without round-tripping through GitHub Pages.
+
+
+* Result
+
+Landed.

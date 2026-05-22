@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 17a92bec-05ea-41a1-8118-1360e7ea8903
+:END:
+#+title: How do I get help for the CLI iam roles command?
+#+description: Show available operations under =ores.cli iam roles=
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:roles:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Show available operations under =ores.cli iam roles=. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
+
+* Question
+
+How do I get help for the CLI iam roles command?
+
+* Answer
+
+#+begin_src sh :wrap src text
+./ores.cli iam roles --help
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+roles - Manage roles
+
+Usage: ores.cli roles <operation> [options]
+
+Available operations:
+   list           List roles as JSON or table
+   delete         Delete a role by ID
+   add            Add a new role
+
+For operation-specific options, use: roles <operation> --help
+#+end_src

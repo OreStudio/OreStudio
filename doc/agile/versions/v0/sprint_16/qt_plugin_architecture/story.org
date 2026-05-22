@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 38c972e1-2dd2-41ae-a770-800fee90d1e6
+:END:
+#+title: Story: Qt plugin architecture
+#+description: Extract ores.qt.api shared framework library; extract domain-specific plugins (admin, compute, refdata, party, mktdata, trading, workflow); move classes between plugins to satisfy ownership.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :qt:plugins:architecture:refactor:modularity:sprint_16:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Extract ores.qt.api shared framework library; extract domain-specific plugins (admin, compute, refdata, party, mktdata, trading, workflow); move classes between plugins to satisfy ownership.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Now           | Completed 2026-04-09.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-04-09                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- [[id:27e66a7c-ba13-40ec-9a0f-2d89a459d3e9][Extract domain-specific plugin libraries]]
+- [[id:6f5ddf6d-95ab-4c17-a4ae-9ed43c51b3f7][Extract ores.qt.api as shared framework library]]
+- [[id:3f1c1cf9-1df9-40d3-885f-7481ad3b512a][Move App/AppVersion/ClientApp/ClientHost classes to compute]]
+- [[id:b6c2fb2c-18ea-4ac9-b7c9-ccbbd5970e41][Move DataLibrarianWindow and publish dialogs from mktdata to refdata]]
+- [[id:2808e19f-d16d-456d-bf16-9de26203a72e][Move OreImport* from compute to trading plugin]]
+
+* Decisions
+
+- /Final v0 sprint/ :: capture everything landed under v0 honestly; this is the closing chapter of v0.
+
+* Out of scope
+
+- Anything explicitly carried forward to v1.
+
+* See also
+
+None.

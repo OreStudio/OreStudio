@@ -2,26 +2,105 @@
 :ID: 7474935C-95D1-3034-B833-83DCD9FB3A09
 :END:
 #+title: Knowledge
-#+author: Marco Craveiro
-#+startup: inlineimages
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+description: Index of durable cross-cutting knowledge — domain concepts, architecture, security, and supporting topics.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:index:
+#+created: 2024-06-15
+#+updated: 2026-05-21
 
-This folder contains assorted knowledge we picked up as part of implementing
-this project. It is mainly made up of short definitions created by LLMs (Gemini,
-Grok, etc) and is there to help us when we are looking at certain aspects of the
-code; we can then rely on org-roam to get the required context for some
-technical terms. This page serves as a "general index" of the knowledge.
+Durable, cross-cutting knowledge that outlives any sprint. Each entry
+is a single-topic page — a definition, a convention, an explanation of
+how some piece of the system works — that other documents can link to
+without restating it. If you find yourself explaining the same concept
+in two places, that concept belongs here.
 
-* ORE / Risk Analytics
+Knowledge is grouped by topic; jump to the section that fits what you
+are looking for. The [[id:cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11][external/]] subfolder contains pure reference docs
+about systems and concepts ORE Studio does not own.
 
-- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]]
+* Domain
 
-* C++ Architecture
+Finance concepts the codebase relies on.
 
-- [[id:A1C3E5F7-92B4-4D6A-B8C2-3F1D7E9A0B5C][Shared Library Symbol Visibility]]
+- [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data quality]] — the standard DQ-6 dimensions as we apply them
+  inside [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq.core]].
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE model configuration]] — how ORE Studio configures the
+  pricing / risk models we hand to [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]].
+
+* Architecture
+
+How the codebase is put together.
+
+- [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]] — api/core/service split, facet
+  placement, CMake dependency chain, and scaffold profiles.
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset menu, output directory layout, the
+  conventions every component build follows.
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering, type mappings, and service
+  conventions for creating a full-stack entity.
+- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] — =ores.qt.api= contract, IPlugin
+  lifecycle, the two-phase menu-building sequence.
+- [[id:2fddc2f6-c510-4a86-8c50-d79c83eddfff][Qt entity patterns]] — ClientModel, list window, detail dialog,
+  history dialog, and async-fetch patterns.
+- [[id:e44891dc-234c-42db-90e1-9421400abd1a][Qt menu and toolbar patterns]] — plugin registration,
+  =on_login()= menu wiring, and MDI window toolbar construction.
+- [[id:05891220-2503-48a0-adf5-13ec95b605d7][CLI entity patterns]] — options structs, parser layout, and
+  command-dispatch conventions.
+- [[id:e38360b6-99ff-4af0-937f-58f31bd573f5][Shell entity patterns]] — REPL command registration,
+  message-based communication, and operation shapes.
+- [[id:579910d3-89ff-4820-9a9b-57508ff39096][HTTP entity patterns]] — REST route structure, handler skeleton,
+  and CRUD conventions.
+- [[id:acf334d8-703b-4020-a48e-f8a8e5090e72][Wt entity patterns]] — list widget, detail dialog, and
+  application-integration patterns.
+- [[id:5cb31a0e-4e38-4521-b0ee-e4396c3e2936][SQL entity schema patterns]] — naming conventions, idempotency
+  patterns, and entity-type catalogue.
+- [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] — Catch2 file structure, naming,
+  test-case shape, generators, database helpers.
+- [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]] — the categorised checks both
+  PR-delta and full-component reviews apply.
+- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component documentation guide]] — how to write a
+  =component_overview.org= that passes audit.
+- [[id:271f40da-d0ea-4d08-a4f8-3d2b835df5e7][PlantUML class diagram conventions]] — styling for component
+  and system class diagrams.
+- [[id:496dc90b-8951-42a6-a63e-b1762df496c6][PlantUML ER diagram conventions]] — styling for the SQL schema
+  ER diagram.
+
+* UI
+
+How ORE Studio's surfaces look and feel.
+
+- [[id:6743f6e3-578c-4e4b-9dd6-d5a0df6734c8][UI design principles]] — the Jony Ive-level rulebook: design
+  direction, typography, colour, spacing, depth, motion.
+- [[id:6ef42145-cee7-4035-806a-a4200a3e003a][Icon guidelines]] — the visual-language catalogue (Fluent UI
+  System Icons) grouped by semantic category.
 
 * Security
 
-- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
-- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]
-- [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]]
+Authentication, authorisation, and tenancy.
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — how IAM is realised in
+  [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]]: tenants, accounts, roles, permissions.
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — the RBAC model that backs IAM:
+  roles compose permissions, the assignment graph.
+
+* External reference
+
+Concepts and systems we don't own — captured here so other docs can
+link to them without restating. See the [[id:cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11][external knowledge index]] for
+the full list, or jump direct:
+
+- [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][Open Source Risk Engine (ORE)]] — the upstream risk-analytics
+  library ORE Studio wraps.
+- [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]] — the open-source quantitative-finance library ORE
+  itself builds on.
+- [[id:FCC3BBA5-DFA3-17F4-69B3-B7958C05B1F8][Financial Products Markup Language (FpML)]] — industry XML
+  standard for representing financial products.
+- [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding schemes]] — FpML mechanism for restricting fields to a
+  known set of values.
+- [[id:0929B047-1A31-3514-9EDB-EF7B4F012C5D][Standing settlement instructions]] — SSIs and how they flow
+  through the trading lifecycle.
+- [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] — what RLS is at the database
+  level, before we describe how we use it.
+- [[id:A1C3E5F7-92B4-4D6A-B8C2-3F1D7E9A0B5C][Shared library symbol visibility]] — visibility annotations and
+  hidden-by-default policy at the compiler / linker level.

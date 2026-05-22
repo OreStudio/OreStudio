@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 1dc4639c-893d-4cbe-b4ac-a4bc9a04b932
+:END:
+#+title: Task: DQ domain types and FpML reference data
+#+description: 10 DQ domain types (data_domain, subject_area, catalog, coding_scheme_authority_type, coding_scheme, origin_dimension, nature_dimension, treatment_dimension, methodology, dataset) with JSON + table I/O; FpML non-ISO currencies / business centers / business processes integrated; faker-cxx generators; year_month_day reflector.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :dq:domain_types:fpml:faker:data_quality_subsystem:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Land the C++ domain types and synthetic-data generators for the DQ subsystem; integrate FpML reference data.
+
+* Status
+
+| Field        | Value                                                                                  |
+|--------------+----------------------------------------------------------------------------------------|
+| State        | DONE                                                                                   |
+| Parent story | [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] |
+| Now          | Completed 2026-01-15.                                                                  |
+| Waiting on   | None.                                                                                  |
+| Next         | None.                                                                                  |
+| Last touched | 2026-01-15                                                                             |
+
+* Acceptance
+
+- 10 domain types: =data_domain=, =subject_area=, =catalog=, =coding_scheme_authority_type=, =coding_scheme=, =origin_dimension=, =nature_dimension=, =treatment_dimension=, =methodology=, =dataset= (each with JSON + table I/O).
+- FpML non-ISO currencies, business centers, business processes integrated via SQL populate.
+- faker-cxx generators for all DQ types.
+- =year_month_day= reflector for reflect-cpp.
+- DQ documentation extended with the /DQ 6/ standard dimensions and DAMA-DMBOK / TOGAF references.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+FpML reference data anchors us to industry vocabulary rather than inventing one.
+
+* Result
+
+DQ types + FpML data + synthetic generators all in place.

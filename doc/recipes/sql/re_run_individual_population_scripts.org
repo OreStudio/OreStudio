@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 187f2f2f-4678-4fff-a5d8-2f7f58786adc
+:END:
+#+title: Re-run Individual Population Scripts
+#+description: Re-run Individual Population Scripts
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:population_scripts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+To re-run only specific population scripts:
+
+#+begin_src sql
+-- RBAC only
+\ir '$project_sql_dir'/populate/permissions_populate.sql
+\ir '$project_sql_dir'/populate/roles_populate.sql
+
+-- System flags only
+\ir '$project_sql_dir'/populate/system_flags_populate.sql
+
+-- All reference data (currencies, flags, images)
+\ir '$project_sql_dir'/populate/reference_data.sql
+
+-- Or individual reference data scripts
+\ir '$project_sql_dir'/populate/currencies_populate.sql
+\ir '$project_sql_dir'/populate/load_flags.sql
+\ir '$project_sql_dir'/populate/flags_populate.sql
+\ir '$project_sql_dir'/populate/currency_images_populate.sql
+#+end_src

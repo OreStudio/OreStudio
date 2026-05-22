@@ -4,10 +4,17 @@
 #+title: ores.marketdata.core
 #+description: Market data management — market series, observations, fixings, and import from external sources.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :marketdata:core:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.marketdata.core component diagram
+#+caption: ores.marketdata.core
+[[file:ores.marketdata.core.png][file:ores.marketdata.core.png]]
 
 * Summary
 

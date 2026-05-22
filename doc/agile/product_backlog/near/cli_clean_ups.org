@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 0d169880-ea3b-4c19-8ccb-c06efc775ebe
+:END:
+#+title: Cli clean-ups
+#+description: Cli clean-ups
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+- we still seem to support =--entity currencies=. This should now be invalid.
+  Done.
+- we are still exporting as JSON. We should instead allow CSV and XML exports
+  only.
+- add recipes for all commands.
+- should be able to list all admin accounts.
+- list command should support table output.
+- is admin should be a bool: =--is-admin arg (=0)=
+- add account duplicates logic. We should have a single service for this.
+- split application into entities.

@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 9af052ac-0875-4bc5-964b-b4821ed7b161
+:END:
+#+title: Task: Extend roundtrip to all four ORE XML document types
+#+description: - Add `reverse()` to `calendar_adjustment_mapper` and `conventions_mapper` so all four ORE XML document types can be ser
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ore_domain_roundtrip:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/732
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:66109ae6-1c44-405d-b4d6-08164c457c25][ORE domain roundtrip]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extend the roundtrip command to auto-detect and handle all four ORE XML document types: Portfolio, CurrencyConfig, CalendarAdjustments, and Conventions.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:66109ae6-1c44-405d-b4d6-08164c457c25][ORE domain roundtrip]] |
+| Now          | Completed 2026-05-08.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Extend the roundtrip command to auto-detect and handle all four ORE XML document types: Portfolio, CurrencyConfig, CalendarAdjustments, and Conventions.
+- PR #732 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- Add =reverse()= to =calendar_adjustment_mapper= and =conventions_mapper= so all four ORE XML document types can be serialised back to XML after domain round-trip
+- Extend =exporter::roundtrip= (renamed from =roundtrip_portfolio=) to detect =<Portfolio>=, =<CurrencyConfig>=, =<CalendarAdjustments>=, and =<Conventions>= root elements from the first 4 KiB of each file and dispatch to the appropriate import/export pair
+- Add =export_calendar_adjustments= and =export_conventions= to =exporter=; extend =roundtrip_summary= with =currency_files=, =calendar_files=, =convention_files= counters
+- Update CLI output to display the three new file-type counters
+- Rewrite =ore_domain_roundtrip_check.py= to classify all four file types, extract typed entities (trades / currencies / calendars / conventions), and report per-type fidelity
+
+
+* Result
+
+Landed.

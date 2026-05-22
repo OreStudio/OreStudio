@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: 759152ce-af91-40fe-b45f-12167bf9fcda
+:END:
+#+title: Associating annotations with entities
+#+description: Associating annotations with entities
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+It should be possible to associate annotations with any entity in the system.
+For example, with books, portfolios, trades, etc. This could be a very simple
+table with a UUID, a text field, and the usual timestamps. Then, we could add a
+notes tab to entities which just loads all notes matching that UUID and shows
+them chronologically. Need to be temporal but the display is as a list:
+
+- ID: UUID of the note.
+- Entity ID: UUID of the entity being annotated
+- Text: Annotation text.
+- User: Modified by of the entry.
+- Time: valid from of the entry.

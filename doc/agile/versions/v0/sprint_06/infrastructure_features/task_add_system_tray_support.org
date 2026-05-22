@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 38dae511-4dd6-429d-bfc9-557cd3c57d0b
+:END:
+#+title: Task: Add system tray support
+#+description: Show ORE Studio in the system tray with minimise-to-tray behaviour for long-running sessions.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt:ux:system_tray:infrastructure_features:sprint_06:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-15
+#+updated: 2025-12-15
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Show ORE Studio in the system tray with minimise-to-tray behaviour for long-running sessions.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | DONE                                                                 |
+| Parent story | [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]] |
+| Now          | Completed 2025-12-15.                                                |
+| Waiting on   | None.                                                                |
+| Next         | None.                                                                |
+| Last touched | 2025-12-15                                                           |
+
+* Acceptance
+
+- Tray icon shows on supported platforms.
+- Minimise sends to tray rather than dock/taskbar; restore from tray menu.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Platform-conditional; macOS dock behaviour preserved.
+
+* Result
+
+System tray support shipped.

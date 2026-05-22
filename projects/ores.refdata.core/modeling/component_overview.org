@@ -4,10 +4,17 @@
 #+title: ores.refdata.core
 #+description: Reference data domain — currencies, countries, counterparties, books, and business structure with temporal persistence.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :refdata:core:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.refdata.core component diagram
+#+caption: ores.refdata.core
+[[file:ores.refdata.core.png][file:ores.refdata.core.png]]
 
 * Summary
 

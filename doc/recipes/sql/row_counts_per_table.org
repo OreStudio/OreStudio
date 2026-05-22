@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 35d6ec68-f7e0-445a-8f03-78ca5eac9c13
+:END:
+#+title: Row Counts per Table
+#+description: Row Counts per Table
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:administrative:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Uses PostgreSQL statistics for all tables in the schema:
+
+#+begin_src sql
+select relname as table_name, n_live_tup as rows
+from pg_stat_user_tables
+where schemaname = 'ores'
+order by n_live_tup desc;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| table_name       | rows |
+|------------------+------|
+| images           |  276 |
+| image_tags       |  276 |
+| currency_images  |  158 |
+| currencies       |  158 |
+| permissions      |   24 |
+| role_permissions |   21 |
+| roles            |    6 |
+| feature_flags    |    4 |
+| tags             |    1 |
+| ip2country       |    0 |
+| account_roles    |    0 |
+| sessions         |    0 |
+| accounts         |    0 |
+| login_info       |    0 |
+#+end_example

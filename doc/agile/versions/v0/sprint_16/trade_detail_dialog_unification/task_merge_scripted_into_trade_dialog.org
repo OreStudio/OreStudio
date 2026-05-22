@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 05f8dec5-1293-4ef7-84eb-479137c170c0
+:END:
+#+title: Task: Merge scripted instrument family into TradeDetailDialog
+#+description: PR 6 of 6: standalone scripted controllers + MDI windows removed; integrated into TradeDetailDialog with UI tabs for script definition + body; error visibility for load failures; QLineEdit for trade type code.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt:trade:scripted:instrument:trade_detail_dialog_unification:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1490e130-08f9-4d43-8f80-d7e0f5022fbd][Trade detail dialog unification]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+PR 6 of 6: standalone scripted controllers + MDI windows removed; integrated into TradeDetailDialog with UI tabs for script definition + body; error visibility for load failures; QLineEdit for trade type code.
+
+* Status
+
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | DONE                                                                         |
+| Parent story | [[id:1490e130-08f9-4d43-8f80-d7e0f5022fbd][Trade detail dialog unification]] |
+| Now          | Completed 2026-04-07.                                                        |
+| Waiting on   | None.                                                                        |
+| Next         | None.                                                                        |
+| Last touched | 2026-04-07                                                                   |
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =git log= for the per-PR breakdown.
+
+* Result
+
+Landed.

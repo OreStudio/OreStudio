@@ -2,6 +2,7 @@
 :ID: B7E4D2A1-CD23-11F1-9F1E-40B0768014EB
 :END:
 #+title: CDM-Inspired Instrument Domain Model — Phase 2 (Equity, Commodity, Extensions)
+#+version: 1
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 * Overview

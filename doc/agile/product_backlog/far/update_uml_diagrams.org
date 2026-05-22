@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: cb8b2a2a-4adf-4f08-9ee1-c32491b3b50e
+:END:
+#+title: Update all UML/PlantUML component diagrams
+#+description: Component diagrams are out of date. Update all PlantUML diagrams in modeling/ folders to reflect the current architecture.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :documentation:architecture:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+PlantUML diagrams in =modeling/= directories are out of date. Many were generated from an earlier architecture (pre-service-isolation, pre-per-type equity) and no longer reflect the component boundaries or dependency graph.
+
+A sweep is needed to:
+1. Regenerate component diagrams from the current =CMakeLists.txt= dependency declarations.
+2. Update sequence diagrams for the key flows (import, export, publish bundle).
+3. Remove diagrams for components that no longer exist.
+
+Consider automating this as part of the CI documentation build.

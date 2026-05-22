@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: b5aa3934-c955-4dcc-ad98-3e0b7153753c
+:END:
+#+title: Task: Implement client heartbeat for disconnect detection
+#+description: Client sends periodic heartbeats so it (and the server) detect dropped connections rather than waiting on a stalled read.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :comms:sessions:heartbeat:reliability:session_lifecycle_followup:sprint_06:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-04
+#+updated: 2025-12-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Client sends periodic heartbeats so it (and the server) detect dropped connections rather than waiting on a stalled read.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]] |
+| Now          | Completed 2025-12-04.                                                    |
+| Waiting on   | None.                                                                    |
+| Next         | None.                                                                    |
+| Last touched | 2025-12-04                                                               |
+
+* Acceptance
+
+- Client heartbeat task running on the cobalt scheduler.
+- Missed-heartbeat threshold triggers disconnect.
+- Server-side heartbeat ack.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Removes a class of "disconnected but nobody noticed" bugs that surfaced during the session-cancellation work.
+
+* Result
+
+Heartbeat in place; disconnect detection now timely.

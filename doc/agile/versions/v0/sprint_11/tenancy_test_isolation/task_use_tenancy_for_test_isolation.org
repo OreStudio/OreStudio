@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 9e2e5ca9-31a7-4527-bb9b-3b767ddac0ab
+:END:
+#+title: Task: Use tenancy to isolate tests
+#+description: tenant_context C++ service in ores.database; per-test tenant provision + deprovision; RLS policies allow system tenant; --tenant CLI flag + ORES_TENANT env; psqlrc tenant prompt; ores_iam_provision_tenant_fn + ores_iam_deprovision_tenant_fn.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :tenancy:tests:rls:cli:context:tenancy_test_isolation:sprint_11:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1eff8c9c-e4c2-49cc-a563-bb91923ec406][Tenancy-based test isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Use tenants to give every test run its own isolated slice of the database — same DB, different tenant.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:1eff8c9c-e4c2-49cc-a563-bb91923ec406][Tenancy-based test isolation]] |
+| Now          | Completed 2026-02-01.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2026-02-01                                                                |
+
+* Acceptance
+
+- C++ =tenant_context= service in =ores.database= centralises tenant-context management.
+- Each test run provisions a unique tenant + reference-data copies; deprovisions on completion.
+- RLS policies on assets / dq / iam / refdata / telemetry / variability allow the system tenant to access all tenant data for admin/provisioning.
+- =--tenant= CLI flag + =ORES_TENANT= env on =ores.cli=.
+- =psqlrc.sql= sets the system tenant context on load, shows the current tenant in the prompt, exposes =:tenant= / =:tenants= macros.
+- SQL: =ores_iam_provision_tenant_fn= + =ores_iam_deprovision_tenant_fn= for programmatic tenant lifecycle.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Same database / different tenant is much faster than tearing the database down per test, and far more realistic.
+
+* Result
+
+Tests now run in isolated tenants on a shared database.

@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 5016b990-bb38-4386-a6d8-082a524f5359
+:END:
+#+title: Task: Rename core to risk
+#+description: Pure rename of the =core= module to =risk= — no semantic changes.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :refactor:rename:risk:risk_module_extraction:sprint_02:v0:
+#+owner: marco
+#+created: 2025-10-01
+#+updated: 2025-10-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Rename the =core= module to =risk= across the codebase — CMake
+targets, source files, headers, includes, references in
+documentation. No semantic changes; only a name change.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]] |
+| Now          | Completed 2025-10-02.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2025-10-02                                                          |
+
+* Acceptance
+
+- =core= becomes =risk= everywhere.
+- Build is green after the rename.
+- The rename PR is reviewable in one sitting (no other changes).
+
+* Notes
+
+- Pure rename was deliberately kept separate from the follow-on
+  refactor, so the rename diff has no other noise.
+
+* Result
+
+- Rename PR merged. Follow-on refactor task picked up the semantic
+  cleanup.

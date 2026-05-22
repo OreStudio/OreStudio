@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID: 6a0a10d4-560f-496b-bb87-ea08b380e82f
+:END:
+#+title: List All Login Info
+#+description: List All Login Info
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:login_info:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+View login tracking for all accounts:
+
+#+begin_src sql
+select li.account_id, a.username, li.last_login, li.failed_logins,
+       li.locked, li.online, li.last_ip
+from ores.login_info li
+join ores.accounts a on a.id = li.account_id
+  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
+order by li.last_login desc nulls last;
+#+end_src

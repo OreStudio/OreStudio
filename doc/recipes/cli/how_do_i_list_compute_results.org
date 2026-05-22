@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 4b52c31c-98b0-4904-aef3-bb7899569af8
+:END:
+#+title: How do I list compute results?
+#+description: List compute results via =ores.cli=
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:compute_results:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List compute results via =ores.cli=. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
+
+* Question
+
+How do I list compute results?
+
+* Answer
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute results list ${db_args} ${log_args} --format table
+#+end_src

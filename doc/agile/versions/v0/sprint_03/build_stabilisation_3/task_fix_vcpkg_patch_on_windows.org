@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: ea9a3802-114c-4250-97db-a2e172a69e67
+:END:
+#+title: Task: Fix vcpkg patch application on Windows
+#+description: Diagnose and work around vcpkg failing to apply a port patch on Windows.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :build:vcpkg:windows:bug_fix:build_stabilisation_3:sprint_03:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-15
+#+updated: 2025-11-15
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Diagnose and work around vcpkg failing to apply our sqlgen port
+patches on Windows. The error was =Applying patch failed: error:
+corrupt patch at line 21= — patches that applied cleanly on Linux were
+rejected on Windows runners.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]] |
+| Now          | Completed 2025-11-15.                                              |
+| Waiting on   | None.                                                              |
+| Next         | None.                                                              |
+| Last touched | 2025-11-15                                                         |
+
+* Acceptance
+
+- sqlgen vcpkg port builds on Windows CI.
+- Patches apply without =corrupt patch= errors.
+
+* Notes
+
+- Total time spent in v0: ~1:46.
+- Root cause: line endings. Patch files were being checked out with CRLF on Windows; the patch tool then saw the trailing CRs as corruption.
+- Fix: =.gitattributes= entry to force =.patch= files to binary mode (LF-only).
+
+* Result
+
+sqlgen patches apply on Windows CI runs.

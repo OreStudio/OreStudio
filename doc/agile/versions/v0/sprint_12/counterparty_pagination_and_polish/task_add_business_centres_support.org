@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: a6fa8c90-24d1-422e-a1c2-03595bb9e14c
+:END:
+#+title: Task: Add support for business centres
+#+description: business_centre domain type end-to-end: database entity, mapper, repository, service, protocol (0x1061-0x1068), data generator, eventing, JSON + table I/O; Qt UI with paginated list + detail dialog + history; country_alpha2_code column with derivation.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :business_centres:refdata:qt:protocol:counterparty_pagination_and_polish:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:af7112ba-bf04-4b6b-ae2f-8fb1c7b362fe][Counterparty pagination and polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Land a full CRUD surface for business centres.
+
+* Status
+
+| Field        | Value                                                                           |
+|--------------+---------------------------------------------------------------------------------|
+| State        | DONE                                                                            |
+| Parent story | [[id:af7112ba-bf04-4b6b-ae2f-8fb1c7b362fe][Counterparty pagination and polish]] |
+| Now          | Completed 2026-02-12.                                                           |
+| Waiting on   | None.                                                                           |
+| Next         | None.                                                                           |
+| Last touched | 2026-02-12                                                                      |
+
+* Acceptance
+
+- End-to-end backend: domain class, database entity, mapper, repository, service, protocol (0x1061-0x1068), data generator, eventing, JSON + table I/O.
+- Qt UI: paginated list, detail dialog (create/edit/view), version-history dialog with field-by-field diff, controller.
+- Schema: =country_alpha2_code= column with derivation from BC code.
+- UI bug fix: cross-thread =QPointer= access in combo boxes that left them blank.
+- Docs: LEI-to-BIC mapping data, Standing Settlement Instructions (SSI) domain doc.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Business centres were already used through FpML; this gives them the CRUD surface they were missing.
+
+* Result
+
+Business centres a first-class entity.

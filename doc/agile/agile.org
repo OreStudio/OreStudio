@@ -2,29 +2,50 @@
 :ID: E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E
 :END:
 #+title: Agile
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
-#+startup: inlineimages
+#+description: Index of the agile information architecture — versions, sprints, stories, tasks, captures, and the process that connects them.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :agile:index:knowledge:
+#+created: 2024-06-15
+#+updated: 2026-05-21
 
-Task and time tracking activities. If you want a bit of background on how we use
-Agile and, more generally, on our ideas around software engineering, the
-following essays may be of interest (in no particular order).
+This is the entry point to the agile information architecture. Work flows as
+ideas in the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]], promoted into a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] when a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] pulls them
+in, broken down into [[id:31c868b9-306e-4282-ba8c-07e647021b34][tasks]] that map one-to-one to pull requests, and grouped
+into sprints that compose a [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]]. The pages under =doc/agile/= are:
 
-| Post                            | Description                                                           |
-|---------------------------------+-----------------------------------------------------------------------|
-| [[https://mcraveiro.github.io/nerd_food/on_product_backlog.html][On Product Backlog]]              | How stories flow in our sprints, from capture to implementation.      |
-| [[https://mcraveiro.github.io/nerd_food/pull_request_driven_development.html][Pull Request Driven Development]] | The importance of pull requests in the development process.           |
-| [[https://mcraveiro.github.io/nerd_food/on_maintenance.html][On Maintenance]]                  | The code-base as a repository of knowledge in a given problem domain. |
-| [[https://mcraveiro.github.io/nerd_food/on_evolutionary_methodology.html][On Evolutionary Methodology]]     | Lessons from the Linux kernel.                                        |
+- [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Agile process]] — how the loop runs: backlog refinement, opening
+  and closing sprints, sizing tasks, cross-sprint continuations.
+- [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]] — every version of the product, the sprints inside
+  each, and the stories and tasks that compose those sprints.
+- [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]] — pre-sprint ideas split into [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]]
+  (next-version candidates) and [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]] (longer-term wishlist).
 
-* Backlogs
+The /contract/ every document follows (frontmatter, sections, state
+machine) is described separately under [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][doc/meta/]]. In particular,
+[[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] describes TODO state transitions generically — it is not
+agile-specific. Agile is the loop /around/ those states.
 
-All agile related information is kept in /Backlogs/. There are two types of
-backlogs:
+* At a glance
 
-- [[id:558650A4-C3E5-8964-4193-7D9125E29B83][Product Backlog]]: Contains all of the captured stories that have not yet been
-  assigned to a sprint.
-- [[id:57A7FABC-21FE-5124-45EB-9685D0712176][Sprint Backlog]]: Either archives of stories we have worked on or the stories we
-  are currently working on.
+| Field           | Value     |
+|-----------------+-----------|
+| Current Version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][v0]]        |
+| Current Sprint  | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Next sprint     | Sprint 18 |
 
-| Previous: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] |
+* See also
+
+External essays on the agile approach this project draws from:
+
+#+begin_note
+These describe historical ideas that are the basis of the current process, but
+not the process as it stands now with it's [[https://en.wikipedia.org/wiki/Cybernetics][cybernetic]] inspiration.
+#+end_note
+
+- [[https://mcraveiro.github.io/nerd_food/on_product_backlog.html][On Product Backlog]] — how stories flow from capture to
+  implementation.
+- [[https://mcraveiro.github.io/nerd_food/pull_request_driven_development.html][Pull Request Driven Development]] — why the PR is the atomic unit.
+- [[https://mcraveiro.github.io/nerd_food/on_maintenance.html][On Maintenance]] — the codebase as a repository of domain knowledge.
+- [[https://mcraveiro.github.io/nerd_food/on_evolutionary_methodology.html][On Evolutionary Methodology]] — lessons from the Linux kernel.

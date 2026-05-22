@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 8a3058db-f08e-4fbf-b8e4-65910c66f69b
+:END:
+#+title: Task: Enable all skipped tests
+#+description: 19 previously skipped tests now active across DQ + IAM; skip count from 25 to 6 (only tenant RLS tests remain).
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :tests:coverage:fk:unskip:test_coverage_and_generators:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Re-enable the previously skipped tests now that FK-aware generators produce valid data.
+
+* Status
+
+| Field        | Value                                                                              |
+|--------------+------------------------------------------------------------------------------------|
+| State        | DONE                                                                               |
+| Parent story | [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] |
+| Now          | Completed 2026-02-11.                                                              |
+| Waiting on   | None.                                                                              |
+| Next         | None.                                                                              |
+| Last touched | 2026-02-11                                                                         |
+
+* Acceptance
+
+- DQ generator fixes (coding_scheme, dataset, dataset_bundle_member) emit valid reference data.
+- IAM account_party tests use real party_ids from tenant provisioning.
+- 19 previously-skipped tests now active (14 DQ + 5 IAM).
+- Total skip count dropped 25 → 6 (only tenant RLS tests remain).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Closes the loop on the FK-aware generator work.
+
+* Result
+
+Skipped-test debt mostly cleared.

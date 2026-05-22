@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 81acec3a-b462-4521-91d5-ed30e4b5a508
+:END:
+#+title: Task: Add report execution workflow pipeline
+#+description: Report execution workflow definition + messaging protocol + report_execution_handler; concurrency checks; risk_report_config domain + repository; step handlers including gather market data, assemble bundle, prepare ORE package, submit compute, collect results; MsgPack + object storage for inter-step data; gzip compression.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :reporting:workflow:compute:marketdata:storage:reporting_and_analytics:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:08d2b499-53ce-4b1c-92cf-a7c26d036ec9][Reporting and analytics]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Report execution workflow definition + messaging protocol + report_execution_handler; concurrency checks; risk_report_config domain + repository; step handlers including gather market data, assemble bundle, prepare ORE package, submit compute, collect results; MsgPack + object storage for inter-step data; gzip compression.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | DONE                                                                 |
+| Parent story | [[id:08d2b499-53ce-4b1c-92cf-a7c26d036ec9][Reporting and analytics]] |
+| Now          | Completed 2026-04-07.                                                |
+| Waiting on   | None.                                                                |
+| Next         | None.                                                                |
+| Last touched | 2026-04-07                                                           |
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =git log= for the per-PR breakdown.
+
+* Result
+
+Landed.

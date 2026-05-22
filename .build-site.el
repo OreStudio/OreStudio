@@ -99,12 +99,33 @@
       org-html-head-include-default-style nil ;; Use our own styles
       org-html-head html-header)
 
+;; Make org-roam id-links scroll to the right place. Org rewrites
+;; [[id:UUID]] links to `…#ID-UUID' on the href side, but does not stamp
+;; a matching id attribute on the target heading (it only does that for
+;; :CUSTOM_ID:). The advice below prepends an empty `<a id="ID-UUID"/>'
+;; anchor to every exported heading that carries an :ID:. Browsers
+;; scroll to the anchor; the heading's auto-generated org-html id stays
+;; intact for the table of contents.
+(defun ores/org-html-headline-id-anchor (orig-fun headline contents info)
+  "Prepend an `ID-<uuid>' anchor when HEADLINE has an :ID: property."
+  (let ((rendered (funcall orig-fun headline contents info))
+        (uuid (org-element-property :ID headline)))
+    (if uuid
+        (concat (format "<a id=\"ID-%s\" class=\"id-anchor\"></a>\n" uuid)
+                rendered)
+      rendered)))
+
+(advice-add 'org-html-headline :around #'ores/org-html-headline-id-anchor)
+
 (defvar site-html-preamble "<header id='site-header'>
   <nav id='site-nav'>
     <a href='/OreStudio/readme.html'>Home</a>
-    <a href='/OreStudio/doc/doc.html'>Documentation</a>
-    <a href='/OreStudio/doc/v2/compass.html'>V2 Compass</a>
-    <a href='/OreStudio/doxygen/html/index.html'>Doxygen</a>
+    <a href='/OreStudio/doc/orientation.html'>Orientation</a>
+    <a href='/OreStudio/doc/identity/product_identity.html'>Product</a>
+    <a href='/OreStudio/projects/modeling/system_model.html'>Architecture</a>
+    <a href='/OreStudio/doc/recipes/recipes.html'>Recipes</a>
+    <a href='/OreStudio/doc/skills/claude_code_skills.html'>Skills</a>
+    <a href='/OreStudio/doc/agile/versions/versions.html'>Roadmap</a>
     <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>
   </nav>
 </header>")
@@ -117,7 +138,7 @@
          :base-directory "./"
          :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\)/"
          :publishing-function org-html-publish-to-html
-         :publishing-directory "./build/output/site"
+         :publishing-directory "./build/output/site/OreStudio"
          :html-preamble ,site-html-preamble
          :with-author nil
          :with-creator t
@@ -128,15 +149,15 @@
          :recursive t
          :base-directory "./"
          :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\)/"
-         :base-extension "png\\|jpg\\|gif\\|svg"
-         :publishing-directory "./build/output/site/"
+         :base-extension "png\\|jpe?g\\|gif\\|svg"
+         :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:style"
          :recursive t
          :base-directory "./"
          :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\)/"
          :base-extension "css"
-         :publishing-directory "./build/output/site/"
+         :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:main" :components("site:pages" "site:images" "site:style"))))
 

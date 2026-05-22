@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 3CAA394F-E84C-3434-331B-6E664F7E84D2
+:ROAM_ALIASES: RBAC
+:END:
+#+title: Role-Based Access Control
+#+description: The RBAC model — roles compose permissions, users are assigned roles — as applied in ORE Studio's IAM subsystem.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:security:iam:rbac:
+#+created: 2024-06-15
+#+updated: 2026-05-21
+
+/Role-Based Access Control (RBAC)/ restricts system access to
+authorised users based on their job roles, rather than individual
+user permissions. By grouping permissions into roles (e.g. =admin=,
+=user=), the project simplifies access management, enforces least
+privilege, and lowers the blast radius of any one compromised
+account. RBAC is the model that backs [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access
+Management]] in ORE Studio; the concrete role/permission entities and
+their assignments live in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]]. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Key Components of RBAC
+
+- *Roles*: collections of permissions defining job functions
+  (/e.g./, "Nurse", "Manager").
+- *Permissions*: specific rights to view, create, or modify data.
+- *Users*: individuals assigned one or more roles.
+
+* Core Principles
+
+- *Role-Based Assignment*: users are assigned roles, and
+  permissions are attached to those roles, not the user directly.
+- *Least Privilege*: users receive only the minimum permissions
+  necessary for their role.
+- *Separation of Duties (SoD)*: As described in [[https://www.ibm.com/br-pt/think/topics/rbac][IBM's research]], SoD
+  prevents conflicts of interest by requiring multiple people to
+  complete high-risk tasks.
+
+* Benefits of RBAC
+
+- *Simplified Management*: reduces the overhead of managing
+  permissions for thousands of users.
+- *Increased Security*: according to the [[https://www.cloudflare.com/en-gb/learning/access-management/role-based-access-control-rbac/][Cloudflare write-up]], it
+  limits unauthorised access and reduces the risk of data leaks.
+- *Compliance*: facilitates adherence to data-protection
+  regulations.
+
+* See also
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — the security subsystem that
+  applies this model.
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — where the role/permission entities live.

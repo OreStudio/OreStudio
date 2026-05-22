@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 0ea51f00-4a5d-4358-a0f9-13e90cb23a5a
+:END:
+#+title: Add claude continuous learning skill
+#+description: Add claude continuous learning skill
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+#+begin_quote
+Every time you use an AI coding agent, it starts from zero. You spend an hour
+debugging some obscure error, the agent figures it out, session ends. Next time
+you hit the same issue? Another hour.
+
+This skill fixes that. When Claude Code discovers something non-obvious (a
+debugging technique, a workaround, some project-specific pattern), it saves that
+knowledge as a new skill. Next time a similar problem comes up, the skill gets
+loaded automatically.
+#+end_quote
+
+Links:
+
+- [[https://github.com/blader/claude-code-continuous-learning-skill][GH: claude-code-continuous-learning-skill]]

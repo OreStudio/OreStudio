@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: fdeb08b4-fd95-46df-b868-eb57ae4666c6
+:END:
+#+title: Task: Refactor options and parser
+#+description: Composable CLI configuration: common, server, client, compression configurations; standardise -h/-v/--verbose across binaries; add --log-include-pid.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :cli:refactor:options:comms_substrate_evolution:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:da77fb50-27e8-4b42-a826-cab289c7826e][Comms substrate evolution]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Refactor the boost-program-options usage across binaries into a composable configuration architecture.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:da77fb50-27e8-4b42-a826-cab289c7826e][Comms substrate evolution]] |
+| Now          | Completed 2026-01-02.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2026-01-02                                                             |
+
+* Acceptance
+
+- =common_configuration=, =server_configuration=, =client_configuration=, =compression_configuration= classes share the common code.
+- Standardised =-h=/=--help=, =-v=/=--version=, =--verbose= across all binaries.
+- =--log-include-pid= added across applications.
+- =ores.comms.service=, =ores.cli=, =ores.qt=, =ores.comms.analyser= migrated.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Tradeoff: =--log-include-pid= is generic enough to justify global treatment rather than per-binary.
+
+* Result
+
+Options consistent across binaries.

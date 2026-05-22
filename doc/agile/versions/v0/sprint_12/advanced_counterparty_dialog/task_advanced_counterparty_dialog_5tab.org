@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: bc6a1b9e-253a-4727-badf-324d86a98313
+:END:
+#+title: Task: Counterparty dialog: 5-tab layout
+#+description: Tabs: General Info / Identifiers / Contacts / Hierarchy / Metadata. Inline sub-entity management; counterparty hierarchy tree; change-reason dialog on amend; eventing for counterparty + identifier + contact info; tenant_id fix on save handlers; reconnect crash fix.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :counterparty:qt:ux:eventing:advanced_counterparty_dialog:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:84545fff-58e6-4c97-821c-0d3bb0375f08][Advanced counterparty dialog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Reshape the counterparty dialog into a five-tab layout with inline sub-entity management.
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | DONE                                                                      |
+| Parent story | [[id:84545fff-58e6-4c97-821c-0d3bb0375f08][Advanced counterparty dialog]] |
+| Now          | Completed 2026-02-18.                                                     |
+| Waiting on   | None.                                                                     |
+| Next         | None.                                                                     |
+| Last touched | 2026-02-18                                                                |
+
+* Acceptance
+
+- Tabs: General Info / Identifiers / Contacts / Hierarchy / Metadata.
+- Inline sub-tables + toolbars for identifiers + contacts.
+- Hierarchy tab shows parent-child relationships as a tree.
+- Change-reason dialog integrated for amendments.
+- PostgreSQL change-event definitions + client-side subscriptions for counterparties + identifiers + contacts.
+- Tenant_id fix on save handlers (party, counterparty, counterparty_identifier, counterparty_contact_information).
+- Crash fix: =send_request_sync= no longer concurrent during re-auth.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Following the four-tab Gemini analysis with metadata added as a fifth tab.
+
+* Result
+
+Counterparty dialog is realistic for trading-system use.

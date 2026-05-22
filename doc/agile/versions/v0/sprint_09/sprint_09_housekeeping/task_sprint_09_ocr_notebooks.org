@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: f3187f2d-d903-4674-8338-d83af02736ec
+:END:
+#+title: Task: OCR scan notebooks for this sprint
+#+description: Continue notebook OCR thread for sprint 09.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :agile:ocr:sprint_09_housekeeping:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1e7a8abc-1abc-4a37-bdce-1d8dfb9d21ff][Sprint 09 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Continue digitising the paper notebooks for the period covered by sprint 09.
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:1e7a8abc-1abc-4a37-bdce-1d8dfb9d21ff][Sprint 09 housekeeping]] |
+| Now          | Completed 2026-01-20.                                               |
+| Waiting on   | None.                                                               |
+| Next         | None.                                                               |
+| Last touched | 2026-01-20                                                          |
+
+* Acceptance
+
+- Relevant notebook pages OCRed and committed.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Long-running notebook digitisation strand; one pass per sprint.
+
+* Result
+
+Sprint 09's chunk of notebook content landed.

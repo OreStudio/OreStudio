@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 1ca91a21-f6f3-4089-9c36-ded598dbb19e
+:END:
+#+title: Help Menu
+#+description: Help Menu
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:variability:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+name: help-variability-exit
+#+begin_src ores-shell :exports none
+variability
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-variability-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> variability> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - list-flags
+	Retrieve all feature flags from the server
+ - add-flag <string> <string> <string> <string> <string>
+	Add a feature flag (name enabled description reason_code "commentary")
+ - delete-flag <string>
+	Delete a feature flag by name
+ - flag-history <string>
+	Get version history for a feature flag by name
+ - ores-shell
+	(menu)
+variability> Bye!
+#+end_example

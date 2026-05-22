@@ -1,4 +1,5 @@
 #+TITLE: Workflow Monitor — Design & Implementation Plan
+#+version: 1
 #+DATE: 2026-04-10
 #+AUTHOR: Marco Craveiro
 

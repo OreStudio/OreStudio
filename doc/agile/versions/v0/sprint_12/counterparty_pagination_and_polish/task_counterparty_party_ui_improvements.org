@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 8d524a42-38b4-421c-b910-d367e768a0d7
+:END:
+#+title: Task: Improvements to counterparty and party UI
+#+description: max_cardinality on identifier schemes (BIC dedup); rename 'Business Center' → 'Centre'; merge transliterated names into Name column with non-Latin detection; ResizeToContents standard; centralised window-settings persistence in EntityListMdiWindow.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt:party:counterparty:ux:refactor:counterparty_pagination_and_polish:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:af7112ba-bf04-4b6b-ae2f-8fb1c7b362fe][Counterparty pagination and polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Polish party + counterparty UI further: identifier cardinality, naming, column sizing, settings persistence.
+
+* Status
+
+| Field        | Value                                                                           |
+|--------------+---------------------------------------------------------------------------------|
+| State        | DONE                                                                            |
+| Parent story | [[id:af7112ba-bf04-4b6b-ae2f-8fb1c7b362fe][Counterparty pagination and polish]] |
+| Now          | Completed 2026-02-14.                                                           |
+| Waiting on   | None.                                                                           |
+| Next         | None.                                                                           |
+| Last touched | 2026-02-14                                                                      |
+
+* Acceptance
+
+- =max_cardinality= on identifier schemes prevents duplicate-key violations (especially for BIC).
+- Rename 'Business Center' → 'Centre' in the UI.
+- Transliterated name merged into Name column with non-Latin text detection.
+- All list windows use =ResizeToContents=.
+- Window settings persistence consolidated into =EntityListMdiWindow= base class (with header versioning).
+- New =TextUtils= for non-Latin detection + name formatting.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+The cardinality fix is load-bearing: BIC mappings were violating unique keys without it.
+
+* Result
+
+Party + counterparty UI consistent and resilient.

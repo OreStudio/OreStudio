@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 00590c50-f119-4e2b-bc43-6fa2bae8543c
+:END:
+#+title: Task: Add country support (ISO 3166-1)
+#+description: Domain model, bitemporal repository, country_service in ores.refdata; country_images linkage in ores.assets; Wt list/dialog UI; SQL populate for all 249 ISO countries.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :refdata:countries:iso:wt:reference_data_countries:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:501c05b5-aa7f-4807-a4f2-627b857ce2aa][Reference data: countries]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add full ISO 3166-1 country support end-to-end: domain types, bitemporal repository, service layer, SQL populate of all 249 countries, country-image linkage in =ores.assets=, and Wt CRUD UI.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:501c05b5-aa7f-4807-a4f2-627b857ce2aa][Reference data: countries]] |
+| Now          | Completed 2026-01-08.                                                  |
+| Waiting on   | None.                                                                  |
+| Next         | None.                                                                  |
+| Last touched | 2026-01-08                                                             |
+
+* Acceptance
+
+- =country= domain in =ores.refdata= with bitemporal repository.
+- =country_service= wired into =application_context=.
+- =country_images= table + repository + mapper in =ores.assets=.
+- Wt =country_list_widget= + =country_dialog= cover CRUD.
+- SQL populate seeds all 249 ISO countries with idempotent scripts.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+First proper /reference data/ entity; sets the template the rest of refdata will follow.
+
+* Result
+
+Countries are a first-class entity with persistence, service, UI, and flag linkage.

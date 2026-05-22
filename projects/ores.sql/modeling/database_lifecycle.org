@@ -2,6 +2,7 @@
 :ID: 7A3D8E2F-B1C4-4F9A-8D5E-6C2A1B9F0E3D
 :END:
 #+title: Database Lifecycle and Script Reference
+#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 992aad62-c371-4e93-b3d2-311d250aa41a
+:END:
+#+title: Task: Party table structure
+#+description: First-cut SQL table for party (LEI, tenant_id, party_type_id, business_center_id, status, etc.). Foundation for later domain layer + UI.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :party:sql:fpml:party_database_groundwork:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ef555d10-3fd3-4928-8e43-e63284d7706f][Party database groundwork]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Lay the first SQL table for =party= so subsequent sprints can build the domain layer + UI on top.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | BACKLOG                                                                |
+| Parent story | [[id:ef555d10-3fd3-4928-8e43-e63284d7706f][Party database groundwork]] |
+| Now          | POSTPONED in sprint 09; carried forward.                               |
+| Waiting on   | A sprint with the slot to land it.                                     |
+| Next         | Return to this once a sprint has the budget.                           |
+| Last touched | 2026-01-20                                                             |
+
+* Acceptance
+
+- =party_tbl= with: =party_id= PK, =tenant_id= FK, =party_name=, =short_name= unique, =lei= ISO 17442, =is_internal= bool, =party_type_id= FK, =postal_address=, =business_center_id= FK (FpML), =status= enum, =created_at=.
+- Domain documented; FK targets identified.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+POSTPONED in v0: only 20 minutes of v0 work landed; the full table-creation work was rolled forward to a later sprint where party-related entities are tackled together.
+
+* Result
+
+Not landed in sprint 09; carried forward as the foundation for party work.

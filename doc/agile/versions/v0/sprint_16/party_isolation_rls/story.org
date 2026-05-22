@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 2faf5366-2fed-4fbe-99f2-8cb46ca84aeb
+:END:
+#+title: Story: Party isolation RLS policies
+#+description: Add the missing AS RESTRICTIVE party-isolation RLS policies across IAM / refdata / scheduler / trading subtables; close the visibility gap surfaced by validate_schemas.sh.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :rls:party:security:sql:sprint_16:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Add the missing AS RESTRICTIVE party-isolation RLS policies across IAM / refdata / scheduler / trading subtables; close the visibility gap surfaced by validate_schemas.sh.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Now           | Completed 2026-04-09.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-04-09                                             |
+
+
+#+predecessor: df3b299e-7fed-4411-b257-125ed35c3a9e
+
+Continued from: [[id:df3b299e-7fed-4411-b257-125ed35c3a9e][Party isolation for books, portfolios, trades]] (sprint 13). Sprint 13 extended party-level RLS to books / portfolios / trades. This sprint closes the remaining gaps surfaced by validate_schemas.sh.
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- [[id:77b2dce3-aa7e-4ac6-bced-1251e14ff066][Add missing party isolation RLS policies (initial)]]
+- [[id:6435d59a-108b-450d-860e-bf8ce795d3f2][SQL: Add missing party isolation RLS policies]]
+
+* Decisions
+
+- /Final v0 sprint/ :: capture everything landed under v0 honestly; this is the closing chapter of v0.
+
+* Out of scope
+
+- Anything explicitly carried forward to v1.
+
+* See also
+
+None.

@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 24b4ae53-ad80-455c-8a6d-6d4d5c7793a8
+:END:
+#+title: Task: Fix pg_notify pipeline, badge RLS, and system reset
+#+description: - pg_notify timestamp format: All 143 notify triggers now emit ISO 8601 UTC (`YYYY-MM-DDThh:mm:ssZ`); `datetime::from_is
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :workflow_hardening:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/772
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the pg_notify timestamp format to ISO 8601 UTC, correct an entity name mismatch in party cache refresh, and repair badge RLS and system-reset commands.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] |
+| Now          | Completed 2026-05-19.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+- Fix the pg_notify timestamp format to ISO 8601 UTC, correct an entity name mismatch in party cache refresh, and repair badge RLS and system-reset commands.
+- PR #772 merged and landed on main.
+
+* Plan
+
+* Notes
+
+** Summary
+
+- *pg_notify timestamp format*: All 143 notify triggers now emit ISO 8601 UTC (=YYYY-MM-DDThh:mm:ssZ=); =datetime::from_iso8601_utc= updated to accept both =T= and space date/time separators so the full notification pipeline functions correctly
+- *Party cache refresh*: Fixed =ores.refdata.party_changed= → =ores.refdata.party= entity name mismatch in refdata service event registration — party status changes now propagate to the IAM party cache, eliminating the re-appearing party provisioning wizard on login
+- *Badge colours*: Added RLS read policies for badge severity, definition and mapping tables so system-tenant badge data is visible to all tenants; removed redundant explicit =tenant_id= filters from badge repository read methods
+- *System reset*: Added missing =iam_tenant_purger_create.sql= to the IAM create/drop sequences; fixed bootstrap detection in =ores_iam_validate_account_username_fn= to filter by active accounts only (soft-deleted accounts no longer block re-bootstrap); fixed =nats.sh= to use =tls://= scheme for mTLS connections
+- *Event source logging*: =postgres_event_source= now logs registered entity names at startup and in the no-mapping warning path, making future mismatches immediately diagnosable
+
+
+* Result
+
+Landed.

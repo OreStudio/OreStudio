@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: a3f4549f-3e40-47f3-bcf2-397205129c00
+:END:
+#+title: Task: Fix off-by-one in accounts dialog
+#+description: Account list view off-by-one after AccountType column added; public Column enum + delegate refactor; documented in qt-entity-creator skill.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt:bug_fix:delegate:ux:test_coverage_and_generators:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the off-by-one display error in the accounts list view after =AccountType= column was added.
+
+* Status
+
+| Field        | Value                                                                              |
+|--------------+------------------------------------------------------------------------------------|
+| State        | DONE                                                                               |
+| Parent story | [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] |
+| Now          | Completed 2026-02-10.                                                              |
+| Waiting on   | None.                                                                              |
+| Next         | None.                                                                              |
+| Last touched | 2026-02-10                                                                         |
+
+* Acceptance
+
+- Off-by-one fixed.
+- =ClientAccountModel::Column= enum public; delegates consume it (not hardcoded indices).
+- =AccountItemDelegate= + =ConnectionItemDelegate= refactored.
+- Pattern documented in =qt-entity-creator= skill.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Type-safe Column enum prevents this class of bug across the codebase.
+
+* Result
+
+Accounts list view aligned; delegate pattern documented.

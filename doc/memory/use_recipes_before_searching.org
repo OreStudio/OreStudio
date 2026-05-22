@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: 387016ad-42cf-4830-b504-f255f6a7d1ab
+:END:
+#+title: Check recipes before searching for how to do something
+#+description: When needing to know how to perform a project operation, look in doc/recipes/ first.
+#+type: memory
+#+memory_subtype: feedback
+#+version: 2
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Before searching the codebase or the web for how to perform a project
+operation, check =doc/recipes/= first. Recipes are tested how-to documents
+that answer "how do I X?" for every common workflow in the project.
+
+*Why:* The recipes directory is the canonical source for operational
+knowledge — build, test, deploy, git, codegen, documentation workflows.
+Searching blindly wastes time and may produce incorrect answers. The
+user explicitly asked to use recipes as the first port of call.
+
+*How to apply:* When about to ask "how do I build?", "how do I create a
+doc?", "how do I run codegen?", "how do I start a story?" — open
+=doc/recipes/= and look for the relevant topic index (cmake, codegen,
+documentation, git, agile, etc.) before doing anything else. The recipe
+index is at [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]].

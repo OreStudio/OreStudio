@@ -1,0 +1,165 @@
+:PROPERTIES:
+:ID: 496dc90b-8951-42a6-a63e-b1762df496c6
+:END:
+#+title: PlantUML ER diagram conventions
+#+description: How ORE Studio writes PlantUML entity-relationship diagrams for the SQL schema — skeleton, entity styling, field notation, relationships, domain packages.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:architecture:plantuml:sql:diagrams:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+ER diagrams document the live SQL schema — every table, its columns,
+and the foreign-key relationships between them. The [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]]
+skill drives the authoring; this doc captures /how the diagram
+looks/. The schema lives in [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]]. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* File location
+
+| Item      | Value                                |
+|-----------+--------------------------------------|
+| Diagram   | =projects/ores.sql/modeling/ores_schema.puml= |
+| CMakeLists | =projects/ores.sql/modeling/CMakeLists.txt= |
+
+* Skeleton
+
+#+begin_src plantuml
+' GPL header
+@startuml
+
+title ORES Database Schema
+hide circle
+skinparam linetype ortho
+
+' <<< BODY GOES HERE >>>
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores_schema.puml"
+' End:
+@enduml
+#+end_src
+
+* Entity styling
+
+Use the =entity= keyword with the appropriate stereotype:
+
+| Stereotype      | Colour    | When                                              |
+|-----------------+-----------+---------------------------------------------------|
+| =<<temporal>>=  | =#C6F0D8= | Tables with =valid_from= / =valid_to= columns.    |
+| =<<junction>>=  | =#ECECEC= | Many-to-many association tables.                  |
+| (none)          | =#F7E5FF= | Current-state tables without temporal support.    |
+
+Example:
+
+#+begin_src plantuml
+entity accounts <<temporal>> #C6F0D8 {
+    * id : uuid <<PK>>
+    --
+    * username : text <<unique>>
+    * email : text <<unique>>
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+}
+#+end_src
+
+* Field notation
+
+- =*= prefix marks =NOT NULL= fields.
+- =<<PK>>= for primary keys, =<<FK>>= for foreign keys,
+  =<<unique>>= for unique constraints.
+- A =--= separator divides the primary key block from the rest of
+  the columns.
+
+* Domain packages
+
+Group related entities into packages by domain:
+
+| Domain                            | Colour    |
+|-----------------------------------+-----------|
+| IAM (Identity & Access)           | =#E8F4FD= |
+| RBAC (Role-Based Access Control)  | =#FFF3E0= |
+| Assets (Images & Currencies)      | =#F3E5F5= |
+| Variability (Feature Flags)       | =#E8F5E9= |
+
+A package looks like:
+
+#+begin_src plantuml
+package "IAM (Identity & Access Management)" #E8F4FD {
+    entity accounts <<temporal>> #C6F0D8 {
+        ...
+    }
+}
+#+end_src
+
+* Relationships
+
+Standard ER cardinality:
+
+| Notation       | Meaning      | Example                                |
+|----------------+--------------+----------------------------------------|
+| =\vert\vert--o{= | One-to-many   | =accounts \vert\vert--o{ sessions=     |
+| =\vert\vert--o\vert= | One-to-one  | =accounts \vert\vert--o\vert login_info= |
+| Junction table | Many-to-many | Use a =<<junction>>= entity            |
+
+Always label the arrow with descriptive text:
+
+#+begin_src plantuml
+accounts ||--o{ sessions : "creates"
+roles ||--o{ role_permissions : "has"
+#+end_src
+
+* Notes
+
+Add a note next to any entity that benefits from explanation:
+
+#+begin_src plantuml
+note right of accounts
+User accounts with authentication credentials.
+Supports optimistic locking via the version field.
+end note
+#+end_src
+
+* Temporal conventions
+
+ORE Studio uses bitemporal data management. Most tables have:
+
+- =valid_from= / =valid_to= — validity period (temporal support).
+- =version= — optimistic locking.
+- =modified_by= — audit trail.
+
+Junction tables typically carry:
+
+- =assigned_by= — who created the association.
+- =assigned_at= — when the association was created.
+
+* Schema source
+
+SQL schema lives at =projects/ores.sql/create/=. Two file kinds:
+
+- =*_create.sql= — table definitions with triggers.
+- =*_notify_trigger.sql= — PostgreSQL NOTIFY triggers for change
+  events.
+
+Read these to confirm:
+
+- Column types, constraints, primary key shape (incl. composite).
+- Indexes (incl. partial indexes for "current" records).
+- Temporal trigger presence.
+
+* Evaluation checklist
+
+| Check                  | How                                                                |
+|------------------------+--------------------------------------------------------------------|
+| All tables represented | Compare with =projects/ores.sql/create/*_create.sql=.              |
+| FK arrows correct      | Verify against the SQL =REFERENCES= clauses.                       |
+| Proper stereotypes     | Temporal tables =<<temporal>>=, junctions =<<junction>>=.          |
+| Domain packages        | Related entities grouped logically.                                |
+| Syntax valid           | =cmake --build --target generate_ores_schema_diagram=.             |
+
+* See also
+
+- [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler skill]] — drives the authoring.
+- [[id:271f40da-d0ea-4d08-a4f8-3d2b835df5e7][PlantUML class diagram conventions]] — sibling, for components.
+- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — runs the build.
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the schema this diagram documents.

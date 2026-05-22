@@ -1,0 +1,26 @@
+:PROPERTIES:
+:ID: 263c0b6b-d983-44f7-8d57-bb095972445a
+:END:
+#+title: DQ/Refdata service boundary cleanup
+#+description: DQ/Refdata service boundary cleanup
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+DQ bundle publication currently writes directly to =ores_refdata_*= tables.
+This must be routed via =refdata.v1.*= NATS endpoints. See "Open Questions"
+in [[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] Identify all direct =ores_refdata_*= writes inside =ores.dq= publication
+      pipeline
+- [ ] Add any missing =refdata.v1.*= NATS endpoints needed by DQ
+- [ ] Rewrite DQ publication to use NATS calls instead of direct DB writes
+- [ ] Verify bundle publish end-to-end after refactor
+- [ ] Remove cross-schema table includes from =ores.dq= CMake deps

@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 1088e4b4-fb61-4047-aebb-b35d913e4c43
+:END:
+#+title: Task: Add generation context with KVP for audit trail fields
+#+description: generation_context decomposed into generation_engine + generation_environment + composing context; ~36 generators migrated to accept generation_context&; modified_by lookup via environment; strict ores_iam_validate_account_username_fn re-enabled; make_generation_context() factory in ores.testing.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :generators:audit:refactor:tests:context:audit_trail_and_system_account:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Decompose the generation context: an engine for randomness/UUIDs, an environment for scoped KVPs, and a composing context. Generators read =modified_by= + =tenant_id= from the environment.
+
+* Status
+
+| Field        | Value                                                                       |
+|--------------+-----------------------------------------------------------------------------|
+| State        | DONE                                                                        |
+| Parent story | [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]] |
+| Now          | Completed 2026-02-17.                                                       |
+| Waiting on   | None.                                                                       |
+| Next         | None.                                                                       |
+| Last touched | 2026-02-17                                                                  |
+
+* Acceptance
+
+- =generation_engine= (randomness + UUIDs), =generation_environment= (scoped KVP with parent-chain lookup), composing =generation_context=.
+- ~36 generators across 6 components migrated to accept =const generation_context&=.
+- =make_generation_context()= factory in =ores.testing= populates =modified_by= from =db_user()= and =tenant_id= from the test helper.
+- Strict =ores_iam_validate_account_username_fn= re-enabled.
+- Codegen templates updated.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+The KVP-environment pattern is the right shape for any downstream cross-cutting concern (FK refs, tenant context, audit fields).
+
+* Result
+
+Generators tenant-aware + audit-correct.

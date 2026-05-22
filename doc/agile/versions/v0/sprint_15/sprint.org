@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 03d189e0-1960-4f19-b71f-ee7c8d0941a7
+:END:
+#+title: Sprint 15
+#+description: Implement compute grid: BOINC-inspired distributed grid; telemetry + RAG dashboard; api/core architecture split across 10 services; JWT refresh; unified system_settings replacing feature_flags; CDM instrument domain models (rates, FX, bond, credit); ORE import bug fixes.
+#+type: sprint
+#+version: 2
+#+level: s3
+#+filetags: :compute:grid:boinc:cdm:jwt:settings:architecture:sprint_15:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: STARTED | DONE
+
+This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 15*) of ORE Studio v0. It captures the
+sprint's mission, current status, and the stories that compose it. For the
+surrounding context — version goals, sprint order, and product identity — see
+[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+
+* Mission
+
+/Implement compute grid./ Delivered exactly that — BOINC-inspired
+distributed grid across the whole stack, with telemetry pipeline + RAG
+service-health dashboard. Around it: the api/core architecture migration
+across all ten service libraries (the long-overdue Conway-pleasing
+refactor), JWT refresh closing the silent-expiry hole left by sprint
+14's RS256 work, unified system_settings replacing the boolean-only
+feature_flags, and four CDM-inspired instrument domain models (rates,
+FX, bond, credit).
+
+* Status
+
+| Field          | Value                                                                                                                |
+|----------------+----------------------------------------------------------------------------------------------------------------------|
+| State          | DONE                                                                                                                 |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                            |
+| Now            | Sprint closed 2026-03-30. No BACKLOG carry-overs this sprint.                                                        |
+| Waiting on     | None.                                                                                                                |
+| Next           | Sprint 16 closes out v0 — likely the three-level provisioning workflow + remaining CDM phases + RBAC handler guards. |
+| Last touched   | 2026-03-30                                                                                                           |
+
+* Stories
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                    | State | Start      | End        | Theme                                                                   |
+|------------------------------------------------------------------------------------------+-------+------------+------------+-------------------------------------------------------------------------|
+| [[id:df3c08d8-a11e-4e2e-908a-5bd0ddc29626][Sprint 15 housekeeping]]                      | DONE  |            | 2026-03-24 | backlog refinement.                                                     |
+| [[id:fd12bbd4-bd95-454a-a636-5f22c928c4d1][Fix ORE import bugs]]                         | DONE  |            | 2026-03-19 | real-data shakedown of the sprint-14 wizard.                            |
+| [[id:7b5e0c11-8c1f-4d91-adea-2596197cd0d4][Loading indicator on entity list windows]]    | DONE  |            | 2026-03-20 | UI consistency.                                                         |
+| [[id:bfac3a00-1684-4546-b10b-5ba358b5a867][Unified system_settings]]                     | DONE  |            | 2026-03-20 | replace feature_flags.                                                  |
+| [[id:3ed3ca4d-8709-4f70-a1a8-1ff287adb8bf][Compute grid implementation]]                 | DONE  |            | 2026-03-21 | the sprint's mission. Continues from sprint 10 compute_grid_analysis.   |
+| [[id:679da033-934a-4330-951f-5016675cc8af][Compute grid observability]]                  | DONE  |            | 2026-03-21 | telemetry + RAG dashboard.                                              |
+| [[id:169b15a7-442b-44fd-8e54-436fec8340a6][JWT refresh]]                                 | DONE  |            | 2026-03-21 | closes the loop on sprint-14 RS256.                                     |
+| [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]]           | DONE  |            | 2026-03-26 | real-data testing + loading-lifecycle refactor.                         |
+| [[id:84fca31b-b6a8-444f-9ea9-33515d50645f][NATS service discovery for HTTP base URL]]    | DONE  |            | 2026-03-22 | and the architecture migration plan.                                    |
+| [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]]             | DONE  |            | 2026-03-23 | 10 service libraries split into *.api + *.core.                         |
+| [[id:bc195cb4-4cbf-4d9d-8685-8ce3304da3fe][Engineering hygiene]]                         | DONE  |            | 2026-03-25 | sccache cache bloat, tenant_id in tests, ORES_PRESET + start-client.sh. |
+| [[id:4837265a-934c-4cfc-9f7a-edc3f86f37c6][Generators to api layer + http.server split]] | DONE  |            | 2026-03-25 | cross-cutting cleanup completing the migration.                         |
+| [[id:1af340aa-fb79-4870-bc13-0dd2fc75af2b][Environment isolation for database roles]]    | DONE  |            | 2026-03-25 | prefixed PostgreSQL roles.                                              |
+| [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]]                | DONE  |            | 2026-03-30 | rates / FX / credit / bond, in four phases.                             |
+| [[id:2aa3562a-9e27-4efc-a2a0-492098f9ebbb][Badges to database (phase 1)]]                | DONE  |            | 2026-03-28 | DB-driven badge metadata.                                               |
+
+* Retrospective
+
+** What went well
+
+- Compute grid landed end-to-end in one sprint, with observability +
+  RAG dashboard + comprehensive E2E polish round.
+- API/core migration applied uniformly across all ten service
+  libraries with a consistent three-layer pattern.
+- JWT refresh + telemetry hypertable closes the sprint-14 silent-
+  expiry hole properly.
+- CDM instrument phases 1-4 all landed: rates, FX, bond, credit
+  domain models with full vertical slices.
+- system_settings unification touched 9 phases / every layer but
+  finished cleanly with all legacy files removed.
+
+** What hurt
+
+- 86h sprint — among the heaviest. Compute grid + 4 CDM phases + 10-
+  service architecture migration is a lot for one window.
+- CDM CLI commands deferred across all four phases; database
+  recreate left as a manual step for FX/bond/credit tables.
+- Three protocol bumps (45 → 46 system_settings, 49 → 50 NATS subject
+  prefixes, lifetime config) within the sprint; less than sprint 13
+  but still high.
+- AbstractClientModel signal refactor surfaced via the compute grid's
+  missing endLoading() calls — a class of bug we should have caught
+  systematically earlier.
+
+** What changed
+
+- =ores.compute= is a real component with =service= + =wrapper=
+  binaries; the grid is operational.
+- Every service library is now =*.api= + =*.core=; no more monolithic
+  domain modules.
+- JWT tokens refresh transparently on the client; auth events feed
+  =ores_iam_auth_events_tbl=.
+- =ores_variability_feature_flags_tbl= is gone; =system_settings=
+  with typed accessors replaces it.
+- All entity list windows show a consistent loading indicator;
+  =AbstractClientModel= drives the loading lifecycle.
+- Four CDM-inspired instrument models exist as first-class entities.
+- Badge metadata moved from hardcoded Qt colours to database
+  definitions (phase 1).
+- PostgreSQL roles are environment-prefixed; cross-env contamination
+  fixed at the role layer.
+- =ORES_PRESET= centralised in =.env=; =start-client.sh= launches
+  coloured Qt instances.

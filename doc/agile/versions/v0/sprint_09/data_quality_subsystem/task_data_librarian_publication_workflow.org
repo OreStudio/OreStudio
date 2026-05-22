@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: fee9f73a-16b2-4692-9a22-b6c8b23ca451
+:END:
+#+title: Task: Data Librarian publication workflow
+#+description: Multi-page publication wizard (upsert / insert_only / replace_all) with dependency resolution via Boost.Graph topological sort; stable dataset codes; publication history dialog; UI rename to 'methodology' and 'data passport'.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :dq:librarian:publication:boost_graph:data_quality_subsystem:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a publication workflow so curated datasets can be promoted from staging artefact tables into production tables with full dependency resolution.
+
+* Status
+
+| Field        | Value                                                                                  |
+|--------------+----------------------------------------------------------------------------------------|
+| State        | DONE                                                                                   |
+| Parent story | [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] |
+| Now          | Completed 2026-01-20.                                                                  |
+| Waiting on   | None.                                                                                  |
+| Next         | None.                                                                                  |
+| Last touched | 2026-01-20                                                                             |
+
+* Acceptance
+
+- Multi-page publication wizard with progress indication.
+- Publication modes: =upsert=, =insert_only=, =replace_all=.
+- Dependency resolution via Boost.Graph topological sort; stable dataset codes for cross-references.
+- Publication-history dialog.
+- Dataset detail view visualises dependencies.
+- Schema rename: =catalog_dependency= → =dataset_dependency= across the stack; role field on dependencies.
+- Upsert mode in population functions corrected (version increments preserved).
+- UI nomenclature updated: =methods= → =methodology=, =data Ascension= → =data passport=.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Boost.Graph chosen rather than rolling a topo-sort because the graph algorithms are well-tested and we'll use more of them later.
+
+* Result
+
+Publication workflow complete and exercised against the existing curated catalogs.

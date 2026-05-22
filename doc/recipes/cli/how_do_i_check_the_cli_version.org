@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 3d139b63-c1de-4410-930c-df11e62c2cea
+:END:
+#+title: How do I check the CLI version?
+#+description: Display =ores.cli= version, build, and licence information
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:general:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Display =ores.cli= version, build, and licence information. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
+
+* Question
+
+How do I check the CLI version?
+
+* Answer
+
+#+begin_src sh
+./ores.cli --version
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+CLI for ORE Studio v0.0.8
+Copyright (C) 2025 Marco Craveiro.
+License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Build: Provider = LOCAL
+IMPORTANT: build details are NOT for security purposes.
+#+end_src

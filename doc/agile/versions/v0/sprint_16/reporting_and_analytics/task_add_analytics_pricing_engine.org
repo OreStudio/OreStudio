@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 551be8ac-5f16-4b9a-b0f3-050053eee129
+:END:
+#+title: Task: Add analytics pricing engine configuration
+#+description: ores.analytics component (api / core / service); domain entities + repositories + services for managing ORE pricing model configurations, products, parameters; SQL schema + NATS messaging protocols; component-creator skill updated; codegen NATS templates.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :analytics:ore:nats:sql:codegen:component:reporting_and_analytics:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:08d2b499-53ce-4b1c-92cf-a7c26d036ec9][Reporting and analytics]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.analytics component (api / core / service); domain entities + repositories + services for managing ORE pricing model configurations, products, parameters; SQL schema + NATS messaging protocols; component-creator skill updated; codegen NATS templates.
+
+* Status
+
+| Field        | Value                                                                |
+|--------------+----------------------------------------------------------------------|
+| State        | DONE                                                                 |
+| Parent story | [[id:08d2b499-53ce-4b1c-92cf-a7c26d036ec9][Reporting and analytics]] |
+| Now          | Completed 2026-04-07.                                                |
+| Waiting on   | None.                                                                |
+| Next         | None.                                                                |
+| Last touched | 2026-04-07                                                           |
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =git log= for the per-PR breakdown.
+
+* Result
+
+Landed.

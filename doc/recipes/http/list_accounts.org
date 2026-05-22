@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 46b87cad-dbe9-494a-a8f5-50da7aee9fb9
+:END:
+#+title: List Accounts
+#+description: List Accounts
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:http:accounts_verb:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Retrieve accounts with optional pagination.
+
+#+begin_src verb :wrap src json
+get /accounts?offset=0&limit=10
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 414
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "accounts": [
+    {
+      "version": 1,
+      "id": "019b90fe-877e-7d3c-8f85-7980d0a96c8d",
+      "recorded_by": "bootstrap",
+      "username": "newuser3",
+      "password_hash": "$scrypt$ln=14,r=8,p=1$mxzHwfFIbYV6ylmQR0I34A==$/zgE0EzSjrRowqK/d0cZOCMD+oQug2uXjLNGfjg2cnxPnXprf1K4LaVsaeSOa3HYHe6lMFCAxEDZfqugIxBAPg==",
+      "password_salt": "",
+      "totp_secret": "",
+      "email": "newuser3@example.com",
+      "recorded_at": "2026-01-06 01:49:18.000000000Z"
+    }
+  ],
+  "total_available_count": 0
+}
+#+end_src

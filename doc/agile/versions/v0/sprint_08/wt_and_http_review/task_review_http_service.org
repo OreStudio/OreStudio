@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: a6c3f702-ec89-41db-b662-79ac971d30a9
+:END:
+#+title: Task: Review HTTP service
+#+description: Validate swagger; write recipes covering the HTTP surface; document the OpenAPI generator.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :http:review:swagger:recipes:wt_and_http_review:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:13fbe901-b255-49f7-88c3-13b2a2506bf3][Wt and HTTP review]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Validate the HTTP service introduced in sprint 07: swagger correctness, recipes covering each endpoint, and OpenAPI-generator documentation.
+
+* Status
+
+| Field        | Value                                                           |
+|--------------+-----------------------------------------------------------------|
+| State        | DONE                                                            |
+| Parent story | [[id:13fbe901-b255-49f7-88c3-13b2a2506bf3][Wt and HTTP review]] |
+| Now          | Completed 2026-01-06.                                           |
+| Waiting on   | None.                                                           |
+| Next         | None.                                                           |
+| Last touched | 2026-01-06                                                      |
+
+* Acceptance
+
+- Swagger confirmed working end-to-end.
+- Recipes added covering the HTTP surface.
+- OpenAPI generation documented.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Closes the loop on the HTTP entry point landed in sprint 07.
+
+* Result
+
+HTTP service validated and documented.

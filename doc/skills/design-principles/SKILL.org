@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 89935F29-7C6C-1E84-EAD3-EC4BD20421F5
+:END:
+#+title: Design Principles Skill
+#+description: Apply ORE Studio's UI design system — pick a design direction, commit to typography/colour/spacing, hold the craft floor.
+#+type: skill
+#+version: 2
+#+level: cross
+#+filetags: :skills:claude_code:ui:design:
+#+created: 2024-09-01
+#+updated: 2026-05-21
+
+#+begin_export markdown
+---
+name: design-principles
+description: Enforce ORE Studio's UI design system before writing UI code — pick a direction, commit to typography/colour/spacing/depth, hold the quality floor on every interface.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Before writing UI code — for any new screen, dashboard, dialog, or
+significant refactor of an existing surface. Don't default to
+generic styling; commit to a direction that matches what the
+specific interface is for.
+
+* How to use this skill
+
+The design system lives in [[id:6743f6e3-578c-4e4b-9dd6-d5a0df6734c8][UI design principles]] (Jony Ive-level
+precision with intentional personality). This skill is the
+task-shaped entry that walks you through applying it.
+
+1. /Pick a design direction/ before any code:
+   - What does this surface /do/?
+   - Who uses it (power user vs. occasional)?
+   - What's the emotional job (trust / efficiency / delight /
+     focus)?
+   - Which personality (precision & density / warmth /
+     sophistication / boldness / utility / data) fits?
+
+2. /Commit to a colour foundation/ (warm / cool / pure neutral /
+   tinted), a light-or-dark stance, and one accent colour that
+   means something.
+
+3. /Pick a layout approach/ (dense grid / generous spacing /
+   sidebar nav / top nav / split panels) driven by the content.
+
+4. /Pick typography/ (system / geometric sans / humanist sans /
+   monospace influence). Don't default.
+
+5. /Hold the craft floor/ — 4px grid, symmetrical TLBR padding,
+   consistent border-radius family, one depth strategy
+   (borders-only / single shadow / layered / surface-color
+   shifts), motion that aids comprehension. The full rulebook is
+   in [[id:6743f6e3-578c-4e4b-9dd6-d5a0df6734c8][UI design principles]]§"Core Craft Principles".
+
+6. /Pick icons via [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]]/. The icon vocabulary sits on
+   top of the design direction; consult the catalogue rather than
+   inventing.
+
+7. /Self-review/. Before submitting:
+   - Every spacing value lands on the 4px grid.
+   - Border radii are in one family.
+   - One depth strategy is in play, not three.
+   - The accent colour is used /sparingly/, not everywhere.
+   - Motion has a reason.
+
+* Recipes
+
+(No dedicated recipes — applying design is read-only against the
+principles doc.)
+
+* Reference
+
+- [[id:6743f6e3-578c-4e4b-9dd6-d5a0df6734c8][UI design principles]] — the full rulebook.
+- [[id:6ef42145-cee7-4035-806a-a4200a3e003a][Icon guidelines]] — the icon vocabulary.
+- [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines skill]] — sibling skill for icon selection.
+- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] — where these decisions land in code.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

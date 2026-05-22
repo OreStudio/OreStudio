@@ -4,10 +4,17 @@
 #+title: ores.ore.api
 #+description: Domain types and NATS protocol schemas for the ORE integration component.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :ore:api:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.ore.api component diagram
+#+caption: ores.ore.api
+[[file:ores.ore.api.png][file:ores.ore.api.png]]
 
 * Summary
 

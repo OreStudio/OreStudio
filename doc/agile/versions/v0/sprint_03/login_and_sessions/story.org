@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: b09e0d06-0314-4424-ad57-2da31a335d99
+:END:
+#+title: Story: Login and sessions
+#+description: Account and session domain types end-to-end across client, server, and Postgres.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :login:accounts:sessions:sprint_03:v0:
+#+created: 2025-11-20
+#+updated: 2025-12-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Introduce the account and session domain types and wire them through
+the cobalt client/server runtime. This is the /finish login related
+functionality/ half of the sprint mission.
+
+* Status
+
+| Field         | Value                                                                                                                        |
+|---------------+------------------------------------------------------------------------------------------------------------------------------|
+| State         | DONE                                                                                                                         |
+| Parent sprint | [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]]                                                                       |
+| Now           | Story closed; accounts and sessions land end-to-end. The authentication bootstrap remains POSTPONED into a successor sprint. |
+| Waiting on    | None.                                                                                                                        |
+| Next          | None.                                                                                                                        |
+| Last touched  | 2025-12-20                                                                                                                   |
+
+
+#+successor: a465d630-5972-484b-a2e8-ad1f91657103
+
+Continued in: [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] (sprint 05) — the
+POSTPONED bootstrap workflow lands there, along with delete-account
+and the feature-flags split.
+
+* Acceptance
+
+- =account= domain type with repository, JSON/XML codecs, and
+  end-to-end tests.
+- =session= domain type with lifecycle (open/close/expire) and
+  server-side persistence.
+- Client can authenticate against the server using an account and
+  receive a session token.
+
+* Tasks
+
+In execution order:
+
+- [[id:3e57dcdc-f728-4b42-b262-74dfc751d04a][Add account support]]
+- [[id:9327c7d2-4bba-41ff-8448-7d61c436391d][Add session support]]
+
+Additional v0 entries belonging here, not migrated as full tasks:
+
+- POSTPONED: Implement authentication bootstrap workflow (carries
+  forward to a successor story).
+
+* Decisions
+
+- /Sessions in Postgres/ :: simple and durable; we revisit if session
+  read volume becomes a bottleneck.
+- /Account-record pattern follows currencies/ :: lets us reuse the
+  generated repository code without account-specific exceptions.
+
+* Out of scope
+
+- Multi-factor authentication.
+- OAuth integration.
+
+* See also
+
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] — the IAM component that owns the account and session
+  domain types.
+- [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] (sprint 02) — predecessor story that
+  put the socket layer in place.
+- [[id:eda3d069-f3c1-43b5-93fb-e5705a8f9adc][Client console and Qt integration]] (this sprint) — the sibling
+  story that wires the UI to use what this story landed.

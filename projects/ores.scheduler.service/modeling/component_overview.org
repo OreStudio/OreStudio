@@ -4,10 +4,17 @@
 #+title: ores.scheduler.service
 #+description: NATS service entrypoint for the scheduler domain — wires job handlers and runs the cron loop.
 #+type: component
+#+version: 2
 #+level: cross
 #+filetags: :scheduler:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.scheduler.service component diagram
+#+caption: ores.scheduler.service
+[[file:ores.scheduler.service.png][file:ores.scheduler.service.png]]
 
 * Summary
 

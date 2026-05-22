@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 1fbc2c1e-1bb2-44ea-ac40-26a9f9750636
+:END:
+#+title: Help Menu
+#+description: Help Menu
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+name: help-accounts-exit
+#+begin_src ores-shell :exports none
+accounts
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-accounts-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> accounts> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - create <string> <string> <string> <string>
+	Create a new account (principal password totp_secret email) - principal is username@hostname or username
+ - list
+	Retrieve accounts from the server (paginated)
+ - login <string> <string>
+	Login with principal (username@hostname or username) and password
+ - lock <string>
+	Lock an account (account_id) - requires accounts:lock permission
+ - unlock <string>
+	Unlock a locked account (account_id) - requires accounts:unlock permission
+ - list-logins
+	Retrieve all login info records from the server
+ - logout
+	Logout the current user
+ - roles <string>
+	List roles assigned to an account (account_id)
+ - assign-role <string> <string>
+	Assign a role to an account (account_id role_id | principal role_name)
+ - revoke-role <string> <string>
+	Revoke a role from an account (account_id role_id | principal role_name)
+ - permissions <string>
+	List effective permissions for an account (account_id)
+ - sessions
+	List your session history
+ - sessions-for <string>
+	List sessions for an account (account_id) - requires accounts:read permission
+ - active-sessions
+	List your currently active sessions
+ - session-stats
+	Show session statistics for the last 30 days
+ - session-stats-days <int>
+	Show session statistics for the specified number of days
+ - history <string>
+	Get version history for an account by username
+ - ores-shell
+	(menu)
+accounts> Bye!
+#+end_example

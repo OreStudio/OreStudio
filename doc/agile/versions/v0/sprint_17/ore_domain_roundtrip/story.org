@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 66109ae6-1c44-405d-b4d6-08164c457c25
+:END:
+#+title: Story: ORE domain roundtrip
+#+description: ORE roundtrip command; initial baseline for Thing 3; coverage extended to all four ORE XML document types.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :ore:roundtrip:cli:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Implement the ORE domain roundtrip as Thing 3 Phase 5: a CLI command that
+exports to ORE XML, re-imports, and verifies fidelity. Extend coverage to all
+four ORE XML document types (portfolio, market data, fixings, calendar).
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-05-08.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-05-08                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- [[id:b5d90461-980a-4bbc-9a1c-15be795be9c6][Task: Add ore roundtrip command and retire Thing 2 coverage check]]
+- [[id:ef0b846b-3406-4411-ab08-877514890b66][Task: [ore] Add initial ORE domain roundtrip baseline (Thing 3, Phase 5)]]
+- [[id:9af052ac-0875-4bc5-964b-b4821ed7b161][Task: [ore,cli,scripts] Extend roundtrip to all four ORE XML document types]]
+* Decisions
+
+- /Retire Thing 2/ :: the Thing 2 coverage check was superseded by the Thing 3
+  roundtrip; the old check was removed to avoid maintaining redundant test
+  infrastructure.
+- /All four document types/ :: coverage was immediately extended beyond portfolio
+  to market data, fixings, and calendar to make the roundtrip meaningful as a
+  regression gate.
+
+* Out of scope
+
+- Convention document roundtrip (coverage deferred to a later sprint).
+
+* See also
+
+- [[file:../../../../plans/2026-05-05-ore-domain-roundtrip.org][ORE domain roundtrip plan]]

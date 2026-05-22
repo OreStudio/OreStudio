@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 5e8e8b96-94f4-4c8c-84b7-b9e34d8753f2
+:END:
+#+title: List All Permissions
+#+description: List All Permissions
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:rbac_roles_and_permissions:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+#+begin_src sql
+select id, code, description
+from ores.permissions
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by code;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| id                                   | code                    | description                           |
+|--------------------------------------+-------------------------+---------------------------------------|
+| 8f827c95-2af4-4d78-9ccb-22f5d9f4df99 | *                       | Full access to all operations         |
+| 9e337a58-2ee6-4de4-8946-76015de6e928 | accounts:create         | Create new user accounts              |
+| 7151df18-e4c9-4522-bb65-c1055a3e97c1 | accounts:delete         | Delete user accounts                  |
+| c225162e-2b04-4685-b1be-0bacbe367e45 | accounts:lock           | Lock user accounts                    |
+| 4956001c-5ece-4dc8-b437-c834045c25eb | accounts:read           | View user account details             |
+| 5f5f8909-3820-411f-a9f2-d5efb5ad351a | accounts:reset_password | Force password reset on user accounts |
+| fc5587f3-72ad-4706-a1ac-ca735af5a919 | accounts:unlock         | Unlock user accounts                  |
+| cf4ac1a8-b39e-4faa-b6d3-f9ed3d1ef41a | accounts:update         | Modify user account settings          |
+| 43ce84fb-b14a-490a-92d1-4eade25eda37 | currencies:create       | Create new currencies                 |
+| 7fb3f2e6-9b0d-4996-9c02-14e39a732acd | currencies:delete       | Delete currencies                     |
+| 5472a25a-40cf-4bac-9c95-dda2589f12f7 | currencies:history      | View currency version history         |
+| 17f8d400-47fa-4648-8b47-48ab3c1ec82b | currencies:read         | View currency details                 |
+| e1bca8df-8133-4c08-9365-160baf99125e | currencies:update       | Modify currency settings              |
+| 62e6e9ea-5258-41d2-9107-0602512801e6 | flags:create            | Create new feature flags              |
+| 8e42e330-5467-48c2-9a26-5af5b5fcb10e | flags:delete            | Delete feature flags                  |
+| 3b26954f-6368-4c12-b2e2-67797d442714 | flags:read              | View feature flag status              |
+| 5f72cfef-c8a9-4926-a1a3-f51c955595f7 | flags:update            | Modify feature flag settings          |
+| 12e8300a-e76c-4cd6-a439-2098e45393a2 | login_info:read         | View login history and info           |
+| 95d69095-1223-4dbb-970e-8042d90d61de | roles:assign            | Assign roles to accounts              |
+| 2301fe57-f568-4930-b3ec-4a9fba903932 | roles:create            | Create new roles                      |
+| e12a56d4-64a8-436d-8ad8-1909b2439369 | roles:delete            | Delete roles                          |
+| eba37c8c-79e2-4193-9a54-ceb555b1cdda | roles:read              | View role details                     |
+| cd69a420-e93b-4e41-9bab-ee8d6dcd0b7a | roles:revoke            | Revoke roles from accounts            |
+| af5743da-3042-469d-8487-ed859b9de7f5 | roles:update            | Modify role permissions               |
+#+end_example

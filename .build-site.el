@@ -161,9 +161,24 @@
          :publishing-function org-publish-attachment)
         ("site:main" :components("site:pages" "site:images" "site:style"))))
 
+(defun ores-deploy-org-roam-ui (site-dir)
+  "Copy pre-built org-roam-ui static files to SITE-DIR/graph/."
+  (let ((src (expand-file-name "./external/org-roam-ui"))
+        (dst (expand-file-name "graph" site-dir)))
+    (if (not (file-directory-p src))
+        (message "Warning: external/org-roam-ui not found; skipping")
+      (make-directory dst t)
+      (copy-directory src dst nil t t)
+      (message "org-roam-ui files copied to %s" dst))))
+
 (condition-case err
     (progn
       (org-publish-all t)
+      (ores-deploy-org-roam-ui "./build/output/site")
+      (load-file (expand-file-name "~/.emacs.d/config/org-roam-export.el"))
+      (cunene/org-roam-export-graph-json
+       (expand-file-name "./.org-roam.db")
+       (expand-file-name "./build/output/site/graph/graphdata.json"))
       (message "Build succeeded.")
       (kill-emacs 0))
   (error

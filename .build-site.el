@@ -173,9 +173,12 @@
                       (buffer-string)))
            (css-tag "<link rel=\"stylesheet\" href=\"/OreStudio/assets/style.css\">")
            (fa-tag  "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css\">")
+           ;; Fix nav geometry: float the header over the canvas so it doesn't
+           ;; displace the graph (org-roam-ui sizes to window.innerHeight).
+           (fix-tag "<style>#site-header{position:fixed;top:0;left:0;right:0;z-index:9999;}</style>")
            (patched (replace-regexp-in-string
                      "</head>"
-                     (concat css-tag fa-tag "</head>")
+                     (concat css-tag fa-tag fix-tag "</head>")
                      (replace-regexp-in-string
                       "<body>"
                       (concat "<body>" preamble)
@@ -209,7 +212,9 @@
       (load-file (expand-file-name "~/.emacs.d/config/org-roam-export.el"))
       (cunene/org-roam-export-graph-json
        (expand-file-name "./.org-roam.db")
-       (expand-file-name "./build/output/site/OreStudio/graph/graphdata.json"))
+       (expand-file-name "./build/output/site/OreStudio/graph/graphdata.json")
+       (expand-file-name "./")
+       "/OreStudio/")
       (message "Build succeeded.")
       (kill-emacs 0))
   (error

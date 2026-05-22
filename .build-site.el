@@ -209,8 +209,8 @@
             "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui")
       (require 'org-roam)
       (org-roam-db-sync)
-      (load-file (expand-file-name "~/.emacs.d/config/org-roam-export.el"))
-      (cunene/org-roam-export-graph-json
+      (load-file (expand-file-name "./projects/ores.lisp/ores-org-roam-export.el"))
+      (ores/org-roam-export-graph-json
        (expand-file-name "./.org-roam.db")
        (expand-file-name "./build/output/site/OreStudio/graph/graphdata.json")
        (expand-file-name "./")

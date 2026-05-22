@@ -218,7 +218,10 @@ void ClientPortfolioModel::fetch_portfolios(
         QtConcurrent::run([self, offset, limit]() -> FetchResult {
             return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
                 BOOST_LOG_SEV(lg(), debug) << "Making portfolios request with offset="
-                                           << offset << ", limit=" << limit;
+                                           << offset << ", limit=" << limit
+                                           << " (model workspace_id="
+                                           << self->workspaceContext().id.toStdString()
+                                           << ")";
                 if (!self || !self->clientManager_) {
                     return {.success = false, .portfolios = {},
                             .total_available_count = 0,
@@ -230,8 +233,9 @@ void ClientPortfolioModel::fetch_portfolios(
                 request.offset = offset;
                 request.limit = limit;
 
+                const auto ws_id = self->workspaceContext().id.toStdString();
                 auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                    process_authenticated_request(std::move(request), ws_id);
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch portfolios: "
@@ -283,6 +287,9 @@ void ClientPortfolioModel::onPortfoliosLoaded() {
             BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
                                        << " portfolios newer than last reload";
         }
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Server returned 0 portfolios"
+                                  << " (total_available_count=" << total_available_count_ << ")";
     }
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " portfolios."

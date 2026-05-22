@@ -23,14 +23,13 @@
 #include "ores.workspace.api/domain/workspace.hpp"
 #include "ores.workspace.core/repository/workspace_entity.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.workspace.core/export.hpp"
 
 namespace ores::workspace::repository {
 
 /**
  * @brief Maps workspace domain entities to data storage layer and vice-versa.
  */
-class ORES_WORKSPACE_CORE_EXPORT workspace_mapper {
+class workspace_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.workspace.repository.workspace_mapper";

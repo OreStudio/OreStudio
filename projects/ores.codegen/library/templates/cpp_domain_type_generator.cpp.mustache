@@ -46,7 +46,8 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{/is_uuid}}
 {{^is_uuid}}
 {{#generator_expr}}
-    r.{{column}} = {{{generator_expr}}};
+    r.{{column}} = {{{generator_expr}}} + "-"
+        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
 {{/generator_expr}}
 {{^generator_expr}}
     r.{{column}} = std::string(faker::word::noun()) + "-"

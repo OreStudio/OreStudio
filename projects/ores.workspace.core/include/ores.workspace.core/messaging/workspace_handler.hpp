@@ -22,6 +22,7 @@
 
 #include <optional>
 #include <string>
+#include <thread>
 #include <vector>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -329,26 +330,28 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::workspace_service svc(ctx);
-        get_workspace_history_response resp;
         auto req = decode<get_workspace_history_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(workspace_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
-            reply(nats_, msg, resp);
+            reply(nats_, msg, get_workspace_history_response{});
             return;
         }
-        try {
-            resp.workspaces = svc.get_workspace_history(req->id);
-            resp.success = true;
-            BOOST_LOG_SEV(workspace_handler_lg(), debug)
-                << "Completed " << msg.subject;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(workspace_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            resp.message = e.what();
-        }
-        reply(nats_, msg, resp);
+        std::thread([this, msg = std::move(msg), ctx, id = req->id]() mutable {
+            service::workspace_service svc(ctx);
+            get_workspace_history_response resp;
+            try {
+                resp.workspaces = svc.get_workspace_history(id);
+                resp.success = true;
+                BOOST_LOG_SEV(workspace_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(workspace_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.message = e.what();
+            }
+            reply(nats_, msg, resp);
+        }).detach();
     }
 
     void clear_trade_scope(ores::nats::message msg) {

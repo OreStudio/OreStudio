@@ -24,6 +24,7 @@
 #include <QFutureWatcher>
 #include <QPlainTextEdit>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ui_WorkspaceDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
@@ -165,6 +166,13 @@ void WorkspaceDetailDialog::updateWorkspaceFromUi() {
     workspace_.source_path = ui_->sourcePathEdit->text().trimmed().toStdString();
     workspace_.status_code = ui_->statusEdit->text().trimmed().toStdString();
     workspace_.modified_by = username_;
+
+    const auto owner_str = ui_->ownerEdit->text().trimmed().toStdString();
+    if (!owner_str.empty()) {
+        try {
+            workspace_.owner_id = boost::uuids::string_generator{}(owner_str);
+        } catch (...) {}
+    }
 }
 
 void WorkspaceDetailDialog::onCodeChanged(const QString& /* text */) {

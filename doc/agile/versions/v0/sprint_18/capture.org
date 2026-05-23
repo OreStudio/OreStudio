@@ -30,6 +30,14 @@ destination (sprint backlog or [[id:D4219199-7B17-4A89-B4BC-6019738642DA][produc
   : | PR | [[https://github.com/OreStudio/OreStudio/pull/803][#803]] |
 - add a memory for the tmp directory.
 - add recipes to do doc commands (list etc). Link it to skills.
+- add a skill which drains capture buffer: for each entry decides to either file
+  it as a task or a story in current sprint, or into product backlog.
+
+* LLMs
+
+- add document on how all temporary data should be under project dir tmp.
+- consider adding screenshots of bugs during tasks to the task itself and link
+  it there for posterity. But then screenshot must be saved under task dir.
 
 * Code
 
@@ -44,10 +52,47 @@ destination (sprint backlog or [[id:D4219199-7B17-4A89-B4BC-6019738642DA][produc
 
 * Emacs
 
-- add a capture command which gets latest capture buffer.
+- add a capture command which gets latest capture buffer (e.g. latest version,
+  latest sprint, locate capture.org).
 - instead of having a DB buffer for all envs, we should just have a ORES env
   buffer. This will have all the common commands for that env (init env etc).
+  Actually what we need is a ORES Studio console in emacs which wraps all of the
+  available scripts and also provides some blurb as to what the scripts do.
+  Functionality is in groups: for example, all of the start/stop scripts in a
+  group etc. Each console is relative to an environment. The console reads .env
+  and makes it clear what the key settings are (env version, ports, etc). Should
+  also have bookmarks for log directory, bin directory, etc.
 - when running commands (babel) we should use the .env file (preset, etc).
   However the issue is we need to reload as we move envs. Or ideally the babel
   functions should query the .env file dynamically to determine paths.
 - integrate captures with emacs capture: [[https://www.gnu.org/software/emacs/manual/html_mono/org.html#Setting-up-capture][Setting up capture]].
+
+* Environment
+
+- Ensure port consistency for the different kinds of ports we have on an
+  environment:
+
+#+begin_src sh
+ORES_HTTP_PORT=51000
+ORES_CONTROLLER_SERVICE_HTTP_PORT=51000
+ORES_CONTROLLER_SERVICE_WT_PORT=51002
+ORES_SITE_PORT=8001
+ORES_NATS_PORT=42221
+ORES_NATS_URL=nats://localhost:42221
+ORES_NATS_MONITOR_PORT=8221
+ORES_NATS_MONITOR_URL=http://localhost:8221
+#+end_src
+
+  This should just be a set of ports starting at "base environment port" and then
+  going up by 1. Also what is the difference between =ORES_HTTP_PORT= and
+  =ORES_CONTROLLER_SERVICE_HTTP_PORT=
+
+- We need a way to know what the valid environment variables are and what they
+  do. This should be in a document. We also need a script that checks init env
+  and makes sure we only define valid variables. Its fine to error and show
+  error to user.
+
+* Site
+
+- Menu is not coming up at present when we run start site. Seems present in
+  =build-site.el=

@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: d2e4921b-b431-4e78-99ab-62a47f761d1d
+:END:
+#+title: Task: Implement triple isolation for RFL complexity
+#+description: Apply the TU split, two-phase parse, and increased Clang limits to resolve compilation failures.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :refactor:build:reflect_cpp:rfl_complexity_resolution:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-23
+#+updated: 2026-05-23
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d8b1a670-3b02-11f1-bce2-4b06f4bba5d8][Resolve RFL complexity issues]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Apply the structural isolation strategy to permanently fix compilation failures in =ores.qt.api= across all platforms.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:d8b1a670-3b02-11f1-bce2-4b06f4bba5d8][Resolve RFL complexity issues]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation of TU split.      |
+| Last touched | 2026-05-23                               |
+
+* Acceptance
+
+- =projects/ores.trading.api/src/CMakeLists.txt= contains increased Clang limits (=-fbracket-depth=1024=).
+- =getTradeDetail= is isolated in its own TU: =ClientManagerTradeDetail.cpp=.
+- Two-phase parsing is implemented in =ClientManagerTradeDetail.cpp= using restored helper types in =trade_protocol.hpp=.
+- Code builds successfully on Linux (Clang) and Windows (MSVC).
+
+* Plan
+
+1.  **Increase Clang Limits**: Update =projects/ores.trading.api/src/CMakeLists.txt=.
+2.  **Restore Protocol Types**: Restore =get_trade_detail_response_base= and =get_trade_detail_instrument_wrapper= in =trade_protocol.hpp=.
+3.  **Perform TU Split**: Move =getTradeDetail= from =ClientManagerTrades.cpp= to =ClientManagerTradeDetail.cpp=.
+4.  **Implement Two-Phase Parse**: Refactor the isolated =getTradeDetail= to perform two separate =rfl::json::read= calls.
+5.  **Validate**: Verify the build on all target platforms.
+
+* Notes
+
+* Result

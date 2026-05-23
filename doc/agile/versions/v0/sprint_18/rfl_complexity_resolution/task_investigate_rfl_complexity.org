@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: d1e4921b-b431-4e78-99ab-62a47f761d1d
+:END:
+#+title: Task: Investigate RFL complexity root cause
+#+description: Analyze the root cause of Clang and MSVC compilation failures related to reflect-cpp complexity.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :investigation:reflect_cpp:rfl_complexity_resolution:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-23
+#+updated: 2026-05-23
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d8b1a670-3b02-11f1-bce2-4b06f4bba5d8][Resolve RFL complexity issues]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Analyze the root cause of Clang and MSVC compilation failures related to =reflect-cpp= complexity in =ClientManagerTrades.cpp= and propose a permanent resolution strategy.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:d8b1a670-3b02-11f1-bce2-4b06f4bba5d8][Resolve RFL complexity issues]] |
+| Now          | Completed 2026-05-23.                  |
+| Waiting on   | Nothing.                               |
+| Next         | Implement the proposed strategy.        |
+| Last touched | 2026-05-23                               |
+
+* Acceptance
+
+- Root cause for Clang's "expression nesting limit" identified.
+- Root cause for MSVC's "C1202" identified.
+- Permanent resolution strategy (Triple Isolation) proposed.
+- [[id:d75f4921-b431-4e78-99ab-62a47f761d1d][Investigation report]] published.
+
+* Plan
+
+- Analyze compiler error logs from failed CI runs.
+- Review =reflect-cpp= internal headers for complexity drivers.
+- Map the domain types (=trade=, =trade_instrument=) to the failure points.
+- Research history of previous workarounds in the codebase.
+- Synthesize findings into a formal report.
+
+* Notes
+
+- Identified that =rfl::internal::no_duplicate_field_names= is the O(N²) driver.
+- Identified that =trade_instrument= variant is the primary complexity source.
+- Discovered that previous workarounds were reverted prematurely.
+
+* Result
+
+- [[id:d75f4921-b431-4e78-99ab-62a47f761d1d][Investigation: MSVC C1202 and rfl complexity]]
+- Strategy: TU split + Two-phase parse + Global Clang limits.
+- Upstream issue [[https://github.com/getml/reflect-cpp/issues/350][reflect-cpp #350]] opened.

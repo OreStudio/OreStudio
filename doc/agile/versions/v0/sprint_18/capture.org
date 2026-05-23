@@ -48,5 +48,6 @@ destination (sprint backlog or [[id:d4219199-7b17-4a89-b4bc-6019738642da][produc
 - instead of having a DB buffer for all envs, we should just have a ORES env
   buffer. This will have all the common commands for that env (init env etc).
 - when running commands (babel) we should use the .env file (preset, etc).
-  However the issue is we need to reload as we move envs.
+  However the issue is we need to reload as we move envs. Or ideally the babel
+  functions should query the .env file dynamically to determine paths.
 - integrate captures with emacs capture: [[https://www.gnu.org/software/emacs/manual/html_mono/org.html#Setting-up-capture][Setting up capture]].

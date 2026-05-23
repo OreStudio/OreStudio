@@ -38,10 +38,11 @@ surrounding context — version goals, sprint order, and product identity — se
 In execution order.
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                       | State   | Start      | End        | Theme                                                                                |
-|---------------------------------------------------------------------------------------------+---------+------------+------------+--------------------------------------------------------------------------------------|
-| [[id:a4bef88c-1372-46ce-864b-c30ac3be95eb][Inline org-roam export into ores.lisp]] | DONE    | 2026-05-22 | 2026-05-22 | Vendor =org-roam-export.el= into =ores.lisp= so the CI site build is self-contained. |
-| [[id:0a2cb5bd-67b8-4096-bac4-8e110333893a][SQLite CLI quality-of-life setup]]       | STARTED | 2026-05-24 |            | Committed, commented =.sqliterc= for readable, non-wrapping =sqlite3= shell output.   |
+| Story                                                                                       | State   | Start      | End        | Theme                                                                                           |
+|---------------------------------------------------------------------------------------------+---------+------------+------------+-------------------------------------------------------------------------------------------------|
+| [[id:a4bef88c-1372-46ce-864b-c30ac3be95eb][Inline org-roam export into ores.lisp]] | DONE    | 2026-05-22 | 2026-05-22 | Vendor =org-roam-export.el= into =ores.lisp= so the CI site build is self-contained.           |
+| [[id:d8b1a670-3b02-11f1-bce2-4b06f4bba5d8][Resolve RFL complexity issues]]         | STARTED | 2026-05-23 |            | Permanently resolve MSVC C1202 and Clang expression nesting limits via structural isolation.    |
+| [[id:0a2cb5bd-67b8-4096-bac4-8e110333893a][SQLite CLI quality-of-life setup]]       | STARTED | 2026-05-24 |            | Committed, commented =.sqliterc= for readable, non-wrapping =sqlite3= shell output.             |
 
 * Retrospective
 

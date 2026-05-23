@@ -8,11 +8,15 @@
 #+level: cross
 #+filetags: :recipe:git:index:knowledge:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-05-23
 
 Recipes for pure git workflows — branches, stashes, submodules.
 GitHub-specific operations (PRs, CI, review threads, =gh= CLI) live
 under [[id:fcf81f0b-afbf-4169-bd24-04dbd08180a9][GitHub recipes]] separately.
+
+* Committing
+
+- [[id:f4b1a670-3b02-11f1-bce2-4b06f4bba5d9][How do I commit to git using ORE Studio conventions?]]
 
 * Branches
 

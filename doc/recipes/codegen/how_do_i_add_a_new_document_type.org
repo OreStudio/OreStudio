@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: d8f4e2b1-9a7c-4e8d-8f3b-c2e5b4a6d7e8
+:END:
+#+title: How do I add a new document type?
+#+description: Steps to extend the v2 information architecture with a new document type, from definition to codegen support.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :codegen:v2_docs:meta:recipe:
+#+created: 2026-05-23
+#+updated: 2026-05-23
+
+Adding a new document type involves updating the metadata that defines the
+system and then extending the codegen tool to support generating instances of
+that type.
+
+* Question
+
+How do I add a new document type to the ORE Studio [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][information architecture]]?
+
+* Answer
+
+Follow these steps to define the new type and enable codegen support.
+
+** 1. Define the type in metadata
+
+Update the foundational documentation to include the new type.
+
+1.  *Update [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]*: Add a new entry under the =Document types= section.
+   Specify the folder path, title prefix, level, statefulness, and required
+   sections.
+2.  *Update [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][glossary]]*: Add a new entry for the document type with its definition
+   and a reference table (Owner, How to generate, Example).
+
+** 2. Create a Mustache template
+
+Create a new template in =projects/ores.codegen/library/templates/=.
+
+1.  Name the file =v2_doc_<type>.org.mustache=.
+2.  Follow the contract defined in =document_types.org=. Use placeholders like
+   ={{id}}=, ={{title}}=, ={{description}}=, ={{filetags}}=, and ={{date}}=.
+
+Example: =v2_doc_investigation.org.mustache=
+
+** 3. Update the codegen script
+
+Modify =projects/ores.codegen/src/v2_doc_generate.py= to register the new type.
+
+1.  *Update =TYPE_TO_TEMPLATE=*: Map the type name to your new template file.
+2.  *Update =DEFAULT_INITIAL_STATE=*: Provide a default state (or an empty
+   string if not stateful).
+3.  *Update =PARENT_OF_TYPE=*: If the type has a composition parent (like task
+   -> story), add it here.
+4.  *Update =PARENTLESS_TYPES=*: If the type is a leaf node or doesn't have a
+   composition parent, add it to this set.
+5.  *Update title prefixing*: Add logic to prepend the type-specific prefix
+   (e.g., "Investigation: ") to =args.title= if it's missing.
+6.  *Update output layout*: Add the type to the appropriate file path generation
+   branch (usually the same branch as =knowledge= or =recipe= for leaf
+   documents).
+
+** 4. Update documentation recipes
+
+1.  Update [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] to include the new type in the question
+   and provide a "New <type>" section with a sample shell command.
+
+* Script
+
+- =projects/ores.codegen/src/v2_doc_generate.py= — the document generator.
+- =projects/ores.codegen/library/templates/= — the directory for Mustache
+  templates.
+
+* Tested by
+
+Manual verification by generating a document of the new type:
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type investigation --slug sample_investigation \
+  --parent-dir doc/investigations \
+  --title "Sample Investigation" \
+  --description "Testing the new investigation document type."
+#+end_src
+
+* See also
+
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] — the definitive list of document formats.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — how to use the generator.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the component model for the codegen system.

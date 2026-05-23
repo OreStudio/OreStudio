@@ -217,6 +217,23 @@ projects/ores.codegen/generate_v2_doc.sh \
   --tags "identity,vision"
 #+end_src
 
+** New investigation report
+:PROPERTIES:
+:ID: 75f4921b-43d1-4e78-99ab-62a47f761d1d
+:END:
+
+[[id:a7f8d9e2-3c4b-4a5d-b67c-8e9f0a1b2c3d][Investigation reports]] live in =doc/investigations/=. They are formal records
+of technical research or debugging sessions.
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type investigation --slug msvc_c1202_rfl_complexity \
+  --parent-dir doc/investigations \
+  --title "MSVC C1202 and rfl complexity" \
+  --description "Root cause analysis of recursive template depth limits in reflect-cpp." \
+  --tags "msvc,cpp,reflect_cpp,investigation"
+#+end_src
+
 ** New capture
 :PROPERTIES:
 :ID: 978e0a8f-197c-48da-a405-457e0aee91d9

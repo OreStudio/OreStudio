@@ -712,6 +712,31 @@ it is a normal knowledge document — no extra obligations.
 - Generated where possible. See [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] and the relevant function
   documents.
 
+** investigation
+
+- Folder :: =doc/investigations/= — historical records of technical
+  investigations.
+- Title :: =Investigation: <human readable title>=. The
+  =Investigation: = prefix is added by the codegen automatically when
+  the type is =investigation=.
+- Level :: =cross=.
+- Not stateful — no TODO, no =* Status= table. An investigation
+  report is a point-in-time record.
+- How to create :: see [[id:75f4921b-43d1-4e78-99ab-62a47f761d1d][New investigation report]] in the v2-doc recipe.
+- Required sections ::
+  - =* Context= — one or two paragraphs: what was the original
+    problem or research question.
+  - =* Methodology= — how the investigation was conducted (tools,
+    reproducibility steps).
+  - =* Paths taken= — detailed log of approaches tried, including
+    those that were unsuccessful. Link to related PRs, branches, or
+    commits.
+  - =* Conclusions= — the ultimate findings of the investigation.
+  - =* Recommendations= — suggested next steps or new approaches,
+    avoiding implementation-level detail.
+  - =* See also= — related knowledge docs, tasks, or external
+    references.
+
 ** meta
 
 - Folder :: =meta/= (this folder).

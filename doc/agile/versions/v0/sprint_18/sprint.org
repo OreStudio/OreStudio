@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1737c00c-699a-475a-bc94-743c6cda1001
+:ID: 1737C00C-699A-475A-BC94-743C6CDA1001
 :END:
 #+title: Sprint 18
 #+description: Sprint 18 — TBD.
@@ -8,10 +8,13 @@
 #+level: s3
 #+filetags: :v0:
 #+created: 2026-05-22
-#+updated: 2026-05-22
+#+updated: 2026-05-23
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 18*) of ORE Studio. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 18*) of ORE Studio. It captures the
+sprint's mission, current status, and the stories that compose it. For the
+surrounding context — version goals, sprint order, and product identity — see
+[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
@@ -21,22 +24,24 @@ This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Spri
 
 | Field          | Value                                  |
 |----------------+----------------------------------------|
-| State          | STARTED                              |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]] |
+| State          | STARTED                                |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                              |
+| Previous       | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]                              |
 | Now            | Sprint in flight.                      |
 | Waiting on     | Nothing.                               |
 | Next           | Inline org-roam export into ores.lisp. |
-| Last touched   | 2026-05-22                               |
+| Release Notes  | Added at end of sprint.                |
+| Last touched   | 2026-05-23                             |
 
 * Stories
 
 In execution order.
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                       | State   | Start      | End | Theme                                                                           |
-|---------------------------------------------------------------------------------------------+---------+------------+-----+---------------------------------------------------------------------------------|
-| [[id:a4bef88c-1372-46ce-864b-c30ac3be95eb][Inline org-roam export into ores.lisp]] | BACKLOG | 2026-05-22 |     | Vendor =org-roam-export.el= into =ores.lisp= so the CI site build is self-contained. |
-| [[id:0a2cb5bd-67b8-4096-bac4-8e110333893a][SQLite CLI quality-of-life setup]]       | STARTED | 2026-05-24 |     | Committed, commented =.sqliterc= for readable, non-wrapping =sqlite3= shell output.   |
+| Story                                                                                       | State   | Start      | End        | Theme                                                                                |
+|---------------------------------------------------------------------------------------------+---------+------------+------------+--------------------------------------------------------------------------------------|
+| [[id:a4bef88c-1372-46ce-864b-c30ac3be95eb][Inline org-roam export into ores.lisp]] | DONE    | 2026-05-22 | 2026-05-22 | Vendor =org-roam-export.el= into =ores.lisp= so the CI site build is self-contained. |
+| [[id:0a2cb5bd-67b8-4096-bac4-8e110333893a][SQLite CLI quality-of-life setup]]       | STARTED | 2026-05-24 |            | Committed, commented =.sqliterc= for readable, non-wrapping =sqlite3= shell output.   |
 
 * Retrospective
 

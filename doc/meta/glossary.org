@@ -260,14 +260,15 @@ separately under =agile/product_backlog/{near,far}/= as a tree of [[id:671f18e4-
 :END:
 
 A pre-sprint idea: something we may want to do but have not yet pulled into a
-sprint as a story. Captures live at
-=doc/agile/product_backlog/{near,far}/<slug>.org=. The bucket is the source of
-truth: =near/= = candidate work for the next version, =far/= = longer-term
-wishlist. Captures are /not stateful/ — no TODO keyword, no =* Status= table.
-They have only two effective states: /pending/ (the file exists in a bucket) and
-/promoted/ (the file has been converted into a =story=). On promotion the file
-is moved into the appropriate sprint folder and its =#+type:= flips from
-=capture= to =story=; *the =:ID:= is preserved* so existing links keep working.
+sprint as a story. Captures live within the capture document in a sprint, if
+short-lived, or in =doc/agile/product_backlog/{near,far}/<slug>.org= if
+long-lived. The bucket is the source of truth: =near/= = candidate work for the
+next version, =far/= = longer-term wishlist. Captures are /not stateful/ — no
+TODO keyword, no =* Status= table. They have only two effective states:
+/pending/ (the file exists in a bucket) and /promoted/ (the file has been
+converted into a =story=). On promotion the file is moved into the appropriate
+sprint folder and its =#+type:= flips from =capture= to =story=; *the =:ID:= is
+preserved* so existing links keep working.
 
 #+ATTR_HTML: :class hug-leading
 | Field           | Value                                                                                               |

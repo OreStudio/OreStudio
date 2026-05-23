@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 14606A1B-2742-DE34-F813-B4E3B736AEF1
+:END:
+#+title: Sprint 16 Capture
+#+description: Assorted notes taken during Sprint which have not yet been filled but we do not want to forget.
+#+type: capture
+#+version: 2
+#+level: s3
+#+filetags: :ore:workflow:marketdata:controller:plugins:trading:reporting:windows:sprint_16:v0:
+#+created: 2026-05-23
+#+updated: 2026-05-23
+#+todo: STARTED | DONE
+
+This page is the short-lived [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] document for [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] of ORE Studio. At
+the end of the sprint, short-lived captures will migrate to their next
+destination (sprint backlog or [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]]).
+
+* Agile
+
+- add a template for sprint captures. Very often we are doing something and we
+  just need to jot down a quick annotation, but if it goes into product backlog
+  it will get lost. Ideally it should start in sprint and then get filled.
+- add linkage between previous sprint and next sprint to make navigation easier.
+- make release notes a property of the sprint table.
+- add to sprint table:
+  : | Previous | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+- UUIDs of sprints seem lower case, check codegen script.
+- we only updated sprint 16-18, rest needs updating with LLM.
+- add PR to tasks:
+  : | PR | [[https://github.com/OreStudio/OreStudio/pull/803][#803]] |
+- add a memory for the tmp directory.
+- add recipes to do doc commands (list etc). Link it to skills.
+
+* Code
+
+- CLI is direct DB access, shell simulates a client.
+- need to create a document stating what entities are out of sync (e.g. missing
+  cli, http etc) and start working through those. Must add recipes as we go
+  along.
+
+* Tools
+
+- load babel and test all recipe types (SQL, cli etc).
+
+* Emacs
+
+- add a capture command which gets latest capture buffer.
+- instead of having a DB buffer for all envs, we should just have a ORES env
+  buffer. This will have all the common commands for that env (init env etc).
+- when running commands (babel) we should use the .env file (preset, etc).
+  However the issue is we need to reload as we move envs.
+- integrate captures with emacs capture: [[https://www.gnu.org/software/emacs/manual/html_mono/org.html#Setting-up-capture][Setting up capture]].

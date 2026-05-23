@@ -222,9 +222,9 @@ projects/ores.codegen/generate_v2_doc.sh \
 :ID: 978e0a8f-197c-48da-a405-457e0aee91d9
 :END:
 
-Captures live in the product backlog under =doc/agile/product_backlog/=
-in either the =near/= bucket (candidate work for the next version) or
-=far/= (longer-term wishlist). The =--parent-dir= picks the bucket.
+[[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][Captures]] live in the product backlog under =doc/agile/product_backlog/= in
+either the =near/= bucket (candidate work for the next version) or =far/=
+(longer-term wishlist). The =--parent-dir= picks the bucket.
 
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \

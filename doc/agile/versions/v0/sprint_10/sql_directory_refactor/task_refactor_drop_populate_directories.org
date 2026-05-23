@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5a5507a2-f855-4825-b91a-99fb957c7d51
+:ID: 5A5507A2-F855-4825-B91A-99FB957C7D51
 :END:
 #+title: Task: Refactor drop/ and populate/ directory structure
 #+description: 56 files relocated into component subdirectories with git-history preserved; consistent naming (drop_COMPONENT.sql, populate_COMPONENT.sql); monolithic seed_upsert_functions split per component.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:38b6dddf-c02b-4072-b599-41ab3bcc9c28][SQL directory refactor]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38B6DDDF-C02B-4072-B599-41AB3BCC9C28][SQL directory refactor]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Apply the same component-subdirectory pattern to =drop/= and =populate/=.
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:38b6dddf-c02b-4072-b599-41ab3bcc9c28][SQL directory refactor]] |
+| Parent story | [[id:38B6DDDF-C02B-4072-B599-41AB3BCC9C28][SQL directory refactor]] |
 | Now          | Completed 2026-01-24.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

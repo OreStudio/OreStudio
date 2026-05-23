@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 02e293a4-b5fa-4551-8c1b-7c6fc956ea9e
+:ID: 02E293A4-B5FA-4551-8C1B-7C6FC956EA9E
 :END:
 #+title: Trade-aware market data filtering for report execution
 #+description: Trade-aware market data filtering for report execution
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 #+begin_quote
 The report execution workflow currently fetches all market data series for the

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6ac06a04-eb95-4925-8488-c7a47c6a451f
+:ID: 6AC06A04-EB95-4925-8488-C7A47C6A451F
 :END:
 #+title: How do I validate component documentation before committing?
 #+description: Run validate_docs.sh to check every ores.* component has a well-formed component_overview.org before pushing.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-22
 
 Run this before committing any change that touches a =modeling/= folder or
-=component_overview.org=. See [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component documentation guide]] for the full
+=component_overview.org=. See [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component documentation guide]] for the full
 structure contract.
 
 * Question
@@ -35,7 +35,7 @@ Two checks run in sequence:
    =projects/ores.codegen/docs_exceptions.txt=.
 2. /Version tagging/ — every =.org= file in the repo carries
    =#+version: 1= or =#+version: 2= (see
-   [[id:23bcac49-325f-4083-b854-87ea747c2abe][How do I audit and fix document version tags?]]).
+   [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]]).
 
 Fix any reported errors, then re-run until the script exits =0=.
 
@@ -51,6 +51,6 @@ validation workflow and the PR goes red if it exits non-zero.
 
 * See also
 
-- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component documentation guide]] — what a correct =component_overview.org= looks like.
-- [[id:23bcac49-325f-4083-b854-87ea747c2abe][How do I audit and fix document version tags?]] — fix missing =#+version:= tags.
-- [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][How do I fix a failing CI check?]] — if the check fails in CI.
+- [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component documentation guide]] — what a correct =component_overview.org= looks like.
+- [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]] — fix missing =#+version:= tags.
+- [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]] — if the check fails in CI.

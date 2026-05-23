@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 453650ab-b1cb-45ce-b40b-3acbf93c21f5
+:ID: 453650AB-B1CB-45CE-B40B-3ACBF93C21F5
 :END:
 #+title: How do I list roles?
 #+description: List roles via =ores.cli=

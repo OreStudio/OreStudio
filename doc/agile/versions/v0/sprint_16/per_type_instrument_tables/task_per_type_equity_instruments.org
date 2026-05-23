@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 82c51a8d-3d26-45ec-955a-aae46028a05d
+:ID: 82C51A8D-3D26-45EC-955A-AAE46028A05D
 :END:
 #+title: Task: Per-type equity instrument tables
 #+description: Per-type equity instrument tables for options, forwards, swaps, positions; SQL schemas + repository layer + NATS handlers; per-type check constraints + typed error reply.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ce26e56b-944f-4c89-b5a9-e0dabf521908][Per-type instrument tables]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CE26E56B-944F-4C89-B5A9-E0DABF521908][Per-type instrument tables]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Per-type equity instrument tables for options, forwards, swaps, positions; SQL s
 | Field        | Value                                                                   |
 |--------------+-------------------------------------------------------------------------|
 | State        | DONE                                                                    |
-| Parent story | [[id:ce26e56b-944f-4c89-b5a9-e0dabf521908][Per-type instrument tables]] |
+| Parent story | [[id:CE26E56B-944F-4C89-B5A9-E0DABF521908][Per-type instrument tables]] |
 | Now          | Completed 2026-04-10.                                                   |
 | Waiting on   | None.                                                                   |
 | Next         | None.                                                                   |

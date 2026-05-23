@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5cb31a0e-4e38-4521-b0ee-e4396c3e2936
+:ID: 5CB31A0E-4E38-4521-B0EE-E4396C3E2936
 :END:
 #+title: SQL entity schema patterns
 #+description: Naming conventions, idempotency patterns, and entity-type catalogue for ORE Studio SQL schemas.
@@ -117,7 +117,7 @@ implementation — do not reproduce it here.
 
 * See also
 
-- [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][sql-schema-creator]] — skill for creating entity schemas.
-- [[id:479f858e-aa31-4db4-abe9-a0ed7cebf098][How do I create a new entity SQL schema?]] — step-by-step walkthrough.
+- [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][sql-schema-creator]] — skill for creating entity schemas.
+- [[id:479F858E-AA31-4DB4-ABE9-A0ED7CEBF098][How do I create a new entity SQL schema?]] — step-by-step walkthrough.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]] — full schema mental model and PostgreSQL setup.
-- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

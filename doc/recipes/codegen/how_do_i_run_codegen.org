@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 20d0a77d-e0c0-492e-b0ec-45c7638dd220
+:ID: 20D0A77D-E0C0-492E-B0EC-45C7638DD220
 :END:
 #+title: How do I run codegen?
 #+description: Invoke ores.codegen to generate code from a JSON model — set up the venv, run the wrapper, find the output.
@@ -73,6 +73,6 @@ is committed and CI builds the result.
 
 * See also
 
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — uses the same codegen
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — uses the same codegen
   infrastructure for org-mode document generation.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — what the generator is and what it generates.

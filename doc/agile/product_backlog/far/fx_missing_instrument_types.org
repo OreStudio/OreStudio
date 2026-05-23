@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 76b891f5-750c-4ea7-80f1-d840a0af0e20
+:ID: 76B891F5-750C-4EA7-80F1-D840A0AF0E20
 :END:
 #+title: Implement missing FX instrument types
 #+description: Not yet implemented: FX_Swap, FX_KIKO_Barrier_Option, Exotic_FxGenericBarrierOption, FX_WorstOfBasketSwap, Exotic_FXWorstOfBasketSwap.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

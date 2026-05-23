@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 59f9633d-510b-469a-b40b-acde9fb56836
+:ID: 59F9633D-510B-469A-B40B-ACDE9FB56836
 :END:
 #+title: How do I create a new compute batch?
 #+description: Create a new compute batch via =ores.cli=

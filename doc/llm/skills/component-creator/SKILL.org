@@ -23,7 +23,7 @@ license: Complete terms in LICENSE.txt
 When the user asks to create a new ORE Studio component — a new
 project under =projects/=.  Most domain components are split into
 =.api=, =.core=, and =.service= parts; decide which parts are needed
-before starting.  See [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]] for the split rules,
+before starting.  See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] for the split rules,
 facet placement, and CMake dependency chain.
 
 * How to use this skill
@@ -49,12 +49,12 @@ CMakeLists or stub files.
 
 5. /Add a PlantUML stub/ (=modeling/ores.COMPONENT.PART.puml=) for each
    part — codegen does not yet produce this.  See
-   [[id:b0b99088-d88e-4980-a4ee-7d6a9a8e96a5][component-model-creator]] for the diagram conventions.
+   [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][component-model-creator]] for the diagram conventions.
 
-6. /Build and verify/ the stub tests with [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]]:
+6. /Build and verify/ the stub tests with [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]]:
    =cmake --build --preset linux-clang-debug-ninja --target ores.COMPONENT.api.tests=
 
-7. /Document the architecture/ using [[id:b0b99088-d88e-4980-a4ee-7d6a9a8e96a5][component-model-creator]].
+7. /Document the architecture/ using [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][component-model-creator]].
 
 * Templates
 
@@ -70,10 +70,10 @@ Full template list is in [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio C
 
 * Reference
 
-- [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]] — split rules, facet placement, CMake dep chain.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — split rules, facet placement, CMake dep chain.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, profiles, =run_generator.sh= usage.
-- [[id:b0b99088-d88e-4980-a4ee-7d6a9a8e96a5][component-model-creator]] — write the architecture docs once scaffold is working.
-- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]] — build and test commands.
+- [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][component-model-creator]] — write the architecture docs once scaffold is working.
+- [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]] — build and test commands.
 
 * Artefacts                                                        :noexport:
 

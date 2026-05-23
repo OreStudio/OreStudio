@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: af985f3d-6667-4ae7-b93c-37c0e3f664e8
+:ID: AF985F3D-6667-4AE7-B93C-37C0E3F664E8
 :END:
 #+title: Support multiple ORE "toolchains"
 #+description: Support multiple ORE "toolchains"
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Much like with an IDE, where one can have multiple toolchains configured, we
 need to also support multiple versions of ORE. Unlike with IDEs, it may be

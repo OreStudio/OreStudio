@@ -16,7 +16,7 @@ library (=.dll= on Windows, =.so= on Linux, =.dylib= on macOS) are
 accessible to other code that links against it. The default in ORE
 Studio is /hidden-by-default/: only symbols explicitly annotated for
 export are visible to consumers. Everything else is an internal
-implementation detail. Return to [[id:cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+implementation detail. Return to [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Why it matters
 

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 69a4006a-5c35-4f74-9250-6f75194b6e80
+:ID: 69A4006A-5C35-4F74-9250-6F75194B6E80
 :END:
 #+title: Task: Create a variability service for feature flags
 #+description: Stand up ores.variability service: feature-flag domain model + repository + messaging.
@@ -16,7 +16,7 @@
 #+updated: 2025-12-08
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:55c35962-46a0-4353-93ad-fc15bf847c7e][Variability service]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:55C35962-46A0-4353-93AD-FC15BF847C7E][Variability service]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Stand up =ores.variability= as a proper service: feature-flag domain model + rep
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:55c35962-46a0-4353-93ad-fc15bf847c7e][Variability service]] |
+| Parent story | [[id:55C35962-46A0-4353-93AD-FC15BF847C7E][Variability service]] |
 | Now          | Completed 2025-12-08.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

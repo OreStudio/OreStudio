@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d560fc97-03a3-4169-aa5a-2761e9c017ec
+:ID: D560FC97-03A3-4169-AA5A-2761E9C017EC
 :END:
 #+title: How do I serve the site locally?
 #+description: Use build/scripts/serve-site.sh to compile and preview the org-mode site before pushing.
@@ -12,7 +12,7 @@
 
 Run =build/scripts/serve-site.sh= to compile (optionally) and preview
 the org-mode site locally before pushing.  The equivalent CMake target
-is in [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]].
+is in [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]].
 
 * Question
 
@@ -68,9 +68,9 @@ Manual preview before pushing documentation changes.  The
 
 * See also
 
-- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — the CMake =deploy_site= target (same
+- [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] — the CMake =deploy_site= target (same
   Emacs step, no HTTP server).
-- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — publish Claude Code skills alongside
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — publish Claude Code skills alongside
   the site.
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — add org files that will appear in the
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — add org files that will appear in the
   compiled site.

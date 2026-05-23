@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: fd34a3b5-0e24-467a-a9d7-a2f2e7480e1b
+:ID: FD34A3B5-0E24-467A-A9D7-A2F2E7480E1B
 :END:
 #+title: ores.trading.api
 #+description: Protocol types, domain entities, JSON/table I/O, and NATS message schemas for the trading component.

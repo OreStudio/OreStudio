@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 898723ad-a564-4458-94a3-7b5dad08a6c3
+:ID: 898723AD-A564-4458-94A3-7B5DAD08A6C3
 :END:
 #+title: How do I get help for the CLI iam permissions command?
 #+description: Show available operations under =ores.cli iam permissions=

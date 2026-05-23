@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5b0bf2a0-912d-4501-8ca0-ed4e0f6acce3
+:ID: 5B0BF2A0-912D-4501-8CA0-ED4E0F6ACCE3
 :END:
 #+title: Consider adding "global search" via typesense
 #+description: Consider adding "global search" via typesense
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Typesense:
 

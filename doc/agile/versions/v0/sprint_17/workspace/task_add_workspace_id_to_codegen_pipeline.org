@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 293a6f5a-5027-41c0-ac4e-00e4140a0f44
+:ID: 293A6F5A-5027-41C0-AC4E-00E4140A0F44
 :END:
 #+title: Task: Add workspace_id to codegen pipeline (Phases 1-4)
 #+description: - Phase 4: propagate `workspace_id` through the C++ codegen layer — adds `workspace_id` field to all domain entities fla
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:77BF049F-ED38-4998-AFA3-672E25895F9A][Workspace]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Propagate workspace_id through the C++ codegen pipeline (Phases 1-4): add the fi
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]] |
+| Parent story | [[id:77BF049F-ED38-4998-AFA3-672E25895F9A][Workspace]] |
 | Now          | Completed 2026-05-19.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

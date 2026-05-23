@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 19ee14c8-952d-42d6-9ae1-ecea45a5efcf
+:ID: 19EE14C8-952D-42D6-9AE1-ECEA45A5EFCF
 :END:
 #+title: Story: Business centre polish
 #+description: city_name field, US country hard-coding for NY centres, WRLD UN flag + Internal source, default column tidy.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ sprint-12 CRUD landing surfaced the rough edges.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Parent sprint | [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]] |
 | Now           | Completed 2026-02-22.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,7 +41,7 @@ sprint-12 CRUD landing surfaced the rough edges.
 
 In execution order:
 
-- [[id:a1673d39-4165-4607-bf65-93c78c436297][Polish business centre UI and data quality]]
+- [[id:A1673D39-4165-4607-BF65-93C78C436297][Polish business centre UI and data quality]]
 
 * Decisions
 

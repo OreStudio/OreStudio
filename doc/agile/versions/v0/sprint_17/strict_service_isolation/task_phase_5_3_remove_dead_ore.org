@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6281bab9-40bc-42ab-b0f2-386e345ecc2b
+:ID: 6281BAB9-40BC-42AB-B0F2-386E345ECC2B
 :END:
 #+title: Task: Phase 5.3: remove dead ORE DML grant and workflow.core link
 #+description: - Verifies `ore_import_handler` submits workflows exclusively via `nats_.js_publish(start_workflow_message::nats_subject
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E762DA90-B92A-41E1-AD4D-29018F17AF32][Strict service table isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Verify ore_import_handler dispatches workflows via NATS only and remove the dead
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]] |
+| Parent story | [[id:E762DA90-B92A-41E1-AD4D-29018F17AF32][Strict service table isolation]] |
 | Now          | Completed 2026-05-15.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

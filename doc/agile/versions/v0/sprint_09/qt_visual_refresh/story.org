@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: abd80ec4-e7e4-4bb2-b5ae-4fc7f8c46fd3
+:ID: ABD80EC4-E7E4-4BB2-B5AE-4FC7F8C46FD3
 :END:
 #+title: Story: Qt visual refresh
 #+description: Centralise Qt icon handling behind a semantic enum + theme system.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ icon-set or theme changes don't require editing every UI file.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]] |
+| Parent sprint | [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]] |
 | Now           | Completed 2026-01-20.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -40,7 +40,7 @@ icon-set or theme changes don't require editing every UI file.
 
 In execution order:
 
-- [[id:41a9ccc5-8a2b-4f0c-a403-8641c2d0318a][Refactor Qt icon implementation]]
+- [[id:41A9CCC5-8A2B-4F0C-A403-8641C2D0318A][Refactor Qt icon implementation]]
 
 * Decisions
 

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c8d1e83a-d4c7-4b40-9fd1-210c9af0ecf2
+:ID: C8D1E83A-D4C7-4B40-9FD1-210C9AF0ECF2
 :END:
 #+title: Task: Refactor PR-related skills into pr-manager
 #+description: Rename pr-summary -> pr-manager; consolidate the 5-step PR lifecycle; remove duplicated PR creation logic from autonomous developer skills.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e7ddb653-ceaa-4922-b0f9-8bd5393a747e][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E7DDB653-CEAA-4922-B0F9-8BD5393A747E][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Consolidate PR-handling guidance into a single =pr-manager= skill covering the f
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:e7ddb653-ceaa-4922-b0f9-8bd5393a747e][Engineering hygiene]] |
+| Parent story | [[id:E7DDB653-CEAA-4922-B0F9-8BD5393A747E][Engineering hygiene]] |
 | Now          | Completed 2026-01-12.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

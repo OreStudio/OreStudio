@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 083c1060-f952-4505-b066-fed5684cdd5d
+:ID: 083C1060-F952-4505-B066-FED5684CDD5D
 :END:
 #+title: How do I create shell commands for a new entity?
 #+description: Walk through list, add, history, and delete commands for a new entity in ores.shell.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 
 Command class layout, registration pattern, and file locations are in
-[[id:e38360b6-99ff-4af0-937f-58f31bd573f5][Shell entity patterns]]. The [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][shell-entity-creator]] skill drives this process.
+[[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]]. The [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][shell-entity-creator]] skill drives this process.
 
 * Question
 
@@ -22,7 +22,7 @@ How do I add shell REPL commands for a new entity in =ores.shell=?
 *Phase 1 — list and add* (PR: =[shell] Add {entity} list and add commands=):
 
 1. Create ={entity}_commands.hpp= in =include/ores.shell/app/commands/=
-   with the static class shape from [[id:e38360b6-99ff-4af0-937f-58f31bd573f5][Shell entity patterns]].
+   with the static class shape from [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]].
 2. Implement ={entity}_commands.cpp= in =src/app/commands/=: create
    the submenu, register list and add operations.
 3. Call ={entity}_commands::register_commands(menu, session)= from
@@ -48,6 +48,6 @@ against a local database.
 
 * See also
 
-- [[id:e38360b6-99ff-4af0-937f-58f31bd573f5][Shell entity patterns]] — class layout, registration, file locations.
-- [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][shell-entity-creator]] — skill that drives this workflow.
-- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.
+- [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] — class layout, registration, file locations.
+- [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][shell-entity-creator]] — skill that drives this workflow.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

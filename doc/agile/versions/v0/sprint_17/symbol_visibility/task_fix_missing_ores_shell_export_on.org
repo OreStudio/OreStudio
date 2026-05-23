@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 07dc7000-27da-459a-ab0d-8245a0fb20a1
+:ID: 07DC7000-27DA-459A-AB0D-8245A0FB20A1
 :END:
 #+title: Task: Fix missing ORES_SHELL_EXPORT on host class (Windows linker error)
 #+description: - `ores::shell::app::host` was missing the `ORES_SHELL_EXPORT` macro, so `host::execute` was not exported from the `ores
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add ORES_SHELL_EXPORT to ores::shell::app::host to fix the Windows undefined-sym
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] |
+| Parent story | [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]] |
 | Now          | Completed 2026-05-20.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ed218750-9f23-4f90-8d5b-a1e9a898c7f3
+:ID: ED218750-9F23-4F90-8D5B-A1E9A898C7F3
 :END:
 #+title: Add trade import support to HTTP API
 #+description: Add trade import support to HTTP API
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Add an HTTP endpoint for importing ORE portfolio XML files. This should use the
 existing =ores.ore= importer and =trade_mapper= infrastructure.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 60174bb6-de3d-4e82-84a5-4b8c337d3348
+:ID: 60174BB6-DE3D-4E82-84A5-4B8C337D3348
 :END:
 #+title: How do I delete a permission by ID?
 #+description: Delete a permission by ID

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8a51eb28-5527-46af-8188-0cc511add15b
+:ID: 8A51EB28-5527-46AF-8188-0CC511ADD15B
 :END:
 #+title: Task: Add central-bank-related LEIs
 #+description: ~93 GLEIF-verified LEIs (33 sovereign issuers, 51 central banks, 9 supranationals); CENTRAL_BANK sector keyword detection with multilingual support; 3x financial-priority sampling.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:253ce971-c0f3-43c3-980c-276233250b86][GLEIF data integration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:253CE971-C0F3-43C3-980C-276233250B86][GLEIF data integration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Expand the GLEIF anchor list with sovereign issuers, central banks, and supranat
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:253ce971-c0f3-43c3-980c-276233250b86][GLEIF data integration]] |
+| Parent story | [[id:253CE971-C0F3-43C3-980C-276233250B86][GLEIF data integration]] |
 | Now          | Completed 2026-02-11.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

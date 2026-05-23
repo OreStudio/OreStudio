@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 700d4325-2ad1-4e0d-b6af-900abbe1a66e
+:ID: 700D4325-2AD1-4E0D-B6AF-900ABBE1A66E
 :END:
 #+title: Story: Party schemes and FPML reference data
 #+description: Implement the 13 party-related reference-data types via FPML codegen + DQ artefact workflow; ingest GLEIF subset.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,23 +24,23 @@ and the DQ artefact workflow.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Parent sprint | [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]] |
 | Now           | Completed 2026-01-23.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-01-23                                             |
 
 
-#+predecessor: ef555d10-3fd3-4928-8e43-e63284d7706f
-#+successor: 253ce971-c0f3-43c3-980c-276233250b86
+#+predecessor: EF555D10-3FD3-4928-8E43-E63284D7706F
+#+successor: 253CE971-C0F3-43C3-980C-276233250B86
 
-Continued from: [[id:ef555d10-3fd3-4928-8e43-e63284d7706f][Party database groundwork]] (sprint 09) — that story
+Continued from: [[id:EF555D10-3FD3-4928-8E43-E63284D7706F][Party database groundwork]] (sprint 09) — that story
 documented the party table; this one lands the 13 reference-data
 types needed before party can be implemented.
 
-Continued in: [[id:253ce971-c0f3-43c3-980c-276233250b86][GLEIF data integration]] (sprint 12) — turns the
+Continued in: [[id:253CE971-C0F3-43C3-980C-276233250B86][GLEIF data integration]] (sprint 12) — turns the
 download script + CSV subsets into proper datasets. Also followed
-by [[id:76d84778-4544-4ee6-a17a-033019dbacb0][Party database and domain]] (sprint 12), which finally
+by [[id:76D84778-4544-4EE6-A17A-033019DBACB0][Party database and domain]] (sprint 12), which finally
 implements party + counterparty on top of these reference-data types.
 
 * Acceptance
@@ -54,9 +54,9 @@ implements party + counterparty on top of these reference-data types.
 
 In execution order:
 
-- [[id:53b62f83-fb48-42ed-aa25-851259b0341c][Party identifier scheme analysis]]
-- [[id:99881550-e3d4-4692-a07d-a63ef5e2fd03][Implement party-related schemes via FPML codegen]]
-- [[id:c4a49d31-7c01-477f-b988-63ada3be4c64][Download and split GLEIF data]]
+- [[id:53B62F83-FB48-42ED-AA25-851259B0341C][Party identifier scheme analysis]]
+- [[id:99881550-E3D4-4692-A07D-A63EF5E2FD03][Implement party-related schemes via FPML codegen]]
+- [[id:C4A49D31-7C01-477F-B988-63ADA3BE4C64][Download and split GLEIF data]]
 
 * Decisions
 
@@ -69,4 +69,4 @@ In execution order:
 
 * See also
 
-- [[id:ef555d10-3fd3-4928-8e43-e63284d7706f][Party database groundwork]] (sprint 09) — predecessor (party table structure).
+- [[id:EF555D10-3FD3-4928-8E43-E63284D7706F][Party database groundwork]] (sprint 09) — predecessor (party table structure).

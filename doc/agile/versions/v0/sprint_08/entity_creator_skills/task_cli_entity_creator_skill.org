@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: de76313f-3c9e-441a-aa5e-6212a3841eed
+:ID: DE76313F-3C9E-441A-AA5E-6212A3841EED
 :END:
 #+title: Task: CLI entity creator skill
 #+description: Skill for adding CLI commands for a domain entity in ores.cli; parsers, options, application logic, recipes.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:b302b2b6-13f8-49cc-a6af-88418668be31][Entity-creator skills suite]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B302B2B6-13F8-49CC-A6AF-88418668BE31][Entity-creator skills suite]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Skill describing how to add CLI commands for a domain entity in =ores.cli=.
 | Field        | Value                                                                    |
 |--------------+--------------------------------------------------------------------------|
 | State        | DONE                                                                     |
-| Parent story | [[id:b302b2b6-13f8-49cc-a6af-88418668be31][Entity-creator skills suite]] |
+| Parent story | [[id:B302B2B6-13F8-49CC-A6AF-88418668BE31][Entity-creator skills suite]] |
 | Now          | Completed 2026-01-11.                                                    |
 | Waiting on   | None.                                                                    |
 | Next         | None.                                                                    |

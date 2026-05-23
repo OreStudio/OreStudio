@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8ff2df33-c51b-4d82-85eb-337216fef402
+:ID: 8FF2DF33-C51B-4D82-85EB-337216FEF402
 :END:
 #+title: Design and implement instrument/trade integration
 #+description: Instruments and trades are not yet integrated. Design the linkage (instrument attached to trade, shared fields strategy) and implement end-to-end.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

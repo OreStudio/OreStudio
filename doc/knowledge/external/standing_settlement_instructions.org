@@ -15,7 +15,7 @@
 settlement details counterparties use for /all/ future trades of a
 specific type until explicitly changed. The "Standing" half of the
 acronym carries the weight: instructions are "on file", verified
-once during onboarding, and reused thereafter. Return to [[id:cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11][External
+once during onboarding, and reused thereafter. Return to [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External
 knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Why "Standing"?

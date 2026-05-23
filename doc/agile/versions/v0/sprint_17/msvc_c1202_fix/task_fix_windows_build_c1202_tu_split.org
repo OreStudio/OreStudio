@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: dfb3687c-d6d2-4c29-b345-8878eabfd206
+:ID: DFB3687C-D6D2-4C29-B345-8878EABFD206
 :END:
 #+title: Task: Fix Windows build: C1202 TU split and workflow.api export
 #+description: Two Windows build failures fixed in this PR:
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Fix two Windows build failures: move getTradeDetail to a dedicated TU to clear a
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] |
+| Parent story | [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] |
 | Now          | Completed 2026-05-17.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

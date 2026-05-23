@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 40d153e3-4a87-44b6-b605-1e3e28a44d03
+:ID: 40D153E3-4A87-44B6-B605-1E3E28A44D03
 :END:
 #+title: Story: Native pagination support
 #+description: Adopt sqlgen 0.6.0 native offset/limit; drop the single-connection workaround and expand pagination coverage.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ Adopt sqlgen 0.6.0 to land natively what we had hacked around: native
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] |
+| Parent sprint | [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]] |
 | Now           | Completed 2026-01-07.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -40,7 +40,7 @@ Adopt sqlgen 0.6.0 to land natively what we had hacked around: native
 
 In execution order:
 
-- [[id:422d1b1b-d34c-4aa5-b127-0ff08d627377][Adopt sqlgen 0.6.0 native offset/limit]]
+- [[id:422D1B1B-D34C-4AA5-B127-0FF08D627377][Adopt sqlgen 0.6.0 native offset/limit]]
 
 * Decisions
 

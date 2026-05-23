@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0dcedae5-e5f0-4af8-ae85-37c7618237a6
+:ID: 0DCEDAE5-E5F0-4AF8-AE85-37C7618237A6
 :END:
 #+title: Story: Compute grid polish and E2E fixes
 #+description: Loading-lifecycle refactor (AbstractClientModel); change-reason symmetry; UUID generation fix; AppVersion multi-platform support; result processing, host_id persistence, outcome codes, file extensions, service dashboard polish.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ forced into the broader codebase.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Parent sprint | [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]] |
 | Now           | Completed 2026-03-26.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -46,8 +46,8 @@ forced into the broader codebase.
 
 In execution order:
 
-- [[id:7daa4131-019b-4191-802d-cb67b22d102f][E2E compute testing fixes and loading lifecycle refactor]]
-- [[id:0761a4ec-66d1-4c3e-b46f-36d18b3d3cfa][End-to-end fixes for grid work]]
+- [[id:7DAA4131-019B-4191-802D-CB67B22D102F][E2E compute testing fixes and loading lifecycle refactor]]
+- [[id:0761A4EC-66D1-4C3E-B46F-36D18B3D3CFA][End-to-end fixes for grid work]]
 
 * Decisions
 
@@ -60,5 +60,5 @@ In execution order:
 
 * See also
 
-- [[id:3ed3ca4d-8709-4f70-a1a8-1ff287adb8bf][Compute grid implementation]] — the foundational PR.
-- [[id:7b5e0c11-8c1f-4d91-adea-2596197cd0d4][Loading indicator on entity list windows]] — consumes the AbstractClientModel pattern from this story.
+- [[id:3ED3CA4D-8709-4F70-A1A8-1FF287ADB8BF][Compute grid implementation]] — the foundational PR.
+- [[id:7B5E0C11-8C1F-4D91-ADEA-2596197CD0D4][Loading indicator on entity list windows]] — consumes the AbstractClientModel pattern from this story.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5720a0fb-e510-4f25-99cb-410d42062799
+:ID: 5720A0FB-E510-4F25-99CB-410D42062799
 :END:
 #+title: CMake recipes
 #+description: Inventory of cmake recipes.
@@ -15,16 +15,16 @@ a single how-do-I question with executable steps.
 
 * Recipes
 
-- [[id:49f7da81-adb7-44ed-be7e-06dbfbb32a84][How do I set up a development environment?]]
-- [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]]
-- [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]]
-- [[id:5acade16-bcc4-46e5-950e-34015b87c4ec][How do I deploy all org-mode artefacts?]]
-- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]]
-- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]]
-- [[id:3ddb2afa-9caa-44a0-a91a-645a95320a5f][How do I deploy the settings?]]
-- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]]
-- [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available CMake presets?]]
-- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]]
-- [[id:4bf2516d-f37e-4e31-ad7b-124f2639b9ab][How do I enable test logging?]]
-- [[id:e1a68ed5-20cb-426c-91c6-97984a692505][How do I investigate a test failure?]]
-- [[id:e9f98da1-cf33-4b53-bc4d-a034c652f3b0][How do I bump the project version?]]
+- [[id:49F7DA81-ADB7-44ED-BE7E-06DBFBB32A84][How do I set up a development environment?]]
+- [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]
+- [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]]
+- [[id:5ACADE16-BCC4-46E5-950E-34015B87C4EC][How do I deploy all org-mode artefacts?]]
+- [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]]
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]]
+- [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]]
+- [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]]
+- [[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How do I list available CMake presets?]]
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]
+- [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I enable test logging?]]
+- [[id:E1A68ED5-20CB-426C-91C6-97984A692505][How do I investigate a test failure?]]
+- [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]]

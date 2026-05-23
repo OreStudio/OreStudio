@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3afc713a-754e-42dc-ae10-022ac1dfdaba
+:ID: 3AFC713A-754E-42DC-AE10-022AC1DFDABA
 :END:
 #+title: Story: Books, portfolios, business units modelling
 #+description: Business unit entity; book + portfolio entities; business-centre scheme entity; portfolio implementation; country link to currencies.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ portfolios; verify country↔currency link.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Parent sprint | [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]] |
 | Now           | Completed 2026-02-19.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,11 +41,11 @@ portfolios; verify country↔currency link.
 
 In execution order:
 
-- [[id:91dd5cfc-f76e-44fd-9381-1565b274e700][Business unit entity]]
-- [[id:40574a33-82d5-4e72-83b4-2048197460fb][Book and Portfolio entities]]
-- [[id:c650130d-55b3-48e3-a75b-a07a70f9f9b3][Add business centre scheme entity]]
-- [[id:513272dd-7ed4-4f96-98fa-db038a4bae42][Add portfolio support]]
-- [[id:34bfe3e3-62e7-4e2f-a98e-c39a0ad205a1][Add country link to currencies]]
+- [[id:91DD5CFC-F76E-44FD-9381-1565B274E700][Business unit entity]]
+- [[id:40574A33-82D5-4E72-83B4-2048197460FB][Book and Portfolio entities]]
+- [[id:C650130D-55B3-48E3-A75B-A07A70F9F9B3][Add business centre scheme entity]]
+- [[id:513272DD-7ED4-4F96-98FA-DB038A4BAE42][Add portfolio support]]
+- [[id:34BFE3E3-62E7-4E2F-A98E-C39A0AD205A1][Add country link to currencies]]
 
 * Decisions
 

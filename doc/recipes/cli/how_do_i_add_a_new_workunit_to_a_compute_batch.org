@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7b30ee14-5692-4070-8ce9-8874ee178f46
+:ID: 7B30EE14-5692-4070-8CE9-8874EE178F46
 :END:
 #+title: How do I add a new workunit to a compute batch?
 #+description: Add a new workunit to an existing compute batch via =ores.cli=

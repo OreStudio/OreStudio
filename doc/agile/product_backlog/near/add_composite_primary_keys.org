@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 22ee28a3-f123-4e73-b5d3-1b98e00adcf7
+:ID: 22EE28A3-F123-4E73-B5D3-1B98E00ADCF7
 :END:
 #+title: Add composite primary keys
 #+description: Add composite primary keys
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 We probably already have a story for this.
 

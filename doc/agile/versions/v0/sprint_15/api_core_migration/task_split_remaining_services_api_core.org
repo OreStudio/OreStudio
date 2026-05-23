@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1d0fd3d8-fdee-463b-b0c3-f4e3155f8249
+:ID: 1D0FD3D8-FDEE-463B-B0C3-F4E3155F8249
 :END:
 #+title: Task: Split scheduler / assets / variability / synthetic / trading / reporting (Phase 2)
 #+description: Six more service libraries refactored into *.api + *.core. New ores.assets.api + ores.reporting.api + ores.scheduler.api modules added with their CMake configs; existing modules renamed to .core. All ten service libraries now follow the three-layer api / core / service pattern.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7631C4D3-43C5-4238-A180-337BEA863C7F][API/core architecture migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Phase 2: split the remaining six service libraries into .api + .core.
 | Field        | Value                                                                        |
 |--------------+------------------------------------------------------------------------------|
 | State        | DONE                                                                         |
-| Parent story | [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]] |
+| Parent story | [[id:7631C4D3-43C5-4238-A180-337BEA863C7F][API/core architecture migration]] |
 | Now          | Completed 2026-03-23.                                                        |
 | Waiting on   | None.                                                                        |
 | Next         | None.                                                                        |

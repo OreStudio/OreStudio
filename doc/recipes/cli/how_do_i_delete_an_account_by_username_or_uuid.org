@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 62aab88c-aa0a-427d-8353-a46b095ee927
+:ID: 62AAB88C-AA0A-427D-8353-A46B095EE927
 :END:
 #+title: How do I delete an account by username or UUID?
 #+description: Delete an account by username or UUID

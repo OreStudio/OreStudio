@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ca2dd074-9a85-4d05-ac5c-0f4a4586d44c
+:ID: CA2DD074-9A85-4D05-AC5C-0F4A4586D44C
 :END:
 #+title: Task: Assorted fixes to feature flags dialog
 #+description: Real-time subscription, recency pulse, badge column, version + recorded_at columns; protocol bump to 20.0.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB564C6A-F248-4740-8D1C-A1BE148CE576][Qt UX polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Polish the feature-flags dialog with real-time updates, badges, and richer colum
 | Field        | Value                                                     |
 |--------------+-----------------------------------------------------------|
 | State        | DONE                                                      |
-| Parent story | [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]] |
+| Parent story | [[id:CB564C6A-F248-4740-8D1C-A1BE148CE576][Qt UX polish]] |
 | Now          | Completed 2026-01-08.                                     |
 | Waiting on   | None.                                                     |
 | Next         | None.                                                     |

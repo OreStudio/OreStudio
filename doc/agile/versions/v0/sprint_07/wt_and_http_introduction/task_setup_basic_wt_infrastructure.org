@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 05935a3c-fcee-4157-9ba9-15e37d71cf23
+:ID: 05935A3C-FCEE-4157-9BA9-15E37D71CF23
 :END:
 #+title: Task: Setup basic Wt infrastructure
 #+description: Pull Wt in as a peer-of-Qt UI toolkit so the same service can drive a web frontend.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:db625c07-811a-4a61-8de8-910b29913744][Wt and HTTP introduction]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DB625C07-811A-4A61-8DE8-910B29913744][Wt and HTTP introduction]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Pull Wt in as a peer-of-Qt UI toolkit so the same service can drive a web fronte
 | Field        | Value                                                                 |
 |--------------+-----------------------------------------------------------------------|
 | State        | DONE                                                                  |
-| Parent story | [[id:db625c07-811a-4a61-8de8-910b29913744][Wt and HTTP introduction]] |
+| Parent story | [[id:DB625C07-811A-4A61-8DE8-910B29913744][Wt and HTTP introduction]] |
 | Now          | Completed 2025-12-29.                                                 |
 | Waiting on   | None.                                                                 |
 | Next         | None.                                                                 |

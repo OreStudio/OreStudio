@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: fe693595-6693-459b-ad9b-eb7e3abbbc88
+:ID: FE693595-6693-459B-AD9B-EB7E3ABBBC88
 :END:
 #+title: ores.codegen architecture
 #+description: Directory layout, internal modules, template system, model-template mapping, modeline configurations, and features of the code generator.
@@ -184,8 +184,8 @@ To add a new model-template pair:
 * See also
 
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the component model (entry point).
-- [[id:20d0a77d-e0c0-492e-b0ec-45c7638dd220][How do I run codegen?]] — operational recipe.
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — operational recipe for the
+- [[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]] — operational recipe.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — operational recipe for the
   org-document generator.
 - =projects/ores.codegen/docs/cpp_generation_analysis.md= — analysis of
   the C++ code generation paths.

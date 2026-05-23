@@ -83,7 +83,7 @@ which is a required step when adding the Qt layer for any entity.
 
 * Phase 1 — Orchestrator skill
 
-Create [[id:0cba2f23-7f5f-433d-921a-d9c056bd9ca8][Entity Creator Skill]] using the codegen script.
+Create [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][Entity Creator Skill]] using the codegen script.
 
 The skill describes a *complete regular entity* as requiring all seven layers,
 executed in dependency order.  Each layer is a separate task the LLM creates
@@ -107,12 +107,12 @@ skipping any layer is not permitted without explicit user approval.
 
 | # | Layer | Sub-skill | Codegen command |
 |---|---|---|---|
-| 1 | Domain + SQL + repository + service + protocol | [[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]] | =--profile all= |
-| 2 | Qt UI | [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][qt-entity-creator]] | =--profile qt= |
-| 3 | Qt plugin wiring | =qt-menu-toolbar= | (manual; see [[id:e44891dc-234c-42db-90e1-9421400abd1a][Qt menu and toolbar patterns]]) |
-| 4 | HTTP endpoints | [[id:bdcc47d4-b050-409e-8c50-3d179843a274][http-entity-creator]] | ❌ GAP — implement profile first |
-| 5 | CLI commands | [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][cli-entity-creator]] | ❌ GAP — implement profile first |
-| 6 | Shell commands | [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][shell-entity-creator]] | ❌ GAP — implement profile first |
+| 1 | Domain + SQL + repository + service + protocol | [[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]] | =--profile all= |
+| 2 | Qt UI | [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] | =--profile qt= |
+| 3 | Qt plugin wiring | =qt-menu-toolbar= | (manual; see [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]]) |
+| 4 | HTTP endpoints | [[id:BDCC47D4-B050-409E-8C50-3D179843A274][http-entity-creator]] | ❌ GAP — implement profile first |
+| 5 | CLI commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][cli-entity-creator]] | ❌ GAP — implement profile first |
+| 6 | Shell commands | [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][shell-entity-creator]] | ❌ GAP — implement profile first |
 | 7 | Wt UI | [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][wt-entity-creator]] | ❌ GAP — implement profile first |
 
 3. *Gap protocol*: when a layer is marked ❌ GAP, stop, raise a sprint
@@ -120,12 +120,12 @@ skipping any layer is not permitted without explicit user approval.
    proceeding with that layer.
 
 4. *Tests and diagrams*: after all layers are green, invoke
-   [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][unit-test-writer]], [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]], and
+   [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][unit-test-writer]], [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]], and
    [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]].
 
 *** Reference
 
-- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — canonical file checklist and layer diagram.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — canonical file checklist and layer diagram.
 
 ** Commit
 
@@ -251,7 +251,7 @@ new knowledge doc once it has an ID.
 
 | File | Action |
 |---|---|
-| [[id:0cba2f23-7f5f-433d-921a-d9c056bd9ca8][Entity Creator Skill]] | New (orchestrator) |
+| [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][Entity Creator Skill]] | New (orchestrator) |
 | =doc/knowledge/architecture/entity_lifecycle.org= | Update: file checklist + template refs |
 | =doc/knowledge/architecture/sql_entity_schema_patterns.org= | Rewrite: templates, not code |
 | =doc/knowledge/architecture/http_entity_patterns.org= | Rewrite: gap notice |
@@ -260,12 +260,12 @@ new knowledge doc once it has an ID.
 | =doc/knowledge/architecture/wt_entity_patterns.org= | Rewrite: gap notice |
 | =doc/knowledge/qt/qt_entity_patterns.org= | Rewrite: template names, not code |
 | =doc/knowledge/qt/qt_menu_toolbar_patterns.org= | New |
-| [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator Skill]] | Add Templates section |
-| [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator Skill]] | Add Templates section |
-| [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][Qt Entity Creator Skill]] | Add Templates section |
-| [[id:bdcc47d4-b050-409e-8c50-3d179843a274][HTTP Entity Creator Skill]] | Add Codegen gap section |
-| [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][CLI Entity Creator Skill]] | Add Codegen gap section |
-| [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][Shell Entity Creator Skill]] | Add Codegen gap section |
+| [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator Skill]] | Add Templates section |
+| [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][SQL Schema Creator Skill]] | Add Templates section |
+| [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][Qt Entity Creator Skill]] | Add Templates section |
+| [[id:BDCC47D4-B050-409E-8C50-3D179843A274][HTTP Entity Creator Skill]] | Add Codegen gap section |
+| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][CLI Entity Creator Skill]] | Add Codegen gap section |
+| [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][Shell Entity Creator Skill]] | Add Codegen gap section |
 | [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][Wt Entity Creator Skill]] | Add Codegen gap section |
 
 * Verification

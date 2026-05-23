@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 68a57f63-81a6-4c75-b05b-46979ffd9981
+:ID: 68A57F63-81A6-4C75-B05B-46979FFD9981
 :END:
 #+title: Task: Restructure SQL create/, drop/, teardown
 #+description: create/ reorganised into component-based subdirectories with master scripts; safer teardown (admin_teardown_instances_generate.sql for production); ER diagram updated with the new tables.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:38b6dddf-c02b-4072-b599-41ab3bcc9c28][SQL directory refactor]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38B6DDDF-C02B-4072-B599-41AB3BCC9C28][SQL directory refactor]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Reorganise =create/= into component-based subdirectories and harden the teardown
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:38b6dddf-c02b-4072-b599-41ab3bcc9c28][SQL directory refactor]] |
+| Parent story | [[id:38B6DDDF-C02B-4072-B599-41AB3BCC9C28][SQL directory refactor]] |
 | Now          | Completed 2026-01-24.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

@@ -11,10 +11,10 @@
 #+updated: 2026-05-21
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 17*) of ORE Studio. It captures the
+This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 17*) of ORE Studio. It captures the
 sprint's mission, current status, and the stories that compose it. For the
 surrounding context — version goals, sprint order, and product identity — see
-[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+[[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
 
 * Mission
 
@@ -29,11 +29,11 @@ history to the v2 cybernetic information architecture.
 | Field          | Value                     |
 |----------------+---------------------------|
 | State          | DONE                      |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                 |
-| Previous       | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]]                 |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                 |
+| Previous       | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]]                 |
 | Now            | Sprint closed 2026-05-23. |
 | Waiting on     | Nothing.                  |
-| Next           | [[id:1737c00c-699a-475a-bc94-743c6cda1001][Sprint 18]]                 |
+| Next           | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                 |
 | Release Notes  | [[file:release_notes.org][release_notes.org]]         |
 | Capture        | [[id:14606A1B-2742-DE34-F813-B4E3B736AEF1][capture.org]]               |
 | Last touched   | 2026-05-21                |
@@ -43,24 +43,24 @@ history to the v2 cybernetic information architecture.
 #+ATTR_HTML: :class hug-leading
 | Story                                        | State |      Start |        End | Theme                                                                        |
 |----------------------------------------------+-------+------------+------------+------------------------------------------------------------------------------|
-| [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]]                    | DONE  | 2026-04-18 | 2026-04-22 | WiX limits, libpq link, OpenSSL, PostgreSQL CMake target, vcpkg Qt feature.  |
-| [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]]             | DONE  | 2026-05-05 | 2026-05-21 | Trade struct decomposition + constexpr limit raises across all TUs.          |
-| [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]]                  | DONE  | 2026-05-14 | 2026-05-21 | -fvisibility=hidden; export macros; plugin isolation; static CLI/shell libs. |
-| [[id:00ccc0dc-200c-4951-81e0-6aa93b1503fc][FX forward E2E and equity per-type migration]] | DONE  | 2026-04-22 | 2026-05-01 | FX forward ORE import wired end-to-end; equity per-type tables completed.    |
-| [[id:f607b8ce-5d33-424f-a7c2-7ed0243d4728][ORE conventions import]]                       | DONE  | 2026-04-22 | 2026-05-11 | Seven convention types via codegen; deposit_convention; CLI import Phase 3.  |
-| [[id:66109ae6-1c44-405d-b4d6-08164c457c25][ORE domain roundtrip]]                         | DONE  | 2026-05-07 | 2026-05-08 | Roundtrip command + baseline + all four ORE XML document types.              |
-| [[id:e62bf8dd-fd3b-4283-a1a9-3faf1f7a1703][Import/export cleanup]]                        | DONE  | 2026-05-02 | 2026-05-06 | Composite legs, pure parser, batch fetches, export_result wrappers.          |
-| [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]]               | DONE  | 2026-05-14 | 2026-05-16 | SECURITY DEFINER validators; IAM party cache; dead DML grant removal.        |
-| [[id:25f0a34b-c547-4550-943b-e8f517eb0f6c][SQL codegen drift remediation]]                | DONE  | 2026-05-14 | 2026-05-17 | All remaining hand-crafted SQL replaced; profile dispatch fixed.             |
-| [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]]                    | DONE  | 2026-05-15 | 2026-05-19 | Package renames, error reporting, pg_notify fix, shutdown latency.           |
-| [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]]                                    | DONE  | 2026-05-19 | 2026-05-20 | Bitemporal schema, service, UI, codegen propagation, Data Workshop.          |
-| [[id:dc1effd8-b983-48c7-835b-71333aece016][DQ publish pattern]]                           | DONE  | 2026-05-19 | 2026-05-20 | Publish-from-DQ wizard; async PublishDatasetsDialog; IAM logging.            |
-| [[id:e16beabb-cc59-4d6c-b216-dacc1e922047][Compute and GLEIF]]                            | DONE  | 2026-04-18 | 2026-04-28 | GLEIF bundle wiring; per-triplet packages; per-platform uploads.             |
-| [[id:d148b46a-ad14-4391-8b64-46dcfe95c5f1][Qt UI polish]]                                 | DONE  | 2026-04-20 | 2026-05-20 | JWT URL discovery, currency combos, login filter, menu simplification.       |
-| [[id:cc9a5f89-ea6e-46ec-9f95-8891bd1c1a8e][Refdata tenant_id strong-type migration]]      | DONE  | 2026-05-20 | 2026-05-20 | 11 party domain types migrated to utility::uuid::tenant_id.                  |
-| [[id:17c590d4-04f0-43c5-9ea5-f89c40c82a4c][PlantUML and modeling refresh]]                | DONE  | 2026-05-19 | 2026-05-20 | Generation script + bulk diagram refresh + component docs to v2.             |
-| [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]]                | DONE  | 2026-04-18 | 2026-05-20 | Port sprints 01-16 to v2; site theme; GitHub Pages.                          |
-| [[id:a5abed76-b4f5-4e37-8ccc-220d360501b4][Sprint 17 housekeeping]]                       | DONE  | 2026-04-18 | 2026-05-18 | vcpkg, ccache-action, get-cmake, setup-clang bumps.                          |
+| [[id:7D84E735-7DFE-4215-AF00-A1F4C9323BDA][Windows portability fixes]]                    | DONE  | 2026-04-18 | 2026-04-22 | WiX limits, libpq link, OpenSSL, PostgreSQL CMake target, vcpkg Qt feature.  |
+| [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]]             | DONE  | 2026-05-05 | 2026-05-21 | Trade struct decomposition + constexpr limit raises across all TUs.          |
+| [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]]                  | DONE  | 2026-05-14 | 2026-05-21 | -fvisibility=hidden; export macros; plugin isolation; static CLI/shell libs. |
+| [[id:00CCC0DC-200C-4951-81E0-6AA93B1503FC][FX forward E2E and equity per-type migration]] | DONE  | 2026-04-22 | 2026-05-01 | FX forward ORE import wired end-to-end; equity per-type tables completed.    |
+| [[id:F607B8CE-5D33-424F-A7C2-7ED0243D4728][ORE conventions import]]                       | DONE  | 2026-04-22 | 2026-05-11 | Seven convention types via codegen; deposit_convention; CLI import Phase 3.  |
+| [[id:66109AE6-1C44-405D-B4D6-08164C457C25][ORE domain roundtrip]]                         | DONE  | 2026-05-07 | 2026-05-08 | Roundtrip command + baseline + all four ORE XML document types.              |
+| [[id:E62BF8DD-FD3B-4283-A1A9-3FAF1F7A1703][Import/export cleanup]]                        | DONE  | 2026-05-02 | 2026-05-06 | Composite legs, pure parser, batch fetches, export_result wrappers.          |
+| [[id:E762DA90-B92A-41E1-AD4D-29018F17AF32][Strict service table isolation]]               | DONE  | 2026-05-14 | 2026-05-16 | SECURITY DEFINER validators; IAM party cache; dead DML grant removal.        |
+| [[id:25F0A34B-C547-4550-943B-E8F517EB0F6C][SQL codegen drift remediation]]                | DONE  | 2026-05-14 | 2026-05-17 | All remaining hand-crafted SQL replaced; profile dispatch fixed.             |
+| [[id:7030AB78-B8F1-425C-83EF-A6F9EBF218A8][Workflow engine hardening]]                    | DONE  | 2026-05-15 | 2026-05-19 | Package renames, error reporting, pg_notify fix, shutdown latency.           |
+| [[id:77BF049F-ED38-4998-AFA3-672E25895F9A][Workspace]]                                    | DONE  | 2026-05-19 | 2026-05-20 | Bitemporal schema, service, UI, codegen propagation, Data Workshop.          |
+| [[id:DC1EFFD8-B983-48C7-835B-71333AECE016][DQ publish pattern]]                           | DONE  | 2026-05-19 | 2026-05-20 | Publish-from-DQ wizard; async PublishDatasetsDialog; IAM logging.            |
+| [[id:E16BEABB-CC59-4D6C-B216-DACC1E922047][Compute and GLEIF]]                            | DONE  | 2026-04-18 | 2026-04-28 | GLEIF bundle wiring; per-triplet packages; per-platform uploads.             |
+| [[id:D148B46A-AD14-4391-8B64-46DCFE95C5F1][Qt UI polish]]                                 | DONE  | 2026-04-20 | 2026-05-20 | JWT URL discovery, currency combos, login filter, menu simplification.       |
+| [[id:CC9A5F89-EA6E-46EC-9F95-8891BD1C1A8E][Refdata tenant_id strong-type migration]]      | DONE  | 2026-05-20 | 2026-05-20 | 11 party domain types migrated to utility::uuid::tenant_id.                  |
+| [[id:17C590D4-04F0-43C5-9EA5-F89C40C82A4C][PlantUML and modeling refresh]]                | DONE  | 2026-05-19 | 2026-05-20 | Generation script + bulk diagram refresh + component docs to v2.             |
+| [[id:063862A1-C02C-4F76-A212-576A57423F0F][v2 documentation architecture]]                | DONE  | 2026-04-18 | 2026-05-20 | Port sprints 01-16 to v2; site theme; GitHub Pages.                          |
+| [[id:A5ABED76-B4F5-4E37-8CCC-220D360501B4][Sprint 17 housekeeping]]                       | DONE  | 2026-04-18 | 2026-05-18 | vcpkg, ccache-action, get-cmake, setup-clang bumps.                          |
 
 * Retrospective
 

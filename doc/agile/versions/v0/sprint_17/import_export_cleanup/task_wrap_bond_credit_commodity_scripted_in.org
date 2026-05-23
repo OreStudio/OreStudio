@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 81432fff-48a3-4749-bdbc-34ff88c0362c
+:ID: 81432FFF-48A3-4749-BDBC-34FF88C0362C
 :END:
 #+title: Task: Wrap bond/credit/commodity/scripted in *_export_result structs
 #+description: - Introduces four new export-result wrappers — `bond_export_result`, `credit_export_result`, `commodity_export_result`, 
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e62bf8dd-fd3b-4283-a1a9-3faf1f7a1703][Import/export cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E62BF8DD-FD3B-4283-A1A9-3FAF1F7A1703][Import/export cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Introduce four new export-result wrappers (bond, credit, commodity, scripted) sy
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:e62bf8dd-fd3b-4283-a1a9-3faf1f7a1703][Import/export cleanup]] |
+| Parent story | [[id:E62BF8DD-FD3B-4283-A1A9-3FAF1F7A1703][Import/export cleanup]] |
 | Now          | Completed 2026-05-02.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

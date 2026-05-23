@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 85d20e29-0ebd-41ff-9f32-10f60af074a8
+:ID: 85D20E29-0EBD-41FF-9F32-10F60AF074A8
 :END:
 #+title: ores.controller.api
 #+description: Domain types and NATS protocol schemas for the controller component.
@@ -43,4 +43,4 @@ themselves at startup.
 
 * See also
 
-- [[id:c871c5df-a521-4815-9572-72d07da62cc7][ores.controller.core]] — registry logic and NATS handlers.
+- [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]] — registry logic and NATS handlers.

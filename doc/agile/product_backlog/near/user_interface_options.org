@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2b65e321-df8c-4c34-b8c0-e176f92b1c1d
+:ID: 2B65E321-DF8C-4C34-B8C0-E176F92B1C1D
 :END:
 #+title: User interface options
 #+description: User interface options
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 This story keeps track of configuration points in the UI which should be added
 at some point:

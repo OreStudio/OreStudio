@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1284cd48-5b99-48b2-8925-ce7e7c0aac1e
+:ID: 1284CD48-5B99-48B2-8925-CE7E7C0AAC1E
 :END:
 #+title: Task: Refactor connection browser with environments
 #+description: Split server_environment into environment (host + port) and connection (credentials, optionally linked to environment); migrate existing connections automatically; unified tree (folders + environments + connections); Duplicate action; environment-linked connections show inherited tags + resolved host/port; login dialog gets unified quick-connect combo (Manual / Environments / Connections headers); new Keyboard + Copy icons.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ee315a6f-8933-4738-ae3f-e63cbbf57f03][Connection browser: environments]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE315A6F-8933-4738-AE3F-E63CBBF57F03][Connection browser: environments]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Refactor the connection browser to separate the host/port from the credentials a
 | Field        | Value                                                                         |
 |--------------+-------------------------------------------------------------------------------|
 | State        | DONE                                                                          |
-| Parent story | [[id:ee315a6f-8933-4738-ae3f-e63cbbf57f03][Connection browser: environments]] |
+| Parent story | [[id:EE315A6F-8933-4738-AE3F-E63CBBF57F03][Connection browser: environments]] |
 | Now          | Completed 2026-02-24.                                                         |
 | Waiting on   | None.                                                                         |
 | Next         | None.                                                                         |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 526f6418-b4f0-4d7a-a29b-7cc67fe10a0e
+:ID: 526F6418-B4F0-4D7A-A29B-7CC67FE10A0E
 :END:
 #+title: Task: ORE import error reporting, step log, and service isolation
 #+description: - Step outcome tri-state: replaces the binary `success` flag with `step_outcome` (`completed` / `completed_with_warnings
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7030AB78-B8F1-425C-83EF-A6F9EBF218A8][Workflow engine hardening]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Introduce a step outcome tri-state (completed/completed_with_warnings/failed), p
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] |
+| Parent story | [[id:7030AB78-B8F1-425C-83EF-A6F9EBF218A8][Workflow engine hardening]] |
 | Now          | Completed 2026-05-16.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 479e7e27-4060-4bfd-ac38-f11efa3bb306
+:ID: 479E7E27-4060-4BFD-AC38-F11EFA3BB306
 :END:
 #+title: How do I start a new feature branch phase?
 #+description: Transition from a merged feature branch to a fresh one based on the latest main — for multi-phase implementations where each phase is one PR.
@@ -110,4 +110,4 @@ successfully"; the workflow correctness is held by review.
 * See also
 
 - [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch Manager]] — the skill that indexes this recipe.
-- [[id:95d560c6-3551-4810-9d11-55f9f82b483c][How do I merge a PR?]] — the prerequisite step.
+- [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]] — the prerequisite step.

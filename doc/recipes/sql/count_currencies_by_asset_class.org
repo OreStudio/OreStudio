@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ad4bf0f1-4d5c-492c-be63-03e640dcece3
+:ID: AD4BF0F1-4D5C-492C-BE63-03E640DCECE3
 :END:
 #+title: Count Currencies by Asset Class
 #+description: Count Currencies by Asset Class

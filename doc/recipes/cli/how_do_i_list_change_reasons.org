@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c7d76217-ae65-4272-b035-0567bf9bf2de
+:ID: C7D76217-AE65-4272-B035-0567BF9BF2DE
 :END:
 #+title: How do I list change reasons?
 #+description: List change reasons via =ores.cli=

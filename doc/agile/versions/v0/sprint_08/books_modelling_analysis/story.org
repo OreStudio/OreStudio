@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 77211166-9316-40c0-88d6-c92f983a00b5
+:ID: 77211166-9316-40C0-88D6-C92F983A00B5
 :END:
 #+title: Story: Books domain modelling analysis
 #+description: First-cut analysis of the entities needed to support books; FPML-anchored, iterated with LLMs.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ the next major modelling effort after currencies and countries.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] |
+| Parent sprint | [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]] |
 | Now           | Completed 2026-01-11.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -39,7 +39,7 @@ the next major modelling effort after currencies and countries.
 
 In execution order:
 
-- [[id:60722e51-beb9-4221-abb1-95b0e08e9a32][Books entity analysis]]
+- [[id:60722E51-BEB9-4221-ABB1-95B0E08E9A32][Books entity analysis]]
 
 * Decisions
 

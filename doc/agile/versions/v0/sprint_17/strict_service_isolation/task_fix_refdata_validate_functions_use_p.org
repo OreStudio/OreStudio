@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c9248144-1c34-40f5-9eec-ba5c38ab360d
+:ID: C9248144-1C34-40F5-9EEC-BA5C38AB360D
 :END:
 #+title: Task: Fix refdata validate functions: use p_tenant_id not system_tenant_id
 #+description: - `ores_refdata_validate_monetary_nature_fn`, `ores_refdata_validate_currency_market_tier_fn`, and `ores_refdata_validat
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E762DA90-B92A-41E1-AD4D-29018F17AF32][Strict service table isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Fix three refdata validate functions that queried against the system tenant inst
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]] |
+| Parent story | [[id:E762DA90-B92A-41E1-AD4D-29018F17AF32][Strict service table isolation]] |
 | Now          | Completed 2026-05-16.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

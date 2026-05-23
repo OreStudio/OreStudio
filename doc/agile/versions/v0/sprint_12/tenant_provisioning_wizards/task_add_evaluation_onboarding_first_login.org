@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8ef061d5-9f21-4610-91b7-610a52da4c75
+:ID: 8EF061D5-9F21-4610-91B7-610A52DA4C75
 :END:
 #+title: Task: Add evaluation-tenant onboarding wizard on first login
 #+description: First-login wizard offers to install a catalogue + set up the tenant; user can cancel; stops appearing once a root party exists beyond the system party.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a][Tenant provisioning wizards]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EAF03BE3-D1EC-4EC4-B18B-4F1C6F35926A][Tenant provisioning wizards]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ On first login to a new evaluation tenant, offer a wizard to install a catalogue
 | Field        | Value                                                                    |
 |--------------+--------------------------------------------------------------------------|
 | State        | DONE                                                                     |
-| Parent story | [[id:eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a][Tenant provisioning wizards]] |
+| Parent story | [[id:EAF03BE3-D1EC-4EC4-B18B-4F1C6F35926A][Tenant provisioning wizards]] |
 | Now          | Completed 2026-02-16.                                                    |
 | Waiting on   | None.                                                                    |
 | Next         | None.                                                                    |

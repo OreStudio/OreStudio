@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 785a3817-4577-4502-9607-6a128b57f088
+:ID: 785A3817-4577-4502-9607-6A128B57F088
 :END:
 #+title: Sprint 17 Release Notes
 #+description: Sprint 17 release notes (May 2026).

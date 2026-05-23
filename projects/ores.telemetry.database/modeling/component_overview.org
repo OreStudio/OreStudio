@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b73eaf3c-1384-4882-9310-8e9db594c038
+:ID: B73EAF3C-1384-4882-9310-8E9DB594C038
 :END:
 #+title: ores.telemetry.database
 #+description: Database persistence layer for telemetry log records.
@@ -47,4 +47,4 @@ persisting received records.
 * See also
 
 - [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]] — observability library that produces log records.
-- [[id:df0caab9-9ddb-4fea-82d3-71fac2177eef][ores.telemetry.service]] — service that calls this persistence layer.
+- [[id:DF0CAAB9-9DDB-4FEA-82D3-71FAC2177EEF][ores.telemetry.service]] — service that calls this persistence layer.

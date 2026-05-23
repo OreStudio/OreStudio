@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c4a49d31-7c01-477f-b988-63ada3be4c64
+:ID: C4A49D31-7C01-477F-B988-63ADA3BE4C64
 :END:
 #+title: Task: Download and split GLEIF data
 #+description: Script to fetch the GLEIF Golden Copy and produce a representative subset for development use.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:700D4325-2AD1-4E0D-B6AF-900ABBE1A66E][Party schemes and FPML reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Script the download + split of the GLEIF Golden Copy so we have a representative
 | Field        | Value                                                                              |
 |--------------+------------------------------------------------------------------------------------|
 | State        | DONE                                                                               |
-| Parent story | [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] |
+| Parent story | [[id:700D4325-2AD1-4E0D-B6AF-900ABBE1A66E][Party schemes and FPML reference data]] |
 | Now          | Completed 2026-01-23.                                                              |
 | Waiting on   | None.                                                                              |
 | Next         | None.                                                                              |

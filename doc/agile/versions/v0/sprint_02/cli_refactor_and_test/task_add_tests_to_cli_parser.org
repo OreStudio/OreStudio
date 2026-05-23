@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1dbc88f2-f004-45f8-bcd2-67d6ac646e97
+:ID: 1DBC88F2-F004-45F8-BCD2-67D6AC646E97
 :END:
 #+title: Task: Add tests to CLI parser
 #+description: Add Catch2 tests covering the CLI parser's main flag and command paths.
@@ -12,7 +12,7 @@
 #+updated: 2025-10-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cf13ffb1-4d84-4965-ad65-c38b1d4849ab][CLI refactor and test]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CF13FFB1-4D84-4965-AD65-C38B1D4849AB][CLI refactor and test]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -25,7 +25,7 @@ CI.
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
 | State        | DONE                                                               |
-| Parent story | [[id:cf13ffb1-4d84-4965-ad65-c38b1d4849ab][CLI refactor and test]] |
+| Parent story | [[id:CF13FFB1-4D84-4965-AD65-C38B1D4849AB][CLI refactor and test]] |
 | Now          | Completed 2025-10-20.                                              |
 | Waiting on   | None.                                                              |
 | Next         | None.                                                              |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ce523555-1a0c-42ed-96c7-b84c3ff6cb69
+:ID: CE523555-1A0C-42ED-96C7-B84C3FF6CB69
 :END:
 #+title: Generate Whimsical Database Name
 #+description: Generate Whimsical Database Name

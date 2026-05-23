@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: fb797194-eb03-4837-b12d-e651dd5f16f2
+:ID: FB797194-EB03-4837-B12D-E651DD5F16F2
 :END:
 #+title: Unit test conventions
 #+description: Catch2 patterns and file structure ORE Studio unit tests follow — file layout, naming, includes, test-case shapes, generators, database helpers.
@@ -11,9 +11,9 @@
 #+updated: 2026-05-21
 
 ORE Studio's Catch2 unit tests follow consistent file structure,
-naming, and test-case shape. The [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][unit-test-writer]] skill drives
+naming, and test-case shape. The [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][unit-test-writer]] skill drives
 their authoring; this doc is the durable reference for the
-conventions every reviewer also checks (see [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review
+conventions every reviewer also checks (see [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review
 checklist]]§"Unit tests"). For database-integration specifics see
 [[id:A8C7D341-5E92-4F8A-B9E2-1A3D6F8C2E5B][Unit Test Database Integration Guide]] inside =ores.testing=. Return
 to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
@@ -170,8 +170,8 @@ repo.write(h.context(), entity);
 
 * See also
 
-- [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][unit-test-writer skill]] — drives authoring.
-- [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]]§"Unit tests" — review-time enforcement.
+- [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][unit-test-writer skill]] — drives authoring.
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review checklist]]§"Unit tests" — review-time enforcement.
 - [[id:A8C7D341-5E92-4F8A-B9E2-1A3D6F8C2E5B][Unit Test Database Integration Guide]] — deeper database-side
   reference inside =ores.testing=.
 - [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][test-failure-investigator skill]] — when a test goes red.

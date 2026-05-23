@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ab7a5ad7-017d-43f6-83e6-811396c93ba0
+:ID: AB7A5AD7-017D-43F6-83E6-811396C93BA0
 :END:
 #+title: Task: Fix NATS cert generation on Windows
 #+description: Use double-slash prefix for OpenSSL subject strings on MSYS2; later replaced with MSYS2_ARG_CONV_EXCL.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Use double-slash prefix for OpenSSL subject strings on MSYS2; later replaced wit
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | DONE                                                                   |
-| Parent story | [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] |
+| Parent story | [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]] |
 | Now          | Completed 2026-04-11.                                                  |
 | Waiting on   | None.                                                                  |
 | Next         | None.                                                                  |

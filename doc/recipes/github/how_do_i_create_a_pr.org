@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: cc928252-e0c5-4c3c-a7a8-d613593e4e37
+:ID: CC928252-E0C5-4C3C-A7A8-D613593E4E37
 :END:
 #+title: How do I create a PR?
 #+description: Open a pull request via the gh CLI with a structured title and HEREDOC body — and the conventions ORE Studio follows on title format.
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-The body content should be assembled via [[id:1882d6df-4012-4c6e-bf62-0d943ef805b0][How do I generate a PR
+The body content should be assembled via [[id:1882D6DF-4012-4C6E-BF62-0D943EF805B0][How do I generate a PR
 summary?]] before running the =gh= command here.
 
 * Question
@@ -66,7 +66,7 @@ Manual. Reviewers verify the PR shape; =gh pr checks= reports CI.
 
 * See also
 
-- [[id:1882d6df-4012-4c6e-bf62-0d943ef805b0][How do I generate a PR summary?]] — assemble the body.
-- [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][How do I monitor a PR until green?]] — what to do once it's open.
-- [[id:95d560c6-3551-4810-9d11-55f9f82b483c][How do I merge a PR?]] — close it out.
+- [[id:1882D6DF-4012-4C6E-BF62-0D943EF805B0][How do I generate a PR summary?]] — assemble the body.
+- [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] — what to do once it's open.
+- [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]] — close it out.
 - [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — full lifecycle.

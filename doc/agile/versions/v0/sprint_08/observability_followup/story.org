@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: cd9e9d04-44d2-4d0d-95ce-719d55c40da4
+:ID: CD9E9D04-44D2-4D0D-95CE-719D55C40DA4
 :END:
 #+title: Story: Observability follow-up
 #+description: Telemetry review, comms-analyser review, event-viewer review — all postponed within the sprint window.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,16 +24,16 @@ POSTPONED within this sprint — implementation carries forward.
 | Field         | Value                                                                              |
 |---------------+------------------------------------------------------------------------------------|
 | State         | BACKLOG                                                                            |
-| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]]                             |
+| Parent sprint | [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]]                             |
 | Now           | Review notes captured in sprint 08; all three implementation passes carry forward. |
 | Waiting on    | A sprint with the slot to land the fixes.                                          |
 | Next          | Schedule the telemetry/comms-analyser/event-viewer fix passes.                     |
 | Last touched  | 2026-01-11                                                                         |
 
 
-#+predecessor: 8c4c8429-9328-46dd-88ef-27689fb556f2
+#+predecessor: 8C4C8429-9328-46DD-88EF-27689FB556F2
 
-Continued from: [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] (sprint 07) — sprint 07
+Continued from: [[id:8C4C8429-9328-46DD-88EF-27689FB556F2][Observability and telemetry]] (sprint 07) — sprint 07
 stood up the components; this story is the review pass which deferred
 all three review items to a later sprint.
 
@@ -47,9 +47,9 @@ all three review items to a later sprint.
 
 In execution order:
 
-- [[id:d7794c1a-496d-491f-9a92-319c1b92d062][Review telemetry work]]
-- [[id:b091715a-ffa2-4716-90d5-3431f5ff4532][Review comms analyser work]]
-- [[id:67fde70e-e08d-4b55-b420-5f2676763e8e][Event viewer review]]
+- [[id:D7794C1A-496D-491F-9A92-319C1B92D062][Review telemetry work]]
+- [[id:B091715A-FFA2-4716-90D5-3431F5FF4532][Review comms analyser work]]
+- [[id:67FDE70E-E08D-4B55-B420-5F2676763E8E][Event viewer review]]
 
 * Decisions
 
@@ -61,4 +61,4 @@ In execution order:
 
 * See also
 
-- [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] (sprint 07) — predecessor.
+- [[id:8C4C8429-9328-46DD-88EF-27689FB556F2][Observability and telemetry]] (sprint 07) — predecessor.

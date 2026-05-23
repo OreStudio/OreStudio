@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b8298a05-9e0f-48bc-a36a-8a9ef73fcf6b
+:ID: B8298A05-9E0F-48BC-A36A-8A9EF73FCF6B
 :END:
 #+title: Task: Break cross-plugin symbol dependencies (plugin isolation phase 1)
 #+description: - Add `IBusinessUnitBrowser` abstract interface to `ores.qt.api`; `BusinessUnitController` implements it. `OrgExplorerMd
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Break compile-time inter-plugin dependencies by introducing IBusinessUnitBrowser
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] |
+| Parent story | [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]] |
 | Now          | Completed 2026-05-16.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

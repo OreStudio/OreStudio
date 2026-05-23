@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4941a490-0d66-4f09-9b1f-3bc928022a41
+:ID: 4941A490-0D66-4F09-9B1F-3BC928022A41
 :END:
 #+title: Fix: instruments not visible in UI
 #+description: Instruments cannot be seen in the UI. Investigate whether they are being imported and surfaced correctly; fix the import or display path.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

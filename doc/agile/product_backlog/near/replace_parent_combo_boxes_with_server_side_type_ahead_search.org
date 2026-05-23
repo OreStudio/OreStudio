@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2af9873f-5285-4fe8-bb44-122fefa8e424
+:ID: 2AF9873F-5285-4FE8-BB44-122FEFA8E424
 :END:
 #+title: Replace parent combo boxes with server-side type-ahead search
 #+description: Replace parent combo boxes with server-side type-ahead search
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 The entity detail dialogs (party, counterparty) load all entities into a combo
 box for parent selection using a single request with =offset=0, limit=1000=.

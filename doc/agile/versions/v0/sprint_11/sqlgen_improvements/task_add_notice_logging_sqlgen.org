@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: db4461dd-a98e-4847-9b16-a76cfd1afcbe
+:ID: DB4461DD-A98E-4847-9B16-A76CFD1AFCBE
 :END:
 #+title: Task: Add NOTICE logging support to sqlgen
 #+description: Upstream PR getml/sqlgen#120 + proposal #118 — Postgres notice processor hook.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18CCF6C9-7D23-48B3-9D4D-2A8AEB4EE30D][sqlgen improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add Postgres NOTICE-processor support to sqlgen so PL/pgSQL =RAISE NOTICE= surfa
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]] |
+| Parent story | [[id:18CCF6C9-7D23-48B3-9D4D-2A8AEB4EE30D][sqlgen improvements]] |
 | Now          | Completed 2026-02-01.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

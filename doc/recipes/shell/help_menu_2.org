@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1fbc2c1e-1bb2-44ea-ac40-26a9f9750636
+:ID: 1FBC2C1E-1BB2-44EA-AC40-26A9F9750636
 :END:
 #+title: Help Menu
 #+description: Help Menu

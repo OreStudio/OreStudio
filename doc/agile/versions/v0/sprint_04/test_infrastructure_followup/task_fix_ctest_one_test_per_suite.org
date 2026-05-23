@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: bf65a7a2-e271-4275-b0b3-81d6662c2867
+:ID: BF65A7A2-E271-4275-B0B3-81D6662C2867
 :END:
 #+title: Task: CTest shows only one test per test suite
 #+description: Resolve the CTest-only-shows-one-test-per-suite behaviour that was BLOCKED in sprint 03.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a9055a54-ae06-4cc4-8b51-2cb9627e0d5a][Test infrastructure follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A9055A54-AE06-4CC4-8B51-2CB9627E0D5A][Test infrastructure follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ individual failure messages) on the dashboard.
 | Field        | Value                                                                      |
 |--------------+----------------------------------------------------------------------------|
 | State        | DONE                                                                       |
-| Parent story | [[id:a9055a54-ae06-4cc4-8b51-2cb9627e0d5a][Test infrastructure follow-up]] |
+| Parent story | [[id:A9055A54-AE06-4CC4-8B51-2CB9627E0D5A][Test infrastructure follow-up]] |
 | Now          | Completed 2025-11-20.                                                      |
 | Waiting on   | None.                                                                      |
 | Next         | None.                                                                      |

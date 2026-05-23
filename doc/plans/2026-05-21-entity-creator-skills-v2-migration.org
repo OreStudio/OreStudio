@@ -114,7 +114,7 @@ the prerequisite for all other layers.  It is the natural pilot.
 - [ ] The skill already delegates heavy lifting to =ores.codegen=; the main
   v2 task is trimming procedural prose and replacing it with id-links to the
   codegen component model and any extracted patterns.
-- [ ] Rewrite [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator Skill]] to v2:
+- [ ] Rewrite [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator Skill]] to v2:
   - =#+type: skill=, =#+version: 2=, required frontmatter fields.
   - Sections: When / How / Recipes / Reference / Artefacts.
   - No =#+begin_src= blocks in the skill itself.
@@ -142,7 +142,7 @@ that belong in a permanent knowledge doc, not inside the skill.
 - [ ] Create =doc/recipes/sql/how_do_i_create_entity_schema.org= (v2,
   =#+type: recipe=) with a walkthrough of the full schema creation workflow
   for a new entity (tables, indexes, grants, history trigger).
-- [ ] Rewrite [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator Skill]] to v2:
+- [ ] Rewrite [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][SQL Schema Creator Skill]] to v2:
   - Sections: When / How / Recipes / Reference.
   - References: id-link to =sql_entity_schema_patterns.org=, the new recipe,
     and the codegen component model.
@@ -165,7 +165,7 @@ that belong in a permanent knowledge doc, not inside the skill.
 - [ ] Create =doc/recipes/http/how_do_i_create_entity_endpoints.org= (v2,
   =#+type: recipe=) with a phase-by-phase walkthrough (Phase 1: list + save;
   Phase 2: delete + history; Phase 3: recipe docs).
-- [ ] Rewrite [[id:bdcc47d4-b050-409e-8c50-3d179843a274][HTTP Entity Creator Skill]] to v2.
+- [ ] Rewrite [[id:BDCC47D4-B050-409E-8C50-3D179843A274][HTTP Entity Creator Skill]] to v2.
   - Target: 60–80 lines.
 - [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
 
@@ -183,7 +183,7 @@ that belong in a permanent knowledge doc, not inside the skill.
   - Cross-link to =entity_lifecycle.org=.
 - [ ] Create =doc/recipes/cli/how_do_i_create_entity_commands.org= (v2,
   =#+type: recipe=) with a phase-by-phase walkthrough.
-- [ ] Rewrite [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][CLI Entity Creator Skill]] to v2.
+- [ ] Rewrite [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][CLI Entity Creator Skill]] to v2.
   - Target: 60–80 lines.
 - [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
 
@@ -201,7 +201,7 @@ that belong in a permanent knowledge doc, not inside the skill.
   - Cross-link to =entity_lifecycle.org=.
 - [ ] Create =doc/recipes/shell/how_do_i_create_entity_commands.org= (v2,
   =#+type: recipe=) with a phase-by-phase walkthrough.
-- [ ] Rewrite [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][Shell Entity Creator Skill]] to v2.
+- [ ] Rewrite [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][Shell Entity Creator Skill]] to v2.
   - Target: 60–80 lines.
 - [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
 
@@ -249,7 +249,7 @@ of which warrants a clear home.
   =#+type: recipe=) with a phase-by-phase walkthrough (Phase 1: list
   window + client model; Phase 2: detail dialog; Phase 3: history dialog;
   Phase 4: recipe docs).
-- [ ] Rewrite [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][Qt Entity Creator Skill]] to v2.
+- [ ] Rewrite [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][Qt Entity Creator Skill]] to v2.
   - Target: 60–80 lines.
 - [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
 
@@ -284,13 +284,13 @@ of which warrants a clear home.
 | =doc/recipes/wt/how_do_i_create_entity_widgets.org= | New |
 | =doc/recipes/qt/= | New directory |
 | =doc/recipes/qt/how_do_i_create_entity_ui.org= | New |
-| [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator Skill]] | Rewrite to v2 |
-| [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator Skill]] | Rewrite to v2 |
-| [[id:bdcc47d4-b050-409e-8c50-3d179843a274][HTTP Entity Creator Skill]] | Rewrite to v2 |
-| [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][CLI Entity Creator Skill]] | Rewrite to v2 |
-| [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][Shell Entity Creator Skill]] | Rewrite to v2 |
+| [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator Skill]] | Rewrite to v2 |
+| [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][SQL Schema Creator Skill]] | Rewrite to v2 |
+| [[id:BDCC47D4-B050-409E-8C50-3D179843A274][HTTP Entity Creator Skill]] | Rewrite to v2 |
+| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][CLI Entity Creator Skill]] | Rewrite to v2 |
+| [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][Shell Entity Creator Skill]] | Rewrite to v2 |
 | [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][Wt Entity Creator Skill]] | Rewrite to v2 |
-| [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][Qt Entity Creator Skill]] | Rewrite to v2 |
+| [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][Qt Entity Creator Skill]] | Rewrite to v2 |
 
 * Verification
 

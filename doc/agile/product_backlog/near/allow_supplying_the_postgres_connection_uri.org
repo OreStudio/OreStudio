@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d3d157a3-97e6-4860-bd6f-0561b88fb67a
+:ID: D3D157A3-97E6-4860-BD6F-0561B88FB67A
 :END:
 #+title: Allow supplying the postgres connection URI
 #+description: Allow supplying the postgres connection URI
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 At present we are supplying all of the components for the connection. It may be
 easier to allow the entire URI:

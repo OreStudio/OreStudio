@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: dc0bba22-9d4f-4fdd-b011-e30b02b4b82f
+:ID: DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F
 :END:
 #+title: Project memory
 #+description: Persistent project-scope memories for LLM sessions. One memory per file under doc/llm/memory/. Read at session start; appended to over time.
@@ -15,8 +15,8 @@ LLM working on ORE Studio should write things that future sessions
 need to remember/ — feedback from the user, durable project facts,
 references to external systems, anything that would otherwise be
 lost between conversations. Each memory lives as a single
-=.org= file in this folder; this page is the catalogue. See [[id:391b9231-dba8-4e8c-97ab-a75e2b9fea07][How do
-I create a memory?]] for the operational flow and the [[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory]]
+=.org= file in this folder; this page is the catalogue. See [[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do
+I create a memory?]] for the operational flow and the [[id:7357C672-A49F-4974-9399-A166F761D222][ores-memory]]
 skill for the LLM-side procedure. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * What goes here
@@ -54,17 +54,17 @@ of these exclusions, push back: the right home is somewhere else.
 
 ** Feedback
 
-- [[id:f9b796df-2c06-42ef-aacf-d69e53621ff9][Do not re-export ORES_* env vars in Bash tool calls]].
-- [[id:46f83ac1-f41f-4878-9a1d-2e49742e1bfe][Always use codegen to create new v2 documents]] — never write =.org= files
+- [[id:F9B796DF-2C06-42EF-AACF-D69E53621FF9][Do not re-export ORES_* env vars in Bash tool calls]].
+- [[id:46F83AC1-F41F-4878-9A1D-2E49742E1BFE][Always use codegen to create new v2 documents]] — never write =.org= files
   directly; use =generate_v2_doc.sh= to scaffold them.
-- [[id:387016ad-42cf-4830-b504-f255f6a7d1ab][Check recipes before searching for how to do something]] — =doc/recipes/=
+- [[id:387016AD-42CF-4830-B504-F255F6A7D1AB][Check recipes before searching for how to do something]] — =doc/recipes/=
   is the first port of call for any project operation.
-- [[id:c26b61e8-1ca7-4241-b1d9-d4d95b7ddb01][Run deploy_skills cmake target directly]] — it is Emacs-only, not C++
+- [[id:C26B61E8-1CA7-4241-B1D9-D4D95B7DDB01][Run deploy_skills cmake target directly]] — it is Emacs-only, not C++
   compilation; run =cmake --build --preset linux-clang-debug-ninja --target deploy_skills= without asking the user.
-- [[id:06a0919d-b741-40ea-bff2-376bd36c4a27][Builds can run outside the sandbox]] — use =dangerouslyDisableSandbox: true=
+- [[id:06A0919D-B741-40EA-BFF2-376BD36C4A27][Builds can run outside the sandbox]] — use =dangerouslyDisableSandbox: true=
   for any =cmake --build= or =make -C build/output/...= call; compiler
   toolchain and vcpkg detection are blocked inside the sandbox.
-- [[id:5bddd435-9f2a-4abc-ba71-5bb3b980c785][run_sql.sh can run outside the sandbox]] — use =dangerouslyDisableSandbox: true=
+- [[id:5BDDD435-9F2A-4ABC-BA71-5BB3B980C785][run_sql.sh can run outside the sandbox]] — use =dangerouslyDisableSandbox: true=
   for =run_sql.sh= and =recreate_database.sh=; sandbox blocks =localhost:5432=.
 
 ** User
@@ -81,7 +81,7 @@ of these exclusions, push back: the right home is somewhere else.
 
 * See also
 
-- [[id:391b9231-dba8-4e8c-97ab-a75e2b9fea07][How do I create a memory?]] — operational recipe.
-- [[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory skill]] — LLM-side procedure for adding memories.
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]]§"New memory" — the codegen
+- [[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]] — operational recipe.
+- [[id:7357C672-A49F-4974-9399-A166F761D222][ores-memory skill]] — LLM-side procedure for adding memories.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]]§"New memory" — the codegen
   scaffold flow.

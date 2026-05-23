@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8cbc2b51-e3d0-4320-8582-3cfd2f96537a
+:ID: 8CBC2B51-E3D0-4320-8582-3CFD2F96537A
 :END:
 #+title: Sprint 02
 #+description: Lay client/server foundations (cobalt, comms, messaging) and modernise serialisation and storage.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-18
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 02*) of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 02*) of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
 
 * Mission
 
@@ -28,7 +28,7 @@ explicitly.)
 | Field          | Value                                                                                                                      |
 |----------------+----------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                       |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                  |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                  |
 | Now            | Sprint closed 2025-10-23. Client/server foundations in place; serialisation and storage modernised; risk module extracted. |
 | Waiting on     | None.                                                                                                                      |
 | Next           | None.                                                                                                                      |
@@ -39,13 +39,13 @@ explicitly.)
 #+ATTR_HTML: :class hug-leading
 | Story                                                                            | State | Start      | End        | Theme                                                                                                                                        |
 |----------------------------------------------------------------------------------+-------+------------+------------+----------------------------------------------------------------------------------------------------------------------------------------------|
-| [[id:0fe2033d-180f-4195-a314-998917d570be][Sprint 02 housekeeping]]              | DONE  |            | 2025-10-23 | sprint refinement, whiteboarding for the new architecture, dev-environment fixes, Gemini action.                                             |
-| [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]]                 | DONE  |            | 2025-10-23 | Windows/macOS builds, vcpkg caching, Valgrind suppressions, broken-build firefighting.                                                       |
-| [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]]           | DONE  |            | 2025-10-15 | cobalt-based server and client, =comms= library, messaging for risk. Records the GRPC and 0MQ experiments that were abandoned along the way. |
-| [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]] | DONE  |            | 2025-10-10 | adopt reflect-cpp for JSON, replace XML parsing with reflect-cpp, use sqlgen for Postgres.                                                   |
-| [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]]      | DONE  |            | 2025-09-30 | temporal support for currencies, CLI dump command, a containing structure for ORE example data.                                              |
-| [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]]              | DONE  |            | 2025-10-05 | rename =core= to =risk= and refactor the contents accordingly.                                                                               |
-| [[id:cf13ffb1-4d84-4965-ad65-c38b1d4849ab][CLI refactor and test]]               | DONE  |            | 2025-10-10 | restructure the CLI to follow the new project layout and add tests to the CLI parser.                                                        |
+| [[id:0FE2033D-180F-4195-A314-998917D570BE][Sprint 02 housekeeping]]              | DONE  |            | 2025-10-23 | sprint refinement, whiteboarding for the new architecture, dev-environment fixes, Gemini action.                                             |
+| [[id:AC14558D-A526-4BE2-ADB6-81BCFE0E7292][Build stabilisation]]                 | DONE  |            | 2025-10-23 | Windows/macOS builds, vcpkg caching, Valgrind suppressions, broken-build firefighting.                                                       |
+| [[id:145ADEDE-C3DD-4B51-AD3B-D6B5506C6C37][Client/server foundations]]           | DONE  |            | 2025-10-15 | cobalt-based server and client, =comms= library, messaging for risk. Records the GRPC and 0MQ experiments that were abandoned along the way. |
+| [[id:1F9F213C-6BEA-45FB-B0E0-AA5A7A9B7A23][Modernise serialisation and storage]] | DONE  |            | 2025-10-10 | adopt reflect-cpp for JSON, replace XML parsing with reflect-cpp, use sqlgen for Postgres.                                                   |
+| [[id:ED5BC735-FB54-4CE0-9A08-6DAB88C242D0][Currencies temporal and export]]      | DONE  |            | 2025-09-30 | temporal support for currencies, CLI dump command, a containing structure for ORE example data.                                              |
+| [[id:6C63D2B2-7065-4AFC-AE54-86220C427B20][Risk module extraction]]              | DONE  |            | 2025-10-05 | rename =core= to =risk= and refactor the contents accordingly.                                                                               |
+| [[id:CF13FFB1-4D84-4965-AD65-C38B1D4849AB][CLI refactor and test]]               | DONE  |            | 2025-10-10 | restructure the CLI to follow the new project layout and add tests to the CLI parser.                                                        |
 
 * Retrospective
 

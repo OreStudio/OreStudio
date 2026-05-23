@@ -31,7 +31,7 @@ give it a task-shaped entry point.
 1. /Identify the semantic category/ — action, status, navigation,
    content, etc.
 
-2. /Find the icon/ in the [[id:6ef42145-cee7-4035-806a-a4200a3e003a][Icon guidelines]] catalogue. Each entry
+2. /Find the icon/ in the [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] catalogue. Each entry
    has its Regular and Filled file paths, plus the usage rules
    that distinguish the variants.
 
@@ -51,7 +51,7 @@ give it a task-shaped entry point.
 
 6. /If no existing icon fits the semantic/ — propose a new entry
    for the catalogue (a Fluent UI System Icons name plus the
-   Regular/Filled SVG pair). Add it to [[id:6ef42145-cee7-4035-806a-a4200a3e003a][Icon guidelines]] under the
+   Regular/Filled SVG pair). Add it to [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] under the
    right semantic category /before/ using it in code, so the
    catalogue stays the single source of truth.
 
@@ -62,11 +62,11 @@ catalogue.)
 
 * Reference
 
-- [[id:6ef42145-cee7-4035-806a-a4200a3e003a][Icon guidelines]] — the full catalogue grouped by semantic
+- [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] — the full catalogue grouped by semantic
   category.
-- [[id:6743f6e3-578c-4e4b-9dd6-d5a0df6734c8][UI design principles]] — the wider design system that the icon
+- [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the wider design system that the icon
   vocabulary sits inside.
-- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] — where the icons land in code.
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — where the icons land in code.
 
 * Artefacts                                                        :noexport:
 

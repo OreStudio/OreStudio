@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c9ab5860-2fa4-46ac-89a3-bc1e9544760c
+:ID: C9AB5860-2FA4-46AC-89A3-BC1E9544760C
 :END:
 #+title: Add currency and country party-visibility junctions
 #+description: Add currency and country party-visibility junctions
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Add junction tables (=party_currencies=, =party_countries=) that control which
 currencies and countries a given party can see and use. The underlying reference

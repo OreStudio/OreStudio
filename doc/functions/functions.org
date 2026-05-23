@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1a5e0079-5771-4213-b624-62fa9ac947b4
+:ID: 1A5E0079-5771-4213-B624-62FA9AC947B4
 :END:
 #+title: Functions
 #+description: Index of named roles — what someone does when they are wearing a given hat, with the skills and pre-reads each role needs.
@@ -10,30 +10,30 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-A [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]] is a named role — /what someone (or some LLM session)
+A [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]] is a named role — /what someone (or some LLM session)
 does when they are wearing a given hat/. A function doc is the
 priming context an LLM session loads when it takes on the role: the
-purpose, what to pre-read, which [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skills]] to use, what /not/ to do.
+purpose, what to pre-read, which [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] to use, what /not/ to do.
 Functions are role-shaped (descriptive); skills are task-shaped
 (operational). Functions compose skills.
 
-There is one function per [[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic level]], plus one for the
+There is one function per [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic level]], plus one for the
 independent audit channel.
 
 * Per system
 
-- [[id:b544713a-ba23-4d5a-9cee-084212d7c8ba][S1 Agent]] — does one [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] and lands one PR.
-- [[id:eeca6981-3240-44d9-ada7-4b8c64a76b44][S2 Orchestrator]] — coordinates one [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]], decomposes it into
+- [[id:B544713A-BA23-4D5A-9CEE-084212D7C8BA][S1 Agent]] — does one [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] and lands one PR.
+- [[id:EECA6981-3240-44D9-ADA7-4B8C64A76B44][S2 Orchestrator]] — coordinates one [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]], decomposes it into
   tasks, oversees S1 agents.
-- [[id:f1d99662-c6b1-4839-92e1-d061ccf6b83f][S3 Sprint Planner]] — opens, runs, and closes a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]]; refines
-  the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]].
-- [[id:049b086e-f131-4d7a-8244-c1b2ff297ab6][S3* Auditor]] — observes the whole information architecture from
+- [[id:F1D99662-C6B1-4839-92E1-D061CCF6B83F][S3 Sprint Planner]] — opens, runs, and closes a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]]; refines
+  the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]].
+- [[id:049B086E-F131-4D7A-8244-C1B2FF297AB6][S3* Auditor]] — observes the whole information architecture from
   outside; reports drift.
-- [[id:66eb6824-52b8-4603-b302-f805da9ec443][S4 Version Planner]] — plans a [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]], sequences its sprints,
+- [[id:66EB6824-52B8-4603-B302-F805DA9EC443][S4 Version Planner]] — plans a [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]], sequences its sprints,
   judges its Definition of done.
-- [[id:5cad21da-21fb-460b-9286-8998b4c6ef52][S5 Identity Steward]] — maintains the [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product identity]], rules on
+- [[id:5CAD21DA-21FB-460B-9286-8998B4C6EF52][S5 Identity Steward]] — maintains the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]], rules on
   what is in / out of scope.
 
-Each function doc lists its pre-reads, the [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skills]] it draws on, the
+Each function doc lists its pre-reads, the [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] it draws on, the
 recipes it exercises, and explicit boundaries (what this role does
 /not/ do, and which other function picks it up instead).

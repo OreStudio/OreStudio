@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: bc804c31-d6f7-4e4e-9c4f-f4578beaf4f5
+:ID: BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5
 :END:
 #+title: ores.analytics.core
 #+description: Pricing model and analytics configuration — model types, product parameters, and batch pricing.
@@ -53,5 +53,5 @@ exposes all CRUD operations to clients.
 
 * See also
 
-- [[id:66d3f1d6-1926-40cf-bcf5-aa42f14ad6d5][ores.analytics.api]] — protocol types and domain entities.
-- [[id:e5952f27-53bd-4c4d-85cd-556b6421b768][ores.analytics.service]] — NATS service entrypoint.
+- [[id:66D3F1D6-1926-40CF-BCF5-AA42F14AD6D5][ores.analytics.api]] — protocol types and domain entities.
+- [[id:E5952F27-53BD-4C4D-85CD-556B6421B768][ores.analytics.service]] — NATS service entrypoint.

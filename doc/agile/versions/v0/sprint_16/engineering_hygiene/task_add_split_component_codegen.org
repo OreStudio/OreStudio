@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5574eba4-753b-4e1c-871a-d6cc13c4a99b
+:ID: 5574EBA4-753B-4E1C-871A-D6CC13C4A99B
 :END:
 #+title: Task: Add split-component codegen profiles and fix skill docs
 #+description: Codegen workflow supports split-component architectures (api / core / service); automated file placement into project tree; specialised CMake templates; component-specific name derivation.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2c3a9e28-68dc-4bf1-8eb7-5c4379e5c248][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2C3A9E28-68DC-4BF1-8EB7-5C4379E5C248][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Codegen workflow supports split-component architectures (api / core / service); 
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:2c3a9e28-68dc-4bf1-8eb7-5c4379e5c248][Engineering hygiene]] |
+| Parent story | [[id:2C3A9E28-68DC-4BF1-8EB7-5C4379E5C248][Engineering hygiene]] |
 | Now          | Completed 2026-04-07.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

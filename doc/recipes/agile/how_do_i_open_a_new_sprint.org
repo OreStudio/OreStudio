@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1e666848-a785-437e-a463-3d5a0da0765f
+:ID: 1E666848-A785-437E-A463-3D5A0DA0765F
 :END:
 #+title: How do I open a new sprint?
 #+description: Scaffold a new sprint folder under the current version, set its mission, and wire it into the version manifest.
@@ -11,9 +11,9 @@
 #+updated: 2026-05-22
 
 For the surrounding agile cycle (planning / execution / closure) and
-which cybernetic system owns the work, see [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Agile process]]. For the
+which cybernetic system owns the work, see [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]]. For the
 build-side housekeeping that pairs with opening a new sprint, see
-[[id:e9f98da1-cf33-4b53-bc4d-a034c652f3b0][How do I bump the project version?]] and [[id:2a8f0d61-b3f9-4c20-9e76-1d92c8a47fb5][How do I update submodules to
+[[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]] and [[id:2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5][How do I update submodules to
 latest?]].
 
 * Question
@@ -52,7 +52,7 @@ folder, set its mission, and link it from the version manifest?
 
 4. /Write the sprint mission/. Open the generated
    =doc/agile/versions/v0/sprint_17/sprint.org= and fill in
-   =* Mission= (one sentence — see [[id:198da730-d9fb-4bde-b1c0-b930cd019917][sprint mission]] in the glossary).
+   =* Mission= (one sentence — see [[id:198DA730-D9FB-4BDE-B1C0-B930CD019917][sprint mission]] in the glossary).
 
 5. /Wire into the version manifest/. Open
    =doc/agile/versions/v0/version.org= and add the new sprint to
@@ -62,15 +62,15 @@ folder, set its mission, and link it from the version manifest?
    - [[id:<sprint-uuid>][Sprint 17]] — TBD.
    #+end_src
 
-6. /Promote captures into stories/, if applicable. See [[id:2df8adaf-20c9-4757-9399-798eec6df828][Agile
+6. /Promote captures into stories/, if applicable. See [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile
    Product Owner]] for the promotion flow (capture → story, ID
    preserved).
 
 7. /Bump the project version/ as separate housekeeping — see
-   [[id:e9f98da1-cf33-4b53-bc4d-a034c652f3b0][How do I bump the project version?]]. The version-number bump
+   [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]]. The version-number bump
    is decoupled from sprint opening; do not couple them in one PR.
 
-8. /Update the =vcpkg= submodule to latest/ — see [[id:2a8f0d61-b3f9-4c20-9e76-1d92c8a47fb5][How do I update
+8. /Update the =vcpkg= submodule to latest/ — see [[id:2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5][How do I update
    submodules to latest?]]. Land it as a separate commit on the
    same new-sprint PR so the build-side housekeeping ships with
    the sprint open.
@@ -87,7 +87,7 @@ file carries =#+version: 2=.
 
 * See also
 
-- [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][Sprint]] (glossary).
-- [[id:f5426198-acaf-41da-a043-ff15785e4a1d][Planning phase]] of the agile process.
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] §"New sprint".
+- [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][Sprint]] (glossary).
+- [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][Planning phase]] of the agile process.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New sprint".
 - [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint]] — the skill that drives this recipe.

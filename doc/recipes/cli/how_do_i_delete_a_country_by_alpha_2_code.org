@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c979c4e8-c10f-4d69-be82-39c60e5602ff
+:ID: C979C4E8-C10F-4D69-BE82-39C60E5602FF
 :END:
 #+title: How do I delete a country by alpha-2 code?
 #+description: Delete a country by alpha-2 code

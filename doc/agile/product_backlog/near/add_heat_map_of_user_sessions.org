@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b84e61ba-a712-4f84-91b9-54175ea6c23d
+:ID: B84E61BA-A712-4F84-91B9-54175EA6C23D
 :END:
 #+title: Add heat map of user sessions
 #+description: Add heat map of user sessions
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Things to measure:
 

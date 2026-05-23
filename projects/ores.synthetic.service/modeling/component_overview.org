@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 702753e8-0e07-4690-afab-d75514ade660
+:ID: 702753E8-0E07-4690-AFAB-D75514ADE660
 :END:
 #+title: ores.synthetic.service
 #+description: NATS service entrypoint for synthetic data generation.

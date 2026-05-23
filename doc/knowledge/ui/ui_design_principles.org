@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6743f6e3-578c-4e4b-9dd6-d5a0df6734c8
+:ID: 6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8
 :END:
 #+title: UI design principles
 #+description: The ORE Studio UI design system — Jony Ive-level precision; design direction, typography, colour, spacing, motion, and the rules that hold them together.
@@ -13,7 +13,7 @@
 The design system the ORE Studio UI is built against — Jony
 Ive-level precision with intentional personality. Use this to set
 direction before any new interface or major refactor; reach for
-[[id:6ef42145-cee7-4035-806a-a4200a3e003a][Icon guidelines]] for the icon vocabulary that sits on top. The
+[[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] for the icon vocabulary that sits on top. The
 [[id:89935F29-7C6C-1E84-EAD3-EC4BD20421F5][design-principles]] skill drives application. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Design Direction (REQUIRED)
@@ -320,6 +320,6 @@ context-driven execution.
 * See also
 
 - [[id:89935F29-7C6C-1E84-EAD3-EC4BD20421F5][design-principles skill]] — the task-shaped entry point.
-- [[id:6ef42145-cee7-4035-806a-a4200a3e003a][Icon guidelines]] — the icon vocabulary.
-- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] — where these principles meet the
+- [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] — the icon vocabulary.
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — where these principles meet the
   Qt-side technical contract.

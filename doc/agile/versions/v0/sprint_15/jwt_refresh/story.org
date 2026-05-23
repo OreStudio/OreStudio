@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 169b15a7-442b-44fd-8e54-436fec8340a6
+:ID: 169B15A7-442B-44FD-8E54-436FEC8340A6
 :END:
 #+title: Story: JWT refresh
 #+description: Configurable token lifetimes via system settings; iam.v1.auth.refresh NATS endpoint; reactive shell retry + proactive Qt timer; ores_iam_auth_events_tbl TimescaleDB hypertable for auth telemetry.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,16 +23,16 @@ lifetimes, and a TimescaleDB auth-events hypertable for telemetry.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Parent sprint | [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]] |
 | Now           | Completed 2026-03-21.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-03-21                                             |
 
 
-#+predecessor: 1de357ff-7139-49fd-bc97-b30cd095ef53
+#+predecessor: 1DE357FF-7139-49FD-BC97-B30CD095EF53
 
-Continued from: [[id:1de357ff-7139-49fd-bc97-b30cd095ef53][JWT RS256 in ores.security]] (sprint 14). The RS256
+Continued from: [[id:1DE357FF-7139-49FD-BC97-B30CD095EF53][JWT RS256 in ores.security]] (sprint 14). The RS256
 signing landed last sprint; this story closes the loop with token
 refresh (no more silent token-expired failures during long-running
 sessions).
@@ -52,7 +52,7 @@ sessions).
 
 In execution order:
 
-- [[id:922f4fd0-bef7-4115-88de-d855bfc96bba][Implement JWT refresh]]
+- [[id:922F4FD0-BEF7-4115-88DE-D855BFC96BBA][Implement JWT refresh]]
 
 * Decisions
 
@@ -67,5 +67,5 @@ In execution order:
 
 * See also
 
-- [[id:1de357ff-7139-49fd-bc97-b30cd095ef53][JWT RS256 in ores.security]] (sprint 14) — predecessor.
-- [[id:bfac3a00-1684-4546-b10b-5ba358b5a867][Unified system_settings]] — supplies the iam.token.* configuration.
+- [[id:1DE357FF-7139-49FD-BC97-B30CD095EF53][JWT RS256 in ores.security]] (sprint 14) — predecessor.
+- [[id:BFAC3A00-1684-4546-B10B-5BA358B5A867][Unified system_settings]] — supplies the iam.token.* configuration.

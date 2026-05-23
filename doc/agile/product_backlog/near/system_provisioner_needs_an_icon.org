@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1060f374-c693-409c-b113-cc56031eca86
+:ID: 1060F374-C693-409C-B113-CC56031ECA86
 :END:
 #+title: System provisioner needs an icon
 #+description: System provisioner needs an icon
@@ -10,6 +10,6 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Dialog is using default ORE icon.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c0d16e27-cece-44c2-861e-1754642ffa5a
+:ID: C0D16E27-CECE-44C2-861E-1754642FFA5A
 :END:
 #+title: Task: Add ORE market data file types
 #+description: Phase 1: market_datum + fixing structs; parser; serializer; comprehensive round-trip tests; both date formats supported in both file types; date parsing/formatting in ores.platform; comma-delimited file handling.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:47ce4c06-2c59-4b8b-89b3-232d04b2da23][Market data subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47CE4C06-2C59-4B8B-89B3-232D04B2DA23][Market data subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Phase 1: market_datum + fixing structs; parser; serializer; comprehensive round-
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
 | State        | DONE                                                               |
-| Parent story | [[id:47ce4c06-2c59-4b8b-89b3-232d04b2da23][Market data subsystem]] |
+| Parent story | [[id:47CE4C06-2C59-4B8B-89B3-232D04B2DA23][Market data subsystem]] |
 | Now          | Completed 2026-04-01.                                              |
 | Waiting on   | None.                                                              |
 | Next         | None.                                                              |

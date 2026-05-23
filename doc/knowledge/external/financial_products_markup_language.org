@@ -15,7 +15,7 @@
 standard for representing over-the-counter (OTC) derivative
 transactions. ORE Studio touches FpML mainly through [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding
 schemes]] — the FpML mechanism for constraining fields to a known set
-of values. Return to [[id:cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+of values. Return to [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * What it is
 

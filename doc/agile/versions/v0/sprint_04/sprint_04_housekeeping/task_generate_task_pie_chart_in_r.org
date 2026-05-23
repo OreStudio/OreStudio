@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 92c5ec82-b40b-4030-a633-ffd684f39418
+:ID: 92C5EC82-B40B-4030-A633-FFD684F39418
 :END:
 #+title: Task: Generate a pie chart for tasks in org via R
 #+description: Add an R-based pie chart for sprint resourcing alongside the bar chart.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-30
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d0a1c624-dc57-424e-a958-279f68956976][Sprint 04 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D0A1C624-DC57-424E-A958-279F68956976][Sprint 04 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ of the original LibreOffice Calc charts we had pre-org-mode.
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:d0a1c624-dc57-424e-a958-279f68956976][Sprint 04 housekeeping]] |
+| Parent story | [[id:D0A1C624-DC57-424E-A958-279F68956976][Sprint 04 housekeeping]] |
 | Now          | Completed 2025-11-30.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

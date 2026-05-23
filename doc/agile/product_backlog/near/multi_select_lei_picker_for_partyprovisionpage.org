@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 525e49f8-8e68-43d2-bc1d-2e925f36a00a
+:ID: 525E49F8-8E68-43D2-BC1D-2E925F36A00A
 :END:
 #+title: Multi-select LEI picker for PartyProvisionPage
 #+description: Multi-select LEI picker for PartyProvisionPage
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 =LeiEntityPicker= currently supports single selection. Extend to multi-select
 so the tenant admin can pick the full GLEIF hierarchy (root + subsidiaries)

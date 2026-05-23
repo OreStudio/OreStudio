@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 924633e4-e663-42f8-b496-3f2439e8fd70
+:ID: 924633E4-E663-42F8-B496-3F2439E8FD70
 :END:
 #+title: Subscriptions
 #+description: Subscriptions

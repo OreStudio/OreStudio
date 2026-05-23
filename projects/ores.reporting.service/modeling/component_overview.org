@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 544947d0-7e23-4145-8f62-ec8341ed42ff
+:ID: 544947D0-7E23-4145-8F62-EC8341ED42FF
 :END:
 #+title: ores.reporting.service
 #+description: NATS service entrypoint for the reporting domain.

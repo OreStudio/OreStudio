@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e44891dc-234c-42db-90e1-9421400abd1a
+:ID: E44891DC-234C-42DB-90E1-9421400ABD1A
 :END:
 #+title: Qt menu and toolbar patterns
 #+description: Plugin registration, on_login() menu wiring, and MDI window toolbar construction for ores.qt entities.
@@ -38,7 +38,7 @@ Use =IconUtils::createRecoloredIcon(Icon::X, IconUtils::DefaultIconColor)=
 for the menu icon.  Icon selection is in [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]].
 
 The plugin file lives at =src/{Component}Plugin.cpp=.  See
-[[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] for the =PluginBase= contract and lifecycle.
+[[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] for the =PluginBase= contract and lifecycle.
 
 * MDI window toolbar
 
@@ -75,7 +75,7 @@ The controller and MdiWindow templates are the authoritative source.
 
 * See also
 
-- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] — =PluginBase= contract, plugin lifecycle, menu sections.
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — =PluginBase= contract, plugin lifecycle, menu sections.
 - [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] — icon selection for menu and toolbar actions.
-- [[id:2fddc2f6-c510-4a86-8c50-d79c83eddfff][Qt entity patterns]] — ClientModel, list window, dialog shapes.
-- [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][qt-entity-creator]] — skill that orchestrates Qt UI creation.
+- [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]] — ClientModel, list window, dialog shapes.
+- [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] — skill that orchestrates Qt UI creation.

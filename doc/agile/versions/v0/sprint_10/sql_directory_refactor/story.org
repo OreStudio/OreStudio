@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 38b6dddf-c02b-4072-b599-41ab3bcc9c28
+:ID: 38B6DDDF-C02B-4072-B599-41AB3BCC9C28
 :END:
 #+title: Story: SQL directory refactor
 #+description: Reorganise create/, drop/, populate/ into component-based subdirectories; safer teardown; admin object naming convention.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ deprecated files.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Parent sprint | [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]] |
 | Now           | Completed 2026-01-24.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -42,9 +42,9 @@ deprecated files.
 
 In execution order:
 
-- [[id:68a57f63-81a6-4c75-b05b-46979ffd9981][Restructure SQL create/, drop/, teardown]]
-- [[id:5a5507a2-f855-4825-b91a-99fb957c7d51][Refactor drop/ and populate/ directory structure]]
-- [[id:37e6dbd7-8117-4cd9-a31a-527bc006e0c4][Refactor coding schemes and clean up ores.sql]]
+- [[id:68A57F63-81A6-4C75-B05B-46979FFD9981][Restructure SQL create/, drop/, teardown]]
+- [[id:5A5507A2-F855-4825-B91A-99FB957C7D51][Refactor drop/ and populate/ directory structure]]
+- [[id:37E6DBD7-8117-4CD9-A31A-527BC006E0C4][Refactor coding schemes and clean up ores.sql]]
 
 * Decisions
 

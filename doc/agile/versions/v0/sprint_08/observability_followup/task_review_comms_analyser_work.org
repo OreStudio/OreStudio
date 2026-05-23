@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b091715a-ffa2-4716-90d5-3431f5ff4532
+:ID: B091715A-FFA2-4716-90D5-3431F5FF4532
 :END:
 #+title: Task: Review comms analyser work
 #+description: Validate the comms analyser; add a UI surface for it.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CD9E9D04-44D2-4D0D-95CE-719D55C40DA4][Observability follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Review the comms-analyser component: validate the analyser works end-to-end and 
 | Field        | Value                                                                |
 |--------------+----------------------------------------------------------------------|
 | State        | BACKLOG                                                              |
-| Parent story | [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]] |
+| Parent story | [[id:CD9E9D04-44D2-4D0D-95CE-719D55C40DA4][Observability follow-up]] |
 | Now          | POSTPONED in sprint 08; carried forward to a later sprint.           |
 | Waiting on   | Nothing.                                                             |
 | Next         | Return to this once a sprint has the slot.                           |

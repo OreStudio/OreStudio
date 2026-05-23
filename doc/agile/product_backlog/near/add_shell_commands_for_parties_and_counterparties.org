@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e1ed9db8-3a94-4873-9e5b-568fb0c1c346
+:ID: E1ED9DB8-3A94-4873-9E5B-568FB0C1C346
 :END:
 #+title: Add shell commands for parties and counterparties
 #+description: Add shell commands for parties and counterparties
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 The shell currently has no commands for party or counterparty CRUD. Add list,
 add, history, and delete commands following the existing shell entity pattern.

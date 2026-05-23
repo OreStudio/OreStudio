@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 77bf049f-ed38-4998-afa3-672e25895f9a
+:ID: 77BF049F-ED38-4998-AFA3-672E25895F9A
 :END:
 #+title: Story: Workspace
 #+description: Bitemporal schema, service layer, UI, lifecycle operations, workspace_id codegen propagation (Phases 1-4), controller wiring, and Data Workshop UI.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -38,10 +38,10 @@ lifecycle operations, and codegen pipeline propagation for workspace_id
 
 In execution order:
 
-- [[id:7ec6a5b1-5e00-44f3-ba8b-8143621667b2][Task: Workspace: bitemporal schema, service layer, UI, and lifecycle operations]]
-- [[id:293a6f5a-5027-41c0-ac4e-00e4140a0f44][Task: Add workspace_id to codegen pipeline (Phases 1-4)]]
-- [[id:15c29ef8-6012-480f-8d11-81701591921e][Task: [workspace] Phase 3+4: controller wiring and Data Workshop UI]]
-- [[id:e56d4ae5-9d91-4943-ac74-f7d9d3a95987][Task: docs: Update workspace design plan with Phase 3–4 progress]]
+- [[id:7EC6A5B1-5E00-44F3-BA8B-8143621667B2][Task: Workspace: bitemporal schema, service layer, UI, and lifecycle operations]]
+- [[id:293A6F5A-5027-41C0-AC4E-00E4140A0F44][Task: Add workspace_id to codegen pipeline (Phases 1-4)]]
+- [[id:15C29EF8-6012-480F-8D11-81701591921E][Task: [workspace] Phase 3+4: controller wiring and Data Workshop UI]]
+- [[id:E56D4AE5-9D91-4943-AC74-F7D9D3A95987][Task: docs: Update workspace design plan with Phase 3–4 progress]]
 * Decisions
 
 - /Bitemporal from day one/ :: the workspace schema uses bitemporal tracking

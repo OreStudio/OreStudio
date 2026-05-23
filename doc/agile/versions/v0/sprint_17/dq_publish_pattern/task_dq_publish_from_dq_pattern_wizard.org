@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7b174d52-e5ba-4a95-ad5d-dd44c59dd808
+:ID: 7B174D52-E5BA-4A95-AD5D-DD44C59DD808
 :END:
 #+title: Task: DQ publish-from-dq pattern, wizard UX, IAM logging
 #+description: - Implement DQ publish-from-dq pattern: async workflow-based bundle publication with SQL, C++ and UI
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:dc1effd8-b983-48c7-835b-71333aece016][DQ publish pattern]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DC1EFFD8-B983-48C7-835B-71333AECE016][DQ publish pattern]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Implement the DQ publish-from-DQ pattern with async workflow-based bundle public
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:dc1effd8-b983-48c7-835b-71333aece016][DQ publish pattern]] |
+| Parent story | [[id:DC1EFFD8-B983-48C7-835B-71333AECE016][DQ publish pattern]] |
 | Now          | Completed 2026-05-19.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

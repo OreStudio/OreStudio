@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 28ec17eb-b2aa-4e72-bf8c-7aa0b63ea2e0
+:ID: 28EC17EB-B2AA-4E72-BF8C-7AA0B63EA2E0
 :END:
 #+title: Task: Add core infrastructure for roles and permissions
 #+description: Domain model (role, permission, role-permission, user-role), repositories, sqlgen schemas.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:6255bc9f-95bc-4fc7-98c8-6060b8679b85][Roles and permissions]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6255BC9F-95BC-4FC7-98C8-6060B8679B85][Roles and permissions]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Lay the RBAC foundations: =role=, =permission=, =role_permission=, =user_role= d
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
 | State        | DONE                                                               |
-| Parent story | [[id:6255bc9f-95bc-4fc7-98c8-6060b8679b85][Roles and permissions]] |
+| Parent story | [[id:6255BC9F-95BC-4FC7-98C8-6060B8679B85][Roles and permissions]] |
 | Now          | Completed 2025-12-26.                                              |
 | Waiting on   | None.                                                              |
 | Next         | None.                                                              |

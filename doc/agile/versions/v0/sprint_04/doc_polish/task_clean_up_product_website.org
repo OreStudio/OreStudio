@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b5e31cfc-772f-4c07-a019-4d9cfea615e9
+:ID: B5E31CFC-772F-4C07-A019-4D9CFEA615E9
 :END:
 #+title: Task: Clean up product website
 #+description: Tighten the product website: navigation, broken links, stale screenshots.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-30
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:13e4f41f-82e1-400a-9c84-e60a587e2647][Documentation polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:13E4F41F-82E1-400A-9C84-E60A587E2647][Documentation polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -30,7 +30,7 @@ project framing).
 | Field        | Value                                                             |
 |--------------+-------------------------------------------------------------------|
 | State        | DONE                                                              |
-| Parent story | [[id:13e4f41f-82e1-400a-9c84-e60a587e2647][Documentation polish]] |
+| Parent story | [[id:13E4F41F-82E1-400A-9C84-E60A587E2647][Documentation polish]] |
 | Now          | Completed 2025-11-30.                                             |
 | Waiting on   | None.                                                             |
 | Next         | None.                                                             |

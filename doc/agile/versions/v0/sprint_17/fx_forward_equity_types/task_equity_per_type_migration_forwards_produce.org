@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5de55856-aa28-43dd-9cb5-ada241b12765
+:ID: 5DE55856-AA28-43DD-9CB5-ADA241B12765
 :END:
 #+title: Task: Equity per-type migration: forwards produce variants; read-side stub deferred
 #+description: PR #2 of the four-PR instrument per-type migration series (see
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:00ccc0dc-200c-4951-81e0-6aa93b1503fc][FX forward E2E and equity per-type migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:00CCC0DC-200C-4951-81E0-6AA93B1503FC][FX forward E2E and equity per-type migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Migrate all nine equity per-type instrument tables to the import path, replacing
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:00ccc0dc-200c-4951-81e0-6aa93b1503fc][FX forward E2E and equity per-type migration]] |
+| Parent story | [[id:00CCC0DC-200C-4951-81E0-6AA93B1503FC][FX forward E2E and equity per-type migration]] |
 | Now          | Completed 2026-04-24.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1bc0f53e-529a-4b38-a428-41ee1da7581d
+:ID: 1BC0F53E-529A-4B38-A428-41EE1DA7581D
 :END:
 #+title: Task: Refactor documentation per entity
 #+description: Split recipes per entity; create a top-level domain document per entity that cross-references recipes, component model, entity implementation files (SQL included), and skills. Recipes attach to components rather than being global.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e7ddb653-ceaa-4922-b0f9-8bd5393a747e][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E7DDB653-CEAA-4922-B0F9-8BD5393A747E][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Restructure documentation so it composes per-entity rather than across global re
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | BACKLOG                                                          |
-| Parent story | [[id:e7ddb653-ceaa-4922-b0f9-8bd5393a747e][Engineering hygiene]] |
+| Parent story | [[id:E7DDB653-CEAA-4922-B0F9-8BD5393A747E][Engineering hygiene]] |
 | Now          | POSTPONED in sprint 09; carried forward.                         |
 | Waiting on   | A sprint with the slot to land it.                               |
 | Next         | Return to this once a sprint has the budget.                     |

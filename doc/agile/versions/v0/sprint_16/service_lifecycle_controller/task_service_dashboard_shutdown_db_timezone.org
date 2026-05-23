@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b479f64e-385c-468d-a72e-264d22b3f115
+:ID: B479F64E-385C-468D-A72E-264D22B3F115
 :END:
 #+title: Task: Service dashboard, shutdown fixes and DB timezone
 #+description: Standardised exit codes; last 20 lines of logs captured on failure; PID files for supervised services; TimeZone=UTC on raw libpq connections; double-disconnect crash fix; Last Error column in dashboard; PluginRegistry lifecycle fix.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:014352D4-AAA5-48E7-903D-C06B5B4F7D62][Service lifecycle controller]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Standardised exit codes; last 20 lines of logs captured on failure; PID files fo
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE                                                                      |
-| Parent story | [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]] |
+| Parent story | [[id:014352D4-AAA5-48E7-903D-C06B5B4F7D62][Service lifecycle controller]] |
 | Now          | Completed 2026-04-08.                                                     |
 | Waiting on   | None.                                                                     |
 | Next         | None.                                                                     |

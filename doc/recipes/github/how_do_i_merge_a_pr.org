@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 95d560c6-3551-4810-9d11-55f9f82b483c
+:ID: 95D560C6-3551-4810-9D11-55F9F82B483C
 :END:
 #+title: How do I merge a PR?
 #+description: Merge an approved, green PR via the gh CLI and clean up the feature branch.
@@ -27,7 +27,7 @@ How do I merge a green, approved PR and delete its feature branch?
    #+end_src
 
 2. /Verify all review threads are resolved/ — see the resolve loop
-   in [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][How do I address PR review comments?]].
+   in [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]].
 
 3. /Merge the PR/ and delete the branch in one go:
 
@@ -63,7 +63,7 @@ Manual.
 
 * See also
 
-- [[id:cc928252-e0c5-4c3c-a7a8-d613593e4e37][How do I create a PR?]] — the start of the lifecycle.
-- [[id:479e7e27-4060-4bfd-ac38-f11efa3bb306][How do I start a new feature branch phase?]] — what comes after
+- [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — the start of the lifecycle.
+- [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]] — what comes after
   a merge when more work follows.
 - [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]].

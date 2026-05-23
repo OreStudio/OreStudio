@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c2e401c5-3f2b-4910-a91a-82dcf1b826e1
+:ID: C2E401C5-3F2B-4910-A91A-82DCF1B826E1
 :END:
 #+title: Story: Build and packaging
 #+description: Windows package install, broken Windows build (local time), shutdown crash, missing asset packaging, sqlgen Valgrind leak fix.
@@ -11,7 +11,7 @@
 #+updated: 2025-11-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:38DAA167-E791-48FB-AFEB-1813615037DE][Sprint 04]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,16 +24,16 @@ and clear up assets packaging.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]] |
+| Parent sprint | [[id:38DAA167-E791-48FB-AFEB-1813615037DE][Sprint 04]] |
 | Now           | Completed 2025-11-20.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2025-11-20                                             |
 
 
-#+successor: bb39ecbd-1ea5-4d53-a117-a0c88e0463c1
+#+successor: BB39ECBD-1EA5-4D53-A117-A0C88E0463C1
 
-Continued in: [[id:bb39ecbd-1ea5-4d53-a117-a0c88e0463c1][Build platform follow-up]] (sprint 07) — WSL setup,
+Continued in: [[id:BB39ECBD-1EA5-4D53-A117-A0C88E0463C1][Build platform follow-up]] (sprint 07) — WSL setup,
 prebuilt Qt switch, Windows clang build breaks.
 
 * Acceptance
@@ -47,9 +47,9 @@ prebuilt Qt switch, Windows clang build breaks.
 
 In execution order:
 
-- [[id:90e0b641-95ea-4c57-87d6-dce944cdd2b9][Install Windows package on Windows machine]]
-- [[id:0af167ee-420c-427c-9eda-88a41951eda7][Fix broken Windows build due to local time]]
-- [[id:ac81bc12-b879-441f-b2d6-c27fd9d8a135][Resolve crash on shutdown]]
+- [[id:90E0B641-95EA-4C57-87D6-DCE944CDD2B9][Install Windows package on Windows machine]]
+- [[id:0AF167EE-420C-427C-9EDA-88A41951EDA7][Fix broken Windows build due to local time]]
+- [[id:AC81BC12-B879-441F-B2D6-C27FD9D8A135][Resolve crash on shutdown]]
 
 Additional v0 entries belonging here, not migrated as full tasks:
 
@@ -79,7 +79,7 @@ Additional v0 entries belonging here, not migrated as full tasks:
 
 * See also
 
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset menu, output directory layout.
-- [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] (sprint 02) / [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]] (sprint
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset menu, output directory layout.
+- [[id:AC14558D-A526-4BE2-ADB6-81BCFE0E7292][Build stabilisation]] (sprint 02) / [[id:D246FFBE-11EE-4FF9-9309-2A693E2476EF][Build stabilisation 3]] (sprint
   03) — predecessor build stories.
 - [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — the Qt component where the shutdown crash lived.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 41d87dc9-12b8-46ab-87c0-3b28aaf75021
+:ID: 41D87DC9-12B8-46AB-87C0-3B28AAF75021
 :END:
 #+title: Add ISO 20022 Support
 #+description: Add ISO 20022 Support
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 As per Gemini:
 

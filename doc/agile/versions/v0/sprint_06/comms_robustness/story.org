@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 88971afe-e0b4-4e54-b0d7-b1c627c2f239
+:ID: 88971AFE-E0B4-4E54-B0D7-B1C627C2F239
 :END:
 #+title: Story: Comms robustness
 #+description: Split protocol.hpp by component; add a handshake service; cover multi-threaded scenarios; add a Postgres listener; add retry to the client with give-up notification.
@@ -11,7 +11,7 @@
 #+updated: 2025-12-10
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -25,7 +25,7 @@ with give-up notification to the client.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]] |
+| Parent sprint | [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]] |
 | Now           | Completed 2025-12-10.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -43,10 +43,10 @@ with give-up notification to the client.
 
 In execution order:
 
-- [[id:0a5559c6-a726-45f3-9e63-3aec93d6ea90][Split protocol.hpp into components]]
-- [[id:e7fda609-024b-4ef1-95d9-6726ed112315][Create handshake service in comms]]
-- [[id:a9a1e81d-9061-43ac-b566-10b40dee845b][Multi-threaded scenarios with comms]]
-- [[id:7a4ce6b9-06ef-42e2-bda1-fb69ed082dfe][Add retry algorithm to client]]
+- [[id:0A5559C6-A726-45F3-9E63-3AEC93D6EA90][Split protocol.hpp into components]]
+- [[id:E7FDA609-024B-4EF1-95D9-6726ED112315][Create handshake service in comms]]
+- [[id:A9A1E81D-9061-43AC-B566-10B40DEE845B][Multi-threaded scenarios with comms]]
+- [[id:7A4CE6B9-06EF-42E2-BDA1-FB69ED082DFE][Add retry algorithm to client]]
 
 Additional v0 entries belonging here, not migrated as full tasks:
 
@@ -69,5 +69,5 @@ Additional v0 entries belonging here, not migrated as full tasks:
 
 * See also
 
-- [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] (sprint 02) — predecessor.
+- [[id:145ADEDE-C3DD-4B51-AD3B-D6B5506C6C37][Client/server foundations]] (sprint 02) — predecessor.
 - [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] — the messaging substrate this story extends.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 84c10b13-51e2-4d8d-b82a-f38f8db10e86
+:ID: 84C10B13-51E2-4D8D-B82A-F38F8DB10E86
 :END:
 #+title: Work through all types required for Example 1
 #+description: Work through all types required for Example 1
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 We want to be able to visualise all the data types needed in order to be able to
 run the most basic example of ORE. For each of these types, create a stories.

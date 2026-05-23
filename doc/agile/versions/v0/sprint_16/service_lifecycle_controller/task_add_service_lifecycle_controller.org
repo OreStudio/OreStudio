@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ce070f4d-04f6-4b35-b46d-ee6d744c2d7f
+:ID: CE070F4D-04F6-4B35-B46D-EE6D744C2D7F
 :END:
 #+title: Task: Add service lifecycle controller and dashboard enhancements
 #+description: ores.controller component for managing service definitions + instances + lifecycle events; process supervisor with dependency-ordered service launch; cert management; HTTP/Wt/wrapper definitions; service dashboard UX overhaul with badge status + Stop/Restart controls; graceful shutdown of child processes.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:014352D4-AAA5-48E7-903D-C06B5B4F7D62][Service lifecycle controller]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ ores.controller component for managing service definitions + instances + lifecyc
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE                                                                      |
-| Parent story | [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]] |
+| Parent story | [[id:014352D4-AAA5-48E7-903D-C06B5B4F7D62][Service lifecycle controller]] |
 | Now          | Completed 2026-04-08.                                                     |
 | Waiting on   | None.                                                                     |
 | Next         | None.                                                                     |

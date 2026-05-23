@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 68777ef7-8d69-4985-88a1-6363ea5ebee9
+:ID: 68777EF7-8D69-4985-88A1-6363EA5EBEE9
 :END:
 #+title: Task: Implement authentication bootstrap workflow
 #+description: Implement the bootstrap workflow that creates the first admin account on a fresh database; POSTPONED in sprint 03.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A465D630-5972-484B-A2E8-AD1F91657103][Authentication bootstrap follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -30,7 +30,7 @@ at all.
 | Field        | Value                                                                           |
 |--------------+---------------------------------------------------------------------------------|
 | State        | DONE                                                                            |
-| Parent story | [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] |
+| Parent story | [[id:A465D630-5972-484B-A2E8-AD1F91657103][Authentication bootstrap follow-up]] |
 | Now          | Completed 2025-11-22.                                                           |
 | Waiting on   | None.                                                                           |
 | Next         | None.                                                                           |

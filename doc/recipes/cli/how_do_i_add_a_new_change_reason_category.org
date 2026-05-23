@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ebe12443-ad16-4cd4-bd1f-25b71f17e37e
+:ID: EBE12443-AD16-4CD4-BD1F-25B71F17E37E
 :END:
 #+title: How do I add a new change reason category?
 #+description: Add a new change reason category

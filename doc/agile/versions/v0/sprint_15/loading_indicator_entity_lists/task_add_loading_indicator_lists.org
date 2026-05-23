@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 85d90c43-a6ea-4726-b3c4-8ad5c0dc1ebd
+:ID: 85D90C43-A6EA-4726-B3C4-8AD5C0DC1EBD
 :END:
 #+title: Task: Add loading indicator to all entity list windows
 #+description: Indeterminate 4px progress bar across all entity list windows; centralised reload lifecycle in EntityListMdiWindow base class (clears stale indicators, manages loading states); reload() renamed to doReload() in 45 subclasses with base class delegating; applied to OrgExplorerMdiWindow + PortfolioExplorerMdiWindow.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7b5e0c11-8c1f-4d91-adea-2596197cd0d4][Loading indicator on entity list windows]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7B5E0C11-8C1F-4D91-ADEA-2596197CD0D4][Loading indicator on entity list windows]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add a consistent loading indicator across every entity list window.
 | Field        | Value                                                                                 |
 |--------------+---------------------------------------------------------------------------------------|
 | State        | DONE                                                                                  |
-| Parent story | [[id:7b5e0c11-8c1f-4d91-adea-2596197cd0d4][Loading indicator on entity list windows]] |
+| Parent story | [[id:7B5E0C11-8C1F-4D91-ADEA-2596197CD0D4][Loading indicator on entity list windows]] |
 | Now          | Completed 2026-03-20.                                                                 |
 | Waiting on   | None.                                                                                 |
 | Next         | None.                                                                                 |

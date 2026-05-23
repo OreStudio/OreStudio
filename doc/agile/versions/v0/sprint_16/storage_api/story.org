@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7399693e-f61b-4e3d-b37c-f53f3ce5a197
+:ID: 7399693E-F61B-4E3D-B37C-F53F3CE5A197
 :END:
 #+title: Story: Generic object storage API
 #+description: ores.storage component with S3-like PUT / GET / DELETE; migrate compute grid to the generic storage API.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -22,7 +22,7 @@ ores.storage component with S3-like PUT / GET / DELETE; migrate compute grid to 
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Parent sprint | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]] |
 | Now           | Completed 2026-04-03.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -36,8 +36,8 @@ ores.storage component with S3-like PUT / GET / DELETE; migrate compute grid to 
 
 In execution order:
 
-- [[id:9024c57f-ee5f-4f9b-9a53-e72687aea90f][Add generic object storage API + HTTP routes]]
-- [[id:fa020fea-2b75-41ba-8333-90e9469da1e9][Migrate compute grid to generic storage API]]
+- [[id:9024C57F-EE5F-4F9B-9A53-E72687AEA90F][Add generic object storage API + HTTP routes]]
+- [[id:FA020FEA-2B75-41BA-8333-90E9469DA1E9][Migrate compute grid to generic storage API]]
 
 * Decisions
 

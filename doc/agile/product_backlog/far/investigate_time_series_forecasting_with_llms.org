@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 968f901f-464d-48a7-9e71-79ccd7cb9b1d
+:ID: 968F901F-464D-48A7-9E71-79CCD7CB9B1D
 :END:
 #+title: Investigate time series forecasting with LLMs
 #+description: Investigate time series forecasting with LLMs
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 - [[https://timecopilot.dev/][TimeCopilot]]: "TimeCopilot is an open-source forecasting agent that combines
   the power of large language models with state-of-the-art time series

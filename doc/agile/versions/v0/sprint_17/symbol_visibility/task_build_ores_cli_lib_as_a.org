@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6371b4a7-62de-43f3-81ba-a343185b8b6c
+:ID: 6371B4A7-62DE-43F3-81BA-A343185B8B6C
 :END:
 #+title: Task: Build ores.cli.lib as a static library
 #+description: - Fixes Windows link error: `undefined symbol: ores::cli::app::host::execute`
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Convert ores.cli.lib from shared to STATIC to fix a Windows undefined-symbol lin
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] |
+| Parent story | [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]] |
 | Now          | Completed 2026-05-19.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

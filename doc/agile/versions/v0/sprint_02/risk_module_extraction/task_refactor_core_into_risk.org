@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f0501e7e-b681-4c25-a5e8-e350855308ac
+:ID: F0501E7E-B681-4C25-A5E8-E350855308AC
 :END:
 #+title: Task: Refactor core into risk
 #+description: Refactor the contents of the renamed =risk= module so the structure reflects the new name.
@@ -12,7 +12,7 @@
 #+updated: 2025-10-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6C63D2B2-7065-4AFC-AE54-86220C427B20][Risk module extraction]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -26,7 +26,7 @@ the public API to expose risk concepts.
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]] |
+| Parent story | [[id:6C63D2B2-7065-4AFC-AE54-86220C427B20][Risk module extraction]] |
 | Now          | Completed 2025-10-05.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

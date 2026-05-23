@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 09f5ded0-a8c9-4ae7-b822-64aa0a4305c8
+:ID: 09F5DED0-A8C9-4AE7-B822-64AA0A4305C8
 :END:
 #+title: Add a delete all button which deletes all currencies
 #+description: Add a delete all button which deletes all currencies
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 It is useful especially in test environments to be able to delete all entities
 before a re-import.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: df3b299e-7fed-4411-b257-125ed35c3a9e
+:ID: DF3B299E-7FED-4411-B257-125ED35C3A9E
 :END:
 #+title: Story: Party isolation for books, portfolios, trades
 #+description: Extend party-level RLS to books / portfolios / trades; session_data carries party context; FlagIconHelper centralised.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,16 +24,16 @@ while we're touching the affected dialogs.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Parent sprint | [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]] |
 | Now           | Completed 2026-02-24.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-02-24                                             |
 
 
-#+successor: 2faf5366-2fed-4fbe-99f2-8cb46ca84aeb
+#+successor: 2FAF5366-2FED-4FBE-99F2-8CB46CA84AEB
 
-Continued in: [[id:2faf5366-2fed-4fbe-99f2-8cb46ca84aeb][Party isolation RLS policies]] (sprint 16). Sprint 13 extended party-level RLS to books / portfolios / trades; sprint 16 closes the remaining gaps surfaced by validate_schemas.sh.
+Continued in: [[id:2FAF5366-2FED-4FBE-99F2-8CB46CA84AEB][Party isolation RLS policies]] (sprint 16). Sprint 13 extended party-level RLS to books / portfolios / trades; sprint 16 closes the remaining gaps surfaced by validate_schemas.sh.
 
 * Acceptance
 
@@ -47,7 +47,7 @@ Continued in: [[id:2faf5366-2fed-4fbe-99f2-8cb46ca84aeb][Party isolation RLS pol
 
 In execution order:
 
-- [[id:7864c825-dcbd-4f86-8609-c4739d250239][Party isolation for books, portfolios, trades]]
+- [[id:7864C825-DCBD-4F86-8609-C4739D250239][Party isolation for books, portfolios, trades]]
 
 * Decisions
 
@@ -60,4 +60,4 @@ In execution order:
 
 * See also
 
-- [[id:c431b464-a3bc-4d9c-b33a-7c5b247ebea4][Party-level RLS isolation]] (sprint 12) — sibling continuation of the same RLS layer.
+- [[id:C431B464-A3BC-4D9C-B33A-7C5B247EBEA4][Party-level RLS isolation]] (sprint 12) — sibling continuation of the same RLS layer.

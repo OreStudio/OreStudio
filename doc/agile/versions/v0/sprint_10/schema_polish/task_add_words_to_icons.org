@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 47bf0f41-5e6b-4da9-b99d-e73ad80686a5
+:ID: 47BF0F41-5E6B-4DA9-B99D-E73AD80686A5
 :END:
 #+title: Task: Add labels (CSV/ORE/FPML) to import/export icons
 #+description: Two well-defined import/export icons get textual badges (CSV, ORE, FPML) so the toolbar is readable.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5BAFBEB2-C875-4655-BB78-801A3BF65022][Schema polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add textual badges (CSV / ORE / FPML) to the import/export icons so the toolbar 
 | Field        | Value                                                      |
 |--------------+------------------------------------------------------------|
 | State        | DONE                                                       |
-| Parent story | [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]] |
+| Parent story | [[id:5BAFBEB2-C875-4655-BB78-801A3BF65022][Schema polish]] |
 | Now          | Completed 2026-01-24.                                      |
 | Waiting on   | None.                                                      |
 | Next         | None.                                                      |

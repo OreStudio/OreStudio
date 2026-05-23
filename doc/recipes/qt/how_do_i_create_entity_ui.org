@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 25167ed8-6ccc-43ac-9978-026e6ad581fc
+:ID: 25167ED8-6CCC-43AC-9978-026E6AD581FC
 :END:
 #+title: How do I create Qt UI for a new entity?
 #+description: Walk through client model, list window, detail dialog, and history dialog for a new entity in ores.qt.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 
 ClientModel layout, async fetch pattern, and file locations are in
-[[id:2fddc2f6-c510-4a86-8c50-d79c83eddfff][Qt entity patterns]]. The [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][qt-entity-creator]] skill drives this process;
+[[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]]. The [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] skill drives this process;
 codegen (=--profile qt=) is the primary path.
 
 * Question
@@ -68,7 +68,7 @@ highlighting.
 
 * See also
 
-- [[id:2fddc2f6-c510-4a86-8c50-d79c83eddfff][Qt entity patterns]] — ClientModel, dialog, history dialog patterns.
-- [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][qt-entity-creator]] — skill that drives this workflow.
-- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] — plugin lifecycle and menu registration.
-- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.
+- [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]] — ClientModel, dialog, history dialog patterns.
+- [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] — skill that drives this workflow.
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — plugin lifecycle and menu registration.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

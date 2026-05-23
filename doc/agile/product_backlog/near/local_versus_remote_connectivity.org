@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6666fb7a-d7b4-4f81-bd89-9b96af358997
+:ID: 6666FB7A-D7B4-4F81-BD89-9B96AF358997
 :END:
 #+title: Local versus remote connectivity
 #+description: Local versus remote connectivity
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 In some cases it makes sense to use the UI directly against the database - for
 example, users may just want to create a simple setup to play around and the

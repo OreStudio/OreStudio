@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f58f9a64-1776-47c0-96fe-0a7252dce616
+:ID: F58F9A64-1776-47C0-96FE-0A7252DCE616
 :END:
 #+title: Reduce messaging handler boilerplate
 #+description: Factor out common JWT verify, permission check, and logging into a base handler class or free function so individual handlers don't repeat the same preamble.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

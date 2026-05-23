@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7dcf008e-33a5-4493-8ff2-abe1e7d78053
+:ID: 7DCF008E-33A5-4493-8FF2-ABE1E7D78053
 :END:
 #+title: Story: Sprint 14 housekeeping
 #+description: Sprint backlog refinement.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A63C60DC-C3A6-4F4F-8977-012A7BF1D566][Sprint 14]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -22,7 +22,7 @@ Recurring per-sprint housekeeping.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]] |
+| Parent sprint | [[id:A63C60DC-C3A6-4F4F-8977-012A7BF1D566][Sprint 14]] |
 | Now           | Completed 2026-03-12.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -37,7 +37,7 @@ Recurring per-sprint housekeeping.
 
 In execution order:
 
-- [[id:27f234f3-87e2-4e79-84a2-6cae0366044a][Sprint and product backlog refinement]]
+- [[id:27F234F3-87E2-4E79-84A2-6CAE0366044A][Sprint and product backlog refinement]]
 
 * Decisions
 

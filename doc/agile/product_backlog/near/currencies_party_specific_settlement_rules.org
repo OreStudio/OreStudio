@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 09f1172e-67df-464b-9c92-bc0a5bb6bf4b
+:ID: 09F1172E-67DF-464B-9C92-BC0A5BB6BF4B
 :END:
 #+title: Currencies: Party-Specific Settlement Rules
 #+description: Currencies: Party-Specific Settlement Rules
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 - Goal: Define the "Where." This models what a specific "House" entity (or
   child) is capable of doing.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6e09902a-5d78-4697-9934-f818073fa5d9
+:ID: 6E09902A-5D78-4697-9934-F818073FA5D9
 :END:
 #+title: Plans
 #+description: Index of legacy design and implementation plans kept for historical reference.
@@ -13,7 +13,7 @@
 These are pre-sprint design documents written during or before implementation.
 They are kept for historical context — to understand why a decision was made
 or what was considered. They are not maintained after the work is done.
-Active work lives in the [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][agile process]] as stories and tasks, not here.
+Active work lives in the [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][agile process]] as stories and tasks, not here.
 
 * Plans
 

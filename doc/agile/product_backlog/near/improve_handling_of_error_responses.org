@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e5a30950-ea2e-4052-b2d1-14e1621a903e
+:ID: E5A30950-EA2E-4052-B2D1-14E1621A903E
 :END:
 #+title: Improve handling of error responses
 #+description: Improve handling of error responses
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 As per Gemini code review:
 

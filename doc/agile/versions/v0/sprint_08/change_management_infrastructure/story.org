@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 150e3c44-aadb-48c8-a11e-322b44a0357a
+:ID: 150E3C44-AADB-48C8-A11E-322B44A0357A
 :END:
 #+title: Story: Change management infrastructure
 #+description: Amendment / deletion reasons base infrastructure plus the Qt UI polish round on top.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ preserved historically and visible in the UI.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] |
+| Parent sprint | [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]] |
 | Now           | Completed 2026-01-11.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,8 +41,8 @@ preserved historically and visible in the UI.
 
 In execution order:
 
-- [[id:fb3a1834-f76a-4229-8f04-49830a9039cd][Amend and delete reasons base infrastructure]]
-- [[id:6b514406-2fbd-4697-8026-b0cb98a3b93d][Change reasons UI fixes]]
+- [[id:FB3A1834-F76A-4229-8F04-49830A9039CD][Amend and delete reasons base infrastructure]]
+- [[id:6B514406-2FBD-4697-8026-B0CB98A3B93D][Change reasons UI fixes]]
 
 * Decisions
 

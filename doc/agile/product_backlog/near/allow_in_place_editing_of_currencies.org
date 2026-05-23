@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ce3a9400-0d6a-4a5a-851a-2a63022a1a71
+:ID: CE3A9400-0D6A-4A5A-851A-2A63022A1A71
 :END:
 #+title: Allow in place editing of currencies
 #+description: Allow in place editing of currencies
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 For expediency users should be able to edit multiple currencies and save them in
 one go directly in the grid. Shift enter to edit a field seems interesting.

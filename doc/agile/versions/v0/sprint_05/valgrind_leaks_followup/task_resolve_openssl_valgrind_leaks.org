@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c4aafe26-a61f-48c1-9f8d-00c64898ca17
+:ID: C4AAFE26-A61F-48C1-9F8D-00C64898CA17
 :END:
 #+title: Task: Resolve all of the OpenSSL leaks in Valgrind
 #+description: Suppress the OpenSSL initialisation leaks (LLM-confirmed as benign) — closes sprint 03's BLOCKED follow-up.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:69C49095-A91F-41D9-9D7E-0E9478143E93][Valgrind leaks follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -30,7 +30,7 @@ rather than chase them.
 | Field        | Value                                                                 |
 |--------------+-----------------------------------------------------------------------|
 | State        | DONE                                                                  |
-| Parent story | [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]] |
+| Parent story | [[id:69C49095-A91F-41D9-9D7E-0E9478143E93][Valgrind leaks follow-up]] |
 | Now          | Completed 2025-11-25.                                                 |
 | Waiting on   | None.                                                                 |
 | Next         | None.                                                                 |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: afdd8573-8d4f-4b2f-8246-23f68d2e304d
+:ID: AFDD8573-8D4F-4B2F-8246-23F68D2E304D
 :END:
 #+title: Suggest Role Commands
 #+description: Suggest Role Commands

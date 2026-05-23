@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 329950a6-28df-4a63-ac55-12286fedffbb
+:ID: 329950A6-28DF-4A63-AC55-12286FEDFFBB
 :END:
 #+title: Help Permissions
 #+description: Help Permissions

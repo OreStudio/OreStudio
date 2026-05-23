@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b6c5d4e3-f2a1-4b0c-8d9e-0f1a2b3c4d5e
+:ID: B6C5D4E3-F2A1-4B0C-8D9E-0F1A2B3C4D5E
 :END:
 #+title: How do I create a new entity?
 #+description: Steps to add a complete domain entity across all layers using codegen-first approach.
@@ -17,7 +17,7 @@ How do I add a new domain entity to ORE Studio?
 
 ** 1. Read the standard first
 
-Every entity must conform to [[id:608675e1-4284-4902-99ac-4da565390afb][entity lifecycle]] before writing any code.
+Every entity must conform to [[id:608675E1-4284-4902-99AC-4DA565390AFB][entity lifecycle]] before writing any code.
 That document specifies what each layer must contain and what the defaults
 are. Partial entities or disabled defaults without written rationale are not
 acceptable.
@@ -59,7 +59,7 @@ cd projects/ores.codegen
 ./run_generator.sh models/{component}/{entity}_domain_entity.json --profile qt
 #+end_src
 
-Follow the [[id:0cba2f23-7f5f-433d-921a-d9c056bd9ca8][entity-creator]] skill for CMakeLists integration, controller
+Follow the [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][entity-creator]] skill for CMakeLists integration, controller
 wiring, and PR checkpoints at each layer boundary.
 
 ** 4. Validate
@@ -76,7 +76,7 @@ Ask the user to build the affected targets before raising each PR.
 
 * Script
 
-See [[id:0cba2f23-7f5f-433d-921a-d9c056bd9ca8][entity-creator]] skill for the full phase-by-phase execution guide and
+See [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][entity-creator]] skill for the full phase-by-phase execution guide and
 layer-specific skills for deep detail on each layer.
 
 * Tested by

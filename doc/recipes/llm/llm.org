@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 51fe4df6-d12f-4cf3-a32f-e793979aa68b
+:ID: 51FE4DF6-D12F-4CF3-A32F-E793979AA68B
 :END:
 #+title: LLM prompt recipes
 #+description: Index of reusable prompts for LLM chat interactions, grouped by use-case.
@@ -16,12 +16,12 @@ operating inside this repo.
 
 * Code and review
 
-- [[id:c4fef68b-dc9b-4c05-b86b-0548c1394c45][How do I ask an LLM to review C++ code?]]
+- [[id:C4FEF68B-DC9B-4C05-B86B-0548C1394C45][How do I ask an LLM to review C++ code?]]
 
 * Documentation
 
-- [[id:6faa2b35-805a-4790-acea-e168afae23c0][How do I ask an LLM to transcribe handwritten financial notes?]]
+- [[id:6FAA2B35-805A-4790-ACEA-E168AFAE23C0][How do I ask an LLM to transcribe handwritten financial notes?]]
 
 * Planning
 
-- [[id:6fe5a0e1-4c96-4b13-a2b9-64590ad6db46][How do I ask an LLM to spec a new feature?]]
+- [[id:6FE5A0E1-4C96-4B13-A2B9-64590AD6DB46][How do I ask an LLM to spec a new feature?]]

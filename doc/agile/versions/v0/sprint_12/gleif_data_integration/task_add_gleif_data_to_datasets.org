@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3c36efbe-694b-429b-91e6-02082b95f3ef
+:ID: 3C36EFBE-694B-429B-91E6-02082B95F3EF
 :END:
 #+title: Task: Add GLEIF data to datasets
 #+description: Codegen for lei_entities + lei_relationships artefact tables; Python lei_generate_metadata_sql.py + shell wrapper; GLEIF catalog + methodology + 4 datasets; methodology.txt updated.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:253ce971-c0f3-43c3-980c-276233250b86][GLEIF data integration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:253CE971-C0F3-43C3-980C-276233250B86][GLEIF data integration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Turn the GLEIF CSV subsets (downloaded by the sprint-10 script) into proper data
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:253ce971-c0f3-43c3-980c-276233250b86][GLEIF data integration]] |
+| Parent story | [[id:253CE971-C0F3-43C3-980C-276233250B86][GLEIF data integration]] |
 | Now          | Completed 2026-02-09.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

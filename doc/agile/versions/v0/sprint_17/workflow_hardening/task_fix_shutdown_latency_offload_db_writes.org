@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2018f6e5-95f7-443b-9406-9d941ce3934a
+:ID: 2018F6E5-95F7-443B-9406-9D941CE3934A
 :END:
 #+title: Task: Fix shutdown latency: offload DB writes to thread pool
 #+description: - `monitor_process()` and `do_launch()` were running blocking libpqxx calls on the single-threaded `io_context`, seriali
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7030AB78-B8F1-425C-83EF-A6F9EBF218A8][Workflow engine hardening]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Offload blocking libpqxx calls in process_supervisor to a thread pool to elimina
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] |
+| Parent story | [[id:7030AB78-B8F1-425C-83EF-A6F9EBF218A8][Workflow engine hardening]] |
 | Now          | Completed 2026-05-17.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

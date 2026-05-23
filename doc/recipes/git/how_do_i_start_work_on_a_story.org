@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: da003a23-1604-43e7-a98f-a305148fbcf4
+:ID: DA003A23-1604-43E7-A98F-A305148FBCF4
 :END:
 #+title: How do I start work on a story?
 #+description: Create a feature branch from main and mark the story STARTED in the sprint.
@@ -11,10 +11,10 @@
 #+updated: 2026-05-21
 
 This recipe covers the transition =BACKLOG → STARTED= for a
-[[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]]. It is the entry point to [[id:227958a5-0f78-4cc6-a116-b83988592b68][Sprint execution]] — the phase owned by
-[[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]] in which tasks are picked up and PRs are opened. For
+[[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]]. It is the entry point to [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]] — the phase owned by
+[[id:DBFD530B-4B56-48D1-9F03-3A0D0DA16552][System 1]] in which tasks are picked up and PRs are opened. For
 multi-phase stories (several PRs after the first has merged), use
-[[id:479e7e27-4060-4bfd-ac38-f11efa3bb306][How do I start a new feature branch phase?]] instead.
+[[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]] instead.
 
 * Question
 
@@ -58,7 +58,7 @@ branch and mark it active?
    git commit -m "[agile] Mark <story> STARTED"
    #+end_src
 
-The [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][heartbeat rule]] applies from this point: every agent session that
+The [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][heartbeat rule]] applies from this point: every agent session that
 touches the story must refresh the Status rows and =#+updated= before
 yielding.
 
@@ -68,16 +68,16 @@ Bare =git= CLI only. No wrapper script.
 
 * Tested by
 
-Manual. The status change is audited by [[id:ed29c99b-1507-49c9-9937-d296fffe428e][System 3*]] as part of the
+Manual. The status change is audited by [[id:ED29C99B-1507-49C9-9937-D296FFFE428E][System 3*]] as part of the
 sprint heartbeat audit.
 
 * See also
 
-- [[id:227958a5-0f78-4cc6-a116-b83988592b68][Sprint execution phase]] — the cybernetic context for this recipe.
-- [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][Lifecycle]] — full =BACKLOG → STARTED → DONE= state machine and
+- [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution phase]] — the cybernetic context for this recipe.
+- [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]] — full =BACKLOG → STARTED → DONE= state machine and
   heartbeat rule.
-- [[id:479e7e27-4060-4bfd-ac38-f11efa3bb306][How do I start a new feature branch phase?]] — for stories that
+- [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]] — for stories that
   span more than one PR after the first has merged.
 - [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch Manager]] — the skill that orchestrates branch
   creation and phase transitions.
-- [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Agile process]] — the full sprint loop (planning, execution, closure).
+- [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — the full sprint loop (planning, execution, closure).

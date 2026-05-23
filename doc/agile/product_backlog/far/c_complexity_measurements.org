@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d6dc4de5-22fa-4f48-8c8f-eea1fcab1c48
+:ID: D6DC4DE5-22FA-4F48-8C8F-EEA1FCAB1C48
 :END:
 #+title: C++ Complexity Measurements
 #+description: C++ Complexity Measurements
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Since we are no longer taking a close look at the generated code and since
 Gemini code review does not catch all issues, we should try to find some

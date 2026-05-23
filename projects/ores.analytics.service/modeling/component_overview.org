@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e5952f27-53bd-4c4d-85cd-556b6421b768
+:ID: E5952F27-53BD-4C4D-85CD-556B6421B768
 :END:
 #+title: ores.analytics.service
 #+description: NATS service entrypoint for the analytics domain.
@@ -49,4 +49,4 @@ All business logic lives in =ores.analytics.core=.
 
 * See also
 
-- [[id:bc804c31-d6f7-4e4e-9c4f-f4578beaf4f5][ores.analytics.core]] — all business logic for the analytics domain.
+- [[id:BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5][ores.analytics.core]] — all business logic for the analytics domain.

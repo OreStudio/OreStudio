@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d07e1889-fd0c-4f0b-ab3f-60d1519d08ba
+:ID: D07E1889-FD0C-4F0B-AB3F-60D1519D08BA
 :END:
 #+title: Task: Lift libpq Windows workaround to PostgreSQL imported target
 #+description: PRs #708 and #709 patched the Windows libpq link workaround (\`pgport\`, \`pgcommon\`, \`OpenSSL::SSL\`/\`Crypto\`, \`Se
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D84E735-7DFE-4215-AF00-A1F4C9323BDA][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Consolidate the scattered Windows libpq link workaround into a single PostgreSQL
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] |
+| Parent story | [[id:7D84E735-7DFE-4215-AF00-A1F4C9323BDA][Windows portability fixes]] |
 | Now          | Completed 2026-04-20.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

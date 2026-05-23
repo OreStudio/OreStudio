@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d9d3bab0-bb95-41ce-b68e-655b0c3695b0
+:ID: D9D3BAB0-BB95-41CE-B68E-655B0C3695B0
 :END:
 #+title: Task: Fix missing export symbol definitions in trading.api and trading.core
 #+description: - PR #738 added `ORES_X_LIBRARY` compile definitions and visibility flags to 43 libraries but missed `ores.trading.api` 
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add the missing ORES_TRADING_API_LIBRARY and ORES_TRADING_CORE_LIBRARY compile d
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] |
+| Parent story | [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]] |
 | Now          | Completed 2026-05-14.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

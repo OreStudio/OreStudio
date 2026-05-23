@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1490e130-08f9-4d43-8f80-d7e0f5022fbd
+:ID: 1490E130-08F9-4D43-8F80-D7E0F5022FBD
 :END:
 #+title: Story: Trade detail dialog unification
 #+description: Data-driven trade type metadata; merge all six instrument families (FX, swap/rates, bond/credit, equity/commodity, composite, scripted) into TradeDetailDialog; IInstrumentForm registry; form map + trade-type flags + create-mode instrument.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -22,7 +22,7 @@ Data-driven trade type metadata; merge all six instrument families (FX, swap/rat
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Parent sprint | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]] |
 | Now           | Completed 2026-04-07.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -36,15 +36,15 @@ Data-driven trade type metadata; merge all six instrument families (FX, swap/rat
 
 In execution order:
 
-- [[id:8fa0e222-979b-4196-ad1d-753145547d7a][Data-driven trade type metadata]]
-- [[id:12a0c4c2-ae7b-40ad-9098-c7f193a8f932][Form map + trade type flags + create-mode instrument]]
-- [[id:1d5182fe-8007-49e9-a86c-c414e03fd753][IInstrumentForm registry + per-family form widgets]]
-- [[id:6deb9eac-1269-4e84-8dfc-f54d78b5c816][Merge bond + credit instruments into TradeDetailDialog]]
-- [[id:8b41db08-0203-4fac-abc4-26a34655365e][Merge composite instrument family into TradeDetailDialog]]
-- [[id:6e6dd2db-e421-41b4-bad8-1fedbe788be9][Merge equity + commodity instruments into TradeDetailDialog]]
-- [[id:232b4373-d5c1-45db-ae20-37f03989b47d][Merge FX instrument into TradeDetailDialog]]
-- [[id:05f8dec5-1293-4ef7-84eb-479137c170c0][Merge scripted instrument family into TradeDetailDialog]]
-- [[id:0e0e3e4b-e418-4168-a98d-c509ee2bf49d][Merge swap/rates instrument into TradeDetailDialog]]
+- [[id:8FA0E222-979B-4196-AD1D-753145547D7A][Data-driven trade type metadata]]
+- [[id:12A0C4C2-AE7B-40AD-9098-C7F193A8F932][Form map + trade type flags + create-mode instrument]]
+- [[id:1D5182FE-8007-49E9-A86C-C414E03FD753][IInstrumentForm registry + per-family form widgets]]
+- [[id:6DEB9EAC-1269-4E84-8DFC-F54D78B5C816][Merge bond + credit instruments into TradeDetailDialog]]
+- [[id:8B41DB08-0203-4FAC-ABC4-26A34655365E][Merge composite instrument family into TradeDetailDialog]]
+- [[id:6E6DD2DB-E421-41B4-BAD8-1FEDBE788BE9][Merge equity + commodity instruments into TradeDetailDialog]]
+- [[id:232B4373-D5C1-45DB-AE20-37F03989B47D][Merge FX instrument into TradeDetailDialog]]
+- [[id:05F8DEC5-1293-4EF7-84EB-479137C170C0][Merge scripted instrument family into TradeDetailDialog]]
+- [[id:0E0E3E4B-E418-4168-A98D-C509EE2BF49D][Merge swap/rates instrument into TradeDetailDialog]]
 
 * Decisions
 

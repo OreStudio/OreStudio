@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8c70bba0-9a5e-47bb-9c1d-a7620f9d7bd9
+:ID: 8C70BBA0-9A5E-47BB-9C1D-A7620F9D7BD9
 :END:
 #+title: Long-running bundle publishes need progress reporting and async execution
 #+description: Long-running bundle publishes need progress reporting and async execution
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Large bundle publishes (notably =gleif.lei_counterparties.large=, ~15k
 counterparties + ~30k identifiers) take more than 5 minutes server-side, which

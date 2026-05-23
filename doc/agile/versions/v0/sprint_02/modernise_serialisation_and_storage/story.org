@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23
+:ID: 1F9F213C-6BEA-45FB-B0E0-AA5A7A9B7A23
 :END:
 #+title: Story: Modernise serialisation and storage
 #+description: Adopt reflect-cpp for JSON and XML, and sqlgen for Postgres — cut hand-written boilerplate.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ JSON and XML; sqlgen covers Postgres.
 | Field         | Value                                                                                          |
 |---------------+------------------------------------------------------------------------------------------------|
 | State         | DONE                                                                                           |
-| Parent sprint | [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]                                         |
+| Parent sprint | [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]]                                         |
 | Now           | Story closed; reflect-cpp drives JSON and XML, sqlgen replaces hand-written Postgres adapters. |
 | Waiting on    | None.                                                                                          |
 | Next          | None.                                                                                          |
@@ -41,9 +41,9 @@ JSON and XML; sqlgen covers Postgres.
 
 In execution order:
 
-- [[id:da7f8221-f808-432c-ab7d-cbb2687fd7b1][Add serialisation support for reflect-cpp]]
-- [[id:eb9d73f7-3598-48d2-8629-e0408f103280][Replace XML parsing with reflect-cpp]]
-- [[id:83dcdf42-74fa-4c71-b9c6-a31b4e0cc30c][Use sqlgen for Postgres]]
+- [[id:DA7F8221-F808-432C-AB7D-CBB2687FD7B1][Add serialisation support for reflect-cpp]]
+- [[id:EB9D73F7-3598-48D2-8629-E0408F103280][Replace XML parsing with reflect-cpp]]
+- [[id:83DCDF42-74FA-4C71-B9C6-A31B4E0CC30C][Use sqlgen for Postgres]]
 
 * Decisions
 
@@ -63,6 +63,6 @@ In execution order:
 
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the code generator that this work fed into
   (reflect-cpp and sqlgen sit alongside it in =library/templates/=).
-- [[id:fe693595-6693-459b-ad9b-eb7e3abbbc88][ores.codegen architecture]] — knowledge doc for the codegen
+- [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — knowledge doc for the codegen
   internals.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the Postgres setup sqlgen targets.

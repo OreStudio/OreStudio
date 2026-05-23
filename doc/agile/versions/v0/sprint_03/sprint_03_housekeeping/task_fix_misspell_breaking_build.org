@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: afe9a275-ebbe-47f8-9d93-e04fd90cca88
+:ID: AFE9A275-EBBE-47F8-9D93-E04FD90CCA88
 :END:
 #+title: Task: Fix misspell that breaks the build
 #+description: Repair a misspelled symbol that surfaces as a build break.
@@ -16,7 +16,7 @@
 #+updated: 2025-12-31
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:bcef2c68-65fe-4848-95ba-6ddb01b2ab9f][Sprint 03 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BCEF2C68-65FE-4848-95BA-6DDB01B2AB9F][Sprint 03 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -30,7 +30,7 @@ outright.
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:bcef2c68-65fe-4848-95ba-6ddb01b2ab9f][Sprint 03 housekeeping]] |
+| Parent story | [[id:BCEF2C68-65FE-4848-95BA-6DDB01B2AB9F][Sprint 03 housekeeping]] |
 | Now          | Completed 2025-12-31.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

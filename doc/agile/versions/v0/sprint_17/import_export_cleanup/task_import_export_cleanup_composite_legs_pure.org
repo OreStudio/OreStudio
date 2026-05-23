@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 13255aaf-c142-4a65-a56a-065d456ba952
+:ID: 13255AAF-C142-4A65-A56A-065D456BA952
 :END:
 #+title: Task: Import/export cleanup: composite legs, pure parser, batch fetches, trade list split
 #+description: - Phase 1: Unify instrument variant hierarchy — introduce `Instrument` concept, `with_legs<T,Leg>`, `trade_instrument` v
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e62bf8dd-fd3b-4283-a1a9-3faf1f7a1703][Import/export cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E62BF8DD-FD3B-4283-A1A9-3FAF1F7A1703][Import/export cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Introduce a unified instrument variant hierarchy, fix composite legs being silen
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:e62bf8dd-fd3b-4283-a1a9-3faf1f7a1703][Import/export cleanup]] |
+| Parent story | [[id:E62BF8DD-FD3B-4283-A1A9-3FAF1F7A1703][Import/export cleanup]] |
 | Now          | Completed 2026-05-06.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

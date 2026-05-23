@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 57b7d4d9-aaa5-427d-8d16-0e82da9d3763
+:ID: 57B7D4D9-AAA5-427D-8D16-0E82DA9D3763
 :END:
 #+title: PR Shepherd Skill
 #+description: After a PR is opened, drive it to green: poll CI, address review comments, fix failing checks, until everything is green and resolved.
@@ -28,12 +28,12 @@ CI, addressing review comments, and fixing failures as they appear.
 
 1. /Start the watcher/. Prefer the =pr-watch.sh= script — it polls
    cheaply via =gh= and only invokes Claude when there is something
-   actionable. See [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][How do I monitor a PR until green?]] for both the
+   actionable. See [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] for both the
    script and the manual fallback.
 2. /On each notification/, branch on what changed:
-   - /A check went red/ → run [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][How do I fix a failing CI check?]];
+   - /A check went red/ → run [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]];
      push the fix and return to monitoring.
-   - /A reviewer opened a new thread/ → run [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][How do I address PR
+   - /A reviewer opened a new thread/ → run [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR
      review comments?]]; reply + resolve each thread before
      returning.
 3. /Stop when terminal/. The loop exits when CI is fully green and
@@ -45,13 +45,13 @@ commits so the review history is preserved.
 
 * Recipes
 
-- [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][How do I monitor a PR until green?]] — outer loop.
-- [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][How do I address PR review comments?]] — review-thread branch.
-- [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][How do I fix a failing CI check?]] — CI-failure branch.
+- [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] — outer loop.
+- [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] — review-thread branch.
+- [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]] — CI-failure branch.
 
 * Reference
 
-- [[id:fcf81f0b-afbf-4169-bd24-04dbd08180a9][GitHub recipes]] — the inventory.
+- [[id:FCF81F0B-AFBF-4169-BD24-04DBD08180A9][GitHub recipes]] — the inventory.
 - [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — sibling skill that opens and merges the PR.
 
 * Artefacts                                                        :noexport:

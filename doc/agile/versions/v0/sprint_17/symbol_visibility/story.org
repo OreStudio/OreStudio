@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 32852964-d407-43a9-bd94-a6524bb73a8e
+:ID: 32852964-D407-43A9-BD94-A6524BB73A8E
 :END:
 #+title: Story: Symbol visibility migration
 #+description: Apply -fvisibility=hidden to all shared libraries; add export macros; break cross-plugin compile-time dependencies; build CLI and shell as static libraries.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -39,13 +39,13 @@ libraries so they link cleanly on Windows.
 
 In execution order:
 
-- [[id:9f2b0585-3c63-4a3e-97a3-fea97b51727a][Task: [cmake] Symbol visibility migration: -fvisibility=hidden across all shared libraries]]
-- [[id:d9d3bab0-bb95-41ce-b68e-655b0c3695b0][Task: Fix missing export symbol definitions in trading.api and trading.core]]
-- [[id:b8298a05-9e0f-48bc-a36a-8a9ef73fcf6b][Task: [qt] Break cross-plugin symbol dependencies (plugin isolation phase 1)]]
-- [[id:79e3c451-97e5-4c2b-820d-0d6f4d4e8bf7][Task: [shell] Build ores.shell.lib as STATIC to fix Windows plugin DLL link]]
-- [[id:6371b4a7-62de-43f3-81ba-a343185b8b6c][Task: [cli] Build ores.cli.lib as a static library]]
-- [[id:07dc7000-27da-459a-ab0d-8245a0fb20a1][Task: [shell] Fix missing ORES_SHELL_EXPORT on host class (Windows linker error)]]
-- [[id:7e4fb046-c920-465d-82a3-0348991c0499][Task: Add export macro to parser class for DLL visibility]]
+- [[id:9F2B0585-3C63-4A3E-97A3-FEA97B51727A][Task: [cmake] Symbol visibility migration: -fvisibility=hidden across all shared libraries]]
+- [[id:D9D3BAB0-BB95-41CE-B68E-655B0C3695B0][Task: Fix missing export symbol definitions in trading.api and trading.core]]
+- [[id:B8298A05-9E0F-48BC-A36A-8A9EF73FCF6B][Task: [qt] Break cross-plugin symbol dependencies (plugin isolation phase 1)]]
+- [[id:79E3C451-97E5-4C2B-820D-0D6F4D4E8BF7][Task: [shell] Build ores.shell.lib as STATIC to fix Windows plugin DLL link]]
+- [[id:6371B4A7-62DE-43F3-81BA-A343185B8B6C][Task: [cli] Build ores.cli.lib as a static library]]
+- [[id:07DC7000-27DA-459A-AB0D-8245A0FB20A1][Task: [shell] Fix missing ORES_SHELL_EXPORT on host class (Windows linker error)]]
+- [[id:7E4FB046-C920-465D-82A3-0348991C0499][Task: Add export macro to parser class for DLL visibility]]
 * Decisions
 
 - /Static CLI and shell/ :: building =ores.cli.lib= and =ores.shell.lib= as

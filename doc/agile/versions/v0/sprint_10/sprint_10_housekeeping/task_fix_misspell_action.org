@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ede64638-ddc0-45b3-a1db-185d48a68114
+:ID: EDE64638-DDC0-45B3-A1DB-185D48A68114
 :END:
 #+title: Task: Fix issues with misspell action
 #+description: FPML and GLEIF data break the misspell action; configure folder ignores.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:61f6ab0b-bb2e-43e7-9735-447a7e3d55de][Sprint 10 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61F6AB0B-BB2E-43E7-9735-447A7E3D55DE][Sprint 10 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ FPML and GLEIF data trip the misspell GitHub action; configure folder ignores so
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:61f6ab0b-bb2e-43e7-9735-447a7e3d55de][Sprint 10 housekeeping]] |
+| Parent story | [[id:61F6AB0B-BB2E-43E7-9735-447A7E3D55DE][Sprint 10 housekeeping]] |
 | Now          | Completed 2026-01-23.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

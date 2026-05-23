@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f27e5df7-6223-4b6f-80a5-cefbeb1bc756
+:ID: F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756
 :END:
 #+title: Component architecture
 #+description: api/core/service split, facet placement, CMake dependency chain, and scaffold profiles for ORE Studio components.
@@ -98,6 +98,6 @@ Each part follows the same layout:
 
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — profile catalogue and =run_generator.sh= usage.
 - [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][component-creator]] — skill for scaffolding a new component.
-- [[id:b0b99088-d88e-4980-a4ee-7d6a9a8e96a5][component-model-creator]] — skill for writing the architecture docs.
-- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component Documentation Guide]] — how to fill in each section of
+- [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][component-model-creator]] — skill for writing the architecture docs.
+- [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component Documentation Guide]] — how to fill in each section of
   =component_overview.org=.

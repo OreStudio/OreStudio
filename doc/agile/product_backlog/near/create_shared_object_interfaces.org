@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8765cdd5-08eb-4c3e-b7ea-0a6a9a81aaf2
+:ID: 8765CDD5-08EB-4C3E-B7EA-0A6A9A81AAF2
 :END:
 #+title: Create shared object interfaces
 #+description: Create shared object interfaces
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 At present we are building shared objects / DLLs for the ores components, but we
 did not bother defining proper interfaces, exporting symbols etc. This causes

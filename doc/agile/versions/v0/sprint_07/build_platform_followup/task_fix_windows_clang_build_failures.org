@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a0b043a7-efb1-4752-a5d6-de9afe29bb43
+:ID: A0B043A7-EFB1-4752-A5D6-DE9AFE29BB43
 :END:
 #+title: Task: Windows clang build failures
 #+description: Resolve the latest Windows clang build breaks: deprecated APIs, missing DLLs, signed/unsigned warnings.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:bb39ecbd-1ea5-4d53-a117-a0c88e0463c1][Build platform follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BB39ECBD-1EA5-4D53-A117-A0C88E0463C1][Build platform follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Resolve the latest Windows clang build breaks: deprecated APIs, missing DLLs, si
 | Field        | Value                                                                 |
 |--------------+-----------------------------------------------------------------------|
 | State        | DONE                                                                  |
-| Parent story | [[id:bb39ecbd-1ea5-4d53-a117-a0c88e0463c1][Build platform follow-up]] |
+| Parent story | [[id:BB39ECBD-1EA5-4D53-A117-A0C88E0463C1][Build platform follow-up]] |
 | Now          | Completed 2025-12-18.                                                 |
 | Waiting on   | None.                                                                 |
 | Next         | None.                                                                 |

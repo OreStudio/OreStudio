@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: bdd65e39-ff29-4d00-bc8d-86a3f8a27b1e
+:ID: BDD65E39-FF29-4D00-BC8D-86A3F8A27B1E
 :END:
 #+title: Consider adding test times build
 #+description: Consider adding test times build
@@ -10,6 +10,6 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/test-times.yml][=test-times.yml=]].

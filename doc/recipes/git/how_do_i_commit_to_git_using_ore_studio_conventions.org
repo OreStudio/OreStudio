@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f4b1a670-3b02-11f1-bce2-4b06f4bba5d9
+:ID: F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9
 :END:
 #+title: How do I commit to git using ORE Studio conventions?
 #+description: Standards for commit titles, descriptions, and co-author attribution.
@@ -89,5 +89,5 @@ git commit -m "[comp] Title" -m "Detail body." -m "Co-Authored-By: Your Identity
 
 * See also
 
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — for component naming conventions.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — for component naming conventions.
 - [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] — for examples of recent high-quality commits.

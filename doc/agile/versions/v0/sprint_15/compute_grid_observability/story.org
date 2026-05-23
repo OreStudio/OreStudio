@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 679da033-934a-4330-951f-5016675cc8af
+:ID: 679DA033-934A-4330-951F-5016675CC8AF
 :END:
 #+title: Story: Compute grid observability
 #+description: Telemetry pipeline with TimescaleDB hypertables + samplers; service heartbeat + RAG-status dashboard.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,16 +23,16 @@ feeding a unified dashboard with RAG service health.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Parent sprint | [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]] |
 | Now           | Completed 2026-03-21.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-03-21                                             |
 
 
-#+successor: 014352d4-aaa5-48e7-903d-c06b5b4f7d62
+#+successor: 014352D4-AAA5-48E7-903D-C06B5B4F7D62
 
-Continued in: [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]] (sprint 16). Sprint 15 added the RAG service dashboard; sprint 16 adds the controller component that manages service definitions + instances + lifecycle events.
+Continued in: [[id:014352D4-AAA5-48E7-903D-C06B5B4F7D62][Service lifecycle controller]] (sprint 16). Sprint 15 added the RAG service dashboard; sprint 16 adds the controller component that manages service definitions + instances + lifecycle events.
 
 * Acceptance
 
@@ -45,8 +45,8 @@ Continued in: [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle contr
 
 In execution order:
 
-- [[id:1efed917-0c33-45eb-b03a-65f59fd5ff0a][Add compute grid telemetry pipeline]]
-- [[id:5fd4f0b7-4f93-4357-bc3f-79162fbee096][Add service dashboard with live RAG status]]
+- [[id:1EFED917-0C33-45EB-B03A-65F59FD5FF0A][Add compute grid telemetry pipeline]]
+- [[id:5FD4F0B7-4F93-4357-BC3F-79162FBEE096][Add service dashboard with live RAG status]]
 
 * Decisions
 
@@ -59,4 +59,4 @@ In execution order:
 
 * See also
 
-- [[id:3ed3ca4d-8709-4f70-a1a8-1ff287adb8bf][Compute grid implementation]] — the system being observed.
+- [[id:3ED3CA4D-8709-4F70-A1A8-1FF287ADB8BF][Compute grid implementation]] — the system being observed.

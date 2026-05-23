@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3d5f5bb6-056a-4533-9b18-7222d9b9b84f
+:ID: 3D5F5BB6-056A-4533-9B18-7222D9B9B84F
 :END:
 #+title: Task: Add missing entities to CLI
 #+description: list + delete commands for roles, permissions, countries, change_reasons, change_reason_categories; JSON and table output; lookup by UUID/code/name as appropriate.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:09a8d544-22f3-491a-82a9-306b1aa7c756][CLI entity coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09A8D544-22F3-491A-82A9-306B1AA7C756][CLI entity coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Bring the CLI up to date with the entities added in earlier sprints.
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:09a8d544-22f3-491a-82a9-306b1aa7c756][CLI entity coverage]] |
+| Parent story | [[id:09A8D544-22F3-491A-82A9-306B1AA7C756][CLI entity coverage]] |
 | Now          | Completed 2026-01-12.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

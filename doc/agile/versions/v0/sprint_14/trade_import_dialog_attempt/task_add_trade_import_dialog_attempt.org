@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7b2dd252-3f02-4c6e-bc9c-3555e5e8c971
+:ID: 7B2DD252-3F02-4C6E-BC9C-3555E5E8C971
 :END:
 #+title: Task: Add trade import mapping dialog (carry-over)
 #+description: Carry-over from sprint 13. Attempted again in sprint 14: 4h39m of work landed but the story was postponed once more in favour of the broader ORE Import Wizard.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:05cfef69-f80b-437f-aeee-3881e4fe96f1][Trade import mapping dialog (second attempt)]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:05CFEF69-F80B-437F-AEEE-3881E4FE96F1][Trade import mapping dialog (second attempt)]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Second attempt at the Qt trade-import dialog (carried from sprint 13).
 | Field        | Value                                                                                     |
 |--------------+-------------------------------------------------------------------------------------------|
 | State        | BACKLOG                                                                                   |
-| Parent story | [[id:05cfef69-f80b-437f-aeee-3881e4fe96f1][Trade import mapping dialog (second attempt)]] |
+| Parent story | [[id:05CFEF69-F80B-437F-AEEE-3881E4FE96F1][Trade import mapping dialog (second attempt)]] |
 | Now          | POSTPONED in sprint 14; carried forward (second postponement).                            |
 | Waiting on   | A sprint with the slot — or a decision to drop in favour of the ORE Import Wizard.        |
 | Next         | Revisit alongside the ORE Import Wizard work.                                             |

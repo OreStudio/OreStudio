@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f5a4c655-2d07-4d1f-a73b-e8a1b844ece8
+:ID: F5A4C655-2D07-4D1F-A73B-E8A1B844ECE8
 :END:
 #+title: How do I list login info entries?
 #+description: List login info entries via =ores.cli=

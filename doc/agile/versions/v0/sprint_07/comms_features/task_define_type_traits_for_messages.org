@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 52bca570-dfe6-475d-90d9-86e3db7d241d
+:ID: 52BCA570-DFE6-475D-90D9-86E3DB7D241D
 :END:
 #+title: Task: Define type traits for message grouping
 #+description: Add type traits to group messages by component and concern; basis for cleaner dispatch tables.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:b306f938-f939-44ca-9d69-6faedbf91c08][Comms features]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B306F938-F939-44CA-9D69-6FAEDBF91C08][Comms features]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Define type traits that group comms messages by component and concern; basis for
 | Field        | Value                                                       |
 |--------------+-------------------------------------------------------------|
 | State        | DONE                                                        |
-| Parent story | [[id:b306f938-f939-44ca-9d69-6faedbf91c08][Comms features]] |
+| Parent story | [[id:B306F938-F939-44CA-9D69-6FAEDBF91C08][Comms features]] |
 | Now          | Completed 2025-12-25.                                       |
 | Waiting on   | None.                                                       |
 | Next         | None.                                                       |

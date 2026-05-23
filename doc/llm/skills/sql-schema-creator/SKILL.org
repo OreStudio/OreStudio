@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a08fc2a2-4e42-41ec-ac92-d1af50dc61cb
+:ID: A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB
 :END:
 #+title: SQL Schema Creator
 #+description: Create SQL table definitions, triggers, indexes, and population scripts for ORE Studio entities via codegen.
@@ -23,7 +23,7 @@ license: Complete terms in LICENSE.txt
 When you need to add SQL tables, triggers, indexes, or reference data
 to the ORE Studio database for a new entity. This is the second layer
 in the entity lifecycle — the domain type must already exist (see
-[[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]]). For the full layer ordering see [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]].
+[[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]]). For the full layer ordering see [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]].
 
 Codegen is *mandatory*. Hand-crafting SQL is only permitted when the
 entity pattern cannot be expressed in any existing template; in that
@@ -48,15 +48,15 @@ case, extend the template first, then generate.
 
 * Recipes
 
-- [[id:479f858e-aa31-4db4-abe9-a0ed7cebf098][How do I create a new entity SQL schema?]] — step-by-step walkthrough.
+- [[id:479F858E-AA31-4DB4-ABE9-A0ED7CEBF098][How do I create a new entity SQL schema?]] — step-by-step walkthrough.
 
 * Reference
 
-- [[id:5cb31a0e-4e38-4521-b0ee-e4396c3e2936][SQL entity schema patterns]] — naming conventions, suffix catalogue,
+- [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]] — naming conventions, suffix catalogue,
   idempotency patterns.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema and =--profile sql= details.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]] — full schema mental model and PostgreSQL setup.
-- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.
 
 * Templates
 

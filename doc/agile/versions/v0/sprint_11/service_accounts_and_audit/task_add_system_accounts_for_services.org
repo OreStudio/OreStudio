@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8125d266-84df-495f-a344-47d6d0649940
+:ID: 8125D266-84DF-495F-A344-47D6D0649940
 :END:
 #+title: Task: Add system accounts for services
 #+description: account_type classifications (user / service / algorithm / LLM); session-only authentication for service accounts; performed_by audit field across 42 tables (codegen-driven); telemetry async-sink deadlock fix; tenant_aware_pool fail-fast.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:b23bfd60-4604-4d43-92b3-3ef3e1d5dbe6][Service accounts and audit]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B23BFD60-4604-4D43-92B3-3EF3E1D5DBE6][Service accounts and audit]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Give services proper identities — they /login/ and start sessions — and spli
 | Field        | Value                                                                   |
 |--------------+-------------------------------------------------------------------------|
 | State        | DONE                                                                    |
-| Parent story | [[id:b23bfd60-4604-4d43-92b3-3ef3e1d5dbe6][Service accounts and audit]] |
+| Parent story | [[id:B23BFD60-4604-4D43-92B3-3EF3E1D5DBE6][Service accounts and audit]] |
 | Now          | Completed 2026-02-04.                                                   |
 | Waiting on   | None.                                                                   |
 | Next         | None.                                                                   |

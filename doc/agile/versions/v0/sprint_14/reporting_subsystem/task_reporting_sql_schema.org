@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1af41a4b-3281-4e49-941e-98a3bd9a64c4
+:ID: 1AF41A4B-3281-4E49-941E-98A3BD9A64C4
 :END:
 #+title: Task: Add ores.reporting SQL schema
 #+description: SQL schema for the reporting subsystem: report_definitions + report_instances with FSM lifecycle; concurrency_policies + report_types enum tables; risk_report_configs for NPV / cashflow / XVA / VaR / SIMM with temporal junctions for portfolio + book scoping; NOTIFY triggers; RLS for tenant + party isolation; ores_reporting_ component prefix in the schema validator.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:84559b48-546b-4724-bdd0-53dbfca2c24a][Reporting subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84559B48-546B-4724-BDD0-53DBFCA2C24A][Reporting subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Land the SQL schema for the reporting subsystem.
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:84559b48-546b-4724-bdd0-53dbfca2c24a][Reporting subsystem]] |
+| Parent story | [[id:84559B48-546B-4724-BDD0-53DBFCA2C24A][Reporting subsystem]] |
 | Now          | Completed 2026-03-02.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7acbfe8a-e60a-4f0c-afb6-2c9019295144
+:ID: 7ACBFE8A-E60A-4F0C-AFB6-2C9019295144
 :END:
 #+title: Task: Fix xsd::vector to use alias for non-bool to support incomplete types
 #+description: Replace previous xsd::vector<T> wrapper class with template alias + type trait selector; std::vector<T> for most types, custom char-backed bool_vector for bool.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Replace previous xsd::vector<T> wrapper class with template alias + type trait s
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | DONE                                                                   |
-| Parent story | [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] |
+| Parent story | [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]] |
 | Now          | Completed 2026-04-11.                                                  |
 | Waiting on   | None.                                                                  |
 | Next         | None.                                                                  |

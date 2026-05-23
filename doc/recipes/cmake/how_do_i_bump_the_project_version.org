@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e9f98da1-cf33-4b53-bc4d-a034c652f3b0
+:ID: E9F98DA1-CF33-4B53-BC4D-A034C652F3B0
 :END:
 #+title: How do I bump the project version?
 #+description: Bump ORE Studio's version number — CMakeLists.txt, vcpkg.json, the three GitHub workflow package filenames, and the readme badges.
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-The version bump is housekeeping that often follows [[id:1e666848-a785-437e-a463-3d5a0da0765f][opening a new
+The version bump is housekeeping that often follows [[id:1E666848-A785-437E-A463-3D5A0DA0765F][opening a new
 sprint]] but is independent of it — do it as its own PR.
 
 * Question
@@ -83,5 +83,5 @@ the post-build run.
 
 * See also
 
-- [[id:1e666848-a785-437e-a463-3d5a0da0765f][How do I open a new sprint?]] — the sibling agile-side step.
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset menu and project structure background.
+- [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]] — the sibling agile-side step.
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset menu and project structure background.

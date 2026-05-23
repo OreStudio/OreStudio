@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d1ae0786-5f2f-4437-8449-0e480c278a1b
+:ID: D1AE0786-5F2F-4437-8449-0E480C278A1B
 :END:
 #+title: How do I find docs matching a pattern?
 #+description: List documents by regex on title/description, by filetag, by #+type:, or by path prefix, using doc_list.sh.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 
 For the companion lookup "show me /one/ doc by UUID" see
-[[id:e8231c22-cb31-4d85-a9c0-7602953764ff][How do I show a doc by UUID?]].
+[[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]].
 
 * Question
 
@@ -93,19 +93,19 @@ emits a single integer.
 
 The wrapper is =projects/ores.codegen/doc_list.sh=. It delegates to
 =scripts/doc_list.py=, which uses the shared =doc_index.py= library
-(see [[id:e8231c22-cb31-4d85-a9c0-7602953764ff][How do I show a doc by UUID?]] for the model).
+(see [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] for the model).
 
 * Tested by
 
 Manual usage — these scripts are read-only over the doc tree, so the
 =#+type:=, =#+filetags:=, and =:ID:= contract enforced by
-[[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] and audited by [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] is what guarantees
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] and audited by [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]] is what guarantees
 correctness.
 
 * See also
 
-- [[id:e8231c22-cb31-4d85-a9c0-7602953764ff][How do I show a doc by UUID?]] — pivot from a UUID found via list
+- [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — pivot from a UUID found via list
   to the full document context.
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — the =#+type:= taxonomy the =--type= filter
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — the =#+type:= taxonomy the =--type= filter
   works against.
 - [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes index]].

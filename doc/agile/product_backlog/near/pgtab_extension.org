@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 47687276-f206-43e1-afe2-deabc2820b17
+:ID: 47687276-F206-43E1-AFE2-DEABC2820B17
 :END:
 #+title: Add missing pgtab extension to database setup
 #+description: The pgtab extension is referenced but not installed during database setup. Add it to the extension installation block.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

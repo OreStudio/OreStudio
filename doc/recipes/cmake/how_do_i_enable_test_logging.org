@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4bf2516d-f37e-4e31-ad7b-124f2639b9ab
+:ID: 4BF2516D-F37E-4E31-AD7B-124F2639B9AB
 :END:
 #+title: How do I enable test logging?
 #+description: Turn on test-suite logging — configure-time flags (ORES_TEST_LOG_LEVEL, ORES_TEST_LOG_CONSOLE) and equivalent runtime environment variables.
@@ -11,9 +11,9 @@
 #+updated: 2026-05-21
 
 Test logging is /off/ by default for performance. The conceptual
-description lives in [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]]§"Test logging"; this recipe is
+description lives in [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]]§"Test logging"; this recipe is
 the operational counterpart. To actually /run/ the tests once
-logging is configured, see [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]].
+logging is configured, see [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]].
 
 * Question
 
@@ -62,7 +62,7 @@ at /run/ time via environment variables.
 
 No wrapper — these are bare CMake/CTest invocations. The presets are
 listed by =./build/scripts/build.sh --list-presets= (see
-[[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]]).
+[[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How do I list available presets?]]).
 
 * Tested by
 
@@ -72,9 +72,9 @@ harness; no dedicated CI check exercises them.
 
 * See also
 
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]]§"Test logging" — the architectural description of
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]]§"Test logging" — the architectural description of
   the two switches and their defaults.
-- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — the run loop into which this logging
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] — the run loop into which this logging
   feeds.
-- [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]] — for the configure step
+- [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]] — for the configure step
   generally.

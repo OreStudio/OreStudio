@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3d139b63-c1de-4410-930c-df11e62c2cea
+:ID: 3D139B63-C1DE-4410-930C-DF11E62C2CEA
 :END:
 #+title: How do I check the CLI version?
 #+description: Display =ores.cli= version, build, and licence information

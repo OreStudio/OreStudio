@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 91acdecb-a296-4b26-a441-ab99bc9b9c08
+:ID: 91ACDECB-A296-4B26-A441-AB99BC9B9C08
 :END:
 #+title: Task: Fix wt.service crash, trade dialog UI, geometry persistence, and IAM party cache
 #+description: - [iam] Fix party cache cold-start and bootstrap gaps: warm cache for all active tenants at startup; handle missing entr
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d148b46a-ad14-4391-8b64-46dcfe95c5f1][Qt UI polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D148B46A-AD14-4391-8B64-46DCFE95C5F1][Qt UI polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Fix the wt.service startup crash caused by a stale ORES_WT_PORT env var, close I
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:d148b46a-ad14-4391-8b64-46dcfe95c5f1][Qt UI polish]] |
+| Parent story | [[id:D148B46A-AD14-4391-8B64-46DCFE95C5F1][Qt UI polish]] |
 | Now          | Completed 2026-05-17.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3af3a647-67a6-450d-abbf-2777bf967595
+:ID: 3AF3A647-67A6-450D-ABBF-2777BF967595
 :END:
 #+title: Task: Improve tenant provisioning wizard UX
 #+description: Rename to evoke 'evaluation tenant provisioning'; move off main menu, access via tenants-dialog icon; capitalise tenant-type values; tenant code column narrower; default to evaluation; system-party name evokes 'tenant system party'; root party defaults to tenant name; password-match indicator.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a][Tenant provisioning wizards]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EAF03BE3-D1EC-4EC4-B18B-4F1C6F35926A][Tenant provisioning wizards]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Round of UX fixes on the tenant-provisioning wizard.
 | Field        | Value                                                                    |
 |--------------+--------------------------------------------------------------------------|
 | State        | DONE                                                                     |
-| Parent story | [[id:eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a][Tenant provisioning wizards]] |
+| Parent story | [[id:EAF03BE3-D1EC-4EC4-B18B-4F1C6F35926A][Tenant provisioning wizards]] |
 | Now          | Completed 2026-02-15.                                                    |
 | Waiting on   | None.                                                                    |
 | Next         | None.                                                                    |

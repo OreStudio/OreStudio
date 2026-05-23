@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6b9d309a-3fa0-4183-bac4-31c347dd740a
+:ID: 6B9D309A-3FA0-4183-BAC4-31C347DD740A
 :END:
 #+title: Add a generic tagging system
 #+description: Add a generic tagging system
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 It should be possible to associate any entity with one or more tags and then do
 a search by tags on that entity type. For example, tag a set of currencies as

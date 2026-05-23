@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1de357ff-7139-49fd-bc97-b30cd095ef53
+:ID: 1DE357FF-7139-49FD-BC97-B30CD095EF53
 :END:
 #+title: Story: JWT RS256 in ores.security
 #+description: Move JWT handling from ores.http to ores.security; RS256 asymmetric signing for distributed service auth; jwt_claims grows tenant_id + party_id; protocol 49.0.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A63C60DC-C3A6-4F4F-8977-012A7BF1D566][Sprint 14]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,16 +24,16 @@ public key — prerequisite for distributed service authentication.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]] |
+| Parent sprint | [[id:A63C60DC-C3A6-4F4F-8977-012A7BF1D566][Sprint 14]] |
 | Now           | Completed 2026-03-04.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-03-04                                             |
 
 
-#+successor: 169b15a7-442b-44fd-8e54-436fec8340a6
+#+successor: 169B15A7-442B-44FD-8E54-436FEC8340A6
 
-Continued in: [[id:169b15a7-442b-44fd-8e54-436fec8340a6][JWT refresh]] (sprint 15) — closes the loop with token
+Continued in: [[id:169B15A7-442B-44FD-8E54-436FEC8340A6][JWT refresh]] (sprint 15) — closes the loop with token
 refresh, configurable lifetimes, and TimescaleDB-backed auth telemetry.
 
 * Acceptance
@@ -48,7 +48,7 @@ refresh, configurable lifetimes, and TimescaleDB-backed auth telemetry.
 
 In execution order:
 
-- [[id:c9104347-9fb4-4b9a-ac78-8747f7e84060][Migrate JWT to ores.security with RS256]]
+- [[id:C9104347-9FB4-4B9A-AC78-8747F7E84060][Migrate JWT to ores.security with RS256]]
 
 * Decisions
 
@@ -61,4 +61,4 @@ In execution order:
 
 * See also
 
-- [[id:55bf0070-33c2-4f1d-986f-a787138942f6][NNG message broker attempt]] — the JWT work was the security half of this attempt; it survives.
+- [[id:55BF0070-33C2-4F1D-986F-A787138942F6][NNG message broker attempt]] — the JWT work was the security half of this attempt; it survives.

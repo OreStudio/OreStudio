@@ -27,7 +27,7 @@ specific interface is for.
 
 * How to use this skill
 
-The design system lives in [[id:6743f6e3-578c-4e4b-9dd6-d5a0df6734c8][UI design principles]] (Jony Ive-level
+The design system lives in [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] (Jony Ive-level
 precision with intentional personality). This skill is the
 task-shaped entry that walks you through applying it.
 
@@ -53,7 +53,7 @@ task-shaped entry that walks you through applying it.
    consistent border-radius family, one depth strategy
    (borders-only / single shadow / layered / surface-color
    shifts), motion that aids comprehension. The full rulebook is
-   in [[id:6743f6e3-578c-4e4b-9dd6-d5a0df6734c8][UI design principles]]§"Core Craft Principles".
+   in [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]§"Core Craft Principles".
 
 6. /Pick icons via [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]]/. The icon vocabulary sits on
    top of the design direction; consult the catalogue rather than
@@ -73,10 +73,10 @@ principles doc.)
 
 * Reference
 
-- [[id:6743f6e3-578c-4e4b-9dd6-d5a0df6734c8][UI design principles]] — the full rulebook.
-- [[id:6ef42145-cee7-4035-806a-a4200a3e003a][Icon guidelines]] — the icon vocabulary.
+- [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the full rulebook.
+- [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] — the icon vocabulary.
 - [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines skill]] — sibling skill for icon selection.
-- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] — where these decisions land in code.
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — where these decisions land in code.
 
 * Artefacts                                                        :noexport:
 

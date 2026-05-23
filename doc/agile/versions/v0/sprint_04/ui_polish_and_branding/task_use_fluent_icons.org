@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6e1179b7-fd91-4ea7-90a6-a657a23c30a8
+:ID: 6E1179B7-FD91-4EA7-90A6-A657A23C30A8
 :END:
 #+title: Task: Use Fluent icons
 #+description: Switch the icon set to Microsoft's Fluent icons for a more polished, modern look.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2a9269e4-049a-49c3-9354-f26c95390e1f][UI polish and branding]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2A9269E4-049A-49C3-9354-F26C95390E1F][UI polish and branding]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ the same; only the source icons change.
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:2a9269e4-049a-49c3-9354-f26c95390e1f][UI polish and branding]] |
+| Parent story | [[id:2A9269E4-049A-49C3-9354-F26C95390E1F][UI polish and branding]] |
 | Now          | Completed 2025-11-22.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

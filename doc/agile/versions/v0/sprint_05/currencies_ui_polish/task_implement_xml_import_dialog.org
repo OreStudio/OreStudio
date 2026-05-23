@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0879d701-7c3e-494a-9252-217dceced40f
+:ID: 0879D701-7C3E-494A-9252-217DCECED40F
 :END:
 #+title: Task: Implement import dialog for XML import in Qt
 #+description: Qt-side XML import: choose a file, parse, preview, commit. Wraps the existing XML import path with a GUI.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-28
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:9836e113-dea9-4605-ae1b-9b0c955b6b73][Currencies UI polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9836E113-DEA9-4605-AE1B-9B0C955B6B73][Currencies UI polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ repository.
 | Field        | Value                                                             |
 |--------------+-------------------------------------------------------------------|
 | State        | DONE                                                              |
-| Parent story | [[id:9836e113-dea9-4605-ae1b-9b0c955b6b73][Currencies UI polish]] |
+| Parent story | [[id:9836E113-DEA9-4605-AE1B-9B0C955B6B73][Currencies UI polish]] |
 | Now          | Completed 2025-11-28.                                             |
 | Waiting on   | None.                                                             |
 | Next         | None.                                                             |

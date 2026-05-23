@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: db362c3c-d961-49c7-bee9-c10d35e8a669
+:ID: DB362C3C-D961-49C7-BEE9-C10D35E8A669
 :END:
 #+title: Task: Fix CI: export conversion_error and raise MSVC constexpr depth
 #+description: Two separate CI failures introduced on main by recent merges:
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Fix two CI failures: export conversion_error with ORES_UTILITY_EXPORT to resolve
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] |
+| Parent story | [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] |
 | Now          | Completed 2026-05-16.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

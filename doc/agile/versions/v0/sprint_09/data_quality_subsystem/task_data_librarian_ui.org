@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 530624ef-e76e-40ce-82be-3efc8420d938
+:ID: 530624EF-E76E-40CE-82BE-3EFC8420D938
 :END:
 #+title: Task: Data Librarian UI
 #+description: Three-panel Data Librarian MDI window: dataset browser, accession card details, methodology panel; IP geolocation catalog + iptoasn staging; Visual Assets catalog; TCP_NODELAY for parallel-request latency; menu restructuring (System / Data); Origin 'Source' renamed to 'Primary'.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3579AB5E-D5D8-45AE-8CB5-00AD1C58644F][Data Quality subsystem and Data Librarian]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Stand up the Data Librarian Qt UI — the user-facing surface of the DQ subsyste
 | Field        | Value                                                                                  |
 |--------------+----------------------------------------------------------------------------------------|
 | State        | DONE                                                                                   |
-| Parent story | [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] |
+| Parent story | [[id:3579AB5E-D5D8-45AE-8CB5-00AD1C58644F][Data Quality subsystem and Data Librarian]] |
 | Now          | Completed 2026-01-19.                                                                  |
 | Waiting on   | None.                                                                                  |
 | Next         | None.                                                                                  |

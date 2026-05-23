@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0e9bc778-bcf0-48fe-8d87-029f06d42fa2
+:ID: 0E9BC778-BCF0-48FE-8D87-029F06D42FA2
 :END:
 #+title: Task: Fix Windows MOC dllimport conflict on AddItemDialog and TagSelectorWidget
 #+description: Remove ORES_QT_API export macro from AddItemDialog + TagSelectorWidget classes + their header includes.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Remove ORES_QT_API export macro from AddItemDialog + TagSelectorWidget classes +
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | DONE                                                                   |
-| Parent story | [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] |
+| Parent story | [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]] |
 | Now          | Completed 2026-04-11.                                                  |
 | Waiting on   | None.                                                                  |
 | Next         | None.                                                                  |

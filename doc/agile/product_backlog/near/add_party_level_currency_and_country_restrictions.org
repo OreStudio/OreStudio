@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ef479ae6-689b-4fa9-99a0-bf03148fd348
+:ID: EF479AE6-689B-4FA9-99A0-BF03148FD348
 :END:
 #+title: Add party level currency and country restrictions
 #+description: Add party level currency and country restrictions
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 At present a party can use all currencies and all countries. In reality we
 normally want to restrict this at the party level. We won't be able to do a full

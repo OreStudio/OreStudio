@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 00e6e192-a255-4c94-8fcc-15826f7e33ae
+:ID: 00E6E192-A255-4C94-8FCC-15826F7E33AE
 :END:
 #+title: Story: Tenant administration
 #+description: Party-types lookup; RLS-aware tenant provisioning for tests; rename tenant types; tenant CRUD CLI; Super Admin role.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ Admin role.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Parent sprint | [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]] |
 | Now           | Completed 2026-02-12.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -42,11 +42,11 @@ Admin role.
 
 In execution order:
 
-- [[id:74c6a18c-2b7b-4ab2-b1b8-7d3ecd220d5e][Add party types lookup table]]
-- [[id:d64eee12-9220-4fb6-b544-a6bd96d6549a][Add RLS-aware tenant provisioning for tests]]
-- [[id:e306e003-5323-49c2-94a1-fe87d04588fd][Rename tenant types]]
-- [[id:eb1bbe92-e7fa-44a4-b46f-fe6da326986d][Add tenant CRUD commands to CLI]]
-- [[id:8b3e7d8a-d3be-48d1-8fb1-369754c9c95a][Add roles for Super Admin]]
+- [[id:74C6A18C-2B7B-4AB2-B1B8-7D3ECD220D5E][Add party types lookup table]]
+- [[id:D64EEE12-9220-4FB6-B544-A6BD96D6549A][Add RLS-aware tenant provisioning for tests]]
+- [[id:E306E003-5323-49C2-94A1-FE87D04588FD][Rename tenant types]]
+- [[id:EB1BBE92-E7FA-44A4-B46F-FE6DA326986D][Add tenant CRUD commands to CLI]]
+- [[id:8B3E7D8A-D3BE-48D1-8FB1-369754C9C95A][Add roles for Super Admin]]
 
 * Decisions
 

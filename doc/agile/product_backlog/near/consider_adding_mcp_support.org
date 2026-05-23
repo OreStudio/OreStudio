@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: fbcd3280-79b0-4dfa-9918-b40c757907ef
+:ID: FBCD3280-79B0-4DFA-9918-B40C757907EF
 :END:
 #+title: Consider adding MCP support
 #+description: Consider adding MCP support
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 From Kaggle course:
 

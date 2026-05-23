@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9d673cfc-3396-4d61-950f-4888d19f1bd9
+:ID: 9D673CFC-3396-4D61-950F-4888D19F1BD9
 :END:
 #+title: Task: Add opt-in qt feature for Windows users
 #+description: Some Windows users struggle to install Qt externally (e.g. Qt online
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D84E735-7DFE-4215-AF00-A1F4C9323BDA][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Expose Qt as an optional vcpkg manifest feature so Windows users can build the f
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] |
+| Parent story | [[id:7D84E735-7DFE-4215-AF00-A1F4C9323BDA][Windows portability fixes]] |
 | Now          | Completed 2026-04-22.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

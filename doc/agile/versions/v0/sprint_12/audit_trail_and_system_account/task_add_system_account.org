@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 36c998ee-1171-468c-943f-80eefc88a8f4
+:ID: 36C998EE-1171-468C-943F-80EEFC88A8F4
 :END:
 #+title: Task: Add system account
 #+description: Non-login system account used for all initial population; publication uses the new admin account, not the system account.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2901CE42-268C-4ADE-A3E4-CF6E01B8668E][Audit trail and system account]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add a non-login system account for initial population so =modified_by= always ma
 | Field        | Value                                                                       |
 |--------------+-----------------------------------------------------------------------------|
 | State        | DONE                                                                        |
-| Parent story | [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]] |
+| Parent story | [[id:2901CE42-268C-4ADE-A3E4-CF6E01B8668E][Audit trail and system account]] |
 | Now          | Completed 2026-02-16.                                                       |
 | Waiting on   | None.                                                                       |
 | Next         | None.                                                                       |

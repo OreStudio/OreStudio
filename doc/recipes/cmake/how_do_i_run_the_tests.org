@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f
+:ID: 20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F
 :END:
 #+title: How do I run the tests?
 #+description: Run the full or per-component test suite, with optional logging and result analysis.
@@ -10,7 +10,7 @@
 #+created: 2026-05-18
 #+updated: 2026-05-18
 
-For the test-logging knobs and output layout, see [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]].
+For the test-logging knobs and output layout, see [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 
 * Question
 
@@ -92,5 +92,5 @@ itself exercised by use in CI failure analysis.
 
 * See also
 
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — log paths under =build/output/<preset>/publish/log/=.
-- [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]]
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — log paths under =build/output/<preset>/publish/log/=.
+- [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]

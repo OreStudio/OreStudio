@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a4d00400-84a9-499d-89cb-8cc62f19821b
+:ID: A4D00400-84A9-499D-89CB-8CC62F19821B
 :END:
 #+title: Task: Per-type FX instrument tables
 #+description: Per-type FX instrument tables for various FX products (barrier options, digital options, variance swaps, accumulators) using std::variant; updated database schemas + repositories + mappers; typed FX instrument services + handlers + dispatch.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ce26e56b-944f-4c89-b5a9-e0dabf521908][Per-type instrument tables]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CE26E56B-944F-4C89-B5A9-E0DABF521908][Per-type instrument tables]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Per-type FX instrument tables for various FX products (barrier options, digital 
 | Field        | Value                                                                   |
 |--------------+-------------------------------------------------------------------------|
 | State        | DONE                                                                    |
-| Parent story | [[id:ce26e56b-944f-4c89-b5a9-e0dabf521908][Per-type instrument tables]] |
+| Parent story | [[id:CE26E56B-944F-4C89-B5A9-E0DABF521908][Per-type instrument tables]] |
 | Now          | Completed 2026-04-10.                                                   |
 | Waiting on   | None.                                                                   |
 | Next         | None.                                                                   |

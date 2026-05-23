@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: cddcca59-32e3-4a69-8820-15e8b8b2e047
+:ID: CDDCCA59-32E3-4A69-8820-15E8B8B2E047
 :END:
 #+title: Task: OCR scan notebooks for this sprint
 #+description: Capture the paper notebook pages used during sprint 05 design discussions as searchable text.
@@ -16,7 +16,7 @@
 #+updated: 2025-12-01
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:de3eee9f-331e-440c-b62c-abdefe1d87e2][Sprint 05 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DE3EEE9F-331E-440C-B62C-ABDEFE1D87E2][Sprint 05 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -28,7 +28,7 @@ notebooks used during sprint 05 design sessions as searchable text.
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:de3eee9f-331e-440c-b62c-abdefe1d87e2][Sprint 05 housekeeping]] |
+| Parent story | [[id:DE3EEE9F-331E-440C-B62C-ABDEFE1D87E2][Sprint 05 housekeeping]] |
 | Now          | Completed 2025-12-01.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

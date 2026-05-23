@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a6fa8c90-24d1-422e-a1c2-03595bb9e14c
+:ID: A6FA8C90-24D1-422E-A1C2-03595BB9E14C
 :END:
 #+title: Task: Add support for business centres
 #+description: business_centre domain type end-to-end: database entity, mapper, repository, service, protocol (0x1061-0x1068), data generator, eventing, JSON + table I/O; Qt UI with paginated list + detail dialog + history; country_alpha2_code column with derivation.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:af7112ba-bf04-4b6b-ae2f-8fb1c7b362fe][Counterparty pagination and polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AF7112BA-BF04-4B6B-AE2F-8FB1C7B362FE][Counterparty pagination and polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Land a full CRUD surface for business centres.
 | Field        | Value                                                                           |
 |--------------+---------------------------------------------------------------------------------|
 | State        | DONE                                                                            |
-| Parent story | [[id:af7112ba-bf04-4b6b-ae2f-8fb1c7b362fe][Counterparty pagination and polish]] |
+| Parent story | [[id:AF7112BA-BF04-4B6B-AE2F-8FB1C7B362FE][Counterparty pagination and polish]] |
 | Now          | Completed 2026-02-12.                                                           |
 | Waiting on   | None.                                                                           |
 | Next         | None.                                                                           |

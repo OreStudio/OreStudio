@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c37821ab-307e-429f-87c7-686f04d01ae8
+:ID: C37821AB-307E-429F-87C7-686F04D01AE8
 :END:
 #+title: Sign-up dialog should be disabled if feature is disabled
 #+description: Sign-up dialog should be disabled if feature is disabled
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 At present you can click on sign up and fill in all details but then you get a
 server error:

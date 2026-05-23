@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: cc9a5f89-ea6e-46ec-9f95-8891bd1c1a8e
+:ID: CC9A5F89-EA6E-46EC-9F95-8891BD1C1A8E
 :END:
 #+title: Story: Refdata tenant_id strong-type migration
 #+description: Migrate 11 party domain types from raw UUID to utility::uuid::tenant_id strong type.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -38,7 +38,7 @@ at service boundaries.
 
 In execution order:
 
-- [[id:7a34c5a4-abd4-4103-b82b-a25f2aef7da3][Task: [refdata] Migrate 11 party domain types to utility::uuid::tenant_id strong type]]
+- [[id:7A34C5A4-ABD4-4103-B82B-A25F2AEF7DA3][Task: [refdata] Migrate 11 party domain types to utility::uuid::tenant_id strong type]]
 * Decisions
 
 - /Strong type everywhere/ :: utility::uuid::tenant_id was already used in

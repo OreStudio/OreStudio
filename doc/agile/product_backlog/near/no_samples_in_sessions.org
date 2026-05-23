@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ce1614d5-400c-460f-a970-878aa11e1045
+:ID: CE1614D5-400C-460F-A970-878AA11E1045
 :END:
 #+title: No samples in sessions
 #+description: No samples in sessions
@@ -10,6 +10,6 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 For some reason we are no longer sampling for sessions. Investigate why.

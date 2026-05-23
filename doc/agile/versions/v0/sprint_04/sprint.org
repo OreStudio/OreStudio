@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 38daa167-e791-48fb-afeb-1813615037de
+:ID: 38DAA167-E791-48FB-AFEB-1813615037DE
 :END:
 #+title: Sprint 04
 #+description: LLM-driven code review and follow-on refactors; complete the currencies UI; introduce the Claude Code skills layer.
@@ -11,10 +11,10 @@
 #+updated: 2025-11-30
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 04*) of ORE Studio v0. It captures the
+This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 04*) of ORE Studio v0. It captures the
 sprint's mission, current status, and the stories that compose it. For the
 surrounding context — version goals, sprint order, and product identity — see
-[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+[[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
 
 * Mission
 
@@ -26,7 +26,7 @@ UI; introduce the Claude Code skills layer.
 | Field          | Value                                                                                                                                                                      |
 |----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                       |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                                                  |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                                  |
 | Now            | Sprint closed 2025-11-30. LLM-driven review pass complete across the first three components; currencies UI feature-complete; the Claude Code skills layer is in the build. |
 | Waiting on     | None.                                                                                                                                                                      |
 | Next           | None.                                                                                                                                                                      |
@@ -37,14 +37,14 @@ UI; introduce the Claude Code skills layer.
 #+ATTR_HTML: :class hug-leading
 | Story                                                                        | State | Start      | End        | Theme                                                                                  |
 |------------------------------------------------------------------------------+-------+------------+------------+----------------------------------------------------------------------------------------|
-| [[id:d0a1c624-dc57-424e-a958-279f68956976][Sprint 04 housekeeping]]          | DONE  |            | 2025-11-30 | backlog refinement plus a new pie-chart resourcing report.                             |
-| [[id:a9055a54-ae06-4cc4-8b51-2cb9627e0d5a][Test infrastructure follow-up]]   | DONE  |            | 2025-11-20 | successor of sprint 03's BLOCKED CTest item.                                           |
-| [[id:50b83ce1-6e12-44e7-afeb-f6bac09ddc14][Claude Code skills introduction]] | DONE  |            | 2025-11-15 | first skill, CMake deploy targets, weaving analysis.                                   |
-| [[id:c2e401c5-3f2b-4910-a91a-82dcf1b826e1][Build and packaging]]             | DONE  |            | 2025-11-20 | Windows install end-to-end, =localtime= fix, shutdown crash, sqlgen leak fixes.        |
-| [[id:2a9269e4-049a-49c3-9354-f26c95390e1f][UI polish and branding]]          | DONE  |            | 2025-11-22 | splash, Fluent icons, application icon, window-management defaults.                    |
-| [[id:1e99eee4-dca5-4384-942e-0ce28b0a467c][Currencies UI]]                   | DONE  |            | 2025-11-25 | export, edit, add, history, multi-select. Pattern-setter for later reference-data UIs. |
-| [[id:f8d6459d-71d3-4bae-8ece-43201cd2b8ba][LLM code review and refactor]]    | DONE  |            | 2025-11-28 | review pass + Dogen-layout restructure + per-component PlantUML.                       |
-| [[id:13e4f41f-82e1-400a-9c84-e60a587e2647][Documentation polish]]            | DONE  |            | 2025-11-30 | website restructure following the weaving analysis, Doxygen main-page refresh.         |
+| [[id:D0A1C624-DC57-424E-A958-279F68956976][Sprint 04 housekeeping]]          | DONE  |            | 2025-11-30 | backlog refinement plus a new pie-chart resourcing report.                             |
+| [[id:A9055A54-AE06-4CC4-8B51-2CB9627E0D5A][Test infrastructure follow-up]]   | DONE  |            | 2025-11-20 | successor of sprint 03's BLOCKED CTest item.                                           |
+| [[id:50B83CE1-6E12-44E7-AFEB-F6BAC09DDC14][Claude Code skills introduction]] | DONE  |            | 2025-11-15 | first skill, CMake deploy targets, weaving analysis.                                   |
+| [[id:C2E401C5-3F2B-4910-A91A-82DCF1B826E1][Build and packaging]]             | DONE  |            | 2025-11-20 | Windows install end-to-end, =localtime= fix, shutdown crash, sqlgen leak fixes.        |
+| [[id:2A9269E4-049A-49C3-9354-F26C95390E1F][UI polish and branding]]          | DONE  |            | 2025-11-22 | splash, Fluent icons, application icon, window-management defaults.                    |
+| [[id:1E99EEE4-DCA5-4384-942E-0CE28B0A467C][Currencies UI]]                   | DONE  |            | 2025-11-25 | export, edit, add, history, multi-select. Pattern-setter for later reference-data UIs. |
+| [[id:F8D6459D-71D3-4BAE-8ECE-43201CD2B8BA][LLM code review and refactor]]    | DONE  |            | 2025-11-28 | review pass + Dogen-layout restructure + per-component PlantUML.                       |
+| [[id:13E4F41F-82E1-400A-9C84-E60A587E2647][Documentation polish]]            | DONE  |            | 2025-11-30 | website restructure following the weaving analysis, Doxygen main-page refresh.         |
 
 * Retrospective
 

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: bfac3a00-1684-4546-b10b-5ba358b5a867
+:ID: BFAC3A00-1684-4546-B10B-5BA358B5A867
 :END:
 #+title: Story: Unified system_settings (replace feature_flags)
 #+description: Replace boolean-only ores_variability_feature_flags_tbl with ores_variability_system_settings_tbl supporting bool / int / string / JSON; migration across SQL, domain, service, NATS protocol, shell, CLI, HTTP, Qt UI; legacy files removed.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ every layer (SQL through Qt) and remove the legacy files.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Parent sprint | [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]] |
 | Now           | Completed 2026-03-20.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -43,7 +43,7 @@ every layer (SQL through Qt) and remove the legacy files.
 
 In execution order:
 
-- [[id:dfcdfd40-5c49-4122-8f44-e18ea4ba9d12][Replace feature_flags with unified system_settings]]
+- [[id:DFCDFD40-5C49-4122-8F44-E18EA4BA9D12][Replace feature_flags with unified system_settings]]
 
 * Decisions
 
@@ -56,4 +56,4 @@ In execution order:
 
 * See also
 
-- [[id:169b15a7-442b-44fd-8e54-436fec8340a6][JWT refresh]] — first real consumer of typed system settings (iam.token.*).
+- [[id:169B15A7-442B-44FD-8E54-436FEC8340A6][JWT refresh]] — first real consumer of typed system settings (iam.token.*).

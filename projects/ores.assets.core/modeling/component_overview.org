@@ -59,6 +59,6 @@ ships a synthetic-data generator for test and development use.
 
 * See also
 
-- [[id:34ddee6a-915f-404b-8721-01376903d3e4][ores.assets.api]] — protocol types and domain entities.
-- [[id:6d1aa78f-f37b-4030-b32c-b8b5eb4b0eee][ores.assets.service]] — NATS service entrypoint.
+- [[id:34DDEE6A-915F-404B-8721-01376903D3E4][ores.assets.api]] — protocol types and domain entities.
+- [[id:6D1AA78F-F37B-4030-B32C-B8B5EB4B0EEE][ores.assets.service]] — NATS service entrypoint.
 - [[id:F5E6A7B8-C9D0-1234-EFAB-345678901234][ores.assets Messaging Reference]] — full NATS subject and message catalogue.

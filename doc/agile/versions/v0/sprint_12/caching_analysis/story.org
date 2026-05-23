@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c8c45097-7420-438d-9026-6bec0285cd66
+:ID: C8C45097-7420-438D-9026-6BEC0285CD66
 :END:
 #+title: Story: Caching analysis (POSTPONED)
 #+description: Sketch a shared caching component for dialog-level data; consider immer + workspace pattern. Postponed within sprint 12.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ storage. Postponed within sprint 12.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | BACKLOG                                                |
-| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Parent sprint | [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]] |
 | Now           | Postponed in sprint 12; carried forward.               |
 | Waiting on    | A sprint with the slot.                                |
 | Next          | Return to this once a sprint has the budget.           |
@@ -39,7 +39,7 @@ storage. Postponed within sprint 12.
 
 In execution order:
 
-- [[id:713a4f2a-fc2f-40b3-b82a-94d66e680f10][Analyse caching at dialog level]]
+- [[id:713A4F2A-FC2F-40B3-B82A-94D66E680F10][Analyse caching at dialog level]]
 
 * Decisions
 

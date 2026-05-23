@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 90e0b641-95ea-4c57-87d6-dce944cdd2b9
+:ID: 90E0B641-95EA-4C57-87D6-DCE944CDD2B9
 :END:
 #+title: Task: Install Windows package on Windows machine
 #+description: Verify the Windows package produced by CI installs and runs end-to-end on a real Windows machine.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:c2e401c5-3f2b-4910-a91a-82dcf1b826e1][Build and packaging]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2E401C5-3F2B-4910-A91A-82DCF1B826E1][Build and packaging]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ remote service.
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:c2e401c5-3f2b-4910-a91a-82dcf1b826e1][Build and packaging]] |
+| Parent story | [[id:C2E401C5-3F2B-4910-A91A-82DCF1B826E1][Build and packaging]] |
 | Now          | Completed 2025-11-20.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

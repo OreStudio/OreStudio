@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8924ecab-e89e-4f3b-9665-d1876fe3aff8
+:ID: 8924ECAB-E89E-4F3B-9665-D1876FE3AFF8
 :END:
 #+title: Add more account commands
 #+description: Add more account commands
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 See the azeroth account commands for inspiration.
 

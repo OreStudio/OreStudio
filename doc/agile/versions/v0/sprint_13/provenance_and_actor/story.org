@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7b926ace-57f6-414d-8f3e-568175041f87
+:ID: 7B926ACE-57F6-414D-8F3E-568175041F87
 :END:
 #+title: Story: Provenance and actor stamping
 #+description: Tighten performed_by + modified_by stamping; remove the current_user escape hatch; route actor through app.current_actor GUC.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ route the actor through =app.current_actor= GUC, validate every
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Parent sprint | [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]] |
 | Now           | Completed 2026-02-21.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,7 +41,7 @@ route the actor through =app.current_actor= GUC, validate every
 
 In execution order:
 
-- [[id:f04113fc-16ab-44d2-9545-54ca632c45e9][Fix performed_by and modified_by stamping]]
+- [[id:F04113FC-16AB-44D2-9545-54CA632C45E9][Fix performed_by and modified_by stamping]]
 
 * Decisions
 
@@ -54,4 +54,4 @@ In execution order:
 
 * See also
 
-- [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]] (sprint 12) — predecessor work.
+- [[id:2901CE42-268C-4ADE-A3E4-CF6E01B8668E][Audit trail and system account]] (sprint 12) — predecessor work.

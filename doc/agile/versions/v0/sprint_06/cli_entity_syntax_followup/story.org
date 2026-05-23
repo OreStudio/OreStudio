@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 06c56ca2-9846-4dc9-b2f3-271bf4f084ce
+:ID: 06C56CA2-9846-4DC9-B2F3-271BF4F084CE
 :END:
 #+title: Story: CLI entity syntax follow-up
 #+description: Clean up the snags left by sprint 05's entity-first CLI/REPL reshape; add top-level login and logout commands in the shell.
@@ -11,7 +11,7 @@
 #+updated: 2025-12-13
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,16 +24,16 @@ than under the IAM entity submenu.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]] |
+| Parent sprint | [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]] |
 | Now           | Completed 2025-12-13.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2025-12-13                                             |
 
 
-#+predecessor: 7be09d1c-e25a-4783-a911-c37dec55cc43
+#+predecessor: 7BE09D1C-E25A-4783-A911-C37DEC55CC43
 
-Continued from: [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]].
+Continued from: [[id:7BE09D1C-E25A-4783-A911-C37DEC55CC43][CLI / REPL reshape]].
 
 * Acceptance
 
@@ -45,8 +45,8 @@ Continued from: [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]].
 
 In execution order:
 
-- [[id:25290cbf-79ac-4841-89b5-1d660d24859d][Entity syntax refactor snags]]
-- [[id:e95678aa-8849-4706-a985-f5d4d31238f1][Add top-level login and logout commands in shell]]
+- [[id:25290CBF-79AC-4841-89B5-1D660D24859D][Entity syntax refactor snags]]
+- [[id:E95678AA-8849-4706-A985-F5D4D31238F1][Add top-level login and logout commands in shell]]
 
 Additional v0 entries belonging here, not migrated as full tasks:
 
@@ -59,5 +59,5 @@ Additional v0 entries belonging here, not migrated as full tasks:
 
 * See also
 
-- [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]] (sprint 05) — predecessor.
+- [[id:7BE09D1C-E25A-4783-A911-C37DEC55CC43][CLI / REPL reshape]] (sprint 05) — predecessor.
 - [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] and [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the components polished here.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 443b546e-357b-4809-8c20-b804e62fa31e
+:ID: 443B546E-357B-4809-8C20-B804E62FA31E
 :END:
 #+title: Task: Rename ores.shell to ores.comms.shell
 #+description: The shell is specific to the binary comms protocol; namespaces, CMake targets, headers, and docs renamed.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:da77fb50-27e8-4b42-a826-cab289c7826e][Comms substrate evolution]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DA77FB50-27E8-4B42-A826-CAB289C7826E][Comms substrate evolution]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Rename =ores.shell= to =ores.comms.shell= so the component name reflects that it
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | DONE                                                                   |
-| Parent story | [[id:da77fb50-27e8-4b42-a826-cab289c7826e][Comms substrate evolution]] |
+| Parent story | [[id:DA77FB50-27E8-4B42-A826-CAB289C7826E][Comms substrate evolution]] |
 | Now          | Completed 2026-01-03.                                                  |
 | Waiting on   | None.                                                                  |
 | Next         | None.                                                                  |

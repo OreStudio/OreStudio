@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 27768a0e-d9dc-4958-9731-adef4385f23e
+:ID: 27768A0E-D9DC-4958-9731-ADEF4385F23E
 :END:
 #+title: Task: Rerun SQL scripts from scratch
 #+description: Validate schema bring-up from a clean slate; add TimescaleDB license-tier detection and per-database extension install; document the schema.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:42e6c351-795f-48aa-a435-eb3d1c9b6704][Database schema and seeding overhaul]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:42E6C351-795F-48AA-A435-EB3D1C9B6704][Database schema and seeding overhaul]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Validate the SQL schema by rebuilding from scratch; in passing, make TimescaleDB
 | Field        | Value                                                                             |
 |--------------+-----------------------------------------------------------------------------------|
 | State        | DONE                                                                              |
-| Parent story | [[id:42e6c351-795f-48aa-a435-eb3d1c9b6704][Database schema and seeding overhaul]] |
+| Parent story | [[id:42E6C351-795F-48AA-A435-EB3D1C9B6704][Database schema and seeding overhaul]] |
 | Now          | Completed 2025-12-31.                                                             |
 | Waiting on   | None.                                                                             |
 | Next         | None.                                                                             |

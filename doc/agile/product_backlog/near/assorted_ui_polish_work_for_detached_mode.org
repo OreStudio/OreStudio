@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 21a32193-1fe1-4414-88e9-f3cd97243891
+:ID: 21A32193-1FE1-4414-88E9-F3CD97243891
 :END:
 #+title: Assorted UI polish work for detached mode
 #+description: Assorted UI polish work for detached mode
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Break these down into their own stories:
 

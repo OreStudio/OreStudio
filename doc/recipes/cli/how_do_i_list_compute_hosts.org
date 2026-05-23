@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 22a2f77d-c2f5-4a39-9418-2da94ef0f410
+:ID: 22A2F77D-C2F5-4A39-9418-2DA94EF0F410
 :END:
 #+title: How do I list compute hosts?
 #+description: List compute hosts via =ores.cli=

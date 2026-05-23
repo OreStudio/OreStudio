@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 75254029-d708-45bd-a333-16d4ade44755
+:ID: 75254029-D708-45BD-A333-16D4ADE44755
 :END:
 #+title: Task: Add ORE Import Wizard
 #+description: Seven-page QWizard: directory scan, hierarchy build, trade import. ore_directory_scanner classifies files; ore_hierarchy_builder constructs portfolio + book hierarchies with naming + dedup; ore_import_planner generates the import plan; asynchronous scan; batched trade imports with live progress; accessible from File menu + Portfolio Explorer toolbar.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F80BAD05-2E66-458D-9223-1DB0A83EF694][ORE import wizard]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Deliver a comprehensive ORE Import Wizard so users can bring entire ORE director
 | Field        | Value                                                          |
 |--------------+----------------------------------------------------------------|
 | State        | DONE                                                           |
-| Parent story | [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]] |
+| Parent story | [[id:F80BAD05-2E66-458D-9223-1DB0A83EF694][ORE import wizard]] |
 | Now          | Completed 2026-03-01.                                          |
 | Waiting on   | None.                                                          |
 | Next         | None.                                                          |

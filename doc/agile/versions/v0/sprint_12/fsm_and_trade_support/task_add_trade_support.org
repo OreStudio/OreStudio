@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 78c1bec5-d1f6-49ec-89f5-8b485ce8fb96
+:ID: 78C1BEC5-D1F6-49EC-89F5-8B485CE8FB96
 :END:
 #+title: Task: Add trade support
 #+description: Trade envelope schema: 4 reference-data tables (trade types, lifecycle events, party role types, trade ID types) + core trade-envelope tables (trades, identifiers, party_roles) with soft-FK + RLS; ores_trade_ore_envelope_vw flattens to ORE structure. Convention drift fixes across 40 SQL files. Component renamed ores.trade → ores.trading.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:bd4110c2-fdf7-47b0-a726-f4cd83ded8e5][FSM and trade support]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BD4110C2-FDF7-47B0-A726-F4CD83DED8E5][FSM and trade support]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add the trade-envelope schema using the new FSM framework.
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
 | State        | DONE                                                               |
-| Parent story | [[id:bd4110c2-fdf7-47b0-a726-f4cd83ded8e5][FSM and trade support]] |
+| Parent story | [[id:BD4110C2-FDF7-47B0-A726-F4CD83DED8E5][FSM and trade support]] |
 | Now          | Completed 2026-02-20.                                              |
 | Waiting on   | None.                                                              |
 | Next         | None.                                                              |

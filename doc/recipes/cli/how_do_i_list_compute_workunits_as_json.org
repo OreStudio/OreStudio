@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c24e86a3-38cf-42cd-9496-7a02b99cd742
+:ID: C24E86A3-38CF-42CD-9496-7A02B99CD742
 :END:
 #+title: How do I list compute workunits as JSON?
 #+description: List compute workunits via =ores.cli= as JSON for piping into =jq=

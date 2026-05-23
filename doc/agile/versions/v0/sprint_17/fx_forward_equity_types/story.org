@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 00ccc0dc-200c-4951-81e0-6aa93b1503fc
+:ID: 00CCC0DC-200C-4951-81E0-6AA93B1503FC
 :END:
 #+title: Story: FX forward E2E and equity per-type migration
 #+description: Wire FX forward ORE import end-to-end; complete equity per-type instrument tables (forwards + read path + legacy cleanup).
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -38,9 +38,9 @@ forward variants, read path, and deletion of the legacy generic table.
 
 In execution order:
 
-- [[id:f8785fd8-fb24-4cb0-be33-119062158eb8][Task: [trading,qt,sql] FX forward import E2E wiring and instrument-bundle API]]
-- [[id:5de55856-aa28-43dd-9cb5-ada241b12765][Task: [ore,trading,qt] Equity per-type migration: forwards produce variants; read-side stub deferred]]
-- [[id:f9ec0a78-2233-4241-8c18-ba08572057f5][Task: [ore,trading,qt,sql] Equity per-type: finish read path + delete legacy generic]]
+- [[id:F8785FD8-FB24-4CB0-BE33-119062158EB8][Task: [trading,qt,sql] FX forward import E2E wiring and instrument-bundle API]]
+- [[id:5DE55856-AA28-43DD-9CB5-ADA241B12765][Task: [ore,trading,qt] Equity per-type migration: forwards produce variants; read-side stub deferred]]
+- [[id:F9EC0A78-2233-4241-8C18-BA08572057F5][Task: [ore,trading,qt,sql] Equity per-type: finish read path + delete legacy generic]]
 * Decisions
 
 - /Instrument-bundle API/ :: FX forward wiring introduced the instrument-bundle

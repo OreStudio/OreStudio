@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 82a03a76-95a3-46ef-bd4b-873d8e162517
+:ID: 82A03A76-95A3-46EF-BD4B-873D8E162517
 :END:
 #+title: Design per-service RBAC role assignment
 #+description: Services currently accept any valid JWT regardless of role. Design and implement per-service role assignment so a service only accepts JWTs that carry the appropriate role.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

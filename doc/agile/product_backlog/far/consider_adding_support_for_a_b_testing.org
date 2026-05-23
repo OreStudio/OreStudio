@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 98fd02ef-2ef6-410c-85b6-566f29f8560e
+:ID: 98FD02EF-2EF6-410C-85B6-566F29F8560E
 :END:
 #+title: Consider adding support for A/B testing
 #+description: Consider adding support for A/B testing
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 At present feature flags are global. However, we may want to enable a feature
 for a subset of the population. Analysis:

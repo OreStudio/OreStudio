@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 167c48a3-957b-4b58-92a5-e2938f925760
+:ID: 167C48A3-957B-4B58-92A5-E2938F925760
 :END:
 #+title: Task: Copy org-roam-export.el code into ores.lisp
 #+description: Inline the org-roam-export functions from ~/.emacs.d/config/org-roam-export.el into projects/ores.lisp (or wherever ores.lisp lives) so the site build does not depend on the runner's emacs config.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-23
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a4bef88c-1372-46ce-864b-c30ac3be95eb][Inline org-roam export into ores.lisp]] story.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A4BEF88C-1372-46CE-864B-C30AC3BE95EB][Inline org-roam export into ores.lisp]] story.
 It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
@@ -30,7 +30,7 @@ repository.
 | Field        | Value                                 |
 |--------------+---------------------------------------|
 | State        | STARTED                               |
-| Parent story | [[id:a4bef88c-1372-46ce-864b-c30ac3be95eb][Inline org-roam export into ores.lisp]] |
+| Parent story | [[id:A4BEF88C-1372-46CE-864B-C30AC3BE95EB][Inline org-roam export into ores.lisp]] |
 | Now          | Completed.                            |
 | Waiting on   | Nothing.                              |
 | Next         | Address code review comments..        |

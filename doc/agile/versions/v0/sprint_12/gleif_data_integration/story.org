@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 253ce971-c0f3-43c3-980c-276233250b86
+:ID: 253CE971-C0F3-43C3-980C-276233250B86
 :END:
 #+title: Story: GLEIF data integration
 #+description: Add GLEIF LEI entities + relationships as datasets via codegen; central-bank LEIs; LEI-to-BIC mapping dataset.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,16 +23,16 @@ coverage with central banks; add LEI-to-BIC mapping.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Parent sprint | [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]] |
 | Now           | Completed 2026-02-13.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-02-13                                             |
 
 
-#+predecessor: 700d4325-2ad1-4e0d-b6af-900abbe1a66e
+#+predecessor: 700D4325-2AD1-4E0D-B6AF-900ABBE1A66E
 
-Continued from: [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] (sprint 10) —
+Continued from: [[id:700D4325-2AD1-4E0D-B6AF-900ABBE1A66E][Party schemes and FPML reference data]] (sprint 10) —
 that story shipped the GLEIF download + split script; this one
 turns the resulting CSVs into proper datasets + populate scripts.
 
@@ -47,9 +47,9 @@ turns the resulting CSVs into proper datasets + populate scripts.
 
 In execution order:
 
-- [[id:3c36efbe-694b-429b-91e6-02082b95f3ef][Add GLEIF data to datasets]]
-- [[id:8a51eb28-5527-46af-8188-0cc511add15b][Add central-bank-related LEIs]]
-- [[id:1075b79e-fe84-4a88-8045-0dcd57ddd6c8][Add LEI-to-BIC dataset]]
+- [[id:3C36EFBE-694B-429B-91E6-02082B95F3EF][Add GLEIF data to datasets]]
+- [[id:8A51EB28-5527-46AF-8188-0CC511ADD15B][Add central-bank-related LEIs]]
+- [[id:1075B79E-FE84-4A88-8045-0DCD57DDD6C8][Add LEI-to-BIC dataset]]
 
 * Decisions
 
@@ -62,4 +62,4 @@ In execution order:
 
 * See also
 
-- [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] (sprint 10) — predecessor (download script).
+- [[id:700D4325-2AD1-4E0D-B6AF-900ABBE1A66E][Party schemes and FPML reference data]] (sprint 10) — predecessor (download script).

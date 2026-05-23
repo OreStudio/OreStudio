@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b1450696-8c51-4cc5-8910-84912a411ab6
+:ID: B1450696-8C51-4CC5-8910-84912A411AB6
 :END:
 #+title: Domain Type Creator
 #+description: Create a new ORE Studio domain type with JSON I/O, table I/O, generator, and repository support via codegen.
@@ -24,7 +24,7 @@ When you need to add a new domain type to an ORE Studio component with
 JSON I/O, table I/O, a test data generator, and repository CRUD
 support. This is the mandatory first step before any exposure layer
 (SQL schema, HTTP, CLI, shell, Wt, Qt) can be built. See the
-[[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] overview for the full layer ordering.
+[[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] overview for the full layer ordering.
 
 * How to use this skill
 
@@ -34,14 +34,14 @@ be justified in the file header.
 1. /Create a JSON model/ in =projects/ores.codegen/models/{component}/=
    following the =*_domain_entity.json= or =*_junction.json= naming
    convention. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for the model schema and
-   available fields. Type mappings are in [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]]§"Type
+   available fields. Type mappings are in [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Type
    mappings".
 
 2. /Generate all C++ artefacts/ (files written directly to the project
    tree — no copy step):
    =cd projects/ores.codegen && ./run_generator.sh models/{component}/{entity}_domain_entity.json --profile all-cpp=
 
-3. /Build and verify/: use [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]] to confirm the component
+3. /Build and verify/: use [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]] to confirm the component
    library compiles cleanly.
 
 4. /Raise PRs at phase boundaries/ — Phase 1: domain + I/O; Phase 2:
@@ -59,20 +59,20 @@ and which library it uses.
 
 * Recipes
 
-- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering, type mappings, service naming.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering, type mappings, service naming.
 
 * Reference
 
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, profiles, and template catalogue.
-- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — canonical type mappings and service method naming.
-- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]] — build and test commands.
-- [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][unit-test-writer]] — writing Catch2 tests for the new domain type.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — canonical type mappings and service method naming.
+- [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]] — build and test commands.
+- [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][unit-test-writer]] — writing Catch2 tests for the new domain type.
 
 * Templates
 
 Runs via =--profile all-cpp= (combines domain · generator · repository ·
 service · protocol).  Full output paths are in
-[[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]]§"Complete entity file checklist".
+[[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Complete entity file checklist".
 
 | Sub-profile | Key templates |
 |---|---|

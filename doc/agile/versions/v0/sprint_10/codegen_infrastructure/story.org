@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 49a3b815-b5e9-4b3d-9213-100bf96c266d
+:ID: 49A3B815-B5E9-4B3D-9213-100BF96C266D
 :END:
 #+title: Story: Codegen infrastructure
 #+description: Stand up a simple in-tree code generator; cover domain-types SQL; auto-generate the ER diagram from SQL.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ highest-leverage workloads: domain-types SQL, and the ER diagram
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Parent sprint | [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]] |
 | Now           | Completed 2026-01-24.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -40,9 +40,9 @@ highest-leverage workloads: domain-types SQL, and the ER diagram
 
 In execution order:
 
-- [[id:c6879b22-210b-43b3-8463-c84d44105c93][Create a simple code generator]]
-- [[id:8d7be70d-aeef-443e-8a8e-4f078feff833][Add code generation support for domain types SQL]]
-- [[id:3b04427d-b956-4bd0-97e8-b68f445bd5ae][Code-generate ER diagram from SQL]]
+- [[id:C6879B22-210B-43B3-8463-C84D44105C93][Create a simple code generator]]
+- [[id:8D7BE70D-AEEF-443E-8A8E-4F078FEFF833][Add code generation support for domain types SQL]]
+- [[id:3B04427D-B956-4BD0-97E8-B68F445BD5AE][Code-generate ER diagram from SQL]]
 
 * Decisions
 

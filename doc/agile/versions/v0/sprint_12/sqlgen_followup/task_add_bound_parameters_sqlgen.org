@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 39dff131-19b6-49f9-ae2e-5879994d1870
+:ID: 39DFF131-19B6-49F9-AE2E-5879994D1870
 :END:
 #+title: Task: Add bound parameters to sqlgen
 #+description: Adopt native sqlgen bound-parameter support once vcpkg picks up the release.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e8004b20-ae81-4d48-a677-cde07a300e92][sqlgen follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E8004B20-AE81-4D48-A677-CDE07A300E92][sqlgen follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Adopt native sqlgen bound-parameter support so the project can stop using libpq 
 | Field        | Value                                                         |
 |--------------+---------------------------------------------------------------|
 | State        | BLOCKED                                                       |
-| Parent story | [[id:e8004b20-ae81-4d48-a677-cde07a300e92][sqlgen follow-up]] |
+| Parent story | [[id:E8004B20-AE81-4D48-A677-CDE07A300E92][sqlgen follow-up]] |
 | Now          | BLOCKED on upstream + vcpkg release.                          |
 | Waiting on   | vcpkg picking up the sqlgen release with the merged features. |
 | Next         | Resume once vcpkg has the release.                            |

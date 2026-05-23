@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6f9c3077-8207-48d6-a0c2-883703825b2e
+:ID: 6F9C3077-8207-48D6-A0C2-883703825B2E
 :END:
 #+title: View Entity History
 #+description: View Entity History

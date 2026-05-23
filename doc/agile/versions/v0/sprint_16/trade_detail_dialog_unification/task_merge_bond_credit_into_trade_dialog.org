@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6deb9eac-1269-4e84-8dfc-f54d78b5c816
+:ID: 6DEB9EAC-1269-4E84-8DFC-F54D78B5C816
 :END:
 #+title: Task: Merge bond + credit instruments into TradeDetailDialog
 #+description: PR 3 of 6: standalone bond + credit controllers removed; functionality integrated into TradeDetailDialog; review highlighted regressions for new trade creation + CDO zero values.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1490e130-08f9-4d43-8f80-d7e0f5022fbd][Trade detail dialog unification]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1490E130-08F9-4D43-8F80-D7E0F5022FBD][Trade detail dialog unification]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ PR 3 of 6: standalone bond + credit controllers removed; functionality integrate
 | Field        | Value                                                                        |
 |--------------+------------------------------------------------------------------------------|
 | State        | DONE                                                                         |
-| Parent story | [[id:1490e130-08f9-4d43-8f80-d7e0f5022fbd][Trade detail dialog unification]] |
+| Parent story | [[id:1490E130-08F9-4D43-8F80-D7E0F5022FBD][Trade detail dialog unification]] |
 | Now          | Completed 2026-04-07.                                                        |
 | Waiting on   | None.                                                                        |
 | Next         | None.                                                                        |

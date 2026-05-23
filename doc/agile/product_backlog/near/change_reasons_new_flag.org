@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f9ebca64-3021-4747-a8ee-8ce70b6286af
+:ID: F9EBCA64-3021-4747-A8EE-8CE70B6286AF
 :END:
 #+title: Add new flag to change reasons in Qt UI
 #+description: Change reasons have a new flag in the database but it is not surfaced in the Qt UI. Add the field to the change reason form.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

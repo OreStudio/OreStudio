@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 79b815f3-9a40-49d5-a7dc-de2eb1099934
+:ID: 79B815F3-9A40-49D5-A7DC-DE2EB1099934
 :END:
 #+title: Task: Create a Claude Code skill to open a new sprint
 #+description: Skill that updates version strings, copies the backlog template, and creates the next sprint backlog file.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-17
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:656EABB7-C9D1-4FDD-8CAC-0AB77ADCD9B2][Claude Code skills expansion]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ README / GitHub packages, build everything once to confirm green.
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE                                                                      |
-| Parent story | [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]] |
+| Parent story | [[id:656EABB7-C9D1-4FDD-8CAC-0AB77ADCD9B2][Claude Code skills expansion]] |
 | Now          | Completed 2025-11-17.                                                     |
 | Waiting on   | None.                                                                     |
 | Next         | None.                                                                     |

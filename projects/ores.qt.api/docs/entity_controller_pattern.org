@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: fc186d19-9421-45a2-bbcc-4355d66aa41f
+:ID: FC186D19-9421-45A2-BBCC-4355D66AA41F
 :END:
 #+title: Entity Controller Pattern
 #+description: Four-layer Qt entity UI pattern: controller, list-window, detail-dialog, and table-model — and how they wire to NATS.
@@ -109,7 +109,7 @@ live alongside the model.
 
 * See also
 
-- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt Plugin Architecture]] — how controllers are created/destroyed via the
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — how controllers are created/destroyed via the
   plugin lifecycle.
-- [[id:30a3a7f4-e1a9-42fb-af9d-ff36fa0f3d21][ores.qt.api]] — the base classes (EntityController, AbstractClientModel,
+- [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] — the base classes (EntityController, AbstractClientModel,
   EntityListMdiWindow, EntityDetailDialog) that implement this pattern.

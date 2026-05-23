@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e
+:ID: 3BC3B9ED-60C8-4A86-A6F1-925E58C74B6E
 :END:
 #+title: Sprint 03
 #+description: Wire the new socket code into the UI and finish the login/account/session surface.
@@ -11,10 +11,10 @@
 #+updated: 2026-05-18
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 03*) of ORE Studio v0. It captures the
+This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 03*) of ORE Studio v0. It captures the
 sprint's mission, current status, and the stories that compose it. For the
 surrounding context — version goals, sprint order, and product identity — see
-[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+[[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
 
 * Mission
 
@@ -30,7 +30,7 @@ code/ + /finish login related functionality/.)
 | Field          | Value                                                                                                            |
 |----------------+------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                             |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                        |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                        |
 | Now            | Sprint closed 2025-12-31. UI now uses the new socket layer end-to-end; accounts and sessions ship as part of v0. |
 | Waiting on     | None.                                                                                                            |
 | Next           | None.                                                                                                            |
@@ -41,13 +41,13 @@ code/ + /finish login related functionality/.)
 #+ATTR_HTML: :class hug-leading
 | Story                                                                             | State | Start      | End        | Theme                                                                                    |
 |-----------------------------------------------------------------------------------+-------+------------+------------+------------------------------------------------------------------------------------------|
-| [[id:bcef2c68-65fe-4848-95ba-6ddb01b2ab9f][Sprint 03 housekeeping]]               | DONE  |            | 2025-12-31 | sprint sundries, backlog refinement, postponed work tracking.                            |
-| [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]]                | DONE  |            | 2025-11-15 | Windows clang-cl, dynamic libraries, vcpkg patches on Windows, Postgres on CI.           |
-| [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]]                  | DONE  |            | 2025-12-01 | separate test DB, split test code, ctest suite-level tests, test data generators.        |
-| [[id:eda3d069-f3c1-43b5-93fb-e5705a8f9adc][Client console and Qt integration]]    | DONE  |            | 2025-12-15 | merge client into console, enable Qt GUI on the new socket layer, locking, Prodigy tags. |
-| [[id:b09e0d06-0314-4424-ad57-2da31a335d99][Login and sessions]]                   | DONE  |            | 2025-12-20 | account and session domain types end-to-end.                                             |
-| [[id:3f819ee3-0834-4522-8b01-df4a7d09e77f][Postgres-backed currency persistence]] | DONE  |            | 2025-11-25 | currency repository write path, service command-line DB args.                            |
-| [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observability]]            | DONE  |            | 2025-12-30 | proper Boost.Log usage, Valgrind/leak investigations, code-coverage uplift.              |
+| [[id:BCEF2C68-65FE-4848-95BA-6DDB01B2AB9F][Sprint 03 housekeeping]]               | DONE  |            | 2025-12-31 | sprint sundries, backlog refinement, postponed work tracking.                            |
+| [[id:D246FFBE-11EE-4FF9-9309-2A693E2476EF][Build stabilisation 3]]                | DONE  |            | 2025-11-15 | Windows clang-cl, dynamic libraries, vcpkg patches on Windows, Postgres on CI.           |
+| [[id:22EFE1E8-427F-488A-94A3-8CA78F180966][Test infrastructure]]                  | DONE  |            | 2025-12-01 | separate test DB, split test code, ctest suite-level tests, test data generators.        |
+| [[id:EDA3D069-F3C1-43B5-93FB-E5705A8F9ADC][Client console and Qt integration]]    | DONE  |            | 2025-12-15 | merge client into console, enable Qt GUI on the new socket layer, locking, Prodigy tags. |
+| [[id:B09E0D06-0314-4424-AD57-2DA31A335D99][Login and sessions]]                   | DONE  |            | 2025-12-20 | account and session domain types end-to-end.                                             |
+| [[id:3F819EE3-0834-4522-8B01-DF4A7D09E77F][Postgres-backed currency persistence]] | DONE  |            | 2025-11-25 | currency repository write path, service command-line DB args.                            |
+| [[id:1A411B50-2C3A-4248-9AE7-59A835EF6774][Logging and observability]]            | DONE  |            | 2025-12-30 | proper Boost.Log usage, Valgrind/leak investigations, code-coverage uplift.              |
 
 * Retrospective
 

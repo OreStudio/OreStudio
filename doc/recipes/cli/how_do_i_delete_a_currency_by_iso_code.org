@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0f1f88d0-d8c7-470f-808a-34ea686226d1
+:ID: 0F1F88D0-D8C7-470F-808A-34EA686226D1
 :END:
 #+title: How do I delete a currency by ISO code?
 #+description: Delete a currency by ISO code

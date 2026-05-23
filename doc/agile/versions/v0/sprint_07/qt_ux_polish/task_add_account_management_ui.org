@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ba994ed5-8729-4005-a4ed-99f46293c7a2
+:ID: BA994ED5-8729-4005-A4ED-99F46293C7A2
 :END:
 #+title: Task: Add account management support to qt
 #+description: Qt UI for listing accounts, viewing account details, performing lock / reset actions.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:72f723f4-378c-4e0a-b6f1-6ba3c29f5bea][Qt UX polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:72F723F4-378C-4E0A-B6F1-6BA3C29F5BEA][Qt UX polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add a Qt UI for account management.
 | Field        | Value                                                     |
 |--------------+-----------------------------------------------------------|
 | State        | DONE                                                      |
-| Parent story | [[id:72f723f4-378c-4e0a-b6f1-6ba3c29f5bea][Qt UX polish]] |
+| Parent story | [[id:72F723F4-378C-4E0A-B6F1-6BA3C29F5BEA][Qt UX polish]] |
 | Now          | Completed 2025-12-21.                                     |
 | Waiting on   | None.                                                     |
 | Next         | None.                                                     |

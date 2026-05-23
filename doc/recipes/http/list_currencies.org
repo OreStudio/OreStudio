@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: afbc3142-5de3-474e-b5b9-ccbecd1a65e9
+:ID: AFBC3142-5DE3-474E-B5B9-CCBECD1A65E9
 :END:
 #+title: List Currencies
 #+description: List Currencies

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b5efb803-eb60-4438-9304-3bc64fb54e1a
+:ID: B5EFB803-EB60-4438-9304-3BC64FB54E1A
 :END:
 #+title: Three-level provisioning: end-to-end testing
 #+description: Three-level provisioning: end-to-end testing
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 End-to-end test of the complete three-level provisioning flow implemented
 across PRs #582, #611, #614, #619, and the correlation ID / summary page

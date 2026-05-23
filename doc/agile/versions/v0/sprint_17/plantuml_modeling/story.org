@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 17c590d4-04f0-43c5-9ea5-f89c40c82a4c
+:ID: 17C590D4-04F0-43C5-9EA5-F89C40C82A4C
 :END:
 #+title: Story: PlantUML and modeling refresh
 #+description: Component PlantUML generation script; bulk refresh of all component diagrams; migrate all component docs to v2 information architecture.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -38,8 +38,8 @@ migrate all component_overview.org files to the v2 information architecture.
 
 In execution order:
 
-- [[id:838a254c-e9ee-4a06-8f72-97c4f84e3e75][Task: Add component PlantUML generation script and bulk-refresh all diagrams]]
-- [[id:0d4a6b08-ab08-4a63-a768-5cbdb692fa18][Task: [modeling] Migrate all component docs to v2 information architecture]]
+- [[id:838A254C-E9EE-4A06-8F72-97C4F84E3E75][Task: Add component PlantUML generation script and bulk-refresh all diagrams]]
+- [[id:0D4A6B08-AB08-4A63-A768-5CBDB692FA18][Task: [modeling] Migrate all component docs to v2 information architecture]]
 * Decisions
 
 - (none)

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e81c7fea-33e4-400a-839a-9d1618bed211
+:ID: E81C7FEA-33E4-400A-839A-9D1618BED211
 :END:
 #+title: Qt Plugin Architecture
 #+description: IPlugin lifecycle, shared_menus_context, load_order, and the two-phase menu-building sequence in ORE Studio.
@@ -124,5 +124,5 @@ pre-created by =MainWindow= and is always last. Plugins with lower
 * See also
 
 - [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — the MainWindow shell that drives the two-phase loop.
-- [[id:30a3a7f4-e1a9-42fb-af9d-ff36fa0f3d21][ores.qt.api]] — defines IPlugin, PluginBase, plugin_context, shared_menus_context.
-- [[id:fc186d19-9421-45a2-bbcc-4355d66aa41f][Entity Controller Pattern]] — how plugins wire their controllers.
+- [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] — defines IPlugin, PluginBase, plugin_context, shared_menus_context.
+- [[id:FC186D19-9421-45A2-BBCC-4355D66AA41F][Entity Controller Pattern]] — how plugins wire their controllers.

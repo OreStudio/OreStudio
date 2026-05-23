@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6d8987a6-7f0b-40cb-8334-e149ea44b44b
+:ID: 6D8987A6-7F0B-40CB-8334-E149EA44B44B
 :END:
 #+title: Task: Rename ores.comms.shell to ores.shell
 #+description: With NATS replacing the binary comms protocol, the shell no longer needs the .comms namespace; rename completes the cleanup; NATS documentation rewritten across all 10 services with subject-based references.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23D1F2BB-D2D3-423A-8167-657098E30542][NATS migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Rename =ores.comms.shell= to =ores.shell= — the =.comms= namespace no longer a
 | Field        | Value                                                       |
 |--------------+-------------------------------------------------------------|
 | State        | DONE                                                        |
-| Parent story | [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]] |
+| Parent story | [[id:23D1F2BB-D2D3-423A-8167-657098E30542][NATS migration]] |
 | Now          | Completed 2026-03-15.                                       |
 | Waiting on   | None.                                                       |
 | Next         | None.                                                       |

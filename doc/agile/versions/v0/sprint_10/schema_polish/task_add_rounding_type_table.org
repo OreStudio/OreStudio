@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 850e10f2-d84c-4a25-b30b-0328edb33ae8
+:ID: 850E10F2-D84C-4A25-B30B-0328EDB33AE8
 :END:
 #+title: Task: Add rounding type table
 #+description: Rounding values aligned with FpML RoundingDirectionEnum: Up, Down, Closest, Floor, Ceiling. Currency validates against this table.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5BAFBEB2-C875-4655-BB78-801A3BF65022][Schema polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add a reference table for currency rounding types, aligned with FpML's =Rounding
 | Field        | Value                                                      |
 |--------------+------------------------------------------------------------|
 | State        | DONE                                                       |
-| Parent story | [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]] |
+| Parent story | [[id:5BAFBEB2-C875-4655-BB78-801A3BF65022][Schema polish]] |
 | Now          | Completed 2026-01-26.                                      |
 | Waiting on   | None.                                                      |
 | Next         | None.                                                      |

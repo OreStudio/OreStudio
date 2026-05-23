@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c609652a-0266-4cd7-b748-096924688502
+:ID: C609652A-0266-4CD7-B748-096924688502
 :END:
 #+title: Task: Add Analytics CRUD UI and restructure DQ project layout
 #+description: Analytics module Qt UI for pricing engines + model configurations; refactor Data Quality module; code generator enhanced to support combo box widgets in detail dialogs.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:08d2b499-53ce-4b1c-92cf-a7c26d036ec9][Reporting and analytics]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:08D2B499-53CE-4B1C-92CF-A7C26D036EC9][Reporting and analytics]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Analytics module Qt UI for pricing engines + model configurations; refactor Data
 | Field        | Value                                                                |
 |--------------+----------------------------------------------------------------------|
 | State        | DONE                                                                 |
-| Parent story | [[id:08d2b499-53ce-4b1c-92cf-a7c26d036ec9][Reporting and analytics]] |
+| Parent story | [[id:08D2B499-53CE-4B1C-92CF-A7C26D036EC9][Reporting and analytics]] |
 | Now          | Completed 2026-04-07.                                                |
 | Waiting on   | None.                                                                |
 | Next         | None.                                                                |

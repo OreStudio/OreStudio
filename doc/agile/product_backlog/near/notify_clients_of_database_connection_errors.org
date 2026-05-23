@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c89be9f5-3022-4237-a5fd-80ebf99f35cb
+:ID: C89BE9F5-3022-4237-A5FD-80EBF99F35CB
 :END:
 #+title: Notify clients of database connection errors
 #+description: Notify clients of database connection errors
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 If the server fails to connect to the database, we should show a dialog box or
 some other UI to explain this to the user. Elsewhere we have:

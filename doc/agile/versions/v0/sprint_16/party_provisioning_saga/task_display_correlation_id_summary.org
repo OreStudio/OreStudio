@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8826f495-5182-47ae-aa74-5475cdb09ec4
+:ID: 8826F495-5182-47AE-AA74-5475CDB09EC4
 :END:
 #+title: Task: Display provision correlation ID on tenant summary
 #+description: TenantProvisioningWizard summary page shows the provision correlation ID for cross-referencing service logs.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:c0ed556b-57a4-4bce-9196-70bcf4fd0d63][Party provisioning saga]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C0ED556B-57A4-4BCE-9196-70BCF4FD0D63][Party provisioning saga]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ TenantProvisioningWizard summary page shows the provision correlation ID for cro
 | Field        | Value                                                                |
 |--------------+----------------------------------------------------------------------|
 | State        | DONE                                                                 |
-| Parent story | [[id:c0ed556b-57a4-4bce-9196-70bcf4fd0d63][Party provisioning saga]] |
+| Parent story | [[id:C0ED556B-57A4-4BCE-9196-70BCF4FD0D63][Party provisioning saga]] |
 | Now          | Completed 2026-03-31.                                                |
 | Waiting on   | None.                                                                |
 | Next         | None.                                                                |

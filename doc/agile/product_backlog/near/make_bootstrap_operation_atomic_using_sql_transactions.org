@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b25c8d35-d25e-4caf-bf67-a91faff4ac9d
+:ID: B25C8D35-D25E-4CAF-BF67-A91FAFF4AC9D
 :END:
 #+title: Make bootstrap operation atomic using SQL transactions
 #+description: Make bootstrap operation atomic using SQL transactions
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 The bootstrap operation is currently not atomic. If an exception is thrown after
 the admin account is created but before the bootstrap mode feature flag is

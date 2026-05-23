@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 391b9231-dba8-4e8c-97ab-a75e2b9fea07
+:ID: 391B9231-DBA8-4E8C-97AB-A75E2B9FEA07
 :END:
 #+title: How do I create a memory?
 #+description: Scaffold a v2 memory file under doc/llm/memory/ — feedback, user, project, or reference subtype — and wire it into the inventory.
@@ -11,9 +11,9 @@
 #+updated: 2026-05-21
 
 For background on what project memory /is/ and what does and does not
-belong in it, see the [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][project memory inventory]]. For the LLM-side
+belong in it, see the [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][project memory inventory]]. For the LLM-side
 procedure (when to write a memory vs when to push back), see the
-[[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory skill]].
+[[id:7357C672-A49F-4974-9399-A166F761D222][ores-memory skill]].
 
 * Question
 
@@ -60,7 +60,7 @@ frontmatter.
    - /=*How to apply:*=/ when this kicks in (which files, which
      workflows, what circumstances).
 
-5. /Link from the inventory/. Open [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][Project memory]] and add
+5. /Link from the inventory/. Open [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]] and add
    an id-link under the appropriate subtype heading.
 
 6. /Verify/:
@@ -99,9 +99,9 @@ carries =#+version: 2=.
 
 * See also
 
-- [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][Project memory]] — the catalogue and the contract for what
+- [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]] — the catalogue and the contract for what
   belongs.
-- [[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory skill]] — the LLM-side decision flow.
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — the parent codegen recipe;
+- [[id:7357C672-A49F-4974-9399-A166F761D222][ores-memory skill]] — the LLM-side decision flow.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — the parent codegen recipe;
   memory is one of its doctypes.
-- [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]] — sibling recipe-shape doc.
+- [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]] — sibling recipe-shape doc.

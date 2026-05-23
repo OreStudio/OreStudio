@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 735c8fbe-dab6-44b5-9442-9d4eeac86106
+:ID: 735C8FBE-DAB6-44B5-9442-9D4EEAC86106
 :END:
 #+title: Task: Add workflow monitor + late fixes
 #+description: ores.qt.workflow plugin with workflow monitor; JetStream durability + SIGSEGV fix in engine; trade nullable dates; compute fixes; ORE import workflow + correlation IDs selectable/copyable; master-detail layout.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:87599263-bd70-42cf-b653-0803e12f4d0b][Workflow monitor + late fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:87599263-BD70-42CF-B653-0803E12F4D0B][Workflow monitor + late fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ ores.qt.workflow plugin with workflow monitor; JetStream durability + SIGSEGV fi
 | Field        | Value                                                                      |
 |--------------+----------------------------------------------------------------------------|
 | State        | DONE                                                                       |
-| Parent story | [[id:87599263-bd70-42cf-b653-0803e12f4d0b][Workflow monitor + late fixes]] |
+| Parent story | [[id:87599263-BD70-42CF-B653-0803E12F4D0B][Workflow monitor + late fixes]] |
 | Now          | Completed 2026-04-11.                                                      |
 | Waiting on   | None.                                                                      |
 | Next         | None.                                                                      |

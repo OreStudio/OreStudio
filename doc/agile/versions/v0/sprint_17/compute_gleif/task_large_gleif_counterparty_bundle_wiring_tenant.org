@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e8553690-dd3d-4818-8722-cf614f8bca4f
+:ID: E8553690-DD3D-4818-8722-CF614F8BCA4F
 :END:
 #+title: Task: Large GLEIF counterparty bundle wiring, tenant reset, upload logging
 #+description: Work from a bug-hunt session on the PartyProvisioningWizard's Large (~15k) counterparty import path.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e16beabb-cc59-4d6c-b216-dacc1e922047][Compute and GLEIF]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E16BEABB-CC59-4D6C-B216-DACC1E922047][Compute and GLEIF]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Fix GLEIF bundle publish validation, add a tenant reset command, and improve upl
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:e16beabb-cc59-4d6c-b216-dacc1e922047][Compute and GLEIF]] |
+| Parent story | [[id:E16BEABB-CC59-4D6C-B216-DACC1E922047][Compute and GLEIF]] |
 | Now          | Completed 2026-04-18.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

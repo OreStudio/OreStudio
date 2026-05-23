@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0eab0568-fa7d-49f0-b0d4-c6522fd3f0fb
+:ID: 0EAB0568-FA7D-49F0-B0D4-C6522FD3F0FB
 :END:
 #+title: Setup code quality actions
 #+description: Setup code quality actions
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 We added a test password to the repo on purpose to see if it was going to be
 detected by the github actions:

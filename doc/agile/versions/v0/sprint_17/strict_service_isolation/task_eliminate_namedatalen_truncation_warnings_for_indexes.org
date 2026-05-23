@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 17aa65ad-d157-42c5-a312-43df0a421d38
+:ID: 17AA65AD-D157-42C5-A312-43DF0A421D38
 :END:
 #+title: Task: Eliminate NAMEDATALEN truncation warnings for indexes and RLS policies
 #+description: - Strip redundant `ores_<service>_` prefix from all PostgreSQL index names and RLS policy names across the SQL schema (~
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E762DA90-B92A-41E1-AD4D-29018F17AF32][Strict service table isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Strip the redundant ores_<service>_ prefix from 190+ PostgreSQL index and RLS po
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]] |
+| Parent story | [[id:E762DA90-B92A-41E1-AD4D-29018F17AF32][Strict service table isolation]] |
 | Now          | Completed 2026-05-15.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

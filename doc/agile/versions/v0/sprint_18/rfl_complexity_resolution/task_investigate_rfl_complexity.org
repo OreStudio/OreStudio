@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d1e4921b-b431-4e78-99ab-62a47f761d1d
+:ID: D1E4921B-B431-4E78-99AB-62A47F761D1D
 :END:
 #+title: Task: Investigate RFL complexity root cause
 #+description: Analyze the root cause of Clang and MSVC compilation failures related to reflect-cpp complexity.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-23
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d8b1a670-3b02-11f1-bce2-4b06f4bba5d8][Resolve RFL complexity issues]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Analyze the root cause of Clang and MSVC compilation failures related to =reflec
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                                   |
-| Parent story | [[id:d8b1a670-3b02-11f1-bce2-4b06f4bba5d8][Resolve RFL complexity issues]] |
+| Parent story | [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] |
 | Now          | Completed 2026-05-23.                  |
 | Waiting on   | Nothing.                               |
 | Next         | Implement the proposed strategy.        |
@@ -38,7 +38,7 @@ Analyze the root cause of Clang and MSVC compilation failures related to =reflec
 - Root cause for Clang's "expression nesting limit" identified.
 - Root cause for MSVC's "C1202" identified.
 - Permanent resolution strategy (Triple Isolation) proposed.
-- [[id:d75f4921-b431-4e78-99ab-62a47f761d1d][Investigation report]] published.
+- [[id:D75F4921-B431-4E78-99AB-62A47F761D1D][Investigation report]] published.
 
 * Plan
 
@@ -56,6 +56,6 @@ Analyze the root cause of Clang and MSVC compilation failures related to =reflec
 
 * Result
 
-- [[id:d75f4921-b431-4e78-99ab-62a47f761d1d][Investigation: MSVC C1202 and rfl complexity]]
+- [[id:D75F4921-B431-4E78-99AB-62A47F761D1D][Investigation: MSVC C1202 and rfl complexity]]
 - Strategy: TU split + Two-phase parse + Global Clang limits.
 - Upstream issue [[https://github.com/getml/reflect-cpp/issues/350][reflect-cpp #350]] opened.

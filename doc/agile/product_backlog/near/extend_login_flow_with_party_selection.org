@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 636f5860-f6a6-439e-8257-a442e2d471ff
+:ID: 636F5860-F6A6-439E-8257-A442E2D471FF
 :END:
 #+title: Extend login flow with party selection
 #+description: Extend login flow with party selection
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 After authentication, look up the user's associated parties from
 =account_parties=. If one party, auto-select. If multiple, return the party list

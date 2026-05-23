@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6faa2b35-805a-4790-acea-e168afae23c0
+:ID: 6FAA2B35-805A-4790-ACEA-E168AFAE23C0
 :END:
 #+title: How do I ask an LLM to transcribe handwritten financial notes?
 #+description: Reusable prompt for OCR-to-org-mode transcription of handwritten financial notes.
@@ -80,12 +80,12 @@ Manual usage across multiple LLM chat interfaces.
 The output is *draft content* — generic org-mode, not v2 format. If
 the notes are destined for the repo, a human must reshape the output
 to satisfy the v2 frontmatter contract before committing. See
-[[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] for the codegen scaffold, and
-[[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] for the per-type section requirements.
+[[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] for the codegen scaffold, and
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] for the per-type section requirements.
 
 * See also
 
-- [[id:51fe4df6-d12f-4cf3-a32f-e793979aa68b][LLM prompt recipes]] — index of all LLM prompts.
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — scaffold the target doc after
+- [[id:51FE4DF6-D12F-4CF3-A32F-E793979AA68B][LLM prompt recipes]] — index of all LLM prompts.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — scaffold the target doc after
   transcription.
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — v2 frontmatter and section contract to apply.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — v2 frontmatter and section contract to apply.

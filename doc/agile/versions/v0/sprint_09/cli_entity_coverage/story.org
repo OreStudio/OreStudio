@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 09a8d544-22f3-491a-82a9-306b1aa7c756
+:ID: 09A8D544-22F3-491A-82A9-306B1AA7C756
 :END:
 #+title: Story: CLI entity coverage
 #+description: Add list/delete CLI commands for roles, permissions, countries, change reasons, change-reason categories; refactor parsers behind a generic helper.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ boilerplate.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]] |
+| Parent sprint | [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]] |
 | Now           | Completed 2026-01-12.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -40,8 +40,8 @@ boilerplate.
 
 In execution order:
 
-- [[id:3d5f5bb6-056a-4533-9b18-7222d9b9b84f][Add missing entities to CLI]]
-- [[id:61fb71d8-9fd2-4739-a20a-7cadb3f83f4a][Refactor CLI entity parsers with generic helper]]
+- [[id:3D5F5BB6-056A-4533-9B18-7222D9B9B84F][Add missing entities to CLI]]
+- [[id:61FB71D8-9FD2-4739-A20A-7CADB3F83F4A][Refactor CLI entity parsers with generic helper]]
 
 * Decisions
 
@@ -53,4 +53,4 @@ In execution order:
 
 * See also
 
-- [[id:de76313f-3c9e-441a-aa5e-6212a3841eed][CLI entity creator skill]] (sprint 08) — the skill this story exercises.
+- [[id:DE76313F-3C9E-441A-AA5E-6212A3841EED][CLI entity creator skill]] (sprint 08) — the skill this story exercises.

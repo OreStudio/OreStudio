@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: fdeb08b4-fd95-46df-b868-eb57ae4666c6
+:ID: FDEB08B4-FD95-46DF-B868-EB57AE4666C6
 :END:
 #+title: Task: Refactor options and parser
 #+description: Composable CLI configuration: common, server, client, compression configurations; standardise -h/-v/--verbose across binaries; add --log-include-pid.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:da77fb50-27e8-4b42-a826-cab289c7826e][Comms substrate evolution]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DA77FB50-27E8-4B42-A826-CAB289C7826E][Comms substrate evolution]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Refactor the boost-program-options usage across binaries into a composable confi
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | DONE                                                                   |
-| Parent story | [[id:da77fb50-27e8-4b42-a826-cab289c7826e][Comms substrate evolution]] |
+| Parent story | [[id:DA77FB50-27E8-4B42-A826-CAB289C7826E][Comms substrate evolution]] |
 | Now          | Completed 2026-01-02.                                                  |
 | Waiting on   | None.                                                                  |
 | Next         | None.                                                                  |

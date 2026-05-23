@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 13cce605-589e-4c28-92aa-c213cbae9cdd
+:ID: 13CCE605-589E-4C28-92AA-C213CBAE9CDD
 :END:
 #+title: Task: Remove MSVC C1202 workaround file splits
 #+description: Removes three sets of artificial code splits that were introduced solely to work around MSVC C1202 (constexpr budget exc
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Remove the three artificial TU splits introduced as C1202 workarounds now that t
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] |
+| Parent story | [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] |
 | Now          | Completed 2026-05-21.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 25886210-f144-4243-a741-7607243726ce
+:ID: 25886210-F144-4243-A741-7607243726CE
 :END:
 #+title: Task: Clear WiX v3 size and file-count limits
 #+description: Short-term fixes from the WiX analysis in #710, clearing both remaining \`cpack\` errors on Windows.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D84E735-7DFE-4215-AF00-A1F4C9323BDA][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Clear the two WiX v3 CPack failures: exclude the oversized static debug archive 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] |
+| Parent story | [[id:7D84E735-7DFE-4215-AF00-A1F4C9323BDA][Windows portability fixes]] |
 | Now          | Completed 2026-04-20.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

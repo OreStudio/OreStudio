@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1efed917-0c33-45eb-b03a-65f59fd5ff0a
+:ID: 1EFED917-0C33-45EB-B03A-65F59FD5FF0A
 :END:
 #+title: Task: Add compute grid telemetry pipeline
 #+description: Two new TimescaleDB hypertables (ores_compute_grid_samples_tbl + ores_compute_node_samples_tbl, 30-day retention); server-side compute_grid_poller (async Boost.ASIO coroutine, 30s); node-side node_stats_reporter publishing node_sample_message to NATS; unified get_grid_stats NATS request/reply for dashboard.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:679da033-934a-4330-951f-5016675cc8af][Compute grid observability]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:679DA033-934A-4330-951F-5016675CC8AF][Compute grid observability]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Move dashboard data sourcing from ad-hoc queries to a TimescaleDB-backed telemet
 | Field        | Value                                                                   |
 |--------------+-------------------------------------------------------------------------|
 | State        | DONE                                                                    |
-| Parent story | [[id:679da033-934a-4330-951f-5016675cc8af][Compute grid observability]] |
+| Parent story | [[id:679DA033-934A-4330-951F-5016675CC8AF][Compute grid observability]] |
 | Now          | Completed 2026-03-21.                                                   |
 | Waiting on   | None.                                                                   |
 | Next         | None.                                                                   |

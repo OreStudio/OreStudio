@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 03440980-7776-4c85-b51b-eaa9cdba2b4c
+:ID: 03440980-7776-4C85-B51B-EAA9CDBA2B4C
 :END:
 #+title: Enable All Compression
 #+description: Enable All Compression

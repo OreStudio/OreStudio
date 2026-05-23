@@ -11,9 +11,9 @@
 #+updated: 2026-05-23
 #+todo: STARTED | DONE
 
-This page is the short-lived [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] document for [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] of ORE Studio. At
+This page is the short-lived [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] document for [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] of ORE Studio. At
 the end of the sprint, short-lived captures will migrate to their next
-destination (sprint backlog or [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]]).
+destination (sprint backlog or [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]]).
 
 * Agile
 
@@ -23,7 +23,7 @@ destination (sprint backlog or [[id:d4219199-7b17-4a89-b4bc-6019738642da][produc
 - add linkage between previous sprint and next sprint to make navigation easier.
 - make release notes a property of the sprint table.
 - add to sprint table:
-  : | Previous | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+  : | Previous | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]] |
 - UUIDs of sprints seem lower case, check codegen script.
 - we only updated sprint 16-18, rest needs updating with LLM.
 - add PR to tasks:

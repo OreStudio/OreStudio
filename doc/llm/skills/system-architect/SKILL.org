@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 37b88704-7a45-4347-a80a-9d9b4ee71bef
+:ID: 37B88704-7A45-4347-A80A-9D9B4EE71BEF
 :END:
 #+title: System Architect Skill
 #+description: Plan a system-wide change — read the system model, assess cross-component impact, design backwards-compatible migration steps, file as tasks/stories.
@@ -63,14 +63,14 @@ impact propagates through multiple layers.
    - Be independently testable.
    - Be small enough to review.
 
-7. /Plan diagram updates/. Both [[id:271f40da-d0ea-4d08-a4f8-3d2b835df5e7][class diagrams]] (per affected
+7. /Plan diagram updates/. Both [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][class diagrams]] (per affected
    component) and the system-level diagram in
    =projects/modeling/ores.puml=. Sequence the diagram updates
    alongside the code changes.
 
 8. /File the plan as a story/ (or a small set of stories if the
-   migration is large) via [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]]. Each migration
-   step becomes a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] inside the story.
+   migration is large) via [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]]. Each migration
+   step becomes a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] inside the story.
 
 9. /Document trade-offs/. If you deviate from strict layer
    separation (e.g. business logic in a stored procedure for
@@ -79,21 +79,21 @@ impact propagates through multiple layers.
 
 * Recipes
 
-- [[id:d1ae0786-5f2f-4437-8449-0e480c278a1b][How do I find docs matching a pattern?]] — enumerate components,
+- [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — enumerate components,
   in-flight stories, related knowledge.
-- [[id:e8231c22-cb31-4d85-a9c0-7602953764ff][How do I show a doc by UUID?]] — inspect a single component
+- [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — inspect a single component
   overview and follow its links.
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — for scaffolding the migration
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — for scaffolding the migration
   story and its tasks.
 
 * Reference
 
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the cross-component map.
-- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component documentation guide]] — what each
+- [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component documentation guide]] — what each
   =component_overview.org= contains.
-- [[id:271f40da-d0ea-4d08-a4f8-3d2b835df5e7][PlantUML class diagram conventions]] / [[id:496dc90b-8951-42a6-a63e-b1762df496c6][ER diagram conventions]]
+- [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]] / [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][ER diagram conventions]]
   — for the diagram-update part of any plan.
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — story / task contracts.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — story / task contracts.
 
 * Artefacts                                                        :noexport:
 

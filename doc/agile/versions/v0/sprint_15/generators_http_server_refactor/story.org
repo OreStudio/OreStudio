@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4837265a-934c-4cfc-9f7a-edc3f86f37c6
+:ID: 4837265A-934C-4CFC-9F7A-EDC3F86F37C6
 :END:
 #+title: Story: Generators to api layer + http.server split
 #+description: Move synthetic generators from core to api across IAM / refdata / trading / reporting / compute; move HTTP route handlers into domain core modules; ores.http.server retains generic server infrastructure only.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ domain-specific HTTP route handlers (core).
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Parent sprint | [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]] |
 | Now           | Completed 2026-03-25.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -43,7 +43,7 @@ domain-specific HTTP route handlers (core).
 
 In execution order:
 
-- [[id:afcd8728-5bd6-4fa5-8aa6-5eb5cd6b78f0][Move generators to api layer; split http.server]]
+- [[id:AFCD8728-5BD6-4FA5-8AA6-5EB5CD6B78F0][Move generators to api layer; split http.server]]
 
 * Decisions
 
@@ -56,4 +56,4 @@ In execution order:
 
 * See also
 
-- [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]] — sibling.
+- [[id:7631C4D3-43C5-4238-A180-337BEA863C7F][API/core architecture migration]] — sibling.

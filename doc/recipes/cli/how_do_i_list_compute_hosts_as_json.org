@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 15883cde-2b4e-4c37-b4c0-299ebf9e71f2
+:ID: 15883CDE-2B4E-4C37-B4C0-299EBF9E71F2
 :END:
 #+title: How do I list compute hosts as JSON?
 #+description: List compute hosts via =ores.cli= as JSON for piping into =jq=

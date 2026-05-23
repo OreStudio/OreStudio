@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0cd5f988-f59c-47a4-869f-7fec3b5416ec
+:ID: 0CD5F988-F59C-47A4-869F-7FEC3B5416EC
 :END:
 #+title: Task: Fix Valgrind leaks for comms tests
 #+description: Real leaks surfaced in the ores.comms test suite; fix them and confirm Valgrind is clean.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:69C49095-A91F-41D9-9D7E-0E9478143E93][Valgrind leaks follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -28,7 +28,7 @@ These are real leaks in test setup/teardown, not third-party noise.
 | Field        | Value                                                                 |
 |--------------+-----------------------------------------------------------------------|
 | State        | DONE                                                                  |
-| Parent story | [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]] |
+| Parent story | [[id:69C49095-A91F-41D9-9D7E-0E9478143E93][Valgrind leaks follow-up]] |
 | Now          | Completed 2025-11-25.                                                 |
 | Waiting on   | None.                                                                 |
 | Next         | None.                                                                 |

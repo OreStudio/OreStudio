@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3c1dc435-9227-4aad-b9cd-e9fd641975d0
+:ID: 3C1DC435-9227-4AAD-B9CD-E9FD641975D0
 :END:
 #+title: How do I list change reason categories?
 #+description: List change reason categories via =ores.cli=

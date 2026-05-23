@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d1b73897-ed9a-49a8-9fc6-8d77b941d1d2
+:ID: D1B73897-ED9A-49A8-9FC6-8D77B941D1D2
 :END:
 #+title: Task: Review DQ metadata tables for multi-tenancy
 #+description: Audit: 11 DQ metadata tables have unique version indexes without tenant_id, blocking cross-tenant duplication; decision recorded; fix lands as part of the publish-across-tenants task.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:52BBEA16-0344-4299-88BA-EC6A341FBD21][Validate tenancy across surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Analyse the DQ metadata tables for multi-tenant correctness: their unique versio
 | Field        | Value                                                                         |
 |--------------+-------------------------------------------------------------------------------|
 | State        | DONE                                                                          |
-| Parent story | [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]] |
+| Parent story | [[id:52BBEA16-0344-4299-88BA-EC6A341FBD21][Validate tenancy across surfaces]] |
 | Now          | Completed 2026-02-06.                                                         |
 | Waiting on   | None.                                                                         |
 | Next         | None.                                                                         |

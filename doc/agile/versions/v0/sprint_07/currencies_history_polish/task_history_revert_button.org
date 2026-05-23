@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c391add5-af47-49d7-b6bb-720064d41f52
+:ID: C391ADD5-AF47-49D7-B6BB-720064D41F52
 :END:
 #+title: Task: History should have a revert button
 #+description: Add a revert action to the history dialog so a user can roll the currency back to a prior version.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:818b6261-1780-4fb3-aa89-da02c91da363][Currencies history polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:818B6261-1780-4FB3-AA89-DA02C91DA363][Currencies history polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add a /revert/ action to the currency history dialog so the user can roll back t
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | DONE                                                                   |
-| Parent story | [[id:818b6261-1780-4fb3-aa89-da02c91da363][Currencies history polish]] |
+| Parent story | [[id:818B6261-1780-4FB3-AA89-DA02C91DA363][Currencies history polish]] |
 | Now          | Completed 2025-12-19.                                                  |
 | Waiting on   | None.                                                                  |
 | Next         | None.                                                                  |

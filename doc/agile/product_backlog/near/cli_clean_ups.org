@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0d169880-ea3b-4c19-8ccb-c06efc775ebe
+:ID: 0D169880-EA3B-4C19-8CCB-C06EFC775EBE
 :END:
 #+title: Cli clean-ups
 #+description: Cli clean-ups
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 - we still seem to support =--entity currencies=. This should now be invalid.
   Done.

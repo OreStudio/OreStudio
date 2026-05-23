@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9e2e5ca9-31a7-4527-bb9b-3b767ddac0ab
+:ID: 9E2E5CA9-31A7-4527-BB9B-3B767DDAC0AB
 :END:
 #+title: Task: Use tenancy to isolate tests
 #+description: tenant_context C++ service in ores.database; per-test tenant provision + deprovision; RLS policies allow system tenant; --tenant CLI flag + ORES_TENANT env; psqlrc tenant prompt; ores_iam_provision_tenant_fn + ores_iam_deprovision_tenant_fn.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1eff8c9c-e4c2-49cc-a563-bb91923ec406][Tenancy-based test isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1EFF8C9C-E4C2-49CC-A563-BB91923EC406][Tenancy-based test isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Use tenants to give every test run its own isolated slice of the database — sa
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE                                                                      |
-| Parent story | [[id:1eff8c9c-e4c2-49cc-a563-bb91923ec406][Tenancy-based test isolation]] |
+| Parent story | [[id:1EFF8C9C-E4C2-49CC-A563-BB91923EC406][Tenancy-based test isolation]] |
 | Now          | Completed 2026-02-01.                                                     |
 | Waiting on   | None.                                                                     |
 | Next         | None.                                                                     |

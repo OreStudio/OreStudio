@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: fd12bbd4-bd95-454a-a636-5f22c928c4d1
+:ID: FD12BBD4-BD95-454A-A636-5F22C928C4D1
 :END:
 #+title: Story: Fix ORE import bugs
 #+description: ORE CurrencyType mapping; status_id resolution; dynamic activity-type loading via NATS endpoint; ConnectionBrowserMdiWindow size restoration; subject_prefix on environments + connections.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,21 +23,21 @@ and fix the bugs it surfaces.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Parent sprint | [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]] |
 | Now           | Completed 2026-03-19.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-03-19                                             |
 
 
-#+predecessor: f80bad05-2e66-458d-9223-1db0a83ef694
-#+successor: 8361bc43-bd96-433d-889e-367072bad44e
+#+predecessor: F80BAD05-2E66-458D-9223-1DB0A83EF694
+#+successor: 8361BC43-BD96-433D-889E-367072BAD44E
 
-Continued from: [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]] (sprint 14). The wizard
+Continued from: [[id:F80BAD05-2E66-458D-9223-1DB0A83EF694][ORE import wizard]] (sprint 14). The wizard
 landed clean but real-data import surfaced the currency-type, status,
 and activity-type bugs cleaned up here.
 
-Continued in: [[id:8361bc43-bd96-433d-889e-367072bad44e][ORE import pipeline]] (sprint 16) — full end-to-end
+Continued in: [[id:8361BC43-BD96-433D-889E-367072BAD44E][ORE import pipeline]] (sprint 16) — full end-to-end
 coverage: dispatch + mappers for every instrument family + server-side
 service.
 
@@ -54,7 +54,7 @@ service.
 
 In execution order:
 
-- [[id:ad9ab87a-b9fc-459c-b1ca-60e375adbe53][Fix ORE import bugs]]
+- [[id:AD9AB87A-B9FC-459C-B1CA-60E375ADBE53][Fix ORE import bugs]]
 
 * Decisions
 
@@ -66,4 +66,4 @@ In execution order:
 
 * See also
 
-- [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]] (sprint 14) — predecessor.
+- [[id:F80BAD05-2E66-458D-9223-1DB0A83EF694][ORE import wizard]] (sprint 14) — predecessor.

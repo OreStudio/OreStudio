@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: fe36240a-7a64-4332-9e82-8d976d458c73
+:ID: FE36240A-7A64-4332-9E82-8D976D458C73
 :END:
 #+title: ores.wt.service
 #+description: Wt C++ Web Toolkit frontend — account management, currency/country views, and session handling for ORE Studio.

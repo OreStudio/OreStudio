@@ -11,19 +11,19 @@
 #+updated: 2026-05-21
 
 This is the entry point to the agile information architecture. Work flows as
-ideas in the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]], promoted into a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] when a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] pulls them in,
-broken down into [[id:31c868b9-306e-4282-ba8c-07e647021b34][tasks]] that map one-to-one to pull requests, and grouped into
-sprints that compose a [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]]. The pages under =doc/agile/= are:
+ideas in the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]], promoted into a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] when a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] pulls them in,
+broken down into [[id:31C868B9-306E-4282-BA8C-07E647021B34][tasks]] that map one-to-one to pull requests, and grouped into
+sprints that compose a [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]]. The pages under =doc/agile/= are:
 
-- [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Agile process]] — how the loop runs: backlog refinement, opening and closing
+- [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — how the loop runs: backlog refinement, opening and closing
   sprints, sizing tasks, cross-sprint continuations.
-- [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]] — every version of the product, the sprints inside each, and the
+- [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] — every version of the product, the sprints inside each, and the
   stories and tasks that compose those sprints.
-- [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]] — pre-sprint ideas split into [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] (next-version candidates)
-  and [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]] (longer-term wishlist).
+- [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — pre-sprint ideas split into [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] (next-version candidates)
+  and [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][far]] (longer-term wishlist).
 
 The /contract/ every document follows (frontmatter, sections, state machine) is
-described separately under [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][doc/meta/]]. In particular, [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] describes TODO
+described separately under [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][doc/meta/]]. In particular, [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]] describes TODO
 state transitions generically — it is not agile-specific. Agile is the loop
 /around/ those states.
 
@@ -31,7 +31,7 @@ state transitions generically — it is not agile-specific. Agile is the loop
 
 | Field           | Value     |
 |-----------------+-----------|
-| Current Version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][v0]]        |
+| Current Version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][v0]]        |
 | Current Sprint  | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
 | Next sprint     | Sprint 18 |
 

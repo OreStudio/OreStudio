@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1d334356-f123-43b5-a98e-317ebad2848a
+:ID: 1D334356-F123-43B5-A98E-317EBAD2848A
 :END:
 #+title: Story: Build quality
 #+description: Raise the build's quality floor — nightly memcheck, Valgrind, C++ standard alignment, vcpkg hygiene.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2CF90D10-890D-4CB0-A71B-5E8C3261BC54][Sprint 01]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ applied consistently, vcpkg warnings suppressed.
 | Field         | Value                                                                                      |
 |---------------+--------------------------------------------------------------------------------------------|
 | State         | DONE                                                                                       |
-| Parent sprint | [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]                                     |
+| Parent sprint | [[id:2CF90D10-890D-4CB0-A71B-5E8C3261BC54][Sprint 01]]                                     |
 | Now           | Story closed; nightlies green, Valgrind stable, C++ standard bumped, vcpkg warnings tamed. |
 | Waiting on    | None.                                                                                      |
 | Next          | None.                                                                                      |
@@ -42,9 +42,9 @@ applied consistently, vcpkg warnings suppressed.
 
 In execution order:
 
-- [[id:125319dd-7a6e-4df9-a3f7-0458f4c11256][Add nightly support with memcheck]]
-- [[id:ed38a636-d4c7-4069-9a49-b19c71903ead][Fix Valgrind failing to run unit tests]]
-- [[id:326556b2-f83d-4e55-9e20-63d8ef83ce8e][Update C++ standard]]
+- [[id:125319DD-7A6E-4DF9-A3F7-0458F4C11256][Add nightly support with memcheck]]
+- [[id:ED38A636-D4C7-4069-9A49-B19C71903EAD][Fix Valgrind failing to run unit tests]]
+- [[id:326556B2-F83D-4E55-9E20-63D8EF83CE8E][Update C++ standard]]
 
 Additional tasks belonging to this story in v0 but not migrated in
 the drive-test:
@@ -64,16 +64,16 @@ the drive-test:
 
 * Out of scope
 
-- Coverage tracking — deferred to sprint 03's [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and
+- Coverage tracking — deferred to sprint 03's [[id:1A411B50-2C3A-4248-9AE7-59A835EF6774][Logging and
   observability]] story.
 - Performance benchmarks (deferred).
 
 * See also
 
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset menu and the parallel-build configuration
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset menu and the parallel-build configuration
   this story established.
-- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — the recipe that exercises the test
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] — the recipe that exercises the test
   pipeline this story stabilised.
-- [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] (sprint 02) and [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]]
+- [[id:AC14558D-A526-4BE2-ADB6-81BCFE0E7292][Build stabilisation]] (sprint 02) and [[id:D246FFBE-11EE-4FF9-9309-2A693E2476EF][Build stabilisation 3]]
   (sprint 03) — successor stories that addressed the longer-tail
   build issues this story left open.

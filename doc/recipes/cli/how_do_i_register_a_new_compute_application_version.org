@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: bb91fbcb-f8ab-4f50-9989-70fa2bb46627
+:ID: BB91FBCB-F8AB-4F50-9989-70FA2BB46627
 :END:
 #+title: How do I register a new compute application version?
 #+description: Register a new compute application version bundle via =ores.cli=

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c6879b22-210b-43b3-8463-c84d44105c93
+:ID: C6879B22-210B-43B3-8463-C84D44105C93
 :END:
 #+title: Task: Create a simple code generator
 #+description: Stand up basic codegen infrastructure to save Claude Code tokens; generate scaffolds locally and use Claude only to fix issues.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:49a3b815-b5e9-4b3d-9213-100bf96c266d][Codegen infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:49A3B815-B5E9-4B3D-9213-100BF96C266D][Codegen infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Stand up basic codegen infrastructure so the project stops burning Claude Code t
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:49a3b815-b5e9-4b3d-9213-100bf96c266d][Codegen infrastructure]] |
+| Parent story | [[id:49A3B815-B5E9-4B3D-9213-100BF96C266D][Codegen infrastructure]] |
 | Now          | Completed 2026-01-21.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

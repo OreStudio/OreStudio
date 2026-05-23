@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8c447206-e447-4fa8-9761-ca80eb067427
+:ID: 8C447206-E447-4FA8-9761-CA80EB067427
 :END:
 #+title: Task: Extract ores.iam.api + ores.compute.api (Phase 1)
 #+description: First phase of API/core split: ores.iam → ores.iam.api (POCOs + IO helpers + eventing + protocol headers) + ores.iam.core (handlers + services + repositories + registrars); same for ores.compute. All consuming modules updated to link the correct layer.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7631C4D3-43C5-4238-A180-337BEA863C7F][API/core architecture migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ First phase of the API/core split: ores.iam + ores.compute split into .api (cont
 | Field        | Value                                                                        |
 |--------------+------------------------------------------------------------------------------|
 | State        | DONE                                                                         |
-| Parent story | [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]] |
+| Parent story | [[id:7631C4D3-43C5-4238-A180-337BEA863C7F][API/core architecture migration]] |
 | Now          | Completed 2026-03-22.                                                        |
 | Waiting on   | None.                                                                        |
 | Next         | None.                                                                        |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 34b26c5f-205a-4261-b1e7-5676dfe0c5ed
+:ID: 34B26C5F-205A-4261-B1E7-5676DFE0C5ED
 :END:
 #+title: Task: Generate release notes for previous sprint
 #+description: Two-step release-notes generation now that the sprint backlog bursts the LLM prompt window: summarise first, then write release notes from the summary.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:90161bf2-67f0-4542-899c-5d844a3f6f95][Sprint 13 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90161BF2-67F0-4542-899C-5D844A3F6F95][Sprint 13 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Generate the previous sprint's release notes via a two-step process: summarise t
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:90161bf2-67f0-4542-899c-5d844a3f6f95][Sprint 13 housekeeping]] |
+| Parent story | [[id:90161BF2-67F0-4542-899C-5D844A3F6F95][Sprint 13 housekeeping]] |
 | Now          | Completed 2026-02-20.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

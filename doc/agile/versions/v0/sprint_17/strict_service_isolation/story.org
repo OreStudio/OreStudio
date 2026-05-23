@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e762da90-b92a-41e1-ad4d-29018f17af32
+:ID: E762DA90-B92A-41E1-AD4D-29018F17AF32
 :END:
 #+title: Story: Strict service table isolation
 #+description: SECURITY DEFINER validators, NAMEDATALEN truncation fixes, IAM party cache via NATS (Phase 4.3), dead DML grant removal (Phases 5.2 and 5.3), p_tenant_id fix.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -41,12 +41,12 @@ correct tenant scope.
 
 In execution order:
 
-- [[id:d159db0f-ad62-4268-b4cf-a30aa55fe1c5][Task: [sql] Strict service table isolation: SECURITY DEFINER validators + mandatory role drops]]
-- [[id:17aa65ad-d157-42c5-a312-43df0a421d38][Task: [sql] Eliminate NAMEDATALEN truncation warnings for indexes and RLS policies]]
-- [[id:f936ea06-c324-42bd-925a-638159cd142e][Task: [iam][refdata] Phase 4.3: IAM party cache via NATS, remove cross-service DB reads]]
-- [[id:ef97de72-004f-4c28-a957-7e6d6f936475][Task: [sql] Phase 5.2: remove dead workflow DML grants on IAM and refdata tables]]
-- [[id:6281bab9-40bc-42ab-b0f2-386e345ecc2b][Task: [sql] Phase 5.3: remove dead ORE DML grant and workflow.core link]]
-- [[id:c9248144-1c34-40f5-9eec-ba5c38ab360d][Task: [sql] Fix refdata validate functions: use p_tenant_id not system_tenant_id]]
+- [[id:D159DB0F-AD62-4268-B4CF-A30AA55FE1C5][Task: [sql] Strict service table isolation: SECURITY DEFINER validators + mandatory role drops]]
+- [[id:17AA65AD-D157-42C5-A312-43DF0A421D38][Task: [sql] Eliminate NAMEDATALEN truncation warnings for indexes and RLS policies]]
+- [[id:F936EA06-C324-42BD-925A-638159CD142E][Task: [iam][refdata] Phase 4.3: IAM party cache via NATS, remove cross-service DB reads]]
+- [[id:EF97DE72-004F-4C28-A957-7E6D6F936475][Task: [sql] Phase 5.2: remove dead workflow DML grants on IAM and refdata tables]]
+- [[id:6281BAB9-40BC-42AB-B0F2-386E345ECC2B][Task: [sql] Phase 5.3: remove dead ORE DML grant and workflow.core link]]
+- [[id:C9248144-1C34-40F5-9EEC-BA5C38AB360D][Task: [sql] Fix refdata validate functions: use p_tenant_id not system_tenant_id]]
 * Decisions
 
 - /NATS party cache/ :: replacing IAM's direct DB reads on refdata party tables

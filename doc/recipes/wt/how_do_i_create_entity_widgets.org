@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6fdb2f56-789f-4ad4-879e-ba5a1621f807
+:ID: 6FDB2F56-789F-4AD4-879E-BA5A1621F807
 :END:
 #+title: How do I create Wt widgets for a new entity?
 #+description: Walk through list widget, detail dialog, and application integration for a new entity in ores.wt.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 
 Widget layout, signal conventions, and file locations are in
-[[id:acf334d8-703b-4020-a48e-f8a8e5090e72][Wt entity patterns]]. The [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][wt-entity-creator]] skill drives this process.
+[[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt entity patterns]]. The [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][wt-entity-creator]] skill drives this process.
 
 * Question
 
@@ -48,6 +48,6 @@ add dialog opens, edits persist, and deletes work.
 
 * See also
 
-- [[id:acf334d8-703b-4020-a48e-f8a8e5090e72][Wt entity patterns]] — widget layout, signal conventions, file locations.
+- [[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt entity patterns]] — widget layout, signal conventions, file locations.
 - [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][wt-entity-creator]] — skill that drives this workflow.
-- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

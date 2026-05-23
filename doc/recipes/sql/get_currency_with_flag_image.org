@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 96eed88d-58c1-487a-8df4-16021b211b36
+:ID: 96EED88D-58C1-487A-8DF4-16021B211B36
 :END:
 #+title: Get Currency with Flag Image
 #+description: Get Currency with Flag Image

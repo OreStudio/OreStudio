@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6435d59a-108b-450d-860e-bf8ce795d3f2
+:ID: 6435D59A-108B-450D-860E-BF8CE795D3F2
 :END:
 #+title: Task: SQL: Add missing party isolation RLS policies
 #+description: Final landing: missing RLS party isolation policies across IAM, Refdata, Scheduler, Trading modules; party context service in ores.database + ores.testing; validation_ignore.txt updated.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2faf5366-2fed-4fbe-99f2-8cb46ca84aeb][Party isolation RLS policies]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FAF5366-2FED-4FBE-99F2-8CB46CA84AEB][Party isolation RLS policies]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Final landing: missing RLS party isolation policies across IAM, Refdata, Schedul
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE                                                                      |
-| Parent story | [[id:2faf5366-2fed-4fbe-99f2-8cb46ca84aeb][Party isolation RLS policies]] |
+| Parent story | [[id:2FAF5366-2FED-4FBE-99F2-8CB46CA84AEB][Party isolation RLS policies]] |
 | Now          | Completed 2026-04-09.                                                     |
 | Waiting on   | None.                                                                     |
 | Next         | None.                                                                     |

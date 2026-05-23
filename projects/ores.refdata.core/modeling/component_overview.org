@@ -59,8 +59,8 @@ drives UI drop-downs and validation.
 
 * See also
 
-- [[id:654be6cd-d212-4ee5-a7b4-8af125787522][ores.refdata.api]] — protocol types and domain entities.
-- [[id:e75568d2-588a-4fe2-9ed1-6826b60c0e10][ores.refdata.service]] — NATS service entrypoint.
+- [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]] — protocol types and domain entities.
+- [[id:E75568D2-588A-4FE2-9ED1-6826B60C0E10][ores.refdata.service]] — NATS service entrypoint.
 - [[id:C2B3D4E5-F6A7-8901-BCDE-F12345678901][ores.refdata Messaging Reference]] — full NATS subject and message catalogue.
 - [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]] — how parties, books, and business units relate.
 - [[id:7A3F2C91-B4E8-4D12-9F6A-1C8D5E302A74][Trading Structure]] — party, book, portfolio, business-unit, business-centre

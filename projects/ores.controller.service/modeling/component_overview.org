@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1a4e357c-0b10-44cf-9096-47ee42e6f1a4
+:ID: 1A4E357C-0B10-44CF-9096-47EE42E6F1A4
 :END:
 #+title: ores.controller.service
 #+description: NATS service entrypoint for the controller domain.
@@ -40,4 +40,4 @@ domain. It opens database and NATS connections, registers handlers from
 
 * See also
 
-- [[id:c871c5df-a521-4815-9572-72d07da62cc7][ores.controller.core]] — all registry logic.
+- [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]] — all registry logic.

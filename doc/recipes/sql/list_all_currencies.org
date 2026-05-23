@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7955cc98-c463-48c9-b8ae-6b5f95ce2306
+:ID: 7955CC98-C463-48C9-B8AE-6B5F95CE2306
 :END:
 #+title: List All Currencies
 #+description: List All Currencies

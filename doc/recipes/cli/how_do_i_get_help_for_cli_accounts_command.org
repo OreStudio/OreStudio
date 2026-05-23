@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9be3a44a-7f2f-425d-9195-9a5bed671246
+:ID: 9BE3A44A-7F2F-425D-9195-9A5BED671246
 :END:
 #+title: How do I get help for the CLI iam accounts command?
 #+description: Show available operations under =ores.cli iam accounts=

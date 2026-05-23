@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2920a00e-538d-455e-9013-44a1c3a7ed36
+:ID: 2920A00E-538D-455E-9013-44A1C3A7ED36
 :END:
 #+title: Story: Telemetry database sink
 #+description: Split ores.telemetry.database to resolve circular deps; database logging sink for tests; three-tier tenant lifecycle (terminate / deprovision / purge); recursive-logging guard.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ Boost.Log sink that writes telemetry directly to the database.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Parent sprint | [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]] |
 | Now           | Completed 2026-02-03.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -42,8 +42,8 @@ Boost.Log sink that writes telemetry directly to the database.
 
 In execution order:
 
-- [[id:7edc04f8-907e-4230-bd82-23e9e979ffb1][Add ores.telemetry.database component]]
-- [[id:6888a023-d626-44ce-b6c7-d0d92d31cbe1][Add database logging for tests]]
+- [[id:7EDC04F8-907E-4230-BD82-23E9E979FFB1][Add ores.telemetry.database component]]
+- [[id:6888A023-D626-44CE-B6C7-D0D92D31CBE1][Add database logging for tests]]
 
 * Decisions
 
@@ -56,4 +56,4 @@ In execution order:
 
 * See also
 
-- [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] (sprint 07) — predecessor work establishing the components.
+- [[id:8C4C8429-9328-46DD-88EF-27689FB556F2][Observability and telemetry]] (sprint 07) — predecessor work establishing the components.

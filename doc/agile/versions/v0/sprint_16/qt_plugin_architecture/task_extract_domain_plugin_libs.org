@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 27e66a7c-ba13-40ec-9a0f-2d89a459d3e9
+:ID: 27E66A7C-BA13-40EC-9A0F-2D89A459D3E9
 :END:
 #+title: Task: Extract domain-specific plugin libraries
 #+description: Steps 2-8: IPlugin + PluginRegistry + plugin_context + LegacyPlugin; extract ores.qt.admin / compute / refdata / party / mktdata / trading plugins; migrate to QPluginLoader shared libraries; restore menus + toolbar via setup_menus().
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:38c972e1-2dd2-41ae-a770-800fee90d1e6][Qt plugin architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38C972E1-2DD2-41AE-A770-800FEE90D1E6][Qt plugin architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Steps 2-8: IPlugin + PluginRegistry + plugin_context + LegacyPlugin; extract ore
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:38c972e1-2dd2-41ae-a770-800fee90d1e6][Qt plugin architecture]] |
+| Parent story | [[id:38C972E1-2DD2-41AE-A770-800FEE90D1E6][Qt plugin architecture]] |
 | Now          | Completed 2026-04-09.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

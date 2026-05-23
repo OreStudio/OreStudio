@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7ec6a5b1-5e00-44f3-ba8b-8143621667b2
+:ID: 7EC6A5B1-5E00-44F3-BA8B-8143621667B2
 :END:
 #+title: Task: Workspace: bitemporal schema, service layer, UI, and lifecycle operations
 #+description: Full implementation of the workspace entity as a first-class domain object with bitemporal history, a complete NATS serv
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:77BF049F-ED38-4998-AFA3-672E25895F9A][Workspace]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Implement workspace as a first-class bitemporal entity with a complete NATS serv
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]] |
+| Parent story | [[id:77BF049F-ED38-4998-AFA3-672E25895F9A][Workspace]] |
 | Now          | Completed 2026-05-19.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

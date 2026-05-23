@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b3e7f2a1-9c5d-4e82-af1b-7d8c3e6b0f24
+:ID: B3E7F2A1-9C5D-4E82-AF1B-7D8C3E6B0F24
 :END:
 #+title: Currency Taxonomy Enhancement: Asset Class and Market Tier
 #+version: 1

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3a93ecf8-cb10-4c8a-bf27-66209a459bc8
+:ID: 3A93ECF8-CB10-4C8A-BF27-66209A459BC8
 :END:
 #+title: Support tenant specification in shell account commands
 #+description: Support tenant specification in shell account commands
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Currently, shell commands like =accounts info <username>= only search within the
 current session's tenant. This creates a UX gap for SuperAdmins who need to

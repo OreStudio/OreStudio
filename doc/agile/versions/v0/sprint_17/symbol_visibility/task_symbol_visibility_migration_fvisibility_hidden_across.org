@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9f2b0585-3c63-4a3e-97a3-fea97b51727a
+:ID: 9F2B0585-3C63-4A3E-97A3-FEA97B51727A
 :END:
 #+title: Task: Symbol visibility migration: -fvisibility=hidden across all shared libraries
 #+description: - Applies `-fvisibility=hidden` to all 18 shared library targets and removes the `CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS` glob
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Apply -fvisibility=hidden to all 18 shared libraries, add per-library export.hpp
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] |
+| Parent story | [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]] |
 | Now          | Completed 2026-05-14.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

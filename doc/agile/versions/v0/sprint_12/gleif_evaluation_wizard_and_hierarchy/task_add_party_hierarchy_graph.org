@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7ca00ff6-4d43-4663-aaae-3b074ce127dc
+:ID: 7CA00FF6-4D43-4663-AAAE-3B074CE127DC
 :END:
 #+title: Task: Add party hierarchy graph visualisation
 #+description: Visual tree of party hierarchy for a tenant: parent-child, party types, business centres.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:5886ffa7-170f-471c-a9db-37996e650cb6][GLEIF evaluation wizard and party hierarchy]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5886FFA7-170F-471C-A9DB-37996E650CB6][GLEIF evaluation wizard and party hierarchy]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add a visual hierarchy graph for parties.
 | Field        | Value                                                                                    |
 |--------------+------------------------------------------------------------------------------------------|
 | State        | DONE                                                                                     |
-| Parent story | [[id:5886ffa7-170f-471c-a9db-37996e650cb6][GLEIF evaluation wizard and party hierarchy]] |
+| Parent story | [[id:5886FFA7-170F-471C-A9DB-37996E650CB6][GLEIF evaluation wizard and party hierarchy]] |
 | Now          | Completed 2026-02-19.                                                                    |
 | Waiting on   | None.                                                                                    |
 | Next         | None.                                                                                    |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11
+:ID: CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11
 :END:
 #+title: External knowledge
 #+description: Reference docs about external systems and domain concepts ORE Studio does not own — libraries, file formats, and platform features.
@@ -15,13 +15,13 @@ does not own/. The rule of thumb: if the doc would exist (in roughly
 the same form) even if ORE Studio did not, it lives here. Docs about
 /how we use/ an external system stay in the [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][knowledge root]] — for
 example, =ORE Model Configuration= captures /our/ patterns, even
-though it references [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]].
+though it references [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]].
 
 * Risk and pricing libraries
 
-- [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][Open Source Risk Engine (ORE)]] — the upstream risk-analytics
+- [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] — the upstream risk-analytics
   library ORE Studio wraps.
-- [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]] — the open-source quantitative-finance library ORE
+- [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]] — the open-source quantitative-finance library ORE
   itself builds on.
 
 * File formats and protocols

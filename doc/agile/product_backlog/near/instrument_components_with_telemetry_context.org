@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 16dba07f-a062-428b-b43a-32905b5988c8
+:ID: 16DBA07F-A062-428B-B43A-32905B5988C8
 :END:
 #+title: Instrument components with telemetry context
 #+description: Instrument components with telemetry context
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Now that logging has been integrated with telemetry, the next step is to
 instrument key components with the =TLOG_SEV= macro to enable trace correlation.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4fcd03ac-51ad-47ad-8203-faefaa4211b9
+:ID: 4FCD03AC-51AD-47AD-8203-FAEFAA4211B9
 :END:
 #+title: Story: Workflow engine
 #+description: ores.workflow component foundation; FSM state UUIDs replace ad-hoc status strings; generalised event-driven saga engine with startup recovery.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -22,7 +22,7 @@ ores.workflow component foundation; FSM state UUIDs replace ad-hoc status string
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Parent sprint | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]] |
 | Now           | Completed 2026-04-06.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -36,9 +36,9 @@ ores.workflow component foundation; FSM state UUIDs replace ad-hoc status string
 
 In execution order:
 
-- [[id:2f43f4c3-eebb-493f-a8c2-bd0215fefcdb][Generalise workflow engine and migrate existing sagas]]
-- [[id:af7b9ece-3cc8-4e6e-a130-9d7223f40e62][Replace ad-hoc status strings with FSM state UUIDs]]
-- [[id:ece0a01d-ef94-4599-8410-db8096b46935][Add ores.workflow SQL schema and C++ scaffold]]
+- [[id:2F43F4C3-EEBB-493F-A8C2-BD0215FEFCDB][Generalise workflow engine and migrate existing sagas]]
+- [[id:AF7B9ECE-3CC8-4E6E-A130-9D7223F40E62][Replace ad-hoc status strings with FSM state UUIDs]]
+- [[id:ECE0A01D-EF94-4599-8410-DB8096B46935][Add ores.workflow SQL schema and C++ scaffold]]
 
 * Decisions
 

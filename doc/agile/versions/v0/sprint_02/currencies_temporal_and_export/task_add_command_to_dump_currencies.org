@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 562ed395-d245-4e05-b8ae-22f8ff689f59
+:ID: 562ED395-D245-4E05-B8AE-22F8FF689F59
 :END:
 #+title: Task: Add command to dump currencies
 #+description: Add an ORE Studio CLI command that dumps currency reference data to a file in JSON or XML.
@@ -12,7 +12,7 @@
 #+updated: 2025-09-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:ED5BC735-FB54-4CE0-9A08-6DAB88C242D0][Currencies temporal and export]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -25,7 +25,7 @@ database against an ORE example.
 | Field        | Value                                                                       |
 |--------------+-----------------------------------------------------------------------------|
 | State        | DONE                                                                        |
-| Parent story | [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] |
+| Parent story | [[id:ED5BC735-FB54-4CE0-9A08-6DAB88C242D0][Currencies temporal and export]] |
 | Now          | Completed 2025-09-15.                                                       |
 | Waiting on   | None.                                                                       |
 | Next         | None.                                                                       |

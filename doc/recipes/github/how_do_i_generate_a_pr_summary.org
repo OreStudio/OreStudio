@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1882d6df-4012-4c6e-bf62-0d943ef805b0
+:ID: 1882D6DF-4012-4C6E-BF62-0D943EF805B0
 :END:
 #+title: How do I generate a PR summary?
 #+description: Walk the current branch's commits since the merge base with main and assemble a structured PR title and body.
@@ -67,5 +67,5 @@ summary.
 
 * See also
 
-- [[id:cc928252-e0c5-4c3c-a7a8-d613593e4e37][How do I create a PR?]] — the next step in the lifecycle.
+- [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — the next step in the lifecycle.
 - [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — the skill that indexes the full PR lifecycle.

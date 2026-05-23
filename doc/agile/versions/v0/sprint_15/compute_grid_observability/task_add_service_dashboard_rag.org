@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5fd4f0b7-4f93-4357-bc3f-79162fbee096
+:ID: 5FD4F0B7-4F93-4357-BC3F-79162FBEE096
 :END:
 #+title: Task: Add service dashboard with live RAG status
 #+description: TimescaleDB hypertable for service heartbeat samples; reusable header-only heartbeat publisher coroutine over NATS; Qt UI dashboard with RAG (red/amber/green) status indicators; integrated into all domain services.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:679da033-934a-4330-951f-5016675cc8af][Compute grid observability]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:679DA033-934A-4330-951F-5016675CC8AF][Compute grid observability]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add a live service-health dashboard with RAG (red/amber/green) status indicators
 | Field        | Value                                                                   |
 |--------------+-------------------------------------------------------------------------|
 | State        | DONE                                                                    |
-| Parent story | [[id:679da033-934a-4330-951f-5016675cc8af][Compute grid observability]] |
+| Parent story | [[id:679DA033-934A-4330-951F-5016675CC8AF][Compute grid observability]] |
 | Now          | Completed 2026-03-21.                                                   |
 | Waiting on   | None.                                                                   |
 | Next         | None.                                                                   |

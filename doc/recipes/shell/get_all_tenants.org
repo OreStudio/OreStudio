@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e40f0dab-8e2f-4f2e-bf0a-ca1dfd9a681e
+:ID: E40F0DAB-8E2F-4F2E-BF0A-CA1DFD9A681E
 :END:
 #+title: Get All Tenants
 #+description: Get All Tenants

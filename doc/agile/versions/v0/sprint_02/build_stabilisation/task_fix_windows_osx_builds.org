@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5d48fec0-d23f-4b22-82c6-ef3353d15f1c
+:ID: 5D48FEC0-D23F-4B22-82C6-EF3353D15F1C
 :END:
 #+title: Task: Fix Windows and macOS builds
 #+description: Restore green Windows and macOS CI by fixing CMake errors and platform-specific build issues.
@@ -12,7 +12,7 @@
 #+updated: 2025-09-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC14558D-A526-4BE2-ADB6-81BCFE0E7292][Build stabilisation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -24,7 +24,7 @@ sync as Linux work raced ahead.
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] |
+| Parent story | [[id:AC14558D-A526-4BE2-ADB6-81BCFE0E7292][Build stabilisation]] |
 | Now          | Completed 2025-09-25.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

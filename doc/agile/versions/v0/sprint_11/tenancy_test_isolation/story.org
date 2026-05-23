@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1eff8c9c-e4c2-49cc-a563-bb91923ec406
+:ID: 1EFF8C9C-E4C2-49CC-A563-BB91923EC406
 :END:
 #+title: Story: Tenancy-based test isolation
 #+description: Centralised tenant_context C++ service; per-test tenant provisioning + deprovisioning; RLS policies; --tenant CLI flag; psqlrc support.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ system actually runs in production.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Parent sprint | [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]] |
 | Now           | Completed 2026-02-01.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -43,7 +43,7 @@ system actually runs in production.
 
 In execution order:
 
-- [[id:9e2e5ca9-31a7-4527-bb9b-3b767ddac0ab][Use tenancy to isolate tests]]
+- [[id:9E2E5CA9-31A7-4527-BB9B-3B767DDAC0AB][Use tenancy to isolate tests]]
 
 * Decisions
 
@@ -56,4 +56,4 @@ In execution order:
 
 * See also
 
-- [[id:f6748da4-e8d7-48b6-b91f-bc05e68f53d8][Tenancy foundation]] — supplies the schema this story builds on.
+- [[id:F6748DA4-E8D7-48B6-B91F-BC05E68F53D8][Tenancy foundation]] — supplies the schema this story builds on.

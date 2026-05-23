@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f2062027-b1fa-4b51-84e8-f589f4e14849
+:ID: F2062027-B1FA-4B51-84E8-F589F4E14849
 :END:
 #+title: Task: Clean up data layers
 #+description: Restructure data population around explicit layers (Foundation, Data Governance, Data Catalogues, Production).
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5BAFBEB2-C875-4655-BB78-801A3BF65022][Schema polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Restructure data population around explicit layers (Foundation, Data Governance,
 | Field        | Value                                                      |
 |--------------+------------------------------------------------------------|
 | State        | DONE                                                       |
-| Parent story | [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]] |
+| Parent story | [[id:5BAFBEB2-C875-4655-BB78-801A3BF65022][Schema polish]] |
 | Now          | Completed 2026-01-26.                                      |
 | Waiting on   | None.                                                      |
 | Next         | None.                                                      |

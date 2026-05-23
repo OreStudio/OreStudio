@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2c3a9e28-68dc-4bf1-8eb7-5c4379e5c248
+:ID: 2C3A9E28-68DC-4BF1-8EB7-5C4379E5C248
 :END:
 #+title: Story: Engineering hygiene
 #+description: clock_cast portability; nodiscard warnings; split-component codegen profiles; menu repositioning.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -22,7 +22,7 @@ clock_cast portability; nodiscard warnings; split-component codegen profiles; me
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Parent sprint | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]] |
 | Now           | Completed 2026-04-07.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -36,10 +36,10 @@ clock_cast portability; nodiscard warnings; split-component codegen profiles; me
 
 In execution order:
 
-- [[id:5574eba4-753b-4e1c-871a-d6cc13c4a99b][Add split-component codegen profiles and fix skill docs]]
-- [[id:1a666f11-c992-4208-8a19-2700adbb6577][Fix nodiscard warnings in ImportTradeDialog instrument saves]]
-- [[id:7444cf0a-7b32-4690-b0d1-296d93f1eaff][Move Compute and Market Data menus into MainWindow.ui]]
-- [[id:a59ac77e-321e-4b55-b722-0fd74e0f1697][Replace clock_cast with portable file time conversion]]
+- [[id:5574EBA4-753B-4E1C-871A-D6CC13C4A99B][Add split-component codegen profiles and fix skill docs]]
+- [[id:1A666F11-C992-4208-8A19-2700ADBB6577][Fix nodiscard warnings in ImportTradeDialog instrument saves]]
+- [[id:7444CF0A-7B32-4690-B0D1-296D93F1EAFF][Move Compute and Market Data menus into MainWindow.ui]]
+- [[id:A59AC77E-321E-4B55-B722-0FD74E0F1697][Replace clock_cast with portable file time conversion]]
 
 * Decisions
 

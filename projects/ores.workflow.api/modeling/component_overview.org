@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 85319483-4ae9-4162-91f7-d72a8201134b
+:ID: 85319483-4AE9-4162-91F7-D72A8201134B
 :END:
 #+title: ores.workflow.api
 #+description: Domain types and NATS protocol schemas for the workflow component.
@@ -43,4 +43,4 @@ JSON I/O via =rfl=, and the NATS protocol schemas consumed by
 
 * See also
 
-- [[id:440294d7-385d-41ee-92cb-cab937e65e81][ores.workflow.core]] — business logic, persistence, and NATS handlers.
+- [[id:440294D7-385D-41EE-92CB-CAB937E65E81][ores.workflow.core]] — business logic, persistence, and NATS handlers.

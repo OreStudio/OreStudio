@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d75f4921-b431-4e78-99ab-62a47f761d1d
+:ID: D75F4921-B431-4E78-99AB-62A47F761D1D
 :END:
 #+title: Investigation: MSVC C1202 and rfl complexity
 #+description: Root cause analysis of recursive template depth limits in reflect-cpp.
@@ -10,7 +10,7 @@
 #+created: 2026-05-23
 #+updated: 2026-05-23
 
-This page documents a formal historical record of an [[id:a7f8d9e2-3c4b-4a5d-b67c-8e9f0a1b2c3d][investigation]] into Root cause analysis of recursive template depth limits in reflect-cpp..
+This page documents a formal historical record of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into Root cause analysis of recursive template depth limits in reflect-cpp..
 
 * Context
 
@@ -47,6 +47,6 @@ The investigation involved:
 
 * See also
 
-- [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] (Sprint 17 story)
-- [[id:970e36f2-dc20-45e4-b1b7-186f86f46650][Task: Restore two-phase rfl parse in getTradeDetail to fix MSVC C1202]]
+- [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] (Sprint 17 story)
+- [[id:970E36F2-DC20-45E4-B1B7-186F86F46650][Task: Restore two-phase rfl parse in getTradeDetail to fix MSVC C1202]]
 - [[https://github.com/getml/reflect-cpp/issues/350][reflect-cpp Issue #350]]

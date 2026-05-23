@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9c273142-ea54-44d0-96b1-c8660bd5bce8
+:ID: 9C273142-EA54-44D0-96B1-C8660BD5BCE8
 :END:
 #+title: How do I list compute apps?
 #+description: List compute apps via =ores.cli=

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 44f7c2af-35ce-4cff-b09a-e90b6024096f
+:ID: 44F7C2AF-35CE-4CFF-B09A-E90B6024096F
 :END:
 #+title: Task: Mop-up: autogen leak, URI scheme, per-row Retry
 #+description: Cleanup follow-ups surfaced during the per-platform package work (#714, #719). Three independent commits, each its own s
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e16beabb-cc59-4d6c-b216-dacc1e922047][Compute and GLEIF]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E16BEABB-CC59-4D6C-B216-DACC1E922047][Compute and GLEIF]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Fix three follow-up defects from the per-platform package work: narrow AUTOUIC i
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:e16beabb-cc59-4d6c-b216-dacc1e922047][Compute and GLEIF]] |
+| Parent story | [[id:E16BEABB-CC59-4D6C-B216-DACC1E922047][Compute and GLEIF]] |
 | Now          | Completed 2026-04-28.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

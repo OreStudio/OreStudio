@@ -15,7 +15,7 @@ This document describes /Row-Level Security/ as a PostgreSQL feature
 in general. For the project-specific application — tenant isolation,
 service-role policies, schema patterns — see [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] (and the
 "Service Table Isolation" section of its component overview). Return
-to [[id:cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+to [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 *PostgreSQL Row-Level Security (RLS)* is a built-in database feature
 that provides fine-grained access control by restricting which rows

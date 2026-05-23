@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 04ca6bd9-7739-4213-a9dc-17aaace43252
+:ID: 04CA6BD9-7739-4213-A9DC-17AAACE43252
 :END:
 #+title: Code Review PR Skill
 #+description: Review the delta in a pull request — changed files only — against the ORE Studio code-review checklist. Produce findings bucketed by severity.
@@ -22,7 +22,7 @@ license: Complete terms in LICENSE.txt
 
 When reviewing changes in a pull request or a commit range — focused
 on the /delta/ (changed files only), not a full component audit. For
-the latter, use [[id:dadf4117-757a-4eef-a137-cc2ee8023c73][code-review-component]].
+the latter, use [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component]].
 
 * How to use this skill
 
@@ -36,7 +36,7 @@ the latter, use [[id:dadf4117-757a-4eef-a137-cc2ee8023c73][code-review-component
 
    Categorise changed files by component and facet.
 
-2. /Apply the checklist/. The canonical list is [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review
+2. /Apply the checklist/. The canonical list is [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review
    checklist]] — go through each category and check what applies to
    the changed files. Skip the /Component-only checks/ section
    (those are for whole-component audits).
@@ -50,7 +50,7 @@ the latter, use [[id:dadf4117-757a-4eef-a137-cc2ee8023c73][code-review-component
 
 4. /Group findings into tasks or a story/. For non-trivial fixes,
    open a new task in the current sprint, or a story if the
-   review surfaces a coherent unit of work, via [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]].
+   review surfaces a coherent unit of work, via [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]].
 
 5. /Verdict/. Conclude with one of:
    - *Ready to merge* — no critical issues.
@@ -62,15 +62,15 @@ the latter, use [[id:dadf4117-757a-4eef-a137-cc2ee8023c73][code-review-component
 
 * Recipes
 
-- [[id:cc928252-e0c5-4c3c-a7a8-d613593e4e37][How do I create a PR?]] — context for the PR being reviewed.
-- [[id:e8231c22-cb31-4d85-a9c0-7602953764ff][How do I show a doc by UUID?]] — for tracing skill / knowledge
+- [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — context for the PR being reviewed.
+- [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — for tracing skill / knowledge
   references the diff touches.
 
 * Reference
 
-- [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]] — the categorised checks this skill
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review checklist]] — the categorised checks this skill
   applies.
-- [[id:dadf4117-757a-4eef-a137-cc2ee8023c73][code-review-component]] — sibling skill for whole-component
+- [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component]] — sibling skill for whole-component
   audits.
 
 * Artefacts                                                        :noexport:

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d900cdcc-3d94-46f4-b54e-94212902fe77
+:ID: D900CDCC-3D94-46F4-B54E-94212902FE77
 :END:
 #+title: Task: Remaining NATS changes
 #+description: Tenant provisioning auto-creates system party + seeds bootstrap-mode flag; server-side UUID generation in tenant_handler::save(); account_handler uses make_request_context for tenant scoping; lei_entity_handler::summary() implementation calling new SQL functions; PQsetNoticeProcessor routes PL/pgSQL through Boost.Log; provisioning wizard parity restored (depth + contact + seed); performed_by audit field attributed to service account; ores.wt.service startup fix.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23D1F2BB-D2D3-423A-8167-657098E30542][NATS migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Round of follow-up fixes after the NATS landing — tenant provisioning, RBAC, L
 | Field        | Value                                                       |
 |--------------+-------------------------------------------------------------|
 | State        | DONE                                                        |
-| Parent story | [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]] |
+| Parent story | [[id:23D1F2BB-D2D3-423A-8167-657098E30542][NATS migration]] |
 | Now          | Completed 2026-03-18.                                       |
 | Waiting on   | None.                                                       |
 | Next         | None.                                                       |

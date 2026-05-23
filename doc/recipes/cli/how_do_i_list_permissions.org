@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 44698b77-2d0a-49ed-ba1b-04bf6ccc110a
+:ID: 44698B77-2D0A-49ED-BA1B-04BF6CCC110A
 :END:
 #+title: How do I list permissions?
 #+description: List permissions via =ores.cli=

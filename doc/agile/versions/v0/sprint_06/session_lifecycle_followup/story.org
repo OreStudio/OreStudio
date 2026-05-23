@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4b50a7e5-d862-47a6-aebe-353cad55b058
+:ID: 4B50A7E5-D862-47A6-AEBE-353CAD55B058
 :END:
 #+title: Story: Session lifecycle follow-up
 #+description: Implement session cancellation (POSTPONED in sprint 05); add logout message; fix disconnect-related crashes; client heartbeat for disconnect detection.
@@ -11,7 +11,7 @@
 #+updated: 2025-12-04
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -25,16 +25,16 @@ behind.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]] |
+| Parent sprint | [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]] |
 | Now           | Completed 2025-12-04.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2025-12-04                                             |
 
 
-#+predecessor: a465d630-5972-484b-a2e8-ad1f91657103
+#+predecessor: A465D630-5972-484B-A2E8-AD1F91657103
 
-Continued from: [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]].
+Continued from: [[id:A465D630-5972-484B-A2E8-AD1F91657103][Authentication bootstrap follow-up]].
 
 * Acceptance
 
@@ -48,9 +48,9 @@ Continued from: [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootst
 
 In execution order:
 
-- [[id:61986ca2-c815-4cea-b029-26ab503379f5][Implement session cancellation]]
-- [[id:3bb7644c-3061-4925-99db-65d86a3b9c02][Add a logout message]]
-- [[id:b5aa3934-c955-4dcc-ad98-3e0b7153753c][Implement client heartbeat for disconnect detection]]
+- [[id:61986CA2-C815-4CEA-B029-26AB503379F5][Implement session cancellation]]
+- [[id:3BB7644C-3061-4925-99DB-65D86A3B9C02][Add a logout message]]
+- [[id:B5AA3934-C955-4DCC-AD98-3E0B7153753C][Implement client heartbeat for disconnect detection]]
 
 Additional v0 entries belonging here, not migrated as full tasks:
 
@@ -71,5 +71,5 @@ Additional v0 entries belonging here, not migrated as full tasks:
 
 * See also
 
-- [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] (sprint 05) — predecessor.
+- [[id:A465D630-5972-484B-A2E8-AD1F91657103][Authentication bootstrap follow-up]] (sprint 05) — predecessor.
   Carried the POSTPONED =Implement session cancellation= item.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1af4aec8-70ec-496c-821e-4e2e1bb303e5
+:ID: 1AF4AEC8-70EC-496C-821E-4E2E1BB303E5
 :END:
 #+title: ores.workflow.service
 #+description: NATS service entrypoint for the workflow domain.
@@ -42,4 +42,4 @@ message handlers from =ores.workflow.core=, and runs the event loop.
 
 * See also
 
-- [[id:440294d7-385d-41ee-92cb-cab937e65e81][ores.workflow.core]] — all business logic for the workflow domain.
+- [[id:440294D7-385D-41EE-92CB-CAB937E65E81][ores.workflow.core]] — all business logic for the workflow domain.

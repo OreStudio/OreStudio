@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 572c63f9-9a87-40fb-8609-8d4d7c1ccd39
+:ID: 572C63F9-9A87-40FB-8609-8D4D7C1CCD39
 :END:
 #+title: Story: Sprint 11 housekeeping
 #+description: Sprint backlog refinement and notebook OCR scans.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -22,7 +22,7 @@ Recurring per-sprint housekeeping.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Parent sprint | [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]] |
 | Now           | Completed 2026-02-06.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -37,8 +37,8 @@ Recurring per-sprint housekeeping.
 
 In execution order:
 
-- [[id:caba009d-8b9b-4809-bdbe-419de756a36e][Sprint and product backlog refinement]]
-- [[id:b0f7d3a2-056b-46ac-8402-d0ba2c20fbb9][OCR scan notebooks for this sprint]]
+- [[id:CABA009D-8B9B-4809-BDBE-419DE756A36E][Sprint and product backlog refinement]]
+- [[id:B0F7D3A2-056B-46AC-8402-D0BA2C20FBB9][OCR scan notebooks for this sprint]]
 
 * Decisions
 

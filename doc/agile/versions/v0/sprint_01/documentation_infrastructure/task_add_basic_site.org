@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7c6151b0-3a3b-4562-83fe-e0ec2459aeae
+:ID: 7C6151B0-3A3B-4562-83FE-E0EC2459AEAE
 :END:
 #+title: Task: Add basic site
 #+description: Stand up a basic project site, generated from the org-mode sources.
@@ -12,7 +12,7 @@
 #+updated: 2024-06-23
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:c85f2dca-f7d6-40ae-b796-8b4cf84a7093][Documentation infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C85F2DCA-F7D6-40AE-B796-8B4CF84A7093][Documentation infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -24,7 +24,7 @@ it. This becomes the home for everything written about the project.
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE                                                                      |
-| Parent story | [[id:c85f2dca-f7d6-40ae-b796-8b4cf84a7093][Documentation infrastructure]] |
+| Parent story | [[id:C85F2DCA-F7D6-40AE-B796-8B4CF84A7093][Documentation infrastructure]] |
 | Now          | Completed 2024-06-23.                                                     |
 | Waiting on   | None.                                                                     |
 | Next         | None.                                                                     |

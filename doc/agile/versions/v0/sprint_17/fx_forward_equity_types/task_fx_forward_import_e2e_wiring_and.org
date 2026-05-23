@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f8785fd8-fb24-4cb0-be33-119062158eb8
+:ID: F8785FD8-FB24-4CB0-BE33-119062158EB8
 :END:
 #+title: Task: FX forward import E2E wiring and instrument-bundle API
 #+description: Fixes a defect where FX forward trades imported via the ORE flow rendered with blank instrument economics in the Portfol
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:00ccc0dc-200c-4951-81e0-6aa93b1503fc][FX forward E2E and equity per-type migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:00CCC0DC-200C-4951-81E0-6AA93B1503FC][FX forward E2E and equity per-type migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Fix FX forward trades showing blank instrument economics by wiring the per-type 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:00ccc0dc-200c-4951-81e0-6aa93b1503fc][FX forward E2E and equity per-type migration]] |
+| Parent story | [[id:00CCC0DC-200C-4951-81E0-6AA93B1503FC][FX forward E2E and equity per-type migration]] |
 | Now          | Completed 2026-04-22.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

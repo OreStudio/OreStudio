@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1edaeb0f-16b4-4fb4-b806-7bee9175cff1
+:ID: 1EDAEB0F-16B4-4FB4-B806-7BEE9175CFF1
 :END:
 #+title: Get Currency Details
 #+description: Get Currency Details

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d64eee12-9220-4fb6-b544-a6bd96d6549a
+:ID: D64EEE12-9220-4FB6-B544-A6BD96D6549A
 :END:
 #+title: Task: Add RLS-aware tenant provisioning for tests
 #+description: Tenant repository tests bypass RLS via a privileged tenant_provisioning_helper; 6 SKIP'd tenant tests re-enabled.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:00e6e192-a255-4c94-8fcc-15826f7e33ae][Tenant administration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:00E6E192-A255-4C94-8FCC-15826F7E33AE][Tenant administration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Get the tenant repository tests off SKIP by adding an RLS-aware provisioning hel
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
 | State        | DONE                                                               |
-| Parent story | [[id:00e6e192-a255-4c94-8fcc-15826f7e33ae][Tenant administration]] |
+| Parent story | [[id:00E6E192-A255-4C94-8FCC-15826F7E33AE][Tenant administration]] |
 | Now          | Completed 2026-02-12.                                              |
 | Waiting on   | None.                                                              |
 | Next         | None.                                                              |

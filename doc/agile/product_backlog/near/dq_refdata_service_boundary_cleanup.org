@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 263c0b6b-d983-44f7-8d57-bb095972445a
+:ID: 263C0B6B-D983-44F7-8D57-BB095972445A
 :END:
 #+title: DQ/Refdata service boundary cleanup
 #+description: DQ/Refdata service boundary cleanup
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 DQ bundle publication currently writes directly to =ores_refdata_*= tables.
 This must be routed via =refdata.v1.*= NATS endpoints. See "Open Questions"

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 88aaacdb-87db-4c8a-bfdc-b7b08037d0af
+:ID: 88AAACDB-87DB-4C8A-BFDC-B7B08037D0AF
 :END:
 #+title: Task: Add Nats-Session-Id header for per-session correlation
 #+description: Session-level trace ID enabling log aggregation across all requests within a session; nats_client supports + propagates session ID; sourced from IAM session record.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ba5268af-df0e-4338-a6ce-1d5f84e1166d][Nats-Session-Id for session-level correlation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA5268AF-DF0E-4338-A6CE-1D5F84E1166D][Nats-Session-Id for session-level correlation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Session-level trace ID enabling log aggregation across all requests within a ses
 | Field        | Value                                                                                      |
 |--------------+--------------------------------------------------------------------------------------------|
 | State        | DONE                                                                                       |
-| Parent story | [[id:ba5268af-df0e-4338-a6ce-1d5f84e1166d][Nats-Session-Id for session-level correlation]] |
+| Parent story | [[id:BA5268AF-DF0E-4338-A6CE-1D5F84E1166D][Nats-Session-Id for session-level correlation]] |
 | Now          | Completed 2026-04-01.                                                                      |
 | Waiting on   | None.                                                                                      |
 | Next         | None.                                                                                      |

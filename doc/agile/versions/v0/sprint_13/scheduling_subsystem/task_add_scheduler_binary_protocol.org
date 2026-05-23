@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b74604d3-2a48-4ba9-a4dd-c2f554f7eb29
+:ID: B74604D3-2A48-4BA9-A4DD-C2F554F7EB29
 :END:
 #+title: Task: Add scheduler binary protocol
 #+description: Open scheduler subsystem 0x9000-0x9FFF in the comms protocol; four request/response pairs (get_job_definitions / schedule_job / unschedule_job / get_job_history); registrar pattern; rfl::Reflector for cron_expression + job_status placed in ores.scheduler/rfl/reflectors.hpp to avoid circular dep with ores.utility; protocol 45.0 (breaking).
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a0b6c877-2fad-457a-b0c2-000d3f707a5b][Scheduling subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A0B6C877-2FAD-457A-B0C2-000D3F707A5B][Scheduling subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add the binary-protocol surface for the scheduling subsystem.
 | Field        | Value                                                             |
 |--------------+-------------------------------------------------------------------|
 | State        | DONE                                                              |
-| Parent story | [[id:a0b6c877-2fad-457a-b0c2-000d3f707a5b][Scheduling subsystem]] |
+| Parent story | [[id:A0B6C877-2FAD-457A-B0C2-000D3F707A5B][Scheduling subsystem]] |
 | Now          | Completed 2026-02-26.                                             |
 | Waiting on   | None.                                                             |
 | Next         | None.                                                             |

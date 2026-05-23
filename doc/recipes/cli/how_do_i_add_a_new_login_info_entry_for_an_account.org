@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 84d9e897-e90b-4a63-b8a7-82dd61234571
+:ID: 84D9E897-E90B-4A63-B8A7-82DD61234571
 :END:
 #+title: How do I add a new login info entry for an account?
 #+description: Add a new login info entry for an account via =ores.cli=

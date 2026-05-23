@@ -17,111 +17,111 @@ a single how-do-I question with executable steps.
 
 * General
 
-- [[id:3d139b63-c1de-4410-930c-df11e62c2cea][How do I check the CLI version?]]
-- [[id:694dcc10-a1e1-45f9-8ecb-aee4c71395b2][How do I get help for the CLI?]]
+- [[id:3D139B63-C1DE-4410-930C-DF11E62C2CEA][How do I check the CLI version?]]
+- [[id:694DCC10-A1E1-45F9-8ECB-AEE4C71395B2][How do I get help for the CLI?]]
 
 * Currencies
 
-- [[id:71cabb20-a7b2-46c3-9a19-f8c0662a5422][How do I add a new currency?]]
-- [[id:0f1f88d0-d8c7-470f-808a-34ea686226d1][How do I delete a currency by ISO code?]]
-- [[id:e4c1e73d-cd5f-45d0-af10-3dd223b697d1][How do I export currencies?]]
-- [[id:cb85c105-afcb-49f6-bd62-2a5f9ca62590][How do I get help for the CLI refdata currencies command?]]
-- [[id:16b0472b-acb9-4f20-9f43-74c7e8f53593][How do I import currencies?]]
-- [[id:91b80133-bce8-4ecd-bd87-3196d04bd58b][How do I list currencies?]]
+- [[id:71CABB20-A7B2-46C3-9A19-F8C0662A5422][How do I add a new currency?]]
+- [[id:0F1F88D0-D8C7-470F-808A-34EA686226D1][How do I delete a currency by ISO code?]]
+- [[id:E4C1E73D-CD5F-45D0-AF10-3DD223B697D1][How do I export currencies?]]
+- [[id:CB85C105-AFCB-49F6-BD62-2A5F9CA62590][How do I get help for the CLI refdata currencies command?]]
+- [[id:16B0472B-ACB9-4F20-9F43-74C7E8F53593][How do I import currencies?]]
+- [[id:91B80133-BCE8-4ECD-BD87-3196D04BD58B][How do I list currencies?]]
 
 * Countries
 
-- [[id:d3857fe6-8b07-4276-ad2a-8f32efb3755e][How do I add a new country?]]
-- [[id:c979c4e8-c10f-4d69-be82-39c60e5602ff][How do I delete a country by alpha-2 code?]]
-- [[id:592c6373-dc2f-45fe-ae2c-810fc1d3e40f][How do I get help for the CLI refdata countries command?]]
-- [[id:d67f1e36-6cc8-4311-b146-3834e9139829][How do I list countries?]]
+- [[id:D3857FE6-8B07-4276-AD2A-8F32EFB3755E][How do I add a new country?]]
+- [[id:C979C4E8-C10F-4D69-BE82-39C60E5602FF][How do I delete a country by alpha-2 code?]]
+- [[id:592C6373-DC2F-45FE-AE2C-810FC1D3E40F][How do I get help for the CLI refdata countries command?]]
+- [[id:D67F1E36-6CC8-4311-B146-3834E9139829][How do I list countries?]]
 
 * Change reasons
 
-- [[id:59c39597-4483-4f32-8b36-82c24ef7ec26][How do I add a new change reason?]]
-- [[id:0f0b77d2-d635-4ae1-bbba-3e0e9ec396c3][How do I delete a change reason by code?]]
-- [[id:fa0057d2-9a0d-4a52-89a1-a123bb530333][How do I get help for the CLI dq change-reasons command?]]
-- [[id:c7d76217-ae65-4272-b035-0567bf9bf2de][How do I list change reasons?]]
+- [[id:59C39597-4483-4F32-8B36-82C24EF7EC26][How do I add a new change reason?]]
+- [[id:0F0B77D2-D635-4AE1-BBBA-3E0E9EC396C3][How do I delete a change reason by code?]]
+- [[id:FA0057D2-9A0D-4A52-89A1-A123BB530333][How do I get help for the CLI dq change-reasons command?]]
+- [[id:C7D76217-AE65-4272-B035-0567BF9BF2DE][How do I list change reasons?]]
 
 * Change reason categories
 
-- [[id:ebe12443-ad16-4cd4-bd1f-25b71f17e37e][How do I add a new change reason category?]]
-- [[id:6e1d3117-ca5b-4617-96a0-fd295654505a][How do I delete a change reason category by code?]]
-- [[id:4bfd3268-95df-45d0-aead-ed1d533d06cd][How do I get help for the CLI dq change-reason-categories command?]]
-- [[id:3c1dc435-9227-4aad-b9cd-e9fd641975d0][How do I list change reason categories?]]
+- [[id:EBE12443-AD16-4CD4-BD1F-25B71F17E37E][How do I add a new change reason category?]]
+- [[id:6E1D3117-CA5B-4617-96A0-FD295654505A][How do I delete a change reason category by code?]]
+- [[id:4BFD3268-95DF-45D0-AEAD-ED1D533D06CD][How do I get help for the CLI dq change-reason-categories command?]]
+- [[id:3C1DC435-9227-4AAD-B9CD-E9FD641975D0][How do I list change reason categories?]]
 
 * Accounts
 
-- [[id:a4556487-4842-462b-9f87-b330d7db740d][How do I add a new account?]]
-- [[id:62aab88c-aa0a-427d-8353-a46b095ee927][How do I delete an account by username or UUID?]]
-- [[id:9be3a44a-7f2f-425d-9195-9a5bed671246][How do I get help for the CLI iam accounts command?]]
-- [[id:1162e635-a8fe-4066-90cb-5887bfbc6c3c][How do I list accounts?]]
+- [[id:A4556487-4842-462B-9F87-B330D7DB740D][How do I add a new account?]]
+- [[id:62AAB88C-AA0A-427D-8353-A46B095EE927][How do I delete an account by username or UUID?]]
+- [[id:9BE3A44A-7F2F-425D-9195-9A5BED671246][How do I get help for the CLI iam accounts command?]]
+- [[id:1162E635-A8FE-4066-90CB-5887BFBC6C3C][How do I list accounts?]]
 
 * Login info
 
-- [[id:84d9e897-e90b-4a63-b8a7-82dd61234571][How do I add a new login info entry for an account?]]
-- [[id:d0820631-9884-410d-98c3-1388481fbc11][How do I delete a login info entry by key?]]
-- [[id:350b20fd-a797-42ad-ae0b-f922d935a958][How do I get help for the CLI iam login-info command?]]
-- [[id:f5a4c655-2d07-4d1f-a73b-e8a1b844ece8][How do I list login info entries?]]
+- [[id:84D9E897-E90B-4A63-B8A7-82DD61234571][How do I add a new login info entry for an account?]]
+- [[id:D0820631-9884-410D-98C3-1388481FBC11][How do I delete a login info entry by key?]]
+- [[id:350B20FD-A797-42AD-AE0B-F922D935A958][How do I get help for the CLI iam login-info command?]]
+- [[id:F5A4C655-2D07-4D1F-A73B-E8A1B844ECE8][How do I list login info entries?]]
 
 * Feature flags
 
-- [[id:452a691f-988e-4493-b480-2139dd005d5a][How do I add a new feature flag?]]
-- [[id:14e1981e-2032-46b7-a050-a6cff9311ed4][How do I delete a feature flag by key?]]
-- [[id:7954bc79-0d34-4149-9326-fceac88046d3][How do I get help for the CLI variability feature-flags command?]]
-- [[id:806cb8dd-27e7-4c2c-9f65-462cd1a96a60][How do I list feature flags?]]
+- [[id:452A691F-988E-4493-B480-2139DD005D5A][How do I add a new feature flag?]]
+- [[id:14E1981E-2032-46B7-A050-A6CFF9311ED4][How do I delete a feature flag by key?]]
+- [[id:7954BC79-0D34-4149-9326-FCEAC88046D3][How do I get help for the CLI variability feature-flags command?]]
+- [[id:806CB8DD-27E7-4C2C-9F65-462CD1A96A60][How do I list feature flags?]]
 
 * Roles
 
-- [[id:08fea192-496d-43ec-ad2d-9e0680b76001][How do I add a new role with optional permission assignments?]]
-- [[id:4977e892-1b8e-4549-bd87-75f773361059][How do I delete a role by ID?]]
-- [[id:17a92bec-05ea-41a1-8118-1360e7ea8903][How do I get help for the CLI iam roles command?]]
-- [[id:453650ab-b1cb-45ce-b40b-3acbf93c21f5][How do I list roles?]]
+- [[id:08FEA192-496D-43EC-AD2D-9E0680B76001][How do I add a new role with optional permission assignments?]]
+- [[id:4977E892-1B8E-4549-BD87-75F773361059][How do I delete a role by ID?]]
+- [[id:17A92BEC-05EA-41A1-8118-1360E7EA8903][How do I get help for the CLI iam roles command?]]
+- [[id:453650AB-B1CB-45CE-B40B-3ACBF93C21F5][How do I list roles?]]
 
 * Permissions
 
-- [[id:a30a46fe-f2b7-46da-b1fb-698acecc5f09][How do I add a new permission?]]
-- [[id:60174bb6-de3d-4e82-84a5-4b8c337d3348][How do I delete a permission by ID?]]
-- [[id:898723ad-a564-4458-94a3-7b5dad08a6c3][How do I get help for the CLI iam permissions command?]]
-- [[id:44698b77-2d0a-49ed-ba1b-04bf6ccc110a][How do I list permissions?]]
+- [[id:A30A46FE-F2B7-46DA-B1FB-698ACECC5F09][How do I add a new permission?]]
+- [[id:60174BB6-DE3D-4E82-84A5-4B8C337D3348][How do I delete a permission by ID?]]
+- [[id:898723AD-A564-4458-94A3-7B5DAD08A6C3][How do I get help for the CLI iam permissions command?]]
+- [[id:44698B77-2D0A-49ED-BA1B-04BF6CCC110A][How do I list permissions?]]
 
 * Compute hosts
 
-- [[id:e7e4dda4-8bae-4ea4-bc35-ff56aecac4a4][How do I get help for the CLI compute hosts command?]]
-- [[id:15883cde-2b4e-4c37-b4c0-299ebf9e71f2][How do I list compute hosts as JSON?]]
-- [[id:22a2f77d-c2f5-4a39-9418-2da94ef0f410][How do I list compute hosts?]]
-- [[id:155b1482-7ec3-4db1-ae4d-44e0371aa5f2][How do I register a new compute host node?]]
+- [[id:E7E4DDA4-8BAE-4EA4-BC35-FF56AECAC4A4][How do I get help for the CLI compute hosts command?]]
+- [[id:15883CDE-2B4E-4C37-B4C0-299EBF9E71F2][How do I list compute hosts as JSON?]]
+- [[id:22A2F77D-C2F5-4A39-9418-2DA94EF0F410][How do I list compute hosts?]]
+- [[id:155B1482-7EC3-4DB1-AE4D-44E0371AA5F2][How do I register a new compute host node?]]
 
 * Compute apps
 
-- [[id:2d6ead25-0654-4231-a64c-a4a45ccc9e09][How do I get help for the CLI compute apps command?]]
-- [[id:c8709697-1082-44e3-863f-776332d890c1][How do I list compute apps as JSON?]]
-- [[id:9c273142-ea54-44d0-96b1-c8660bd5bce8][How do I list compute apps?]]
-- [[id:0f1d158a-01c2-4296-9f3b-4cf2ab5e1619][How do I register a new compute application?]]
+- [[id:2D6EAD25-0654-4231-A64C-A4A45CCC9E09][How do I get help for the CLI compute apps command?]]
+- [[id:C8709697-1082-44E3-863F-776332D890C1][How do I list compute apps as JSON?]]
+- [[id:9C273142-EA54-44D0-96B1-C8660BD5BCE8][How do I list compute apps?]]
+- [[id:0F1D158A-01C2-4296-9F3B-4CF2AB5E1619][How do I register a new compute application?]]
 
 * Compute app versions
 
-- [[id:87976633-b5c7-422d-8d54-5a8f1a9a7be5][How do I get help for the CLI compute app-versions command?]]
-- [[id:66dbe0b0-c8f6-4580-a977-d74efbca3eac][How do I list compute app versions as JSON?]]
-- [[id:47bcd022-22c8-4504-a4e9-c4e7cee76cb5][How do I list compute app versions?]]
-- [[id:bb91fbcb-f8ab-4f50-9989-70fa2bb46627][How do I register a new compute application version?]]
+- [[id:87976633-B5C7-422D-8D54-5A8F1A9A7BE5][How do I get help for the CLI compute app-versions command?]]
+- [[id:66DBE0B0-C8F6-4580-A977-D74EFBCA3EAC][How do I list compute app versions as JSON?]]
+- [[id:47BCD022-22C8-4504-A4E9-C4E7CEE76CB5][How do I list compute app versions?]]
+- [[id:BB91FBCB-F8AB-4F50-9989-70FA2BB46627][How do I register a new compute application version?]]
 
 * Compute batches
 
-- [[id:59f9633d-510b-469a-b40b-acde9fb56836][How do I create a new compute batch?]]
-- [[id:1fc16986-44f0-422e-9a0a-7e29269359b1][How do I get help for the CLI compute batches command?]]
-- [[id:c3b6efb2-6a52-4f32-8aa2-10f71ab6bc5f][How do I list compute batches as JSON?]]
-- [[id:84ccbec1-136e-41f2-b024-104669ac6b99][How do I list compute batches?]]
+- [[id:59F9633D-510B-469A-B40B-ACDE9FB56836][How do I create a new compute batch?]]
+- [[id:1FC16986-44F0-422E-9A0A-7E29269359B1][How do I get help for the CLI compute batches command?]]
+- [[id:C3B6EFB2-6A52-4F32-8AA2-10F71AB6BC5F][How do I list compute batches as JSON?]]
+- [[id:84CCBEC1-136E-41F2-B024-104669AC6B99][How do I list compute batches?]]
 
 * Compute workunits
 
-- [[id:7b30ee14-5692-4070-8ce9-8874ee178f46][How do I add a new workunit to a compute batch?]]
-- [[id:ff804fcd-1fbd-4069-a41d-10948738cd75][How do I get help for the CLI compute workunits command?]]
-- [[id:c24e86a3-38cf-42cd-9496-7a02b99cd742][How do I list compute workunits as JSON?]]
-- [[id:2f9a2883-abb1-4065-936e-902100330f3f][How do I list compute workunits?]]
+- [[id:7B30EE14-5692-4070-8CE9-8874EE178F46][How do I add a new workunit to a compute batch?]]
+- [[id:FF804FCD-1FBD-4069-A41D-10948738CD75][How do I get help for the CLI compute workunits command?]]
+- [[id:C24E86A3-38CF-42CD-9496-7A02B99CD742][How do I list compute workunits as JSON?]]
+- [[id:2F9A2883-ABB1-4065-936E-902100330F3F][How do I list compute workunits?]]
 
 * Compute results
 
-- [[id:0c871fc9-9b83-4fc0-87e5-4bb06046d6b7][How do I get help for the CLI compute results command?]]
-- [[id:05b40ace-1db9-46e5-aee7-cfb32e32c0ff][How do I list compute results as JSON?]]
-- [[id:4b52c31c-98b0-4904-aef3-bb7899569af8][How do I list compute results?]]
+- [[id:0C871FC9-9B83-4FC0-87E5-4BB06046D6B7][How do I get help for the CLI compute results command?]]
+- [[id:05B40ACE-1DB9-46E5-AEE7-CFB32E32C0FF][How do I list compute results as JSON?]]
+- [[id:4B52C31C-98B0-4904-AEF3-BB7899569AF8][How do I list compute results?]]

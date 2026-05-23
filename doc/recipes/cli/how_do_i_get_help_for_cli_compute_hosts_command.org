@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e7e4dda4-8bae-4ea4-bc35-ff56aecac4a4
+:ID: E7E4DDA4-8BAE-4EA4-BC35-FF56AECAC4A4
 :END:
 #+title: How do I get help for the CLI compute hosts command?
 #+description: Show available operations under =ores.cli compute hosts=

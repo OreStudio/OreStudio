@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2d83251f-0e24-4b97-b736-08f710316634
+:ID: 2D83251F-0E24-4B97-B736-08F710316634
 :END:
 #+title: Claude Code Settings
 #+description: Literate source for .claude/settings.json — permission allow-list and sandbox overrides, generated via org-babel tangle.
@@ -305,6 +305,6 @@ default.
 
 * See also
 
-- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — parallel deploy target.
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset names and output layout.
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — parallel deploy target.
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset names and output layout.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — service table isolation and SQL script conventions.

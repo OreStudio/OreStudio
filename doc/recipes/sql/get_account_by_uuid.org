@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a92db443-4336-4b39-9f6d-fc50d873facb
+:ID: A92DB443-4336-4B39-9F6D-FC50D873FACB
 :END:
 #+title: Get Account by UUID
 #+description: Get Account by UUID

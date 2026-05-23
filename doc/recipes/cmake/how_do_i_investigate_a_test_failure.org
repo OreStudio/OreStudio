@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e1a68ed5-20cb-426c-91c6-97984a692505
+:ID: E1A68ED5-20CB-426C-91C6-97984A692505
 :END:
 #+title: How do I investigate a test failure?
 #+description: Run a failing suite with logging on, parse the results via parse_test_results.py, drill into the per-test logs, and add targeted logging if needed.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 
 For the conventions tests follow (file structure, naming, helpers),
-see [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]]. To /enable/ logging, see [[id:4bf2516d-f37e-4e31-ad7b-124f2639b9ab][How do I
+see [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]]. To /enable/ logging, see [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I
 enable test logging?]].
 
 * Question
@@ -27,7 +27,7 @@ results XML and the per-test logs?
    =ores.refdata.tests=, =ores.cli.tests=, or the =rat= meta-target
    that runs everything.
 
-2. /Enable logging/. Off by default for performance. Per [[id:4bf2516d-f37e-4e31-ad7b-124f2639b9ab][How do I
+2. /Enable logging/. Off by default for performance. Per [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I
    enable test logging?]]:
 
    #+begin_src sh :results verbatim
@@ -104,9 +104,9 @@ Manual. The script is exercised every time tests go red.
 
 * See also
 
-- [[id:4bf2516d-f37e-4e31-ad7b-124f2639b9ab][How do I enable test logging?]] — the prerequisite knob.
-- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — the surrounding run loop.
-- [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] — what to read in the test file once
+- [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I enable test logging?]] — the prerequisite knob.
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] — the surrounding run loop.
+- [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] — what to read in the test file once
   you find it.
 - [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][test-failure-investigator skill]] — the skill that drives this
   recipe.

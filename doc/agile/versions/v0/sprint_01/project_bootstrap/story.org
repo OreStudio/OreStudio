@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 64e55e42-12eb-46cf-8269-6b30da277a1b
+:ID: 64E55E42-12EB-46CF-8269-6B30DA277A1B
 :END:
 #+title: Story: Project bootstrap
 #+description: Establish the minimum infrastructure (repo, build, CI, packaging) the rest of v0 depends on.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2CF90D10-890D-4CB0-A71B-5E8C3261BC54][Sprint 01]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ is the foundation every later story in v0 stands on.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]] |
+| Parent sprint | [[id:2CF90D10-890D-4CB0-A71B-5E8C3261BC54][Sprint 01]] |
 | Now           | Story closed; all migrated tasks =DONE=.               |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,9 +41,9 @@ is the foundation every later story in v0 stands on.
 
 In execution order:
 
-- [[id:f491ba45-287b-46fb-bf80-7db6f66f59a3][Create GitHub repository]]
-- [[id:0ce4e5fe-8b94-4c05-9d5a-2b5341bc3be4][Set up vcpkg and CMake]]
-- [[id:47b71a1d-2848-4842-bad4-9f0c49797fc6][Set up GitHub Actions]]
+- [[id:F491BA45-287B-46FB-BF80-7DB6F66F59A3][Create GitHub repository]]
+- [[id:0CE4E5FE-8B94-4C05-9D5A-2B5341BC3BE4][Set up vcpkg and CMake]]
+- [[id:47B71A1D-2848-4842-BAD4-9F0C49797FC6][Set up GitHub Actions]]
 
 Additional tasks that belonged to this story in the v0 sprint but were
 not migrated in the drive-test:
@@ -68,17 +68,17 @@ not migrated in the drive-test:
 * Out of scope
 
 - Multi-platform CI (only Linux at this point — Windows and macOS
-  come back to bite in [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] in sprint 02 and again
+  come back to bite in [[id:AC14558D-A526-4BE2-ADB6-81BCFE0E7292][Build stabilisation]] in sprint 02 and again
   in sprint 03).
 - Code signing.
-- Code quality gates beyond a green build — picked up by [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build
+- Code quality gates beyond a green build — picked up by [[id:1D334356-F123-43B5-A98E-317EBAD2848A][Build
   quality]] later in this same sprint.
 
 * See also
 
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — the preset menu and output directory layout this
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — the preset menu and output directory layout this
   story established.
-- [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]] / [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]] —
+- [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]] / [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] —
   recipes that exercise what this story put in place.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the first downstream consumer of the build (its
   generators run as part of the project build).

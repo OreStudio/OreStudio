@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: aa32b9c6-9c05-4f63-bbc5-51704df4e9b6
+:ID: AA32B9C6-9C05-4F63-BBC5-51704DF4E9B6
 :END:
 #+title: Task: Rename ores.risk to ores.refdata
 #+description: Pure rename: include paths, namespaces, CMake targets, header guards, HTTP routes file (risk_routes.cpp -> refdata_routes.cpp); diagrams + docs aligned.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:61485635-64ba-4c31-a35b-2f60d7fb41aa][Database naming refactor]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61485635-64BA-4C31-A35B-2F60D7FB41AA][Database naming refactor]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Rename =ores.risk= to =ores.refdata= so the component name reflects /reference d
 | Field        | Value                                                                 |
 |--------------+-----------------------------------------------------------------------|
 | State        | DONE                                                                  |
-| Parent story | [[id:61485635-64ba-4c31-a35b-2f60d7fb41aa][Database naming refactor]] |
+| Parent story | [[id:61485635-64BA-4C31-A35B-2F60D7FB41AA][Database naming refactor]] |
 | Now          | Completed 2026-01-14.                                                 |
 | Waiting on   | None.                                                                 |
 | Next         | None.                                                                 |

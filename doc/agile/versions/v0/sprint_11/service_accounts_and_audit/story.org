@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b23bfd60-4604-4d43-92b3-3ef3e1d5dbe6
+:ID: B23BFD60-4604-4D43-92B3-3EF3E1D5DBE6
 :END:
 #+title: Story: Service accounts and audit
 #+description: Service / algorithm / LLM account types; performed_by audit field across 42 tables; telemetry async-sink deadlock fix; tenant-aware pool fail-fast.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ application layer (=performed_by=).
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Parent sprint | [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]] |
 | Now           | Completed 2026-02-04.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -42,7 +42,7 @@ application layer (=performed_by=).
 
 In execution order:
 
-- [[id:8125d266-84df-495f-a344-47d6d0649940][Add system accounts for services]]
+- [[id:8125D266-84DF-495F-A344-47D6D0649940][Add system accounts for services]]
 
 * Decisions
 

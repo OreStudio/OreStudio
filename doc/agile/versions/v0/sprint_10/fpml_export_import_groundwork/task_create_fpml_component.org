@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b7c0605a-7b13-440b-8099-e628ff5bb0e9
+:ID: B7C0605A-7B13-440B-8099-E628FF5BB0E9
 :END:
 #+title: Task: Create ores.fpml component
 #+description: Scaffold the ores.fpml component to host shared FPML infrastructure (XSD validation via libxml2, reporting-view schema set, partial-validation wrappers); export and import implementations carry forward to a later sprint.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:4c7782d0-1382-4fed-a9f3-c209a45caf7e][FPML export and import groundwork]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4C7782D0-1382-4FED-A9F3-C209A45CAF7E][FPML export and import groundwork]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Scaffold =ores.fpml= as the home for FPML common infrastructure (XSD validation 
 | Field        | Value                                                                          |
 |--------------+--------------------------------------------------------------------------------|
 | State        | BACKLOG                                                                        |
-| Parent story | [[id:4c7782d0-1382-4fed-a9f3-c209a45caf7e][FPML export and import groundwork]] |
+| Parent story | [[id:4C7782D0-1382-4FED-A9F3-C209A45CAF7E][FPML export and import groundwork]] |
 | Now          | POSTPONED in sprint 10; carried forward.                                       |
 | Waiting on   | A sprint with the slot to land it.                                             |
 | Next         | Return to this once a sprint has the budget.                                   |

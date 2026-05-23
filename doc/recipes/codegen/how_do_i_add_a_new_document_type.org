@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d8f4e2b1-9a7c-4e8d-8f3b-c2e5b4a6d7e8
+:ID: D8F4E2B1-9A7C-4E8D-8F3B-C2E5B4A6D7E8
 :END:
 #+title: How do I add a new document type?
 #+description: Steps to extend the v2 information architecture with a new document type, from definition to codegen support.
@@ -26,10 +26,10 @@ Follow these steps to define the new type and enable codegen support.
 
 Update the foundational documentation to include the new type.
 
-1.  *Update [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]*: Add a new entry under the =Document types= section.
+1.  *Update [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]*: Add a new entry under the =Document types= section.
    Specify the folder path, title prefix, level, statefulness, and required
    sections.
-2.  *Update [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][glossary]]*: Add a new entry for the document type with its definition
+2.  *Update [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]]*: Add a new entry for the document type with its definition
    and a reference table (Owner, How to generate, Example).
 
 ** 2. Create a Mustache template
@@ -61,7 +61,7 @@ Modify =projects/ores.codegen/src/v2_doc_generate.py= to register the new type.
 
 ** 4. Update documentation recipes
 
-1.  Update [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] to include the new type in the question
+1.  Update [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] to include the new type in the question
    and provide a "New <type>" section with a sample shell command.
 
 * Script
@@ -84,6 +84,6 @@ projects/ores.codegen/generate_v2_doc.sh \
 
 * See also
 
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] — the definitive list of document formats.
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — how to use the generator.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] — the definitive list of document formats.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — how to use the generator.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the component model for the codegen system.

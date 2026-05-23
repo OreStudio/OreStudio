@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 742f2310-4678-4a9e-bba9-d73d9dd6b42a
+:ID: 742F2310-4678-4A9E-BBA9-D73D9DD6B42A
 :END:
 #+title: Task: Refactor Qt UI
 #+description: Tidy the Qt UI — launcher, logging, column names, row sizes, tab opening, table sizing — before more widgets are added.
@@ -12,7 +12,7 @@
 #+updated: 2024-07-23
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36A36BCB-6D25-4CEA-A2DE-53741EDAD563][Qt UI scaffold]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -26,7 +26,7 @@ the main-window-following table size.
 | Field        | Value                                                       |
 |--------------+-------------------------------------------------------------|
 | State        | DONE                                                        |
-| Parent story | [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]] |
+| Parent story | [[id:36A36BCB-6D25-4CEA-A2DE-53741EDAD563][Qt UI scaffold]] |
 | Now          | Completed 2024-07-23.                                       |
 | Waiting on   | None.                                                       |
 | Next         | None.                                                       |

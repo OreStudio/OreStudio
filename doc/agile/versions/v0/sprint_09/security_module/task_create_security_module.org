@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 91c1e06d-5307-4f45-803d-dea3e841ee84
+:ID: 91C1E06D-5307-4F45-803D-DEA3E841EE84
 :END:
 #+title: Task: Create ores.security module
 #+description: Extract shared security primitives from ores.iam and ores.connections into a new ores.security component; rename password_manager -> password_hasher, encryption_service -> encryption; apply RAII to OpenSSL cipher contexts.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:8c29b0e8-64ea-4f32-add0-59419769bcd4][Security module]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C29B0E8-64EA-4F32-ADD0-59419769BCD4][Security module]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Extract the shared security primitives that =ores.iam= and =ores.connections= bo
 | Field        | Value                                                        |
 |--------------+--------------------------------------------------------------|
 | State        | DONE                                                         |
-| Parent story | [[id:8c29b0e8-64ea-4f32-add0-59419769bcd4][Security module]] |
+| Parent story | [[id:8C29B0E8-64EA-4F32-ADD0-59419769BCD4][Security module]] |
 | Now          | Completed 2026-01-13.                                        |
 | Waiting on   | None.                                                        |
 | Next         | None.                                                        |

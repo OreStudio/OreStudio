@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: cf13ffb1-4d84-4965-ad65-c38b1d4849ab
+:ID: CF13FFB1-4D84-4965-AD65-C38B1D4849AB
 :END:
 #+title: Story: CLI refactor and test
 #+description: Restructure the CLI to follow the new project layout and add tests to the CLI parser.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ tests to the parser so future changes are caught.
 | Field         | Value                                                                                 |
 |---------------+---------------------------------------------------------------------------------------|
 | State         | DONE                                                                                  |
-| Parent sprint | [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]                                |
+| Parent sprint | [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]]                                |
 | Now           | Story closed; CLI restructured under the new project layout, parser test suite green. |
 | Waiting on    | None.                                                                                 |
 | Next          | None.                                                                                 |
@@ -41,8 +41,8 @@ tests to the parser so future changes are caught.
 
 In execution order:
 
-- [[id:e452514e-593c-4a4f-8696-471132e15ec1][Refactor CLI to follow new project structure]]
-- [[id:1dbc88f2-f004-45f8-bcd2-67d6ac646e97][Add tests to CLI parser]]
+- [[id:E452514E-593C-4A4F-8696-471132E15EC1][Refactor CLI to follow new project structure]]
+- [[id:1DBC88F2-F004-45F8-BCD2-67D6AC646E97][Add tests to CLI parser]]
 
 Additional tasks belonging to this story in v0 but not migrated in
 the drive-test:
@@ -66,5 +66,5 @@ the drive-test:
 
 - [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] — the CLI component model.
 - [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]] — the testing infrastructure the parser tests use.
-- [[id:562ed395-d245-4e05-b8ae-22f8ff689f59][Add command to dump currencies]] (this sprint) — the first user-
+- [[id:562ED395-D245-4E05-B8AE-22F8FF689F59][Add command to dump currencies]] (this sprint) — the first user-
   facing command added on top of the restructured CLI.

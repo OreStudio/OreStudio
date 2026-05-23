@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ad6a0ba3-3857-40c9-9a23-57bd240c115e
+:ID: AD6A0BA3-3857-40C9-9A23-57BD240C115E
 :END:
 #+title: Check Bootstrap Status
 #+description: Check Bootstrap Status

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1c778ce6-25d6-429b-920e-d08a2ce9a0a6
+:ID: 1C778CE6-25D6-429B-920E-D08A2CE9A0A6
 :END:
 #+title: Sprint 16
 #+description: ORE import end-to-end, plus the cross-cutting infrastructure it depends on: workflow engine + sagas, market data subsystem, service lifecycle controller, Qt plugin split, reporting + analytics, asset-class / product-type separation, and a ~20-fix Windows portability sweep.
@@ -11,10 +11,10 @@
 #+updated: 2026-05-20
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 16*) of ORE Studio v0. It captures the
+This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 16*) of ORE Studio v0. It captures the
 sprint's mission, current status, and the stories that compose it. For the
 surrounding context — version goals, sprint order, and product identity — see
-[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+[[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
 
 * Mission
 
@@ -41,7 +41,7 @@ The largest v0 sprint to date (157h, 89 tasks across 22 stories).
 | Field          | Value                     |
 |----------------+---------------------------|
 | State          | DONE                      |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                 |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                 |
 | Now            | Sprint closed 2026-04-17. |
 | Waiting on     | None.                     |
 | Next           | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]                 |
@@ -52,28 +52,28 @@ The largest v0 sprint to date (157h, 89 tasks across 22 stories).
 #+ATTR_HTML: :class hug-leading
 | Story                                                                                 | State | Start      | End        | Theme                                                                                                                 |
 |---------------------------------------------------------------------------------------+-------+------------+------------+-----------------------------------------------------------------------------------------------------------------------|
-| [[id:c1db4c7a-16d7-4289-a457-a6c6ce5c8b5c][Sprint 16 housekeeping]]                   | DONE  |            | 2026-04-17 | backlog refinement.                                                                                                   |
-| [[id:ffc60db1-b82a-4c8a-961e-2c6720379508][Asset class and product_type unification]] | DONE  |            | 2026-04-03 | rename + analysis + implementation.                                                                                   |
-| [[id:2faf5366-2fed-4fbe-99f2-8cb46ca84aeb][Party isolation RLS policies]]             | DONE  |            | 2026-04-09 | close the gaps. Continues from sprint 13 party_isolation_books_portfolios_trades.                                     |
-| [[id:4fcd03ac-51ad-47ad-8203-faefaa4211b9][Workflow engine]]                          | DONE  |            | 2026-04-06 | scaffold + FSM state UUIDs + generalised event-driven engine.                                                         |
-| [[id:c0ed556b-57a4-4bce-9196-70bcf4fd0d63][Party provisioning saga]]                  | DONE  |            | 2026-03-31 | first concrete saga + UX.                                                                                             |
-| [[id:87599263-bd70-42cf-b653-0803e12f4d0b][Workflow monitor]]                         | DONE  |            | 2026-04-11 | Qt plugin + late fixes.                                                                                               |
-| [[id:8361bc43-bd96-433d-889e-367072bad44e][ORE import pipeline]]                      | DONE  |            | 2026-04-04 | the sprint's mission. Continues from sprint 15 fix_ore_import_bugs.                                                   |
-| [[id:44ecad9c-332a-48f5-acb4-7c30f9eb8ddf][ORE import supporting files]]              | DONE  |            | 2026-04-03 | market.txt + fixings.txt + calendar + conventions.                                                                    |
-| [[id:43f68b11-1870-46db-bfc3-c5fbc83fe6cf][ORE golden roundtrip tests]]               | DONE  |            | 2026-03-31 | three test PRs.                                                                                                       |
-| [[id:fb0471f1-6bd2-4955-ac39-15d7800bb973][ORE portfolio export]]                     | DONE  |            | 2026-04-01 | exporter + Qt actions.                                                                                                |
-| [[id:47ce4c06-2c59-4b8b-89b3-232d04b2da23][Market data subsystem]]                    | DONE  |            | 2026-04-01 | parser + schema + repo + service + Qt UI.                                                                             |
-| [[id:7399693e-f61b-4e3d-b37c-f53f3ce5a197][Generic object storage API]]               | DONE  |            | 2026-04-03 | ores.storage + compute grid migration.                                                                                |
-| [[id:08d2b499-53ce-4b1c-92cf-a7c26d036ec9][Reporting and analytics]]                  | DONE  |            | 2026-04-07 | DQ-sourced report defs + execution workflow + analytics pricing engine. Continues from sprint 14 reporting_subsystem. |
-| [[id:1490e130-08f9-4d43-8f80-d7e0f5022fbd][Trade detail dialog unification]]          | DONE  |            | 2026-04-07 | six instrument family merges + IInstrumentForm registry.                                                              |
-| [[id:ce26e56b-944f-4c89-b5a9-e0dabf521908][Per-type instrument tables]]               | DONE  |            | 2026-04-10 | rates / FX / equity. Continues from sprint 15 cdm_instruments.                                                        |
-| [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]]             | DONE  |            | 2026-04-08 | ores.controller + unified NATS heartbeat. Continues from sprint 15 compute_grid_ observability.                       |
-| [[id:38c972e1-2dd2-41ae-a770-800fee90d1e6][Qt plugin architecture]]                   | DONE  |            | 2026-04-09 | ores.qt.api + 7 domain plugins.                                                                                       |
-| [[id:2d496a77-5238-4b5b-8cc6-c61fc59fa9c1][Scheduler UI complete]]                    | DONE  |            | 2026-04-11 | Job Instances + Monitor.                                                                                              |
-| [[id:ba5268af-df0e-4338-a6ce-1d5f84e1166d][Nats-Session-Id]]                          | DONE  |            | 2026-04-01 | session-level correlation.                                                                                            |
-| [[id:1997ccef-3e2f-44c9-ab1c-9435a646bd61][UTC-everywhere timestamp policy]]          | DONE  |            | 2026-04-08 | canonical UTC API.                                                                                                    |
-| [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]]                | DONE  |            | 2026-04-11 | ~20 fixes surfaced by Windows builds.                                                                                 |
-| [[id:2c3a9e28-68dc-4bf1-8eb7-5c4379e5c248][Engineering hygiene]]                      | DONE  |            | 2026-04-07 | clock_cast, nodiscard, codegen profiles, menu repositioning.                                                          |
+| [[id:C1DB4C7A-16D7-4289-A457-A6C6CE5C8B5C][Sprint 16 housekeeping]]                   | DONE  |            | 2026-04-17 | backlog refinement.                                                                                                   |
+| [[id:FFC60DB1-B82A-4C8A-961E-2C6720379508][Asset class and product_type unification]] | DONE  |            | 2026-04-03 | rename + analysis + implementation.                                                                                   |
+| [[id:2FAF5366-2FED-4FBE-99F2-8CB46CA84AEB][Party isolation RLS policies]]             | DONE  |            | 2026-04-09 | close the gaps. Continues from sprint 13 party_isolation_books_portfolios_trades.                                     |
+| [[id:4FCD03AC-51AD-47AD-8203-FAEFAA4211B9][Workflow engine]]                          | DONE  |            | 2026-04-06 | scaffold + FSM state UUIDs + generalised event-driven engine.                                                         |
+| [[id:C0ED556B-57A4-4BCE-9196-70BCF4FD0D63][Party provisioning saga]]                  | DONE  |            | 2026-03-31 | first concrete saga + UX.                                                                                             |
+| [[id:87599263-BD70-42CF-B653-0803E12F4D0B][Workflow monitor]]                         | DONE  |            | 2026-04-11 | Qt plugin + late fixes.                                                                                               |
+| [[id:8361BC43-BD96-433D-889E-367072BAD44E][ORE import pipeline]]                      | DONE  |            | 2026-04-04 | the sprint's mission. Continues from sprint 15 fix_ore_import_bugs.                                                   |
+| [[id:44ECAD9C-332A-48F5-ACB4-7C30F9EB8DDF][ORE import supporting files]]              | DONE  |            | 2026-04-03 | market.txt + fixings.txt + calendar + conventions.                                                                    |
+| [[id:43F68B11-1870-46DB-BFC3-C5FBC83FE6CF][ORE golden roundtrip tests]]               | DONE  |            | 2026-03-31 | three test PRs.                                                                                                       |
+| [[id:FB0471F1-6BD2-4955-AC39-15D7800BB973][ORE portfolio export]]                     | DONE  |            | 2026-04-01 | exporter + Qt actions.                                                                                                |
+| [[id:47CE4C06-2C59-4B8B-89B3-232D04B2DA23][Market data subsystem]]                    | DONE  |            | 2026-04-01 | parser + schema + repo + service + Qt UI.                                                                             |
+| [[id:7399693E-F61B-4E3D-B37C-F53F3CE5A197][Generic object storage API]]               | DONE  |            | 2026-04-03 | ores.storage + compute grid migration.                                                                                |
+| [[id:08D2B499-53CE-4B1C-92CF-A7C26D036EC9][Reporting and analytics]]                  | DONE  |            | 2026-04-07 | DQ-sourced report defs + execution workflow + analytics pricing engine. Continues from sprint 14 reporting_subsystem. |
+| [[id:1490E130-08F9-4D43-8F80-D7E0F5022FBD][Trade detail dialog unification]]          | DONE  |            | 2026-04-07 | six instrument family merges + IInstrumentForm registry.                                                              |
+| [[id:CE26E56B-944F-4C89-B5A9-E0DABF521908][Per-type instrument tables]]               | DONE  |            | 2026-04-10 | rates / FX / equity. Continues from sprint 15 cdm_instruments.                                                        |
+| [[id:014352D4-AAA5-48E7-903D-C06B5B4F7D62][Service lifecycle controller]]             | DONE  |            | 2026-04-08 | ores.controller + unified NATS heartbeat. Continues from sprint 15 compute_grid_ observability.                       |
+| [[id:38C972E1-2DD2-41AE-A770-800FEE90D1E6][Qt plugin architecture]]                   | DONE  |            | 2026-04-09 | ores.qt.api + 7 domain plugins.                                                                                       |
+| [[id:2D496A77-5238-4B5B-8CC6-C61FC59FA9C1][Scheduler UI complete]]                    | DONE  |            | 2026-04-11 | Job Instances + Monitor.                                                                                              |
+| [[id:BA5268AF-DF0E-4338-A6CE-1D5F84E1166D][Nats-Session-Id]]                          | DONE  |            | 2026-04-01 | session-level correlation.                                                                                            |
+| [[id:1997CCEF-3E2F-44C9-AB1C-9435A646BD61][UTC-everywhere timestamp policy]]          | DONE  |            | 2026-04-08 | canonical UTC API.                                                                                                    |
+| [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]]                | DONE  |            | 2026-04-11 | ~20 fixes surfaced by Windows builds.                                                                                 |
+| [[id:2C3A9E28-68DC-4BF1-8EB7-5C4379E5C248][Engineering hygiene]]                      | DONE  |            | 2026-04-07 | clock_cast, nodiscard, codegen profiles, menu repositioning.                                                          |
 
 * Retrospective
 

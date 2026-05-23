@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6146fb9f-24a7-453b-8720-a8cbe63dba02
+:ID: 6146FB9F-24A7-453B-8720-A8CBE63DBA02
 :END:
 #+title: Task: Use prebuilt Qt
 #+description: Switch CI and dev installs to a prebuilt Qt rather than building from vcpkg; saves significant time + disk.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:bb39ecbd-1ea5-4d53-a117-a0c88e0463c1][Build platform follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BB39ECBD-1EA5-4D53-A117-A0C88E0463C1][Build platform follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Switch CI and dev installs to a prebuilt Qt rather than building Qt from vcpkg f
 | Field        | Value                                                                 |
 |--------------+-----------------------------------------------------------------------|
 | State        | DONE                                                                  |
-| Parent story | [[id:bb39ecbd-1ea5-4d53-a117-a0c88e0463c1][Build platform follow-up]] |
+| Parent story | [[id:BB39ECBD-1EA5-4D53-A117-A0C88E0463C1][Build platform follow-up]] |
 | Now          | Completed 2025-12-17.                                                 |
 | Waiting on   | None.                                                                 |
 | Next         | None.                                                                 |

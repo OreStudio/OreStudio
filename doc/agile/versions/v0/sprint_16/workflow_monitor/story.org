@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 87599263-bd70-42cf-b653-0803e12f4d0b
+:ID: 87599263-BD70-42CF-B653-0803E12F4D0B
 :END:
 #+title: Story: Workflow monitor + late fixes
 #+description: ores.qt.workflow plugin with workflow monitor; JetStream durability + SIGSEGV fix in engine; trade nullable dates; ORE import workflow improvements.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -22,7 +22,7 @@ ores.qt.workflow plugin with workflow monitor; JetStream durability + SIGSEGV fi
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Parent sprint | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]] |
 | Now           | Completed 2026-04-11.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -36,7 +36,7 @@ ores.qt.workflow plugin with workflow monitor; JetStream durability + SIGSEGV fi
 
 In execution order:
 
-- [[id:735c8fbe-dab6-44b5-9442-9d4eeac86106][Add workflow monitor + late fixes]]
+- [[id:735C8FBE-DAB6-44B5-9442-9D4EEAC86106][Add workflow monitor + late fixes]]
 
 * Decisions
 

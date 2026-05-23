@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: dad79c37-0f35-4523-958d-ea41d96d4d5b
+:ID: DAD79C37-0F35-4523-958D-EA41D96D4D5B
 :END:
 #+title: Replace optional JWT verifier with explicit modes
 #+description: The JWT verifier is currently optional<jwt_authenticator>. Replace with an enum mode (allow_all / strict) for clarity and safety.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

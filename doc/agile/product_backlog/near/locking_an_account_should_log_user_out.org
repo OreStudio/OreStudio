@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8519e111-1cd8-417c-a50b-17a3339d38f5
+:ID: 8519E111-1CD8-417C-A50B-17A3339D38F5
 :END:
 #+title: Locking an account should log user out
 #+description: Locking an account should log user out
@@ -10,6 +10,6 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 At present if you lock an account the user will remain logged in.

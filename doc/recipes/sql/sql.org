@@ -14,80 +14,80 @@ Recipes related to *SQL recipes*. Each entry below is a single how-do-I question
 
 * Database Management
 
-- [[id:2bfc42e9-2615-44da-9e08-52feb221a826][List All ORES Databases]]
-- [[id:bb9d68f2-f65d-4a65-8e08-81587c16f615][List Test Databases]]
-- [[id:6deb7fe7-32d2-40a9-a043-cd5c0301fada][List Instance Databases]]
-- [[id:cffa6f33-9c71-4f76-9763-db5e23cbf155][Delete All Test Databases]]
-- [[id:3ebf5f97-6090-4329-bbec-e5bfd2fa2026][Delete All ORES Databases]]
-- [[id:d9eac6e8-f842-4da8-93ac-11bae7f5ba1c][Delete All Instance Databases]]
-- [[id:0bfca9d4-2f97-4cfa-b7d5-cd97318855ba][Preview Cleanup SQL]]
-- [[id:ce523555-1a0c-42ed-96c7-b84c3ff6cb69][Generate Whimsical Database Name]]
+- [[id:2BFC42E9-2615-44DA-9E08-52FEB221A826][List All ORES Databases]]
+- [[id:BB9D68F2-F65D-4A65-8E08-81587C16F615][List Test Databases]]
+- [[id:6DEB7FE7-32D2-40A9-A043-CD5C0301FADA][List Instance Databases]]
+- [[id:CFFA6F33-9C71-4F76-9763-DB5E23CBF155][Delete All Test Databases]]
+- [[id:3EBF5F97-6090-4329-BBEC-E5BFD2FA2026][Delete All ORES Databases]]
+- [[id:D9EAC6E8-F842-4DA8-93AC-11BAE7F5BA1C][Delete All Instance Databases]]
+- [[id:0BFCA9D4-2F97-4CFA-B7D5-CD97318855BA][Preview Cleanup SQL]]
+- [[id:CE523555-1A0C-42ED-96C7-B84C3FF6CB69][Generate Whimsical Database Name]]
 
 * Accounts
 
-- [[id:e3a8668f-26e7-44f3-bd47-6255fc87aec0][List All Current Accounts]]
-- [[id:b89a17b3-dd9d-4028-b850-cc7d4397b1fd][List All Account Versions]]
-- [[id:32ddf8d9-8c81-4d9e-9b0d-e8ff48f72e7f][Get Account by Username]]
-- [[id:a92db443-4336-4b39-9f6d-fc50d873facb][Get Account by UUID]]
-- [[id:24a4b36b-31fb-41dd-bf95-83af769b5e2e][Count Active Accounts]]
+- [[id:E3A8668F-26E7-44F3-BD47-6255FC87AEC0][List All Current Accounts]]
+- [[id:B89A17B3-DD9D-4028-B850-CC7D4397B1FD][List All Account Versions]]
+- [[id:32DDF8D9-8C81-4D9E-9B0D-E8FF48F72E7F][Get Account by Username]]
+- [[id:A92DB443-4336-4B39-9F6D-FC50D873FACB][Get Account by UUID]]
+- [[id:24A4B36B-31FB-41DD-BF95-83AF769B5E2E][Count Active Accounts]]
 
 * Login Info
 
-- [[id:6a0a10d4-560f-496b-bb87-ea08b380e82f][List All Login Info]]
-- [[id:f844d680-ee16-42e2-a054-4238bde8d26c][Find Locked Accounts]]
-- [[id:1b807ee1-a183-4283-882d-322470f77a3c][Find Online Users]]
+- [[id:6A0A10D4-560F-496B-BB87-EA08B380E82F][List All Login Info]]
+- [[id:F844D680-EE16-42E2-A054-4238BDE8D26C][Find Locked Accounts]]
+- [[id:1B807EE1-A183-4283-882D-322470F77A3C][Find Online Users]]
 
 * Sessions
 
-- [[id:e8b519f9-f36f-4389-8152-08f5cd787bde][List Recent Sessions]]
-- [[id:5a911f51-ee75-404d-96dd-3ec093103be8][Session Statistics by User]]
+- [[id:E8B519F9-F36F-4389-8152-08F5CD787BDE][List Recent Sessions]]
+- [[id:5A911F51-EE75-404D-96DD-3EC093103BE8][Session Statistics by User]]
 
 * Population Scripts
 
-- [[id:a566f8ba-4041-459a-98f7-c9d9f80b8896][View Seeded Permissions]]
-- [[id:c64ba4b3-8e3c-4ab8-a605-06b2a4f2ee7d][View Seeded Roles]]
-- [[id:11c9dbfb-943a-47d4-9e7c-7ce10c77a604][View Role-Permission Assignments]]
-- [[id:bc09b7f4-d487-4430-b466-dbcee0441a50][View Seeded System Flags]]
-- [[id:a59b9a7c-b4c1-4084-aa21-c4ebac2764ba][Re-run All Population Scripts]]
-- [[id:187f2f2f-4678-4fff-a5d8-2f7f58786adc][Re-run Individual Population Scripts]]
+- [[id:A566F8BA-4041-459A-98F7-C9D9F80B8896][View Seeded Permissions]]
+- [[id:C64BA4B3-8E3C-4AB8-A605-06B2A4F2EE7D][View Seeded Roles]]
+- [[id:11C9DBFB-943A-47D4-9E7C-7CE10C77A604][View Role-Permission Assignments]]
+- [[id:BC09B7F4-D487-4430-B466-DBCEE0441A50][View Seeded System Flags]]
+- [[id:A59B9A7C-B4C1-4084-AA21-C4EBAC2764BA][Re-run All Population Scripts]]
+- [[id:187F2F2F-4678-4FFF-A5D8-2F7F58786ADC][Re-run Individual Population Scripts]]
 
 * RBAC (Roles and Permissions)
 
-- [[id:b0f5dbb7-2a02-4986-b85f-9f0207c67657][List All Roles]]
-- [[id:5e8e8b96-94f4-4c8c-84b7-b9e34d8753f2][List All Permissions]]
-- [[id:2dd0aa0d-9eff-4aca-b1fc-b8bd47270620][Get Permissions for a Role]]
-- [[id:950d0206-5cc7-49cd-ab84-af7e3d5c9f32][Get Roles for an Account]]
-- [[id:3a124a2e-1b52-422b-89e0-6b858c205d33][Get All Permissions for an Account (via Roles)]]
-- [[id:d4a4ca18-7652-4b2e-a51d-f8cd3c40777f][Check if Account Has Permission]]
+- [[id:B0F5DBB7-2A02-4986-B85F-9F0207C67657][List All Roles]]
+- [[id:5E8E8B96-94F4-4C8C-84B7-B9E34D8753F2][List All Permissions]]
+- [[id:2DD0AA0D-9EFF-4ACA-B1FC-B8BD47270620][Get Permissions for a Role]]
+- [[id:950D0206-5CC7-49CD-AB84-AF7E3D5C9F32][Get Roles for an Account]]
+- [[id:3A124A2E-1B52-422B-89E0-6B858C205D33][Get All Permissions for an Account (via Roles)]]
+- [[id:D4A4CA18-7652-4B2E-A51D-F8CD3C40777F][Check if Account Has Permission]]
 
 * Currencies
 
-- [[id:7955cc98-c463-48c9-b8ae-6b5f95ce2306][List All Currencies]]
-- [[id:1edaeb0f-16b4-4fb4-b806-7bee9175cff1][Get Currency Details]]
-- [[id:ad4bf0f1-4d5c-492c-be63-03e640dcece3][Count Currencies by Asset Class]]
-- [[id:18b0e215-6662-472e-9fea-99cf1680e285][Count Currencies by Market Tier]]
-- [[id:96eed88d-58c1-487a-8df4-16021b211b36][Get Currency with Flag Image]]
+- [[id:7955CC98-C463-48C9-B8AE-6B5F95CE2306][List All Currencies]]
+- [[id:1EDAEB0F-16B4-4FB4-B806-7BEE9175CFF1][Get Currency Details]]
+- [[id:AD4BF0F1-4D5C-492C-BE63-03E640DCECE3][Count Currencies by Asset Class]]
+- [[id:18B0E215-6662-472E-9FEA-99CF1680E285][Count Currencies by Market Tier]]
+- [[id:96EED88D-58C1-487A-8DF4-16021B211B36][Get Currency with Flag Image]]
 
 * Feature Flags
 
-- [[id:055e7245-1d4e-4044-b12e-93f407aea1df][List All Feature Flags]]
-- [[id:d0dbc636-39d8-4542-ac44-975dc7ca38f6][Check Feature Flag Status]]
-- [[id:f3efbcf2-a167-41ce-9d8e-42abbabb1d57][List Enabled Features]]
+- [[id:055E7245-1D4E-4044-B12E-93F407AEA1DF][List All Feature Flags]]
+- [[id:D0DBC636-39D8-4542-AC44-975DC7CA38F6][Check Feature Flag Status]]
+- [[id:F3EFBCF2-A167-41CE-9D8E-42ABBABB1D57][List Enabled Features]]
 
 * Images and Tags
 
-- [[id:455ae1aa-57b2-4952-9e1e-e71d047c3b31][List All Images]]
-- [[id:4fcb5abb-cce6-4ed2-a7e6-f6014b071faf][List All Tags]]
-- [[id:f835c004-ce6b-4e7a-903b-30433fe3e85d][Get Images by Tag]]
+- [[id:455AE1AA-57B2-4952-9E1E-E71D047C3B31][List All Images]]
+- [[id:4FCB5ABB-CCE6-4ED2-A7E6-F6014B071FAF][List All Tags]]
+- [[id:F835C004-CE6B-4E7A-903B-30433FE3E85D][Get Images by Tag]]
 
 * Temporal Queries
 
-- [[id:6f9c3077-8207-48d6-a0c2-883703825b2e][View Entity History]]
-- [[id:8e85305b-64f3-48b2-b59d-6e97a476382b][Point-in-Time Query]]
-- [[id:be785e49-3af0-4086-918d-efc261fcae4b][Count Entity Versions]]
+- [[id:6F9C3077-8207-48D6-A0C2-883703825B2E][View Entity History]]
+- [[id:8E85305B-64F3-48B2-B59D-6E97A476382B][Point-in-Time Query]]
+- [[id:BE785E49-3AF0-4086-918D-EFC261FCAE4B][Count Entity Versions]]
 
 * Administrative
 
-- [[id:2bf63848-718f-4388-ad09-759292ef65dc][Database Size]]
-- [[id:3d098827-07d6-4d73-89bc-87980365b10d][Table Sizes]]
-- [[id:35d6ec68-f7e0-445a-8f03-78ca5eac9c13][Row Counts per Table]]
+- [[id:2BF63848-718F-4388-AD09-759292EF65DC][Database Size]]
+- [[id:3D098827-07D6-4D73-89BC-87980365B10D][Table Sizes]]
+- [[id:35D6EC68-F7E0-445A-8F03-78CA5EAC9C13][Row Counts per Table]]

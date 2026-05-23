@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5dbad991-c9e9-4b7c-8a78-8fe2adda3f45
+:ID: 5DBAD991-C9E9-4B7C-8A78-8FE2ADDA3F45
 :END:
 #+title: Listener error in comms service
 #+description: Listener error in comms service
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Investigate this:
 

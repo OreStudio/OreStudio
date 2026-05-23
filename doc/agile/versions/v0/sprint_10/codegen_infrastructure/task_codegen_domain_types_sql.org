@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8d7be70d-aeef-443e-8a8e-4f078feff833
+:ID: 8D7BE70D-AEEF-443E-8A8E-4F078FEFF833
 :END:
 #+title: Task: Add code generation support for domain types SQL
 #+description: Generate the SQL for domain types from the central model rather than hand-writing them.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:49a3b815-b5e9-4b3d-9213-100bf96c266d][Codegen infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:49A3B815-B5E9-4B3D-9213-100BF96C266D][Codegen infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Use the new codegen to emit the SQL for domain types from the central model rath
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:49a3b815-b5e9-4b3d-9213-100bf96c266d][Codegen infrastructure]] |
+| Parent story | [[id:49A3B815-B5E9-4B3D-9213-100BF96C266D][Codegen infrastructure]] |
 | Now          | Completed 2026-01-22.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

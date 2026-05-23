@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ce26e56b-944f-4c89-b5a9-e0dabf521908
+:ID: CE26E56B-944F-4C89-B5A9-E0DABF521908
 :END:
 #+title: Story: Per-type instrument tables
 #+description: Replace the generic instrument table with per-type tables for rates, FX, and equity instruments; full vertical slice (SQL, domain, repo, service, Qt).
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -22,16 +22,16 @@ Replace the generic instrument table with per-type tables for rates, FX, and equ
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Parent sprint | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]] |
 | Now           | Completed 2026-04-10.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-04-10                                             |
 
 
-#+predecessor: f8e6374b-aaaf-4d50-98ce-844da4558172
+#+predecessor: F8E6374B-AAAF-4D50-98CE-844DA4558172
 
-Continued from: [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]] (sprint 15). Sprint 15 introduced four CDM-inspired instrument models on a shared instruments table. This sprint replaces the generic instrument with per-type tables for rates / FX / equity.
+Continued from: [[id:F8E6374B-AAAF-4D50-98CE-844DA4558172][CDM instrument domain models]] (sprint 15). Sprint 15 introduced four CDM-inspired instrument models on a shared instruments table. This sprint replaces the generic instrument with per-type tables for rates / FX / equity.
 
 * Acceptance
 
@@ -41,9 +41,9 @@ Continued from: [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain
 
 In execution order:
 
-- [[id:82c51a8d-3d26-45ec-955a-aae46028a05d][Per-type equity instrument tables]]
-- [[id:a4d00400-84a9-499d-89cb-8cc62f19821b][Per-type FX instrument tables]]
-- [[id:37743ef3-168c-47d3-9b3b-e06e12b9eaa0][Per-type rates instrument tables]]
+- [[id:82C51A8D-3D26-45EC-955A-AAE46028A05D][Per-type equity instrument tables]]
+- [[id:A4D00400-84A9-499D-89CB-8CC62F19821B][Per-type FX instrument tables]]
+- [[id:37743EF3-168C-47D3-9B3B-E06E12B9EAA0][Per-type rates instrument tables]]
 
 * Decisions
 

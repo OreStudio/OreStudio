@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 654be6cd-d212-4ee5-a7b4-8af125787522
+:ID: 654BE6CD-D212-4EE5-A7B4-8AF125787522
 :END:
 #+title: ores.refdata.api
 #+description: Domain types, JSON/CSV/table I/O, and NATS protocol schemas for the reference-data component.

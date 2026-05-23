@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 23d1f2bb-d2d3-423a-8167-657098e30542
+:ID: 23D1F2BB-D2D3-423A-8167-657098E30542
 :END:
 #+title: Story: NATS migration
 #+description: Replace the entire binary protocol with cnats request/reply (~107k lines removed); 10 domain services migrated; ores.shell rename; NATS telemetry sampling; tenant provisioning + RBAC + LEI handler follow-ups.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A63C60DC-C3A6-4F4F-8977-012A7BF1D566][Sprint 14]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -25,7 +25,7 @@ migrated; ores.comms.shell renamed; pgmq-based ores.mq removed.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]] |
+| Parent sprint | [[id:A63C60DC-C3A6-4F4F-8977-012A7BF1D566][Sprint 14]] |
 | Now           | Completed 2026-03-18.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -44,10 +44,10 @@ migrated; ores.comms.shell renamed; pgmq-based ores.mq removed.
 
 In execution order:
 
-- [[id:84365a4e-5921-4921-ab81-e8ea15c17eaf][Implement NATS support]]
-- [[id:6d8987a6-7f0b-40cb-8334-e149ea44b44b][Rename ores.comms.shell to ores.shell]]
-- [[id:4776490d-d9b5-4465-9bd0-21afac83ca60][Add NATS telemetry sampling]]
-- [[id:d900cdcc-3d94-46f4-b54e-94212902fe77][Remaining NATS changes]]
+- [[id:84365A4E-5921-4921-AB81-E8EA15C17EAF][Implement NATS support]]
+- [[id:6D8987A6-7F0B-40CB-8334-E149EA44B44B][Rename ores.comms.shell to ores.shell]]
+- [[id:4776490D-D9B5-4465-9BD0-21AFAC83CA60][Add NATS telemetry sampling]]
+- [[id:D900CDCC-3D94-46F4-B54E-94212902FE77][Remaining NATS changes]]
 
 * Decisions
 
@@ -63,5 +63,5 @@ In execution order:
 
 * See also
 
-- [[id:55bf0070-33c2-4f1d-986f-a787138942f6][NNG message broker attempt]] — the path this story replaces.
-- [[id:ed082d5a-4afb-4bf9-81db-8712f881dde3][Custom MQ tables and in-process scheduler]] — superseded by JetStream.
+- [[id:55BF0070-33C2-4F1D-986F-A787138942F6][NNG message broker attempt]] — the path this story replaces.
+- [[id:ED082D5A-4AFB-4BF9-81DB-8712F881DDE3][Custom MQ tables and in-process scheduler]] — superseded by JetStream.

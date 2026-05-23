@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 45d1741e-5def-454a-9358-928d44af31e7
+:ID: 45D1741E-5DEF-454A-9358-928D44AF31E7
 :END:
 #+title: Synthetic data generator improvements
 #+description: Three issues: (1) cities must nest within the same parent city, not mixed hierarchies; (2) generate multiple counterparty root nodes with a probability distribution over tree depth; (3) block tenant bootstrapping if system has not been bootstrapped first.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

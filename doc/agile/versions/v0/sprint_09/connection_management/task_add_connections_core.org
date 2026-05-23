@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 15053700-a572-4ab7-b9f8-9cc2405d60c6
+:ID: 15053700-A572-4AB7-B9F8-9CC2405D60C6
 :END:
 #+title: Task: Add ores.connections core
 #+description: New component for server connection bookmarks: folder + tag + server_environment + environment_tag domain types; SQLite persistence with AES-256-GCM password encryption and PBKDF2 key derivation; connection_manager service.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AACC71E6-3DEE-47D2-B77C-E0B4847260BD][Connection management]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Stand up =ores.connections= as a dedicated component for server-connection bookm
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
 | State        | DONE                                                               |
-| Parent story | [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]] |
+| Parent story | [[id:AACC71E6-3DEE-47D2-B77C-E0B4847260BD][Connection management]] |
 | Now          | Completed 2026-01-13.                                              |
 | Waiting on   | None.                                                              |
 | Next         | None.                                                              |

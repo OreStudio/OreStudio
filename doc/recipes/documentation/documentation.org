@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 95ff6af4-2320-4cb6-a007-b016b7da16ed
+:ID: 95FF6AF4-2320-4CB6-A007-B016B7DA16ED
 :END:
 #+title: Documentation recipes
 #+description: Inventory of recipes for navigating, finding, and authoring the v2 documentation graph.
@@ -16,31 +16,31 @@ contract. Authoring recipes physically live under
 =recipes/codegen/= because they drive =generate_v2_doc.sh=, but
 appear here too since they're how you /create/ doc-graph entries.
 For the codegen scripts that generate /code/ (not docs) see the
-[[id:69796171-66f4-4459-913d-01523fc27e54][Codegen recipes]] topic.
+[[id:69796171-66F4-4459-913D-01523FC27E54][Codegen recipes]] topic.
 
 * Finding and inspecting documents
 
-- [[id:d1ae0786-5f2f-4437-8449-0e480c278a1b][How do I find docs matching a pattern?]]
-- [[id:e8231c22-cb31-4d85-a9c0-7602953764ff][How do I show a doc by UUID?]]
+- [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]]
+- [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]]
 
 * Authoring documents
 
-- [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]] — recipe-specific conventions;
+- [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]] — recipe-specific conventions;
   this recipe lives here.
-- [[id:391b9231-dba8-4e8c-97ab-a75e2b9fea07][How do I create a memory?]] — project-scope memory authoring.
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — generic scaffold flow;
+- [[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]] — project-scope memory authoring.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — generic scaffold flow;
   physically under =recipes/codegen/=.
-- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — component scaffold
+- [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] — component scaffold
   flow; physically under =recipes/codegen/=.
 
 * Validation
 
-- [[id:6ac06a04-eb95-4925-8488-c7a47c6a451f][How do I validate component documentation before committing?]] — run
+- [[id:6AC06A04-EB95-4925-8488-C7A47C6A451F][How do I validate component documentation before committing?]] — run
   =validate_docs.sh= before pushing any component doc change.
-- [[id:23bcac49-325f-4083-b854-87ea747c2abe][How do I audit and fix document version tags?]] — check and stamp
+- [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]] — check and stamp
   =#+version:= tags across the repo.
 
 * See also
 
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — the v2 contract every doc satisfies.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — the v2 contract every doc satisfies.
 - [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes index]] — sibling topics.

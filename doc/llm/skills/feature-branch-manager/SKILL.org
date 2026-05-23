@@ -38,11 +38,11 @@ linear and each phase is reviewable in isolation.
    - =feature/currency_generator=
    - =feature/session_history_dialog=
 
-3. /Run one phase to merge/ via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] (open) and [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR
+3. /Run one phase to merge/ via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] (open) and [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR
    Shepherd]] (watch until green and merge).
 
 4. /Transition to the next phase/ — once the current PR is merged,
-   use [[id:479e7e27-4060-4bfd-ac38-f11efa3bb306][How do I start a new feature branch phase?]]. This stashes
+   use [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]]. This stashes
    any WIP, branches from the freshly-fetched main, restores the
    stash, and deletes the old branch both locally and on the
    remote.
@@ -52,13 +52,13 @@ linear and each phase is reviewable in isolation.
 
 * Recipes
 
-- [[id:479e7e27-4060-4bfd-ac38-f11efa3bb306][How do I start a new feature branch phase?]] — the transition
+- [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]] — the transition
   procedure.
 
 * Reference
 
 - [[id:B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44][Git recipes]] — sibling pure-git recipes.
-- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] / [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]] — drive each phase's PR.
+- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] / [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] — drive each phase's PR.
 
 * Artefacts                                                        :noexport:
 

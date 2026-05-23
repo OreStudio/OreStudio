@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1fc16986-44f0-422e-9a0a-7e29269359b1
+:ID: 1FC16986-44F0-422E-9A0A-7E29269359B1
 :END:
 #+title: How do I get help for the CLI compute batches command?
 #+description: Show available operations under =ores.cli compute batches=

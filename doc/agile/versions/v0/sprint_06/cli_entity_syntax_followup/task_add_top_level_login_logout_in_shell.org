@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e95678aa-8849-4706-a985-f5d4d31238f1
+:ID: E95678AA-8849-4706-A985-F5D4D31238F1
 :END:
 #+title: Task: Add top-level login and logout commands in shell
 #+description: Make login/logout top-level shell commands so users don't have to enter the IAM entity submenu for them.
@@ -16,7 +16,7 @@
 #+updated: 2025-12-13
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:06c56ca2-9846-4dc9-b2f3-271bf4f084ce][CLI entity syntax follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:06C56CA2-9846-4DC9-B2F3-271BF4F084CE][CLI entity syntax follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Make login/logout top-level shell commands so users don't have to enter the IAM 
 | Field        | Value                                                                    |
 |--------------+--------------------------------------------------------------------------|
 | State        | DONE                                                                     |
-| Parent story | [[id:06c56ca2-9846-4dc9-b2f3-271bf4f084ce][CLI entity syntax follow-up]] |
+| Parent story | [[id:06C56CA2-9846-4DC9-B2F3-271BF4F084CE][CLI entity syntax follow-up]] |
 | Now          | Completed 2025-12-13.                                                    |
 | Waiting on   | None.                                                                    |
 | Next         | None.                                                                    |

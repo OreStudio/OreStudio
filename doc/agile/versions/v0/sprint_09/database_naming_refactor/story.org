@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 61485635-64ba-4c31-a35b-2f60d7fb41aa
+:ID: 61485635-64BA-4C31-A35B-2F60D7FB41AA
 :END:
 #+title: Story: Database naming refactor
 #+description: Rename ores.risk to ores.refdata; prefix every SQL entity by component (iam_, refdata_, assets_, etc.).
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ to reflect what the component actually does.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]] |
+| Parent sprint | [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]] |
 | Now           | Completed 2026-01-14.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,8 +41,8 @@ to reflect what the component actually does.
 
 In execution order:
 
-- [[id:aa32b9c6-9c05-4f63-bbc5-51704df4e9b6][Rename ores.risk to ores.refdata]]
-- [[id:6c292f2c-9a0a-479c-9632-59a3f5028da7][Prefix database entities with component]]
+- [[id:AA32B9C6-9C05-4F63-BBC5-51704DF4E9B6][Rename ores.risk to ores.refdata]]
+- [[id:6C292F2C-9A0A-479C-9632-59A3F5028DA7][Prefix database entities with component]]
 
 * Decisions
 

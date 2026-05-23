@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b5aa3934-c955-4dcc-ad98-3e0b7153753c
+:ID: B5AA3934-C955-4DCC-AD98-3E0B7153753C
 :END:
 #+title: Task: Implement client heartbeat for disconnect detection
 #+description: Client sends periodic heartbeats so it (and the server) detect dropped connections rather than waiting on a stalled read.
@@ -16,7 +16,7 @@
 #+updated: 2025-12-04
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4B50A7E5-D862-47A6-AEBE-353CAD55B058][Session lifecycle follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Client sends periodic heartbeats so it (and the server) detect dropped connectio
 | Field        | Value                                                                    |
 |--------------+--------------------------------------------------------------------------|
 | State        | DONE                                                                     |
-| Parent story | [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]] |
+| Parent story | [[id:4B50A7E5-D862-47A6-AEBE-353CAD55B058][Session lifecycle follow-up]] |
 | Now          | Completed 2025-12-04.                                                    |
 | Waiting on   | None.                                                                    |
 | Next         | None.                                                                    |

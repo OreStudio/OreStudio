@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f752c290-2a7a-4bf7-a615-4cdc2a3e0de6
+:ID: F752C290-2A7A-4BF7-A615-4CDC2A3E0DE6
 :END:
 #+title: Task: Sprint and product backlog refinement
 #+description: Maintain sprint 10 backlog and groom the product backlog.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:61f6ab0b-bb2e-43e7-9735-447a7e3d55de][Sprint 10 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61F6AB0B-BB2E-43E7-9735-447A7E3D55DE][Sprint 10 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Maintain the sprint 10 backlog and groom the product backlog as items emerge.
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:61f6ab0b-bb2e-43e7-9735-447a7e3d55de][Sprint 10 housekeeping]] |
+| Parent story | [[id:61F6AB0B-BB2E-43E7-9735-447A7E3D55DE][Sprint 10 housekeeping]] |
 | Now          | Completed 2026-01-27.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

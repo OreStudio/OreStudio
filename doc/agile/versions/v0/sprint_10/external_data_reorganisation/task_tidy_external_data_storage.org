@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3038f1e7-97b6-4b5b-bda0-50fcb71c0810
+:ID: 3038F1E7-97B6-4B5B-BDA0-50FCB71C0810
 :END:
 #+title: Task: Tidy up external data storage
 #+description: Restructure populate/ into domain-specific subdirectories (fpml/, crypto/, flags/, solvaris/); manifest.json files; code generators for flags/crypto/solvaris; relocate external data to external/.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ebc22454-356d-4b6c-a3be-e8edfd858fca][External data reorganisation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EBC22454-356D-4B6C-A3BE-E8EDFD858FCA][External data reorganisation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Consolidate the scattered external data under =external/= and reorganise =popula
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE                                                                      |
-| Parent story | [[id:ebc22454-356d-4b6c-a3be-e8edfd858fca][External data reorganisation]] |
+| Parent story | [[id:EBC22454-356D-4B6C-A3BE-E8EDFD858FCA][External data reorganisation]] |
 | Now          | Completed 2026-01-23.                                                     |
 | Waiting on   | None.                                                                     |
 | Next         | None.                                                                     |

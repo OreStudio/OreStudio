@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1af340aa-fb79-4870-bc13-0dd2fc75af2b
+:ID: 1AF340AA-FB79-4870-BC13-0DD2FC75AF2B
 :END:
 #+title: Story: Environment isolation for database roles
 #+description: Environment-prefixed PostgreSQL roles + users so dev environments don't contaminate each other; ORES_TEST_ENV_CMD for custom test runners; psql DO-block set_config workaround.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ ores.http.core to round off the api/core split.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Parent sprint | [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]] |
 | Now           | Completed 2026-03-25.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -42,7 +42,7 @@ ores.http.core to round off the api/core split.
 
 In execution order:
 
-- [[id:ae604582-91d9-4bff-a8f1-d15af4241d4e][Implement full environment isolation for database roles]]
+- [[id:AE604582-91D9-4BFF-A8F1-D15AF4241D4E][Implement full environment isolation for database roles]]
 
 * Decisions
 

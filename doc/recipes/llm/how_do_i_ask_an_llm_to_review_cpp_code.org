@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c4fef68b-dc9b-4c05-b86b-0548c1394c45
+:ID: C4FEF68B-DC9B-4C05-B86B-0548C1394C45
 :END:
 #+title: How do I ask an LLM to review C++ code?
 #+description: Reusable prompt for a fast, focused C++ code review in any LLM chat interface.
@@ -58,8 +58,8 @@ Used successfully in Gemini 2.5 Flash and ChatGPT.
 
 * See also
 
-- [[id:51fe4df6-d12f-4cf3-a32f-e793979aa68b][LLM prompt recipes]] — index of all LLM prompts.
-- [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]] — api/core/service split and facet placement
+- [[id:51FE4DF6-D12F-4CF3-A32F-E793979AA68B][LLM prompt recipes]] — index of all LLM prompts.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — api/core/service split and facet placement
   rules the reviewer should know.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — profile catalogue describing what each generated
   file should look like (useful context for generated code reviews).

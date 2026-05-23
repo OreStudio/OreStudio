@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0a69cb02-19df-4df7-bedd-81c57a604737
+:ID: 0A69CB02-19DF-4DF7-BEDD-81C57A604737
 :END:
 #+title: Story: Engineering hygiene
 #+description: Past PR-review comments, CI apt-get retries, vcpkg cache backend fix.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ binary caching after the =x-gha= backend was silently removed upstream.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Parent sprint | [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]] |
 | Now           | Completed 2026-02-06.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -40,9 +40,9 @@ binary caching after the =x-gha= backend was silently removed upstream.
 
 In execution order:
 
-- [[id:12f3d5ed-fb2b-41e6-8cc5-15392522c2c0][Address past review comments]]
-- [[id:1f64c879-3cca-42da-b16c-9f0194346964][Fix apt-get failures on nightly build]]
-- [[id:760fa2b8-3005-494c-aced-53c2d605351d][Fix vcpkg caching (x-gha removed upstream)]]
+- [[id:12F3D5ED-FB2B-41E6-8CC5-15392522C2C0][Address past review comments]]
+- [[id:1F64C879-3CCA-42DA-B16C-9F0194346964][Fix apt-get failures on nightly build]]
+- [[id:760FA2B8-3005-494C-ACED-53C2D605351D][Fix vcpkg caching (x-gha removed upstream)]]
 
 * Decisions
 

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 665dc710-e8a1-4c1f-9f66-2ee30aa94849
+:ID: 665DC710-E8A1-4C1F-9F66-2EE30AA94849
 :END:
 #+title: Task: Add temporal support to currencies
 #+description: Add validity-time and transaction-time columns to currencies so changes are tracked over time.
@@ -12,7 +12,7 @@
 #+updated: 2025-09-10
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:ED5BC735-FB54-4CE0-9A08-6DAB88C242D0][Currencies temporal and export]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -26,7 +26,7 @@ reference-data type uses.
 | Field        | Value                                                                       |
 |--------------+-----------------------------------------------------------------------------|
 | State        | DONE                                                                        |
-| Parent story | [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] |
+| Parent story | [[id:ED5BC735-FB54-4CE0-9A08-6DAB88C242D0][Currencies temporal and export]] |
 | Now          | Completed 2025-09-10.                                                       |
 | Waiting on   | None.                                                                       |
 | Next         | None.                                                                       |

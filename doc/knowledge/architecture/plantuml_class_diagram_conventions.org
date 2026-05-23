@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 271f40da-d0ea-4d08-a4f8-3d2b835df5e7
+:ID: 271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7
 :END:
 #+title: PlantUML class diagram conventions
 #+description: How ORE Studio writes PlantUML class diagrams — skeleton, namespaces, class styling, members, relationships, layout, and test-suite blocks.
@@ -13,7 +13,7 @@
 ORE Studio's class diagrams follow consistent rules so that any two
 components' diagrams look comparable. This doc captures /how a
 diagram should look/. The [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] skill drives the
-authoring; [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] runs the build.
+authoring; [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]] runs the build.
 Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * File locations
@@ -208,6 +208,6 @@ libraries.
 * See also
 
 - [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler skill]] — drives the authoring.
-- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — runs the build.
-- [[id:496dc90b-8951-42a6-a63e-b1762df496c6][PlantUML ER diagram conventions]] — sibling, for SQL schema.
+- [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]] — runs the build.
+- [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]] — sibling, for SQL schema.
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the system-level diagram lives here.

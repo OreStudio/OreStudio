@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3ddb2afa-9caa-44a0-a91a-645a95320a5f
+:ID: 3DDB2AFA-9CAA-44A0-A91A-645A95320A5F
 :END:
 #+title: How do I deploy the settings?
 #+description: Regenerate .claude/settings.json from its literate org source using the deploy_settings CMake target.
@@ -11,9 +11,9 @@
 #+updated: 2026-05-22
 
 The authoritative source for =.claude/settings.json= is
-[[id:2d83251f-0e24-4b97-b736-08f710316634][Claude Code Settings]] (=doc/llm/claude_code_settings.org=). Never
+[[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] (=doc/llm/claude_code_settings.org=). Never
 edit the JSON file directly. For CMake setup and preset names see
-[[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]].
+[[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 
 * Question
 
@@ -86,6 +86,6 @@ CMake reconfiguration was not required on a warm build.
 
 * See also
 
-- [[id:2d83251f-0e24-4b97-b736-08f710316634][Claude Code Settings]] — the literate source; edit permissions here.
-- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — parallel target for Claude Code skills.
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset names and output layout.
+- [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — the literate source; edit permissions here.
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — parallel target for Claude Code skills.
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset names and output layout.

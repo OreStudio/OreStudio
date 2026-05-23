@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 53f2d7b0-390b-4e0a-8a68-743bcf8f1d5e
+:ID: 53F2D7B0-390B-4E0A-8A68-743BCF8F1D5E
 :END:
 #+title: Task: Add reporting component design document
 #+description: Design specification for ores.reporting: report_type enum; report_definition (template, lifecycle FSM); report_instance (execution, lifecycle FSM); risk_report_config; scheduler integration via pg_cron at the time; open questions captured.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:84559b48-546b-4724-bdd0-53dbfca2c24a][Reporting subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84559B48-546B-4724-BDD0-53DBFCA2C24A][Reporting subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Sketch the design for the =ores.reporting= component.
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:84559b48-546b-4724-bdd0-53dbfca2c24a][Reporting subsystem]] |
+| Parent story | [[id:84559B48-546B-4724-BDD0-53DBFCA2C24A][Reporting subsystem]] |
 | Now          | Completed 2026-03-01.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

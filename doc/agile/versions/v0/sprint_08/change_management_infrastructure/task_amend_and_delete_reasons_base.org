@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: fb3a1834-f76a-4229-8f04-49830a9039cd
+:ID: FB3A1834-F76A-4229-8F04-49830A9039CD
 :END:
 #+title: Task: Amend and delete reasons base infrastructure
 #+description: Domain + temporal tables for reason_categories, amendment_reasons, entity_reason_categories; populate scripts; Qt UI scaffolding.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:150e3c44-aadb-48c8-a11e-322b44a0357a][Change management infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:150E3C44-AADB-48C8-A11E-322B44A0357A][Change management infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Lay the change-management foundations: temporal tables for =reason_categories=, 
 | Field        | Value                                                                         |
 |--------------+-------------------------------------------------------------------------------|
 | State        | DONE                                                                          |
-| Parent story | [[id:150e3c44-aadb-48c8-a11e-322b44a0357a][Change management infrastructure]] |
+| Parent story | [[id:150E3C44-AADB-48C8-A11E-322B44A0357A][Change management infrastructure]] |
 | Now          | Completed 2026-01-09.                                                         |
 | Waiting on   | None.                                                                         |
 | Next         | None.                                                                         |

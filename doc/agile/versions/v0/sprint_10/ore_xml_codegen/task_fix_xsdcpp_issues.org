@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 755c3e7e-372b-4014-8698-41f6404255f2
+:ID: 755C3E7E-372B-4014-8698-41F6404255F2
 :END:
 #+title: Task: Fix issues with xsdcpp when generating ORE code
 #+description: xs:group ref expansion (trade data types: SwapData, FxForwardData); xs:choice maxOccurs='unbounded' → xsd::vector<T> (LGM in InterestRateModels); domain regenerated; XML round-trip tests; ore_xsd_schema_gaps.md analysis.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A1571428-C1BD-4FD1-9434-21CE5B1A6154][ORE XML codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Address the xsdcpp limitations that block parsing real ORE XML samples.
 | Field        | Value                                                        |
 |--------------+--------------------------------------------------------------|
 | State        | DONE                                                         |
-| Parent story | [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]] |
+| Parent story | [[id:A1571428-C1BD-4FD1-9434-21CE5B1A6154][ORE XML codegen]] |
 | Now          | Completed 2026-01-27.                                        |
 | Waiting on   | None.                                                        |
 | Next         | None.                                                        |

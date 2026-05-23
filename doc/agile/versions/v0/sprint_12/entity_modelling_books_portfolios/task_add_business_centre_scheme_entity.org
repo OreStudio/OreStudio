@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c650130d-55b3-48e3-a75b-a07a70f9f9b3
+:ID: C650130D-55B3-48E3-A75B-A07A70F9F9B3
 :END:
 #+title: Task: Add business centre scheme entity
 #+description: FpML business-centre coding scheme (v9-4); 4-char codes (ISO country + location); 500+ entries; FK to country (nullable for index publication calendars).
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:3afc713a-754e-42dc-ae10-022ac1dfdaba][Books, portfolios, business units modelling]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3AFC713A-754E-42DC-AE10-022AC1DFDABA][Books, portfolios, business units modelling]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add the FpML business-centre coding scheme as a refdata entity.
 | Field        | Value                                                                                    |
 |--------------+------------------------------------------------------------------------------------------|
 | State        | DONE                                                                                     |
-| Parent story | [[id:3afc713a-754e-42dc-ae10-022ac1dfdaba][Books, portfolios, business units modelling]] |
+| Parent story | [[id:3AFC713A-754E-42DC-AE10-022AC1DFDABA][Books, portfolios, business units modelling]] |
 | Now          | Completed 2026-02-18.                                                                    |
 | Waiting on   | None.                                                                                    |
 | Next         | None.                                                                                    |

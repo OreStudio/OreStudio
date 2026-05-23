@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2a8f0d61-b3f9-4c20-9e76-1d92c8a47fb5
+:ID: 2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5
 :END:
 #+title: How do I update submodules to latest?
 #+description: Pull the latest commit on each git submodule's tracked branch.

@@ -14,9 +14,9 @@
 /Identity and Access Management (IAM)/ is the security subsystem
 that governs who can do what in ORE Studio. It is realised by the
 =ores.iam.*= components — domain logic in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]], wire
-protocol in [[id:4e0dc581-d74d-4bd1-87d2-7f524a36d20c][ores.iam.api]], service-side enforcement in
-[[id:70f2d886-bb3f-4fe0-929c-45509e1ce967][ores.iam.service]], and the client-side helpers in
-[[id:28a7af22-1eb1-4989-b4bd-a383d09605f3][ores.iam.client]]. The companion concept doc is [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access
+protocol in [[id:4E0DC581-D74D-4BD1-87D2-7F524A36D20C][ores.iam.api]], service-side enforcement in
+[[id:70F2D886-BB3F-4FE0-929C-45509E1CE967][ores.iam.service]], and the client-side helpers in
+[[id:28A7AF22-1EB1-4989-B4BD-A383D09605F3][ores.iam.client]]. The companion concept doc is [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access
 Control]]. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Core Responsibilities

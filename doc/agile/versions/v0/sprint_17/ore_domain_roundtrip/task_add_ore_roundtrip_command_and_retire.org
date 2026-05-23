@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b5d90461-980a-4bbc-9a1c-15be795be9c6
+:ID: B5D90461-980A-4BBC-9A1C-15BE795BE9C6
 :END:
 #+title: Task: Add ore roundtrip command and retire Thing 2 coverage check
 #+description: - Phase 1 (`ores.ore`): Implements `exporter::roundtrip_portfolio` — walks a directory of ORE portfolio XMLs recursively
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:66109ae6-1c44-405d-b4d6-08164c457c25][ORE domain roundtrip]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:66109AE6-1C44-405D-B4D6-08164C457C25][ORE domain roundtrip]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Implement 'ore roundtrip' as a DB-free CLI command that imports and re-exports a
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:66109ae6-1c44-405d-b4d6-08164c457c25][ORE domain roundtrip]] |
+| Parent story | [[id:66109AE6-1C44-405D-B4D6-08164C457C25][ORE domain roundtrip]] |
 | Now          | Completed 2026-05-07.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b0c9fdc8-f0b2-48fe-ae37-8fd79e6fd164
+:ID: B0C9FDC8-F0B2-48FE-AE37-8FD79E6FD164
 :END:
 #+title: ores.http.api
 #+description: HTTP server library — Boost.Beast server, JWT authentication, routing, and OpenAPI support.
@@ -53,5 +53,5 @@ exposed to external clients (web, mobile) alongside the NATS-based internal API.
 
 * See also
 
-- [[id:869526b6-6c82-430e-95e1-776d4a11a56b][ores.http.core]] — concrete route implementations (IAM, assets, risk, etc.).
-- [[id:a8b318bc-8653-4d33-a58c-60793e3596d5][ores.http.server]] — server entrypoint.
+- [[id:869526B6-6C82-430E-95E1-776D4A11A56B][ores.http.core]] — concrete route implementations (IAM, assets, risk, etc.).
+- [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]] — server entrypoint.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 28b359cc-1d56-4347-96ec-5d244c1fcaa7
+:ID: 28B359CC-1D56-4347-96EC-5D244C1FCAA7
 :END:
 #+title: Auto connect
 #+description: Auto connect

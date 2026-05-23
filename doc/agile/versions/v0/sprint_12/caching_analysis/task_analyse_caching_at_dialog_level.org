@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 713a4f2a-fc2f-40b3-b82a-94d66e680f10
+:ID: 713A4F2A-FC2F-40B3-B82A-94D66E680F10
 :END:
 #+title: Task: Analyse caching at dialog level
 #+description: Design sketch for a shared caching component (ores.caching or workspace) using immer immutable data structures; subscription-aware; foreign-key navigation; baobab-style usage viz.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:c8c45097-7420-438d-9026-6bec0285cd66][Caching analysis (POSTPONED)]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8C45097-7420-438D-9026-6BEC0285CD66][Caching analysis (POSTPONED)]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Design a shared caching component to replace the scattered dialog-level caches.
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | BACKLOG                                                                   |
-| Parent story | [[id:c8c45097-7420-438d-9026-6bec0285cd66][Caching analysis (POSTPONED)]] |
+| Parent story | [[id:C8C45097-7420-438D-9026-6BEC0285CD66][Caching analysis (POSTPONED)]] |
 | Now          | POSTPONED in sprint 12; carried forward.                                  |
 | Waiting on   | A sprint with the slot.                                                   |
 | Next         | Return to this once a sprint has the budget.                              |

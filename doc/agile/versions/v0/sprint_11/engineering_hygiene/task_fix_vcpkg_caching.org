@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 760fa2b8-3005-494c-aced-53c2d605351d
+:ID: 760FA2B8-3005-494C-ACED-53C2D605351D
 :END:
 #+title: Task: Fix vcpkg caching (x-gha removed upstream)
 #+description: Replace the silently-removed x-gha vcpkg binary-cache backend with the files provider backed by actions/cache@v4 across 5 workflow files; saves ~21 min per build.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:0a69cb02-19df-4df7-bedd-81c57a604737][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0A69CB02-19DF-4DF7-BEDD-81C57A604737][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Restore vcpkg binary caching across all five CI workflows after the =x-gha= back
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:0a69cb02-19df-4df7-bedd-81c57a604737][Engineering hygiene]] |
+| Parent story | [[id:0A69CB02-19DF-4DF7-BEDD-81C57A604737][Engineering hygiene]] |
 | Now          | Completed 2026-02-06.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

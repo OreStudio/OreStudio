@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 694dcc10-a1e1-45f9-8ecb-aee4c71395b2
+:ID: 694DCC10-A1E1-45F9-8ECB-AEE4C71395B2
 :END:
 #+title: How do I get help for the CLI?
 #+description: Display global help showing all top-level commands and global options of =ores.cli=

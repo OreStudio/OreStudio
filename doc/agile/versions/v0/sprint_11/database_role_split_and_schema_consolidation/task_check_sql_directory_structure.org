@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2accc003-a494-4687-bc9b-446653511658
+:ID: 2ACCC003-A494-4687-BC9B-446653511658
 :END:
 #+title: Task: Check SQL directory structure
 #+description: Standardise SQL file names to [name]_[purpose].sql; consolidate change_control/ into dq/; remove ~45 orphaned refdata SQL files.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:b726d4ea-4e80-4d54-a5cc-0cd895ce883c][Database role split and schema consolidation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B726D4EA-4E80-4D54-A5CC-0CD895CE883C][Database role split and schema consolidation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Standardise SQL file naming and folder organisation; remove dead files.
 | Field        | Value                                                                                     |
 |--------------+-------------------------------------------------------------------------------------------|
 | State        | DONE                                                                                      |
-| Parent story | [[id:b726d4ea-4e80-4d54-a5cc-0cd895ce883c][Database role split and schema consolidation]] |
+| Parent story | [[id:B726D4EA-4E80-4D54-A5CC-0CD895CE883C][Database role split and schema consolidation]] |
 | Now          | Completed 2026-01-31.                                                                     |
 | Waiting on   | None.                                                                                     |
 | Next         | None.                                                                                     |

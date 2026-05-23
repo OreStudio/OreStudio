@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: fcf81f0b-afbf-4169-bd24-04dbd08180a9
+:ID: FCF81F0B-AFBF-4169-BD24-04DBD08180A9
 :END:
 #+title: GitHub recipes
 #+description: Inventory of GitHub-specific recipes — the ones that drive gh CLI, GitHub Actions / CI checks, review threads, and PR lifecycle.
@@ -17,15 +17,15 @@ under [[id:B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44][Git recipes]].
 
 * Pull-request lifecycle
 
-- [[id:1882d6df-4012-4c6e-bf62-0d943ef805b0][How do I generate a PR summary?]]
-- [[id:cc928252-e0c5-4c3c-a7a8-d613593e4e37][How do I create a PR?]]
-- [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][How do I monitor a PR until green?]]
-- [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][How do I address PR review comments?]]
-- [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][How do I fix a failing CI check?]]
-- [[id:95d560c6-3551-4810-9d11-55f9f82b483c][How do I merge a PR?]]
+- [[id:1882D6DF-4012-4C6E-BF62-0D943EF805B0][How do I generate a PR summary?]]
+- [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]]
+- [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]]
+- [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]]
+- [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]]
+- [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]]
 
 * See also
 
 - [[id:B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44][Git recipes]] — pure git workflows that don't depend on GitHub.
-- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] / [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]] — the skills that thin-index these
+- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] / [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] — the skills that thin-index these
   recipes.

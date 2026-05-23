@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b726d4ea-4e80-4d54-a5cc-0cd895ce883c
+:ID: B726D4EA-4E80-4D54-A5CC-0CD895CE883C
 :END:
 #+title: Story: Database role split and schema consolidation
 #+description: Split the 'god' admin account into RBAC roles; collapse metadata/production schemas back into public; SQL directory + naming cleanup.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ Principle-of-Least-Privilege RBAC roles, a single =public= schema
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Parent sprint | [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]] |
 | Now           | Completed 2026-01-31.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -40,9 +40,9 @@ Principle-of-Least-Privilege RBAC roles, a single =public= schema
 
 In execution order:
 
-- [[id:41c5a11e-0633-4112-9335-ec7ed684682f][Split god admin account into RBAC roles]]
-- [[id:18d627fb-9eea-4e3b-bd84-744ef0d8ef2e][Move all database entities back to public schema]]
-- [[id:2accc003-a494-4687-bc9b-446653511658][Check SQL directory structure]]
+- [[id:41C5A11E-0633-4112-9335-EC7ED684682F][Split god admin account into RBAC roles]]
+- [[id:18D627FB-9EEA-4E3B-BD84-744EF0D8EF2E][Move all database entities back to public schema]]
+- [[id:2ACCC003-A494-4687-BC9B-446653511658][Check SQL directory structure]]
 
 * Decisions
 
@@ -55,4 +55,4 @@ In execution order:
 
 * See also
 
-- [[id:1b78d767-89d3-4646-93db-c8297a66b093][Separate catalog metadata schema from production data]] (sprint 10) — the split this story reverses.
+- [[id:1B78D767-89D3-4646-93DB-C8297A66B093][Separate catalog metadata schema from production data]] (sprint 10) — the split this story reverses.

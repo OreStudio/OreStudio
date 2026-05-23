@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: beca4987-76d8-43ac-b62c-f32ead34e44d
+:ID: BECA4987-76D8-43AC-B62C-F32EAD34E44D
 :END:
 #+title: Task: Reorganise CLI structure by entity
 #+description: Switch from import/export-first to entity-first: ./ores.cli currencies export rather than ./ores.cli export --entity currencies.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7BE09D1C-E25A-4783-A911-C37DEC55CC43][CLI / REPL reshape]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -30,7 +30,7 @@ scales when more entities arrive.
 | Field        | Value                                                           |
 |--------------+-----------------------------------------------------------------|
 | State        | DONE                                                            |
-| Parent story | [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]] |
+| Parent story | [[id:7BE09D1C-E25A-4783-A911-C37DEC55CC43][CLI / REPL reshape]] |
 | Now          | Completed 2025-11-25.                                           |
 | Waiting on   | None.                                                           |
 | Next         | None.                                                           |

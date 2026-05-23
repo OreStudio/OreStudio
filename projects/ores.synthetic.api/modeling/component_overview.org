@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 44039e5b-3435-4bcb-824f-3990af341fbe
+:ID: 44039E5B-3435-4BCB-824F-3990AF341FBE
 :END:
 #+title: ores.synthetic.api
 #+description: Domain types and NATS protocol schemas for the synthetic data component.

@@ -14,109 +14,109 @@ Recipes related to *Shell recipes*. Each entry below is a single how-do-I questi
 
 * General
 
-- [[id:c9170c1c-8297-4401-b093-12a01d9ae742][Help]]
-- [[id:09f74dc2-68aa-41ec-9a2e-abd7a59f3abe][Version]]
-- [[id:1914d31e-4cd9-453b-9800-49b6851244b8][Help Menu]]
+- [[id:C9170C1C-8297-4401-B093-12A01D9AE742][Help]]
+- [[id:09F74DC2-68AA-41EC-9A2E-ABD7A59F3ABE][Version]]
+- [[id:1914D31E-4CD9-453B-9800-49B6851244B8][Help Menu]]
 
 * Accounts
 
-- [[id:1fbc2c1e-1bb2-44ea-ac40-26a9f9750636][Help Menu]]
-- [[id:28b359cc-1d56-4347-96ec-5d244c1fcaa7][Auto connect]]
-- [[id:67362277-05e4-4fa6-8420-51c97236df61][Basic connect]]
-- [[id:a89f12b0-c212-4fd4-b034-f102fc6cff68][Bootstrap]]
+- [[id:1FBC2C1E-1BB2-44EA-AC40-26A9F9750636][Help Menu]]
+- [[id:28B359CC-1D56-4347-96EC-5D244C1FCAA7][Auto connect]]
+- [[id:67362277-05E4-4FA6-8420-51C97236DF61][Basic connect]]
+- [[id:A89F12B0-C212-4FD4-B034-F102FC6CFF68][Bootstrap]]
 - [[id:CA27A829-0A1C-2C44-9AE3-D389D3898C4E][Auto login]]
-- [[id:e8da8b33-81d9-4f22-8439-216d7d916093][Login logout]]
-- [[id:92e184f9-0a3d-44b5-bd4c-9521b818a69f][Login]]
-- [[id:0e9d3dcd-0e8d-4f5a-a675-c88e9bc125d1][Logout]]
-- [[id:eec4f8be-26bb-42a6-9c60-e65ac9cefc41][Create]]
-- [[id:6ba720d5-1f2e-475b-acb0-477f516ea8c9][Info]]
-- [[id:e706ef2d-00ba-44a1-bc3f-e206ef6eca30][List]]
-- [[id:784cd3c0-1267-4b0a-ac31-4e3ae8794e6f][List Login Info]]
-- [[id:2d8ecbdf-6896-4dc1-b38e-cc7cfc479fe2][Lock]]
-- [[id:6906c683-5d50-464e-9520-fe5199136ab1][Unlock]]
-- [[id:f5b4cc6b-0602-4023-9eb1-b941fb333061][Account Roles]]
-- [[id:35555992-6f01-40f5-a1a7-1ef0fa6fcab3][Account Permissions]]
-- [[id:67378649-0c9d-40d0-b348-dbc83ac90928][Assign Role]]
-- [[id:ad073cbd-91a1-47d7-b0fb-26492327ded1][Revoke Role]]
-- [[id:e0bf1e20-9cee-43bb-9c0e-325088de368c][Assign Role By Name]]
-- [[id:a330aeff-e2ab-43bc-a3f7-4427ca47c8cc][Revoke Role By Name]]
-- [[id:887af33e-e237-417a-9636-5006881a6790][History]]
+- [[id:E8DA8B33-81D9-4F22-8439-216D7D916093][Login logout]]
+- [[id:92E184F9-0A3D-44B5-BD4C-9521B818A69F][Login]]
+- [[id:0E9D3DCD-0E8D-4F5A-A675-C88E9BC125D1][Logout]]
+- [[id:EEC4F8BE-26BB-42A6-9C60-E65AC9CEFC41][Create]]
+- [[id:6BA720D5-1F2E-475B-ACB0-477F516EA8C9][Info]]
+- [[id:E706EF2D-00BA-44A1-BC3F-E206EF6ECA30][List]]
+- [[id:784CD3C0-1267-4B0A-AC31-4E3AE8794E6F][List Login Info]]
+- [[id:2D8ECBDF-6896-4DC1-B38E-CC7CFC479FE2][Lock]]
+- [[id:6906C683-5D50-464E-9520-FE5199136AB1][Unlock]]
+- [[id:F5B4CC6B-0602-4023-9EB1-B941FB333061][Account Roles]]
+- [[id:35555992-6F01-40F5-A1A7-1EF0FA6FCAB3][Account Permissions]]
+- [[id:67378649-0C9D-40D0-B348-DBC83AC90928][Assign Role]]
+- [[id:AD073CBD-91A1-47D7-B0FB-26492327DED1][Revoke Role]]
+- [[id:E0BF1E20-9CEE-43BB-9C0E-325088DE368C][Assign Role By Name]]
+- [[id:A330AEFF-E2AB-43BC-A3F7-4427CA47C8CC][Revoke Role By Name]]
+- [[id:887AF33E-E237-417A-9636-5006881A6790][History]]
 
 * Tenants
 
-- [[id:6ba77ef7-5f06-48cb-8be9-a4e9b670e910][Help Menu]]
-- [[id:691aea4f-4cb2-425d-8231-fd47efa16b71][Get Tenants]]
-- [[id:e40f0dab-8e2f-4f2e-bf0a-ca1dfd9a681e][Get All Tenants]]
-- [[id:d7d6bccb-26cc-47c9-b763-220c07062939][Add Tenant]]
-- [[id:b7b55734-cd7d-4eaa-b0d2-5262a05c6438][Create Account on Tenant]]
-- [[id:41576369-a684-4bc4-af5e-32ecdaadaa7c][List accounts on Tenant]]
-- [[id:4406cc4d-23bf-4a8f-ab95-ffed42437ed7][Tenant History]]
-- [[id:74a76d6b-ff31-42f6-8e1d-09501f09fa9f][Delete Tenant]]
+- [[id:6BA77EF7-5F06-48CB-8BE9-A4E9B670E910][Help Menu]]
+- [[id:691AEA4F-4CB2-425D-8231-FD47EFA16B71][Get Tenants]]
+- [[id:E40F0DAB-8E2F-4F2E-BF0A-CA1DFD9A681E][Get All Tenants]]
+- [[id:D7D6BCCB-26CC-47C9-B763-220C07062939][Add Tenant]]
+- [[id:B7B55734-CD7D-4EAA-B0D2-5262A05C6438][Create Account on Tenant]]
+- [[id:41576369-A684-4BC4-AF5E-32ECDAADAA7C][List accounts on Tenant]]
+- [[id:4406CC4D-23BF-4A8F-AB95-FFED42437ED7][Tenant History]]
+- [[id:74A76D6B-FF31-42F6-8E1D-09501F09FA9F][Delete Tenant]]
 
 * Variability
 
-- [[id:1ca91a21-f6f3-4089-9c36-ded598dbb19e][Help Menu]]
-- [[id:0da49716-852d-4814-aa83-13452db3fae4][List Feature Flags]]
-- [[id:e53146d5-0b0c-4760-bbcc-400aa9c445ca][Add Feature Flag]]
-- [[id:61b7f668-5b49-4470-9c52-4bc547e3ab4f][Delete Feature Flag]]
-- [[id:660dd54d-8319-4508-b398-c02aa956c979][Feature Flag History]]
+- [[id:1CA91A21-F6F3-4089-9C36-DED598DBB19E][Help Menu]]
+- [[id:0DA49716-852D-4814-AA83-13452DB3FAE4][List Feature Flags]]
+- [[id:E53146D5-0B0C-4760-BBCC-400AA9C445CA][Add Feature Flag]]
+- [[id:61B7F668-5B49-4470-9C52-4BC547E3AB4F][Delete Feature Flag]]
+- [[id:660DD54D-8319-4508-B398-C02AA956C979][Feature Flag History]]
 
 * Currencies
 
-- [[id:a9e5d960-d1dc-43b5-84e9-f7730d927080][Help Menu]]
-- [[id:53e30b9f-e327-4250-8f8f-a4865fd5fe23][Get]]
-- [[id:ef2d7edc-4470-4976-8a29-4189103cdc15][Add]]
-- [[id:51b7adaa-2673-444e-a4ac-9367c4add568][Delete]]
-- [[id:f807e5c7-198d-4d13-9105-68513d07c193][History]]
+- [[id:A9E5D960-D1DC-43B5-84E9-F7730D927080][Help Menu]]
+- [[id:53E30B9F-E327-4250-8F8F-A4865FD5FE23][Get]]
+- [[id:EF2D7EDC-4470-4976-8A29-4189103CDC15][Add]]
+- [[id:51B7ADAA-2673-444E-A4AC-9367C4ADD568][Delete]]
+- [[id:F807E5C7-198D-4D13-9105-68513D07C193][History]]
 
 * Roles
 
-- [[id:307f49c9-6738-43ed-a233-241d6e0c4e08][Help]]
-- [[id:dd903837-76fb-4061-a1ad-83f3f059fd3a][List]]
-- [[id:8ab40575-d912-4a89-a653-314a7610b43c][Get]]
+- [[id:307F49C9-6738-43ED-A233-241D6E0C4E08][Help]]
+- [[id:DD903837-76FB-4061-A1AD-83F3F059FD3A][List]]
+- [[id:8AB40575-D912-4A89-A653-314A7610B43C][Get]]
 
 * Permissions
 
-- [[id:329950a6-28df-4a63-ac55-12286fedffbb][Help Permissions]]
-- [[id:e864dc84-a0df-4997-aced-e69c870f0afe][List Permissions]]
-- [[id:afdd8573-8d4f-4b2f-8246-23f68d2e304d][Suggest Role Commands]]
+- [[id:329950A6-28DF-4A63-AC55-12286FEDFFBB][Help Permissions]]
+- [[id:E864DC84-A0DF-4997-ACED-E69C870F0AFE][List Permissions]]
+- [[id:AFDD8573-8D4F-4B2F-8246-23F68D2E304D][Suggest Role Commands]]
 
 * Events
 
-- [[id:d4f96bab-f96e-4441-8e53-584bbc046398][Help Menu]]
-- [[id:54371d4e-6b27-4ebb-9368-158a63faec9a][Channels]]
-- [[id:23df494f-f41e-42f4-8f49-2341c9f7abfe][Listen]]
-- [[id:81e40906-7f17-4688-80e5-9aba0d63e3e2][Unlisten]]
-- [[id:924633e4-e663-42f8-b496-3f2439e8fd70][Subscriptions]]
-- [[id:43cd4a31-e209-4fa8-b2b9-486345d711c8][Notifications]]
+- [[id:D4F96BAB-F96E-4441-8E53-584BBC046398][Help Menu]]
+- [[id:54371D4E-6B27-4EBB-9368-158A63FAEC9A][Channels]]
+- [[id:23DF494F-F41E-42F4-8F49-2341C9F7ABFE][Listen]]
+- [[id:81E40906-7F17-4688-80E5-9ABA0D63E3E2][Unlisten]]
+- [[id:924633E4-E663-42F8-B496-3F2439E8FD70][Subscriptions]]
+- [[id:43CD4A31-E209-4FA8-B2B9-486345D711C8][Notifications]]
 
 * Compression
 
-- [[id:9ff8edca-06ca-4c31-9684-c79545775fbc][Show Status]]
-- [[id:ec0dd331-1b7f-4971-851a-73c9780ce891][Disable Compression]]
-- [[id:03440980-7776-4c85-b51b-eaa9cdba2b4c][Enable All Compression]]
-- [[id:970b8f52-0560-430f-a4ff-cfa83fc25545][Enable Specific Algorithm]]
+- [[id:9FF8EDCA-06CA-4C31-9684-C79545775FBC][Show Status]]
+- [[id:EC0DD331-1B7F-4971-851A-73C9780CE891][Disable Compression]]
+- [[id:03440980-7776-4C85-B51B-EAA9CDBA2B4C][Enable All Compression]]
+- [[id:970B8F52-0560-430F-A4FF-CFA83FC25545][Enable Specific Algorithm]]
 
 * Countries
 
-- [[id:3cc3a006-31a6-424f-8176-a1ba8ca9a2b5][Help]]
-- [[id:11e13d6c-39ee-445a-a758-1dea7e83d589][Get]]
-- [[id:911100ed-309c-48a8-bc69-a81336f04e68][Add]]
-- [[id:a9db4566-672b-4565-a27e-f28ddb9c00a3][Delete]]
-- [[id:39bf64ec-a6c4-4359-8fae-00e135826794][History]]
+- [[id:3CC3A006-31A6-424F-8176-A1BA8CA9A2B5][Help]]
+- [[id:11E13D6C-39EE-445A-A758-1DEA7E83D589][Get]]
+- [[id:911100ED-309C-48A8-BC69-A81336F04E68][Add]]
+- [[id:A9DB4566-672B-4565-A27E-F28DDB9C00A3][Delete]]
+- [[id:39BF64EC-A6C4-4359-8FAE-00E135826794][History]]
 
 * Change Reasons
 
-- [[id:3a94a1cc-9134-494c-a036-a1ddbf3e0d5f][Help]]
-- [[id:fb4f43ff-90ff-4e67-8bd0-c6db47dd6e69][Get]]
-- [[id:66c9469c-9049-4410-89b3-b1d453405e38][Add]]
-- [[id:8a23c49d-61fb-4a0e-8829-abcd0463dec8][Delete]]
-- [[id:c82409f0-2ded-4134-b5e2-98e51ad9cfcf][History]]
+- [[id:3A94A1CC-9134-494C-A036-A1DDBF3E0D5F][Help]]
+- [[id:FB4F43FF-90FF-4E67-8BD0-C6DB47DD6E69][Get]]
+- [[id:66C9469C-9049-4410-89B3-B1D453405E38][Add]]
+- [[id:8A23C49D-61FB-4A0E-8829-ABCD0463DEC8][Delete]]
+- [[id:C82409F0-2DED-4134-B5E2-98E51AD9CFCF][History]]
 
 * Change Reason Categories
 
-- [[id:7459c714-ad65-4be9-84c8-249a4d56231e][Help]]
-- [[id:d6c9b1a7-e6ab-4847-9db8-65ddaee9c5c2][Get]]
-- [[id:dc91a742-8c16-45dc-9689-7cd122b9e48a][Add]]
-- [[id:4e3f1039-7fda-4263-81d5-296e935aacce][Delete]]
-- [[id:4e1b0644-98de-480c-a63b-92e0a5153957][History]]
+- [[id:7459C714-AD65-4BE9-84C8-249A4D56231E][Help]]
+- [[id:D6C9B1A7-E6AB-4847-9DB8-65DDAEE9C5C2][Get]]
+- [[id:DC91A742-8C16-45DC-9689-7CD122B9E48A][Add]]
+- [[id:4E3F1039-7FDA-4263-81D5-296E935AACCE][Delete]]
+- [[id:4E1B0644-98DE-480C-A63B-92E0A5153957][History]]

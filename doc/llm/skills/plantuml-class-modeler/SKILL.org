@@ -38,11 +38,11 @@ architecture diagram at =projects/modeling/ores.puml=.
    carries the namespace =@brief= description.
 
 3. /Author the diagram following the conventions/ in
-   [[id:271f40da-d0ea-4d08-a4f8-3d2b835df5e7][PlantUML class diagram conventions]] — skeleton, namespace
+   [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]] — skeleton, namespace
    handling, class styling, members + notes, relationships,
    generators, test suites, layout.
 
-4. /Validate/ by running the diagram target — see [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I
+4. /Validate/ by running the diagram target — see [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I
    generate PlantUML diagrams?]]. Fix any PlantUML syntax errors.
 
 5. /Self-check/ against the evaluation checklist in the
@@ -51,11 +51,11 @@ architecture diagram at =projects/modeling/ores.puml=.
 
 * Recipes
 
-- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — build / preview loop.
+- [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]] — build / preview loop.
 
 * Reference
 
-- [[id:271f40da-d0ea-4d08-a4f8-3d2b835df5e7][PlantUML class diagram conventions]] — the styling rules and
+- [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]] — the styling rules and
   evaluation checklist.
 - [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]] — sibling skill for SQL ER diagrams.
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the system-level diagram lives here.

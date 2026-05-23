@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f8caa6ce-a36f-464c-a9a2-058e796a0f81
+:ID: F8CAA6CE-A36F-464C-A9A2-058E796A0F81
 :END:
 #+title: Story: Trade import mapping dialog (Qt UI)
 #+description: Qt dialog: select ORE XML, preview trades, choose target book, map counterparties, confirm import. Postponed mid-implementation.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,18 +23,18 @@ the analysis story. Six hours of implementation started; postponed.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | BACKLOG                                                |
-| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Parent sprint | [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]] |
 | Now           | Postponed in sprint 13; carried forward.               |
 | Waiting on    | A sprint with the slot.                                |
 | Next          | Return to this once a sprint has the budget.           |
 | Last touched  | 2026-02-28                                             |
 
 
-#+successor: 05cfef69-f80b-437f-aeee-3881e4fe96f1
+#+successor: 05CFEF69-F80B-437F-AEEE-3881E4FE96F1
 
-Continued in: [[id:05cfef69-f80b-437f-aeee-3881e4fe96f1][Trade import mapping dialog (second attempt)]]
+Continued in: [[id:05CFEF69-F80B-437F-AEEE-3881E4FE96F1][Trade import mapping dialog (second attempt)]]
 (sprint 14) — attempted again and postponed again; ORE Import
-Wizard ([[id:f80bad05-2e66-458d-9223-1db0a83ef694][ore_import_wizard]]) covers a broader shape.
+Wizard ([[id:F80BAD05-2E66-458D-9223-1DB0A83EF694][ore_import_wizard]]) covers a broader shape.
 
 * Acceptance
 
@@ -46,7 +46,7 @@ Wizard ([[id:f80bad05-2e66-458d-9223-1db0a83ef694][ore_import_wizard]]) covers a
 
 In execution order:
 
-- [[id:63515c34-a1ea-4368-86c9-c2063ea2302c][Add trade import mapping dialog]]
+- [[id:63515C34-A1EA-4368-86C9-C2063EA2302C][Add trade import mapping dialog]]
 
 * Decisions
 
@@ -58,4 +58,4 @@ In execution order:
 
 * See also
 
-- [[id:68c577a4-b33e-47cb-953f-f3d90a4440d6][Trade import mapping analysis]] — the analysis story (DONE).
+- [[id:68C577A4-B33E-47CB-953F-F3D90A4440D6][Trade import mapping analysis]] — the analysis story (DONE).

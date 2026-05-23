@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0ce4e5fe-8b94-4c05-9d5a-2b5341bc3be4
+:ID: 0CE4E5FE-8B94-4C05-9D5A-2B5341BC3BE4
 :END:
 #+title: Task: Set up vcpkg and CMake
 #+description: Configure a basic CMake build that resolves its dependencies through vcpkg.
@@ -12,7 +12,7 @@
 #+updated: 2024-06-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:64e55e42-12eb-46cf-8269-6b30da277a1b][Project bootstrap]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:64E55E42-12EB-46CF-8269-6B30DA277A1B][Project bootstrap]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -25,7 +25,7 @@ package installation.
 | Field        | Value                                                          |
 |--------------+----------------------------------------------------------------|
 | State        | DONE                                                           |
-| Parent story | [[id:64e55e42-12eb-46cf-8269-6b30da277a1b][Project bootstrap]] |
+| Parent story | [[id:64E55E42-12EB-46CF-8269-6B30DA277A1B][Project bootstrap]] |
 | Now          | Completed 2024-06-22.                                          |
 | Waiting on   | None.                                                          |
 | Next         | None.                                                          |

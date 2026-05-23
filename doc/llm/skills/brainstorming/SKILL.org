@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 460c89da-50d2-40c3-88b2-be52e430d170
+:ID: 460C89DA-50D2-40C3-88B2-BE52E430D170
 :END:
 #+title: Brainstorming Skill
 #+description: Turn a fuzzy idea into a validated design through one-question-at-a-time dialogue; then file the result as the right kind of v2 doc.
@@ -61,16 +61,16 @@ This is where v2 differs from v1: pick the /right shape/ for the
 output. Always scaffold via the codegen — never hand-write.
 
 6. /If the design is one story/'s plan → put it in the story's
-   =* Plan= section. The story itself is scaffolded via [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I
+   =* Plan= section. The story itself is scaffolded via [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I
    create a new v2 doc?]] §"New story".
 
 7. /If the design captures durable, cross-cutting rationale/ → file
-   as a [[id:bd1f3458-f991-46be-abeb-5f06c2633375][knowledge]] doc under =doc/knowledge/<topic>/=. Scaffold via
-   [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] §"New knowledge document".
+   as a [[id:BD1F3458-F991-46BE-ABEB-5F06C2633375][knowledge]] doc under =doc/knowledge/<topic>/=. Scaffold via
+   [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New knowledge document".
 
 8. /If the design is pre-sprint and not yet committed to a
-   version/ → file as a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] / [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]] bucket via
-   [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] §"New capture".
+   version/ → file as a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] / [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][far]] bucket via
+   [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New capture".
 
 9. /If the design is a one-off cross-cutting analysis/ — e.g. a
    migration plan that spans many stories — file as
@@ -80,7 +80,7 @@ output. Always scaffold via the codegen — never hand-write.
 
 10. /Commit/ the new doc and, if the conversation is ready,
     proceed to scaffold the implementation stories/tasks via
-    [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]].
+    [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]].
 
 * Key principles
 
@@ -96,20 +96,20 @@ output. Always scaffold via the codegen — never hand-write.
 
 * Recipes
 
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — for every output of the
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — for every output of the
   brainstorm (story / plan section / capture / knowledge doc).
-- [[id:d1ae0786-5f2f-4437-8449-0e480c278a1b][How do I find docs matching a pattern?]] — gather context
+- [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — gather context
   before asking the first question.
-- [[id:e8231c22-cb31-4d85-a9c0-7602953764ff][How do I show a doc by UUID?]] — inspect any doc the
+- [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — inspect any doc the
   conversation references.
 
 * Reference
 
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — picks the right shape for the design output.
-- [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][Product identity]] — checks the design against what ORE
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — picks the right shape for the design output.
+- [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][Product identity]] — checks the design against what ORE
   Studio /is/ and /is not/.
-- [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]] — for filing the implementation stories.
-- [[id:37b88704-7a45-4347-a80a-9d9b4ee71bef][system-architect]] — sibling skill for migrations spanning
+- [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]] — for filing the implementation stories.
+- [[id:37B88704-7A45-4347-A80A-9D9B4EE71BEF][system-architect]] — sibling skill for migrations spanning
   multiple components.
 
 * Artefacts                                                        :noexport:

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d3f0d24e-d687-42f0-a5b8-cd16e2ad4de1
+:ID: D3F0D24E-D687-42F0-A5B8-CD16E2AD4DE1
 :END:
 #+title: Task: Add conventions import handler (Phase 3)
 #+description: - Adds `conventions` to the CLI entity enum so `--entity=conventions` is a valid import target
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:f607b8ce-5d33-424f-a7c2-7ed0243d4728][ORE conventions import]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F607B8CE-5D33-424F-A7C2-7ED0243D4728][ORE conventions import]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Wire the CLI conventions import handler (Phase 3): add --entity=conventions, imp
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:f607b8ce-5d33-424f-a7c2-7ed0243d4728][ORE conventions import]] |
+| Parent story | [[id:F607B8CE-5D33-424F-A7C2-7ED0243D4728][ORE conventions import]] |
 | Now          | Completed 2026-05-11.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

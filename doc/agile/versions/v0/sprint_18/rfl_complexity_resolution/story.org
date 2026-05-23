@@ -11,7 +11,7 @@
 #+updated: 2026-05-23
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]].
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1737c00c-699a-475a-bc94-743c6cda1001][Sprint 18]].
 
 * Goal
 
@@ -22,7 +22,7 @@ Permanently resolve the compilation failures in =ores.qt.api= on Windows (MSVC C
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | STARTED                                |
-| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
+| Parent sprint | [[id:1737c00c-699a-475a-bc94-743c6cda1001][Sprint 18]] |
 
 | Now           | Investigation complete; planning implementation. |
 | Waiting on    | Nothing.                               |

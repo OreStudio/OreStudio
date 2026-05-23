@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1737C00C-699A-475A-BC94-743C6CDA1001
+:ID: 1737c00c-699a-475a-bc94-743c6cda1001
 :END:
 #+title: Sprint 18
 #+description: Sprint 18 — TBD.

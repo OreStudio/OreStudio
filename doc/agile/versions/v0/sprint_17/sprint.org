@@ -33,7 +33,7 @@ history to the v2 cybernetic information architecture.
 | Previous       | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]]                 |
 | Now            | Sprint closed 2026-05-23. |
 | Waiting on     | Nothing.                  |
-| Next           | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                 |
+| Next           | [[id:1737c00c-699a-475a-bc94-743c6cda1001][Sprint 18]]                 |
 | Release Notes  | [[file:release_notes.org][release_notes.org]]         |
 | Capture        | [[id:14606A1B-2742-DE34-F813-B4E3B736AEF1][capture.org]]               |
 | Last touched   | 2026-05-21                |

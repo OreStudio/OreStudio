@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:47296A33-5CF4-49B5-B3D4-1B74C23FAEE9][Add investigation support to document system]] |
-| Now          | Not yet started.                       |
+| Now          | Completed 2026-05-23.                  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | None.                                  |
 | Last touched | 2026-05-23                               |
 
 * Acceptance

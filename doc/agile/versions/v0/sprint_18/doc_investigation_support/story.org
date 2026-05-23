@@ -15,28 +15,33 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Enhance the cybernetic documentation system with a formal 'investigation' document type, standardized git commit conventions, and consistent uppercase UUIDs to ensure build reliability across platforms.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
-| Now           | Not yet started.                       |
+| Now           | Completed 2026-05-23.                  |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | None.                                  |
 | Last touched  | 2026-05-23                               |
 
 * Acceptance
 
--
+- New 'investigation' document type defined and supported by codegen.
+- Git commit convention recipe published and linked.
+- All documentation IDs and links normalized to uppercase.
+- Codegen updated to generate uppercase UUIDs.
 
 * Tasks
 
 In execution order:
 
--
+- [[id:1F001F12-0C8E-46E9-9816-3F2622E0B8BE][Task: Define investigation document type and extend codegen]]
+- [[id:3B399253-D172-4CC7-B0B1-DD7D3204E1E3][Task: Document git commit conventions]]
+- [[id:F85A86D4-801B-4506-83D6-8B61D93DAAD6][Task: Normalize documentation IDs to uppercase]]
 
 * Decisions
 

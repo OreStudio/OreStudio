@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 47296A33-5CF4-49B5-B3D4-1B74C23FAEE9
+:END:
+#+title: Story: Add investigation support to document system
+#+description: Extend the cybernetic document system with formal investigation reports and improved git conventions.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :meta:documentation:codegen:story:sprint_18:v0:
+#+created: 2026-05-23
+#+updated: 2026-05-23
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1737c00c-699a-475a-bc94-743c6cda1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1737c00c-699a-475a-bc94-743c6cda1001][Sprint 18]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-05-23                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+In execution order:
+
+-
+
+* Decisions
+
+* Out of scope
+
+-

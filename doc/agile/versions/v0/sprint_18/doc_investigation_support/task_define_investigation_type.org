@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 1F001F12-0C8E-46E9-9816-3F2622E0B8BE
+:END:
+#+title: Task: Define investigation document type and extend codegen
+#+description: Formalize the 'investigation' document type and add automated scaffolding support.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :meta:codegen:doc_investigation_support:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-23
+#+updated: 2026-05-23
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:47296A33-5CF4-49B5-B3D4-1B74C23FAEE9][Add investigation support to document system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:47296A33-5CF4-49B5-B3D4-1B74C23FAEE9][Add investigation support to document system]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-23                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* Result

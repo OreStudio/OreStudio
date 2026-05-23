@@ -315,7 +315,7 @@ def main(argv=None):
         ancestor_slugs.insert(0, args.parent_slug)
     filetags = build_filetags(args.tags, ancestor_slugs)
     today = date.today().isoformat()
-    new_id = args.id if args.id else str(uuid.uuid4())
+    new_id = (args.id if args.id else str(uuid.uuid4())).upper()
 
     # Captures derive their bucket (near | far) from the parent-dir name.
     bucket = parent_dir.name if args.type == "capture" else ""

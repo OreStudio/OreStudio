@@ -20,9 +20,29 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-BUILD_DIR="$REPO_ROOT/build/output/site"
-DOTENV="$REPO_ROOT/.env"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+BUILD_DIR="$PROJECT_DIR/build/output/site"
+DOTENV="$PROJECT_DIR/.env"
+
+# --- Load environment ---
+ENV_FILE="$PROJECT_DIR/.env"
+if [[ ! -f "$ENV_FILE" ]]; then
+    echo "error: .env not found at $ENV_FILE"
+    echo "       run: ./build/scripts/init-environment.sh --preset <preset>"
+    exit 1
+fi
+
+# Export all variables from .env into this shell. Values that contain literal
+# \n (e.g. the JWT private key) keep them as two characters; we override the
+# JWT key below using the actual key file so the IAM service receives real
+# newlines.
+set -a
+# shellcheck disable=SC1090
+source "$ENV_FILE"
+set +a
+
+# shellcheck source=../../projects/ores.sql/utility/validate_env_version.sh
+source "$PROJECT_DIR/projects/ores.sql/utility/validate_env_version.sh"
 
 # ---------------------------------------------------------------------------
 # Resolve port: --port flag > PORT env var > ORES_SITE_PORT from .env > 8000
@@ -85,7 +105,7 @@ stop_site_server_if_running "${PORT}"
 
 if [[ $COMPILE -eq 1 ]]; then
     echo "Building site..."
-    (cd "$REPO_ROOT" && emacs -Q --script .build-site.el)
+    (cd "$PROJECT_DIR" && emacs -Q --script .build-site.el)
 fi
 
 if [[ ! -d "$BUILD_DIR" ]]; then

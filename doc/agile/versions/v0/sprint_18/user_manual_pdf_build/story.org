@@ -42,6 +42,7 @@ build themselves.
 
 In execution order:
 
+- [[id:30AFB759-D3F2-4DD9-A5C7-209735F35B38][Task: User manual restructure]] (DONE — PR #807; prerequisite for PDF build)
 - [[id:001f63b6-c4e8-4dd2-b680-364393b15d51][Task: Add CMake target to build user manual PDF and commit it]]
 
 * Decisions

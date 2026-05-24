@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 30AFB759-D3F2-4DD9-A5C7-209735F35B38
+:END:
+#+title: Task: User manual restructure
+#+description: Retrospective record of PR #807: restructured user_manual.org into chaptered layout, wrote the introduction chapter, migrated screenshots to assets/images.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :doc:manual:retrospective:user_manual_pdf_build:sprint_18:v0:
+#+owner: marco
+#+branch: feature/user-manual-restructure
+#+pr: 807
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restructure the ORE Studio user manual from a flat single-file layout
+into a chapter-per-folder hierarchy, write the introduction chapter,
+migrate screenshots to =assets/images/=, and ensure the site build
+still passes. This is the prerequisite that unblocked the =deploy_manual=
+PDF build story.
+
+* Status
+
+DONE
+
+| Field        | Value                                       |
+|--------------+---------------------------------------------|
+| State        | DONE                                        |
+| Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
+| Start        | 2026-05-24                                  |
+| End          | 2026-05-24                                  |
+| Now          | Merged as PR #807.                          |
+| Waiting on   | Nothing.                                    |
+| Last touched | 2026-05-24                                  |
+
+* Acceptance
+
+- =doc/manual/user_guide/user_manual.org= is the root file; chapters
+  are included via =#+include:= with =:minlevel 2=.
+- =chapters/chapter_00/introduction.org= contains a full prose
+  introduction written for traders/quants/middle-office/students
+  (non-programmer audience), with an alpha-stage warning quote block.
+- =chapters/chapter_01/system_bootstrapping.org= skeleton exists with
+  correct frontmatter.
+- All screenshots live under =assets/images/= and are referenced from
+  the root file via =[[../../../assets/images/foo.png]]=.
+- =doc/compass.org= updated to link to the manual by id-link.
+- =cmake --build ... --target deploy_site= passes after the changes.
+
+* Plan
+
+The plan followed for this task:
+
+1. Scaffold chapter folders =chapter_00= and =chapter_01= under
+   =doc/manual/user_guide/chapters/=.
+2. Write =introduction.org= with an alpha-warning quote block, prose
+   covering: what ORE Studio is, who it is for (5 audience types), 5
+   functional areas, what it is not, and how the manual is organised.
+3. Rewrite =user_manual.org= as a root composition file: =#+include:=
+   each chapter at =:minlevel 2=; chapter headings are level-1 (=*=).
+4. Move the three existing screenshots from =chapter_01/= to
+   =assets/images/=; update the reference in =user_manual.org= to use
+   the canonical path =../../../assets/images/=.
+5. Add a =#+caption:= for the main-window screenshot.
+6. Update =doc/compass.org= =manual/= entry with an id-link to the
+   manual root file.
+7. Run =deploy_site= to verify no regressions; fix heading-level and
+   description frontmatter issues surfaced by review.
+8. Rebase on main (resolved conflict in =sprint.org= stories table),
+   force-push, and merge.
+
+* Notes
+
+- Image path resolution was the main friction point: org-publish could
+  not resolve cross-directory image links from included files. The fix
+  was to always reference images from the root =user_manual.org= using
+  =assets/images/= paths, consistent with =release_notes.org= precedent.
+- Review identified two issues: incorrect =#+description:= (copy-pasted
+  from agile template) and broken heading hierarchy (=** Introduction=
+  with =:minlevel 1= created double-nesting). Both fixed before merge.
+
+* Result
+
+PR #807 merged. The manual now has a clean chaptered layout with a
+full introduction chapter. All screenshots are in =assets/images/=.
+Site build passes. The PDF build story (this story's parent) was
+unblocked by this merge.

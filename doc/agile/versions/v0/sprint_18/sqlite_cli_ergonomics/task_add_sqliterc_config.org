@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 687b46b5-ef84-4016-a699-391edc443072
+:END:
+#+title: Task: Add a default sqliterc with formatting and ergonomic defaults
+#+description: Author projects/ores.sql/utility/sqliterc.sql with commented defaults for output formatting, wide non-wrapping columns, and session settings.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sql:sqlite:tooling:sqlite_cli_ergonomics:sprint_18:v0:
+#+owner: marco
+#+branch: feature/sqliterc-helper
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:0a2cb5bd-67b8-4096-bac4-8e110333893a][SQLite CLI quality-of-life setup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A committed, fully-commented =projects/ores.sql/utility/sqliterc.sql=
+that the =sqlite3= shell can load to get headed box output, wide
+non-wrapping columns, a visible NULL marker, query timing, and
+connection-level safety defaults.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:0a2cb5bd-67b8-4096-bac4-8e110333893a][SQLite CLI quality-of-life setup]] |
+| Now          | rc file authored; verified against sqlite3 3.46.1. |
+| Waiting on   | Nothing.                               |
+| Next         | Land via PR.                           |
+| Last touched | 2026-05-24                               |
+
+* Acceptance
+
+- =.mode box --wrap 0= so long values render on one line (verified).
+- =.headers on=, =.nullvalue '∅'=, =.timer on=, =.changes on=.
+- =PRAGMA foreign_keys = ON= and =PRAGMA busy_timeout = 5000= active.
+- Every active entry is commented; =journal_mode= left commented with
+  rationale.
+- =sqlite3 -init projects/ores.sql/utility/sqliterc.sql= loads cleanly.
+
+* Plan
+
+Reproduce the wrapping complaint against the installed =sqlite3= to
+find the real lever (=.mode box --wrap 0=) rather than guessing, and
+verify each dot-command is real before commenting it. Then rewrite the
+rc file in sections — output formatting, ergonomics, session pragmas,
+handy levers — with a comment on every active entry, enabling only
+per-connection settings and leaving persistent ones commented. Finish
+by smoke-testing with =sqlite3 -init=.
+
+* Notes
+
+- Removed the original =.alias= example — =.alias= is not a real
+  =sqlite3= dot-command (verified against 3.46.1).
+- Plain =.mode box= was confirmed to wrap long values even when no
+  =~/.sqliterc= is present; =--wrap 0= disables it.
+
+* Result
+
+rc file written and smoke-tested with =sqlite3 -init=: a long value
+renders on a single full-width line, NULL shows as =∅=,
+=PRAGMA foreign_keys= reports =1=, and =PRAGMA busy_timeout= reports
+=5000=. No load errors.

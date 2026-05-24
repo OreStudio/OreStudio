@@ -36,6 +36,7 @@ In execution order.
 | Story                                                                                       | State   | Start      | End | Theme                                                                           |
 |---------------------------------------------------------------------------------------------+---------+------------+-----+---------------------------------------------------------------------------------|
 | [[id:a4bef88c-1372-46ce-864b-c30ac3be95eb][Inline org-roam export into ores.lisp]] | BACKLOG | 2026-05-22 |     | Vendor =org-roam-export.el= into =ores.lisp= so the CI site build is self-contained. |
+| [[id:0a2cb5bd-67b8-4096-bac4-8e110333893a][SQLite CLI quality-of-life setup]]       | STARTED | 2026-05-24 |     | Committed, commented =.sqliterc= for readable, non-wrapping =sqlite3= shell output.   |
 
 * Retrospective
 

@@ -88,6 +88,19 @@ struct get_trade_detail_response {
     ores::trading::domain::trade_instrument instrument;
 };
 
+// Two-phase parse helpers: split the single rfl::AddTagsToVariants pass into
+// two smaller ones so no TU has to reflect both trade (25 fields) and the
+// trade_instrument variant (9 alternatives) simultaneously.
+struct get_trade_detail_response_base {
+    bool success = false;
+    std::string message;
+    ores::trading::domain::trade trade;
+};
+
+struct get_trade_detail_instrument_wrapper {
+    ores::trading::domain::trade_instrument instrument;
+};
+
 struct save_trade_request {
     using response_type = struct save_trade_response;
     static constexpr std::string_view nats_subject = "trading.v1.trades.save";

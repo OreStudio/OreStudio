@@ -62,44 +62,4 @@ std::optional<TradeListResult> ClientManager::listTrades(
     }
 }
 
-std::optional<trading::messaging::trade_export_item>
-ClientManager::getTradeDetail(const std::string& trade_id) {
-    try {
-        trading::messaging::get_trade_detail_request request;
-        request.trade_id = trade_id;
-        const auto raw = send_authenticated_request(
-            trading::messaging::get_trade_detail_request::nats_subject,
-            rfl::json::write(request),
-            std::chrono::seconds(30));
-
-        auto resp = rfl::json::read<
-            trading::messaging::get_trade_detail_response,
-            rfl::AddTagsToVariants>(raw);
-        if (!resp) {
-            BOOST_LOG_SEV(lg(), error)
-                << "getTradeDetail deserialize error: " << resp.error().what();
-            return std::nullopt;
-        }
-        if (!resp->success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "getTradeDetail server error: " << resp->message;
-            return std::nullopt;
-        }
-
-        return trading::messaging::trade_export_item{
-            .trade = std::move(resp->trade),
-            .instrument = std::move(resp->instrument)
-        };
-    } catch (const ores::nats::service::nats_connect_error&) {
-        throw;
-    } catch (const ores::nats::service::session_expired_error& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Session expired: " << e.what();
-        QMetaObject::invokeMethod(this, [this] { emit sessionExpired(); }, Qt::QueuedConnection);
-        return std::nullopt;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "getTradeDetail failed: " << e.what();
-        return std::nullopt;
-    }
-}
-
 }

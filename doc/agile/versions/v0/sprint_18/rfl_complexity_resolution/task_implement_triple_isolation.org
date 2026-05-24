@@ -8,7 +8,7 @@
 #+level: s1
 #+filetags: :refactor:build:reflect_cpp:rfl_complexity_resolution:sprint_18:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/rfl-complexity-isolation
 #+pr:
 #+blocked_on: none
 #+blocked_since:
@@ -26,12 +26,12 @@ Apply the structural isolation strategy to permanently fix compilation failures 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | STARTED                                |
 | Parent story | [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] |
-| Now          | Not yet started.                       |
+| Now          | Implementation in progress.            |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation of TU split.      |
-| Last touched | 2026-05-23                               |
+| Next         | Step 1: increase Clang bracket depth.  |
+| Last touched | 2026-05-24                             |
 
 * Acceptance
 

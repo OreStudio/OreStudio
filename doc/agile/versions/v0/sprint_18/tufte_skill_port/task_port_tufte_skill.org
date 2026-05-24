@@ -79,12 +79,14 @@ task closes. Plans do not outlive their task.)
 The two reference files cross-reference each other: the quick
 reference at the end of =analytical-design.org= calls the 7-question
 test in =tufte-principles.org= "the standard test" and adds 7 more
-questions. Maintain that cross-reference in the org versions using
-=[[file:tufte-principles.org][...]]= links.
+questions. Assign org-roam UUIDs to both reference files at creation
+time and use =[[id:UUID][...]]= links for all cross-references — not
+=[[file:...]]= links, which break on rename.
 
 The skill's =* How to use= section currently points to
 =references/tufte-principles.md= and =references/analytical-design.md=
-— update those paths to the new =.org= files.
+— update those paths to =[[id:UUID][...]]= links once the org files
+exist and have IDs.
 
 Attribution line to use in both reference files (after the title,
 before the first section):
@@ -101,8 +103,8 @@ Adapted from the work of [[https://x.com/draparente][Dr. Angelica Parente]].
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                              | File                    | Decision | Notes                                                                  |
+|---+--------------------------------------------------------------+-------------------------+----------+------------------------------------------------------------------------|
+| 1 | Use org-roam ID links, not file links, for cross-references  | task_port_tufte_skill   | Accepted | Notes updated: assign UUIDs at creation; use =[[id:...]]= throughout.  |
 
 * Result

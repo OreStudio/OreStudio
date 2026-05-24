@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :skills:claude_code:agile:sprint:
 #+created: 2024-09-01
-#+updated: 2026-05-22
+#+updated: 2026-05-24
 
 #+begin_export markdown
 ---
@@ -41,16 +41,20 @@ do at the same time, before, or after.
 3. /Run/ [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]] — codegen scaffold, set
    mission, wire into the version manifest.
 
-4. /If requested, bump the project version/ as a separate
+4. /Update the agile index/ — =doc/agile/agile.org= =* At a glance=
+   table: =Current Sprint= → id-link to the new sprint; =Next
+   sprint= → plain-text placeholder. Update =#+updated:=.
+
+5. /If requested, bump the project version/ as a separate
    commit/PR — [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]]. Bumps and
    sprint openings are decoupled by design.
 
-5. /If requested, update the =vcpkg= submodule to latest/ as a
+6. /If requested, update the =vcpkg= submodule to latest/ as a
    separate commit on the same new-sprint PR —
    [[id:2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5][How do I update submodules to latest?]]. This ships the
    build-side housekeeping with the sprint open.
 
-6. /If the work moves to a new branch/, use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch
+7. /If the work moves to a new branch/, use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch
    Manager]]. Otherwise, raise the PR via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]].
 
 * Recipes

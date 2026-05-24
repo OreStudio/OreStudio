@@ -92,3 +92,10 @@ node_modules/
 
 # compass tool local cache (generated at repo root)
 /.compass.db
+
+# LaTeX intermediate artefacts from deploy_manual
+doc/manual/user_guide/user_manual.tex
+doc/manual/user_guide/user_manual.aux
+doc/manual/user_guide/user_manual.log
+doc/manual/user_guide/user_manual.out
+doc/manual/user_guide/user_manual.toc

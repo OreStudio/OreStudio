@@ -325,6 +325,12 @@ add_custom_target(deploy_site
     COMMAND emacs -Q --script .build-site.el
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+set(ORES_MANUAL_PDF "doc/manual/user_guide/user_manual.pdf")
+add_custom_target(deploy_manual
+    COMMENT "Building ORE Studio User Manual PDF to ${ORES_MANUAL_PDF}" VERBATIM
+    COMMAND emacs -Q --script .build-manual.el
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 set(ORES_SKILLS_DIRECTORY ".claude/skills")
 add_custom_target(deploy_skills
     COMMENT "Deploying ORE Studio Claude Code Skills to ${ORES_SIRE_DIRECTORY}" VERBATIM

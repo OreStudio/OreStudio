@@ -8,7 +8,7 @@
 #+level: s1
 #+filetags: :doc:manual:cmake:pdf:latex:user_manual_pdf_build:sprint_18:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/user-manual-pdf-build
 #+pr:
 #+blocked_on: none
 #+blocked_since:
@@ -29,12 +29,12 @@ committed and a link added so it is reachable from the published site.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                     |
 | Parent story | [[id:c42c3563-671f-4721-8ce8-5ee05925255f][Build and publish user manual PDF via CMake]] |
-| Now          | Not yet started; waiting on #807 merge. |
-| Waiting on   | PR #807 merged to main.                |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-24                               |
+| Now          | Adding deploy_manual CMake target and .build-manual.el script. |
+| Waiting on   | Nothing.                                    |
+| Next         | Run target, commit PDF, add download link.  |
+| Last touched | 2026-05-24                                  |
 
 * Acceptance
 
@@ -52,5 +52,15 @@ distilled into the parent story's =* Decisions= and cleared when the
 task closes. Plans do not outlive their task.)
 
 * Notes
+
+* Review
+
+PR #810 review by gemini-code-assist.
+
+| # | Comment summary                        | File                      | Decision | Notes                                                             |
+|---+----------------------------------------+---------------------------+----------+-------------------------------------------------------------------|
+| 1 | Expand .gitignore to cover all LaTeX   | .gitignore                | Applied  | Added .aux, .log, .out, .toc alongside .tex                       |
+| 2 | Use CMAKE_CURRENT_SOURCE_DIR           | CMakeLists.txt            | Declined | All other deploy_* targets in same file use CMAKE_SOURCE_DIR; changing one alone creates inconsistency |
+| 3 | Use relative path for PDF download link | doc/manual/user_guide/user_manual.org | Applied  | Changed from /OreStudio/... absolute path to user_manual.pdf     |
 
 * Result

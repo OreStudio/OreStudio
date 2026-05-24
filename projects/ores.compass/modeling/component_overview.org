@@ -43,8 +43,9 @@ Three pillars, drawn from the Sprint 18 capture (=* Tools=):
    embedding-based ranking. /Implemented./
 
 3. /Scaffold — agile authoring./ Add a story to a sprint, a task to a
-   story, a sprint, a recipe, a capture, etc. Delegates to the existing
-   codegen rather than re-implementing it. /Planned/ — [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][Scaffold story]].
+   story, a sprint, a recipe, a capture, etc. Calls codegen /as a
+   library/ rather than re-implementing it. /Implemented/ as =add= —
+   see the [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][Scaffold story]].
 
 * Inputs
 
@@ -76,13 +77,16 @@ Three pillars, drawn from the Sprint 18 capture (=* Tools=):
 - =projects/ores.compass/src/compass.py= — the CLI. Subcommands:
   =index [--rebuild]=, =search <query> [-l N] [-f FMT]=,
   =debug [-f FILE]= (Search); =where= / =status= [=-f pretty|json=]
-  (Locate); =list [filters]= and =show <uuid>= (Navigate). Planned:
-  =add <type> ...= (Scaffold).
+  (Locate); =list [filters]= and =show <uuid>= (Navigate); and
+  =add <type> [flags]= (Scaffold).
 
 * Dependencies
 
-- Python 3 standard library only (=sqlite3=, =argparse=, =json=,
-  =pathlib=, =re=, =dataclasses=). No third-party packages.
+- Python 3 standard library for everything except Scaffold (=sqlite3=,
+  =argparse=, =json=, =pathlib=, =re=, =dataclasses=).
+- =pystache= — only for =add= (Scaffold), which imports codegen's
+  Mustache-based generator. Declared in =requirements.txt=; the other
+  commands run without it.
 - =org-roam= (in Emacs) to populate =.org-roam.db=, used only by the
   Search pillar. Compass never writes to it; it opens it read-only.
   Locate and Navigate read the working tree directly and need neither
@@ -90,8 +94,8 @@ Three pillars, drawn from the Sprint 18 capture (=* Tools=):
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the division of labour is: /codegen generates,
   compass navigates/. Doc /navigation/ (=doc_index= / =list= / =show=)
   was folded /out/ of codegen into compass. Doc /generation/ stays in
-  codegen; for the planned /Scaffold/ pillar compass will call codegen
-  /as a library/ (its v2-doc generation API) to make stories, tasks and
+  codegen; the /Scaffold/ pillar (=add=) calls codegen
+  /as a library/ (=v2_doc_generate.main(...)=) to make stories, tasks and
   sprints — not shell out to, nor re-implement, =generate_v2_doc.sh=.
 
 * Structure
@@ -99,10 +103,10 @@ Three pillars, drawn from the Sprint 18 capture (=* Tools=):
 #+begin_src text
 projects/ores.compass/
 ├── compass.sh                 # venv bootstrap + CLI entry wrapper
-├── requirements.txt           # empty (stdlib only)
+├── requirements.txt           # pystache (only `add` needs it)
 ├── src/
 │   ├── __init__.py
-│   ├── compass.py             # CLI dispatcher: index/search/debug/where/list/show
+│   ├── compass.py             # CLI dispatcher: index/search/debug/where/list/show/add
 │   ├── doc_index.py           # canonical .org parser (walks the repo)
 │   ├── doc_list.py            # `list` — filter the doc graph
 │   └── doc_show.py            # `show` — one doc + inbound/outbound links

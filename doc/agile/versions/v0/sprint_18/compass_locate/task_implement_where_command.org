@@ -59,7 +59,7 @@ contributor or LLM can orient in one command.
 
 * Notes
 
-"Current" is the lexicographically-highest version/sprint folder.
+"Current" is the version/sprint folder with the highest sequence number.
 In-flight uses =State == STARTED= parsed from each doc's =* Status=
 table via =STATE_RE=.
 
@@ -71,3 +71,18 @@ subparser). Verified: =where= reports Version 0 / Sprint 18 and eight
 in-flight items; =-f json= emits the structured document; =search=
 unaffected; =py_compile= clean. Reuses =ores.codegen='s =doc_index=, so
 no frontmatter parsing is duplicated.
+
+* Review
+
+From the [[https://github.com/OreStudio/OreStudio/pull/813][PR #813]] gemini-code-assist review (squash-merged as
+=de74b85e3=). The reviewed code spans this task (=cmd_where= /
+=read_state=) and the [[id:158C96A4-7E0F-4223-9756-639ECF9920D6][consolidation task]] (the =list= / =show=
+imports).
+
+| # | Comment summary                                  | Severity | Decision         | What I did                                                                                  |
+|---+--------------------------------------------------+----------+------------------+---------------------------------------------------------------------------------------------|
+| 1 | Imports done inside sub-commands violate PEP 8   | high     | Fixed            | Hoisted =doc_index= / =doc_list= / =doc_show= to module top (after the =sys.path= setup); removed the =load_doc_index= helper. |
+| 2 | =read_state= reads whole file; catch decode errs | medium   | Fixed (partial)  | Added =UnicodeDecodeError= to the =except=. Kept the full read — the =State= row can follow a long =* Goal=, so a fixed chunk risks dropping in-flight items. |
+| 3 | =d.id= could be =None= → =AttributeError=         | medium   | Declined         | =doc_index= skips files without an =:ID:=, so =d.id= is always present for loaded docs; a guard would be dead code. |
+
+All three review threads were replied to and resolved before merge.

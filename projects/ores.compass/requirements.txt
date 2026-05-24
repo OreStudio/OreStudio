@@ -1,5 +1,9 @@
 # ores.compass dependencies.
 #
-# The search slice (FTS5 over org-roam.db) runs on the Python standard
-# library alone (sqlite3, argparse, json). Optional NLP/embedding
-# dependencies are added here as the semantic-search capability grows.
+# search / where / list / show run on the Python standard library alone
+# (sqlite3, argparse, json, re, pathlib, dataclasses).
+#
+# The `add` (Scaffold) command calls ores.codegen's v2_doc_generate as a
+# library, which renders Mustache templates — hence pystache. It is only
+# needed for `add`; the other commands work without it.
+pystache>=0.6.0

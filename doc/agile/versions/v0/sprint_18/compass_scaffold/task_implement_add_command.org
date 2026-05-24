@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 43F78F72-29C2-4853-96C9-B94484563B53
+:END:
+#+title: Task: Implement the add command
+#+description: Add a compass add subcommand that calls ores.codegen as a library to create v2 docs.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compass:python:codegen:compass_scaffold:sprint_18:v0:
+#+owner: marco
+#+branch: feature/compass-scaffold
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][ores.compass Scaffold — agile authoring over codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a =compass add <type> [flags]= command that creates a v2 document by
+calling [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]'s =v2_doc_generate= /as a library/, defaulting
+=--parent-dir= from the current sprint/version via Locate where the
+choice is unambiguous.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][ores.compass Scaffold — agile authoring over codegen]] |
+| Now          | Implemented and smoke-tested.          |
+| Waiting on   | Nothing.                               |
+| Next         | Review.                                |
+| Last touched | 2026-05-24                             |
+
+* Acceptance
+
+- =compass add story|task|sprint|...= creates the artefact via
+  =v2_doc_generate.main([...])= (in-process import, not a subprocess,
+  not a copied generator).
+- =add story= with no =--parent-dir= lands in the current sprint;
+  =add sprint= in the current version; =add task= requires explicit
+  =--parent-dir=.
+- =add --help= documents the usage; =pystache= is declared in compass's
+  =requirements.txt= (only =add= needs it).
+- =where= / =search= / =list= / =show= continue to work without
+  =pystache=.
+
+* Plan
+
+1. Confirm =v2_doc_generate= is importable (=main(argv)= already exists).
+2. Add a shared =current_version_sprint()= helper (used by =where= and
+   =add=); add =_default_parent_dir= and =cmd_add=; short-circuit =add=
+   in =main()= and register it for =--help=.
+3. Lazy-import =v2_doc_generate= inside =cmd_add= (optional pystache
+   dep); add =pystache= to =requirements.txt=.
+4. Smoke-test (=add story= into the current sprint; clean up).
+
+* Notes
+
+Dogfooded: this very task file was created with =compass add task=.
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   | (pending PR review) |  |       |       |
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

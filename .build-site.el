@@ -62,8 +62,9 @@
 (setq org-id-locations-file (expand-file-name "./.org-id-locations-file"))
 (org-id-update-id-locations (directory-files-recursively "." "\\.org$"))
 (setq package-user-dir (expand-file-name "./.packages"))
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("elpa" . "https://elpa.gnu.org/packages/")))
+(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+                         ("melpa" . "https://melpa.org/packages/")))
 
 ;; Initialize the package system
 (package-initialize)

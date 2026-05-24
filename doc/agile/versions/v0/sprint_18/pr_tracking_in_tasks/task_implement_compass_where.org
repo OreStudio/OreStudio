@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: E9C783F7-955C-4317-8847-9972CB0D9C6D
+:END:
+#+title: Task: Implement compass where with --prs flag
+#+description: Add the where subcommand to compass.py: current version/sprint, STARTED items, and --prs flag fetching PR status via gh.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compass:python:pr_tracking_in_tasks:sprint_18:v0:
+#+owner: marco
+#+branch: feature/pr-tracking-compass
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7EF64A67-EB1C-4F79-9FF2-1C59DD6146AB][Track PRs per task and surface them in compass where]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=compass where= reports current version, sprint, and all STARTED
+stories/tasks. With =--prs= it additionally reads each task's =* PRs=
+table, fetches live status for every PR (open and closed) via =gh pr
+view=, and prints them grouped by task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:7EF64A67-EB1C-4F79-9FF2-1C59DD6146AB][Track PRs per task and surface them in compass where]] |
+| Now          | Completed.                             |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-24                             |
+
+* Acceptance
+
+- =compass where= / =compass status= lists current version, sprint, and
+  STARTED stories/tasks.
+- =compass where --prs= additionally reads each task's =* PRs= table,
+  fetches live status via =gh pr view=, and displays open and closed PRs.
+- Both =--format pretty= and =--format json= are supported.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The =where= subcommand was already implemented in the updated
+=projects/ores.compass/src/compass.py= (from the compass-tool PR). This
+task added:
+
+- =parse_prs_table(path)= — reads the =* PRs= org table from a task
+  file; returns =[(pr_number, title)]=.
+- =fetch_pr_statuses(pr_numbers)= — calls =gh pr view --json= for each
+  number; falls back gracefully if =gh= is unavailable.
+- =--prs= argument on the =where= / =status= subparser.
+- Updated =cmd_where= to walk all task files in the current sprint,
+  collect PR records, fetch live status, and render in both pretty and
+  JSON formats.

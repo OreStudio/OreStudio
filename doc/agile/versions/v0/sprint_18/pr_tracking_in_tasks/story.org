@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 7EF64A67-EB1C-4F79-9FF2-1C59DD6146AB
+:END:
+#+title: Story: Track PRs per task and surface them in compass where
+#+description: Add a PRs table to task documents, record PRs on creation, and add --prs flag to compass where.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :compass:tooling:agile:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every task document carries a =* PRs= table listing the pull requests
+raised for that task (number and title). When a PR is created, it is
+recorded there immediately. =compass where --prs= (part of the Locate
+pillar) shows the same data live — fetching open and closed PR status
+via =gh= — so a session can orient itself without manually checking
+GitHub. Story and task UUIDs are embedded in the PR body on creation
+for forward traceability.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                                |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                              |
+| Now           | Implementing all three tasks on feature/pr-tracking-compass. |
+| Waiting on    | Nothing.                               |
+| Next          | Raise PR and merge.                    |
+| Last touched  | 2026-05-24                             |
+
+* Acceptance
+
+- =v2_doc_task.org.mustache= has a =* PRs= section with an empty
+  =| PR | Title |= table.
+- =how_do_i_create_a_pr.org= instructs the author to record the PR
+  number and title in the task's =* PRs= table immediately after
+  raising, and to include the story and task =:ID:= UUIDs in the PR
+  body.
+- =compass where= lists the current version, sprint, and all STARTED
+  stories and tasks with their file paths and UUIDs.
+- =compass where --prs= additionally reads each task's =* PRs= table
+  and fetches live status for all listed PRs (open and closed) via
+  =gh pr view=.
+- Output is available in =pretty= (human) and =json= (tooling) formats.
+
+* Tasks
+
+In execution order:
+
+- [[id:63019BF3-5C02-40D5-A5F0-C1879A10F588][Task: Add PRs table to task template and update PR recipe]]
+- [[id:E9C783F7-955C-4317-8847-9972CB0D9C6D][Task: Implement compass where with --prs flag]]
+
+* Decisions
+
+- /PRs table on tasks only, not stories./ Stories span many tasks and
+  many PRs; the task is the unit that owns a PR. Aggregation can happen
+  at read time (compass walks task files).
+- /No status column in the PRs table./ Maintaining it would require
+  manual updates after each PR state change. compass fetches live
+  status from =gh= instead.
+- /Story + task UUID in PR body, not title./ Titles are read by humans
+  at a glance; UUIDs belong in the body where tooling can parse them.
+- /compass where reads the filesystem directly./ The cached FTS index
+  is for search; for =where=, walking =doc/agile/versions/= and parsing
+  =#+todo:= + the Status table is fast enough and always fresh.
+
+* Out of scope
+
+- Retroactive: existing tasks and PRs are not back-filled.
+- Closed PR bodies are not parsed for UUID linkage.
+- =compass where= does not mutate any state.

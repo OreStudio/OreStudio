@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 84C10B13-51E2-4D8D-B82A-F38F8DB10E86
+:END:
+#+title: Story: Work through all types required for ORE Example 1
+#+description: Identify and implement every ORE instrument and market-data type needed to round-trip the ORE Example 1 input files end-to-end.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :ore:types:example1:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-05-24                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+In execution order:
+
+-
+
+* Decisions
+
+* Out of scope
+
+-

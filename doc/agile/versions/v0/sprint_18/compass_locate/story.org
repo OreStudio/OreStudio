@@ -26,19 +26,19 @@ highest sprint folder and its =STARTED= items" ritual with one command.
 
 | Field         | Value                                           |
 |---------------+-------------------------------------------------|
-| State         | STARTED                                          |
+| State         | DONE                                            |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                       |
-| Now           | =where= / =status= implemented on =feature/compass-locate=. |
+| Now           | Complete — =where= / =status= shipped (PR #813). |
 | Waiting on    | Nothing.                                         |
-| Next          | Smoke-tested; PR for review.                     |
+| Next          | Done.                                           |
 | Last touched  | 2026-05-24                                       |
 
 * Acceptance
 
 - =compass.sh where= (or =status=) prints the current version and
   current sprint — title and =:ID:= for each — where "current" is the
-  lexicographically-highest version/sprint folder, matching the rule
-  the [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile product owner]] skill already uses.
+  version/sprint folder with the highest sequence number, matching the
+  rule the [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile product owner]] skill already uses.
 - It lists every story and task under the current sprint whose =State=
   is =STARTED=, with file path and =:ID:=.
 - The query runs without an Emacs round-trip — it reads
@@ -64,9 +64,9 @@ In execution order:
   Rejected: routing through the =list= command (it does not expose
   =State=) and the FTS cache (=.compass.db= can be stale; the agile tree
   is always current).
-- /"Current" = lexicographically-highest folder/ for both version and
-  sprint, matching the [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile product owner]] skill's rule (=sprint_NN=
-  is zero-padded, so this is correct up to 99 sprints).
+- /"Current" = highest folder sequence number/ for both version and
+  sprint, matching the [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile product owner]] skill's rule. A numeric key
+  (=_seq_key=) is used so =v10= > =v9= (not a lexicographic compare).
 
 * Out of scope
 

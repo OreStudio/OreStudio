@@ -24,6 +24,11 @@ How to use =compass=, the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][repository 
 - [[id:DEAC11AE-3753-49FA-994A-98594162A605][How do I index notes for compass?]] — build the FTS cache (=index=).
 - [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][How do I search docs with compass?]] — full-text search (=search=).
 
+* Authoring
+
+- [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] — create a v2 doc via codegen
+  (=add=).
+
 * Navigating the doc graph
 
 These commands moved into compass from =ores.codegen= (the tool now owns

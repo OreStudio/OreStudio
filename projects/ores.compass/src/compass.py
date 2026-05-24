@@ -8,6 +8,8 @@ Pillars:
     (where/status), read from the agile document tree.
   - Navigate: list/filter the doc graph (list) and inspect a single doc with
     its inbound/outbound links (show).
+  - Scaffold: create agile/doc artefacts (add) by calling ores.codegen as a
+    library — generation stays in codegen, not duplicated here.
 """
 
 import argparse
@@ -547,6 +549,16 @@ def _parent_dir(rel_path):
     """Directory holding a doc, as a forward-slash relative string."""
     return Path(rel_path).parent.as_posix()
 
+def _seq_key(doc):
+    """Ordering key from a version/sprint folder name (e.g. v0, sprint_18).
+
+    Sorts by the trailing integer so v10 > v9 and sprint_100 > sprint_99,
+    rather than lexicographically. Falls back to the path for stability.
+    """
+    name = Path(doc.rel_path).parent.name
+    match = re.search(r"(\d+)", name)
+    return (int(match.group(1)) if match else -1, doc.rel_path)
+
 def _strip_type_prefix(title):
     """Drop the codegen 'Story: ' / 'Task: ' prefix for display next to a type column."""
     for prefix in ("Story: ", "Task: "):
@@ -554,21 +566,30 @@ def _strip_type_prefix(title):
             return title[len(prefix):]
     return title
 
-def cmd_where(args):
-    docs = doc_index.load_all()
+def current_version_sprint(docs):
+    """Return (current_version_doc, current_sprint_doc) from a loaded index.
+
+    "Current" = the version/sprint folder with the highest sequence number
+    (v0, v1, …, v10; sprint_NN), matching the rule the agile product-owner
+    skill uses. Either may be None if no such docs exist.
+    """
     versions = [d for d in docs.values() if d.doctype == "version"]
     sprints  = [d for d in docs.values() if d.doctype == "sprint"]
     if not versions or not sprints:
+        return None, None
+    current_version = max(versions, key=_seq_key)
+    version_dir = _parent_dir(current_version.rel_path)
+    in_version = [d for d in sprints if d.rel_path.startswith(version_dir + "/")]
+    current_sprint = max(in_version or sprints, key=_seq_key)
+    return current_version, current_sprint
+
+def cmd_where(args):
+    docs = doc_index.load_all()
+    current_version, current_sprint = current_version_sprint(docs)
+    if current_version is None or current_sprint is None:
         print("❌ No version/sprint documents found under doc/agile/versions/.",
               file=sys.stderr)
         sys.exit(1)
-
-    # "Current" = lexicographically-highest folder (sprint_NN is zero-padded),
-    # matching the rule the agile product-owner skill already uses.
-    current_version = max(versions, key=lambda d: d.rel_path)
-    version_dir = _parent_dir(current_version.rel_path)
-    in_version = [d for d in sprints if d.rel_path.startswith(version_dir + "/")]
-    current_sprint = max(in_version or sprints, key=lambda d: d.rel_path)
     sprint_dir = _parent_dir(current_sprint.rel_path)
 
     # In-flight = stories/tasks under the current sprint with State == STARTED.
@@ -650,6 +671,84 @@ def cmd_where(args):
                 if url:
                     print(f"          {url}")
 
+# --- Scaffold pillar: create agile/doc artefacts ---
+#
+# Generation belongs to ores.codegen, not compass: `add` calls codegen's
+# v2_doc_generate *as a library* (no shelling out, no copied generator). For
+# the unambiguous cases it fills --parent-dir from the current sprint/version
+# via Locate, so `compass add story --title ...` lands in the open sprint.
+
+# Types whose parent compass can resolve from "where we are".
+_DEFAULTABLE_PARENT = {"story": "sprint", "sprint": "version"}
+
+def _default_parent_dir(doc_type):
+    """Parent dir derived from the current sprint/version, or None."""
+    parent_kind = _DEFAULTABLE_PARENT.get(doc_type)
+    if parent_kind is None:
+        return None
+    current_version, current_sprint = current_version_sprint(doc_index.load_all())
+    if parent_kind == "version" and current_version is not None:
+        return _parent_dir(current_version.rel_path)
+    if parent_kind == "sprint" and current_sprint is not None:
+        return _parent_dir(current_sprint.rel_path)
+    return None
+
+def cmd_add(argv):
+    """Create a v2 doc by calling ores.codegen as a library.
+
+    argv is [<type>, <generate_v2_doc flags...>]. When --parent-dir is
+    omitted, default it from the current sprint (story) or version (sprint).
+    """
+    if not argv or argv[0] in ("-h", "--help"):
+        print("usage: compass add <type> [generate_v2_doc options]\n"
+              "  types: story task sprint version recipe knowledge component\n"
+              "         capture memory investigation product_identity\n"
+              "  --parent-dir defaults to the current sprint (story) or "
+              "version (sprint); required otherwise.\n"
+              "  remaining flags are passed through to ores.codegen "
+              "(see 'How do I create a new v2 doc?').")
+        return 0
+
+    doc_type = argv[0]
+    rest = list(argv[1:])
+
+    has_parent = any(a == "--parent-dir" or a.startswith("--parent-dir=")
+                     for a in rest)
+    if not has_parent:
+        default_parent = _default_parent_dir(doc_type)
+        if default_parent:
+            rest += ["--parent-dir", default_parent]
+            print(f"ℹ️  --parent-dir not given; using current "
+                  f"{_DEFAULTABLE_PARENT[doc_type]}: {default_parent}", file=sys.stderr)
+
+    # Lazy, optional import: the generator lives in ores.codegen and needs
+    # pystache. Only `add` requires it, so importing here keeps the other
+    # commands dependency-free.
+    sys.path.insert(0, str(PROJECT_ROOT / "projects" / "ores.codegen" / "src"))
+    try:
+        import v2_doc_generate
+    except ImportError as exc:
+        print(f"❌ `add` needs ores.codegen's generator ({exc}). Install its "
+              f"dependency into the compass venv: pip install pystache",
+              file=sys.stderr)
+        return 1
+
+    # v2_doc_generate.main returns 0 on success but may sys.exit on error;
+    # catch SystemExit so the reminder prints only on success and the
+    # generator's own error message/code is preserved.
+    try:
+        rc = v2_doc_generate.main(["--type", doc_type, *rest])
+    except SystemExit as exc:
+        rc = exc.code
+    if rc in (None, 0):
+        print("ℹ️  Remember to wire the new artefact into its parent "
+              "(e.g. the sprint's * Stories table) where needed.", file=sys.stderr)
+        return 0
+    if isinstance(rc, str):   # sys.exit("message") — surface it
+        print(rc, file=sys.stderr)
+        return 1
+    return rc
+
 def main():
     # `list` and `show` pass every remaining argument straight through to the
     # bundled doc tools (full flag compatibility, including their own --help).
@@ -659,6 +758,8 @@ def main():
         sys.exit(doc_list.main(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "show":
         sys.exit(doc_show.main(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "add":
+        sys.exit(cmd_add(sys.argv[2:]))
 
     parser = argparse.ArgumentParser(description="Compass: orientation tool for ORE Studio")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -683,11 +784,13 @@ def main():
                               help="Also show PRs from all sprint tasks (fetches live status via gh)")
 
     # Registered for discoverability in --help; actually handled by the
-    # short-circuit above (which forwards all args to the bundled doc tools).
+    # short-circuit above (which forwards all args to their handlers).
     subparsers.add_parser("list",
                           help="List/filter docs (--regex/--tag/--type/--under/...); 'list --help' for filters")
     subparsers.add_parser("show",
                           help="Show one doc by UUID/prefix: metadata, blurb, in/out links")
+    subparsers.add_parser("add",
+                          help="Create a v2 doc via ores.codegen (story/task/sprint/...); 'add --help' for usage")
 
     args = parser.parse_args()
 

@@ -9,7 +9,7 @@
 #+filetags: :doc:manual:chapter_01:bootstrapping:user_manual_pdf_build:sprint_18:v0:
 #+owner: marco
 #+branch: feature/user-manual-system-bootstrapping
-#+pr:
+#+pr: 814
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
@@ -57,8 +57,10 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                           | File                             | Decision | Notes                                                                 |
+|---+-------------------------------------------+----------------------------------+----------+-----------------------------------------------------------------------|
+| 1 | LICENCE.txt vs LICENSE.txt in metadata    | manual-updater/SKILL.org:18      | Accepted | Fixed in 4c40c8776; British spelling matches the tangle block         |
+| 2 | Screenshot path uses 4 traversals, needs 5 | manual-updater/SKILL.org:63     | Accepted | Fixed in 4c40c8776; chapters are 5 levels below repo root             |
+| 3 | Same path depth error on all 16 image links | system_bootstrapping_concepts.org | Accepted | Fixed in 4c40c8776; also fixed 14 occurrences in system_bootstrapping.org (PR #811 oversight) |
 
 * Result

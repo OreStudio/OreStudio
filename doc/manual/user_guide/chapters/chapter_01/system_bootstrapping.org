@@ -2,7 +2,7 @@
 :ID: DF779317-BDEB-49E4-E9AB-48C46615D0CF
 :END:
 #+title: System Bootstrapping
-#+description: How to start ORE Studio, connect to a backend service, and manage connections.
+#+description: How to start ORE Studio, connect to a backend service, manage connections, read the status bar, and use command-line options.
 #+type: manual
 #+version: 2
 #+level: cross
@@ -25,6 +25,9 @@ This chapter covers:
 - How to log in once a connection is active.
 - How to manage your saved connections — adding, editing, deleting,
   organising by environment and tag.
+- How to read the status bar and understand what each zone shows.
+- How to launch ORE Studio from the command line with options for colour
+  theme, configuration directory, auto-connect, and diagnostics.
 
 ** The main window before login
 
@@ -232,6 +235,133 @@ or port is needed — only your password.
 # Capture: while logged in, stop or restart the backend service.
 # Screenshot the moment ORE Studio detects the disconnection and shows
 # the warning indicator. The Reconnect affordance should be visible.
+
+** The status bar
+
+The status bar runs along the bottom of the main window and provides a
+continuous read on the application's connection state. It is always
+visible regardless of what is open in the workspace.
+
+#+caption: [SCREENSHOT NEEDED] The status bar in the fully connected and logged-in state. Show the full-width status bar with all zones labelled: connection name on the left, username in the centre, environment badge, and session duration or server version on the right.
+# Capture: while logged in, screenshot only the status bar strip at the
+# bottom of the main window. Crop tightly so all zones are clearly
+# legible. Annotate the zones if possible (or describe them in the
+# caption).
+
+The status bar is divided into zones from left to right:
+
+- *Connection name* — the name of the active connection as entered in
+  the Connection Manager (e.g. "Local dev"). Clicking this zone opens
+  the Connection Manager directly.
+- *Environment badge* — the coloured environment label (e.g.
+  =Production= in red) if one is assigned to the active connection.
+  Absent when no environment is set. This is the most prominent safety
+  indicator: always glance at the environment badge before performing
+  any write operation.
+- *Username* — the account name of the currently logged-in user. Absent
+  in the disconnected state.
+- *Server version* — the version string reported by the backend service.
+  Useful when reporting issues or verifying that the client and backend
+  are compatible.
+- *Session duration* — a running clock showing how long the current
+  login session has been active.
+
+The status bar changes appearance to reflect the connection state:
+
+| State | Appearance |
+|-------+------------|
+| Disconnected (no active connection) | Grey; shows "Not connected" |
+| Connecting (handshake in progress) | Animated indicator; shows "Connecting to /name/…" |
+| Connected and logged in | Normal; shows all zones as described above |
+| Connection lost (backend unreachable) | Warning colour (amber/red); shows "Connection lost — /name/" |
+| Reconnecting | Animated indicator; shows "Reconnecting…" |
+
+#+caption: [SCREENSHOT NEEDED] A composite or side-by-side comparison of the status bar in the three most common states: Disconnected, Connected, and Connection lost. Label each state clearly.
+# Capture: three separate screenshots of the status bar — one with no
+# connection configured, one while logged in, one after stopping the
+# backend. Arrange them vertically or present as three separate figures.
+
+** Starting ORE Studio from the command line
+
+ORE Studio can be launched directly from a terminal, which is useful for
+scripting, for switching colour themes, or for pointing the application
+at a non-default configuration directory. Run =ores --help= to see the
+full list of accepted options for your installed version; the most
+commonly used ones are documented below.
+
+#+begin_src sh
+ores --help
+#+end_src
+
+*** Colour theme
+
+ORE Studio ships with light and dark colour themes. By default it
+follows the operating system's current theme preference. To override:
+
+#+begin_src sh
+ores --colour light    # force light theme
+ores --colour dark     # force dark theme
+ores --colour system   # follow the OS preference (default)
+#+end_src
+
+The =--color= spelling (without the 'u') is accepted as an alias.
+
+#+caption: [SCREENSHOT NEEDED] The application side-by-side in light and dark themes. Show the same screen (e.g. the main window or Connection Manager) in both modes to illustrate the visual difference.
+# Capture: launch with --colour light and take a screenshot. Relaunch
+# with --colour dark and take the same screenshot. Place them side by
+# side or present as two figures.
+
+*** Configuration directory
+
+By default ORE Studio stores its settings — saved connections,
+preferences, window layout — in the platform's standard user
+configuration directory (=~/.config/OreStudio/= on Linux,
+=~/Library/Application Support/OreStudio/= on macOS,
+=%APPDATA%\OreStudio\= on Windows). To use a different directory:
+
+#+begin_src sh
+ores --config-dir /path/to/config
+#+end_src
+
+This is useful when running multiple isolated instances, or when keeping
+configuration under version control for team-shared settings.
+
+*** Selecting a connection at startup
+
+To bypass the Connection Manager and connect immediately to a named
+connection:
+
+#+begin_src sh
+ores --connection "Local dev"
+#+end_src
+
+ORE Studio will start, set the named connection as active, and open the
+login dialog automatically. The connection name must match exactly
+(case-sensitive) a saved entry in the Connection Manager.
+
+*** Logging and diagnostics
+
+For troubleshooting, verbosity can be increased:
+
+#+begin_src sh
+ores --log-level debug    # verbose output to stdout
+ores --log-file /tmp/ores.log  # write log to a file instead
+#+end_src
+
+Log output includes connection lifecycle events, authentication
+attempts, and backend protocol messages. The =debug= level is intended
+for issue reporting and development; it produces high-volume output and
+should not be left enabled during normal use.
+
+*** Version information
+
+#+begin_src sh
+ores --version
+#+end_src
+
+Prints the client version string (e.g. =ORE Studio 0.0.19=) and exits.
+Useful for confirming which build is installed or when filing a bug
+report.
 
 ** Logging out
 

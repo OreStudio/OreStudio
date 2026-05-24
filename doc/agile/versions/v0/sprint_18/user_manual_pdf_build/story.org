@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c42c3563-671f-4721-8ce8-5ee05925255f
+:ID: C42C3563-671F-4721-8CE8-5EE05925255F
 :END:
 #+title: Story: Build and publish user manual PDF via CMake
 #+description: Add a CMake target that compiles user_manual.org to PDF, commits the PDF, and links to it from the documentation.

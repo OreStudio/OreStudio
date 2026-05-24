@@ -36,12 +36,9 @@ fi
 source "$VENV_PATH/bin/activate"
 
 # Change to the repository root so that relative paths (e.g. --parent-dir
-# doc/agile/...) resolve correctly. The repo root is the nearest ancestor of
-# this script that contains a .git entry.
-REPO_ROOT="$SCRIPT_DIR"
-while [ "$REPO_ROOT" != "/" ] && [ ! -e "$REPO_ROOT/.git" ]; do
-    REPO_ROOT="$(dirname "$REPO_ROOT")"
-done
+# doc/agile/...) resolve correctly. Use git rev-parse for robustness;
+# fall back to SCRIPT_DIR if not inside a git repository.
+REPO_ROOT=$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR")
 cd "$REPO_ROOT"
 
 # --- Parse command line arguments ---

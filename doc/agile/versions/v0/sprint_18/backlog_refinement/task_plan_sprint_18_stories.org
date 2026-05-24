@@ -8,9 +8,9 @@
 #+level: s1
 #+filetags: :agile:sprint_18:sprint_planning:v0:backlog_refinement:
 #+owner: marco
-#+branch: feature/backlog-refinement-skills
+#+branch: feature/sprint-18-planning
 #+pr:
-#+blocked_on: C0A295F9-69B0-45AF-A45C-18A813D649A4
+#+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
 #+updated: 2026-05-24
@@ -24,14 +24,14 @@ Sprint 18 acquires a clear one-sentence mission and a curated Stories table that
 
 * Status
 
-| Field        | Value                                                                      |
-|--------------+----------------------------------------------------------------------------|
-| State        | BACKLOG                                                                    |
-| Parent story | [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]]                                                 |
-| Now          | Blocked on Task 1 (skills must exist before running the planner).          |
-| Waiting on   | [[id:C0A295F9-69B0-45AF-A45C-18A813D649A4][Task: Create backlog-refiner and sprint-planner skills and recipes]]         |
-| Next         | Set sprint mission; run sprint-planner; promote selected captures.         |
-| Last touched | 2026-05-24                                                                 |
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | STARTED                                                          |
+| Parent story | [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]]                                       |
+| Now          | Scanning near backlog; scoring captures against sprint goals.    |
+| Waiting on   | Nothing.                                                         |
+| Next         | Promote selected captures; update sprint Stories table.          |
+| Last touched | 2026-05-24                                                       |
 
 * Acceptance
 
@@ -42,7 +42,11 @@ Sprint 18 acquires a clear one-sentence mission and a curated Stories table that
 
 * Plan
 
-(Written when task 1 completes and this task starts.)
+1. Run =sprint-planner= skill: list near captures, score against sprint 18 goals.
+2. Present ranked candidates to user; get confirmation on which to promote.
+3. For each confirmed: scaffold story (preserving capture ID), remove from near backlog.
+4. Update =sprint.org= Stories table.
+5. Verify site builds clean; close task.
 
 * Notes
 

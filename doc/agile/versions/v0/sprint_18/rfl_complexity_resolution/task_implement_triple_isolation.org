@@ -52,7 +52,7 @@ Apply the structural isolation strategy to permanently fix compilation failures 
 
 | PR  | Title                                                     |
 |-----+-----------------------------------------------------------|
-| 819 | [ores.qt.api] Implement triple isolation for RFL complexity |
+| [[https://github.com/OreStudio/OreStudio/pull/819][#819]] | [ores.qt.api] Implement triple isolation for RFL complexity |
 
 * Review
 

@@ -62,9 +62,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR  | Title                                                             |
-|-----+-------------------------------------------------------------------|
-| 824 | Add compass product backlog listing and fix compass.sh CWD bug    |
+| PR                                                               | Title                                                          |
+|------------------------------------------------------------------+----------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/824][#824]] | Add compass product backlog listing and fix compass.sh CWD bug |
 
 * Review
 

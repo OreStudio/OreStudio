@@ -61,7 +61,7 @@ Folders already linked in compass.org before this task (no changes needed):
 
 | PR  | Title                                                                |
 |-----+----------------------------------------------------------------------|
-| 817 | [doc] Add org-roam index links to compass.org folder entries |
+| [[https://github.com/OreStudio/OreStudio/pull/817][#817]] | [doc] Add org-roam index links to compass.org folder entries |
 
 * Review
 

@@ -56,9 +56,9 @@ Apply the structural isolation strategy to permanently fix compilation failures 
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                          | File                          | Decision | Notes                                                         |
+|---+------------------------------------------+-------------------------------+----------+---------------------------------------------------------------|
+| 1 | Phase 2 silently ignores parse failure   | ClientManagerTradeDetail.cpp  | Applied  | Now returns std::nullopt + logs error; matches original behaviour. Fixed in dc0c653f5. |
 
 * Notes
 

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 8D295781-33E7-4812-AAC6-134BD7CD0DDC
+:END:
+#+title: Story: Rebuild org-roam DB independently from CMake
+#+description: Extract org-roam DB sync into .build-org-roam.el and add a standalone cmake target so the DB can be rebuilt without a full site build.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :build:cmake:org-roam:elisp:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The org-roam DB sync is currently embedded inside =.build-site.el= so
+the only way to get a fresh =.org-roam.db= is to run a full site
+build. This story extracts that logic into a standalone
+=.build-org-roam.el= and wires it to a =rebuild_org_roam_db= cmake
+target, giving contributors and the LLM a fast, lightweight way to
+keep the DB current without triggering the whole publish pipeline.
+
+* Status
+
+| Field         | Value                              |
+|---------------+------------------------------------|
+| State         | BACKLOG                            |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                          |
+| Now           | Not yet started.                   |
+| Waiting on    | Nothing.                           |
+| Next          | Implement .build-org-roam.el and cmake target. |
+| Last touched  | 2026-05-24                         |
+
+* Acceptance
+
+- =.build-org-roam.el= exists at the repo root and syncs the org-roam
+  DB in the same way as the current =.build-site.el= block.
+- =CMakeLists.txt= defines a =rebuild_org_roam_db= target that runs
+  =emacs -Q --script .build-org-roam.el=.
+- =deploy_site= no longer contains inline org-roam sync code; it calls
+  or depends on the new target instead.
+- Running =cmake --build . --target rebuild_org_roam_db= from the build
+  directory updates =.org-roam.db= without regenerating the site.
+
+* Tasks
+
+In execution order:
+
+- [[id:74DD59ED-7A1D-4C09-97EE-F9D59988E1AB][Task: Implement .build-org-roam.el and rebuild_org_roam_db cmake target]]
+
+* Decisions
+
+* Out of scope
+
+- Live file watching or inotify-based auto-sync.
+- Changing how =compass.sh index= updates the compass FTS5 cache; that
+  is a separate step after the org-roam DB is fresh.

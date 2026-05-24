@@ -43,7 +43,7 @@ folder, set its mission, and link it from the version manifest?
    ancestor tag chain:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh add sprint \
+   projects/ores.compass/compass.sh add sprint \
      --slug sprint_17 \
      --title "Sprint 17" \
      --description "Sprint 17 — one-sentence mission." \
@@ -77,9 +77,9 @@ folder, set its mission, and link it from the version manifest?
 
 * Script
 
-=projects/ores.compass/compass.sh add= → =src/compass.py= (=cmd_add=),
-which calls =ores.codegen='s =v2_doc_generate= as a library. The
-sprint template is =v2_doc_sprint.org.mustache=.
+The entry point is =projects/ores.compass/compass.sh add=, mapping to
+=src/compass.py= (=cmd_add=), which calls =ores.codegen='s =v2_doc_generate=
+as a library. The sprint template is =v2_doc_sprint.org.mustache=.
 
 * Tested by
 

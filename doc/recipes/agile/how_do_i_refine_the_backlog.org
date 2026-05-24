@@ -48,7 +48,7 @@ sharpening vague ones, and re-prioritising between =near/= and
 3. /File new captures/ that surface during the review:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh add capture \
+   projects/ores.compass/compass.sh add capture \
      --parent-dir doc/agile/product_backlog/near \
      --slug <slug> \
      --title "<title>" --description "<one-liner>"

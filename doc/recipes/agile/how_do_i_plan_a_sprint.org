@@ -61,7 +61,7 @@ against it, and promote selected captures into stories?
       =--parent-dir= to the current sprint automatically:
 
       #+begin_src sh :results verbatim
-      ./projects/ores.compass/compass.sh add story \
+      projects/ores.compass/compass.sh add story \
         --slug <slug> \
         --id <capture-uuid> \
         --title "<title>" --description "<description>"

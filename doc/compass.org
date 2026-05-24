@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :meta:overview:entry_point:
 #+created: 2026-05-18
-#+updated: 2026-05-21
+#+updated: 2026-05-24
 
 This is the entry point for the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][ORE Studio]] cybernetic information architecture
 and the top-level orientation for the =doc/= tree. Read it first on a new
@@ -38,13 +38,14 @@ doc/
 ├── manual/               ← user-facing PDF/LaTeX manual
 ├── prompts/              ← reusable LLM prompts
 ├── samples/              ← screenshots and product imagery
-└── analysis/             ← older one-off analyses (v1, mostly historical)
+├── analysis/             ← older one-off analyses (v1, mostly historical)
+└── investigations/       ← targeted deep-dive investigations
 #+end_example
 
 ** =meta/= — how documents are shaped
 
-The five contract documents. Read in order on first contact; refer
-back to individual ones as needed.
+See [[id:82F08C3E-D00F-4888-8C11-CC4358AA9FB7][Meta]] for the full index. The five contract documents, read in order on
+first contact; refer back to individual ones as needed.
 
 1. [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — what we mean by [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]], [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]], [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]], [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]], [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]], [[id:58D491A6-E4BD-4B0D-86BD-BB8465DFD4C7][plan]],
    [[id:117A95F9-B03D-490B-BB74-DA9FE74537E2][recipe]] and many other such terms. This is not a ORE Studio glossary --- for
@@ -60,11 +61,15 @@ back to individual ones as needed.
 
 ** =agile/=: the operational tree
 
+See [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] for the full index.
+
 Everything related to the rolling agile process: versions of the product, their
 sprints, the stories and tasks that compose them, and the product backlog of
 pre-sprint ideas.
 
 *** =agile/versions/=: the composition tree
+
+See [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] for the full index.
 
 Where the operational documents live. Path shape:
 
@@ -80,6 +85,8 @@ Stories and sprints are folders (they contain children); tasks are flat files
 
 *** =agile/product_backlog/=: the pre-sprint queue
 
+See [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] for the full index.
+
 Holds [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][captures]] — ideas not yet pulled into a sprint as stories. Split into two
 buckets:
 
@@ -92,12 +99,17 @@ preserved so links keep working.
 
 ** =recipes/=: how do I do X?
 
+See [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] for the full index.
+
 Short, tested, executable how-tos grouped by topic
 (=recipes/<topic>/how_do_i_xxx.org=). Each recipe answers one NLP question.
 Shell commands inside =#+begin_src sh :results verbatim= blocks so they run in place via
 =C-c C-c=.
 
 ** =knowledge/=: durable reference
+
+See [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] for the full index; external reference docs are under
+[[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]].
 
 Cross-cutting knowledge that outlives any sprint. Lives under
 =knowledge/<topic>/=. Component-specific knowledge (e.g. an architecture
@@ -130,19 +142,21 @@ See [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]]
 
 ** Secondary folders
 
-- =plans/= — historical design plans, one =YYYY-MM-DD-name.org= per plan. Plans
-  inside a sprint live as the =* Plan= section of the task/story; this folder is
-  for one-off cross-cutting designs retained for the record.
+- =plans/= ([[id:6E09902A-5D78-4697-9934-F818073FA5D9][Plans]]) — historical design plans, one =YYYY-MM-DD-name.org= per plan.
+  Plans inside a sprint live as the =* Plan= section of the task/story; this
+  folder is for one-off cross-cutting designs retained for the record.
 - =manual/= — user-facing manual. The root file is
   [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] at
   =manual/user_guide/user_manual.org=; chapters live under
   =manual/user_guide/chapters/=. Surfaced to end users, not part of the
   developer-doc tree.
-- =prompts/= — reusable LLM prompts that don't fit cleanly as a [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skill]].
-- =samples/= — screenshots and product imagery referenced from [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]]
-  and visual mockups.
-- =analysis/= — older one-off analyses from before v2. Some still useful as
-  background context; not actively maintained.
+- =prompts/= ([[id:9E971D53-0501-4B56-AD85-037057E295D8][Prompts]]) — reusable LLM prompts that don't fit cleanly as a [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skill]].
+- =samples/= ([[id:49FBC025-4B13-47E3-AC85-C86A81CA3056][Samples]]) — screenshots and product imagery referenced from
+  [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]] and visual mockups.
+- =analysis/= ([[id:E5DE23FF-8FE6-4B90-BD5A-F19F26D05737][Analysis]]) — older one-off analyses from before v2. Some still
+  useful as background context; not actively maintained.
+- =investigations/= ([[id:249FEDB9-7010-4124-A593-A01160E4B56E][Investigations]]) — targeted deep-dive investigations into
+  specific technical problems.
 
 ** Reserved folders
 

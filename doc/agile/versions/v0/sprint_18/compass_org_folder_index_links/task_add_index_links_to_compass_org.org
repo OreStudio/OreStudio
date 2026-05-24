@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: E1D1F6BC-A69F-478A-8A66-9DDBF62C21FD
+:END:
+#+title: Task: Add index links to compass.org and create missing index files
+#+description: Wire each folder entry in doc/compass.org to its org-roam index file; scaffold any missing index docs.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :docs:compass:navigation:compass_org_folder_index_links:sprint_18:v0:
+#+owner: marco
+#+branch: feature/compass-index-links
+#+pr: 817
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:026AA423-68A1-43A1-8F2A-D9D3D6379E6C][Add org-roam index links to compass.org folder entries]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+For every folder section in =doc/compass.org=, add a prominent org-roam
+link to the folder's index file. Create the five missing index files
+(=meta/=, =analysis/=, =investigations/=, =prompts/=, =samples/=) and add
+=investigations/= to the compass.org layout tree.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:026AA423-68A1-43A1-8F2A-D9D3D6379E6C][Add org-roam index links to compass.org folder entries]] |
+| Now          | Completed.                             |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-24                             |
+
+* Acceptance
+
+- =doc/compass.org= — every folder section has a "See [[id:UUID][Title]] for the full
+  index." sentence.
+- =doc/meta/meta.org= — new index listing the 5 contract docs.
+- =doc/analysis/analysis.org= — new index listing analysis files with IDs.
+- =doc/investigations/investigations.org= — new index listing investigation docs.
+- =doc/prompts/prompts.org= — new empty index placeholder.
+- =doc/samples/samples.org= — new index listing all image assets.
+- =investigations/= added to the folder layout tree in =compass.org=.
+
+* Notes
+
+Folders already linked in compass.org before this task (no changes needed):
+- =identity/= → [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][ORE Studio]] (product_identity.org is the index)
+- =functions/= → [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][index page]] (functions.org)
+- =llm/= → [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]]
+- =llm/skills/= → [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]]
+- =llm/memory/= → [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]]
+- =manual/user_guide/= → [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]]
+
+* PRs
+
+| PR  | Title                                                                |
+|-----+----------------------------------------------------------------------|
+| 817 | [doc] Add org-roam index links to compass.org folder entries |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- =doc/meta/meta.org= [[[id:82F08C3E-D00F-4888-8C11-CC4358AA9FB7][82F08C3E]]] — created; lists the 5 contract docs.
+- =doc/analysis/analysis.org= [[[id:E5DE23FF-8FE6-4B90-BD5A-F19F26D05737][E5DE23FF]]] — created; lists 5 files with IDs.
+- =doc/investigations/investigations.org= [[[id:249FEDB9-7010-4124-A593-A01160E4B56E][249FEDB9]]] — created; lists 1 file.
+- =doc/prompts/prompts.org= [[[id:9E971D53-0501-4B56-AD85-037057E295D8][9E971D53]]] — created; placeholder (empty folder).
+- =doc/samples/samples.org= [[[id:49FBC025-4B13-47E3-AC85-C86A81CA3056][49FBC025]]] — created; lists all image assets.
+- =doc/compass.org= — added "See [[id:UUID][Title]]" reference to: =meta/=, =agile/=,
+  =agile/versions/=, =agile/product_backlog/=, =recipes/=, =knowledge/=,
+  =plans/=, =prompts/=, =samples/=, =analysis/=, =investigations/=.
+  Added =investigations/= to the folder layout tree.

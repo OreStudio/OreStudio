@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 49FBC025-4B13-47E3-AC85-C86A81CA3056
+:END:
+#+title: Samples
+#+description: Index of screenshots and product imagery referenced from product identity and visual mockups.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :samples:index:knowledge:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+
+Screenshots and product imagery referenced from [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]] and visual
+mockups. These are static image assets; this index documents what they depict.
+
+- =BitMex-Screen.png= — BitMex trading interface reference.
+- =channel_analytics_dashboard.png=, =client_dashboard.png= — dashboard reference designs.
+- =gnucash_new_hierarchy_setup_*.png= — GnuCash account hierarchy workflow screenshots.
+- =crypto_*.png/jpeg=, =spread_dashboard*.png= — market trading interface references.
+- =QDirStat-main-win.png= — file system visualisation reference.
+- =quadra_*.png= — Quadra trading platform reference screens.
+- =sample_pnl_screen.png= — P&L display reference.
+- =world_map_statistics.png=, =nanex_order_depth_3d.jpg= — data visualisation references.
+- =thesium_desk.png= — desk/workspace reference image.

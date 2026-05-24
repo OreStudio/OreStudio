@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 026AA423-68A1-43A1-8F2A-D9D3D6379E6C
+:END:
+#+title: Story: Add org-roam index links to compass.org folder entries
+#+description: Update doc/compass.org so every folder entry links to its index file; create missing index files where needed.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :docs:compass:navigation:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every folder entry in =doc/compass.org= links to its index file via an
+org-roam =[[id:UUID][Title]]= reference. Folders that lack an index file get one
+created. The result is that any LLM session reading =compass.org= can
+jump directly to the authoritative inventory of any folder without
+needing to know file names.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                              |
+| Now           | Completed 2026-05-24.                  |
+| Waiting on    | Nothing.                               |
+| Next          | None.                                  |
+| Last touched  | 2026-05-24                             |
+
+* Acceptance
+
+- Every =**= and =***= folder section in =doc/compass.org= contains a
+  prominent org-roam link to the folder's index file.
+- Folders that were missing an index file have one: =meta/=, =analysis/=,
+  =investigations/=, =prompts/=, =samples/=.
+- =investigations/= is added to the folder layout tree in =compass.org=.
+- All new index files have an uppercase =:ID:=, correct frontmatter, and
+  list the folder contents.
+
+* Tasks
+
+In execution order:
+
+- [[id:E1D1F6BC-A69F-478A-8A66-9DDBF62C21FD][Task: Add index links to compass.org and create missing index files]]
+
+* Decisions
+
+- /One "See X for the full index." sentence at the top of each section./
+  Consistent with the pattern already used in =llm/=. Avoids duplicating
+  the index content inside compass.org.
+- /Only folders get index links; individual files (orientation.org) do not./
+  orientation.org is a navigation doc, not an index — it already sits at the
+  top level of the folder layout.
+- /investigations/ added to the compass.org folder tree./ It existed on disk
+  but was absent from compass.org's layout map — a gap that needed closing.
+
+* Out of scope
+
+- Retroactive: existing files without org-roam IDs in =analysis/= are not
+  back-filled. Only files that already have IDs are listed in the index.
+- The content of individual analysis or investigation files is not updated.

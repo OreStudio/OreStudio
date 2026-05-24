@@ -35,8 +35,11 @@ fi
 
 source "$VENV_PATH/bin/activate"
 
-# Change to script directory so Python can find compass.py
-cd "$SCRIPT_DIR"
+# Change to the repository root so that relative paths (e.g. --parent-dir
+# doc/agile/...) resolve correctly. Use git rev-parse for robustness;
+# fall back to SCRIPT_DIR if not inside a git repository.
+REPO_ROOT=$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR")
+cd "$REPO_ROOT"
 
 # --- Parse command line arguments ---
 PYTHON_ARGS=()
@@ -78,4 +81,4 @@ if [ ${#PYTHON_ARGS[@]} -eq 0 ]; then
 fi
 
 # --- Execute the Python script ---
-python3 src/compass.py "${PYTHON_ARGS[@]}"
+python3 "$SCRIPT_DIR/src/compass.py" "${PYTHON_ARGS[@]}"

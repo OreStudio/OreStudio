@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 15CE567F-489C-4A80-9CEC-27FCF95E5C36
+:END:
+#+title: Story: ores.compass Product Backlog — near and far listing
+#+description: Add compass commands to list near and far product-backlog captures, mirroring the sprint-backlog listing in compass where.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :compass:tooling:python:backlog:near:far:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=compass backlog= lists the near and far product-backlog captures in the
+same style that =compass where= shows in-flight sprint work: a count
+summary followed by titled entries per bucket. An operator (human or
+LLM) can see at a glance what is queued for the next version and what
+is on the longer-term wishlist without opening any files.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                                |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Implement =cmd_backlog= in compass.py. |
+| Last touched  | 2026-05-24                             |
+
+* Acceptance
+
+- =compass.sh backlog= (or =compass.sh backlog --near= / =--far=) prints
+  near and far captures, one per line, with title and path.
+- Output includes a count summary line per bucket (e.g. =Near: 12  Far: 7=).
+- =--json= flag emits machine-readable output with the same structure as
+  the =where= command's in-flight list.
+- The command works correctly from any working directory (the CWD bug
+  that caused generated files to land in =projects/ores.compass/= is fixed
+  as part of this story).
+- The [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] recipe is updated to include
+  the new command.
+
+* Tasks
+
+In execution order:
+
+- [[id:092931C3-633E-4885-8AA0-31B88E196A65][Task: Implement product backlog near/far listing in compass]]
+
+* Decisions
+
+- Implement as a new =backlog= subcommand rather than extending =where=,
+  so the two concerns remain separable and the output format can differ.
+
+* Out of scope
+
+- Filtering captures by tag or regex — that is already covered by =compass list=.
+- Editing or moving captures between buckets from the CLI.

@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 74DD59ED-7A1D-4C09-97EE-F9D59988E1AB
+:END:
+#+title: Task: Implement .build-org-roam.el and rebuild_org_roam_db cmake target
+#+description: Extract org-roam DB sync from .build-site.el into a standalone .build-org-roam.el; add rebuild_org_roam_db cmake target; update deploy_site to depend on it.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :build:cmake:org-roam:elisp:org_roam_db_rebuild:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D295781-33E7-4812-AAC6-134BD7CD0DDC][Rebuild org-roam DB independently from CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create =.build-org-roam.el= at the repo root that syncs =.org-roam.db=
+using the same settings as the current inline block in =.build-site.el=
+(=org-roam-directory=, =org-roam-db-location=,
+=org-roam-file-exclude-regexp=). Add a =rebuild_org_roam_db= cmake
+target in =CMakeLists.txt=. Remove the duplicated inline block from
+=.build-site.el= and replace it with a call to the new script (or a
+cmake dependency).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:8D295781-33E7-4812-AAC6-134BD7CD0DDC][Rebuild org-roam DB independently from CMake]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Implement .build-org-roam.el.          |
+| Last touched | 2026-05-24                             |
+
+* Acceptance
+
+- =.build-org-roam.el= exists at the repo root.
+- It sets =org-roam-directory=, =org-roam-db-location=, and
+  =org-roam-file-exclude-regexp= to the canonical repo-root-relative
+  values, installs =org-roam= if absent, and calls =org-roam-db-sync=.
+- =CMakeLists.txt= defines =rebuild_org_roam_db= target:
+  =emacs -Q --script .build-org-roam.el=.
+- =.build-site.el= no longer contains a duplicated org-roam sync block;
+  it calls =.build-org-roam.el= via =load-file= or the cmake target
+  handles ordering.
+- =cmake --build . --target rebuild_org_roam_db= completes successfully
+  and updates =.org-roam.db=.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+The existing org-roam block in =.build-site.el= (lines ~206–212) sets:
+
+#+begin_example
+(setq org-roam-directory (expand-file-name "./"))
+(setq org-roam-db-location (expand-file-name "./.org-roam.db"))
+(setq org-roam-file-exclude-regexp
+      "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui")
+(require 'org-roam)
+(org-roam-db-sync)
+#+end_example
+
+The new =.build-org-roam.el= should mirror this exactly and wrap it in
+=condition-case= for consistent error handling (matching the pattern of
+=.build-site.el= and =.build-manual.el=).
+
+* PRs
+
+| PR  | Title                                              |
+|-----+----------------------------------------------------|
+|     |                                                    |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

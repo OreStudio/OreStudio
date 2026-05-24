@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 092931C3-633E-4885-8AA0-31B88E196A65
+:END:
+#+title: Task: Implement product backlog near/far listing in compass
+#+description: Add compass backlog command to list near and far captures with counts and titles, mirroring the sprint in-flight display.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compass:tooling:python:backlog:sprint_18:v0:compass_product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — near and far listing]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a =backlog= subcommand to =compass.py= that reads the near and far
+capture buckets from the doc index and prints them in a human-readable
+(and optionally JSON) format. Also fix the CWD bug in =compass.sh= that
+causes generated files to land inside =projects/ores.compass/= instead of
+the repo root.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | BACKLOG                                                            |
+| Parent story | [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — near and far listing]] |
+| Now          | Not yet started.                                                   |
+| Waiting on   | Nothing.                                                           |
+| Next         | Fix CWD bug in compass.sh; implement cmd_backlog in compass.py.    |
+| Last touched | 2026-05-24                                                         |
+
+* Acceptance
+
+- =compass.sh= changes to =cd "$REPO_ROOT"= (nearest ancestor with =.git=)
+  instead of =cd "$SCRIPT_DIR"=, so relative =--parent-dir= arguments
+  resolve against the repo root.
+- =compass.sh backlog= prints near captures then far captures, each group
+  headed by a count line (e.g. =Near (12):=).
+- Each capture prints as one line: title and relative path.
+- =compass.sh backlog --near= prints only the near bucket; =--far= only far.
+- =compass.sh backlog --json= emits ={"near": [...], "far": [...]}= with
+  the same fields as the =where --json= in-flight entries.
+- =compass.sh backlog --count= prints only the counts (=near=12 far=7=),
+  useful for scripting.
+- Existing =where=, =list=, =search=, and =add= commands are unaffected.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR                                                               | Title                                                          |
+|------------------------------------------------------------------+----------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/824][#824]] | Add compass product backlog listing and fix compass.sh CWD bug |
+
+* Review
+
+| # | Comment summary                                        | File            | Decision | Notes                                                                 |
+|---+--------------------------------------------------------+-----------------+----------+-----------------------------------------------------------------------|
+| 1 | Manual dirname loop fragile — can infinite-loop or cd /  | compass.sh:44   | Accepted | Replaced with =git rev-parse --show-toplevel= + SCRIPT_DIR fallback (226e830e1) |
+| 2 | Use git rev-parse --show-toplevel for robustness       | compass.sh:45   | Accepted | Implemented; same fix as above                                        |
+| 3 | SCRIPT_DIR must be absolute before cd                  | compass.sh:44   | Accepted | SCRIPT_DIR already absolute (line 12); confirmed in reply             |
+| 4 | Missing cmd_backlog implementation in compass.py       | compass.sh:87   | Declined | This PR scaffolds docs; implementation ships in follow-up PR          |
+| 5 | Missing cmd_backlog implementation (task file)         | task…listing:37 | Declined | Same as above                                                         |
+| 6 | Missing recipe update from acceptance criteria         | story.org:46    | Declined | Future deliverable of story, not required for scaffolding PR          |
+| 7 | Story/task/sprint status should be DONE                | story.org:32    | Declined | Status correctly BACKLOG — work not yet done; will update on impl PR  |
+
+* Result

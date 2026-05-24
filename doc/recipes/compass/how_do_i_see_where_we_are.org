@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 41E5F9A8-1C2B-4ECA-8EA0-1ABBAB0B6A31
+:END:
+#+title: How do I see where we are?
+#+description: Use compass where/status to report the current version, sprint, and in-flight stories and tasks.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :compass:agile:orientation:recipe:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+
+The /Locate/ pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]]. It reads the agile tree
+(=doc/agile/versions/=) directly, so it needs no =org-roam.db= and no
+=org-roam-db-sync=.
+
+* Question
+
+Where are we in time — which [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]] and [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] are current, and which
+[[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][stories]] / [[id:31C868B9-306E-4282-BA8C-07E647021B34][tasks]] are in flight right now?
+
+* Answer
+
+Run =compass.sh where= (or its alias =status=):
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh where
+#+end_src
+
+It prints the current version and sprint (title, =:ID:=, path) and every
+story/task under the current sprint whose =State= is =STARTED=. "Current"
+is the lexicographically-highest version/sprint folder.
+
+For tooling, =-f json= emits a structured =version= / =sprint= /
+=in_flight= document:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh status -f json
+#+end_src
+
+* Script
+
+=projects/ores.compass/compass.sh where= → =src/compass.py= (=cmd_where=),
+which uses the bundled =doc_index= to discover docs and reads the =State=
+row from each doc's =* Status= table.
+
+* Tested by
+
+Manual smoke test. Read-only over the working tree.
+
+* See also
+
+- [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][How do I search docs with compass?]] — full-text search.
+- [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — list/filter docs
+  (=compass list=).
+- [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile product owner]] — the skill that acts on this orientation.

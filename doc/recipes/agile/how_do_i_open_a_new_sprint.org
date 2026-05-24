@@ -26,7 +26,7 @@ folder, set its mission, and link it from the version manifest?
 1. /Identify the current version and sprint/ via the doc tools:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type sprint --sort path | tail -5
+   ./projects/ores.compass/compass.sh list --type sprint --sort path | tail -5
    #+end_src
 
    The lexicographically-highest sprint folder is the current one.

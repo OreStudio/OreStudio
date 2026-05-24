@@ -35,8 +35,8 @@ When you need to act as the product owner of ORE Studio:
    before doing anything else — never assume.
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type version
-   ./projects/ores.codegen/doc_list.sh --type sprint --sort path | tail -5
+   ./projects/ores.compass/compass.sh list --type version
+   ./projects/ores.compass/compass.sh list --type sprint --sort path | tail -5
    #+end_src
 
    The lexicographically-highest sprint folder is the current

@@ -69,11 +69,11 @@ def show_anchor(anchor, docs, inbound_idx, anchors) -> None:
             print(show_link_row(uuid, docs, anchors))
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__,
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(prog="compass show", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("query", help="UUID or unambiguous prefix (>=6 hex chars)")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
     docs = load_all()
     inbound_idx = build_inbound(docs)

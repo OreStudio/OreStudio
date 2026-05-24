@@ -31,7 +31,7 @@ sprint-selection goal, use [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][backlog-re
 1. /Read the current sprint and its mission/:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type sprint --sort path | tail -3
+   ./projects/ores.compass/compass.sh list --type sprint --sort path | tail -3
    #+end_src
 
    Open =sprint.org= and read =* Mission= and =* Goals=. If the
@@ -47,7 +47,7 @@ sprint-selection goal, use [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][backlog-re
 3. /List the near-bucket captures/:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type capture --sort path | grep near
+   ./projects/ores.compass/compass.sh list --type capture --sort path | grep near
    #+end_src
 
    Read each capture's title and description. Ignore captures that

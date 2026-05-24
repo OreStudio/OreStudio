@@ -25,7 +25,7 @@ against it, and promote selected captures into stories?
 1. /Open the current sprint document/ and confirm or set the mission:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type sprint --sort path | tail -3
+   ./projects/ores.compass/compass.sh list --type sprint --sort path | tail -3
    #+end_src
 
    The =* Mission= must be a single sentence before scoring can
@@ -39,7 +39,7 @@ against it, and promote selected captures into stories?
 3. /List near-bucket candidates/:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type capture --sort path | grep near
+   ./projects/ores.compass/compass.sh list --type capture --sort path | grep near
    #+end_src
 
 4. /Score each candidate/ on three axes — record results as a table

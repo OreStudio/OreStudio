@@ -32,13 +32,13 @@ might overlap.
    area. For a flat, scriptable view:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type skill
+   ./projects/ores.compass/compass.sh list --type skill
    #+end_src
 
 2. /Inspect each skill's metadata/ via the doc tools:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_show.sh <uuid-prefix>
+   ./projects/ores.compass/compass.sh show <uuid-prefix>
    #+end_src
 
    This prints the skill's blurb, outgoing links (the recipes /
@@ -76,7 +76,7 @@ might overlap.
    go stale.
 
 7. /Spot-check the linked recipes and references/ still exist. The
-   =doc_show.sh= output will flag broken =[[id:...]]= as =BROKEN=.
+   =compass show= output will flag broken =[[id:...]]= as =BROKEN=.
 
 8. /File findings/. Either:
    - Open a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the current sprint for each fix-shaped finding,

@@ -26,8 +26,8 @@ sharpening vague ones, and re-prioritising between =near/= and
 1. /List both buckets/:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type capture --sort path | grep near
-   ./projects/ores.codegen/doc_list.sh --type capture --sort path | grep far
+   ./projects/ores.compass/compass.sh list --type capture --sort path | grep near
+   ./projects/ores.compass/compass.sh list --type capture --sort path | grep far
    #+end_src
 
 2. /For each capture, apply the VBCD checklist/:

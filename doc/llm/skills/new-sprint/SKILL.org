@@ -31,7 +31,7 @@ do at the same time, before, or after.
 1. /Anchor the context/. Find the current sprint:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type sprint --sort path | tail -3
+   ./projects/ores.compass/compass.sh list --type sprint --sort path | tail -3
    #+end_src
 
    The new sprint is /current + 1/.

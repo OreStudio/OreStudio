@@ -32,7 +32,7 @@ component "production-ready". For PR-delta reviews, use the sibling
    =projects/ores.<component>/=. To see all known components:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type component
+   ./projects/ores.compass/compass.sh list --type component
    #+end_src
 
 2. /Walk the full checklist/. The canonical list is [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review

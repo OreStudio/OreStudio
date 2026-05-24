@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 95A33EA9-DFF9-4937-8A3F-AD82E42A68D3
+:END:
+#+title: Compass recipes
+#+description: Inventory of recipes for using the compass tool: search, orientation, doc navigation, and indexing.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :recipe:compass:docs:search:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+
+How to use =compass=, the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][repository orientation tool]]. One CLI
+(=projects/ores.compass/compass.sh=) answers three kinds of question:
+/where are we?/, /which docs are relevant?/, and /show me this doc/.
+
+* Orientation
+
+- [[id:41E5F9A8-1C2B-4ECA-8EA0-1ABBAB0B6A31][How do I see where we are?]] — current version, sprint, and in-flight
+  stories/tasks (=where= / =status=).
+
+* Search and indexing
+
+- [[id:DEAC11AE-3753-49FA-994A-98594162A605][How do I index notes for compass?]] — build the FTS cache (=index=).
+- [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][How do I search docs with compass?]] — full-text search (=search=).
+
+* Navigating the doc graph
+
+These commands moved into compass from =ores.codegen= (the tool now owns
+doc navigation); the recipes live under [[id:95FF6AF4-2320-4CB6-A007-B016B7DA16ED][Documentation recipes]]:
+
+- [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — filter the graph
+  (=compass list=).
+- [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — one doc + inbound/outbound links
+  (=compass show=).
+
+* See also
+
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the component model (pillars, structure, design).
+- [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] — the full topic index.

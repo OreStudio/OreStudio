@@ -31,8 +31,8 @@ come up.
 1. /List both buckets/ to get a full picture before changing anything:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type capture --sort path | grep near
-   ./projects/ores.codegen/doc_list.sh --type capture --sort path | grep far
+   ./projects/ores.compass/compass.sh list --type capture --sort path | grep near
+   ./projects/ores.compass/compass.sh list --type capture --sort path | grep far
    #+end_src
 
    Note the total count — near should stay manageable (≤ 20 is a

@@ -52,7 +52,7 @@ correct response.
    the catalogue:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type memory --regex '<keyword>'
+   ./projects/ores.compass/compass.sh list --type memory --regex '<keyword>'
    #+end_src
 
    If a memory already covers this point, /update/ it rather than

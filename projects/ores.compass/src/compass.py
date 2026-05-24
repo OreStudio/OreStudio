@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """
-Compass: A fast NLP/FTS search tool for Org-Roam notes.
+Compass: a repository orientation tool for ORE Studio.
+
+Pillars:
+  - Search: fast NLP/FTS retrieval over Org-Roam notes (index/search/debug).
+  - Locate: where are we in time — current version, sprint, in-flight work
+    (where/status), read from the agile document tree.
+  - Navigate: list/filter the doc graph (list) and inspect a single doc with
+    its inbound/outbound links (show).
 """
 
 import argparse
@@ -11,6 +18,14 @@ import sqlite3
 import sys
 import time
 from pathlib import Path
+
+# Make the bundled doc-graph modules importable whether compass.py is run as a
+# script (src/ is already on sys.path) or imported from elsewhere. The sys.path
+# setup must precede these imports, hence the E402 suppressions.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import doc_index  # noqa: E402
+import doc_list   # noqa: E402
+import doc_show   # noqa: E402
 
 # --- Dynamic Path Resolution ---
 def find_git_root():
@@ -453,8 +468,104 @@ def cmd_debug(args):
     compass_conn.close()
     roam_conn.close()
 
+# --- Locate pillar: "where are we in time?" ---
+#
+# Source of truth: the agile document tree under doc/agile/versions/. Locate
+# uses the bundled doc_index (the canonical org-frontmatter parser, which also
+# backs the `list` and `show` commands) for discovery, and adds the one field
+# it does not expose — the current State, which lives in each doc's "* Status"
+# table as a "| State | <STATE> |" row. This keeps Locate dependency-free of
+# org-roam.db (no M-x org-roam-db-sync needed) and always fresh against the
+# working tree.
+
+STATE_RE = re.compile(r"^\|\s*State\s*\|\s*([A-Z]+)\s*\|", re.MULTILINE)
+IN_FLIGHT_STATE = "STARTED"
+
+def read_state(path):
+    """Return the State value from a doc's Status table, or None if absent."""
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
+    match = STATE_RE.search(text)
+    return match.group(1) if match else None
+
+def _parent_dir(rel_path):
+    """Directory holding a doc, as a forward-slash relative string."""
+    return Path(rel_path).parent.as_posix()
+
+def _strip_type_prefix(title):
+    """Drop the codegen 'Story: ' / 'Task: ' prefix for display next to a type column."""
+    for prefix in ("Story: ", "Task: "):
+        if title.startswith(prefix):
+            return title[len(prefix):]
+    return title
+
+def cmd_where(args):
+    docs = doc_index.load_all()
+    versions = [d for d in docs.values() if d.doctype == "version"]
+    sprints  = [d for d in docs.values() if d.doctype == "sprint"]
+    if not versions or not sprints:
+        print("❌ No version/sprint documents found under doc/agile/versions/.",
+              file=sys.stderr)
+        sys.exit(1)
+
+    # "Current" = lexicographically-highest folder (sprint_NN is zero-padded),
+    # matching the rule the agile product-owner skill already uses.
+    current_version = max(versions, key=lambda d: d.rel_path)
+    version_dir = _parent_dir(current_version.rel_path)
+    in_version = [d for d in sprints if d.rel_path.startswith(version_dir + "/")]
+    current_sprint = max(in_version or sprints, key=lambda d: d.rel_path)
+    sprint_dir = _parent_dir(current_sprint.rel_path)
+
+    # In-flight = stories/tasks under the current sprint with State == STARTED.
+    in_flight = []
+    for d in docs.values():
+        if d.doctype in ("story", "task") and d.rel_path.startswith(sprint_dir + "/"):
+            state = read_state(d.path)
+            if state == IN_FLIGHT_STATE:
+                in_flight.append((d, state))
+    in_flight.sort(key=lambda pair: (pair[0].doctype, pair[0].rel_path))
+
+    if args.format == "json":
+        def entry(d):
+            return {"id": d.id.upper(), "title": d.title, "path": d.rel_path}
+        out = {
+            "version": entry(current_version),
+            "sprint": entry(current_sprint),
+            "in_flight": [
+                {"type": d.doctype, "id": d.id.upper(), "title": _strip_type_prefix(d.title),
+                 "state": state, "path": d.rel_path}
+                for d, state in in_flight
+            ],
+        }
+        print(json.dumps(out, indent=2))
+        return
+
+    print("🧭 ores.compass — where are we?\n")
+    print(f"Version:  {current_version.title}  [{current_version.id.upper()}]")
+    print(f"          {current_version.rel_path}")
+    print(f"Sprint:   {current_sprint.title}  [{current_sprint.id.upper()}]")
+    print(f"          {current_sprint.rel_path}")
+    print(f"\nIn flight ({IN_FLIGHT_STATE}):")
+    if not in_flight:
+        print("  (nothing in flight)")
+    else:
+        for d, state in in_flight:
+            print(f"  {d.doctype:<5} {_strip_type_prefix(d.title)}")
+            print(f"        [{d.id.upper()}]  {d.rel_path}")
+
 def main():
-    parser = argparse.ArgumentParser(description="Compass: NLP/FTS search for Org-Roam")
+    # `list` and `show` pass every remaining argument straight through to the
+    # bundled doc tools (full flag compatibility, including their own --help).
+    # Short-circuit before argparse so leading options like `--type` are not
+    # swallowed by this parser.
+    if len(sys.argv) >= 2 and sys.argv[1] == "list":
+        sys.exit(doc_list.main(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "show":
+        sys.exit(doc_show.main(sys.argv[2:]))
+
+    parser = argparse.ArgumentParser(description="Compass: orientation tool for ORE Studio")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     index_parser = subparsers.add_parser("index", help="Index or update notes from org-roam.db")
@@ -469,8 +580,24 @@ def main():
     debug_parser = subparsers.add_parser("debug", help="Debug the index contents")
     debug_parser.add_argument("-f", "--file", type=str, help="Check a specific file (partial match)")
 
+    where_parser = subparsers.add_parser("where", aliases=["status"],
+                                         help="Show where we are: current version, sprint, in-flight work")
+    where_parser.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty",
+                              help="Output format: pretty (default) or json")
+
+    # Registered for discoverability in --help; actually handled by the
+    # short-circuit above (which forwards all args to the bundled doc tools).
+    subparsers.add_parser("list",
+                          help="List/filter docs (--regex/--tag/--type/--under/...); 'list --help' for filters")
+    subparsers.add_parser("show",
+                          help="Show one doc by UUID/prefix: metadata, blurb, in/out links")
+
     args = parser.parse_args()
-    validate_paths(args.command)
+
+    # Only the org-roam-backed commands need org-roam.db; the agile/doc-graph
+    # commands read the working tree directly.
+    if args.command in ("index", "search", "debug"):
+        validate_paths(args.command)
 
     if args.command == "index":
         cmd_index(args)
@@ -478,6 +605,8 @@ def main():
         cmd_search(args)
     elif args.command == "debug":
         cmd_debug(args)
+    elif args.command in ("where", "status"):
+        cmd_where(args)
 
 if __name__ == "__main__":
     main()

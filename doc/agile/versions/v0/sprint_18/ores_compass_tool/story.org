@@ -53,6 +53,7 @@ application. See the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][component overvi
 In execution order:
 
 - [[id:7D1E3657-FFB1-4171-9AFC-E46E7D406776][Task: Define scope and structure for ores.compass]]
+- [[id:158C96A4-7E0F-4223-9756-639ECF9920D6][Task: Consolidate doc-navigation into compass and add usage recipes]]
 
 Follow-up pillars, now sprint-backlog stories in their own right:
 
@@ -64,9 +65,10 @@ Follow-up pillars, now sprint-backlog stories in their own right:
 - The Sprint 18 capture asked for "a tool called compass". The existing
   =scripts/compass.py= FTS prototype is adopted as the /Search/ pillar
   and relocated into the new project rather than rewritten.
-- Compass /wraps/ [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] for scaffolding/listing instead of
-  duplicating =generate_v2_doc.sh= / =doc_list.sh= (to be confirmed in
-  the scoping task).
+- Compass /wraps/ [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] for scaffolding instead of duplicating
+  =generate_v2_doc.sh=. (Doc navigation later moved the other way: the
+  =doc_list= / =doc_show= / =doc_index= scripts were folded /into/
+  compass — see [[id:158C96A4-7E0F-4223-9756-639ECF9920D6][the consolidation task]].)
 
 * Out of scope
 

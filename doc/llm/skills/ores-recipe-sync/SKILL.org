@@ -57,7 +57,7 @@ location changes.
 3. /Enumerate the current recipes/ for the topic:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh \
+   ./projects/ores.compass/compass.sh list \
        --tag <topic> --type recipe --sort path
    #+end_src
 

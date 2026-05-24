@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: CCD6870A-2236-482A-AC09-49ED6DCF6786
+:END:
+#+title: Task: Implement the where command
+#+description: Add a where/status subcommand reporting the current version, sprint, and in-flight stories and tasks.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compass:python:agile:compass_locate:sprint_18:v0:
+#+owner: marco
+#+branch: feature/compass-locate
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][ores.compass Locate — temporal orientation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a =where= subcommand (alias =status=) to =ores.compass= that prints
+the current version, the current sprint, and the stories and tasks
+currently in flight, in both =pretty= and =json= form — so a
+contributor or LLM can orient in one command.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][ores.compass Locate — temporal orientation]] |
+| Now          | Implemented and smoke-tested.          |
+| Waiting on   | Nothing.                               |
+| Next         | Review.                                |
+| Last touched | 2026-05-24                             |
+
+* Acceptance
+
+- =compass.sh where= prints the current version and sprint (title +
+  uppercase =:ID:= + path).
+- It lists in-flight (=State STARTED=) stories and tasks under the
+  current sprint, with id and path.
+- =-f json= emits a structured =version= / =sprint= / =in_flight=
+  document; =status= works as an alias.
+- Runs with no =org-roam.db= present (Locate does not need it).
+
+* Plan
+
+1. Decide the source of truth (done — see the story's =* Decisions=:
+   reuse =doc_index=, read =State= from the =* Status= table).
+2. Add =load_doc_index= (sys.path import of codegen's parser),
+   =read_state=, and =cmd_where=; wire the =where=/=status= subparser
+   and skip the =org-roam.db= check for it.
+3. Polish output: uppercase canonical IDs; strip the =Story:=/=Task:=
+   title prefix next to the type column.
+4. Smoke-test both formats; confirm =search= still works.
+
+* Notes
+
+"Current" is the lexicographically-highest version/sprint folder.
+In-flight uses =State == STARTED= parsed from each doc's =* Status=
+table via =STATE_RE=.
+
+* Result
+
+Implemented in =projects/ores.compass/src/compass.py= (=cmd_where= plus
+=load_doc_index= / =read_state= helpers and the =where= / =status=
+subparser). Verified: =where= reports Version 0 / Sprint 18 and eight
+in-flight items; =-f json= emits the structured document; =search=
+unaffected; =py_compile= clean. Reuses =ores.codegen='s =doc_index=, so
+no frontmatter parsing is duplicated.

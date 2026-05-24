@@ -240,7 +240,7 @@ def cmd_index(args):
                 try:
                     props = json.loads(node['properties'])
                     description = props.get('DESCRIPTION', '')
-                except:
+                except (json.JSONDecodeError, TypeError, AttributeError):
                     pass
                 break
 
@@ -265,7 +265,7 @@ def cmd_index(args):
                 if olp_str.startswith('['):
                     try:
                         olp_str = " > ".join(json.loads(olp_str))
-                    except:
+                    except (json.JSONDecodeError, TypeError):
                         pass
 
                 # Use node title, or filename for level 0 if no title

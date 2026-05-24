@@ -24,11 +24,11 @@ build themselves.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                                |
 | Parent sprint | [[id:1737c00c-699a-475a-bc94-743c6cda1001][Sprint 18]] |
-| Now           | Not yet started; blocked on merge of #807. |
-| Waiting on    | PR #807 (user manual restructure) merged. |
-| Next          | Add CMake target following =deploy_site= pattern. |
+| Now           | Chapter 1 (login/connection manager) merged in PR #811. System bootstrapping concepts + manual-updater skill pushed on feature/user-manual-system-bootstrapping (PR pending). |
+| Waiting on    | PR review for system bootstrapping concepts branch. Screenshots for all TODO_ placeholders. |
+| Next          | Raise PR for feature/user-manual-system-bootstrapping; capture screenshots. |
 | Last touched  | 2026-05-24                               |
 
 * Acceptance

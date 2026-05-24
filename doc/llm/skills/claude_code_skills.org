@@ -28,6 +28,9 @@ See [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner]] for the deployment
 
 - [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile Product Owner]] — manage the team through story creation,
   prioritisation, sprint planning.
+- [[id:00F85A2F-547A-4F11-99EB-A46A7DE5AB1C][Manual Updater]] — update the user manual when UI features are
+  added or changed: find the chapter, edit prose, add screenshot
+  placeholders, rebuild the PDF.
 - [[id:7357C672-A49F-4974-9399-A166F761D222][ORES Memory]] — decide when to write a project-scope memory and
   scaffold it into =doc/llm/memory/=.
 - [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]] — class diagrams for C++ components.

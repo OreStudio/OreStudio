@@ -29,11 +29,11 @@ screenshot placeholders, and rebuilding the PDF.
 
 | Field        | Value                                                       |
 |--------------+-------------------------------------------------------------|
-| State        | BACKLOG                                                     |
+| State        | DONE                                                        |
 | Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
-| Now          | Not yet started.                                            |
+| Now          | Skill written and added to skills catalogue.                |
 | Waiting on   | Nothing.                                                    |
-| Next         | Scaffold skill via codegen; write skill body.               |
+| Next         | —                                                           |
 | Last touched | 2026-05-24                                                  |
 
 * Acceptance
@@ -47,10 +47,6 @@ screenshot placeholders, and rebuilding the PDF.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
 * Review
@@ -60,3 +56,11 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Skill created at =doc/llm/skills/manual-updater/SKILL.org= on branch
+=feature/user-manual-system-bootstrapping= (same commit as the system
+bootstrapping concepts chapter). Added to the skills catalogue
+(=doc/llm/skills/claude_code_skills.org=) under the Documentation
+section. The skill covers: when to trigger (UI feature added/changed),
+chapter mapping table, prose editing conventions, screenshot placeholder
+format, PDF rebuild command, and commit guidance.

@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 696612A2-A9D5-47FE-BC5A-2F90FDCA4E15
+:END:
+#+title: Task: Implement ores-dashboard.el
+#+description: Create the ores-dashboard.el core: env binding, .env reading, command groups (db, services, compass, build), bookmarks, ORE shell, splash image.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :emacs:lisp:dashboard:ores_studio_emacs_dashboard:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create =projects/ores.lisp/ores-dashboard.el= — a fully functional
+ORE Studio console built on =emacs-dashboard=, with env binding,
+command groups, bookmarks, recipe links, ORE shell, and splash image.
+
+* Status
+
+| Field        | Value                                            |
+|--------------+--------------------------------------------------|
+| State        | BACKLOG                                          |
+| Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                       |
+| Now          | Blocked on audit/design task.                    |
+| Waiting on   | [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][task_audit_and_design]] sign-off.                  |
+| Next         | Implement once design is approved.               |
+| Last touched | 2026-05-24                                       |
+
+* Acceptance
+
+- =ores-dashboard.el= loads cleanly via =(require 'ores-dashboard)=.
+- Dashboard header shows ORE splash image.
+- Command groups present and functional: DB, Services, Compass, Build.
+- All commands read their env from the checkout's =.env= via =ores-env.el=.
+- Bookmarks section: log dir and bin dir resolved from =.env=.
+- Links section: key recipes and user manual open in Emacs.
+- "Open ORE Studio shell" launches a =comint= shell bound to active env.
+- Tested on both =local1= and =local2= checkouts with no cross-env bleed.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

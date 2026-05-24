@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 7E86CDB4-3FE6-46AD-BCC8-C0E9AD8857D6
+:END:
+#+title: Task: Remove superseded ores.lisp modules
+#+description: Delete or gut ores-db.el and other per-mode modules that are superseded by the dashboard; keep reusable helpers (ores-env.el, ores-shell.el).
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :emacs:lisp:dashboard:ores_studio_emacs_dashboard:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove or gut the per-mode =ores.lisp= modules that the dashboard
+supersedes, keeping only the reusable helpers; update the package load
+list accordingly.
+
+* Status
+
+| Field        | Value                                               |
+|--------------+-----------------------------------------------------|
+| State        | BACKLOG                                             |
+| Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                          |
+| Now          | Blocked on implement task.                          |
+| Waiting on   | [[id:696612A2-A9D5-47FE-BC5A-2F90FDCA4E15][task_implement_dashboard]] merged.                    |
+| Next         | Delete superseded files once dashboard is in place. |
+| Last touched | 2026-05-24                                          |
+
+* Acceptance
+
+- =ores-db.el= and all other SUPERSEDED modules (per audit) deleted.
+- =ores-env.el=, =ores-shell.el=, =ores-shell-mode.el=, =ores-babel.el=,
+  =ores-org-roam-export.el= retained unchanged.
+- Package declaration and =:require= lists updated; no broken references.
+- Emacs starts cleanly with only the remaining modules loaded.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -195,7 +195,7 @@ UI/HTTP code to database implementation details.
 
 * See also
 
-- [[id:B5D2A1F3-7E94-4C8B-A2D6-G3B84F0E1567][Qt QPluginLoader Architecture Migration]] — established the pattern in
+- [[id:720D74A0-DAD3-4F11-BC5F-AD78BF5A9DD2][Qt QPluginLoader Architecture Migration]] — established the pattern in
   =ores.qt.api=.
 - [[id:F2A4C6E8-B1D3-4E5F-A7B9-2C4D6E8F0A1B][Symbol Visibility Migration Plan]] — phased rollout across all
   libraries.

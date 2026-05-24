@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: C7E3B2A4-8F95-4D9C-B3E7-H4C95G1F2678
+:ID: 8B8E0568-AF14-4820-B7AD-6FCA99C40626
 :END:
 #+title: Scheduler Real-Time UI — Job Lifecycle Events and Live Views
 #+version: 1

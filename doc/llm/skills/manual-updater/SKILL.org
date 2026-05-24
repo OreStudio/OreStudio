@@ -15,7 +15,7 @@
 ---
 name: manual-updater
 description: When to update the user manual and how: find the right chapter, update prose, add screenshot placeholders, and rebuild the PDF.
-license: Complete terms in LICENSE.txt
+license: Complete terms in LICENCE.txt
 ---
 #+end_export
 
@@ -60,7 +60,7 @@ behaviour, even if the user did not explicitly ask for a manual update.
    #+begin_example
    #+caption: [SCREENSHOT NEEDED] <what to show>.
    # Capture: <precise instruction for what to capture and how>.
-   [[../../../../assets/images/TODO_descriptive_name.png]]
+   [[../../../../../assets/images/TODO_descriptive_name.png]]
    #+end_example
 
    Name placeholder files with the =TODO_= prefix so they stand out in

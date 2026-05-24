@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 9F6635A3-A770-44F2-BC85-B5324A0E65EA
+:END:
+#+title: Task: Reformat and install the tufte-viz skill and reference docs
+#+description: Convert SKILL.md and the two Tufte reference Markdown files to org-mode; place them under doc/llm/skills/tufte-viz/; catalogue the skill in claude_code_skills.org.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :skills:design:visualisation:tufte:tufte_skill_port:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7225526E-DCDB-4DC6-A95D-22C7117E5EAA][Port Tufte visualisation skill into ORE Studio]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The three files currently sitting in =tmp/= are:
+
+- =tmp/SKILL.md= — the =tufte-viz= skill playbook.
+- =tmp/references__tufte-principles.md= — Tufte's core principles
+  (lie factor, data-ink ratio, chartjunk, small multiples, etc.),
+  adapted from the work of [[https://x.com/draparente][Dr. Angelica Parente]].
+- =tmp/references__analytical-design.md= — extensions from
+  /Envisioning Information/, /Visual Explanations/, and /Beautiful
+  Evidence/ (six principles of analytical design, sparklines,
+  layering, micro/macro, range-frames, causality), adapted from the
+  same source.
+
+Convert all three to org-mode, install them into the skills tree,
+update the catalogue, and delete the originals from =tmp/=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:7225526E-DCDB-4DC6-A95D-22C7117E5EAA][Port Tufte visualisation skill into ORE Studio]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Create skill directory; convert files. |
+| Last touched | 2026-05-25                             |
+
+* Acceptance
+
+- =doc/llm/skills/tufte-viz/SKILL.org= — standard skill layout:
+  org-mode frontmatter, =#+begin_export markdown= block with =name:
+  tufte-viz= and description, =* When to use this skill=, =* How to
+  use this skill= with the two-workflow structure (new visualisations
+  / critiquing existing ones), key-principles reference list pointing
+  to the companion org files, and a quick checklist.
+- =doc/llm/skills/tufte-viz/references/tufte-principles.org= —
+  org-mode conversion of =references__tufte-principles.md=; header
+  includes attribution: "Adapted from the work of
+  [[https://x.com/draparente][Dr. Angelica Parente]]."
+- =doc/llm/skills/tufte-viz/references/analytical-design.org= —
+  org-mode conversion of =references__analytical-design.md=; same
+  attribution line.
+- =doc/llm/skills/claude_code_skills.org= =* Design= section gains:
+  =- [[id:…][Tufte Viz]] — design and critique data visualisations
+  using Tufte's principles (data-ink ratio, chartjunk, small
+  multiples, graphical integrity).=
+- =tmp/SKILL.md=, =tmp/references__tufte-principles.md=, and
+  =tmp/references__analytical-design.md= are deleted.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+The two reference files cross-reference each other: the quick
+reference at the end of =analytical-design.org= calls the 7-question
+test in =tufte-principles.org= "the standard test" and adds 7 more
+questions. Maintain that cross-reference in the org versions using
+=[[file:tufte-principles.org][...]]= links.
+
+The skill's =* How to use= section currently points to
+=references/tufte-principles.md= and =references/analytical-design.md=
+— update those paths to the new =.org= files.
+
+Attribution line to use in both reference files (after the title,
+before the first section):
+
+#+begin_example
+Adapted from the work of [[https://x.com/draparente][Dr. Angelica Parente]].
+#+end_example
+
+* PRs
+
+| PR  | Title                                              |
+|-----+----------------------------------------------------|
+|     |                                                    |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

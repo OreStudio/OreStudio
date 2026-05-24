@@ -53,16 +53,19 @@ ClientManager::getTradeDetail(const std::string& trade_id) {
         }
 
         // Phase 2: parse instrument variant — isolated from trade reflection.
-        trading::domain::trade_instrument instrument;
         auto wrapper = rfl::json::read<
             trading::messaging::get_trade_detail_instrument_wrapper,
             rfl::AddTagsToVariants>(raw);
-        if (wrapper)
-            instrument = std::move(wrapper->instrument);
+        if (!wrapper) {
+            BOOST_LOG_SEV(lg(), error)
+                << "getTradeDetail instrument deserialize error: "
+                << wrapper.error().what();
+            return std::nullopt;
+        }
 
         return trading::messaging::trade_export_item{
             .trade = std::move(base->trade),
-            .instrument = std::move(instrument)
+            .instrument = std::move(wrapper->instrument)
         };
     } catch (const ores::nats::service::nats_connect_error&) {
         throw;

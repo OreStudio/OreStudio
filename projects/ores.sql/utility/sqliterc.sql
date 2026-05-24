@@ -7,7 +7,11 @@
 --
 -- Use it one of two ways:
 --   * Per session:  sqlite3 -init projects/ores.sql/utility/sqliterc.sql my.db
---   * Always on:     ln -s "$PWD/projects/ores.sql/utility/sqliterc.sql" ~/.sqliterc
+--   * Always on:     source it from your global ~/.sqliterc with .read,
+--                    which preserves any settings you already have there:
+--                    echo ".read $PWD/projects/ores.sql/utility/sqliterc.sql" >> ~/.sqliterc
+--
+-- Requires SQLite 3.37.0+ (Nov 2021) for the columnar `--wrap` option below.
 -- =====================================================================
 
 -- ---------------------------------------------------------------------
@@ -20,6 +24,7 @@
 -- wrapping: columns grow to fit their widest value instead of being
 -- folded onto multiple lines. (Plain `.mode box` wraps long values; this
 -- is the "larger columns, no wrapping" behaviour we want.)
+-- Needs SQLite 3.37.0+; older shells reject the `--wrap` option.
 .mode box --wrap 0
 
 -- Print a visible marker for NULL so it is not confused with an empty

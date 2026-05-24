@@ -47,9 +47,13 @@ connection-level safety defaults.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Reproduce the wrapping complaint against the installed =sqlite3= to
+find the real lever (=.mode box --wrap 0=) rather than guessing, and
+verify each dot-command is real before commenting it. Then rewrite the
+rc file in sections — output formatting, ergonomics, session pragmas,
+handy levers — with a comment on every active entry, enabling only
+per-connection settings and leaving persistent ones commented. Finish
+by smoke-testing with =sqlite3 -init=.
 
 * Notes
 

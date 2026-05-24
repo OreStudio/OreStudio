@@ -62,14 +62,20 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                             |
+|-----+-------------------------------------------------------------------|
+| 824 | Add compass product backlog listing and fix compass.sh CWD bug    |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                        | File            | Decision | Notes                                                                 |
+|---+--------------------------------------------------------+-----------------+----------+-----------------------------------------------------------------------|
+| 1 | Manual dirname loop fragile — can infinite-loop or cd /  | compass.sh:44   | Accepted | Replaced with =git rev-parse --show-toplevel= + SCRIPT_DIR fallback (226e830e1) |
+| 2 | Use git rev-parse --show-toplevel for robustness       | compass.sh:45   | Accepted | Implemented; same fix as above                                        |
+| 3 | SCRIPT_DIR must be absolute before cd                  | compass.sh:44   | Accepted | SCRIPT_DIR already absolute (line 12); confirmed in reply             |
+| 4 | Missing cmd_backlog implementation in compass.py       | compass.sh:87   | Declined | This PR scaffolds docs; implementation ships in follow-up PR          |
+| 5 | Missing cmd_backlog implementation (task file)         | task…listing:37 | Declined | Same as above                                                         |
+| 6 | Missing recipe update from acceptance criteria         | story.org:46    | Declined | Future deliverable of story, not required for scaffolding PR          |
+| 7 | Story/task/sprint status should be DONE                | story.org:32    | Declined | Status correctly BACKLOG — work not yet done; will update on impl PR  |
 
 * Result

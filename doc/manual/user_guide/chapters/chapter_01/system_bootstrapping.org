@@ -63,6 +63,7 @@ Open it at any time from the toolbar *Connections* button or from the
 # Capture: open the Connection Manager with no connections configured.
 # The list area should be blank. The Add button (or "+" icon) must be
 # visible along with Edit and Delete buttons in their disabled state.
+[[../../../../assets/images/TODO_connection_manager_empty.png]]
 
 *** Adding a new connection
 
@@ -88,6 +89,7 @@ in the fields:
 # Capture: open Add Connection dialog. Fill in realistic example values
 # as described. Show the full form with all fields visible before
 # clicking Save/OK.
+[[../../../../assets/images/TODO_new_connection_form.png]]
 
 Click *Save* (or *OK*) to add the connection to the list. The new entry
 appears immediately in the Connection Manager list. No network contact
@@ -104,6 +106,7 @@ updates immediately.
 # Capture: select a saved connection and click Edit. The form should
 # show the existing values. Highlight or focus the Name field to show
 # editing is in progress.
+[[../../../../assets/images/TODO_edit_connection_form.png]]
 
 *** Deleting a connection
 
@@ -113,6 +116,7 @@ the Delete key). A confirmation dialog asks you to confirm the removal.
 #+caption: [SCREENSHOT NEEDED] The delete confirmation dialog asking "Are you sure you want to delete the selected connection(s)?" with Yes and No buttons.
 # Capture: select a connection and click Delete. Screenshot the
 # confirmation dialog before clicking Yes.
+[[../../../../assets/images/TODO_delete_connection_confirm.png]]
 
 Deleting a connection removes only the saved configuration; it has no
 effect on the running backend or any data stored there.
@@ -135,6 +139,7 @@ environment badge prevents that.
 # Capture: create three connections with different environments assigned.
 # Open the Connection Manager so the list shows all three, with the
 # environment badge visible on each row.
+[[../../../../assets/images/TODO_connection_manager_env_badges.png]]
 
 To manage the available environment names, open the /Environments/
 section within the Connection Manager settings (or the dedicated menu
@@ -149,6 +154,7 @@ item). From there you can:
 #+caption: [SCREENSHOT NEEDED] The Environments management panel showing a list of defined environments (Development, Staging, Production) with their colours, and Add/Edit/Delete controls.
 # Capture: open the Environments management view. Show at least three
 # environments with distinct colours and the controls for managing them.
+[[../../../../assets/images/TODO_environments_management.png]]
 
 *** Tags
 
@@ -165,10 +171,11 @@ or select a tag to show only the connections that carry it.
 # Capture: assign tags to several connections. Open the Connection
 # Manager and type a tag name into the filter bar. Show the filtered
 # result with the unmatched connections hidden.
+[[../../../../assets/images/TODO_connection_manager_tag_filter.png]]
 
 To add or remove tags on a connection, open the Edit form for that
 connection and use the tag input field. Type a new tag name and press
-Enter (or comma) to add it; click the ×  on an existing tag chip to
+Enter (or comma) to add it; click the × on an existing tag chip to
 remove it. Tags are created on first use — there is no separate tag
 management screen.
 
@@ -192,6 +199,7 @@ full Connection Manager.
 # Capture: click the Connect button dropdown (or the equivalent
 # quick-select). Show the list of saved connections in the dropdown
 # before selecting one.
+[[../../../../assets/images/TODO_connect_button_dropdown.png]]
 
 *** The login screen
 
@@ -235,6 +243,7 @@ or port is needed — only your password.
 # Capture: while logged in, stop or restart the backend service.
 # Screenshot the moment ORE Studio detects the disconnection and shows
 # the warning indicator. The Reconnect affordance should be visible.
+[[../../../../assets/images/TODO_connection_lost_banner.png]]
 
 ** The status bar
 
@@ -247,6 +256,7 @@ visible regardless of what is open in the workspace.
 # bottom of the main window. Crop tightly so all zones are clearly
 # legible. Annotate the zones if possible (or describe them in the
 # caption).
+[[../../../../assets/images/TODO_status_bar_connected.png]]
 
 The status bar is divided into zones from left to right:
 
@@ -280,6 +290,7 @@ The status bar changes appearance to reflect the connection state:
 # Capture: three separate screenshots of the status bar — one with no
 # connection configured, one while logged in, one after stopping the
 # backend. Arrange them vertically or present as three separate figures.
+[[../../../../assets/images/TODO_status_bar_states.png]]
 
 ** Starting ORE Studio from the command line
 
@@ -310,6 +321,7 @@ The =--color= spelling (without the 'u') is accepted as an alias.
 # Capture: launch with --colour light and take a screenshot. Relaunch
 # with --colour dark and take the same screenshot. Place them side by
 # side or present as two figures.
+[[../../../../assets/images/TODO_colour_themes.png]]
 
 *** Configuration directory
 

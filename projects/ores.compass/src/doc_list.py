@@ -38,8 +38,8 @@ import sys
 from doc_index import load_all, REPO_ROOT
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__,
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(prog="compass list", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--regex", help="case-insensitive regex on title or description")
     ap.add_argument("--tag", action="append", default=[], help="require this filetag (repeatable)")
@@ -51,7 +51,7 @@ def main() -> int:
     ap.add_argument("--sort", choices=["title", "updated", "path"], default="path")
     ap.add_argument("--count", action="store_true", help="print match count only")
     ap.add_argument("--paths", action="store_true", help="print only paths, one per line")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
     pattern = re.compile(args.regex, re.IGNORECASE) if args.regex else None
     type_filter = args.doctype.lower() if args.doctype else None

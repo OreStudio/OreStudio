@@ -37,7 +37,7 @@ impact propagates through multiple layers.
    component. Use the doc tools to enumerate:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type component
+   ./projects/ores.compass/compass.sh list --type component
    #+end_src
 
 3. /Assess impact across the four layers/. For each layer, answer:

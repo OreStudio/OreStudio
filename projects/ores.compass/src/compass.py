@@ -6,6 +6,8 @@ Pillars:
   - Search: fast NLP/FTS retrieval over Org-Roam notes (index/search/debug).
   - Locate: where are we in time — current version, sprint, in-flight work
     (where/status), read from the agile document tree.
+  - Navigate: list/filter the doc graph (list) and inspect a single doc with
+    its inbound/outbound links (show).
 """
 
 import argparse
@@ -460,26 +462,24 @@ def cmd_debug(args):
 
 # --- Locate pillar: "where are we in time?" ---
 #
-# Source of truth: the agile document tree under doc/agile/versions/. We reuse
-# ores.codegen's doc_index (the canonical org-frontmatter parser) for discovery
-# rather than re-implementing parsing, and add the one field it does not expose
-# — the current State, which lives in each doc's "* Status" table as a
-# "| State | <STATE> |" row. This keeps Locate dependency-free of org-roam.db
-# (no M-x org-roam-db-sync needed) and always fresh against the working tree.
+# Source of truth: the agile document tree under doc/agile/versions/. Locate
+# uses the bundled doc_index (the canonical org-frontmatter parser, which also
+# backs the `list` and `show` commands) for discovery, and adds the one field
+# it does not expose — the current State, which lives in each doc's "* Status"
+# table as a "| State | <STATE> |" row. This keeps Locate dependency-free of
+# org-roam.db (no M-x org-roam-db-sync needed) and always fresh against the
+# working tree.
 
 STATE_RE = re.compile(r"^\|\s*State\s*\|\s*([A-Z]+)\s*\|", re.MULTILINE)
 IN_FLIGHT_STATE = "STARTED"
 
 def load_doc_index():
-    """Import ores.codegen's doc_index (canonical org parser). None if absent."""
-    scripts_dir = PROJECT_ROOT / "projects" / "ores.codegen" / "scripts"
-    if str(scripts_dir) not in sys.path:
-        sys.path.insert(0, str(scripts_dir))
-    try:
-        import doc_index
-        return doc_index
-    except ImportError:
-        return None
+    """Import the bundled doc_index (canonical org-frontmatter parser)."""
+    src_dir = Path(__file__).resolve().parent
+    if str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
+    import doc_index
+    return doc_index
 
 def read_state(path):
     """Return the State value from a doc's Status table, or None if absent."""
@@ -503,11 +503,6 @@ def _strip_type_prefix(title):
 
 def cmd_where(args):
     di = load_doc_index()
-    if di is None:
-        print("❌ Could not import ores.codegen doc_index "
-              "(expected under projects/ores.codegen/scripts/).", file=sys.stderr)
-        sys.exit(1)
-
     docs = di.load_all()
     versions = [d for d in docs.values() if d.doctype == "version"]
     sprints  = [d for d in docs.values() if d.doctype == "sprint"]
@@ -562,7 +557,18 @@ def cmd_where(args):
             print(f"        [{d.id.upper()}]  {d.rel_path}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Compass: NLP/FTS search for Org-Roam")
+    # `list` and `show` pass every remaining argument straight through to the
+    # bundled doc tools (full flag compatibility, including their own --help).
+    # Short-circuit before argparse so leading options like `--type` are not
+    # swallowed by this parser.
+    if len(sys.argv) >= 2 and sys.argv[1] == "list":
+        import doc_list
+        sys.exit(doc_list.main(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "show":
+        import doc_show
+        sys.exit(doc_show.main(sys.argv[2:]))
+
+    parser = argparse.ArgumentParser(description="Compass: orientation tool for ORE Studio")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     index_parser = subparsers.add_parser("index", help="Index or update notes from org-roam.db")
@@ -582,10 +588,17 @@ def main():
     where_parser.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty",
                               help="Output format: pretty (default) or json")
 
+    # Registered for discoverability in --help; actually handled by the
+    # short-circuit above (which forwards all args to the bundled doc tools).
+    subparsers.add_parser("list",
+                          help="List/filter docs (--regex/--tag/--type/--under/...); 'list --help' for filters")
+    subparsers.add_parser("show",
+                          help="Show one doc by UUID/prefix: metadata, blurb, in/out links")
+
     args = parser.parse_args()
 
-    # Only the org-roam-backed commands need org-roam.db; Locate reads the
-    # agile tree directly.
+    # Only the org-roam-backed commands need org-roam.db; the agile/doc-graph
+    # commands read the working tree directly.
     if args.command in ("index", "search", "debug"):
         validate_paths(args.command)
 

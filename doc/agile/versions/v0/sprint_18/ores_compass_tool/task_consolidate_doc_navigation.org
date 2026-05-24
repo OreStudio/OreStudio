@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 158C96A4-7E0F-4223-9756-639ECF9920D6
+:END:
+#+title: Task: Consolidate doc-navigation into compass and add usage recipes
+#+description: Move doc_index/doc_list/doc_show from ores.codegen into ores.compass as compass list/show; delete codegen copies; repoint references; add compass recipes.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compass:codegen:docs:recipes:refactor:ores_compass_tool:sprint_18:v0:
+#+owner: marco
+#+branch: feature/compass-locate
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][ores.compass repository compass tool]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+End duplication of doc-handling between [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] and =ores.compass=
+by drawing a clean line: /codegen generates, compass navigates/. Move
+the doc-navigation code (=doc_index=, =doc_list=, =doc_show=) out of
+codegen into compass as the =list= and =show= commands; leave document
+/generation/ in codegen (compass will call it as a library for the
+future Scaffold pillar). Add recipes covering compass usage.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][ores.compass repository compass tool]] |
+| Now          | Migration complete; recipes added.     |
+| Waiting on   | Nothing.                               |
+| Next         | Review.                                |
+| Last touched | 2026-05-24                             |
+
+* Acceptance
+
+- =doc_index.py=, =doc_list.py=, =doc_show.py= live under
+  =projects/ores.compass/src/= (moved with history); the codegen
+  =doc_list.sh= / =doc_show.sh= wrappers are deleted.
+- =compass.sh list= and =compass.sh show= reproduce the old behaviour;
+  =search= / =where= still work.
+- No doc-navigation reference to =ores.codegen/doc_*.sh= remains; all
+  ~24 skill/recipe references point at compass.
+- Recipes exist for compass =search=, =where=, and =index= under a new
+  [[id:95A33EA9-DFF9-4937-8A3F-AD82E42A68D3][Compass recipes]] topic, wired into the [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] index.
+- No functionality is duplicated between codegen and compass.
+
+* Plan
+
+1. =git mv= the three modules into =compass/src=; =git rm= the codegen
+   =.sh= wrappers. (=doc_index= REPO_ROOT depth is unchanged, so it
+   still resolves the repo root.)
+2. Make =doc_list.main(argv)= / =doc_show.main(argv)= callable; add
+   =list= / =show= to the compass CLI (pass-through dispatch), and
+   point =load_doc_index= at the bundled module.
+3. Repoint every =doc_list.sh= / =doc_show.sh= reference (skills,
+   recipes, orientation) to =compass.sh list= / =show=; fix prose and
+   descriptions.
+4. Write the three usage recipes and the topic inventory; add the topic
+   to the [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] index.
+5. Update the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][component overview]] to record the new commands, the
+   structure, and the resolved division of labour.
+
+* Notes
+
+Architecture confirmed with the product owner: /functionality must not
+be duplicated between codegen and compass/. Generation stays in codegen
+and is consumed by compass /as a library/; navigation/orientation lives
+in compass. =doc_index= now has a single home (compass).
+
+* Result
+
+Done on =feature/compass-locate=:
+- Moved =doc_index= / =doc_list= / =doc_show= into =compass/src=;
+  deleted codegen's =doc_list.sh= / =doc_show.sh=.
+- Added =compass list= and =compass show= (pass-through to the moved
+  modules); verified =list --type=, =list --count=, =show <prefix>=,
+  =where=, and =search= all work; =py_compile= clean.
+- Repointed 18 path references plus prose/description mentions across
+  skills, recipes and =orientation.org=.
+- Added the [[id:95A33EA9-DFF9-4937-8A3F-AD82E42A68D3][Compass recipes]] topic with =search= / =where= / =index=
+  recipes and indexed it. =validate_docs.sh= passes.

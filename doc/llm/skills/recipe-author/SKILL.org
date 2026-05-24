@@ -37,7 +37,7 @@ invoke.
    in a topic:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --tag <topic> --type recipe
+   ./projects/ores.compass/compass.sh list --tag <topic> --type recipe
    #+end_src
 
    If the topic does not exist yet, create the folder /and/ a
@@ -53,7 +53,7 @@ invoke.
 
 4. /Wire into the topic inventory/ at =doc/recipes/<topic>/<topic>.org=.
 
-5. /Verify/ via =doc_show.sh <uuid-prefix>= — incoming and outgoing
+5. /Verify/ via =compass.sh show <uuid-prefix>= — incoming and outgoing
    links should all resolve.
 
 * Recipes

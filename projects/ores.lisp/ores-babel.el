@@ -23,7 +23,7 @@
 ;;
 ;; What it does:
 ;;   - Sets the default cwd for shell babel blocks to the repo root, so
-;;     paths like `./projects/ores.codegen/doc_list.sh` resolve
+;;     paths like `./projects/ores.compass/compass.sh` resolve
 ;;     consistently no matter where the org file lives in the tree.
 ;;   - Sets the default :results to verbatim so multi-line shell output
 ;;     renders cleanly in #+RESULTS: blocks.

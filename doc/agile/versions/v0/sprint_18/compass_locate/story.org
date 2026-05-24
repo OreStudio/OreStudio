@@ -58,9 +58,10 @@ In execution order:
 * Decisions
 
 - /Source of truth (resolved)./ Locate reads the agile tree directly.
-  It reuses =ores.codegen='s =doc_index= (the canonical org parser) for
-  discovery and adds the one field it lacks — the =State= value in each
-  doc's =* Status= table. Rejected: =doc_list.sh= (does not expose
+  It reuses the bundled =doc_index= (the canonical org parser, shared
+  with the =list= / =show= commands) for discovery and adds the one
+  field it lacks — the =State= value in each doc's =* Status= table.
+  Rejected: routing through the =list= command (it does not expose
   =State=) and the FTS cache (=.compass.db= can be stale; the agile tree
   is always current).
 - /"Current" = lexicographically-highest folder/ for both version and

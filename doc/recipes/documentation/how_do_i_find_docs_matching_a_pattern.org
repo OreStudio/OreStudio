@@ -2,7 +2,7 @@
 :ID: D1AE0786-5F2F-4437-8449-0E480C278A1B
 :END:
 #+title: How do I find docs matching a pattern?
-#+description: List documents by regex on title/description, by filetag, by #+type:, or by path prefix, using doc_list.sh.
+#+description: List documents by regex on title/description, by filetag, by #+type:, or by path prefix, using compass list.
 #+type: recipe
 #+version: 2
 #+level: cross
@@ -20,62 +20,62 @@ title, a tag, the doctype, or roughly which folder it lives in?
 
 * Answer
 
-Run =./projects/ores.codegen/doc_list.sh= with one or more filters.
+Run =./projects/ores.compass/compass.sh list= with one or more filters.
 Each filter narrows the result; combining filters AND's them.
 
 1. /Regex on title or description/ (case-insensitive):
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --regex 'currency'
+   ./projects/ores.compass/compass.sh list --regex 'currency'
    #+end_src
 
 2. /By =#+type:= /  — recipe, knowledge, task, story, sprint, version,
    component, capture, function, skill, meta, ...:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type recipe
-   ./projects/ores.codegen/doc_list.sh --type knowledge
+   ./projects/ores.compass/compass.sh list --type recipe
+   ./projects/ores.compass/compass.sh list --type knowledge
    #+end_src
 
 3. /By filetag/ (repeatable; multiple tags are AND'd):
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --tag cli
-   ./projects/ores.codegen/doc_list.sh --tag build_quality --tag task
+   ./projects/ores.compass/compass.sh list --tag cli
+   ./projects/ores.compass/compass.sh list --tag build_quality --tag task
    #+end_src
 
 4. /Under a path prefix/ — restrict to one subtree (repeatable):
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --under doc/agile/versions/v0
-   ./projects/ores.codegen/doc_list.sh --under doc/recipes/cli
+   ./projects/ores.compass/compass.sh list --under doc/agile/versions/v0
+   ./projects/ores.compass/compass.sh list --under doc/recipes/cli
    #+end_src
 
 5. /Combine filters/ for a precise lookup:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh \
+   ./projects/ores.compass/compass.sh list \
        --type recipe --tag cli --regex 'list'
    #+end_src
 
 6. /Just count/ how many docs match — useful for sanity checks:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --type recipe --count
+   ./projects/ores.compass/compass.sh list --type recipe --count
    #+end_src
 
 7. /Pipe paths into grep/xargs/ when you want to read or edit the
    matched files:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --tag cli --paths | \
+   ./projects/ores.compass/compass.sh list --tag cli --paths | \
        xargs grep -l 'compute_host'
    #+end_src
 
 8. /Sort by recency/ — most recently touched first:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --sort updated | tail -20
+   ./projects/ores.compass/compass.sh list --sort updated | tail -20
    #+end_src
 
 * Output format
@@ -91,9 +91,9 @@ emits a single integer.
 
 * Script
 
-The wrapper is =projects/ores.codegen/doc_list.sh=. It delegates to
-=scripts/doc_list.py=, which uses the shared =doc_index.py= library
-(see [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] for the model).
+The wrapper is =projects/ores.compass/compass.sh list=. It delegates to
+=projects/ores.compass/src/doc_list.py=, which uses the shared
+=doc_index.py= library (see [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] for the model).
 
 * Tested by
 

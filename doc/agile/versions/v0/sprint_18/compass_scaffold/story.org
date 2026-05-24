@@ -38,11 +38,12 @@ that new =.org= docs are produced by codegen only — never hand-written.
 * Acceptance
 
 - =compass.sh add story|task|sprint|recipe|capture …= creates the
-  artefact by shelling out to =generate_v2_doc.sh= with the right
-  =--type=, =--slug=, =--parent-dir=, =--title=, =--description= and
-  =--tags=.
+  artefact by calling [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] /as a library/ (its v2-doc generation
+  API), passing type, slug, parent-dir, title, description and tags.
 - Compass does /not/ reimplement frontmatter, UUID minting, or template
-  rendering — it only assembles the codegen call.
+  rendering, and does /not/ copy the generator into compass — generation
+  stays in codegen, navigation stays in compass, no functionality is
+  duplicated between the two.
 - "Current" defaults are resolved via the /Locate/ pillar: =add task=
   targets the current story, =add story= targets the current sprint,
   unless an explicit parent is given.
@@ -56,16 +57,20 @@ that new =.org= docs are produced by codegen only — never hand-written.
 
 In execution order (to be scaffolded when the story starts):
 
-- Map each =compass add <type>= subcommand to the corresponding
-  =generate_v2_doc.sh= flag set (see [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]]).
+- Expose codegen's v2-doc generation as an importable function (refactor
+  =generate_v2_doc= so it is callable in-process, not only as a script),
+  then map each =compass add <type>= subcommand onto it (see
+  [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]]).
 - Use /Locate/ to resolve the current sprint/story for default parents.
 - Implement the =add= dispatcher and its argument validation.
 - Document the CLI and update the component overview.
 
 * Decisions
 
-- Resolves the umbrella "codegen boundary" open question in favour of
-  /wrapping/: compass orchestrates codegen, never duplicates it.
+- /Division of labour:/ codegen /generates/, compass /navigates/.
+  Scaffold uses codegen /as a library/ (in-process), not by shelling
+  out and not by copying the generator. No functionality is duplicated
+  between the two components.
 - Depends on the /Locate/ pillar landing first (for "current"
   resolution); can ship with explicit-parent-only support if Locate
   slips.

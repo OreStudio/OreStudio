@@ -32,7 +32,7 @@ fully-formed designs through natural collaborative dialogue.
    skills and knowledge docs before asking. Use the doc tools:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_list.sh --regex '<keyword>'
+   ./projects/ores.compass/compass.sh list --regex '<keyword>'
    #+end_src
 
 2. /Ask questions one at a time/. Multiple choice when possible;

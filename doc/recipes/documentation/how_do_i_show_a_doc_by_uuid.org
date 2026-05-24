@@ -2,7 +2,7 @@
 :ID: E8231C22-CB31-4D85-A9C0-7602953764FF
 :END:
 #+title: How do I show a doc by UUID?
-#+description: Given a UUID (or unique prefix), print a document's header, blurb, outgoing links, and incoming links using doc_show.sh.
+#+description: Given a UUID (or unique prefix), print a document's header, blurb, outgoing links, and incoming links using compass show.
 #+type: recipe
 #+version: 2
 #+level: cross
@@ -15,25 +15,25 @@ folder, see [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matchi
 
 * Question
 
-I have a UUID (e.g. from an =[[id:...]]= link, a =doc_list= row, or
+I have a UUID (e.g. from an =[[id:...]]= link, a =compass list= row, or
 a glossary entry) — how do I see the document it points to, the
 context around it, and the docs that link to or from it?
 
 * Answer
 
-Run =./projects/ores.codegen/doc_show.sh= with the UUID. Any
+Run =./projects/ores.compass/compass.sh show= with the UUID. Any
 unambiguous prefix of 6 or more hex characters is accepted.
 
 1. /By full UUID/:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_show.sh 47341fc6-b8fb-499e-aae0-f4ee0abfda05
+   ./projects/ores.compass/compass.sh show 47341fc6-b8fb-499e-aae0-f4ee0abfda05
    #+end_src
 
 2. /By prefix/ — short but unambiguous (typically 8 chars is plenty):
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_show.sh 47341fc6
+   ./projects/ores.compass/compass.sh show 47341fc6
    #+end_src
 
 3. /Heading-level anchors/ resolve too — sub-headings with their own
@@ -42,8 +42,8 @@ unambiguous prefix of 6 or more hex characters is accepted.
    tool prints the parent doc and the section body:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/doc_show.sh fabb50e5   # Release entry in glossary
-   ./projects/ores.codegen/doc_show.sh 7d72a9da   # Sprint closure phase
+   ./projects/ores.compass/compass.sh show fabb50e5   # Release entry in glossary
+   ./projects/ores.compass/compass.sh show 7d72a9da   # Sprint closure phase
    #+end_src
 
 * Output sections
@@ -72,18 +72,18 @@ The two doc tools compose:
 
 #+begin_src sh :results verbatim
 # 1. find — list candidates
-./projects/ores.codegen/doc_list.sh --regex 'release'
+./projects/ores.compass/compass.sh list --regex 'release'
 
 # 2. focus — pick a UUID and inspect it
-./projects/ores.codegen/doc_show.sh fabb50e5
+./projects/ores.compass/compass.sh show fabb50e5
 #+end_src
 
 * Script
 
-The wrapper is =projects/ores.codegen/doc_show.sh=. It calls
-=scripts/doc_show.py=, which uses the shared =doc_index.py= library
-(file-level docs + heading anchors + inbound index, all built on a
-single walk of every =.org= file under the repo).
+The wrapper is =projects/ores.compass/compass.sh show=. It calls
+=projects/ores.compass/src/doc_show.py=, which uses the shared
+=doc_index.py= library (file-level docs + heading anchors + inbound
+index, all built on a single walk of every =.org= file under the repo).
 
 * Tested by
 

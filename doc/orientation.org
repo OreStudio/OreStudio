@@ -89,10 +89,10 @@ Before generating any document, read the contract:
 
 When you need to /find/ something in the doc graph:
 
-- [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — =doc_list.sh= over
+- [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — =compass list= over
   regex, tag, =#+type:=, or path prefix. Faster than =grep -r= and
   it understands the doctype taxonomy.
-- [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — =doc_show.sh= prints a doc's
+- [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — =compass show= prints a doc's
   blurb, outgoing links, and incoming links. Accepts UUID prefixes
   and resolves heading-level anchors (e.g. glossary entries).
 - The full set of doc-graph operations lives in the [[id:95FF6AF4-2320-4CB6-A007-B016B7DA16ED][Documentation

@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: DEAC11AE-3753-49FA-994A-98594162A605
+:END:
+#+title: How do I index notes for compass?
+#+description: Use compass index to build/update the local FTS cache from org-roam.db before searching.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :compass:search:index:recipe:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+
+Prerequisite for the [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][search]] pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]]. Indexing
+reads =org-roam.db=, so sync it first in Emacs with =M-x
+org-roam-db-sync=.
+
+* Question
+
+How do I build (or refresh) the local search cache compass searches over?
+
+* Answer
+
+Run =compass.sh index=. It reads =org-roam.db= at the repo root and
+writes an FTS5 cache to =.compass.db= (git-ignored), updating only files
+whose mtime changed:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh index
+#+end_src
+
+To discard the cache and rebuild from scratch (e.g. after large
+renames or an org-roam schema change):
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh index --rebuild
+#+end_src
+
+Inspect what is indexed with =debug=:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh debug
+./projects/ores.compass/compass.sh debug -f glossary
+#+end_src
+
+If =org-roam.db= is missing, compass tells you to run
+=M-x org-roam-db-sync= first.
+
+* Script
+
+=projects/ores.compass/compass.sh index= → =src/compass.py= (=cmd_index=),
+reading =org-roam.db= read-only and writing =.compass.db=.
+
+* Tested by
+
+Manual smoke test. =index= is incremental by mtime; =--rebuild= forces a
+full pass.
+
+* See also
+
+- [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][How do I search docs with compass?]] — query the cache this builds.
+- [[id:41E5F9A8-1C2B-4ECA-8EA0-1ABBAB0B6A31][How do I see where we are?]] — orientation (needs no index).

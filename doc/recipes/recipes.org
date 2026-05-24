@@ -21,6 +21,7 @@ recipes; each topic has its own inventory that lists its recipes.
 - [[id:69796171-66F4-4459-913D-01523FC27E54][Codegen recipes]] — run the C++ generator, scaffold v2 docs.
 - [[id:95FF6AF4-2320-4CB6-A007-B016B7DA16ED][Documentation recipes]] — find docs, inspect links, author new
   recipes.
+- [[id:95A33EA9-DFF9-4937-8A3F-AD82E42A68D3][Compass recipes]] — the compass tool: orient, search, index, navigate.
 - [[id:74BAC855-EC3E-49A7-832F-D0EAE85C1B14][Emacs recipes]] — org-babel and other emacs-specific workflows.
 - [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI recipes]] — using the CLI tool with entity-based syntax.
 - [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][Shell recipes]] — using the client REPL.

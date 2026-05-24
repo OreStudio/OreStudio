@@ -61,7 +61,7 @@ that question is.
 
      #+begin_src org
      ,#+begin_src sh :results verbatim
-     ./projects/ores.codegen/doc_list.sh --type recipe --count
+     ./projects/ores.compass/compass.sh list --type recipe --count
      ,#+end_src
      #+end_src
 
@@ -96,10 +96,10 @@ that question is.
 
    #+begin_src sh :results verbatim
    # the new recipe should show up
-   ./projects/ores.codegen/doc_list.sh --type recipe --regex 'clear the cache'
+   ./projects/ores.compass/compass.sh list --type recipe --regex 'clear the cache'
 
    # and inspect its links
-   ./projects/ores.codegen/doc_show.sh <uuid-from-the-row-above>
+   ./projects/ores.compass/compass.sh show <uuid-from-the-row-above>
    #+end_src
 
 * Conventions to keep an eye on

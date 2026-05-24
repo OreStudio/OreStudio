@@ -28,10 +28,10 @@ Apply the structural isolation strategy to permanently fix compilation failures 
 |--------------+----------------------------------------|
 | State        | STARTED                                |
 | Parent story | [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] |
-| Now          | Implementation in progress.            |
-| Waiting on   | Nothing.                               |
-| Next         | Step 1: increase Clang bracket depth.  |
-| Last touched | 2026-05-24                             |
+| Now          | PR #819 raised; awaiting CI validation. |
+| Waiting on   | Windows CI build confirmation.          |
+| Next         | Merge PR 819 after CI passes.           |
+| Last touched | 2026-05-24                              |
 
 * Acceptance
 

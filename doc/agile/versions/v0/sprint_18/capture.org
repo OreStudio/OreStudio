@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 14606A1B-2742-DE34-F813-B4E3B736AEF1
 :END:
-#+title: Sprint 16 Capture
+#+title: Sprint 18 Capture
 #+description: Assorted notes taken during Sprint which have not yet been filled but we do not want to forget.
 #+type: capture
 #+version: 2
@@ -11,23 +11,15 @@
 #+updated: 2026-05-23
 #+todo: STARTED | DONE
 
-This page is the short-lived [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] document for [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] of ORE Studio. At
+This page is the short-lived [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] document for [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] of ORE Studio. At
 the end of the sprint, short-lived captures will migrate to their next
-destination (sprint backlog or [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]]).
+destination ([[id:1737C00C-699A-475A-BC94-743C6CDA1001][sprint backlog]] or [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]]).
 
 * Agile
 
 - add a template for sprint captures. Very often we are doing something and we
   just need to jot down a quick annotation, but if it goes into product backlog
   it will get lost. Ideally it should start in sprint and then get filled.
-- add linkage between previous sprint and next sprint to make navigation easier.
-- make release notes a property of the sprint table.
-- add to sprint table:
-  : | Previous | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]] |
-- UUIDs of sprints seem lower case, check codegen script.
-- we only updated sprint 16-18, rest needs updating with LLM.
-- add PR to tasks:
-  : | PR | [[https://github.com/OreStudio/OreStudio/pull/803][#803]] |
 - add a memory for the tmp directory.
 - add recipes to do doc commands (list etc). Link it to skills.
 - add a skill which drains capture buffer: for each entry decides to either file

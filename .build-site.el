@@ -96,7 +96,6 @@
 ;; syntax highlighting, but we never want CI to execute src blocks.
 ;; Developers refresh #+RESULTS: manually via the org-babel-refresh recipe.
 (setq org-export-use-babel nil)
-(setq org-export-with-broken-links 'mark)
 
 ;; Customize the HTML output
 (setq org-html-validation-link nil            ;; Don't show validation link

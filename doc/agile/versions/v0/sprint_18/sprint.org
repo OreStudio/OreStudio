@@ -54,7 +54,7 @@ In execution order.
 | [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]]              | STARTED | 2026-05-24 |            | Build backlog-refiner and sprint-planner skills/recipes; set sprint 18 mission.              |
 | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] | BACKLOG | 2026-05-24 |        | =deploy_manual= target builds =user_manual.org= to PDF; commit and link the result.         |
 | [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][ores.compass repository compass tool]]   | STARTED | 2026-05-24 |            | Python repository compass: temporal orientation, semantic doc search, agile scaffolding.        |
-| [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][ores.compass Locate — temporal orientation]] | BACKLOG | | | =where=/=status=: report current version, sprint, and in-flight stories and tasks from the graph. |
+| [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][ores.compass Locate — temporal orientation]] | STARTED | 2026-05-24 | | =where=/=status=: report current version, sprint, and in-flight stories and tasks from the graph. |
 | [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][ores.compass Scaffold — agile authoring]] | BACKLOG | | | =add story/task/sprint/recipe=: create agile artefacts from the CLI by delegating to ores.codegen. |
 
 * Retrospective

@@ -26,11 +26,11 @@ highest sprint folder and its =STARTED= items" ritual with one command.
 
 | Field         | Value                                           |
 |---------------+-------------------------------------------------|
-| State         | BACKLOG                                          |
+| State         | STARTED                                          |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                       |
-| Now           | Not yet started (sprint backlog).               |
-| Waiting on    | Scope confirmation on the umbrella [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][story]].          |
-| Next          | Decide source of truth, then implement =where=. |
+| Now           | =where= / =status= implemented on =feature/compass-locate=. |
+| Waiting on    | Nothing.                                         |
+| Next          | Smoke-tested; PR for review.                     |
 | Last touched  | 2026-05-24                                       |
 
 * Acceptance
@@ -39,31 +39,33 @@ highest sprint folder and its =STARTED= items" ritual with one command.
   current sprint — title and =:ID:= for each — where "current" is the
   lexicographically-highest version/sprint folder, matching the rule
   the [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile product owner]] skill already uses.
-- It lists every story and task whose =#+todo:= state is =STARTED=,
-  grouped by sprint, with file path and =:ID:=.
-- The query runs without an Emacs round-trip — it reads the cached
-  index (=.compass.db=) and/or walks =doc/agile/versions/= directly.
+- It lists every story and task under the current sprint whose =State=
+  is =STARTED=, with file path and =:ID:=.
+- The query runs without an Emacs round-trip — it reads
+  =doc/agile/versions/= directly, so it does not depend on
+  =org-roam-db-sync= or =.compass.db=.
 - Output is available in =pretty= (human) and =json= (tooling), matching
   the existing =search= formats.
-- The relationship to [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]'s =doc_list.sh= is resolved: compass
-  /wraps or reuses/ it rather than duplicating the listing logic.
+- The relationship to [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] is resolved: compass /reuses/ its
+  =doc_index= parser rather than duplicating the listing logic.
 
 * Tasks
 
-In execution order (to be scaffolded when the story starts):
+In execution order:
 
-- Decide the source of truth: cached FTS index vs filesystem walk vs
-  wrapping =doc_list.sh=.
-- Implement the =where= / =status= subcommand with =pretty= + =json=
-  output.
-- Smoke-test against the live agile tree; document in the component
-  overview =Entry points=.
+- [[id:CCD6870A-2236-482A-AC09-49ED6DCF6786][Task: Implement the where command]]
 
 * Decisions
 
-- Leaning towards /wrapping/ =doc_list.sh= for version/sprint discovery
-  and reading =#+todo:= directly for in-flight items, to avoid
-  duplicating codegen (umbrella open question: "codegen boundary").
+- /Source of truth (resolved)./ Locate reads the agile tree directly.
+  It reuses =ores.codegen='s =doc_index= (the canonical org parser) for
+  discovery and adds the one field it lacks — the =State= value in each
+  doc's =* Status= table. Rejected: =doc_list.sh= (does not expose
+  =State=) and the FTS cache (=.compass.db= can be stale; the agile tree
+  is always current).
+- /"Current" = lexicographically-highest folder/ for both version and
+  sprint, matching the [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile product owner]] skill's rule (=sprint_NN=
+  is zero-padded, so this is correct up to 99 sprints).
 
 * Out of scope
 

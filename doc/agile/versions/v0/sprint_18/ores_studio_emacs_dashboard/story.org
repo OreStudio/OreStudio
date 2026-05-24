@@ -28,9 +28,9 @@ offers an ORE Studio shell, and shows the ORE splash image.
 |---------------+--------------------------------------------|
 | State         | STARTED                                    |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                  |
-| Now           | Tasks scaffolded; audit/design task first. |
+| Now           | Tasks scaffolded; [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][audit/design task]] first.  |
 | Waiting on    | Nothing.                                   |
-| Next          | Begin task_audit_and_design.               |
+| Next          | Begin [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][task_audit_and_design]].              |
 | Last touched  | 2026-05-24                                 |
 
 * Acceptance

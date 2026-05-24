@@ -30,7 +30,7 @@ command groups, bookmarks, recipe links, ORE shell, and splash image.
 |--------------+--------------------------------------------------|
 | State        | BACKLOG                                          |
 | Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                       |
-| Now          | Blocked on audit/design task.                    |
+| Now          | Blocked on [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][audit/design task]].                   |
 | Waiting on   | [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][task_audit_and_design]] sign-off.                  |
 | Next         | Implement once design is approved.               |
 | Last touched | 2026-05-24                                       |

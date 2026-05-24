@@ -42,7 +42,7 @@ group layout, and which helpers it will reuse.
 - Every =.el= file classified with a rationale.
 - Dashboard architecture written up: sections, env-binding approach,
   command groups, helper dependencies.
-- Design signed off by user before =task_implement_dashboard= starts.
+- Design signed off by user before [[id:696612A2-A9D5-47FE-BC5A-2F90FDCA4E15][task_implement_dashboard]] starts.
 
 * Plan
 

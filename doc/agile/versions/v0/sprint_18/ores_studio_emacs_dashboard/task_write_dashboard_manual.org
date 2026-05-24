@@ -29,7 +29,7 @@ dashboard, each command group, bookmarks, and the ORE Studio shell.
 |--------------+----------------------------------------------------------|
 | State        | BACKLOG                                                  |
 | Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                               |
-| Now          | Blocked on implement task.                               |
+| Now          | Blocked on [[id:696612A2-A9D5-47FE-BC5A-2F90FDCA4E15][implement task]].                              |
 | Waiting on   | [[id:696612A2-A9D5-47FE-BC5A-2F90FDCA4E15][task_implement_dashboard]] merged.                         |
 | Next         | Write manual chapter once implementation is stable.      |
 | Last touched | 2026-05-24                                               |

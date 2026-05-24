@@ -38,7 +38,7 @@ link to the folder's index file. Create the five missing index files
 
 * Acceptance
 
-- =doc/compass.org= — every folder section has a "See [[id:UUID][Title]] for the full
+- =doc/compass.org= — every folder section has a "See =[[id:UUID][Title]]= for the full
   index." sentence.
 - =doc/meta/meta.org= — new index listing the 5 contract docs.
 - =doc/analysis/analysis.org= — new index listing analysis files with IDs.
@@ -76,7 +76,7 @@ Folders already linked in compass.org before this task (no changes needed):
 - =doc/investigations/investigations.org= [[[id:249FEDB9-7010-4124-A593-A01160E4B56E][249FEDB9]]] — created; lists 1 file.
 - =doc/prompts/prompts.org= [[[id:9E971D53-0501-4B56-AD85-037057E295D8][9E971D53]]] — created; placeholder (empty folder).
 - =doc/samples/samples.org= [[[id:49FBC025-4B13-47E3-AC85-C86A81CA3056][49FBC025]]] — created; lists all image assets.
-- =doc/compass.org= — added "See [[id:UUID][Title]]" reference to: =meta/=, =agile/=,
+- =doc/compass.org= — added "See =[[id:UUID][Title]]=" reference to: =meta/=, =agile/=,
   =agile/versions/=, =agile/product_backlog/=, =recipes/=, =knowledge/=,
   =plans/=, =prompts/=, =samples/=, =analysis/=, =investigations/=.
   Added =investigations/= to the folder layout tree.

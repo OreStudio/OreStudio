@@ -9,7 +9,7 @@
 #+filetags: :refactor:build:reflect_cpp:rfl_complexity_resolution:sprint_18:v0:
 #+owner: marco
 #+branch: feature/rfl-complexity-isolation
-#+pr:
+#+pr: 819
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-23
@@ -47,6 +47,18 @@ Apply the structural isolation strategy to permanently fix compilation failures 
 3.  **Perform TU Split**: Move =getTradeDetail= from =ClientManagerTrades.cpp= to =ClientManagerTradeDetail.cpp=.
 4.  **Implement Two-Phase Parse**: Refactor the isolated =getTradeDetail= to perform two separate =rfl::json::read= calls.
 5.  **Validate**: Verify the build on all target platforms.
+
+* PRs
+
+| PR  | Title                                                     |
+|-----+-----------------------------------------------------------|
+| 819 | [ores.qt.api] Implement triple isolation for RFL complexity |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
 
 * Notes
 

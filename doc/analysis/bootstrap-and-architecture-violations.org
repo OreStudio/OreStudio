@@ -602,3 +602,8 @@ Track A from Part 4 has been implemented (mandatory role drops in
 | IAM bootstrap-mode service         | ~projects/ores.iam.core/src/service/bootstrap_mode_service.cpp~ |
 | RBAC design                        | ~doc/plans/2026-03-28-service-rbac-design.org~              |
 | WSL investigation (predecessor)    | ~doc/analysis/wsl-db-permission-investigation.org~          |
+
+* See also
+
+- [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][System Bootstrapping Concepts and Provisioning]] — user-facing
+  walkthrough of the bootstrap sequence and provisioning wizards.

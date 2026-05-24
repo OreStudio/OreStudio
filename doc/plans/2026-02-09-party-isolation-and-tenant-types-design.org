@@ -332,3 +332,11 @@ None at this time. The following items are deferred to separate stories:
 - Self-registration and approval workflow for production tenants.
 - Single-tenant mode implementation.
 - Party selection protocol changes (login flow extension).
+
+* See also
+
+- [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][System Bootstrapping Concepts and Provisioning]] — user-facing
+  explanation of tenants, tenant types, parties, party hierarchy, and
+  the provisioning wizards (System Provisioner, Tenant Provisioner,
+  Party Provisioner).
+- [[id:914738C6-7C77-41CD-A949-55DBBE0B6908][ORE Studio Manuals]] — index of all user and developer guides.

@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: A2B3BFD0-F44C-48F3-BB01-6BAECB851356
+:END:
+#+title: Story: Remove unused GitHub Actions workflows
+#+description: Delete dormant/unused workflows (the Gemini ones) now that PR review comes from the gemini-code-assist app.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :ci:github:cleanup:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The =.github/workflows/= directory contains only workflows we actually
+use. The four dormant Gemini workflows are removed; CI and the
+gemini-code-assist PR review are unaffected.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                              |
+| Now           | Complete — four Gemini workflows removed. |
+| Waiting on    | Nothing.                               |
+| Next          | Done.                                  |
+| Last touched  | 2026-05-24                             |
+
+* Acceptance
+
+- These four workflow files are deleted: =gemini-cli.yml=,
+  =gemini-issue-automated-triage.yml=,
+  =gemini-issue-scheduled-triage.yml=, =gemini-pr-review.yml=.
+- No remaining references to them anywhere in the repo.
+- The remaining ten workflows (CI, site, codeql, misspell, nightly,
+  coverage, stale) are untouched.
+- PR review still works — it is provided by the =gemini-code-assist=
+  GitHub App, independent of these workflows.
+
+* Tasks
+
+In execution order:
+
+- [[id:15222E31-B0CD-4BAC-93E0-713BADF3CD95][Task: Delete the four Gemini workflows]]
+
+* Decisions
+
+- /PR review is App-driven, not workflow-driven./ The automatic reviews
+  come from the =gemini-code-assist= GitHub App. =gemini-pr-review.yml=
+  was dormant anyway (=on: workflow_dispatch= only; its =pull_request=
+  triggers were commented out), so deleting it does not affect reviews.
+- Kept =stale.yml= and all CI workflows; only the Gemini set was unused.
+
+* Out of scope
+
+- The =gemini-code-assist= GitHub App configuration (managed in repo
+  settings, not via a workflow file).
+- Any change to the active CI workflows.

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 15222E31-B0CD-4BAC-93E0-713BADF3CD95
+:END:
+#+title: Task: Delete the four Gemini workflows
+#+description: Remove the four unused Gemini workflow files; PR review continues via the gemini-code-assist app.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ci:github:cleanup:remove_unused_workflows:sprint_18:v0:
+#+owner: marco
+#+branch: feature/prune-unused-workflows
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A2B3BFD0-F44C-48F3-BB01-6BAECB851356][Remove unused GitHub Actions workflows]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove the four unused Gemini workflow files from =.github/workflows/=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:A2B3BFD0-F44C-48F3-BB01-6BAECB851356][Remove unused GitHub Actions workflows]] |
+| Now          | Complete — four files deleted.         |
+| Waiting on   | Nothing.                               |
+| Next         | Review.                                |
+| Last touched | 2026-05-24                             |
+
+* Acceptance
+
+- =gemini-cli.yml=, =gemini-issue-automated-triage.yml=,
+  =gemini-issue-scheduled-triage.yml= and =gemini-pr-review.yml= are
+  deleted.
+- =grep= finds no remaining references to them in the repo.
+- The other ten workflows are untouched.
+
+* Plan
+
+1. Confirm the live PR reviewer is the =gemini-code-assist= App, not a
+   workflow (so deleting =gemini-pr-review.yml= is safe). (done)
+2. Check for references to the four files elsewhere (badges, docs). (done — none)
+3. =git rm= the four files; also clear local =misspell.yml.~…~= emacs
+   backup cruft from the folder. (done)
+
+* Notes
+
+References found were all internal to the deleted files. The three
+=misspell.yml.~hash~= files were untracked emacs backups (git-ignored
+via =*~=) and were removed from the working tree.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Deleted the four Gemini workflow files; =.github/workflows/= now holds
+ten active workflows. No references remained. PR review (the
+=gemini-code-assist= App) is unaffected.

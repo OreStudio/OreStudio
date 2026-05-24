@@ -1,0 +1,5 @@
+# ores.compass dependencies.
+#
+# The search slice (FTS5 over org-roam.db) runs on the Python standard
+# library alone (sqlite3, argparse, json). Optional NLP/embedding
+# dependencies are added here as the semantic-search capability grows.

@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 7D1E3657-FFB1-4171-9AFC-E46E7D406776
+:END:
+#+title: Task: Define scope and structure for ores.compass
+#+description: Brainstorm and document the purpose, capabilities, and project structure of ores.compass before implementation.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compass:scoping:python:ores_compass_tool:sprint_18:v0:
+#+owner: marco
+#+branch: feature/compass-tool
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][ores.compass repository compass tool]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Decide and document /what ores.compass is/ before any feature work:
+its purpose, its capabilities, its project layout, and how it relates
+to the existing =scripts/compass.py= prototype and to [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].
+The deliverable is the project skeleton plus a filled-in
+[[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][component overview]] that the rest of the story builds against.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][ores.compass repository compass tool]] |
+| Now          | Complete — scope accepted.             |
+| Waiting on   | Nothing.                               |
+| Next         | Pillars tracked as their own stories.  |
+| Last touched | 2026-05-24                             |
+
+* Acceptance
+
+- =projects/ores.compass/= created as a regular Python project:
+  =compass.sh=, =requirements.txt=, =src/__init__.py=,
+  =src/compass.py= (relocated from =scripts/=), =modeling/=.
+- =modeling/component_overview.org= states the purpose, the three
+  pillars (Locate / Search / Scaffold), inputs/outputs, structure, and
+  open design questions; passes =validate_docs.sh=.
+- The three open design questions (codegen boundary, cache freshness,
+  name overlap) are recorded.
+- =compass.sh search= still runs from the new location.
+
+* Plan
+
+1. Mine the Sprint 18 capture (=* Tools=) and the existing
+   =compass.py= for the intended capabilities. (done)
+2. Scaffold the project and relocate the prototype with =git mv=. (done)
+3. Write =component_overview.org= with the three-pillar design and the
+   open questions. (done)
+4. Scaffold this story + task in Sprint 18 and wire the story into the
+   sprint's =* Stories= table. (done)
+5. Review the scope with the product owner; fold conclusions into the
+   story's =* Decisions=.
+
+* Notes
+
+Capture source (Sprint 18 =capture.org=, =* Tools=): "create a tool
+called compass which tells you: where we are in time …; given a NLP
+query, gives you relevant docs (uses cached data); add story to sprint,
+add task to story, add sprint, add recipe, etc."
+
+Related captures that touch the same surface but are tracked
+separately: the Agile "capture-drain skill" and the Emacs "capture
+command that locates the latest capture.org".
+
+* Result
+
+Scope accepted. Outcomes:
+
+- =projects/ores.compass/= created as a regular Python project; the FTS
+  prototype was relocated there (=git mv= from =scripts/=) and the
+  =search= pillar verified working from its new home (indexed 1,609
+  docs, search returns results).
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][component_overview.org]] documents purpose, the three pillars, I/O,
+  structure, and three open questions; a =ores.compass.puml= diagram
+  was added; =validate_docs.sh= passes.
+- The "codegen boundary" question is resolved in favour of /wrapping/
+  codegen — recorded in the [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][Locate]] and [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][Scaffold]] story decisions.
+- The /Locate/ and /Scaffold/ pillars are promoted to their own
+  sprint-backlog stories.
+- Logged the =doc/compass.org= disambiguation action (tool vs the
+  general cybernetic orientation concept).

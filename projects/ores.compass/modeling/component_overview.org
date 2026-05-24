@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 6F7A122F-BC0F-4F3E-BA46-8B793FF15D10
+:END:
+#+title: ores.compass
+#+description: Python repository compass: temporal orientation, semantic doc search, and agile scaffolding over the org-roam graph.
+#+type: component
+#+version: 2
+#+level: cross
+#+filetags: :compass:tooling:python:docs:agile:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.compass component diagram
+#+caption: ores.compass
+[[file:ores.compass.png][file:ores.compass.png]]
+
+* Summary
+
+=ores.compass= is a small Python command-line tool that orients a
+contributor (human or LLM) inside the ORE Studio repository. It answers
+three questions against the project's =org-roam= documentation graph:
+/where are we in time?/, /which documents are relevant to X?/, and /how
+do I add a new agile artefact?/. It is the executable counterpart to the
+documentation [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — the doc map tells a reader where things are;
+the tool computes the answer on demand from cached data. The search
+slice is implemented today; temporal orientation and agile scaffolding
+are planned (see [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][the story]]).
+
+* Capabilities
+
+Three pillars, drawn from the Sprint 18 capture (=* Tools=):
+
+1. /Locate — "where are we in time?"/ Report the current [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]], the
+   current [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]], and the [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][stories]] / [[id:31C868B9-306E-4282-BA8C-07E647021B34][tasks]] currently executing
+   (TODO state =STARTED=). Derivable from the =#+type:= and =#+todo:=
+   of the agile docs. /Planned/ — [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][Locate story]].
+
+2. /Search — semantic document retrieval./ Given a query, return the
+   most relevant documents from a cached index of the graph. Today this
+   is SQLite FTS5 over the text of every org node; future work may add
+   embedding-based ranking. /Implemented./
+
+3. /Scaffold — agile authoring./ Add a story to a sprint, a task to a
+   story, a sprint, a recipe, a capture, etc. Delegates to the existing
+   codegen rather than re-implementing it. /Planned/ — [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][Scaffold story]].
+
+* Inputs
+
+- =.org-roam.db= (or =org-roam.db=) at the repository root — the
+  EmacSQL database produced by =M-x org-roam-db-sync=. The single
+  source of truth for node text, titles, tags, outline paths, and
+  links.
+- The agile document tree under =doc/agile/versions/= — sprints,
+  stories, tasks and their =#+todo:= states (consumed by /Locate/).
+- A search query string (consumed by /Search/).
+
+* Outputs
+
+- =.compass.db= at the repository root — a local SQLite FTS5 cache
+  (=compass_fts= + =compass_meta=) rebuilt incrementally by mtime. Git
+  ignored.
+- Search results in three formats: =pretty= (default, human), =line=
+  (=UUID "path" "match"=, scriptable), and =json= (for tooling such as
+  the knowledge-graph site).
+- /Planned:/ a temporal-orientation report, and new v2 =.org= artefacts
+  (via codegen) for the scaffold pillar.
+
+* Entry points
+
+- =projects/ores.compass/compass.sh= — bootstraps the virtualenv (and
+  installs =requirements.txt= if present) and forwards to the Python
+  CLI.
+- =projects/ores.compass/src/compass.py= — the CLI. Current
+  subcommands: =index [--rebuild]=, =search <query> [-l N] [-f FMT]=,
+  =debug [-f FILE]=. Planned: =where= / =status= (Locate) and
+  =add <type> ...= (Scaffold).
+
+* Dependencies
+
+- Python 3 standard library only for the search slice (=sqlite3=,
+  =argparse=, =json=, =pathlib=). No third-party packages yet.
+- =org-roam= (in Emacs) to populate =.org-roam.db=. Compass never
+  writes to it; it opens it read-only.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the intended backend for the /Scaffold/ pillar
+  (=generate_v2_doc.sh=) and a sibling for /Locate/ (=doc_list.sh=,
+  =doc_show.sh=). Compass orchestrates these rather than duplicating
+  them.
+
+* Structure
+
+#+begin_src text
+projects/ores.compass/
+├── compass.sh                 # venv bootstrap + CLI entry wrapper
+├── requirements.txt           # empty for now (stdlib only)
+├── src/
+│   ├── __init__.py
+│   └── compass.py             # current monolith: index / search / debug
+└── modeling/
+    ├── component_overview.org # this document
+    └── ores.compass.puml      # component diagram source
+#+end_src
+
+As the Locate and Scaffold pillars land, =compass.py= is expected to
+split into per-pillar modules (=index.py=, =search.py=, =locate.py=,
+=scaffold.py=) behind a thin =compass.py= dispatcher. Kept as a single
+file until the second pillar justifies the split.
+
+* Open questions
+
+- /Codegen boundary./ Scaffold and Locate overlap with
+  =ores.codegen='s =generate_v2_doc.sh= / =doc_list.sh=. Confirm
+  compass /wraps/ those scripts (no duplication) versus growing its own.
+- /Cache freshness./ Both Locate and Search read =.compass.db=, which
+  is only as fresh as the last =index= run, which is only as fresh as
+  the last =org-roam-db-sync=. Decide how/when to refresh (manual,
+  pre-command auto-index, or a git hook).
+- /Name overlap./ The tool shares its name with the documentation
+  [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]]. Intentional (both orient the reader) but should be called
+  out wherever both are referenced. /Action:/ update =doc/compass.org=
+  to distinguish the two senses — =ores.compass=, the executable tool
+  in =projects/=, versus "compass" the general orienting concept (the
+  doc map, and the cybernetic notion of a device that tells a system
+  where it is and which way it is heading). The doc map should note the
+  tool as its executable counterpart and link to the [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][ores.compass
+  story]].
+
+* See also
+
+- [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][Story: ores.compass repository compass tool]] — the sprint story.
+- [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — the documentation map this tool complements.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the codegen backend for scaffolding and listing.

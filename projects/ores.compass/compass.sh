@@ -78,4 +78,4 @@ if [ ${#PYTHON_ARGS[@]} -eq 0 ]; then
 fi
 
 # --- Execute the Python script ---
-python3 compass.py "${PYTHON_ARGS[@]}"
+python3 src/compass.py "${PYTHON_ARGS[@]}"

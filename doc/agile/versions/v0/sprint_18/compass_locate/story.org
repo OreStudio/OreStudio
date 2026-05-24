@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 468387DD-0D6F-49B4-9F82-BD179DCB1CC1
+:END:
+#+title: Story: ores.compass Locate — temporal orientation
+#+description: Report where we are in time: current version, sprint, and the stories and tasks currently in flight.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :compass:tooling:python:agile:docs:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A contributor (human or LLM) can ask =ores.compass= "where are we?" and
+get an immediate, accurate answer computed from the documentation graph:
+the current [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]], the current [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]], and the [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][stories]] / [[id:31C868B9-306E-4282-BA8C-07E647021B34][tasks]]
+currently in flight. This is the /Locate/ pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass
+component]] — it replaces the manual "grep the agile tree to find the
+highest sprint folder and its =STARTED= items" ritual with one command.
+
+* Status
+
+| Field         | Value                                           |
+|---------------+-------------------------------------------------|
+| State         | BACKLOG                                          |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                       |
+| Now           | Not yet started (sprint backlog).               |
+| Waiting on    | Scope confirmation on the umbrella [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][story]].          |
+| Next          | Decide source of truth, then implement =where=. |
+| Last touched  | 2026-05-24                                       |
+
+* Acceptance
+
+- =compass.sh where= (or =status=) prints the current version and
+  current sprint — title and =:ID:= for each — where "current" is the
+  lexicographically-highest version/sprint folder, matching the rule
+  the [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile product owner]] skill already uses.
+- It lists every story and task whose =#+todo:= state is =STARTED=,
+  grouped by sprint, with file path and =:ID:=.
+- The query runs without an Emacs round-trip — it reads the cached
+  index (=.compass.db=) and/or walks =doc/agile/versions/= directly.
+- Output is available in =pretty= (human) and =json= (tooling), matching
+  the existing =search= formats.
+- The relationship to [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]'s =doc_list.sh= is resolved: compass
+  /wraps or reuses/ it rather than duplicating the listing logic.
+
+* Tasks
+
+In execution order (to be scaffolded when the story starts):
+
+- Decide the source of truth: cached FTS index vs filesystem walk vs
+  wrapping =doc_list.sh=.
+- Implement the =where= / =status= subcommand with =pretty= + =json=
+  output.
+- Smoke-test against the live agile tree; document in the component
+  overview =Entry points=.
+
+* Decisions
+
+- Leaning towards /wrapping/ =doc_list.sh= for version/sprint discovery
+  and reading =#+todo:= directly for in-flight items, to avoid
+  duplicating codegen (umbrella open question: "codegen boundary").
+
+* Out of scope
+
+- Mutating state (advancing TODOs) — Locate is read-only.
+- Predicting or recommending the "next" piece of work.
+- Cross-version timelines or burndown/velocity reporting.

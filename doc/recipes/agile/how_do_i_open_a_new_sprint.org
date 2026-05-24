@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :agile:sprint:codegen:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-22
+#+updated: 2026-05-24
 
 For the surrounding agile cycle (planning / execution / closure) and
 which cybernetic system owns the work, see [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]]. For the
@@ -62,15 +62,25 @@ folder, set its mission, and link it from the version manifest?
    - [[id:<sprint-uuid>][Sprint 17]] — TBD.
    #+end_src
 
-6. /Promote captures into stories/, if applicable. See [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile
+6. /Update the agile index/. Open =doc/agile/agile.org= and update
+   the =* At a glance= table — =Current Sprint= to an id-link for
+   the new sprint, =Next sprint= to plain text (the next sprint
+   doesn't exist yet). Update =#+updated:= to today:
+
+   #+begin_src org
+   | Current Sprint | [[id:<new-sprint-uuid>][Sprint N]] |
+   | Next sprint    | Sprint N+1                         |
+   #+end_src
+
+7. /Promote captures into stories/, if applicable. See [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile
    Product Owner]] for the promotion flow (capture → story, ID
    preserved).
 
-7. /Bump the project version/ as separate housekeeping — see
+8. /Bump the project version/ as separate housekeeping — see
    [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]]. The version-number bump
    is decoupled from sprint opening; do not couple them in one PR.
 
-8. /Update the =vcpkg= submodule to latest/ — see [[id:2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5][How do I update
+9. /Update the =vcpkg= submodule to latest/ — see [[id:2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5][How do I update
    submodules to latest?]]. Land it as a separate commit on the
    same new-sprint PR so the build-side housekeeping ships with
    the sprint open.

@@ -25,9 +25,8 @@ BUILD_DIR="$PROJECT_DIR/build/output/site"
 DOTENV="$PROJECT_DIR/.env"
 
 # --- Load environment ---
-ENV_FILE="$PROJECT_DIR/.env"
-if [[ ! -f "$ENV_FILE" ]]; then
-    echo "error: .env not found at $ENV_FILE"
+if [[ ! -f "$DOTENV" ]]; then
+    echo "error: .env not found at $DOTENV"
     echo "       run: ./build/scripts/init-environment.sh --preset <preset>"
     exit 1
 fi
@@ -38,7 +37,7 @@ fi
 # newlines.
 set -a
 # shellcheck disable=SC1090
-source "$ENV_FILE"
+source "$DOTENV"
 set +a
 
 # shellcheck source=../../projects/ores.sql/utility/validate_env_version.sh

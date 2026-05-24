@@ -21,11 +21,11 @@ Make uppercase UUIDs a hard invariant of the documentation system: every =:ID:= 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
-| Now           | Not yet started.                       |
+| Now           | Completed 2026-05-24.                  |
 | Waiting on    | Nothing.                               |
-| Next          | Begin [[id:C86FFED4-AD4E-4330-B542-95B36760ED2F][Enforce uppercase UUID invariant in codegen and audit docs]]. |
+| Next          | None.                                  |
 | Last touched  | 2026-05-24                               |
 
 * Acceptance
@@ -47,6 +47,8 @@ In execution order:
 
 - /Why hardcode uppercase in the templates rather than post-process the rendered output./ The concept-link UUIDs are not generated, they are author-baked content. Uppercasing them at the template source matches how the rest of the doc graph already stores them, and avoids a post-render rewrite step in the generator.
 - /Why also keep the defensive =.upper()= on =parent_id= and =predecessor_id=./ The generator auto-detects parent IDs from on-disk org files (already uppercase), but a user may pass =--parent-id= or =--predecessor-id= manually from a copy-paste source where casing is unknown. Belt-and-braces.
+- /Why uppercase =GLOSS_CAPTURE= and =INDEX_IDS= constants in =regenerate_backlog_indexes.py= even though the on-disk index pages were already uppercased by prior normalisation./ The script regenerates =near.org= and =far.org= from these constants; if it ran with the old lowercase constants it would silently undo the on-disk normalisation. Sourcing them as uppercase makes the regen idempotent against the invariant.
+- /Where the invariant is documented./ A single sentence under =:PROPERTIES: :ID:= in [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] points at this story for the rationale and audit trail. Future contributors editing UUIDs by hand discover the rule there.
 
 * Out of scope
 

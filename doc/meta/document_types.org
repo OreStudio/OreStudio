@@ -60,7 +60,14 @@ writing "yesterday" or "next week", convert it.
 
 - =:PROPERTIES: :ID:= — org-roam tracks documents by ID, not by path.
   Every document needs one; generate with =uuidgen=. Paths can change;
-  IDs do not.
+  IDs do not. /Every UUID — both the =:ID:= property and every
+  =[[id:UUID]]= link — is uppercase hex./ The codegen enforces this for
+  new documents (=v2_doc_generate.py= uppercases the freshly minted
+  ID, the templates carry uppercase concept-link UUIDs, and
+  =--parent-id= / =--predecessor-id= are uppercased defensively); any
+  hand-edited or copy-pasted UUID must follow the same rule. The
+  Sprint 18 story [[id:BAF1DEAE-59DF-49AB-BFCD-E6D09496DA43][Lock down uppercase UUID invariant]] records the
+  rationale and the audit trail.
 - =#+filetags:= — the standard org-mode keyword for /applying/ tags to a
   whole file. =#+tags:= in standard org-mode declares the /allowed/ tag
   vocabulary for a file, which is a different concern and not what we

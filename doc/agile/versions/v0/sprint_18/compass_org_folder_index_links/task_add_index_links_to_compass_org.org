@@ -9,7 +9,7 @@
 #+filetags: :docs:compass:navigation:compass_org_folder_index_links:sprint_18:v0:
 #+owner: marco
 #+branch: feature/compass-index-links
-#+pr:
+#+pr: 817
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
@@ -59,9 +59,9 @@ Folders already linked in compass.org before this task (no changes needed):
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                                |
+|-----+----------------------------------------------------------------------|
+| 817 | [doc] Add org-roam index links to compass.org folder entries |
 
 * Review
 

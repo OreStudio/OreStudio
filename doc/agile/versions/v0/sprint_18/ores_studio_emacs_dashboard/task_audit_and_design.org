@@ -8,12 +8,12 @@
 #+level: s1
 #+filetags: :emacs:lisp:dashboard:ores_studio_emacs_dashboard:sprint_18:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/ores-dashboard-audit-design
 #+pr:
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
-#+updated: 2026-05-24
+#+updated: 2026-05-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,12 +30,12 @@ group layout, and which helpers it will reuse.
 
 | Field        | Value                                                  |
 |--------------+--------------------------------------------------------|
-| State        | BACKLOG                                                |
+| State        | STARTED                                                |
 | Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                             |
-| Now          | Not yet started.                                       |
-| Waiting on   | Nothing.                                               |
-| Next         | Read all .el files; write classification + design.     |
-| Last touched | 2026-05-24                                             |
+| Now          | Classification and design written in =* Notes=.        |
+| Waiting on   | User sign-off before implement task starts.            |
+| Next         | Review design, then proceed to [[id:696612A2-A9D5-47FE-BC5A-2F90FDCA4E15][task_implement_dashboard]].  |
+| Last touched | 2026-05-25                                             |
 
 * Acceptance
 
@@ -46,11 +46,188 @@ group layout, and which helpers it will reuse.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Audit all seven =.el= files; classify each; write the =ores-dashboard.el=
+architecture in =* Notes=; get user sign-off; close.
 
 * Notes
+
+** Module classification
+
+| File                      | Classification      | Rationale                                                                                                      |
+|---------------------------+---------------------+----------------------------------------------------------------------------------------------------------------|
+| =ores-env.el=             | REUSABLE            | Pure =.env= parser with no env-specific state; the dashboard's primary data source. Keep as-is.              |
+| =ores-babel.el=           | REUSABLE            | Sets =org-babel= cwd per org buffer; orthogonal to the bleed problem. Keep as-is.                            |
+| =ores-shell.el=           | REUSABLE (absorbed) | Provides =ores-shell= comint launcher. Dashboard surfaces it as the "Open shell" button. Keep as-is.         |
+| =ores-shell-mode.el=      | REUSABLE            | =ores-shell-mode= major mode / font-lock. Minor duplication with =ores-shell.el= — clean up in task 3.       |
+| =ores-org-roam-export.el= | KEEP AS-IS          | Site-build utility; no relation to the per-env bleed. Untouched.                                             |
+| =ores-prodigy.el=         | SUPERSEDED          | Services are now managed entirely via =build/scripts/= shell scripts. Prodigy is not needed; the dashboard  |
+|                           |                     | surfaces start-services, start-client, status-services, and stop-services directly. Delete the file.        |
+| =ores-db.el=              | SUPERSEDED          | 693 lines. The underlying scripts (recreate-env, init-env, SQL connections) are valuable; the standalone     |
+|                           |                     | tabulated-list mode and global transient are the entry-point anti-pattern. Functions will be called          |
+|                           |                     | directly from the dashboard's DB command group.                                                              |
+
+** Root cause of the bleed problem
+
+=ores-prodigy.el= uses =defconst= to record =ores/checkout-label= and
+=ores/project-root= at file-load time.  If a user's =init.el= loads the
+file from a hardcoded path (e.g. =OreStudio.local1=) and then opens a
+buffer from =OreStudio.local2=, the constants still refer to =local1=,
+causing the wrong services to be started for =local2=.
+
+The dashboard fixes this at the architectural level: env is read freshly
+at =ores/dashboard= invocation time (or on explicit re-read) and stored as
+a =defvar-local= in the dashboard buffer.  All commands close over that
+buffer-local alist, so each checkout's dashboard is independently bound.
+Prodigy is removed entirely — the shell scripts are the authority for
+service lifecycle, not a prodigy service registry.
+
+** Architecture: ores-dashboard.el
+
+*** Entry point and buffer naming
+
+The buffer name is =ORES Dashboard - <label>= where =<label>= is
+=ORES_CHECKOUT_LABEL= from =.env= (e.g. =ORES Dashboard - local1=).
+This makes the dashboard immediately identifiable in =C-x b= and
+=ibuffer= when multiple checkouts are open simultaneously.
+
+#+begin_src emacs-lisp
+(defun ores/dashboard ()
+  "Open the ORE Studio dashboard for the current checkout."
+  (interactive)
+  (let* ((env   (ores/load-dotenv))
+         (label (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "unknown"))
+         (root  (ores/checkout-root))
+         (buf   (get-buffer-create (format "ORES Dashboard - %s" label))))
+    (with-current-buffer buf
+      (ores/dashboard-mode)            ; sets up special-mode first (kills locals)
+      (setq ores/dashboard--env env)   ; set buffer-local AFTER mode init
+      (setq ores/dashboard--root root)
+      (let ((inhibit-read-only t))
+        (ores/dashboard--render env root)))
+    (pop-to-buffer buf)))
+
+(defun ores/dashboard-reload ()
+  "Re-read .env and redraw the current dashboard buffer."
+  (interactive)
+  (let ((env  (ores/load-dotenv))
+        (root (ores/checkout-root)))
+    (setq ores/dashboard--env env)
+    (let ((inhibit-read-only t))
+      (ores/dashboard--render env root))
+    (message "ORES Dashboard reloaded.")))
+#+end_src
+
+*** Buffer-local env binding
+
+#+begin_src emacs-lisp
+(defvar-local ores/dashboard--env nil
+  "Alist of (KEY . VALUE) from the checkout .env.
+Set after mode init so kill-all-local-variables does not wipe it.")
+
+(defvar-local ores/dashboard--root nil
+  "Checkout root path, set alongside ores/dashboard--env.")
+#+end_src
+
+*** Sections
+
+Each section is a named =ores/dashboard--insert-*= function that writes
+button/text into the dashboard buffer using =widget.el= or =insert= +
+=make-text-button=.  Rendering order:
+
+1. *Header* — ORE splash image (=doc/assets/images/ore_studio_logo.png= once
+   created; fall back to ASCII title if missing) + =ORES Dashboard - <label>=
+   title + current preset.
+2. *Environment* — buttons: Init environment (=build/scripts/init-environment.sh=
+   — generates the =.env= file; existing passwords preserved) · Reload
+   environment (re-reads =.env= and redraws dashboard) · Diff =.env= vs
+   =.env.old=.
+3. *Database* — buttons: Recreate env (=projects/ores.sql/recreate_env.sh= —
+   resets schema and data for the checkout) · Browse databases · SQL
+   connections.
+4. *Services* — buttons invoking =build/scripts/= shell scripts directly:
+   Start services (=start-services.sh=) · Start client (=start-client.sh=) ·
+   Service status (=status-services.sh=) · Stop services (=stop-services.sh=).
+   No Prodigy dependency.
+5. *Compass* — buttons: =compass where= · =compass list= · =compass add= · open
+   =doc/compass.org=.
+6. *Build* — buttons: Configure · Build · Test.
+7. *Site* — buttons:
+   - Rebuild site → =cmake --build --preset $ORES_PRESET --target deploy_site=
+   - Start site → =build/scripts/serve-site.sh= (stops any prior instance, then serves)
+   - Stop site → =fuser -k <ORES_SITE_PORT>/tcp= (port from =ORES_SITE_PORT= in =.env=,
+     default 8000; same logic =serve-site.sh= uses internally)
+8. *Skills* — link: open =doc/llm/skills/= in =dired= · button: Deploy skills
+   (=cmake --build --preset $ORES_PRESET --target deploy_skills=).
+9. *Bookmarks* — =dired= links to log dir and bin dir (resolved from =.env=
+   =ORES_LOG_DIR= and computed from =ORES_PRESET=).
+10. *Links* — open-file links to user manual and key recipe index files.
+11. *Shell* — single "Open ORE Studio shell" button → =(ores-shell)=.
+
+*** Env-isolation contract
+
+Every button callback captures =env= and =root= from =ores/dashboard--render='s
+arguments at render time (not from globals).  The render function wraps all
+insertion in =(let ((inhibit-read-only t)) ...)= because =special-mode= makes
+the buffer read-only.  Example:
+
+#+begin_src emacs-lisp
+(defun ores/dashboard--render (env root)
+  (let ((inhibit-read-only t))
+    (erase-buffer)
+    ;; ... insert sections ...
+    (insert-button "Recreate env"
+      'action (let ((e env) (r root))
+                (lambda (_) (ores-db/--run-recreate-env
+                              (or (cdr (assoc "ORES_CHECKOUT_LABEL" e)) "local1")
+                              r))))))
+#+end_src
+
+=root= is derived from =(ores/checkout-root)= (defined in =ores-env.el=,
+uses =project-current=) — not from the =env= alist.
+
+*** Mode definition
+
+=ores/dashboard-mode= derives from =special-mode= (read-only, =q= to quit).
+No edits needed in the buffer; all interaction is via buttons.
+
+*** Global keybinding (user's init)
+
+The user adds one binding to their =init.el=:
+#+begin_src emacs-lisp
+(define-key global-map (kbd "C-x p 9") #'ores/dashboard)
+#+end_src
+
+No binding is set by the package itself.
+
+*** File loading
+
+=.dir-locals.el= currently loads only =ores-babel.el=.  After this story,
+it will additionally load =ores-dashboard.el= (which =require='s =ores-env=,
+=ores-shell=, and =ores-db= for helper functions).  =ores-prodigy.el= is
+removed and not loaded.
+
+*** No splash image yet
+
+=doc/samples/= contains UI reference screenshots only; no ORE Studio logo
+exists.  The header will show a text banner initially.  A logo can be added
+later without changing the architecture.
+
+** Dependencies
+
+#+begin_example
+ores-dashboard.el
+  ├── (require 'ores-env)    ; .env parser — buffer-local env binding
+  ├── (require 'ores-shell)  ; ORE shell launcher
+  └── (require 'ores-db)     ; DB helpers (recreate-env, init-env, SQL connections)
+#+end_example
+
+The buffer is rendered with plain =insert= + =make-text-button= inside a
+=special-mode= derived mode.  The =emacs-dashboard= MELPA package was
+considered but its API is oriented around the Emacs startup screen and does
+not accommodate per-checkout buffer-local state cleanly.  Implementation
+will use =special-mode= + built-in button primitives; =emacs-dashboard= is
+not a dependency.  =prodigy= is no longer a dependency and can be removed
+from the user's init if it was only used for ORE Studio services.
 
 * PRs
 

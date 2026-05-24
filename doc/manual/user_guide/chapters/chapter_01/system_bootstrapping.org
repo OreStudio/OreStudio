@@ -2,10 +2,244 @@
 :ID: DF779317-BDEB-49E4-E9AB-48C46615D0CF
 :END:
 #+title: System Bootstrapping
-#+description: How to bootstrap a ORE Studio system.
+#+description: How to start ORE Studio, connect to a backend service, and manage connections.
 #+type: manual
 #+version: 2
 #+level: cross
 #+filetags: :knowledge:chapter:
 #+created: 2024-06-23
-#+updated: 2026-06-23
+#+updated: 2026-05-24
+
+** Getting started
+
+When you launch ORE Studio for the first time you are greeted by the
+main window in its /disconnected/ state. The application is running
+but has not yet established a connection to the backend service that
+performs calculations. Before you can work with trades, market data, or
+analytics, you need to connect to a running ORE Studio backend.
+
+This chapter covers:
+
+- What the main window looks like before a connection is established.
+- How to open the Connection Manager and configure one or more backends.
+- How to log in once a connection is active.
+- How to manage your saved connections — adding, editing, deleting,
+  organising by environment and tag.
+
+** The main window before login
+
+#+caption: [SCREENSHOT NEEDED] The ORE Studio main window immediately after launch, showing the disconnected state. The toolbar shows the Connect and Connections buttons; the workspace area is empty.
+# Capture: launch ORE Studio with no active connection. Show the full
+# main window. The toolbar should be visible with both the Connect
+# button (plug icon) and the Connections button (list icon) clearly
+# visible. No workspace panels should be open.
+[[../../../../assets/images/ores_qt_non_logged_in_window.png]]
+
+In the disconnected state most of the application is inactive. The menu
+bar and toolbar are present but workspace panels, trade lists, and
+analytics views are all unavailable until a successful login. Two
+toolbar buttons are always accessible:
+
+- *Connect* — opens the login dialog for the currently selected
+  connection.
+- *Connections* — opens the Connection Manager, where you configure
+  the list of backends ORE Studio knows about.
+
+** The Connection Manager
+
+The Connection Manager is the central place where you maintain the list
+of ORE Studio backends the application can connect to. You might have a
+local development backend, a shared team backend, and a staging backend
+— each appears as a separate entry here. The manager lets you add, edit,
+delete, and organise those entries before you attempt a login.
+
+Open it at any time from the toolbar *Connections* button or from the
+/File/ menu.
+
+#+caption: [SCREENSHOT NEEDED] The Connection Manager dialog open and empty (first launch). Show the full dialog with the empty connection list, and the Add, Edit, Delete buttons visible.
+# Capture: open the Connection Manager with no connections configured.
+# The list area should be blank. The Add button (or "+" icon) must be
+# visible along with Edit and Delete buttons in their disabled state.
+
+*** Adding a new connection
+
+Click *Add* (or the "+" button) to open the /New Connection/ form. Fill
+in the fields:
+
+- *Name* — a free-text label you choose, used throughout the UI to
+  identify this backend (e.g. "Local dev", "Team staging"). Must be
+  unique among your saved connections.
+- *Host* — the hostname or IP address of the machine running the ORE
+  Studio backend (e.g. =localhost=, =192.168.1.10=,
+  =ores-staging.example.com=).
+- *Port* — the TCP port the backend is listening on. The default is
+  =35900=; change it only if the backend was started on a different
+  port.
+- *Environment* — an optional grouping label (see [[*Environments][Environments]] below).
+  Helps you distinguish development, staging, and production backends
+  at a glance.
+- *Tags* — zero or more free-text labels (see [[*Tags][Tags]] below). Useful for
+  filtering and searching when you have many connections.
+
+#+caption: [SCREENSHOT NEEDED] The New Connection form with example values filled in. Show Name = "Local dev", Host = "localhost", Port = "35900", an Environment selected, and at least one tag.
+# Capture: open Add Connection dialog. Fill in realistic example values
+# as described. Show the full form with all fields visible before
+# clicking Save/OK.
+
+Click *Save* (or *OK*) to add the connection to the list. The new entry
+appears immediately in the Connection Manager list. No network contact
+is made at this point — ORE Studio simply stores the configuration.
+
+*** Editing a connection
+
+Select an existing connection in the list and click *Edit* (or
+double-click the row) to open the same form pre-populated with the
+saved values. Change any field and click *Save*. The connection list
+updates immediately.
+
+#+caption: [SCREENSHOT NEEDED] The Edit Connection form open for an existing connection. Show the form pre-populated with saved values, with the Name field highlighted to indicate it is being edited.
+# Capture: select a saved connection and click Edit. The form should
+# show the existing values. Highlight or focus the Name field to show
+# editing is in progress.
+
+*** Deleting a connection
+
+Select one or more connections in the list and click *Delete* (or press
+the Delete key). A confirmation dialog asks you to confirm the removal.
+
+#+caption: [SCREENSHOT NEEDED] The delete confirmation dialog asking "Are you sure you want to delete the selected connection(s)?" with Yes and No buttons.
+# Capture: select a connection and click Delete. Screenshot the
+# confirmation dialog before clicking Yes.
+
+Deleting a connection removes only the saved configuration; it has no
+effect on the running backend or any data stored there.
+
+*** Environments
+
+An /environment/ is a named grouping that you assign to a connection to
+indicate which tier of your infrastructure it belongs to. Typical
+values are =Development=, =Staging=, and =Production=, but the list is
+fully customisable — you can define any environment names that make
+sense for your setup.
+
+Environments appear as a coloured badge or label next to the connection
+name in the list, making it immediately obvious which tier you are about
+to connect to. This is a safety feature: it is easy to accidentally
+connect to production when you meant staging; a clearly labelled
+environment badge prevents that.
+
+#+caption: [SCREENSHOT NEEDED] The Connection Manager list showing several connections with different environment badges — one "Development" (green or blue), one "Staging" (yellow/orange), one "Production" (red). Show the visual distinction clearly.
+# Capture: create three connections with different environments assigned.
+# Open the Connection Manager so the list shows all three, with the
+# environment badge visible on each row.
+
+To manage the available environment names, open the /Environments/
+section within the Connection Manager settings (or the dedicated menu
+item). From there you can:
+
+- *Add* a new environment name and choose its display colour.
+- *Rename* an existing environment (all connections using it update
+  automatically).
+- *Delete* an environment (connections that used it revert to
+  /Unassigned/).
+
+#+caption: [SCREENSHOT NEEDED] The Environments management panel showing a list of defined environments (Development, Staging, Production) with their colours, and Add/Edit/Delete controls.
+# Capture: open the Environments management view. Show at least three
+# environments with distinct colours and the controls for managing them.
+
+*** Tags
+
+/Tags/ are free-text labels you attach to a connection to enable
+flexible filtering and search. Unlike environments (which represent a
+single tier), a connection can carry any number of tags. Examples:
+=personal=, =client-acme=, =read-only=, =high-memory=.
+
+Tags are displayed inline with the connection name in the list. The
+Connection Manager provides a tag filter bar at the top of the list: type
+or select a tag to show only the connections that carry it.
+
+#+caption: [SCREENSHOT NEEDED] The Connection Manager list with the tag filter bar visible at the top. Several connections are shown with their tags as small chips/badges. The filter bar has "client-acme" typed, and only matching connections are shown.
+# Capture: assign tags to several connections. Open the Connection
+# Manager and type a tag name into the filter bar. Show the filtered
+# result with the unmatched connections hidden.
+
+To add or remove tags on a connection, open the Edit form for that
+connection and use the tag input field. Type a new tag name and press
+Enter (or comma) to add it; click the ×  on an existing tag chip to
+remove it. Tags are created on first use — there is no separate tag
+management screen.
+
+** Connecting and logging in
+
+Once you have at least one connection configured, you can log in.
+
+*** Selecting the active connection
+
+In the Connection Manager, select the connection you want to use and
+click *Set as active* (or double-click it). The selected connection
+becomes the target for the *Connect* button in the main toolbar. The
+status bar at the bottom of the main window shows the name of the active
+connection.
+
+Alternatively, the *Connect* toolbar button opens a quick-select dropdown
+if no connection is active, letting you pick one without opening the
+full Connection Manager.
+
+#+caption: [SCREENSHOT NEEDED] The main toolbar with the Connect button highlighted and a dropdown showing the list of available connections. The cursor is hovering over one entry.
+# Capture: click the Connect button dropdown (or the equivalent
+# quick-select). Show the list of saved connections in the dropdown
+# before selecting one.
+
+*** The login screen
+
+With an active connection selected, click *Connect*. ORE Studio
+attempts to reach the backend. If the backend is reachable, the /Login/
+dialog appears.
+
+#+caption: [SCREENSHOT NEEDED] The login dialog with the username and password fields, the backend name shown at the top, and the Log In button.
+# Capture: click Connect with a reachable backend. Screenshot the login
+# dialog before entering credentials. The connection name should be
+# visible in the dialog header or subtitle.
+[[../../../../assets/images/login_screen.png]]
+
+Enter your *username* and *password* and click *Log In*. ORE Studio
+authenticates against the backend's user database. On success the dialog
+closes and the main window transitions to the /connected/ state: the
+workspace panels become active, the menu bar is fully enabled, and the
+status bar shows your username and the connected backend name.
+
+If authentication fails, an error message is shown below the password
+field. Check that you are using the correct credentials for this
+backend; each backend maintains its own user database independently.
+
+*** First login and the default account
+
+On a freshly initialised backend the only account that exists is the
+default administrator account. Your system administrator will have
+provided the initial credentials. After first login it is strongly
+recommended to change the password immediately via /Settings → Account/.
+
+** Connection status and reconnection
+
+Once connected, the status bar permanently shows the connection state.
+If the backend becomes unreachable (network interruption, service
+restart) ORE Studio displays a /disconnected/ banner and disables
+workspace interactions. Use the *Connect* button to reconnect; your
+saved connection configuration is retained, so no re-entry of the host
+or port is needed — only your password.
+
+#+caption: [SCREENSHOT NEEDED] The main window in the disconnected-while-logged-in state: a warning banner or status-bar indicator showing the connection was lost, with a Reconnect button or prompt.
+# Capture: while logged in, stop or restart the backend service.
+# Screenshot the moment ORE Studio detects the disconnection and shows
+# the warning indicator. The Reconnect affordance should be visible.
+
+** Logging out
+
+To end your session, choose /File → Log Out/ or click the *Disconnect*
+toolbar button. ORE Studio closes the connection to the backend and
+returns to the disconnected main window. Your saved connection
+configurations are preserved; you can log back in at any time.
+
+Logging out does not stop the backend service — it only terminates your
+client session. Other users connected to the same backend are
+unaffected.

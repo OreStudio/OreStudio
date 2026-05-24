@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: C86FFED4-AD4E-4330-B542-95B36760ED2F
+:END:
+#+title: Task: Enforce uppercase UUID invariant in codegen and audit docs
+#+description: Patch v2 doc templates and Python scripts so every generated UUID and link is uppercase; sweep org docs for stragglers.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :documentation:codegen:audit:uppercase_uuid_invariant:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BAF1DEAE-59DF-49AB-BFCD-E6D09496DA43][Lock down uppercase UUID invariant]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close every code path that can still emit a lowercase UUID into the documentation graph, and run one final sweep to confirm the existing on-disk corpus is clean.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BAF1DEAE-59DF-49AB-BFCD-E6D09496DA43][Lock down uppercase UUID invariant]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-24                               |
+
+* Acceptance
+
+- Every =v2_doc_*.org.mustache= template under =projects/ores.codegen/library/templates/= renders only uppercase UUIDs (verified by running each =generate_v2_doc.sh --type ...= variant against a scratch dir and grepping for =[a-f]= inside =[[id:...]]= and =:ID:=).
+- =v2_doc_generate.py= calls =.upper()= on =parent_id= and =predecessor_id= before they reach the renderer.
+- =build/scripts/generate_release_notes.py= calls =.upper()= on the generated UUID.
+- =projects/ores.codegen/scripts/regenerate_backlog_indexes.py= holds its UUID string constants in uppercase.
+- A full-tree grep (=grep -rEn '[a-f]' --include='*.org' [...]=) for lowercase hex inside =:ID:= properties and =[[id:...]]= links across =doc/= and =projects/*/modeling/= returns zero real matches (template placeholders such as =[[id:UUID]]= and =[[id:<parent_id>]]= are excluded).
+- A note is added to =doc/recipes/codegen/how_do_i_create_a_new_v2_doc.org= or =doc/meta/document_types.org= documenting the invariant, so future contributors know not to undo it.
+
+* Plan
+
+The audit (commit-this-page) already located the gaps; this plan executes against them in dependency order.
+
+1. *Patch the v2 doc templates.* For each =v2_doc_*.org.mustache=, replace lowercase concept-link UUIDs with their uppercase canonical form:
+   - =v2_doc_story.org.mustache=: =699a8d45-...= → =699A8D45-B67E-4D3E-9206-24FA17C51ADA= ([[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]])
+   - =v2_doc_task.org.mustache=: =31c868b9-...= → =31C868B9-306E-4282-BA8C-07E647021B34= ([[id:31C868B9-306E-4282-BA8C-07E647021B34][task]])
+   - =v2_doc_sprint.org.mustache=: =0820b7fd-...= → =0820B7FD-147C-4832-AC25-C043D38D5B61= ([[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]])
+   - =v2_doc_version.org.mustache=: =ca4d4bde-...= → =CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82= ([[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]]); =436fb40c-...= → =436FB40C-422A-465B-B949-E9F0760820C1= ([[id:436FB40C-422A-465B-B949-E9F0760820C1][product identity]])
+   - =v2_doc_capture.org.mustache=: =671f18e4-...= → =671F18E4-E09C-4B3B-BD24-D33DF8AE38A6= ([[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]])
+   - =v2_doc_investigation.org.mustache=: =a7f8d9e2-...= → =A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D=
+   Look up each canonical ID with =grep -n '^:ID:' doc/meta/glossary.org doc/meta/document_types.org= before editing — do not eyeball the casing.
+
+2. *Add defensive =.upper()= calls in =projects/ores.codegen/src/v2_doc_generate.py=.* The line that builds the variables dict (currently around line 332) passes =args.parent_id= and =args.predecessor_id= as-is. Wrap both in =.upper() if x else ""= so a lowercase argument still renders an uppercase link. Mirror the pattern already used for =new_id= at line 318.
+
+3. *Fix the release-notes UUID.* In =build/scripts/generate_release_notes.py=, change =str(uuid.uuid4())= to =str(uuid.uuid4()).upper()= (currently at line 316).
+
+4. *Uppercase the hardcoded constants in =regenerate_backlog_indexes.py=.* Five literals identified by the audit: =GLOSS_CAPTURE=, the two =bucket_ids= values (=near=, =far=), and two link references in the docstring template strings. =sed -i 's/\([0-9a-f-]\{36\}\)/\U\1/g'= on the file is correct here — the file contains no other 36-char hex spans.
+
+5. *Run the regression sweep.* From repo root:
+   #+begin_src sh :results verbatim
+   # any lowercase :ID:
+   grep -rEn '^:ID:\s+[A-Za-z0-9-]*[a-f]' --include='*.org' doc/ projects/
+
+   # any lowercase id-link, skipping template placeholders
+   grep -rEn '\[\[id:[0-9a-f-]{20,}[a-f][0-9a-f-]*\]' --include='*.org' doc/ projects/
+   #+end_src
+   Both must return zero lines.
+
+6. *Smoke-test the codegen end-to-end.* Generate a throwaway story and task under =/tmp/uuid-smoke/=:
+   #+begin_src sh :results verbatim
+   for t in story task sprint version capture investigation; do
+     projects/ores.codegen/generate_v2_doc.sh --type $t [...]
+   done
+   grep -rEn '[a-f]' /tmp/uuid-smoke/ | grep -E ':ID:|\[\[id:'
+   #+end_src
+   Expect no matches.
+
+7. *Document the invariant.* Add a short =* Invariant: uppercase UUIDs= section to [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] (or fold into the existing =* UUIDs= notes if present) explaining that uppercase is the contract and where the enforcement lives.
+
+8. *Commit and PR.* One commit per logical unit: templates, generator defensive upper, release notes fix, backlog indexes constants, docs update. Title prefixes: =[codegen]=, =[build]=, =[doc]= as appropriate.
+
+* Notes
+
+- The audit that fed this plan was performed on 2026-05-24 on =feature/minor-doc-fixes=. It found zero lowercase IDs in the on-disk org corpus (confirming prior normalisation commits held) and four code-side leak sources (templates, =parent_id= / =predecessor_id= pass-through, release-notes generator, backlog-indexes constants).
+- The newly generated =story.org= and =task.org= for /this/ story themselves shipped with lowercase concept-link UUIDs from the templates — fixed by hand in the same commit that introduces them. They are Exhibit A for why step 1 is necessary.
+
+* Result

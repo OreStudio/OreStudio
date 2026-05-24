@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: BAF1DEAE-59DF-49AB-BFCD-E6D09496DA43
+:END:
+#+title: Story: Lock down uppercase UUID invariant
+#+description: Enforce uppercase UUIDs everywhere: org documents, codegen templates, and ID-generating Python scripts.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :documentation:codegen:invariant:build_reliability:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make uppercase UUIDs a hard invariant of the documentation system: every =:ID:= property and every =[[id:UUID]]= link in =doc/= and =projects/*/modeling/= must use uppercase hex, and every code path that mints or templates a UUID must produce uppercase by construction. Prior commits ([[https://github.com/OreStudio/OreStudio/commit/abe6686ce][=abe6686ce=]], [[https://github.com/OreStudio/OreStudio/commit/a8ddd4920][=a8ddd4920=]], [[https://github.com/OreStudio/OreStudio/commit/d1022161e][=d1022161e=]]) normalised the existing corpus and uppercased the freshly-minted ID in the v2 doc generator; this story closes the remaining holes so the invariant cannot drift back.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Begin [[id:C86FFED4-AD4E-4330-B542-95B36760ED2F][Enforce uppercase UUID invariant in codegen and audit docs]]. |
+| Last touched  | 2026-05-24                               |
+
+* Acceptance
+
+- All =v2_doc_*.org.mustache= templates carry uppercase concept-link UUIDs (=story=, =task=, =sprint=, =version=, =capture=, =investigation=, =product identity=).
+- =v2_doc_generate.py= uppercases =parent_id= and =predecessor_id= defensively, so a lowercase value passed via =--parent-id= / =--predecessor-id= still produces an uppercase link in the output.
+- =build/scripts/generate_release_notes.py= uppercases the generated release-notes UUID.
+- =projects/ores.codegen/scripts/regenerate_backlog_indexes.py= holds its hardcoded UUID constants in uppercase.
+- A sweep across =doc/= and =projects/*/modeling/= for lowercase =:ID:= properties and lowercase =[[id:...]]= links returns zero matches. Recipe placeholders such as =[[id:UUID]]= and =[[id:<parent_id>]]= are excluded by design.
+- Generating a fresh story or task end-to-end through =generate_v2_doc.sh= produces a file in which /every/ UUID is uppercase, without manual touch-up.
+
+* Tasks
+
+In execution order:
+
+- [[id:C86FFED4-AD4E-4330-B542-95B36760ED2F][Task: Enforce uppercase UUID invariant in codegen and audit docs]]
+
+* Decisions
+
+- /Why hardcode uppercase in the templates rather than post-process the rendered output./ The concept-link UUIDs are not generated, they are author-baked content. Uppercasing them at the template source matches how the rest of the doc graph already stores them, and avoids a post-render rewrite step in the generator.
+- /Why also keep the defensive =.upper()= on =parent_id= and =predecessor_id=./ The generator auto-detects parent IDs from on-disk org files (already uppercase), but a user may pass =--parent-id= or =--predecessor-id= manually from a copy-paste source where casing is unknown. Belt-and-braces.
+
+* Out of scope
+
+- Postgres / generated SQL UUID literals (=00000000-0000-0000-0000-000000000000= and live workspace sentinels). SQL has its own conventions and case rules; this story is about the documentation graph only.
+- External docs in =external/= and third-party samples.

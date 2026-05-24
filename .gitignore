@@ -83,3 +83,6 @@ build/nats/
 .ripgreprc
 .zprofile
 .zshrc
+node_modules/
+package.json
+package-lock.json

@@ -55,8 +55,11 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+PR #811 review by gemini-code-assist.
+
+| # | Comment summary                          | File                        | Decision | Notes                                                        |
+|---+------------------------------------------+-----------------------------+----------+--------------------------------------------------------------|
+| 1 | Missing placeholder image links on captions | system_bootstrapping.org | Applied  | Added TODO_ placeholder links to all 12 caption blocks       |
+| 2 | Double space after × character           | system_bootstrapping.org    | Applied  | Removed extra space                                          |
 
 * Result

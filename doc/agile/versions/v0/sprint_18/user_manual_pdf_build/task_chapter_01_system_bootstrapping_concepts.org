@@ -29,11 +29,11 @@ Party Provisioner), with screenshot placeholders throughout.
 
 | Field        | Value                                                       |
 |--------------+-------------------------------------------------------------|
-| State        | STARTED                                                     |
+| State        | DONE                                                        |
 | Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
-| Now          | Writing chapter content.                                    |
-| Waiting on   | Nothing.                                                    |
-| Next         | Author takes screenshots per placeholders; rebuild PDF.     |
+| Now          | Merged in PR #814.                                          |
+| Waiting on   | Screenshots from author per placeholder instructions.       |
+| Next         | —                                                           |
 | Last touched | 2026-05-24                                                  |
 
 * Acceptance

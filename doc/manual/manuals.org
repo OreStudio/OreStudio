@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 914738C6-7C77-41CD-A949-55DBBE0B6908
+:END:
+#+title: ORE Studio Manuals
+#+description: Index of all ORE Studio manuals and guides.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:manual:index:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+
+* User Manual
+
+The [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] documents the application from the end-user
+perspective: how to connect to a backend, manage connections, bootstrap
+the system, provision tenants and parties, enter trades, and run
+analytics.
+
+- [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][Read online]] | [[file:user_guide/user_manual.pdf][Download PDF]]
+
+* Developer Guide
+
+Coming soon. Will cover the development environment setup, build
+system, coding conventions, testing strategy, and contribution
+workflow.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the full documentation graph.
+- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Functions]] — component and service documentation.

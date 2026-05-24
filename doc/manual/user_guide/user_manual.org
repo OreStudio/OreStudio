@@ -33,7 +33,7 @@
 #+latex: \thispagestyle{empty}
 #+latex: \newpage
 
-#+HTML: <p><a href="/OreStudio/doc/manual/user_guide/user_manual.pdf">Download PDF</a></p>
+#+HTML: <p><a href="user_manual.pdf">Download PDF</a></p>
 
 * Introduction
 

@@ -95,3 +95,7 @@ node_modules/
 
 # LaTeX intermediate artefacts from deploy_manual
 doc/manual/user_guide/user_manual.tex
+doc/manual/user_guide/user_manual.aux
+doc/manual/user_guide/user_manual.log
+doc/manual/user_guide/user_manual.out
+doc/manual/user_guide/user_manual.toc

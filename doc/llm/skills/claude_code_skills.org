@@ -85,6 +85,9 @@ See [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner]] for the deployment
   (Jony Ive-level precision with intentional personality).
 - [[id:2A167638-8B5A-4691-90CB-4A6B55785108][Icon Guidelines]] — pick the right Fluent UI icon and variant
   for a UI element from the visual-language catalogue.
+- [[id:E8629813-4F4A-4165-85AA-27BE7F38E32C][Tufte Viz]] — design and critique data visualisations using
+  Tufte's principles (data-ink ratio, chartjunk elimination,
+  small multiples, graphical integrity).
 
 * Code review
 

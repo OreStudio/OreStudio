@@ -41,9 +41,9 @@ update the catalogue, and delete the originals from =tmp/=.
 |--------------+----------------------------------------|
 | State        | BACKLOG                                |
 | Parent story | [[id:7225526E-DCDB-4DC6-A95D-22C7117E5EAA][Port Tufte visualisation skill into ORE Studio]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Create skill directory; convert files. |
+| Now          | PR raised; awaiting review.            |
+| Waiting on   | PR merge.                              |
+| Next         | Mark DONE on merge.                    |
 | Last touched | 2026-05-25                             |
 
 * Acceptance

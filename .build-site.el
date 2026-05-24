@@ -202,7 +202,7 @@
 
 (condition-case err
     (progn
-      (org-publish-all t)
+      (org-publish-all nil)
       (ores-deploy-org-roam-ui "./build/output/site/OreStudio")
       ;; Sync org-roam DB (mirrors .dir-locals.el project-local settings)
       (setq org-roam-directory (expand-file-name "./"))

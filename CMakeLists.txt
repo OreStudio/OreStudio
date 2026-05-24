@@ -321,7 +321,6 @@ endif()
 set(ORES_SITE_DIRECTORY "build/output/site")
 add_custom_target(deploy_site
     COMMENT "Deploying ORE Studio Website to ${ORES_SITE_DIRECTORY}" VERBATIM
-    COMMAND echo "Removing site directory" && rm -rf ${ORES_SITE_DIRECTORY}
     COMMAND emacs -Q --script .build-site.el
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 

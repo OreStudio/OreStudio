@@ -138,11 +138,16 @@ button/text into the dashboard buffer using =widget.el= or =insert= +
    No Prodigy dependency.
 5. *Compass* — buttons: =compass where= · =compass list= · =compass add= · open
    =doc/compass.org=.
-6. *Build* — buttons: Configure · Build · Test · Deploy site · Deploy skills.
-7. *Bookmarks* — =dired= links to log dir and bin dir (resolved from =.env=
+6. *Build* — buttons: Configure · Build · Test · Deploy skills.
+7. *Site* — buttons:
+   - Rebuild site → =cmake --build --preset $ORES_PRESET --target deploy_site=
+   - Start site → =build/scripts/serve-site.sh= (stops any prior instance, then serves)
+   - Stop site → =fuser -k <ORES_SITE_PORT>/tcp= (port from =ORES_SITE_PORT= in =.env=,
+     default 8000; same logic =serve-site.sh= uses internally)
+8. *Bookmarks* — =dired= links to log dir and bin dir (resolved from =.env=
    =ORES_LOG_DIR= and computed from =ORES_PRESET=).
-8. *Links* — open-file links to user manual and key recipe index files.
-9. *Shell* — single "Open ORE Studio shell" button → =(ores-shell)=.
+9. *Links* — open-file links to user manual and key recipe index files.
+10. *Shell* — single "Open ORE Studio shell" button → =(ores-shell)=.
 
 *** Env-isolation contract
 

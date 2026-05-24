@@ -21,13 +21,13 @@ Equip every future session with two Claude Code skills and companion recipes —
 
 | Field         | Value                                       |
 |---------------+---------------------------------------------|
-| State         | STARTED                                     |
-| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                   |
-| Branch        | feature/backlog-refinement-skills           |
-| Now           | Authoring backlog-refiner and sprint-planner skills and recipes. |
-| Waiting on    | Nothing.                                    |
-| Next          | Task 2 — set sprint 18 goals and select stories. |
-| Last touched  | 2026-05-24                                  |
+| State         | DONE                                                             |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                                        |
+| Branch        | feature/backlog-refinement-skills, feature/sprint-18-planning   |
+| Now           | Completed 2026-05-24.                                            |
+| Waiting on    | Nothing.                                                         |
+| Next          | None.                                                            |
+| Last touched  | 2026-05-24                                                       |
 
 * Acceptance
 

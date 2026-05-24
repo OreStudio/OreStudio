@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: 249FEDB9-7010-4124-A593-A01160E4B56E
+:END:
+#+title: Investigations
+#+description: Index of targeted deep-dive investigations into specific technical problems.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :investigations:index:knowledge:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+
+Targeted investigations into specific technical problems encountered during
+development. Each is a focused deep-dive capturing the problem, findings,
+and resolution.
+
+- [[id:D75F4921-B431-4E78-99AB-62A47F761D1D][Investigation: MSVC C1202 and rfl complexity]] — MSVC C1202 and Clang
+  expression nesting limits caused by =rfl= reflection depth.

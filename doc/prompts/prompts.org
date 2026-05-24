@@ -1,0 +1,15 @@
+:PROPERTIES:
+:ID: 9E971D53-0501-4B56-AD85-037057E295D8
+:END:
+#+title: Prompts
+#+description: Index of reusable LLM prompts — standalone prompts that don't fit cleanly as a skill.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :prompts:index:knowledge:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+
+Reusable LLM prompts that are too short or situational to warrant a full
+[[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skill]] but are worth capturing for repeated use. Currently empty; prompts
+are added here as they are identified.

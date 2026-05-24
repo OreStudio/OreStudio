@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: D84B1122-30DC-4BCF-9C90-73403FAAECD9
+:END:
+#+title: Story: ores.compass Scaffold — agile authoring over codegen
+#+description: Add stories, tasks, sprints and recipes from the compass CLI by delegating to ores.codegen.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :compass:tooling:python:agile:codegen:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A contributor can create new agile artefacts — a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in the current
+[[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]], a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in a story, a new sprint, a recipe, a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] — directly
+from the =ores.compass= CLI, without having to remember the codegen
+invocation, the parent directory, or the flag names. This is the
+/Scaffold/ pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass component]]. Compass is a thin,
+ergonomic front-end; the actual document generation is delegated to
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]'s =generate_v2_doc.sh=, honouring the non-negotiable rule
+that new =.org= docs are produced by codegen only — never hand-written.
+
+* Status
+
+| Field         | Value                                          |
+|---------------+------------------------------------------------|
+| State         | BACKLOG                                         |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                      |
+| Now           | Not yet started (sprint backlog).              |
+| Waiting on    | Locate pillar ([[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][story]]) for "current" resolution. |
+| Next          | Map compass subcommands to codegen flags.      |
+| Last touched  | 2026-05-24                                      |
+
+* Acceptance
+
+- =compass.sh add story|task|sprint|recipe|capture …= creates the
+  artefact by shelling out to =generate_v2_doc.sh= with the right
+  =--type=, =--slug=, =--parent-dir=, =--title=, =--description= and
+  =--tags=.
+- Compass does /not/ reimplement frontmatter, UUID minting, or template
+  rendering — it only assembles the codegen call.
+- "Current" defaults are resolved via the /Locate/ pillar: =add task=
+  targets the current story, =add story= targets the current sprint,
+  unless an explicit parent is given.
+- After creation it prints the generated path and reminds the user to
+  wire the artefact into its parent's table (e.g. the sprint's
+  =* Stories= table) where codegen does not do so automatically.
+- Behaviour and CLI surface are documented in the component overview
+  =Entry points=.
+
+* Tasks
+
+In execution order (to be scaffolded when the story starts):
+
+- Map each =compass add <type>= subcommand to the corresponding
+  =generate_v2_doc.sh= flag set (see [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]]).
+- Use /Locate/ to resolve the current sprint/story for default parents.
+- Implement the =add= dispatcher and its argument validation.
+- Document the CLI and update the component overview.
+
+* Decisions
+
+- Resolves the umbrella "codegen boundary" open question in favour of
+  /wrapping/: compass orchestrates codegen, never duplicates it.
+- Depends on the /Locate/ pillar landing first (for "current"
+  resolution); can ship with explicit-parent-only support if Locate
+  slips.
+
+* Out of scope
+
+- Draining the [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] buffer into stories/tasks — that is a separate
+  capture-drain skill, not part of compass scaffolding.
+- Editing, closing, or transitioning existing artefacts.
+- Automatically wiring artefacts into parent tables (compass reminds;
+  it does not edit the parent doc in this iteration).

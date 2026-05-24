@@ -56,6 +56,9 @@ projects/ores.codegen/output/
 projects/ores.codegen/venv/
 __pycache__
 
+# python compass
+projects/ores.compass/venv/
+
 # LEI source files (large, download via extract_subset.py --download)
 external/lei/*-golden-copy.csv
 
@@ -86,3 +89,6 @@ build/nats/
 node_modules/
 /package.json
 /package-lock.json
+
+# compass tool local cache (generated at repo root)
+/.compass.db

@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 8BA366D7-B43F-4E5B-B4AD-A40C7E28881B
+:END:
+#+title: Story: ores.compass repository compass tool
+#+description: A Python tool that orients you in the repo: where we are in time, semantic doc search, and agile scaffolding.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :compass:tooling:python:agile:docs:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=ores.compass= exists as a proper Python project under =projects/= — a
+repository "compass" that orients a contributor (human or LLM) in three
+ways: /Locate/ (where we are in time — version, sprint, in-flight
+stories and tasks), /Search/ (semantic retrieval of relevant docs from
+cached =org-roam= data), and /Scaffold/ (add stories, tasks, sprints,
+recipes via codegen). The capability already prototyped as a loose
+script (=search=) becomes the first pillar of a documented, structured
+application. See the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][component overview]] for the full design.
+
+* Status
+
+| Field         | Value                              |
+|---------------+------------------------------------|
+| State         | STARTED                            |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                          |
+| Now           | Scoped; project created. Search pillar works from its new home. |
+| Waiting on    | Nothing.                           |
+| Next          | Implement the Locate pillar.       |
+| Last touched  | 2026-05-24                         |
+
+* Acceptance
+
+- =projects/ores.compass= exists as a regular Python project (venv
+  bootstrap, =src/=, =requirements.txt=, =modeling/=) and the existing
+  search code lives there rather than in =scripts/=.
+- =modeling/component_overview.org= documents the purpose, the three
+  pillars, the project structure, and the open design questions, and
+  passes =validate_docs.sh=.
+- The /Search/ pillar still works from its new home
+  (=projects/ores.compass/compass.sh search "<query>"=).
+- /Locate/ and /Scaffold/ are specified (not necessarily implemented)
+  with their relationship to [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] resolved.
+
+* Tasks
+
+In execution order:
+
+- [[id:7D1E3657-FFB1-4171-9AFC-E46E7D406776][Task: Define scope and structure for ores.compass]]
+
+Follow-up pillars, now sprint-backlog stories in their own right:
+
+- [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][Story: ores.compass Locate — temporal orientation]]
+- [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][Story: ores.compass Scaffold — agile authoring over codegen]]
+
+* Decisions
+
+- The Sprint 18 capture asked for "a tool called compass". The existing
+  =scripts/compass.py= FTS prototype is adopted as the /Search/ pillar
+  and relocated into the new project rather than rewritten.
+- Compass /wraps/ [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] for scaffolding/listing instead of
+  duplicating =generate_v2_doc.sh= / =doc_list.sh= (to be confirmed in
+  the scoping task).
+
+* Out of scope
+
+- Embedding / vector search beyond SQLite FTS5.
+- Emacs integration, dashboards, and the capture-drain skill (separate
+  captures).
+- Live file watching; compass reflects the last =org-roam-db-sync= +
+  =index= run.

@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 962FDC09-8DED-4C60-8725-FDE288E55C00
+:END:
+#+title: Task: Audit existing ores.lisp modules and design dashboard architecture
+#+description: Survey all .el files under projects/ores.lisp, identify what is reusable vs superseded, and produce the design for ores-dashboard.el.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :emacs:lisp:dashboard:ores_studio_emacs_dashboard:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a written design (in =* Notes= below) that classifies every
+=.el= file under =projects/ores.lisp/= as REUSABLE, PARTIALLY
+REUSABLE, or SUPERSEDED, and specifies the architecture of
+=ores-dashboard.el=: required sections, data flow from =.env=, command
+group layout, and which helpers it will reuse.
+
+* Status
+
+| Field        | Value                                                  |
+|--------------+--------------------------------------------------------|
+| State        | BACKLOG                                                |
+| Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                             |
+| Now          | Not yet started.                                       |
+| Waiting on   | Nothing.                                               |
+| Next         | Read all .el files; write classification + design.     |
+| Last touched | 2026-05-24                                             |
+
+* Acceptance
+
+- Every =.el= file classified with a rationale.
+- Dashboard architecture written up: sections, env-binding approach,
+  command groups, helper dependencies.
+- Design signed off by user before [[id:696612A2-A9D5-47FE-BC5A-2F90FDCA4E15][task_implement_dashboard]] starts.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 8E5543CD-AD7C-41B5-A7EA-F2DC534F5248
+:END:
+#+title: Story: ORE Studio Emacs dashboard
+#+description: Replace per-mode ores.lisp approach with an env-aware Emacs dashboard — one-stop console for all dev commands, grouped by function, bound to the active checkout.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :emacs:lisp:dashboard:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Replace the broken per-mode =ores.lisp= approach — where scripts from
+one checkout bleed into another — with an env-aware [[https://github.com/emacs-dashboard/emacs-dashboard][emacs-dashboard]]
+console. The dashboard binds to the active checkout via =.env=,
+groups all dev commands (DB, services, compass, build), provides
+bookmarks to key directories, links to recipes and the user manual,
+offers an ORE Studio shell, and shows the ORE splash image.
+
+* Status
+
+| Field         | Value                                      |
+|---------------+--------------------------------------------|
+| State         | STARTED                                    |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                  |
+| Now           | Tasks scaffolded; [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][audit/design task]] first.  |
+| Waiting on    | Nothing.                                   |
+| Next          | Begin [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][task_audit_and_design]].              |
+| Last touched  | 2026-05-24                                 |
+
+* Acceptance
+
+- =ores-dashboard.el= loads without error via =(require 'ores-dashboard)=.
+- Dashboard binds dynamically to the current checkout's =.env= — two
+  Emacs instances on =local1= and =local2= run independent commands.
+- Command groups cover: DB (init, migrate, reset), Services (start/stop
+  server, NATS), Compass (list, where, add), Build (configure, build,
+  test, deploy site, deploy skills).
+- Bookmarks section resolves log dir and bin dir from =.env=.
+- Links section opens key recipes and the user manual inside Emacs.
+- "Open ORE Studio shell" launches a comint shell bound to the active env.
+- ORE splash image displayed in dashboard header.
+- Superseded per-mode modules (=ores-db.el= etc.) are removed or gutted.
+- A dashboard chapter exists in the user guide.
+- Reusable helpers (=ores-env.el=, =ores-shell.el=, =ores-shell-mode.el=) are retained and wired in.
+
+* Tasks
+
+In execution order:
+
+- [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][Audit existing ores.lisp modules and design dashboard architecture]]
+- [[id:696612A2-A9D5-47FE-BC5A-2F90FDCA4E15][Implement ores-dashboard.el]]
+- [[id:7E86CDB4-3FE6-46AD-BCC8-C0E9AD8857D6][Remove superseded ores.lisp modules]]
+- [[id:3C888F53-0522-4A56-A50A-A7AFEA101468][Write the ORE Studio dashboard user manual section]]
+
+* Decisions
+
+- Use =emacs-dashboard= as the host framework rather than a custom
+  buffer, so ORE commands land in an established, maintainable widget
+  system.
+- Dashboard is dev-only; no production-environment integration.
+- Each Emacs instance reads =.env= at load time — no global singleton
+  that could leak state between checkouts.
+
+* Out of scope
+
+- Integration with production or staging environments.
+- A new Emacs minor-mode API surface (the dashboard replaces the old
+  per-mode approach entirely; no shim layer).

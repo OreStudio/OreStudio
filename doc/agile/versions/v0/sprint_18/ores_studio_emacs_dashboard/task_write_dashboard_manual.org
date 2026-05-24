@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 3C888F53-0522-4A56-A50A-A7AFEA101468
+:END:
+#+title: Task: Write the ORE Studio dashboard user manual section
+#+description: Add a dashboard chapter to the user guide covering: launching the dashboard, each command group, bookmarks, and the ORE Studio shell.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :emacs:lisp:dashboard:ores_studio_emacs_dashboard:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a dashboard chapter to the user guide covering: how to launch the
+dashboard, each command group, bookmarks, and the ORE Studio shell.
+
+* Status
+
+| Field        | Value                                                    |
+|--------------+----------------------------------------------------------|
+| State        | BACKLOG                                                  |
+| Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                               |
+| Now          | Blocked on [[id:696612A2-A9D5-47FE-BC5A-2F90FDCA4E15][implement task]].                              |
+| Waiting on   | [[id:696612A2-A9D5-47FE-BC5A-2F90FDCA4E15][task_implement_dashboard]] merged.                         |
+| Next         | Write manual chapter once implementation is stable.      |
+| Last touched | 2026-05-24                                               |
+
+* Acceptance
+
+- Dashboard chapter present under =doc/manual/user_guide/=.
+- Covers: launching, all command groups, bookmarks, shell, limitations.
+- Includes a note that the dashboard is dev-only (not for production).
+- Renders correctly via the =deploy_manual= CMake target.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

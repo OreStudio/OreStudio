@@ -2,7 +2,7 @@
 :ID: 1737C00C-699A-475A-BC94-743C6CDA1001
 :END:
 #+title: Sprint 18
-#+description: Sprint 18 — TBD.
+#+description: Sprint 18 — ORE imports, more ORE types, compass tool, and backlog refinement tooling.
 #+type: sprint
 #+version: 2
 #+level: s3
@@ -18,7 +18,14 @@ surrounding context — version goals, sprint order, and product identity — se
 
 * Mission
 
-(One sentence — what this sprint exists to achieve.)
+Enable end-to-end [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] imports into workspaces, expand supported ORE types, and equip the LLM with a compass tool for orientation.
+
+* Goals
+
+- *ORE imports into workspaces* — users can load ORE input files directly into a workspace and have them processed end-to-end.
+- *More ORE types* — expand the set of ORE instrument/trade types that ORE Studio recognises and can round-trip.
+- *Compass tool* — implement the basic compass skill so the LLM can orient itself in the doc graph and codebase without manual exploration.
+- *Backlog refinement tooling* — build the =backlog-refiner= and =sprint-planner= skills and recipes to make future sprint planning repeatable.
 
 * Status
 
@@ -29,9 +36,9 @@ surrounding context — version goals, sprint order, and product identity — se
 | Previous       | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]                              |
 | Now            | Sprint in flight.                      |
 | Waiting on     | Nothing.                               |
-| Next           | Inline org-roam export into ores.lisp. |
+| Next           | Backlog refinement skills; ORE imports. |
 | Release Notes  | Added at end of sprint.                |
-| Last touched   | 2026-05-23                             |
+| Last touched   | 2026-05-24                             |
 
 * Stories
 

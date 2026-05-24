@@ -31,7 +31,7 @@ repository.
 |--------------+---------------------------------------|
 | State        | DONE                                  |
 | Parent story | [[id:A4BEF88C-1372-46CE-864B-C30AC3BE95EB][Inline org-roam export into ores.lisp]] |
-| Now          | Completed — merged in PR #803.        |
+| Now          | Complete — merged in PR #803.         |
 | Waiting on   | Nothing.                              |
 | Next         | Address code review comments..        |
 | PR           | [[https://github.com/OreStudio/OreStudio/pull/803][#803]]                                  |

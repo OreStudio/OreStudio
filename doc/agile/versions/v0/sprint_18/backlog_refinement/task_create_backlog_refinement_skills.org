@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: C0A295F9-69B0-45AF-A45C-18A813D649A4
+:END:
+#+title: Task: Create backlog-refiner and sprint-planner skills and recipes
+#+description: Author the backlog-refiner and sprint-planner Claude Code skills and their companion agile recipes.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :agile:backlog:skills:recipes:sprint_18:v0:backlog_refinement:
+#+owner: marco
+#+branch: feature/backlog-refinement-skills
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce two Claude Code skills (=backlog-refiner=, =sprint-planner=) and two companion agile recipes, so that both types of backlog session are structured, repeatable, and self-documenting.
+
+* Status
+
+| Field        | Value                                                          |
+|--------------+----------------------------------------------------------------|
+| State        | STARTED                                                        |
+| Parent story | [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]]                                     |
+| Now          | Authoring skills and recipes.                                  |
+| Waiting on   | Nothing.                                                       |
+| Next         | Deploy skills; verify site build; close task.                  |
+| Last touched | 2026-05-24                                                     |
+
+* Acceptance
+
+- =doc/llm/skills/backlog-refiner/SKILL.org= exists and is a valid v2 skill doc.
+- =doc/llm/skills/sprint-planner/SKILL.org= exists and is a valid v2 skill doc.
+- =doc/recipes/agile/how_do_i_refine_the_backlog.org= exists and covers the full housekeeping checklist.
+- =doc/recipes/agile/how_do_i_plan_a_sprint.org= exists and covers the goal-setting and selection workflow.
+- =.claude/skills/backlog-refiner.md= and =.claude/skills/sprint-planner.md= are deployed (=deploy_skills= target passes).
+- Site builds clean with all four new documents.
+
+* Plan
+
+1. Scaffold =backlog-refiner= skill via =generate_v2_doc.sh --type skill=.
+2. Scaffold =sprint-planner= skill via =generate_v2_doc.sh --type skill=.
+3. Author both skills: when-to-use, how-to-use, step-by-step procedure.
+4. Scaffold =how_do_i_refine_the_backlog.org= recipe via codegen.
+5. Scaffold =how_do_i_plan_a_sprint.org= recipe via codegen.
+6. Author both recipes: question, answer (checklist), script, tested-by, see-also.
+7. Run =deploy_skills= and =deploy_site= to confirm clean build.
+
+* Notes
+
+* Result

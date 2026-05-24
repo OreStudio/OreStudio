@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 2F0D0382-2230-470E-A481-7A9D5B7326B4
+:END:
+#+title: Task: Set sprint goals and select sprint 18 stories
+#+description: Define sprint 18 mission and use the sprint-planner skill to identify and promote candidate stories from the backlog.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :agile:sprint_18:sprint_planning:v0:backlog_refinement:
+#+owner: marco
+#+branch: feature/backlog-refinement-skills
+#+pr:
+#+blocked_on: C0A295F9-69B0-45AF-A45C-18A813D649A4
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Sprint 18 acquires a clear one-sentence mission and a curated Stories table that reflects actual planned work — produced by running the new =sprint-planner= skill against the near backlog.
+
+* Status
+
+| Field        | Value                                                                      |
+|--------------+----------------------------------------------------------------------------|
+| State        | BACKLOG                                                                    |
+| Parent story | [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]]                                                 |
+| Now          | Blocked on Task 1 (skills must exist before running the planner).          |
+| Waiting on   | [[id:C0A295F9-69B0-45AF-A45C-18A813D649A4][Task: Create backlog-refiner and sprint-planner skills and recipes]]         |
+| Next         | Set sprint mission; run sprint-planner; promote selected captures.         |
+| Last touched | 2026-05-24                                                                 |
+
+* Acceptance
+
+- =doc/agile/versions/v0/sprint_18/sprint.org= has a non-placeholder one-sentence mission.
+- At least one capture from =doc/agile/product_backlog/near/= has been promoted into a sprint 18 story.
+- All promoted stories appear in the sprint's Stories table.
+- Site builds clean.
+
+* Plan
+
+(Written when task 1 completes and this task starts.)
+
+* Notes
+
+* Result

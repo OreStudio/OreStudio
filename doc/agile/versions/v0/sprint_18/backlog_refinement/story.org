@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 22AA37FA-23A0-406E-B05B-B11BB3E83874
+:END:
+#+title: Story: Product backlog refinement
+#+description: Build the skills and recipes for backlog housekeeping and sprint planning sessions.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :agile:backlog:skills:recipes:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Equip every future session with two Claude Code skills and companion recipes — one for general backlog housekeeping (=backlog-refiner=) and one for sprint planning (=sprint-planner=) — so that backlog work is structured, repeatable, and recorded. As a first use of the new tooling, set sprint 18's mission and select its remaining stories.
+
+* Status
+
+| Field         | Value                                       |
+|---------------+---------------------------------------------|
+| State         | STARTED                                     |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                   |
+| Branch        | feature/backlog-refinement-skills           |
+| Now           | Authoring backlog-refiner and sprint-planner skills and recipes. |
+| Waiting on    | Nothing.                                    |
+| Next          | Task 2 — set sprint 18 goals and select stories. |
+| Last touched  | 2026-05-24                                  |
+
+* Acceptance
+
+- A =backlog-refiner= skill exists under =doc/llm/skills/backlog-refiner/= and is deployed to =.claude/skills/=.
+- A =sprint-planner= skill exists under =doc/llm/skills/sprint-planner/= and is deployed to =.claude/skills/=.
+- A =how_do_i_refine_the_backlog.org= recipe exists under =doc/recipes/agile/=.
+- A =how_do_i_plan_a_sprint.org= recipe exists under =doc/recipes/agile/=.
+- Sprint 18 has a one-sentence mission and a populated Stories table with at least one additional story beyond those already in flight.
+- The site builds clean after all new documents are committed.
+
+* Tasks
+
+In execution order:
+
+- [[id:C0A295F9-69B0-45AF-A45C-18A813D649A4][Task: Create backlog-refiner and sprint-planner skills and recipes]]
+- [[id:2F0D0382-2230-470E-A481-7A9D5B7326B4][Task: Set sprint goals and select sprint 18 stories]]
+
+* Decisions
+
+- /Two skills, not one./ General refinement (housekeeping, near↔far moves, culling) and sprint planning (goal-directed selection, promotion) have different triggers and outputs. Separating them keeps each skill focused and composable. The existing =agile-product-owner= skill handles atomic operations that both call into.
+- /Recipes alongside skills./ Skills hold the LLM orchestration logic; recipes hold the human-readable checklist and context. Both are needed so the process is transparent and the user can run it without Claude.
+- /Sprint goal-setting is part of task 2, not a third task./ Goals are a precondition of sprint planning; folding them in keeps the task atomic and avoids a blocked state where planning cannot start.
+
+* Out of scope
+
+- Changes to =agile-product-owner= skill (it remains the atomic-operation handler).
+- Backlog estimation or complexity-tagging (a future refinement pass).
+- Automated backlog health checks in CI.

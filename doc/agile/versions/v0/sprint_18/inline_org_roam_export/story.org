@@ -25,9 +25,9 @@ no dependency on a file under the runner's Emacs config directory.
 
 | Field         | Value                         |
 |---------------+-------------------------------|
-| State         | STARTED                       |
+| State         | DONE                          |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                     |
-| Now           | In implementation.            |
+| Now           | Complete — shipped in PR #803. |
 | Waiting on    | Nothing.                      |
 | Next          | Address code review comments. |
 | Last touched  | 2026-05-23                    |

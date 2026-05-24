@@ -28,11 +28,11 @@ that new =.org= docs are produced by codegen only — never hand-written.
 
 | Field         | Value                                          |
 |---------------+------------------------------------------------|
-| State         | STARTED                                         |
+| State         | DONE                                            |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                      |
-| Now           | =add= implemented on =feature/compass-scaffold=. |
+| Now           | Complete — =add= shipped in PR #815.            |
 | Waiting on    | Nothing.                                        |
-| Next          | Review.                                         |
+| Next          | Done.                                           |
 | Last touched  | 2026-05-24                                      |
 
 * Acceptance

@@ -26,11 +26,11 @@ Produce two Claude Code skills (=backlog-refiner=, =sprint-planner=) and two com
 
 | Field        | Value                                                          |
 |--------------+----------------------------------------------------------------|
-| State        | STARTED                                                        |
+| State        | DONE                                                           |
 | Parent story | [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]]                                     |
-| Now          | Authoring skills and recipes.                                  |
+| Now          | Complete — skills/recipes merged in PR #809.                   |
 | Waiting on   | Nothing.                                                       |
-| Next         | Deploy skills; verify site build; close task.                  |
+| Next         | Done.                                                          |
 | Last touched | 2026-05-24                                                     |
 
 * Acceptance

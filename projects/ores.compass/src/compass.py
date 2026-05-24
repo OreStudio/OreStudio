@@ -481,6 +481,12 @@ def cmd_debug(args):
 STATE_RE = re.compile(r"^\|\s*State\s*\|\s*([A-Z]+)\s*\|", re.MULTILINE)
 IN_FLIGHT_STATE = "STARTED"
 
+# Matches the body rows of a "* PRs" table. The header row (PR | Title) and
+# separator row are consumed by the leading anchors; each data row must have a
+# numeric PR number in the first cell and a non-empty title in the second.
+_PRS_SECTION_RE = re.compile(r"^\* PRs\s*\n", re.MULTILINE)
+_PRS_ROW_RE = re.compile(r"^\|\s*(\d+)\s*\|\s*([^|\n]+?)\s*\|", re.MULTILINE)
+
 def read_state(path):
     """Return the State value from a doc's Status table, or None if absent."""
     try:
@@ -489,6 +495,53 @@ def read_state(path):
         return None
     match = STATE_RE.search(text)
     return match.group(1) if match else None
+
+def parse_prs_table(path):
+    """Return list of (pr_number: int, title: str) from the task's * PRs table."""
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return []
+    section_match = _PRS_SECTION_RE.search(text)
+    if not section_match:
+        return []
+    # Slice from the section heading to the next heading (or EOF)
+    section_start = section_match.end()
+    next_heading = re.search(r"^\*+ ", text[section_start:], re.MULTILINE)
+    section_text = text[section_start: section_start + next_heading.start()] if next_heading else text[section_start:]
+    prs = []
+    for m in _PRS_ROW_RE.finditer(section_text):
+        try:
+            num = int(m.group(1))
+        except ValueError:
+            continue
+        title = m.group(2).strip()
+        if num and title:
+            prs.append((num, title))
+    return prs
+
+def fetch_pr_statuses(pr_numbers):
+    """
+    Fetch live PR state from GitHub for each PR number.
+    Returns {pr_number: {"title": str, "state": str, "url": str}}.
+    Falls back gracefully if gh is unavailable.
+    """
+    import subprocess
+    result = {}
+    for num in sorted(set(pr_numbers)):
+        try:
+            proc = subprocess.run(
+                ["gh", "pr", "view", str(num), "--json", "number,title,state,url"],
+                capture_output=True, text=True, timeout=15,
+            )
+            if proc.returncode == 0:
+                data = json.loads(proc.stdout)
+                result[num] = {"title": data.get("title", ""), "state": data.get("state", ""), "url": data.get("url", "")}
+            else:
+                result[num] = {"title": "", "state": "UNKNOWN", "url": ""}
+        except Exception:
+            result[num] = {"title": "", "state": "UNKNOWN", "url": ""}
+    return result
 
 def _parent_dir(rel_path):
     """Directory holding a doc, as a forward-slash relative string."""
@@ -527,6 +580,20 @@ def cmd_where(args):
                 in_flight.append((d, state))
     in_flight.sort(key=lambda pair: (pair[0].doctype, pair[0].rel_path))
 
+    # --prs: collect PRs from all task files in the current sprint (any state).
+    sprint_prs = []   # list of (pr_number, title, task_doc)
+    pr_statuses = {}  # pr_number -> {title, state, url}
+    if getattr(args, "prs", False):
+        all_tasks = [d for d in docs.values()
+                     if d.doctype == "task" and d.rel_path.startswith(sprint_dir + "/")]
+        all_tasks.sort(key=lambda d: d.rel_path)
+        for d in all_tasks:
+            for pr_num, pr_title in parse_prs_table(d.path):
+                sprint_prs.append((pr_num, pr_title, d))
+        if sprint_prs:
+            all_nums = [pr_num for pr_num, _, _ in sprint_prs]
+            pr_statuses = fetch_pr_statuses(all_nums)
+
     if args.format == "json":
         def entry(d):
             return {"id": d.id.upper(), "title": d.title, "path": d.rel_path}
@@ -539,6 +606,18 @@ def cmd_where(args):
                 for d, state in in_flight
             ],
         }
+        if getattr(args, "prs", False):
+            out["prs"] = [
+                {
+                    "pr": pr_num,
+                    "task_id": td.id.upper(),
+                    "task_title": _strip_type_prefix(td.title),
+                    "title": pr_statuses.get(pr_num, {}).get("title") or pr_title,
+                    "state": pr_statuses.get(pr_num, {}).get("state", "UNKNOWN"),
+                    "url": pr_statuses.get(pr_num, {}).get("url", ""),
+                }
+                for pr_num, pr_title, td in sprint_prs
+            ]
         print(json.dumps(out, indent=2))
         return
 
@@ -554,6 +633,22 @@ def cmd_where(args):
         for d, state in in_flight:
             print(f"  {d.doctype:<5} {_strip_type_prefix(d.title)}")
             print(f"        [{d.id.upper()}]  {d.rel_path}")
+
+    if getattr(args, "prs", False):
+        print(f"\nPRs (sprint {current_sprint.title}):")
+        if not sprint_prs:
+            print("  (no PRs recorded in task * PRs tables)")
+        else:
+            for pr_num, pr_title, td in sprint_prs:
+                info = pr_statuses.get(pr_num, {})
+                live_title = info.get("title") or pr_title
+                state_label = info.get("state", "UNKNOWN")
+                url = info.get("url", "")
+                task_label = _strip_type_prefix(td.title)
+                print(f"  #{pr_num:<5} [{state_label:<6}] {live_title}")
+                print(f"          task: {task_label}")
+                if url:
+                    print(f"          {url}")
 
 def main():
     # `list` and `show` pass every remaining argument straight through to the
@@ -584,6 +679,8 @@ def main():
                                          help="Show where we are: current version, sprint, in-flight work")
     where_parser.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty",
                               help="Output format: pretty (default) or json")
+    where_parser.add_argument("--prs", action="store_true",
+                              help="Also show PRs from all sprint tasks (fetches live status via gh)")
 
     # Registered for discoverability in --help; actually handled by the
     # short-circuit above (which forwards all args to the bundled doc tools).

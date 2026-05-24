@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :github:pr:gh:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-05-24
 
 The body content should be assembled via [[id:1882D6DF-4012-4C6E-BF62-0D943EF805B0][How do I generate a PR
 summary?]] before running the =gh= command here.
@@ -26,8 +26,9 @@ correctly-formatted title and a structured body?
    git push -u origin "$(git branch --show-current)"
    #+end_src
 
-2. /Create the PR/ with =gh pr create=. Use a HEREDOC for the body
-   so newlines are preserved:
+2. /Create the PR/ with =gh pr create=. Embed the story and task
+   =:ID:= UUIDs in the body so =compass where --prs= can surface them
+   later. Use a HEREDOC for the body so newlines are preserved:
 
    #+begin_src sh :results verbatim
    gh pr create --title "[component] One-line description" \
@@ -40,12 +41,25 @@ correctly-formatted title and a structured body?
 
    - First change
    - Second change
+
+   Story: [[id:STORY-UUID]]
+   Task:  [[id:TASK-UUID]]
    EOF
    )"
    #+end_src
 
 3. /Confirm the PR URL/ that =gh= prints; verify the title format
    matches =[COMPONENT] Description=.
+
+4. /Record the PR in the task./ Open the task's =* PRs= table and add
+   a row with the PR number and title. The table carries the canonical
+   record — =compass where --prs= reads it to fetch live status:
+
+   #+begin_example
+   | PR  | Title                         |
+   |-----+-------------------------------|
+   | 123 | [component] One-line description |
+   #+end_example
 
 * Conventions
 
@@ -54,6 +68,8 @@ correctly-formatted title and a structured body?
   use =[a,b,c]=.
 - Body sections may be expanded (Notes, Decisions, Follow-ups), but
   Summary and Changes are the load-bearing pair.
+- /Story/Task UUIDs in the body/ are forward-only: they make PRs
+  discoverable from the task but are not back-filled on old PRs.
 
 * Script
 

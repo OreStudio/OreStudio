@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 63019BF3-5C02-40D5-A5F0-C1879A10F588
+:END:
+#+title: Task: Add PRs table to task template and update PR recipe
+#+description: Update v2_doc_task.org.mustache to include a * PRs table; update how_do_i_create_a_pr.org to record PRs and embed UUIDs.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :agile:compass:pr_tracking_in_tasks:sprint_18:v0:
+#+owner: marco
+#+branch: feature/pr-tracking-compass
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7EF64A67-EB1C-4F79-9FF2-1C59DD6146AB][Track PRs per task and surface them in compass where]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every future task document starts with an empty =* PRs= table so PR
+numbers can be recorded at creation time. The PR creation recipe
+instructs authors to fill the table and to embed story/task UUIDs in
+the PR body for traceability.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:7EF64A67-EB1C-4F79-9FF2-1C59DD6146AB][Track PRs per task and surface them in compass where]] |
+| Now          | Completed.                             |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-24                             |
+
+* Acceptance
+
+- =v2_doc_task.org.mustache= has a =* PRs= section with a =| PR | Title |= table.
+- =how_do_i_create_a_pr.org= step 2 embeds story/task UUIDs in the PR body.
+- =how_do_i_create_a_pr.org= step 4 instructs recording the PR in the task's =* PRs= table.
+
+* PRs
+
+| PR  | Title                                               |
+|-----+-----------------------------------------------------|
+| 816 | [compass,agile] Track PRs per task; compass where --prs |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- =projects/ores.codegen/library/templates/v2_doc_task.org.mustache= — =* PRs= section
+  with empty =| PR | Title |= table added before =* Review=.
+- =doc/recipes/github/how_do_i_create_a_pr.org= — step 2 updated to embed
+  =Story: [[id:STORY-UUID]]= / =Task: [[id:TASK-UUID]]= in the PR body; new step 4
+  instructs recording the PR number and title in the task's =* PRs= table immediately
+  after the PR is raised.

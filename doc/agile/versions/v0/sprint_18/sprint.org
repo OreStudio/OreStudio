@@ -61,6 +61,7 @@ In execution order.
 | [[id:84C10B13-51E2-4D8D-B82A-F38F8DB10E86][Work through all types for ORE Example 1]] | BACKLOG | 2026-05-24 |          | Implement every ORE instrument and market-data type needed for Example 1.                    |
 | [[id:4941A490-0D66-4F09-9B1F-3BC928022A41][Fix instruments not visible in UI]]       | BACKLOG | 2026-05-24 |            | Instruments not showing in UI — investigate import/display path and fix.                     |
 | [[id:B3EBD70C-DAFA-4854-92F3-54E7D90D22C7][Qt: instrument creation in TradeDetailDialog]] | BACKLOG | 2026-05-24 |      | Create/associate instruments directly from TradeDetailDialog.                                |
+| [[id:7EF64A67-EB1C-4F79-9FF2-1C59DD6146AB][Track PRs per task and surface in compass where]] | DONE    | 2026-05-24 | 2026-05-24 | PRs table in task docs; =compass where --prs= fetches live PR status via =gh=.          |
 
 * Retrospective
 

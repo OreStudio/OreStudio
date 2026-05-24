@@ -29,11 +29,11 @@ committed and a link added so it is reachable from the published site.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                     |
-| Parent story | [[id:c42c3563-671f-4721-8ce8-5ee05925255f][Build and publish user manual PDF via CMake]] |
-| Now          | Adding deploy_manual CMake target and .build-manual.el script. |
+| State        | DONE                                        |
+| Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
+| Now          | Complete — deploy_manual target merged in PR #810. |
 | Waiting on   | Nothing.                                    |
-| Next         | Run target, commit PDF, add download link.  |
+| Next         | Done.                                       |
 | Last touched | 2026-05-24                                  |
 
 * Acceptance

@@ -29,9 +29,9 @@ connection-level safety defaults.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:0A2CB5BD-67B8-4096-BAC4-8E110333893A][SQLite CLI quality-of-life setup]] |
-| Now          | rc file authored; verified against sqlite3 3.46.1. |
+| Now          | Complete — merged in PR #804.          |
 | Waiting on   | Nothing.                               |
 | Next         | Land via PR.                           |
 | Last touched | 2026-05-24                               |

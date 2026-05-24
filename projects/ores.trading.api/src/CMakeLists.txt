@@ -54,6 +54,7 @@ target_link_libraries(${lib_target_name}
 # consumers automatically so they don't need to set this independently.
 target_compile_options(${lib_target_name} PUBLIC
     $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/constexpr:depth100000>
-    $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/constexpr:steps10000000>)
+    $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/constexpr:steps10000000>
+    $<$<AND:$<CXX_COMPILER_ID:Clang>,$<COMPILE_LANGUAGE:CXX>>:-fbracket-depth=1024>)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

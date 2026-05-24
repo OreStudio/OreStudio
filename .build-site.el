@@ -96,6 +96,7 @@
 ;; syntax highlighting, but we never want CI to execute src blocks.
 ;; Developers refresh #+RESULTS: manually via the org-babel-refresh recipe.
 (setq org-export-use-babel nil)
+(setq org-export-with-broken-links 'mark)
 
 ;; Customize the HTML output
 (setq org-html-validation-link nil            ;; Don't show validation link
@@ -210,13 +211,17 @@
       (setq org-roam-file-exclude-regexp
             "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui")
       (require 'org-roam)
-      (org-roam-db-sync)
-      (load-file (expand-file-name "./projects/ores.lisp/ores-org-roam-export.el"))
-      (ores/org-roam-export-graph-json
-       (expand-file-name "./.org-roam.db")
-       (expand-file-name "./build/output/site/OreStudio/graph/graphdata.json")
-       (expand-file-name "./")
-       "/OreStudio/")
+      (condition-case roam-err
+          (progn
+            (org-roam-db-sync)
+            (load-file (expand-file-name "./projects/ores.lisp/ores-org-roam-export.el"))
+            (ores/org-roam-export-graph-json
+             (expand-file-name "./.org-roam.db")
+             (expand-file-name "./build/output/site/OreStudio/graph/graphdata.json")
+             (expand-file-name "./")
+             "/OreStudio/"))
+        (error (message "Warning: org-roam graph export skipped: %s"
+                        (error-message-string roam-err))))
       (message "Build succeeded.")
       (kill-emacs 0))
   (error

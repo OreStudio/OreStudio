@@ -23,6 +23,12 @@ frontmatter?
 
 * Answer
 
+For *stories, tasks, and sprints* — the most common agile operations — use
+[[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][compass add]] instead. It defaults =--parent-dir= from where you are (current
+sprint for stories, current version for sprints) so you rarely need to type
+a path. This recipe remains the authoritative reference for all other doc
+types and for edge cases (explicit =--id=, non-current parents, etc.).
+
 Call =projects/ores.codegen/generate_v2_doc.sh= with the type, slug, parent
 directory, and the document's title and description. The script fills in a fresh
 UUID, today's dates, the required frontmatter (including =#+version: 2= and the

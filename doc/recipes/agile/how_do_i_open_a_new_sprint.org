@@ -37,14 +37,14 @@ folder, set its mission, and link it from the version manifest?
    Numbering is monotonic and cheap to reverse, but rolling
    backwards is awkward.
 
-3. /Scaffold the sprint/. The codegen mints a fresh =:ID:=, applies
-   the right frontmatter, builds the skeleton sections, and the
+3. /Scaffold the sprint/. Use =compass add= — it defaults =--parent-dir=
+   to the current version automatically and mints a fresh =:ID:=,
+   applies the right frontmatter, builds the skeleton sections, and the
    ancestor tag chain:
 
    #+begin_src sh :results verbatim
-   projects/ores.codegen/generate_v2_doc.sh \
-     --type sprint --slug sprint_17 \
-     --parent-dir doc/agile/versions/v0 \
+   projects/ores.compass/compass.sh add sprint \
+     --slug sprint_17 \
      --title "Sprint 17" \
      --description "Sprint 17 — one-sentence mission." \
      --tags "v0"
@@ -77,8 +77,9 @@ folder, set its mission, and link it from the version manifest?
 
 * Script
 
-The wrapper is =projects/ores.codegen/generate_v2_doc.sh=. The
-sprint template is =v2_doc_sprint.org.mustache=.
+The entry point is =projects/ores.compass/compass.sh add=, mapping to
+=src/compass.py= (=cmd_add=), which calls =ores.codegen='s =v2_doc_generate=
+as a library. The sprint template is =v2_doc_sprint.org.mustache=.
 
 * Tested by
 
@@ -89,5 +90,6 @@ file carries =#+version: 2=.
 
 - [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][Sprint]] (glossary).
 - [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][Planning phase]] of the agile process.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New sprint".
+- [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] — preferred scaffold entry point.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New sprint" — full codegen reference.
 - [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint]] — the skill that drives this recipe.

@@ -32,6 +32,42 @@ destination (sprint backlog or [[id:D4219199-7B17-4A89-B4BC-6019738642DA][produc
 - add recipes to do doc commands (list etc). Link it to skills.
 - add a skill which drains capture buffer: for each entry decides to either file
   it as a task or a story in current sprint, or into product backlog.
+- we seem to be missing a plan.org to link into all plans.
+
+* Docs
+
+- added tufte docs to TMP
+- add new document type: manual.
+- rename claude code skills to large_language_model_skills. Add a LLM page to
+  knowledge. Explain we use mainly claude code.
+- architecture should link to multi party, multi company and workspace documents
+  under a section of isolation.
+- components, instead of Summary should just start straight away with the blurb.
+- file and directory links in docs should use =proj:= so that they link to
+  github.
+- split out component inventory from system model. Component inventory should
+  have tables for each component grouping.
+- system architecture should have a detailed description of the system and link
+  to top-level concepts such as multi-party etc.
+- rename =modeling= dir to =docs=. Modeling is confusing.
+- create a summary page of the cybernetics approach instead of linking to
+  wikipedia.
+- in Cybernetic Levels explain how our approach connects and does not connect to
+  cybernets. Explain limitations.
+- add knowledge pages for CMake: what is it, how we use it. Link to build pages.
+- add knowledge page for vcpkg: what is it, how we use it. link to submodule
+  updates.
+- add "Definition of done" to the glossary. Link it from where we use it.
+- recipes: make topics a table.
+- "How do I set up a development environment?" is linux only. Maybe rename it.
+- memory catalogue should be a table.
+- skills catalogue should be a table.
+
+* UML
+
+- missing relationships on all diagrams. Script should capture these but
+  according to some rules to avoid overcrowding.
+- missing notes on namespace descriptions and class descriptions.
 
 * LLMs
 
@@ -48,10 +84,15 @@ destination (sprint backlog or [[id:D4219199-7B17-4A89-B4BC-6019738642DA][produc
 
 * Tools
 
-- load babel and test all recipe types (SQL, cli etc).
+- create a tool called compass which tells you:
+  - where we are in time: what version, what sprint, what tasks are currently
+    executing.
+  - given a NLP query, gives you relevant docs. Uses cached data.
+  - add story to sprint, add task to story, add sprint, add recipe, etc.
 
 * Emacs
 
+- load babel and test all recipe types (SQL, cli etc).
 - add a capture command which gets latest capture buffer (e.g. latest version,
   latest sprint, locate capture.org).
 - instead of having a DB buffer for all envs, we should just have a ORES env
@@ -66,6 +107,20 @@ destination (sprint backlog or [[id:D4219199-7B17-4A89-B4BC-6019738642DA][produc
   However the issue is we need to reload as we move envs. Or ideally the babel
   functions should query the .env file dynamically to determine paths.
 - integrate captures with emacs capture: [[https://www.gnu.org/software/emacs/manual/html_mono/org.html#Setting-up-capture][Setting up capture]].
+- we could use emacs dashboard: https://github.com/emacs-dashboard/dashboard. We
+  could provide a way to edit the environment manually if required.
+- we could even provide plots for some ORE Studio functionality.
+  https://francismurillo.github.io/2017-04-15-Exploring-Emacs-chart-Library/
+- the dashboard should link up to recipes and user manual. We should have a
+  manual for the dashboard itself.
+- in the future we could extend the dashboard to provide some of the screens we
+  have in the UI via HTTP: list users, etc. This would just be another facet via
+  codegen. We could make a "standard" table like proced: [[https://laurencewarne.github.io/emacs/programming/2022/12/26/exploring-proced.html][Exploring Proced]].
+  Dashboard should have a login screen integrated with emacs. However, we should
+  be careful to distinguish the three modes of operation:
+  - running local scripts.
+  - remote login operations via HTTP. A true client.
+  - integration with CLI. Direct database access.
 
 * Environment
 
@@ -94,5 +149,18 @@ ORES_NATS_MONITOR_URL=http://localhost:8221
 
 * Site
 
-- Menu is not coming up at present when we run start site. Seems present in
-  =build-site.el=
+- Problem is we had legacy site as well as new site. We need to always =rm -rf
+  site= on recompile.
+- can org publish detect unchanged files? to speed up site rebuild.
+- links no longer work in local site, after UUID upcase changes? Links look
+  strange:
+
+: http://0.0.0.0:8001/mnt/development/Development/OreStudio/OreStudio.local1/doc/meta/glossary.html#ID-47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05
+
+  Should be relative to the site, not local drive.
+- can't configure org-roam knowledge graph properties or remove sidebar. seem to
+  have been removed.
+- add a download button for the releases. Make sure the page states a disclaimer
+  that these are alpha versions. Ask user to report problems on discord.
+- consider adding screenshots with functionality like qwen. ask LLM if its
+  possible to jazz up the screenshots. https://qwen.ai/qwencode

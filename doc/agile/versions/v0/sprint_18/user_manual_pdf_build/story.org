@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: c42c3563-671f-4721-8ce8-5ee05925255f
+:END:
+#+title: Story: Build and publish user manual PDF via CMake
+#+description: Add a CMake target that compiles user_manual.org to PDF, commits the PDF, and links to it from the documentation.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :doc:manual:cmake:pdf:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1737c00c-699a-475a-bc94-743c6cda1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A =deploy_manual= CMake target compiles =user_manual.org= to a PDF via
+Emacs/LaTeX. The resulting PDF is committed to the repository and linked
+from the documentation so readers can download it without running the
+build themselves.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1737c00c-699a-475a-bc94-743c6cda1001][Sprint 18]] |
+| Now           | Not yet started; blocked on merge of #807. |
+| Waiting on    | PR #807 (user manual restructure) merged. |
+| Next          | Add CMake target following =deploy_site= pattern. |
+| Last touched  | 2026-05-24                               |
+
+* Acceptance
+
+- =cmake --build ... --target deploy_manual= produces =doc/manual/user_guide/user_manual.pdf=.
+- The PDF is committed to the repository.
+- A download link to the PDF appears in the user manual and/or the site nav.
+- The PDF build does not break the existing =deploy_site= target.
+
+* Tasks
+
+In execution order:
+
+- [[id:001f63b6-c4e8-4dd2-b680-364393b15d51][Task: Add CMake target to build user manual PDF and commit it]]
+
+* Decisions
+
+* Out of scope
+
+- Automated PDF update on every commit — the PDF is rebuilt and committed
+  manually when the manual content changes significantly.

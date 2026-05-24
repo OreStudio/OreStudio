@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 37EA004E-340C-5FE4-14AB-D9678749733B
+:END:
+#+title: Introduction
+#+description: Introduction of the ORE Studio User Manual
+#+type: manual
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:chapter:
+#+created: 2024-06-23
+#+updated: 2026-05-24
+
+#+begin_quote
+*Early-stage software.* ORE Studio is currently in active development (version
+0.x). Features, workflows, and this documentation are all evolving and may
+change between releases. Numbers produced by the system are for learning and
+exploration only — they must not be used for real trading, risk management, or
+any financial decision-making.
+#+end_quote
+
+ORE Studio is a desktop application for exploring, configuring, and running
+quantitative finance calculations. It provides a graphical environment built
+around the /Open Source Risk Engine/ ([[https://github.com/OpenSourceRisk/Engine][ORE]]), a widely-used open-source library
+for pricing derivatives and measuring financial risk, which is itself built on
+[[https://www.quantlib.org][QuantLib]]. ORE Studio handles the data — storing trades, market data, and model
+configurations, and presenting the results — while ORE and QuantLib provide
+the mathematics.
+
+*Who this manual is for.* This manual is for analysts, traders, quants,
+middle-office staff, and students who want to use ORE Studio to explore
+financial instruments and risk calculations. No programming experience is
+required. The focus throughout is on what you can do through the application
+itself: entering trades, configuring market data, running analytics, and
+understanding the results.
+
+*What you can do.* ORE Studio is organised around a set of functional areas
+accessible from the main menu:
+
+- /Reference data/ — currencies, business calendars, counterparties, and
+  market conventions that form the foundation for everything else.
+- /Instruments and trades/ — define, store, and manage financial instruments
+  and their terms.
+- /Market data/ — yield curves, volatility surfaces, fixing histories, and
+  other inputs to pricing and risk models.
+- /Model configuration/ — choose and parameterise pricing engines, simulation
+  models, and sensitivity specifications.
+- /Analytics/ — run calculations and view results: net present value,
+  sensitivities (Greeks), credit and funding valuation adjustments (XVA),
+  Monte Carlo simulations, and stress tests.
+
+All data is stored persistently, so trades, curves, and configurations can be
+saved, revisited, and reused across sessions.
+
+*What ORE Studio is not.* ORE Studio is a learning and exploration environment,
+not a production trading or risk system. It is independent of and unaffiliated
+with ORE, QuantLib, or any financial institution. All quantitative mathematics
+are provided by ORE and QuantLib; ORE Studio is the surface through which they
+are configured and their results explored. Users who need production-grade
+performance, real-time market data feeds, or regulatory reporting should look
+to enterprise risk platforms.
+
+*How this manual is organised.* The chapters follow the natural order of first
+use. Chapter 1 covers getting started: launching the application, establishing
+a connection to the backend, and orienting yourself in the main window. Later
+chapters cover each functional area in turn. You do not need to read the manual
+cover to cover; each chapter can be read independently once the system is up
+and running.

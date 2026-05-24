@@ -1,7 +1,16 @@
-#+title: ORE Studio Manual
-#+version: 1
+:PROPERTIES:
+:ID: 6A1A333C-A83A-8954-B9C3-C3AB1AEC3046
+:END:
+#+title: ORE Studio User Manual
 #+author: Marco Craveiro
+#+version: 2
 #+options: date:nil <:nil c:nil todo:nil H:7 ^:{}
+#+description: User manual for ORE Studio, a desktop application for exploring, configuring, and running quantitative finance calculations.
+#+type: manual
+#+level: cross
+#+filetags: :knowledge:
+#+created: 2024-06-23
+#+updated: 2026-06-23
 #+latex_class: article
 #+latex_class_options: [a4paper,11pt]
 #+latex_header: \usepackage[margin=1in]{geometry}
@@ -24,6 +33,13 @@
 #+latex: \thispagestyle{empty}
 #+latex: \newpage
 
-** Introduction
+* Introduction
 
-** Chapter 1
+#+include: "chapters/chapter_00/introduction.org" :minlevel 2
+
+#+caption: The ORE Studio main window on first launch, before connecting to the backend service.
+[[../../../assets/images/ores_qt_non_logged_in_window.png]]
+
+* Chapter 1
+
+#+include: "chapters/chapter_01/system_bootstrapping.org" :minlevel 2

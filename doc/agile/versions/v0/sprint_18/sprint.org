@@ -45,13 +45,14 @@ Enable end-to-end [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] imports into 
 In execution order.
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                       | State   | Start      | End        | Theme                                                                                           |
-|---------------------------------------------------------------------------------------------+---------+------------+------------+-------------------------------------------------------------------------------------------------|
-| [[id:A4BEF88C-1372-46CE-864B-C30AC3BE95EB][Inline org-roam export into ores.lisp]] | DONE    | 2026-05-22 | 2026-05-22 | Vendor =org-roam-export.el= into =ores.lisp= so the CI site build is self-contained.           |
-| [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]]         | STARTED | 2026-05-23 |            | Permanently resolve MSVC C1202 and Clang expression nesting limits via structural isolation.    |
-| [[id:0A2CB5BD-67B8-4096-BAC4-8E110333893A][SQLite CLI quality-of-life setup]]       | STARTED | 2026-05-24 |            | Committed, commented =.sqliterc= for readable, non-wrapping =sqlite3= shell output.             |
-| [[id:BAF1DEAE-59DF-49AB-BFCD-E6D09496DA43][Lock down uppercase UUID invariant]]    | DONE    | 2026-05-24 | 2026-05-24 | Close the remaining code paths that can emit lowercase UUIDs into the doc graph.                |
-| [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]]            | STARTED | 2026-05-24 |            | Build backlog-refiner and sprint-planner skills/recipes; set sprint 18 mission.                 |
+| Story                                                                                           | State   | Start      | End        | Theme                                                                                        |
+|-------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------------------|
+| [[id:A4BEF88C-1372-46CE-864B-C30AC3BE95EB][Inline org-roam export into ores.lisp]]   | DONE    | 2026-05-22 | 2026-05-22 | Vendor =org-roam-export.el= into =ores.lisp= so the CI site build is self-contained.        |
+| [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]]           | STARTED | 2026-05-23 |            | Permanently resolve MSVC C1202 and Clang expression nesting limits via structural isolation. |
+| [[id:0A2CB5BD-67B8-4096-BAC4-8E110333893A][SQLite CLI quality-of-life setup]]         | STARTED | 2026-05-24 |            | Committed, commented =.sqliterc= for readable, non-wrapping =sqlite3= shell output.          |
+| [[id:BAF1DEAE-59DF-49AB-BFCD-E6D09496DA43][Lock down uppercase UUID invariant]]      | DONE    | 2026-05-24 | 2026-05-24 | Close the remaining code paths that can emit lowercase UUIDs into the doc graph.             |
+| [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]]              | STARTED | 2026-05-24 |            | Build backlog-refiner and sprint-planner skills/recipes; set sprint 18 mission.              |
+| [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] | BACKLOG | 2026-05-24 |        | =deploy_manual= target builds =user_manual.org= to PDF; commit and link the result.         |
 
 * Retrospective
 

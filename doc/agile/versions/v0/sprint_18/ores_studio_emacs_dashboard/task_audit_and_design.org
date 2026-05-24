@@ -96,19 +96,24 @@ This makes the dashboard immediately identifiable in =C-x b= and
   (interactive)
   (let* ((env   (ores/load-dotenv))
          (label (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "unknown"))
+         (root  (ores/checkout-root))
          (buf   (get-buffer-create (format "ORES Dashboard - %s" label))))
     (with-current-buffer buf
-      (setq ores/dashboard--env env)   ; buffer-local
-      (ores/dashboard-mode)
-      (ores/dashboard--render env))
+      (ores/dashboard-mode)            ; sets up special-mode first (kills locals)
+      (setq ores/dashboard--env env)   ; set buffer-local AFTER mode init
+      (setq ores/dashboard--root root)
+      (let ((inhibit-read-only t))
+        (ores/dashboard--render env root)))
     (pop-to-buffer buf)))
 
 (defun ores/dashboard-reload ()
   "Re-read .env and redraw the current dashboard buffer."
   (interactive)
-  (let ((env (ores/load-dotenv)))
+  (let ((env  (ores/load-dotenv))
+        (root (ores/checkout-root)))
     (setq ores/dashboard--env env)
-    (ores/dashboard--render env)
+    (let ((inhibit-read-only t))
+      (ores/dashboard--render env root))
     (message "ORES Dashboard reloaded.")))
 #+end_src
 
@@ -117,7 +122,10 @@ This makes the dashboard immediately identifiable in =C-x b= and
 #+begin_src emacs-lisp
 (defvar-local ores/dashboard--env nil
   "Alist of (KEY . VALUE) from the checkout .env.
-Bound when the dashboard is opened; never shared across buffers.")
+Set after mode init so kill-all-local-variables does not wipe it.")
+
+(defvar-local ores/dashboard--root nil
+  "Checkout root path, set alongside ores/dashboard--env.")
 #+end_src
 
 *** Sections
@@ -157,15 +165,25 @@ button/text into the dashboard buffer using =widget.el= or =insert= +
 
 *** Env-isolation contract
 
-Every button callback captures the =env= alist from the surrounding
-=let*= at render time (not from a global variable).  Example:
+Every button callback captures =env= and =root= from =ores/dashboard--render='s
+arguments at render time (not from globals).  The render function wraps all
+insertion in =(let ((inhibit-read-only t)) ...)= because =special-mode= makes
+the buffer read-only.  Example:
 
 #+begin_src emacs-lisp
-(insert-button "Recreate env"
-  'action (let ((e env) (root root))
-            (lambda (_) (ores-db/--run-recreate-env
-                          (or (cdr (assoc "ORES_CHECKOUT_LABEL" e)) "local1")))))
+(defun ores/dashboard--render (env root)
+  (let ((inhibit-read-only t))
+    (erase-buffer)
+    ;; ... insert sections ...
+    (insert-button "Recreate env"
+      'action (let ((e env) (r root))
+                (lambda (_) (ores-db/--run-recreate-env
+                              (or (cdr (assoc "ORES_CHECKOUT_LABEL" e)) "local1")
+                              r))))))
 #+end_src
+
+=root= is derived from =(ores/checkout-root)= (defined in =ores-env.el=,
+uses =project-current=) — not from the =env= alist.
 
 *** Mode definition
 
@@ -203,9 +221,13 @@ ores-dashboard.el
   └── (require 'ores-db)     ; DB helpers (recreate-env, init-env, SQL connections)
 #+end_example
 
-=emacs-dashboard= (MELPA) is the widget host; it is a hard dependency.
-=prodigy= is no longer a dependency and can be removed from the user's
-init if it was only used for ORE Studio services.
+The buffer is rendered with plain =insert= + =make-text-button= inside a
+=special-mode= derived mode.  The =emacs-dashboard= MELPA package was
+considered but its API is oriented around the Emacs startup screen and does
+not accommodate per-checkout buffer-local state cleanly.  Implementation
+will use =special-mode= + built-in button primitives; =emacs-dashboard= is
+not a dependency.  =prodigy= is no longer a dependency and can be removed
+from the user's init if it was only used for ORE Studio services.
 
 * PRs
 

@@ -19,6 +19,14 @@ import sys
 import time
 from pathlib import Path
 
+# Make the bundled doc-graph modules importable whether compass.py is run as a
+# script (src/ is already on sys.path) or imported from elsewhere. The sys.path
+# setup must precede these imports, hence the E402 suppressions.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import doc_index  # noqa: E402
+import doc_list   # noqa: E402
+import doc_show   # noqa: E402
+
 # --- Dynamic Path Resolution ---
 def find_git_root():
     """Walk up directories from the script's location until a .git folder is found."""
@@ -473,19 +481,11 @@ def cmd_debug(args):
 STATE_RE = re.compile(r"^\|\s*State\s*\|\s*([A-Z]+)\s*\|", re.MULTILINE)
 IN_FLIGHT_STATE = "STARTED"
 
-def load_doc_index():
-    """Import the bundled doc_index (canonical org-frontmatter parser)."""
-    src_dir = Path(__file__).resolve().parent
-    if str(src_dir) not in sys.path:
-        sys.path.insert(0, str(src_dir))
-    import doc_index
-    return doc_index
-
 def read_state(path):
     """Return the State value from a doc's Status table, or None if absent."""
     try:
         text = Path(path).read_text(encoding="utf-8")
-    except OSError:
+    except (OSError, UnicodeDecodeError):
         return None
     match = STATE_RE.search(text)
     return match.group(1) if match else None
@@ -502,8 +502,7 @@ def _strip_type_prefix(title):
     return title
 
 def cmd_where(args):
-    di = load_doc_index()
-    docs = di.load_all()
+    docs = doc_index.load_all()
     versions = [d for d in docs.values() if d.doctype == "version"]
     sprints  = [d for d in docs.values() if d.doctype == "sprint"]
     if not versions or not sprints:
@@ -562,10 +561,8 @@ def main():
     # Short-circuit before argparse so leading options like `--type` are not
     # swallowed by this parser.
     if len(sys.argv) >= 2 and sys.argv[1] == "list":
-        import doc_list
         sys.exit(doc_list.main(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "show":
-        import doc_show
         sys.exit(doc_show.main(sys.argv[2:]))
 
     parser = argparse.ArgumentParser(description="Compass: orientation tool for ORE Studio")

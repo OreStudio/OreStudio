@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 0D378978-7CF1-45F5-896F-63E281CC02CB
+:END:
+#+title: How do I see what every worktree is doing?
+#+description: Use compass fleet to list each git worktree's branch, story, task and open PR.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :compass:worktrees:coordination:recipe:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+
+The /Fleet/ pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]]. Use it when several worktrees
+(or agents) work in parallel and you want to avoid collisions.
+
+* Question
+
+What is every git worktree of this repo currently working on — which
+branch, story, task and PR?
+
+* Answer
+
+Run =compass.sh fleet=:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh fleet
+#+end_src
+
+For each worktree it prints the branch, the mapped story and task (found
+via the task's =#+branch:= field, read from /that worktree's/ tree so it
+works on unmerged branches), and the open PR with live state (via =gh=).
+The current worktree is marked =→=; worktrees with no matching task
+(e.g. =main=) are shown plainly.
+
+=-f json= emits a structured array for tooling:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh fleet -f json
+#+end_src
+
+* Script
+
+=projects/ores.compass/compass.sh fleet= → =src/compass.py= (=cmd_fleet=),
+using =git worktree list=, the task =#+branch:= fields, and one
+=gh pr list= matched by head branch.
+
+* Tested by
+
+Manual smoke test across the live worktrees. Read-only; degrades
+gracefully (omits PR state) when =gh= is unavailable.
+
+* See also
+
+- [[id:41E5F9A8-1C2B-4ECA-8EA0-1ABBAB0B6A31][How do I see where we are?]] — the per-sprint =where= view.
+- [[id:CB368AF8-3144-4CFF-B782-05CDF87366A6][Story: compass cross-worktree status]] — design and decisions.

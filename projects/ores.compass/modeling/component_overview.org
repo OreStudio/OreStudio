@@ -30,7 +30,7 @@ are planned (see [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][the story]]).
 
 * Capabilities
 
-Three pillars, drawn from the Sprint 18 capture (=* Tools=):
+Pillars (the first three drawn from the Sprint 18 capture =* Tools=):
 
 1. /Locate — "where are we in time?"/ Report the current [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]], the
    current [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]], and the [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][stories]] / [[id:31C868B9-306E-4282-BA8C-07E647021B34][tasks]] currently in flight
@@ -46,6 +46,11 @@ Three pillars, drawn from the Sprint 18 capture (=* Tools=):
    story, a sprint, a recipe, a capture, etc. Calls codegen /as a
    library/ rather than re-implementing it. /Implemented/ as =add= —
    see the [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][Scaffold story]].
+
+4. /Fleet — "what is every worktree doing?"/ List each git worktree with
+   its branch, mapped story + task (via the task =#+branch:= field), and
+   open PR + live state, so parallel checkouts/agents don't collide.
+   /Implemented/ as =fleet= — see the [[id:CB368AF8-3144-4CFF-B782-05CDF87366A6][Fleet story]].
 
 * Inputs
 
@@ -77,20 +82,23 @@ Three pillars, drawn from the Sprint 18 capture (=* Tools=):
 - =projects/ores.compass/src/compass.py= — the CLI. Subcommands:
   =index [--rebuild]=, =search <query> [-l N] [-f FMT]=,
   =debug [-f FILE]= (Search); =where= / =status= [=-f pretty|json=]
-  (Locate); =list [filters]= and =show <uuid>= (Navigate); and
-  =add <type> [flags]= (Scaffold).
+  (Locate); =list [filters]= and =show <uuid>= (Navigate);
+  =add <type> [flags]= (Scaffold); and =fleet [-f pretty|json]= (Fleet).
 
 * Dependencies
 
 - Python 3 standard library for everything except Scaffold (=sqlite3=,
-  =argparse=, =json=, =pathlib=, =re=, =dataclasses=).
+  =argparse=, =json=, =pathlib=, =re=, =dataclasses=, =subprocess=).
 - =pystache= — only for =add= (Scaffold), which imports codegen's
   Mustache-based generator. Declared in =requirements.txt=; the other
   commands run without it.
+- =git= (for =fleet=, via =git worktree list=) and =gh= (for live PR
+  state in =fleet= and =where --prs=). =fleet= degrades gracefully when
+  =gh= is unavailable, still showing branch + task.
 - =org-roam= (in Emacs) to populate =.org-roam.db=, used only by the
   Search pillar. Compass never writes to it; it opens it read-only.
-  Locate and Navigate read the working tree directly and need neither
-  =org-roam.db= nor =org-roam-db-sync=.
+  Locate, Navigate and Fleet read the working tree directly and need
+  neither =org-roam.db= nor =org-roam-db-sync=.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the division of labour is: /codegen generates,
   compass navigates/. Doc /navigation/ (=doc_index= / =list= / =show=)
   was folded /out/ of codegen into compass. Doc /generation/ stays in
@@ -106,7 +114,7 @@ projects/ores.compass/
 ├── requirements.txt           # pystache (only `add` needs it)
 ├── src/
 │   ├── __init__.py
-│   ├── compass.py             # CLI dispatcher: index/search/debug/where/list/show/add
+│   ├── compass.py             # CLI dispatcher: index/search/debug/where/list/show/add/fleet
 │   ├── doc_index.py           # canonical .org parser (walks the repo)
 │   ├── doc_list.py            # `list` — filter the doc graph
 │   └── doc_show.py            # `show` — one doc + inbound/outbound links

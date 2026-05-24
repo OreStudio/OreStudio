@@ -30,7 +30,16 @@ requested fixes, and close the review threads?
    For multi-line review threads (line-level comments), the API
    call gives you the thread structure that =gh pr view= flattens.
 
-2. /Apply fixes per comment/. One logical fix per commit:
+2. /Decide on each comment/. For every comment, make an explicit
+   accept/decline decision before touching any code:
+
+   - *Accept* — the comment identifies a real problem or improvement.
+     Apply the fix.
+   - *Decline* — the suggestion conflicts with an existing convention,
+     creates inconsistency, or is otherwise not applicable. Do not
+     silently ignore it; you must still reply (see step 4).
+
+3. /Apply fixes per accepted comment/. One logical fix per commit:
 
    #+begin_src sh :results verbatim
    git add <modified-files>
@@ -40,21 +49,28 @@ requested fixes, and close the review threads?
    *Never amend* existing commits — that destroys the review history
    and confuses the reviewer.
 
-3. /Push the batch/ when all comments in the round are addressed:
+4. /Push the batch/ when all accepted comments in the round are fixed:
 
    #+begin_src sh :results verbatim
    git push
    #+end_src
 
-4. /Reply to each review comment/ on GitHub, referencing the fix
-   commit. Skipping this leaves reviewers guessing.
+5. /Reply to every comment/ — accepted or declined — with a clear
+   explanation. This is mandatory, not optional.
+
+   - Accepted: state what was changed and in which commit.
+   - Declined: state why (convention conflict, semantic difference,
+     etc.). Keep it factual; reviewers need to understand the
+     reasoning.
 
    #+begin_src sh :results verbatim
    gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
      -X POST -f body="Fixed in commit <sha> — <brief description>."
+   # or, for a declined comment:
+   # -f body="Not changed. <reason>."
    #+end_src
 
-5. /Resolve each review thread/ via GraphQL. First get the thread
+6. /Resolve each review thread/ via GraphQL. First get the thread
    IDs:
 
    #+begin_src sh :results verbatim
@@ -84,13 +100,30 @@ requested fixes, and close the review threads?
    }"
    #+end_src
 
+7. /Record the review round in the task doc/. Add or update the
+   =* Review= section of the task's =.org= file with a summary table:
+
+   #+begin_example
+   | # | Comment summary         | File              | Decision | Notes                          |
+   |---+-------------------------+-------------------+----------+--------------------------------|
+   | 1 | Expand .gitignore       | .gitignore        | Applied  | Added .aux/.log/.out/.toc      |
+   | 2 | Use CMAKE_CURRENT_...   | CMakeLists.txt    | Declined | All other targets use CMAKE_SOURCE_DIR |
+   | 3 | Relative PDF link       | user_manual.org   | Applied  | Changed to user_manual.pdf     |
+   #+end_example
+
+   Commit the updated task doc in the same push (or as a follow-up
+   commit on the feature branch).
+
 * Conventions
 
 - /One commit per logical fix/. Squash later if you want, but never
   on a PR under active review.
-- /Reply + resolve/ are required, not optional. The PR dashboard
-  shows unresolved threads as outstanding work; reviewers expect
-  zero before merge.
+- /Reply + resolve are mandatory/. Every comment — accepted or
+  declined — must have a reply and a resolved thread before merge.
+  The PR dashboard shows unresolved threads as outstanding work.
+- /Record in the task/. The =* Review= section is the durable record
+  of what reviewers flagged and what was done. Future readers should
+  not need to open GitHub to understand the review history.
 
 * Script
 

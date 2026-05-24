@@ -50,13 +50,15 @@ Plan distilled into the parent story's =* Decisions= section on close — see [[
 
 - The audit that fed this plan was performed on 2026-05-24 on =feature/minor-doc-fixes=. It found zero lowercase IDs in the on-disk org corpus (confirming prior normalisation commits held) and four code-side leak sources (templates, =parent_id= / =predecessor_id= pass-through, release-notes generator, backlog-indexes constants).
 - The newly generated =story.org= and =task.org= for /this/ story themselves shipped with lowercase concept-link UUIDs from the templates — fixed by hand in the same commit that introduced them. They are Exhibit A for why the template fix was needed.
+- A follow-up exhaustive sweep surfaced three pre-existing v1 plan documents whose =:ID:= values were uppercase but /not valid hex/ (=H= and =G= characters). These predate the invariant work; treated as a separate bug and fixed in its own commit ([doc] Fix invalid (non-hex) UUIDs in 3 v1 plan files).
 
 * Result
 
 All eight plan steps executed. On-disk org corpus and codegen-generated documents now use uppercase UUIDs by construction; the contract is documented in [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]].
 
-Verification:
+Final exhaustive verification (run on 2026-05-24, post-fix):
 
-- Regression sweep: =grep -rEn '^:ID:\s+[A-Za-z0-9-]*[a-f]' --include='*.org' doc/ projects/= → 0 matches.
-- Regression sweep: =grep -rEn '\[\[id:[0-9a-f-]{20,}[a-f][0-9a-f-]*\]' --include='*.org' doc/ projects/= → 0 matches.
-- Codegen smoke test: generated one of each v2 doc type under a scratch dir; every =:ID:= and every concept-link UUID was uppercase. Defensive upper on =--parent-id= verified by passing a lowercase value and observing the rendered link as uppercase.
+- /All =:ID:= properties./ 1,671 =:ID:= lines scanned across every =.org= file in the tree. Zero contain lowercase hex. Three pre-existing =:ID:= values in v1 plans were not lowercase but /malformed/ (contained =H= and =G= characters — not valid hex); replaced with fresh uppercase UUIDs in a separate commit, and the one cross-reference in =doc/knowledge/external/shared_library_symbol_visibility.org= was updated.
+- /All =[[id:UUID]]= links./ 5,359 id-links scanned. Zero canonical-shape links contain lowercase hex; zero point to malformed targets. Recipe placeholders (=[[id:UUID]]=, =[[id:<parent_id>]]=, =[[id:...]]=) are intentional and excluded by shape.
+- /All project-owned Python UUID generators./ Two and only two: =projects/ores.codegen/src/v2_doc_generate.py:318= and =build/scripts/generate_release_notes.py:316=. Both call =.upper()= on =str(uuid.uuid4())=. No =uuid.UUID(...)= callers, no =uuidgen= subprocess calls, no shell-script or elisp UUID minters in project code. (vcpkg-vendored Meson tooling under =vcpkg/downloads/= is out of scope and already uppercases its own GUIDs.)
+- /Codegen end-to-end smoke test./ Generated one of every v2 doc type (story, task, sprint, version, capture, investigation, knowledge, recipe, memory, product_identity) into a scratch dir. Every =:ID:= and every concept-link UUID came out uppercase. Defensive upper on =--parent-id= verified by passing a lowercase value and observing the rendered link as uppercase.

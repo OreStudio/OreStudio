@@ -133,8 +133,11 @@ See [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]]
 - =plans/= — historical design plans, one =YYYY-MM-DD-name.org= per plan. Plans
   inside a sprint live as the =* Plan= section of the task/story; this folder is
   for one-off cross-cutting designs retained for the record.
-- =manual/= — user-facing PDF / LaTeX manual built from =manual.org=. Surfaced
-  to end users, not part of the developer-doc tree.
+- =manual/= — user-facing manual. The root file is
+  [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] at
+  =manual/user_guide/user_manual.org=; chapters live under
+  =manual/user_guide/chapters/=. Surfaced to end users, not part of the
+  developer-doc tree.
 - =prompts/= — reusable LLM prompts that don't fit cleanly as a [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skill]].
 - =samples/= — screenshots and product imagery referenced from [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]]
   and visual mockups.

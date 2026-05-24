@@ -10,6 +10,14 @@
 #+created: 2024-06-23
 #+updated: 2026-05-24
 
+#+begin_quote
+*Early-stage software.* ORE Studio is currently in active development (version
+0.x). Features, workflows, and this documentation are all evolving and may
+change between releases. Numbers produced by the system are for learning and
+exploration only — they must not be used for real trading, risk management, or
+any financial decision-making.
+#+end_quote
+
 ORE Studio is a desktop application for exploring, configuring, and running
 quantitative finance calculations. It provides a graphical environment built
 around the /Open Source Risk Engine/ ([[https://github.com/OpenSourceRisk/Engine][ORE]]), a widely-used open-source library

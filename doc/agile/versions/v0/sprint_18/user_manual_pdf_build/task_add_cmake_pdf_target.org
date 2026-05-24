@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 001f63b6-c4e8-4dd2-b680-364393b15d51
+:END:
+#+title: Task: Add CMake target to build user manual PDF and commit it
+#+description: Follow the existing deploy_site pattern to add a deploy_manual CMake target that runs Emacs/LaTeX to export user_manual.org as PDF. Commit the PDF and add a download link.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :doc:manual:cmake:pdf:latex:user_manual_pdf_build:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:c42c3563-671f-4721-8ce8-5ee05925255f][Build and publish user manual PDF via CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A =deploy_manual= CMake custom target that invokes Emacs in batch mode to
+export =doc/manual/user_guide/user_manual.org= to PDF via LaTeX, placing
+the output at =doc/manual/user_guide/user_manual.pdf=. The PDF is then
+committed and a link added so it is reachable from the published site.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:c42c3563-671f-4721-8ce8-5ee05925255f][Build and publish user manual PDF via CMake]] |
+| Now          | Not yet started; waiting on #807 merge. |
+| Waiting on   | PR #807 merged to main.                |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-24                               |
+
+* Acceptance
+
+- =deploy_manual= target exists in =CMakeLists.txt= following the same
+  pattern as =deploy_site= (=emacs -Q --script ...=).
+- Running the target produces =doc/manual/user_guide/user_manual.pdf=.
+- The PDF is committed to the repo.
+- A link to the PDF appears in the user manual introduction and/or site nav.
+- =deploy_site= still passes after the changes.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* Result

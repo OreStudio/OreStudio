@@ -37,6 +37,9 @@
 
 #+include: "chapters/chapter_00/introduction.org" :minlevel 1
 
+#+caption: The ORE Studio main window on first launch, before connecting to the backend service.
+[[./ores_qt_non_logged_in_window.png]]
+
 ** Chapter 1
 
 #+include: "chapters/chapter_01/system_bootstrapping.org" :minlevel 1

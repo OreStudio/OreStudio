@@ -1,5 +1,8 @@
-#+TITLE: Tenant and System Bootstrap Reset
-#+version: 1
+:PROPERTIES:
+:ID: B5EB3B4F-681A-48C9-BAF2-9256FE889A45
+:END:
+#+title: Tenant and System Bootstrap Reset
+#+version: 2
 #+SUBTITLE: Dev-cycle reset from shell scripts through to system-admin UI
 #+DATE: 2026-05-17
 #+AUTHOR: ORE Studio Team

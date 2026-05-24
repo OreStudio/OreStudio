@@ -2,7 +2,7 @@
 :ID: 7F3A8B21-4C9E-4E5B-B2D0-3F8A9C6D1E4F
 :END:
 #+title: Service Architecture Migration
-#+version: 1
+#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

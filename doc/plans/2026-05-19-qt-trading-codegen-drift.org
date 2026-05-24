@@ -1,5 +1,8 @@
-#+TITLE: Qt Trading Codegen Drift Remediation
-#+version: 1
+:PROPERTIES:
+:ID: 69FBCA3B-CDFE-43F5-8C4F-4C26B4D19ADD
+:END:
+#+title: Qt Trading Codegen Drift Remediation
+#+version: 2
 #+DATE: 2026-05-19
 #+AUTHOR: ORE Studio Team
 #+STATUS: IN PROGRESS

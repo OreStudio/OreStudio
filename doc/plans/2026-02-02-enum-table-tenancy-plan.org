@@ -1,5 +1,8 @@
-#+TITLE: Enum Table Tenancy Consolidation Plan
-#+version: 1
+:PROPERTIES:
+:ID: 8917A5A9-D7CA-4B52-9B19-329BBE8315D6
+:END:
+#+title: Enum Table Tenancy Consolidation
+#+version: 2
 #+AUTHOR: Claude
 #+DATE: 2026-02-02
 

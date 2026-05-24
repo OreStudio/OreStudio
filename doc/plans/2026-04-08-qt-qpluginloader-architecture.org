@@ -2,7 +2,7 @@
 :ID: 720D74A0-DAD3-4F11-BC5F-AD78BF5A9DD2
 :END:
 #+title: Qt QPluginLoader Architecture Migration
-#+version: 1
+#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

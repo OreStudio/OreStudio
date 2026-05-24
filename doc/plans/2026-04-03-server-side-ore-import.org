@@ -1,6 +1,9 @@
+:PROPERTIES:
+:ID: 40F4FC83-3552-4788-8520-1570A74A8BCA
+:END:
 # -*- mode: org; indent-tabs-mode: nil -*-
-#+TITLE: Server-Side ORE Import
-#+version: 1
+#+title: Server-Side ORE Import
+#+version: 2
 #+DATE: 2026-04-03
 #+AUTHOR: Marco Craveiro
 #+STATUS: IN PROGRESS

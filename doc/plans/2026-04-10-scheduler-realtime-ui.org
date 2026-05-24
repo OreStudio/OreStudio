@@ -2,7 +2,7 @@
 :ID: 8B8E0568-AF14-4820-B7AD-6FCA99C40626
 :END:
 #+title: Scheduler Real-Time UI — Job Lifecycle Events and Live Views
-#+version: 1
+#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

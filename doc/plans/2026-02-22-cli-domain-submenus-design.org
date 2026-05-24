@@ -2,7 +2,7 @@
 :ID: B7D4E2A1-3C9F-4E8B-A5D2-1F6B8C0E3A94
 :END:
 #+title: CLI Domain Sub-menus Design
-#+version: 1
+#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

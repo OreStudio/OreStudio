@@ -1,5 +1,8 @@
-#+TITLE: Shared audit_record and Codegen Composite-Type Support
-#+version: 1
+:PROPERTIES:
+:ID: 1EF768F1-5B86-402F-866A-5CB730F48319
+:END:
+#+title: Shared audit_record and Codegen Composite-Type Support
+#+version: 2
 #+DATE: 2026-05-17
 #+AUTHOR: ORE Studio Team
 #+STATUS: DRAFT

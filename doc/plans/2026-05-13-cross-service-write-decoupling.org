@@ -1,5 +1,8 @@
-#+TITLE: Cross-Service Write Decoupling
-#+version: 1
+:PROPERTIES:
+:ID: 004B427A-2B3E-4556-8345-A72251238202
+:END:
+#+title: Cross-Service Write Decoupling
+#+version: 2
 #+SUBTITLE: IAM party cache + NATS write APIs for workflow/ORE
 #+DATE: 2026-05-13
 #+AUTHOR: ORE Studio Team

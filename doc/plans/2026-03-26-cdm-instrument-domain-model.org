@@ -2,7 +2,7 @@
 :ID: A3F2C1D0-AB12-11F1-8E4A-40B0768014EB
 :END:
 #+title: CDM-Inspired Instrument Domain Model
-#+version: 1
+#+version: 2
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 * Overview

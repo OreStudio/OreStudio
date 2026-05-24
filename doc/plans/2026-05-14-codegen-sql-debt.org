@@ -1,5 +1,8 @@
-#+TITLE: Codegen SQL Debt — Hand-Written Files with Existing Models
-#+version: 1
+:PROPERTIES:
+:ID: 05661A18-616C-4C39-8A88-BFBB4C68FD2E
+:END:
+#+title: Codegen SQL Debt — Hand-Written Files with Existing Models
+#+version: 2
 #+DATE: 2026-05-14
 #+AUTHOR: ORE Studio Team
 #+STATUS: COMPLETE (PR #752, investigation/codegen-drift-3)

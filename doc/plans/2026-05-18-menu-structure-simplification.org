@@ -1,5 +1,8 @@
-#+TITLE: Menu Structure Analysis and Simplification
-#+version: 1
+:PROPERTIES:
+:ID: 8F08358F-3909-479A-872D-E1A362F9DF4F
+:END:
+#+title: Menu Structure Analysis and Simplification
+#+version: 2
 #+DATE: 2026-05-18
 #+AUTHOR: ORE Studio Team
 #+STATUS: IN PROGRESS

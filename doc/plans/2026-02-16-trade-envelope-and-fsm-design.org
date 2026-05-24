@@ -1,1 +1,5 @@
-#+version: 1
+:PROPERTIES:
+:ID: EEC13CF9-9665-4BF0-B18D-8801275709CD
+:END:
+#+title: Trade Envelope and FSM Design
+#+version: 2

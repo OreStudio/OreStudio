@@ -2,7 +2,7 @@
 :ID: 8F3A1C2E-4B7D-4E9F-A1C3-2D5E6F8A0B1C
 :END:
 #+title: ORE Import Wizard Design
-#+version: 1
+#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

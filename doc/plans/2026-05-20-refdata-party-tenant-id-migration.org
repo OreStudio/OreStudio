@@ -2,7 +2,7 @@
 :ID: 3A7F2B1C-84E6-4D59-B2A8-5C9E0F3D1A72
 :END:
 #+title: Refdata Party Domain: tenant_id Strong-Type Migration
-#+version: 1
+#+version: 2
 #+STATUS: DONE
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil

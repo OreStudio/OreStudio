@@ -2,7 +2,7 @@
 :ID: A3F2E1D0-B4C5-6789-ABCD-EF0123456789
 :END:
 #+title: NATS Monitor Design
-#+version: 1
+#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

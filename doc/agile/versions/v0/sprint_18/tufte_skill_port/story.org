@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 7225526E-DCDB-4DC6-A95D-22C7117E5EAA
+:END:
+#+title: Story: Port Tufte visualisation skill into ORE Studio
+#+description: Reformat the tufte-viz SKILL and its two reference documents into org-mode, add them to doc/llm/skills/tufte-viz/, and catalogue the skill in claude_code_skills.org.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :skills:design:visualisation:tufte:sprint_18:v0:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A =tufte-viz= skill exists in =doc/llm/skills/= and is listed in the
+skills catalogue. It teaches the LLM to design and critique data
+visualisations using Tufte's principles. Two companion reference
+documents — adapted from the work of [[https://x.com/draparente][Dr. Angelica Parente]] — are
+converted from Markdown to org-mode knowledge files and stored
+alongside the skill.
+
+* Status
+
+| Field         | Value                              |
+|---------------+------------------------------------|
+| State         | BACKLOG                            |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                          |
+| Now           | Not yet started.                   |
+| Waiting on    | Nothing.                           |
+| Next          | Reformat SKILL.md and reference files; add to skills tree. |
+| Last touched  | 2026-05-25                         |
+
+* Acceptance
+
+- =doc/llm/skills/tufte-viz/SKILL.org= exists and follows the
+  standard skill layout (=#+begin_export markdown= frontmatter block,
+  =* When to use=, =* How to use=, references to the knowledge docs).
+- =doc/llm/skills/tufte-viz/references/tufte-principles.org= exists
+  as an org-mode knowledge file, with correct attribution to
+  [[https://x.com/draparente][Dr. Angelica Parente]] in its header.
+- =doc/llm/skills/tufte-viz/references/analytical-design.org= exists
+  as an org-mode knowledge file with the same attribution.
+- =doc/llm/skills/claude_code_skills.org= lists =tufte-viz= under
+  =* Design= with a one-line description.
+- The source files in =tmp/= (=SKILL.md=,
+  =references__tufte-principles.md=,
+  =references__analytical-design.md=) are removed once their content
+  is in place.
+
+* Tasks
+
+In execution order:
+
+- [[id:9F6635A3-A770-44F2-BC85-B5324A0E65EA][Task: Reformat and install the tufte-viz skill and reference docs]]
+
+* Decisions
+
+* Out of scope
+
+- Implementing any actual visualisation code or Qt/Wt UI changes.
+- Extending the skill content beyond what is already in the source files.

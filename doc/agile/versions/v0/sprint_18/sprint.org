@@ -67,6 +67,7 @@ In execution order.
 | [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — near and far listing]] | BACKLOG | 2026-05-24 | | =compass backlog= lists near/far captures with counts, mirroring =where= in-flight display. |
 | [[id:8D295781-33E7-4812-AAC6-134BD7CD0DDC][Rebuild org-roam DB independently from CMake]]       | BACKLOG | 2026-05-24 | | Extract org-roam sync into =.build-org-roam.el=; add =rebuild_org_roam_db= cmake target.   |
 | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                         | STARTED | 2026-05-24 |            | Replace broken per-mode ores.lisp with an env-aware emacs-dashboard console for all dev commands. |
+| [[id:7225526E-DCDB-4DC6-A95D-22C7117E5EAA][Port Tufte visualisation skill into ORE Studio]]     | BACKLOG | 2026-05-25 | | Convert =tufte-viz= SKILL and two Tufte reference docs to org-mode; install and catalogue. |
 
 * Retrospective
 

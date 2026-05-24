@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 1F41F21C-8D2A-46DA-8C6A-571564DF2C0E
+:END:
+#+title: How do I work a task?
+#+description: Procedure for picking up, executing, and closing a task: BACKLOG to STARTED to DONE, with Notes and Result fields.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :agile:task:recipe:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+
+A [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] is a PR-sized unit of work inside a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]]. Tasks share the
+story's feature branch — they do not get their own branches. For
+the story-level branch-and-status recipe, see [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work
+on a story?]].
+
+* Question
+
+How do I pick up a task, record progress, and close it when the
+work is done?
+
+* Answer
+
+** Picking up a task (BACKLOG → STARTED)
+
+1. Open the task's =.org= file under
+   =doc/agile/versions/v0/sprint_NN/<story>/task_<slug>.org=.
+
+2. Update the =* Status= table:
+
+   - Change =State= from =BACKLOG= to =STARTED=.
+   - Set =Now= to a one-line description of the first action.
+   - Set =Next= to whatever follows the first action.
+   - Update =Last touched= to today.
+
+3. Fill in =* Plan= if it is still the placeholder text. The plan
+   is the implementation strategy — keep it short (bullet list, not
+   prose). It is transient: distil key decisions into the parent
+   story's =* Decisions= when the task closes, then clear it.
+
+4. Commit the status change on the story's feature branch:
+
+   #+begin_src sh :results verbatim
+   git add doc/agile/versions/v0/sprint_NN/<story>/task_<slug>.org
+   git commit -m "[agile] Mark task <slug> STARTED"
+   #+end_src
+
+** During execution
+
+- Append findings, decisions, and blockers to =* Notes= as they
+  occur — one bullet per entry, newest last.
+- Update =Now= / =Next= / =Last touched= whenever the task changes
+  direction. These fields are the live status; keep them current.
+- If the task becomes blocked, set =State= to =BLOCKED=, fill
+  =Waiting on= and =Blocked since=, and commit.
+
+** Closing a task (STARTED → DONE)
+
+1. Write the =* Result= section: what was built, what was verified,
+   any gotchas a future reader needs. Factual and durable — no PR
+   numbers (the git log has those).
+
+2. Update =* Status=:
+
+   - Change =State= to =DONE=.
+   - Clear =Now= / =Waiting on= / =Next=.
+   - Update =Last touched= to today.
+
+3. Distil any plan decisions worth keeping into the parent story's
+   =* Decisions= section, then clear =* Plan= in this file.
+
+4. Commit:
+
+   #+begin_src sh :results verbatim
+   git add doc/agile/versions/v0/sprint_NN/<story>/task_<slug>.org \
+           doc/agile/versions/v0/sprint_NN/<story>/story.org
+   git commit -m "[agile] Close task <slug>"
+   #+end_src
+
+** Abandoning a task (→ ABANDONED)
+
+Set =State= to =ABANDONED=, add a one-line reason in =* Notes=, and
+commit. Do not delete the file — the history is useful.
+
+* Script
+
+No script — pure status-table edits on the task and story files.
+
+* Tested by
+
+Manual. Applied to every task in Sprint 18 and later.
+
+* See also
+
+- [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] — story-level branch creation
+  and BACKLOG→STARTED transition.
+- [[id:31C868B9-306E-4282-BA8C-07E647021B34][Task]] — the document type contract.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — full frontmatter contract and TODO vocabulary.
+- [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]] — TODO state machine for all stateful doc types.

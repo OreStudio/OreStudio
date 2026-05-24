@@ -51,11 +51,16 @@ In execution order.
 | [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]]           | STARTED | 2026-05-23 |            | Permanently resolve MSVC C1202 and Clang expression nesting limits via structural isolation. |
 | [[id:0A2CB5BD-67B8-4096-BAC4-8E110333893A][SQLite CLI quality-of-life setup]]         | STARTED | 2026-05-24 |            | Committed, commented =.sqliterc= for readable, non-wrapping =sqlite3= shell output.          |
 | [[id:BAF1DEAE-59DF-49AB-BFCD-E6D09496DA43][Lock down uppercase UUID invariant]]      | DONE    | 2026-05-24 | 2026-05-24 | Close the remaining code paths that can emit lowercase UUIDs into the doc graph.             |
-| [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]]              | STARTED | 2026-05-24 |            | Build backlog-refiner and sprint-planner skills/recipes; set sprint 18 mission.              |
+| [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]]              | DONE    | 2026-05-24 | 2026-05-24 | Build backlog-refiner and sprint-planner skills/recipes; set sprint 18 mission.              |
 | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] | BACKLOG | 2026-05-24 |        | =deploy_manual= target builds =user_manual.org= to PDF; commit and link the result.         |
 | [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][ores.compass repository compass tool]]   | STARTED | 2026-05-24 |            | Python repository compass: temporal orientation, semantic doc search, agile scaffolding.        |
 | [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][ores.compass Locate — temporal orientation]] | BACKLOG | | | =where=/=status=: report current version, sprint, and in-flight stories and tasks from the graph. |
 | [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][ores.compass Scaffold — agile authoring]] | BACKLOG | | | =add story/task/sprint/recipe=: create agile artefacts from the CLI by delegating to ores.codegen. |
+| [[id:D495A1B3-7677-4884-935F-1B6E6D65C983][ORE sample data]]                         | BACKLOG | 2026-05-24 |            | Source or generate representative ORE input files for integration testing.                   |
+| [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]]     | BACKLOG | 2026-05-24 |            | Enable end-to-end execution of ORE sample files from a workspace.                            |
+| [[id:84C10B13-51E2-4D8D-B82A-F38F8DB10E86][Work through all types for ORE Example 1]] | BACKLOG | 2026-05-24 |          | Implement every ORE instrument and market-data type needed for Example 1.                    |
+| [[id:4941A490-0D66-4F09-9B1F-3BC928022A41][Fix instruments not visible in UI]]       | BACKLOG | 2026-05-24 |            | Instruments not showing in UI — investigate import/display path and fix.                     |
+| [[id:B3EBD70C-DAFA-4854-92F3-54E7D90D22C7][Qt: instrument creation in TradeDetailDialog]] | BACKLOG | 2026-05-24 |      | Create/associate instruments directly from TradeDetailDialog.                                |
 
 * Retrospective
 

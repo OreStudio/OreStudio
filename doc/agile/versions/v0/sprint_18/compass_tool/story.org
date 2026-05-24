@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 5AAF54C3-69A2-4B25-8284-4054E3E433FC
+:END:
+#+title: Story: Implement basic compass tool for LLM orientation
+#+description: Build a lightweight NLP/FTS search tool over the org-roam doc graph so the LLM can orient itself in the project without exhaustive manual exploration.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :compass:llm:tooling:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The LLM can answer "where is X?" and "what does Y link to?" over the
+org-roam graph without exhaustive manual exploration — using a
+=compass.py= CLI that queries a pre-built FTS/SQLite index of all
+=.org= files and returns ranked matches with UUID and path.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                                |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                              |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Create feature branch; implement tool. |
+| Last touched  | 2026-05-24                             |
+
+* Acceptance
+
+- =scripts/compass.py= accepts a query string and returns ranked
+  matches (UUID, title, path, snippet) from the org-roam SQLite DB.
+- =scripts/compass.sh= wraps the Python script for convenient CLI use.
+- The tool is documented in a recipe under =doc/recipes/llm/=.
+- A Claude Code skill (=compass=) exposes the tool to the LLM with
+  a clear when-to-use and invocation pattern.
+- The =.compass.db= index file is in =.gitignore=.
+
+* Tasks
+
+In execution order:
+
+-
+
+* Decisions
+
+- /Use the existing org-roam SQLite DB./ org-roam already maintains
+  =~/.emacs.d/org-roam.db= (or project-local). Querying it directly
+  avoids maintaining a separate index. =compass.py= connects read-only.
+- /Python over shell./ FTS ranking and JSON output are cleaner in Python
+  (sqlite3 stdlib). The =compass.sh= wrapper provides a one-line entry
+  point for users who prefer not to invoke Python directly.
+
+* Out of scope
+
+- Full semantic/vector search (plain FTS is sufficient for orientation).
+- Integration with the CI build.
+- Real-time index updates (org-roam handles that).

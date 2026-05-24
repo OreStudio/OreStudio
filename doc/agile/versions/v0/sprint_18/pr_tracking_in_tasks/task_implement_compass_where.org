@@ -46,9 +46,9 @@ view=, and prints them grouped by task.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                               |
+|-----+-----------------------------------------------------|
+| 816 | [compass,agile] Track PRs per task; compass where --prs |
 
 * Review
 

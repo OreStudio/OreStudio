@@ -313,7 +313,7 @@ def build_context(sprint: dict, stories: list[dict], pr_summary: dict,
     filetags = f":release_notes:{sprint_slug}:v0:"
 
     return {
-        "id": str(uuid.uuid4()),
+        "id": str(uuid.uuid4()).upper(),
         "title": f"ORE Studio {sprint_title} – Release Notes",
         "sprint_title": sprint_title,
         "description": f"{sprint_title} release notes ({month_year}).",

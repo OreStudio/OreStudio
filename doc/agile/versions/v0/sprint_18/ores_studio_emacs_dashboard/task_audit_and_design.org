@@ -60,9 +60,8 @@ architecture in =* Notes=; get user sign-off; close.
 | =ores-shell.el=           | REUSABLE (absorbed) | Provides =ores-shell= comint launcher. Dashboard surfaces it as the "Open shell" button. Keep as-is.         |
 | =ores-shell-mode.el=      | REUSABLE            | =ores-shell-mode= major mode / font-lock. Minor duplication with =ores-shell.el= — clean up in task 3.       |
 | =ores-org-roam-export.el= | KEEP AS-IS          | Site-build utility; no relation to the per-env bleed. Untouched.                                             |
-| =ores-prodigy.el=         | PARTIALLY REUSABLE  | Service registration machinery is sound and env-aware. =defconst= at top-level causes bleed across sessions  |
-|                           |                     | (=ores/checkout-label=, =ores/project-root= evaluated once at load). Mitigated by using one Emacs per        |
-|                           |                     | checkout. Dashboard removes the standalone transient and =C-x p 8= binding; exposes services via dashboard. |
+| =ores-prodigy.el=         | SUPERSEDED          | Services are now managed entirely via =build/scripts/= shell scripts. Prodigy is not needed; the dashboard  |
+|                           |                     | surfaces start-services, start-client, status-services, and stop-services directly. Delete the file.        |
 | =ores-db.el=              | SUPERSEDED          | 693 lines. The underlying scripts (recreate-env, init-env, SQL connections) are valuable; the standalone     |
 |                           |                     | tabulated-list mode and global transient are the entry-point anti-pattern. Functions will be called          |
 |                           |                     | directly from the dashboard's DB command group.                                                              |
@@ -73,18 +72,23 @@ architecture in =* Notes=; get user sign-off; close.
 =ores/project-root= at file-load time.  If a user's =init.el= loads the
 file from a hardcoded path (e.g. =OreStudio.local1=) and then opens a
 buffer from =OreStudio.local2=, the constants still refer to =local1=,
-causing the wrong services to be started for =local2=.  The same load-time
-capture affects =ores-db.el='s =ores-db/current-environment= (which reads
-from =(project-current)= and is session-relative anyway).
+causing the wrong services to be started for =local2=.
 
 The dashboard fixes this at the architectural level: env is read freshly
-at =ores/dashboard= invocation time and stored as a =defvar-local= in the
-dashboard buffer.  All commands close over that buffer-local alist, so each
-checkout's dashboard is independently bound.
+at =ores/dashboard= invocation time (or on explicit re-read) and stored as
+a =defvar-local= in the dashboard buffer.  All commands close over that
+buffer-local alist, so each checkout's dashboard is independently bound.
+Prodigy is removed entirely — the shell scripts are the authority for
+service lifecycle, not a prodigy service registry.
 
 ** Architecture: ores-dashboard.el
 
-*** Entry point
+*** Entry point and buffer naming
+
+The buffer name is =ORES Dashboard - <label>= where =<label>= is
+=ORES_CHECKOUT_LABEL= from =.env= (e.g. =ORES Dashboard - local1=).
+This makes the dashboard immediately identifiable in =C-x b= and
+=ibuffer= when multiple checkouts are open simultaneously.
 
 #+begin_src emacs-lisp
 (defun ores/dashboard ()
@@ -92,12 +96,20 @@ checkout's dashboard is independently bound.
   (interactive)
   (let* ((env   (ores/load-dotenv))
          (label (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "unknown"))
-         (buf   (get-buffer-create (format "*ores-dashboard [%s]*" label))))
+         (buf   (get-buffer-create (format "ORES Dashboard - %s" label))))
     (with-current-buffer buf
       (setq ores/dashboard--env env)   ; buffer-local
       (ores/dashboard-mode)
       (ores/dashboard--render env))
     (pop-to-buffer buf)))
+
+(defun ores/dashboard-reload ()
+  "Re-read .env and redraw the current dashboard buffer."
+  (interactive)
+  (let ((env (ores/load-dotenv)))
+    (setq ores/dashboard--env env)
+    (ores/dashboard--render env)
+    (message "ORES Dashboard reloaded.")))
 #+end_src
 
 *** Buffer-local env binding
@@ -115,18 +127,22 @@ button/text into the dashboard buffer using =widget.el= or =insert= +
 =make-text-button=.  Rendering order:
 
 1. *Header* — ORE splash image (=doc/assets/images/ore_studio_logo.png= once
-   created; fall back to ASCII title if missing) + checkout label + preset.
-2. *Database* — buttons: Init environment · Recreate env · Browse databases ·
-   SQL connections · Diff .env.
-3. *Services* — buttons: Start NATS · Add preset services · Remove services ·
-   Show Prodigy buffer.
-4. *Compass* — buttons: =compass where= · =compass list= · =compass add= · open
+   created; fall back to ASCII title if missing) + =ORES Dashboard - <label>=
+   title + current preset.
+2. *Environment* — button: Reload environment (re-reads =.env= and redraws).
+3. *Database* — buttons: Init environment · Recreate env · Browse databases ·
+   SQL connections · Diff =.env=.
+4. *Services* — buttons invoking =build/scripts/= shell scripts directly:
+   Start services (=start-services.sh=) · Start client (=start-client.sh=) ·
+   Service status (=status-services.sh=) · Stop services (=stop-services.sh=).
+   No Prodigy dependency.
+5. *Compass* — buttons: =compass where= · =compass list= · =compass add= · open
    =doc/compass.org=.
-5. *Build* — buttons: Configure · Build · Test · Deploy site · Deploy skills.
-6. *Bookmarks* — =dired= links to log dir and bin dir (resolved from =.env=
+6. *Build* — buttons: Configure · Build · Test · Deploy site · Deploy skills.
+7. *Bookmarks* — =dired= links to log dir and bin dir (resolved from =.env=
    =ORES_LOG_DIR= and computed from =ORES_PRESET=).
-7. *Links* — open-file links to user manual and key recipe index files.
-8. *Shell* — single "Open ORE Studio shell" button → =(ores-shell)=.
+8. *Links* — open-file links to user manual and key recipe index files.
+9. *Shell* — single "Open ORE Studio shell" button → =(ores-shell)=.
 
 *** Env-isolation contract
 
@@ -158,8 +174,8 @@ No binding is set by the package itself.
 
 =.dir-locals.el= currently loads only =ores-babel.el=.  After this story,
 it will additionally load =ores-dashboard.el= (which =require='s =ores-env=,
-=ores-shell=, and optionally =ores-prodigy= and =ores-db= for their helper
-functions).
+=ores-shell=, and =ores-db= for helper functions).  =ores-prodigy.el= is
+removed and not loaded.
 
 *** No splash image yet
 
@@ -171,14 +187,14 @@ later without changing the architecture.
 
 #+begin_example
 ores-dashboard.el
-  ├── (require 'ores-env)          ; .env parser
-  ├── (require 'ores-shell)        ; ORE shell launcher
-  ├── (require 'ores-prodigy)      ; service registration (optional, skip if prodigy not installed)
-  └── (require 'ores-db)           ; DB helpers surfaced in DB group
+  ├── (require 'ores-env)    ; .env parser — buffer-local env binding
+  ├── (require 'ores-shell)  ; ORE shell launcher
+  └── (require 'ores-db)     ; DB helpers (recreate-env, init-env, SQL connections)
 #+end_example
 
-=emacs-dashboard= (MELPA) is the widget host; the package is a hard
-dependency.
+=emacs-dashboard= (MELPA) is the widget host; it is a hard dependency.
+=prodigy= is no longer a dependency and can be removed from the user's
+init if it was only used for ORE Studio services.
 
 * PRs
 

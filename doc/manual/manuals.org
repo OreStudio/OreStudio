@@ -18,7 +18,7 @@ perspective: how to connect to a backend, manage connections, bootstrap
 the system, provision tenants and parties, enter trades, and run
 analytics.
 
-- [[file:user_guide/user_manual.org][Read online]] | [[file:user_guide/user_manual.pdf][Download PDF]]
+- [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][Read online]] | [[file:user_guide/user_manual.pdf][Download PDF]]
 
 * Developer Guide
 

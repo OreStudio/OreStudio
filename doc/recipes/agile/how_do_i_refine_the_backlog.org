@@ -48,11 +48,13 @@ sharpening vague ones, and re-prioritising between =near/= and
 3. /File new captures/ that surface during the review:
 
    #+begin_src sh :results verbatim
-   projects/ores.codegen/generate_v2_doc.sh \
-     --type capture --slug <slug> \
+   ./projects/ores.compass/compass.sh add capture \
      --parent-dir doc/agile/product_backlog/near \
+     --slug <slug> \
      --title "<title>" --description "<one-liner>"
    #+end_src
+
+   Use =--parent-dir doc/agile/product_backlog/far= for longer-horizon items.
 
 4. /Move items between buckets/:
 
@@ -88,6 +90,6 @@ the near bucket exceeds 20 items.
 
 - [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][Backlog refiner]] — Claude Code skill for this procedure.
 - [[id:2C2E794B-7565-4FD8-BD26-E7949C874E43][How do I plan a sprint?]] — use after refinement to select stories.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — codegen invocations for new
-  captures.
+- [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] — preferred scaffold entry point.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — full codegen reference.
 - [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — the near/far structure and its invariants.

@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 63BF06CF-B61E-4163-A017-0E2D13586510
+:END:
+#+title: Task: Write Chapter 1: Login and Connection Manager
+#+description: Flesh out system_bootstrapping.org with full prose covering the login screen and all Connection Manager functionality, with screenshot placeholders.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :doc:manual:chapter_01:user_manual_pdf_build:sprint_18:v0:
+#+owner: marco
+#+branch: feature/user-manual-chapter-01
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Flesh out =doc/manual/user_guide/chapters/chapter_01/system_bootstrapping.org=
+with complete prose covering the login screen and all Connection Manager
+functionality. Every piece of UI that requires a screenshot carries a
+clearly labelled placeholder so the author knows exactly what to capture.
+
+* Status
+
+| Field        | Value                                       |
+|--------------+---------------------------------------------|
+| State        | STARTED                                     |
+| Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
+| Now          | Writing chapter content.                    |
+| Waiting on   | Nothing.                                    |
+| Next         | Author takes screenshots per placeholders.  |
+| Last touched | 2026-05-24                                  |
+
+* Acceptance
+
+- =system_bootstrapping.org= covers: login screen, connecting to a
+  backend, the Connection Manager dialog (open, add, edit, delete,
+  environments, tags), and first-launch orientation.
+- Every section that needs a screenshot has a clearly labelled
+  =#+caption:= and a placeholder link indicating what to capture.
+- Chapter builds without errors via =deploy_manual=.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* Review
+
+PR #811 review by gemini-code-assist.
+
+| # | Comment summary                          | File                        | Decision | Notes                                                        |
+|---+------------------------------------------+-----------------------------+----------+--------------------------------------------------------------|
+| 1 | Missing placeholder image links on captions | system_bootstrapping.org | Applied  | Added TODO_ placeholder links to all 12 caption blocks       |
+| 2 | Double space after × character           | system_bootstrapping.org    | Applied  | Removed extra space                                          |
+
+* Result

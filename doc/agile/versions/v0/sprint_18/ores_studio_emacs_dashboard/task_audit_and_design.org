@@ -129,25 +129,31 @@ button/text into the dashboard buffer using =widget.el= or =insert= +
 1. *Header* — ORE splash image (=doc/assets/images/ore_studio_logo.png= once
    created; fall back to ASCII title if missing) + =ORES Dashboard - <label>=
    title + current preset.
-2. *Environment* — button: Reload environment (re-reads =.env= and redraws).
-3. *Database* — buttons: Init environment · Recreate env · Browse databases ·
-   SQL connections · Diff =.env=.
+2. *Environment* — buttons: Init environment (=build/scripts/init-environment.sh=
+   — generates the =.env= file; existing passwords preserved) · Reload
+   environment (re-reads =.env= and redraws dashboard) · Diff =.env= vs
+   =.env.old=.
+3. *Database* — buttons: Recreate env (=projects/ores.sql/recreate_env.sh= —
+   resets schema and data for the checkout) · Browse databases · SQL
+   connections.
 4. *Services* — buttons invoking =build/scripts/= shell scripts directly:
    Start services (=start-services.sh=) · Start client (=start-client.sh=) ·
    Service status (=status-services.sh=) · Stop services (=stop-services.sh=).
    No Prodigy dependency.
 5. *Compass* — buttons: =compass where= · =compass list= · =compass add= · open
    =doc/compass.org=.
-6. *Build* — buttons: Configure · Build · Test · Deploy skills.
+6. *Build* — buttons: Configure · Build · Test.
 7. *Site* — buttons:
    - Rebuild site → =cmake --build --preset $ORES_PRESET --target deploy_site=
    - Start site → =build/scripts/serve-site.sh= (stops any prior instance, then serves)
    - Stop site → =fuser -k <ORES_SITE_PORT>/tcp= (port from =ORES_SITE_PORT= in =.env=,
      default 8000; same logic =serve-site.sh= uses internally)
-8. *Bookmarks* — =dired= links to log dir and bin dir (resolved from =.env=
+8. *Skills* — link: open =.claude/skills/= in =dired= · button: Deploy skills
+   (=cmake --build --preset $ORES_PRESET --target deploy_skills=).
+9. *Bookmarks* — =dired= links to log dir and bin dir (resolved from =.env=
    =ORES_LOG_DIR= and computed from =ORES_PRESET=).
-9. *Links* — open-file links to user manual and key recipe index files.
-10. *Shell* — single "Open ORE Studio shell" button → =(ores-shell)=.
+10. *Links* — open-file links to user manual and key recipe index files.
+11. *Shell* — single "Open ORE Studio shell" button → =(ores-shell)=.
 
 *** Env-isolation contract
 

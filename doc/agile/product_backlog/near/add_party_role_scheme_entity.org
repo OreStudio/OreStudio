@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d9bd8103-9b36-4e68-bbf5-8581f06d9129
+:ID: D9BD8103-9B36-4E68-BBF5-8581F06D9129
 :END:
 #+title: Add party role scheme entity
 #+description: Add party role scheme entity
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 The following is the analysis for adding support to party schemes.
 

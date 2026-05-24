@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9d02285a-ef43-4a80-9a10-ba67e75ddd5b
+:ID: 9D02285A-EF43-4A80-9A10-BA67E75DDD5B
 :END:
 #+title: Task: Improve column handling in list widgets
 #+description: ColumnMetadata struct + helpers; 24 Client*Model headers + 24 *MdiWindow.cpp aligned; column_style enum relocated; initializeTableSettings takes string_view.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:6aaea401-96a8-4027-8887-375b978771b3][Qt column handling centralisation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6AAEA401-96A8-4027-8887-375B978771B3][Qt column handling centralisation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Centralise column metadata across all Qt list windows.
 | Field        | Value                                                                          |
 |--------------+--------------------------------------------------------------------------------|
 | State        | DONE                                                                           |
-| Parent story | [[id:6aaea401-96a8-4027-8887-375b978771b3][Qt column handling centralisation]] |
+| Parent story | [[id:6AAEA401-96A8-4027-8887-375B978771B3][Qt column handling centralisation]] |
 | Now          | Completed 2026-02-19.                                                          |
 | Waiting on   | None.                                                                          |
 | Next         | None.                                                                          |

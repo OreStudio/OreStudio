@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 152c4a5e-9947-4ee1-a5d4-893305d235b5
+:ID: 152C4A5E-9947-4EE1-A5D4-893305D235B5
 :END:
 #+title: ores.compute.service
 #+description: NATS service entrypoint for the compute domain.
@@ -41,4 +41,4 @@ handlers from =ores.compute.core=, and runs the event loop.
 
 * See also
 
-- [[id:3bffdf5c-86f5-4d57-9d9f-676d0d62b344][ores.compute.core]] — all orchestration logic.
+- [[id:3BFFDF5C-86F5-4D57-9D9F-676D0D62B344][ores.compute.core]] — all orchestration logic.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: cb564c6a-f248-4740-8d1c-a1be148ce576
+:ID: CB564C6A-F248-4740-8D1C-A1BE148CE576
 :END:
 #+title: Story: Qt UX polish
 #+description: Validation of features added during the holidays + assorted dialog fixes (currency, currencies, feature flags, accounts, log viewer).
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ dialogs. Add a Qt UI for log viewing.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] |
+| Parent sprint | [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]] |
 | Now           | Completed 2026-01-11.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,12 +41,12 @@ dialogs. Add a Qt UI for log viewing.
 
 In execution order:
 
-- [[id:56a07d0e-f2d9-4337-819f-1a20cdfc8c26][Run qt client and validate all new features]]
-- [[id:0933396a-54e5-4496-ac82-3ec2b0151f2e][Assorted fixes to currency dialog]]
-- [[id:f1634788-2c13-4635-8ea4-cd9fe80b8b07][Assorted fixes to currencies dialog (flag and history)]]
-- [[id:ca2dd074-9a85-4d05-ac5c-0f4a4586d44c][Assorted fixes to feature flags dialog]]
-- [[id:574998d9-07c8-4c24-8e6a-1a9f97ed74f5][Add UI for log viewing]]
-- [[id:2ad7863b-31f9-4d50-8c47-2decba543013][Assorted fixes to accounts dialog]]
+- [[id:56A07D0E-F2D9-4337-819F-1A20CDFC8C26][Run qt client and validate all new features]]
+- [[id:0933396A-54E5-4496-AC82-3EC2B0151F2E][Assorted fixes to currency dialog]]
+- [[id:F1634788-2C13-4635-8EA4-CD9FE80B8B07][Assorted fixes to currencies dialog (flag and history)]]
+- [[id:CA2DD074-9A85-4D05-AC5C-0F4A4586D44C][Assorted fixes to feature flags dialog]]
+- [[id:574998D9-07C8-4C24-8E6A-1A9F97ED74F5][Add UI for log viewing]]
+- [[id:2AD7863B-31F9-4D50-8C47-2DECBA543013][Assorted fixes to accounts dialog]]
 
 * Decisions
 
@@ -61,4 +61,4 @@ In execution order:
 
 * See also
 
-- [[id:150e3c44-aadb-48c8-a11e-322b44a0357a][Change management infrastructure]] — the change-management protocol drove much of the dialog work this sprint.
+- [[id:150E3C44-AADB-48C8-A11E-322B44A0357A][Change management infrastructure]] — the change-management protocol drove much of the dialog work this sprint.

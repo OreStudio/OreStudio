@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4ce5cc79-dc9b-491f-a8f7-f635de33d55a
+:ID: 4CE5CC79-DC9B-491F-A8F7-F635DE33D55A
 :END:
 #+title: Story: Test coverage and FK-aware generators
 #+description: Bring code coverage back over 50%; FK-aware generators; enable skipped tests; expand ORE-codegened type tests; fix accounts dialog off-by-one.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ xsdcpp-generated ORE types, and fix the accounts-dialog off-by-one.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Parent sprint | [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]] |
 | Now           | Completed 2026-02-11.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -42,11 +42,11 @@ xsdcpp-generated ORE types, and fix the accounts-dialog off-by-one.
 
 In execution order:
 
-- [[id:59eab06a-fb3a-44fd-9109-78947b30797d][Improve code coverage]]
-- [[id:5213a729-ef10-4292-8b38-c5d73219f1df][Improve generators with FK-aware test data]]
-- [[id:8a3058db-f08e-4fbf-b8e4-65910c66f69b][Enable all skipped tests]]
-- [[id:f8bb67a5-8975-4967-9751-0ca9550e237f][Expand unit test coverage for ORE codegened types]]
-- [[id:a3f4549f-3e40-47f3-bcf2-397205129c00][Fix off-by-one in accounts dialog]]
+- [[id:59EAB06A-FB3A-44FD-9109-78947B30797D][Improve code coverage]]
+- [[id:5213A729-EF10-4292-8B38-C5D73219F1DF][Improve generators with FK-aware test data]]
+- [[id:8A3058DB-F08E-4FBF-B8E4-65910C66F69B][Enable all skipped tests]]
+- [[id:F8BB67A5-8975-4967-9751-0CA9550E237F][Expand unit test coverage for ORE codegened types]]
+- [[id:A3F4549F-3E40-47F3-BCF2-397205129C00][Fix off-by-one in accounts dialog]]
 
 * Decisions
 

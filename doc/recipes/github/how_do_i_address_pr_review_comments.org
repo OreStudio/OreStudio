@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 26c1dc06-82d2-46c4-94d6-df9231ba171b
+:ID: 26C1DC06-82D2-46C4-94D6-DF9231BA171B
 :END:
 #+title: How do I address PR review comments?
 #+description: Read open review comments via gh, apply fixes as new commits (never amend), reply to each comment, and resolve the review thread.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 
 This is one rung of the PR lifecycle indexed by [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] and
-exercised continuously by [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]] while monitoring.
+exercised continuously by [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] while monitoring.
 
 * Question
 
@@ -102,6 +102,6 @@ Manual. PR Shepherd automates the loop around this recipe.
 
 * See also
 
-- [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][How do I monitor a PR until green?]] — the outer loop.
-- [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][How do I fix a failing CI check?]] — the sibling failure mode.
+- [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] — the outer loop.
+- [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]] — the sibling failure mode.
 - [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]].

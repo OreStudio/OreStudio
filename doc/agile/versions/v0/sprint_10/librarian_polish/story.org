@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 75442a55-dbbb-4bc1-875e-981679e05621
+:ID: 75442A55-DBBB-4BC1-875E-981679E05621
 :END:
 #+title: Story: Librarian polish
 #+description: Address PR-review feedback on the Data Librarian landed in sprint 09.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,16 +24,16 @@ sprint and was carried into this one.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Parent sprint | [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]] |
 | Now           | Completed 2026-01-27.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-01-27                                             |
 
 
-#+predecessor: 3579ab5e-d5d8-45ae-8cb5-00ad1c58644f
+#+predecessor: 3579AB5E-D5D8-45AE-8CB5-00AD1C58644F
 
-Continued from: [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] (sprint 09)
+Continued from: [[id:3579AB5E-D5D8-45AE-8CB5-00AD1C58644F][Data Quality subsystem and Data Librarian]] (sprint 09)
 — polishes the librarian based on PR-review feedback from the sprint
 09 work.
 
@@ -49,7 +49,7 @@ Continued from: [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsyste
 
 In execution order:
 
-- [[id:d7653a18-e5b2-4bf4-851d-539f5b827f36][Fix code review comments for librarian]]
+- [[id:D7653A18-E5B2-4BF4-851D-539F5B827F36][Fix code review comments for librarian]]
 
 * Decisions
 
@@ -62,4 +62,4 @@ In execution order:
 
 * See also
 
-- [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] (sprint 09) — predecessor.
+- [[id:3579AB5E-D5D8-45AE-8CB5-00AD1C58644F][Data Quality subsystem and Data Librarian]] (sprint 09) — predecessor.

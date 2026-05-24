@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 494eb23e-8d38-4372-bf1b-7d23ff07473a
+:ID: 494EB23E-8D38-4372-BF1B-7D23FF07473A
 :END:
 #+title: Task: Fix vcpkg binary caching
 #+description: Get vcpkg binary caching working so CI doesn't rebuild every dependency on every push.
@@ -12,7 +12,7 @@
 #+updated: 2025-10-08
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC14558D-A526-4BE2-ADB6-81BCFE0E7292][Build stabilisation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -25,7 +25,7 @@ fetched from a cache hit on most runs.
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] |
+| Parent story | [[id:AC14558D-A526-4BE2-ADB6-81BCFE0E7292][Build stabilisation]] |
 | Now          | Completed 2025-10-08.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

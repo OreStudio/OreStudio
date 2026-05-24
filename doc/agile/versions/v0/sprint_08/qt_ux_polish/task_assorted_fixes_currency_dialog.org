@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0933396a-54e5-4496-ac82-3ec2b0151f2e
+:ID: 0933396A-54E5-4496-AC82-3EC2B0151F2E
 :END:
 #+title: Task: Assorted fixes to currency dialog
 #+description: Non-maximisable details, column trimming, revert-icon fix, attach-flag on creation; refactor reload logic into common entity code.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB564C6A-F248-4740-8D1C-A1BE148CE576][Qt UX polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Address the first set of currency-dialog snags surfaced during validation.
 | Field        | Value                                                     |
 |--------------+-----------------------------------------------------------|
 | State        | DONE                                                      |
-| Parent story | [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]] |
+| Parent story | [[id:CB564C6A-F248-4740-8D1C-A1BE148CE576][Qt UX polish]] |
 | Now          | Completed 2026-01-06.                                     |
 | Waiting on   | None.                                                     |
 | Next         | None.                                                     |

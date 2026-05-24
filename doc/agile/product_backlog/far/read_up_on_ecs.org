@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2c3e9176-96d6-42ee-aad2-9b75557ada94
+:ID: 2C3E9176-96D6-42EE-AAD2-9B75557ADA94
 :END:
 #+title: Read up on ECS
 #+description: Read up on ECS
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Links:
 

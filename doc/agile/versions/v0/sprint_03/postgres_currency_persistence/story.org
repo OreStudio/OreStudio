@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3f819ee3-0834-4522-8b01-df4a7d09e77f
+:ID: 3F819EE3-0834-4522-8B01-DF4A7D09E77F
 :END:
 #+title: Story: Postgres-backed currency persistence
 #+description: Currency repository write path, service command-line DB args, staging directory layout.
@@ -11,7 +11,7 @@
 #+updated: 2025-11-25
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3BC3B9ED-60C8-4A86-A6F1-925E58C74B6E][Sprint 03]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ configurable via CLI flags.
 | Field         | Value                                                                                                                                                      |
 |---------------+------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State         | DONE                                                                                                                                                       |
-| Parent sprint | [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]]                                                                                                     |
+| Parent sprint | [[id:3BC3B9ED-60C8-4A86-A6F1-925E58C74B6E][Sprint 03]]                                                                                                     |
 | Now           | Story closed; currencies persist into Postgres through the repository, with single-row writes available and DB connection parameters exposed as CLI flags. |
 | Waiting on    | None.                                                                                                                                                      |
 | Next          | None.                                                                                                                                                      |
@@ -43,9 +43,9 @@ configurable via CLI flags.
 
 In execution order:
 
-- [[id:662f38b1-2474-4815-805c-3545d942a861][Add Postgres support for currency]]
-- [[id:4960fbb8-43bd-4936-b407-a1d9c797d7be][Add write-one to repository]]
-- [[id:db5b3729-820d-4d11-8dc4-5a2fed022463][Add database command-line arguments to service]]
+- [[id:662F38B1-2474-4815-805C-3545D942A861][Add Postgres support for currency]]
+- [[id:4960FBB8-43BD-4936-B407-A1D9C797D7BE][Add write-one to repository]]
+- [[id:DB5B3729-820D-4D11-8DC4-5A2FED022463][Add database command-line arguments to service]]
 
 * Decisions
 
@@ -64,6 +64,6 @@ In execution order:
   currency repository.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the Postgres setup; sqlgen targets this.
 - [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] — host of the new database CLI flags.
-- [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]] (sprint 01) and [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and
+- [[id:AF70CDF6-071F-43A9-91BB-7EB9A59A550F][Currencies end-to-end]] (sprint 01) and [[id:ED5BC735-FB54-4CE0-9A08-6DAB88C242D0][Currencies temporal and
   export]] (sprint 02) — predecessor stories in the currency thread.
 - Currency (domain note).

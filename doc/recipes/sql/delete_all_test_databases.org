@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: cffa6f33-9c71-4f76-9763-db5e23cbf155
+:ID: CFFA6F33-9C71-4F76-9763-DB5E23CBF155
 :END:
 #+title: Delete All Test Databases
 #+description: Delete All Test Databases

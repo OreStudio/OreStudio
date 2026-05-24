@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7e4fb046-c920-465d-82a3-0348991c0499
+:ID: 7E4FB046-C920-465D-82A3-0348991C0499
 :END:
 #+title: Task: Add export macro to parser class for DLL visibility
 #+description: Add the `ORES_REFDATA_SERVICE_EXPORT` macro to the `parser` class declaration to ensure proper symbol visibility when bu
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add ORES_REFDATA_SERVICE_EXPORT to the refdata parser class to ensure correct DL
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] |
+| Parent story | [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]] |
 | Now          | Completed 2026-05-21.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

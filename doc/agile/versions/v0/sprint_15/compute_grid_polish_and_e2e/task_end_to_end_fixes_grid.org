@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0761a4ec-66d1-4c3e-b46f-36d18b3d3cfa
+:ID: 0761A4EC-66D1-4C3E-B46F-36D18B3D3CFA
 :END:
 #+title: Task: End-to-end fixes for grid work
 #+description: Service dashboard offline threshold raised to 120s; ORES_VERSION macro for accurate version display; status-services.sh node vs service counts; idle heartbeat sender in wrapper for online hosts; ores.platform::datetime for cross-platform timestamps; result_handler::submit uses service context for unauthenticated wrapper requests; outcome code mapping fix; host_id persisted to result; file extension preservation in artifact URIs (.tar.gz, .csv, .xml); double-slash URL fix in AppVersionDetailDialog; SIGSEGV fix; pill badges on Result UI; main window geometry persistence; RAII thread cleanup + terminate() guard in wrapper.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0DCEDAE5-E5F0-4AF8-AE85-37C7618237A6][Compute grid polish and E2E fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Comprehensive end-to-end fix sweep on the compute grid based on real-data testin
 | Field        | Value                                                                          |
 |--------------+--------------------------------------------------------------------------------|
 | State        | DONE                                                                           |
-| Parent story | [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]] |
+| Parent story | [[id:0DCEDAE5-E5F0-4AF8-AE85-37C7618237A6][Compute grid polish and E2E fixes]] |
 | Now          | Completed 2026-03-26.                                                          |
 | Waiting on   | None.                                                                          |
 | Next         | None.                                                                          |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7864c825-dcbd-4f86-8609-c4739d250239
+:ID: 7864C825-DCBD-4F86-8609-C4739D250239
 :END:
 #+title: Task: Party isolation for books, portfolios, trades
 #+description: Strict RLS policies on books / portfolios / trades restrict visibility to the session party; session_data carries party context; update_session_party() + make_request_context() enforce party-level RLS; party shown in portfolio detail dialog; pre-populate party_id in create mode; parent-portfolio selectors in portfolio + book dialogs; FlagIconHelper centralises flag icon setup.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:df3b299e-7fed-4411-b257-125ed35c3a9e][Party isolation for books, portfolios, trades]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DF3B299E-7FED-4411-B257-125ED35C3A9E][Party isolation for books, portfolios, trades]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Extend party-level RLS to books, portfolios, and trades — they were previously
 | Field        | Value                                                                                      |
 |--------------+--------------------------------------------------------------------------------------------|
 | State        | DONE                                                                                       |
-| Parent story | [[id:df3b299e-7fed-4411-b257-125ed35c3a9e][Party isolation for books, portfolios, trades]] |
+| Parent story | [[id:DF3B299E-7FED-4411-B257-125ED35C3A9E][Party isolation for books, portfolios, trades]] |
 | Now          | Completed 2026-02-24.                                                                      |
 | Waiting on   | None.                                                                                      |
 | Next         | None.                                                                                      |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ef8fd20d-0b9c-4379-8bbd-b4fcf2f5f0c7
+:ID: EF8FD20D-0B9C-4379-8BBD-B4FCF2F5F0C7
 :END:
 #+title: ores.ore.service
 #+description: NATS service entrypoint for the ORE integration domain.
@@ -42,4 +42,4 @@ handlers from =ores.ore.core=, and runs the event loop.
 
 * See also
 
-- [[id:9a71f1f5-c3ed-4c07-9d7d-c5b42d4a1332][ores.ore.core]] — all ORE integration logic.
+- [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]] — all ORE integration logic.

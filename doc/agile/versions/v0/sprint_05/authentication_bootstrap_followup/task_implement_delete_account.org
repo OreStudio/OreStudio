@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a2eafe45-eb1f-4771-b053-4e996b78403c
+:ID: A2EAFE45-EB1F-4771-B053-4E996B78403C
 :END:
 #+title: Task: Implement delete account
 #+description: Add a delete-account flow end-to-end: protocol message, repository bitemporal soft delete, CLI command.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A465D630-5972-484B-A2E8-AD1F91657103][Authentication bootstrap follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -28,7 +28,7 @@ soft-delete (bitemporal), CLI command supporting both UUID and username.
 | Field        | Value                                                                           |
 |--------------+---------------------------------------------------------------------------------|
 | State        | DONE                                                                            |
-| Parent story | [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] |
+| Parent story | [[id:A465D630-5972-484B-A2E8-AD1F91657103][Authentication bootstrap follow-up]] |
 | Now          | Completed 2025-11-22.                                                           |
 | Waiting on   | None.                                                                           |
 | Next         | None.                                                                           |

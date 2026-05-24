@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ed38a636-d4c7-4069-9a49-b19c71903ead
+:ID: ED38A636-D4C7-4069-9A49-B19C71903EAD
 :END:
 #+title: Task: Fix Valgrind failing to run unit tests
 #+description: Diagnose and fix the cause of Valgrind crashing during the unit-test run.
@@ -12,7 +12,7 @@
 #+updated: 2024-07-09
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D334356-F123-43B5-A98E-317EBAD2848A][Build quality]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -24,7 +24,7 @@ pipeline produces useful output rather than crashing partway.
 | Field        | Value                                                      |
 |--------------+------------------------------------------------------------|
 | State        | DONE                                                       |
-| Parent story | [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] |
+| Parent story | [[id:1D334356-F123-43B5-A98E-317EBAD2848A][Build quality]] |
 | Now          | Completed 2024-07-09.                                      |
 | Waiting on   | None.                                                      |
 | Next         | None.                                                      |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c769c040-4ed8-4c3d-aa44-fbdd27dccca1
+:ID: C769C040-4ED8-4C3D-AA44-FBDD27DCCCA1
 :END:
 #+title: Task: Add system party support
 #+description: System-party design lands: 'Internal' party type + 'WRLD' business centre; system tenant renamed 'Root Tenant'; system party renamed 'System Party'; tenant provisioner aligned; system parties excluded from operational root-party uniqueness.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d40d5971-c864-4449-91ad-ca8ab949a4a6][System and customer party]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D40D5971-C864-4449-91AD-CA8AB949A4A6][System and customer party]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Land system-party design end-to-end: types, names, business-centre, tenant-provi
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | DONE                                                                   |
-| Parent story | [[id:d40d5971-c864-4449-91ad-ca8ab949a4a6][System and customer party]] |
+| Parent story | [[id:D40D5971-C864-4449-91AD-CA8AB949A4A6][System and customer party]] |
 | Now          | Completed 2026-02-11.                                                  |
 | Waiting on   | None.                                                                  |
 | Next         | None.                                                                  |

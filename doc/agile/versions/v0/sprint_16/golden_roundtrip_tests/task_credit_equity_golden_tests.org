@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: bf7e3677-4b74-49d0-8ce9-e05eae564e8c
+:ID: BF7E3677-4B74-49D0-8CE9-E05EAE564E8C
 :END:
 #+title: Task: Credit and Equity golden roundtrip tests
 #+description: Golden file XML roundtrip tests for Credit + Equity instruments (CDS, Equity Options, Risk Participation Agreements, etc.); two new C++ test files.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:43f68b11-1870-46db-bfc3-c5fbc83fe6cf][ORE golden roundtrip tests]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:43F68B11-1870-46DB-BFC3-C5FBC83FE6CF][ORE golden roundtrip tests]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Golden file XML roundtrip tests for Credit + Equity instruments (CDS, Equity Opt
 | Field        | Value                                                                   |
 |--------------+-------------------------------------------------------------------------|
 | State        | DONE                                                                    |
-| Parent story | [[id:43f68b11-1870-46db-bfc3-c5fbc83fe6cf][ORE golden roundtrip tests]] |
+| Parent story | [[id:43F68B11-1870-46DB-BFC3-C5FBC83FE6CF][ORE golden roundtrip tests]] |
 | Now          | Completed 2026-03-31.                                                   |
 | Waiting on   | None.                                                                   |
 | Next         | None.                                                                   |

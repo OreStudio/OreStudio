@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 95c585ad-1936-465b-85a3-a0f1bcd0e777
+:ID: 95C585AD-1936-465B-85A3-A0F1BCD0E777
 :END:
 #+title: Task: Add shutdown_signals abstraction; fix Windows SIGQUIT build
 #+description: signals.hpp defines platform-specific shutdown signals (excludes SIGQUIT on Windows); domain_service_runner_impl.hpp uses centralised list.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ signals.hpp defines platform-specific shutdown signals (excludes SIGQUIT on Wind
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | DONE                                                                   |
-| Parent story | [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] |
+| Parent story | [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]] |
 | Now          | Completed 2026-04-11.                                                  |
 | Waiting on   | None.                                                                  |
 | Next         | None.                                                                  |

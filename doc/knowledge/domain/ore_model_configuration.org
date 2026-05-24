@@ -10,7 +10,7 @@
 #+created: 2024-06-15
 #+updated: 2026-05-21
 
-This document analyses the model configuration files used by [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][Open
+This document analyses the model configuration files used by [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open
 Source Risk Engine (ORE)]] and proposes how to represent them as
 persisted domain entities in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. The analysis is based on
 ~1,486 XML files found under =external/ore/examples/=. Return to

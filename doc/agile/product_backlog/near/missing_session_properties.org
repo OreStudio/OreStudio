@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e5b1798d-951f-444a-bf39-a42d9a104ff8
+:ID: E5B1798D-951F-444A-BF39-A42D9A104FF8
 :END:
 #+title: Missing session properties
 #+description: Missing session properties
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 - disconnect type: orphaned, client disconnect.
 - add version, commit, etc.

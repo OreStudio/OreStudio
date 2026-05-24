@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 60722e51-beb9-4221-abb1-95b0e08e9a32
+:ID: 60722E51-BEB9-4221-ABB1-95B0E08E9A32
 :END:
 #+title: Task: Books entity analysis
 #+description: First-cut model of the entities needed to support books; FPML-anchored, iterated with Gemini and Qwen; ignore items explicitly marked as too complex.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:77211166-9316-40c0-88d6-c92f983a00b5][Books domain modelling analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:77211166-9316-40C0-88D6-C92F983A00B5][Books domain modelling analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ First-cut analysis of the entities required to support books, the next major mod
 | Field        | Value                                                                        |
 |--------------+------------------------------------------------------------------------------|
 | State        | DONE                                                                         |
-| Parent story | [[id:77211166-9316-40c0-88d6-c92f983a00b5][Books domain modelling analysis]] |
+| Parent story | [[id:77211166-9316-40C0-88D6-C92F983A00B5][Books domain modelling analysis]] |
 | Now          | Completed 2026-01-11.                                                        |
 | Waiting on   | None.                                                                        |
 | Next         | None.                                                                        |

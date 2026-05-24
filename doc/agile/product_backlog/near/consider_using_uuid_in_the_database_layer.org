@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1a86fd34-5d0c-44e1-aecd-118154c23d65
+:ID: 1A86FD34-5D0C-44E1-AECD-118154C23D65
 :END:
 #+title: Consider using UUID in the database layer
 #+description: Consider using UUID in the database layer
@@ -10,6 +10,6 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 At present we are using std::string and then mapping to boost UUID.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9cfac175-c28f-4c03-9655-1cdc6e8c3ee0
+:ID: 9CFAC175-C28F-4C03-9655-1CDC6E8C3EE0
 :END:
 #+title: ores.service
 #+description: NATS domain service runner infrastructure — domain service lifecycle, heartbeat publishing, and handler helpers.

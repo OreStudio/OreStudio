@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 501c05b5-aa7f-4807-a4f2-627b857ce2aa
+:ID: 501C05B5-AA7F-4807-A4F2-627B857CE2AA
 :END:
 #+title: Story: Reference data: countries
 #+description: ISO 3166-1 countries with bitemporal storage, Wt UI, and shell support.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ The implementation sets the template the rest of refdata will follow.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] |
+| Parent sprint | [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]] |
 | Now           | Completed 2026-01-11.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,8 +41,8 @@ The implementation sets the template the rest of refdata will follow.
 
 In execution order:
 
-- [[id:00590c50-f119-4e2b-bc43-6fa2bae8543c][Add country support (ISO 3166-1)]]
-- [[id:125b746d-d625-4764-8d1e-ea9d4623880c][Finish country features in shell]]
+- [[id:00590C50-F119-4E2B-BC43-6FA2BAE8543C][Add country support (ISO 3166-1)]]
+- [[id:125B746D-D625-4764-8D1E-EA9D4623880C][Finish country features in shell]]
 
 * Decisions
 
@@ -55,4 +55,4 @@ In execution order:
 
 * See also
 
-- [[id:b302b2b6-13f8-49cc-a6af-88418668be31][Entity-creator skills suite]] — countries was the first real exerciser of these skills.
+- [[id:B302B2B6-13F8-49CC-A6AF-88418668BE31][Entity-creator skills suite]] — countries was the first real exerciser of these skills.

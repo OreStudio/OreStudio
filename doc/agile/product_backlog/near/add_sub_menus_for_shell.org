@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 87db430d-2dc0-4082-9ead-78b722de7eb2
+:ID: 87DB430D-2DC0-4082-9EAD-78B722DE7EB2
 :END:
 #+title: Add sub-menus for shell
 #+description: Add sub-menus for shell
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 We did the plan for this work.
 

@@ -55,17 +55,17 @@ housed in sibling projects under =ores.qt.*=.
 
 * See also
 
-- [[id:30a3a7f4-e1a9-42fb-af9d-ff36fa0f3d21][ores.qt.api]] — shared infrastructure, IPlugin, and base entity UI classes.
-- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt Plugin Architecture]] — plugin lifecycle and two-phase menu sequence.
-- [[id:fc186d19-9421-45a2-bbcc-4355d66aa41f][Entity Controller Pattern]] — how domain controllers, windows, and dialogs are structured.
-- [[id:db5a4924-8f0a-440c-873e-d823f430043e][ores.qt.admin]] — IAM UI plugin.
-- [[id:970667d1-8ba8-4b49-b047-0d6d4c4ce498][ores.qt.analytics]] — analytics pricing UI plugin.
-- [[id:03eae018-5e61-4005-ac9a-eff827a46178][ores.qt.compute]] — compute/reporting UI plugin.
-- [[id:92492264-b67a-4ac7-8a58-7d706d9f0dab][ores.qt.data_transfer]] — Data Management menu owner.
-- [[id:2e83f9b5-67f4-4a1f-95bc-fe1e7ab7d4c0][ores.qt.mktdata]] — market data UI plugin.
-- [[id:6de9a7b8-f7ba-4e93-bb93-2fb10c53f9ca][ores.qt.party]] — party/organisation UI plugin.
-- [[id:621194c4-d438-4215-ae40-21fbe8ff0d85][ores.qt.refdata]] — reference data UI plugin.
-- [[id:4092e7e6-c663-4e5e-b330-63bfece7ca51][ores.qt.scheduler]] — job scheduling UI plugin.
-- [[id:3fa355d1-38fd-4e35-9e05-2185882b8ac1][ores.qt.trading]] — trading UI plugin.
-- [[id:b7269e9c-83b6-4d6c-80de-d796ab89b1bd][ores.qt.workflow]] — workflow UI plugin.
-- [[id:31d9c75a-de71-4b98-9d33-d8ed86000c94][ores.qt.workspace]] — workspace management UI plugin.
+- [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] — shared infrastructure, IPlugin, and base entity UI classes.
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — plugin lifecycle and two-phase menu sequence.
+- [[id:FC186D19-9421-45A2-BBCC-4355D66AA41F][Entity Controller Pattern]] — how domain controllers, windows, and dialogs are structured.
+- [[id:DB5A4924-8F0A-440C-873E-D823F430043E][ores.qt.admin]] — IAM UI plugin.
+- [[id:970667D1-8BA8-4B49-B047-0D6D4C4CE498][ores.qt.analytics]] — analytics pricing UI plugin.
+- [[id:03EAE018-5E61-4005-AC9A-EFF827A46178][ores.qt.compute]] — compute/reporting UI plugin.
+- [[id:92492264-B67A-4AC7-8A58-7D706D9F0DAB][ores.qt.data_transfer]] — Data Management menu owner.
+- [[id:2E83F9B5-67F4-4A1F-95BC-FE1E7AB7D4C0][ores.qt.mktdata]] — market data UI plugin.
+- [[id:6DE9A7B8-F7BA-4E93-BB93-2FB10C53F9CA][ores.qt.party]] — party/organisation UI plugin.
+- [[id:621194C4-D438-4215-AE40-21FBE8FF0D85][ores.qt.refdata]] — reference data UI plugin.
+- [[id:4092E7E6-C663-4E5E-B330-63BFECE7CA51][ores.qt.scheduler]] — job scheduling UI plugin.
+- [[id:3FA355D1-38FD-4E35-9E05-2185882B8AC1][ores.qt.trading]] — trading UI plugin.
+- [[id:B7269E9C-83B6-4D6C-80DE-D796AB89B1BD][ores.qt.workflow]] — workflow UI plugin.
+- [[id:31D9C75A-DE71-4B98-9D33-D8ED86000C94][ores.qt.workspace]] — workspace management UI plugin.

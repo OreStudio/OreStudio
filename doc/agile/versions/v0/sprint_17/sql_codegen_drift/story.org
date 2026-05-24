@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 25f0a34b-c547-4550-943b-e8f517eb0f6c
+:ID: 25F0A34B-C547-4550-943B-E8F517EB0F6C
 :END:
 #+title: Story: SQL codegen drift remediation
 #+description: Replace all remaining hand-crafted SQL files with generated output; fix entity model profile dispatch and composite natural-key indexes.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -40,11 +40,11 @@ device support for psql output redirection.
 
 In execution order:
 
-- [[id:6822f0a2-bb7e-4979-8d4c-af01c1a7ce75][Task: Add cross-platform null device support for psql output redirection]]
-- [[id:79dfd8ce-1eff-4fe5-82e2-9a93afb4b0ed][Task: [sql] Codegen drift remediation: Categories A and B]]
-- [[id:73dc3a27-295d-4834-97bf-a8d6f0e1e4ca][Task: [sql] Codegen drift remediation: template fixes + report_definitions]]
-- [[id:cf4b8da3-0b8f-41f9-a5f4-198efafdd1ff][Task: [sql] Replace 4 remaining hand-crafted SQL files with codegen]]
-- [[id:dc845b65-c7c0-4156-afff-ec968079cfce][Task: [codegen] Fix entity model profile dispatch and composite natural-key indexes]]
+- [[id:6822F0A2-BB7E-4979-8D4C-AF01C1A7CE75][Task: Add cross-platform null device support for psql output redirection]]
+- [[id:79DFD8CE-1EFF-4FE5-82E2-9A93AFB4B0ED][Task: [sql] Codegen drift remediation: Categories A and B]]
+- [[id:73DC3A27-295D-4834-97BF-A8D6F0E1E4CA][Task: [sql] Codegen drift remediation: template fixes + report_definitions]]
+- [[id:CF4B8DA3-0B8F-41F9-A5F4-198EFAFDD1FF][Task: [sql] Replace 4 remaining hand-crafted SQL files with codegen]]
+- [[id:DC845B65-C7C0-4156-AFFF-EC968079CFCE][Task: [codegen] Fix entity model profile dispatch and composite natural-key indexes]]
 * Decisions
 
 - /Zero tolerance/ :: every SQL file with an existing codegen model must be

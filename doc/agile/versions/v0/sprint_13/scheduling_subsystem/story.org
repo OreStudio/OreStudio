@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a0b6c877-2fad-457a-b0c2-000d3f707a5b
+:ID: A0B6C877-2FAD-457A-B0C2-000D3F707A5B
 :END:
 #+title: Story: Scheduling subsystem
 #+description: ores.scheduler wrapping pg_cron with Quartz.NET-style fluent API; scheduler binary protocol (0x9000-0x9FFF, protocol 45.0); message queue infrastructure.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,16 +24,16 @@ that supports it.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Parent sprint | [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]] |
 | Now           | Completed 2026-02-27.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-02-27                                             |
 
 
-#+successor: ed082d5a-4afb-4bf9-81db-8712f881dde3
+#+successor: ED082D5A-4AFB-4BF9-81DB-8712F881DDE3
 
-Continued in: [[id:ed082d5a-4afb-4bf9-81db-8712f881dde3][Custom MQ tables and in-process scheduler]]
+Continued in: [[id:ED082D5A-4AFB-4BF9-81DB-8712F881DDE3][Custom MQ tables and in-process scheduler]]
 (sprint 14) — replaces the pg_cron-backed scheduler from this
 story with an in-process boost::asio scheduler loop alongside the
 custom MQ tables.
@@ -48,9 +48,9 @@ custom MQ tables.
 
 In execution order:
 
-- [[id:b74604d3-2a48-4ba9-a4dd-c2f554f7eb29][Add scheduler binary protocol]]
-- [[id:94ea7333-2b7d-412e-bbc6-4e502a3979be][Add scheduling support]]
-- [[id:4a704351-6959-4806-b164-ef8554724ac5][Add a message queue]]
+- [[id:B74604D3-2A48-4BA9-A4DD-C2F554F7EB29][Add scheduler binary protocol]]
+- [[id:94EA7333-2B7D-412E-BBC6-4E502A3979BE][Add scheduling support]]
+- [[id:4A704351-6959-4806-B164-EF8554724AC5][Add a message queue]]
 
 * Decisions
 

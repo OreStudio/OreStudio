@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 66dbe0b0-c8f6-4580-a977-d74efbca3eac
+:ID: 66DBE0B0-C8F6-4580-A977-D74EFBCA3EAC
 :END:
 #+title: How do I list compute app versions as JSON?
 #+description: List compute app versions via =ores.cli= as JSON for piping into =jq=

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2dd0aa0d-9eff-4aca-b1fc-b8bd47270620
+:ID: 2DD0AA0D-9EFF-4ACA-B1FC-B8BD47270620
 :END:
 #+title: Get Permissions for a Role
 #+description: Get Permissions for a Role

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b69989f6-19e1-430d-ac6d-b2416e4c433f
+:ID: B69989F6-19E1-430D-AC6D-B2416E4C433F
 :END:
 #+title: Compass
 #+description: Entry point for the ORE Studio cybernetic information management architecture. Read this first to orient yourself.
@@ -10,7 +10,7 @@
 #+created: 2026-05-18
 #+updated: 2026-05-21
 
-This is the entry point for the [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][ORE Studio]] cybernetic information architecture
+This is the entry point for the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][ORE Studio]] cybernetic information architecture
 and the top-level orientation for the =doc/= tree. Read it first on a new
 contact; come back to it any time you need to remember where something lives.
 The =meta/= subdirectory defines the /contract/ every document follows; this
@@ -46,17 +46,17 @@ doc/
 The five contract documents. Read in order on first contact; refer
 back to individual ones as needed.
 
-1. [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][Glossary]] — what we mean by [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]], [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]], [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]], [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]], [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], [[id:58d491a6-e4bd-4b0d-86bd-bb8465dfd4c7][plan]],
-   [[id:117a95f9-b03d-490b-bb74-da9fe74537e2][recipe]] and many other such terms. This is not a ORE Studio glossary --- for
+1. [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — what we mean by [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]], [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]], [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]], [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]], [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]], [[id:58D491A6-E4BD-4B0D-86BD-BB8465DFD4C7][plan]],
+   [[id:117A95F9-B03D-490B-BB74-DA9FE74537E2][recipe]] and many other such terms. This is not a ORE Studio glossary --- for
    example, it will not contain Computational Finance terms such as volatility
    (vol). Instead, it is focused on terms around our information architecture.
-2. [[id:926b916e-a57e-498e-99ab-720b583c0362][Cybernetic levels]] — the five levels of concern and what each is responsible
+2. [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic levels]] — the five levels of concern and what each is responsible
    for.
-3. [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — every document type, its frontmatter contract, filename
+3. [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — every document type, its frontmatter contract, filename
    convention, required sections.
-4. [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][Lifecycle]] — Describes the =TODO= state transitions and where each state
+4. [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]] — Describes the =TODO= state transitions and where each state
    lives.
-5. [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][Execution model]] — how LLMs and agents operate inside this system.
+5. [[id:F58CA9E7-C65F-4D17-A9A7-95FDE25B9EBD][Execution model]] — how LLMs and agents operate inside this system.
 
 ** =agile/=: the operational tree
 
@@ -80,7 +80,7 @@ Stories and sprints are folders (they contain children); tasks are flat files
 
 *** =agile/product_backlog/=: the pre-sprint queue
 
-Holds [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]] — ideas not yet pulled into a sprint as stories. Split into two
+Holds [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][captures]] — ideas not yet pulled into a sprint as stories. Split into two
 buckets:
 
 - =near/= — candidate work for the next version.
@@ -106,26 +106,26 @@ analysis tied to one component's code) lives co-located with the code at
 
 ** Identity, functions
 
-- =identity/= — system-5 docs: [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product identity]]; what's out of scope. Holds the
+- =identity/= — system-5 docs: [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]]; what's out of scope. Holds the
   durable identity statements that filter candidate versions and far captures.
-- =functions/= — system-spanning named roles. One [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]] per cybernetic level
+- =functions/= — system-spanning named roles. One [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]] per cybernetic level
   (S1 Agent, S2 Orchestrator, S3 Sprint Planner, S3* Auditor, S4 Version
-  Planner, S5 Identity Steward), plus the [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][index page]]. A function doc is the
+  Planner, S5 Identity Steward), plus the [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][index page]]. A function doc is the
   priming context an LLM session loads when it takes on that role.
 
 ** =llm/= — LLM configuration and artefacts
 
-See [[id:94f9949a-1580-4d47-9331-aa0597543c99][LLM Configuration and Artefacts]] for the full description. Summary:
+See [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]] for the full description. Summary:
 
-- =llm_instructions.org= ([[id:f9ad7932-8e11-433c-a812-b57dbc9bf5d8][LLM instructions]]) — the mandatory session entry
+- =llm_instructions.org= ([[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]]) — the mandatory session entry
   point; lists non-negotiable rules and links to every other reference.
-- =claude_code_settings.org= ([[id:2d83251f-0e24-4b97-b736-08f710316634][Claude Code Settings]]) — literate source for
+- =claude_code_settings.org= ([[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]]) — literate source for
   =.claude/settings.json=; regenerate with =deploy_settings= CMake target.
-- =skills/= — Claude Code [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skills]], one per kebab-case slug. Each =SKILL.org= is
+- =skills/= — Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]], one per kebab-case slug. Each =SKILL.org= is
   task-shaped: how to perform a specific unit of work end-to-end. The catalogue
   lives at [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]].
-- =memory/= — persistent project-scope [[id:32b3a055-63fa-4edf-8dcc-901e9d883f22][memory]] for LLM sessions. One
-  memory per file; the catalogue lives at [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][Project memory]]. Write here
+- =memory/= — persistent project-scope [[id:32B3A055-63FA-4EDF-8DCC-901E9D883F22][memory]] for LLM sessions. One
+  memory per file; the catalogue lives at [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]]. Write here
   when the user gives feedback worth keeping across sessions.
 
 ** Secondary folders
@@ -135,8 +135,8 @@ See [[id:94f9949a-1580-4d47-9331-aa0597543c99][LLM Configuration and Artefacts]]
   for one-off cross-cutting designs retained for the record.
 - =manual/= — user-facing PDF / LaTeX manual built from =manual.org=. Surfaced
   to end users, not part of the developer-doc tree.
-- =prompts/= — reusable LLM prompts that don't fit cleanly as a [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skill]].
-- =samples/= — screenshots and product imagery referenced from [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product identity]]
+- =prompts/= — reusable LLM prompts that don't fit cleanly as a [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skill]].
+- =samples/= — screenshots and product imagery referenced from [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]]
   and visual mockups.
 - =analysis/= — older one-off analyses from before v2. Some still useful as
   background context; not actively maintained.
@@ -148,7 +148,7 @@ See [[id:94f9949a-1580-4d47-9331-aa0597543c99][LLM Configuration and Artefacts]]
 
 * Core invariants
 
-- Every stateful document carries the standard frontmatter described in [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document
+- Every stateful document carries the standard frontmatter described in [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document
   types]].
 - Folders encode composition, not state. A document's TODO state lives on its =*
   Status= headline as an org-mode TODO keyword.
@@ -167,5 +167,5 @@ See [[id:94f9949a-1580-4d47-9331-aa0597543c99][LLM Configuration and Artefacts]]
 * Out of scope here
 
 This document /describes/ the layout. The /contract/ that every document follows
-lives in [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]. The /vocabulary/ used across the system lives in
-[[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][glossary]].
+lives in [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]. The /vocabulary/ used across the system lives in
+[[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]].

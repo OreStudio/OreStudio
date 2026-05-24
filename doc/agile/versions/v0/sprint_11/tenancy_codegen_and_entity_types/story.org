@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 467e909e-ceac-4829-8688-d43179d38f18
+:ID: 467E909E-CEAC-4829-8688-D43179D38F18
 :END:
 #+title: Story: Tenancy codegen and entity types
 #+description: Update codegen templates for tenant-aware tables; introduce pgTAP; C++ tenant entities; protocol bump 26.1.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ commands, protocol bump.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Parent sprint | [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]] |
 | Now           | Completed 2026-02-03.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -44,8 +44,8 @@ commands, protocol bump.
 
 In execution order:
 
-- [[id:4bec02dc-52c4-4d2d-b2cb-6142dfd4ff70][Update codegen for tenancy]]
-- [[id:eec6cea6-4f37-4f23-b88a-1f505eb9cbc0][Add entity types for tenants]]
+- [[id:4BEC02DC-52C4-4D2D-B2CB-6142DFD4FF70][Update codegen for tenancy]]
+- [[id:EEC6CEA6-4F37-4F23-B88A-1F505EB9CBC0][Add entity types for tenants]]
 
 * Decisions
 

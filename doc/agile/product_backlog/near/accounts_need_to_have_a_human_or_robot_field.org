@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b76dd9e7-c581-4dd3-949a-7a9befd6111f
+:ID: B76DD9E7-C581-4DD3-949A-7A9BEFD6111F
 :END:
 #+title: Accounts need to have a human or robot field
 #+description: Accounts need to have a human or robot field
@@ -10,6 +10,6 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Look for correct terminology (actor type?).

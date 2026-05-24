@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4def3837-b3d1-488d-afa5-c247b04f13bd
+:ID: 4DEF3837-B3D1-488D-AFA5-C247B04F13BD
 :END:
 #+title: Task: CDM Phase 2: FX instrument domain model
 #+description: FX instruments: FxForward, FxSwap, FxOption. SQL: ores_trading_fx_instruments_tbl (bought/sold currencies + amounts, value_date, settlement, option fields). Domain + repo + service + Qt UI (Model + MDI + Detail + History + Controller).
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F8E6374B-AAAF-4D50-98CE-844DA4558172][CDM instrument domain models]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Phase 2: FX instruments (FxForward, FxSwap, FxOption).
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE                                                                      |
-| Parent story | [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]] |
+| Parent story | [[id:F8E6374B-AAAF-4D50-98CE-844DA4558172][CDM instrument domain models]] |
 | Now          | Completed 2026-03-27.                                                     |
 | Waiting on   | None.                                                                     |
 | Next         | None.                                                                     |

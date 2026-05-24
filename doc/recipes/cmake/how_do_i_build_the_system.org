@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f176fca1-68d5-420d-b076-75a65fee5ebb
+:ID: F176FCA1-68D5-420D-B076-75A65FEE5EBB
 :END:
 #+title: How do I build the system?
 #+description: Build ORE Studio with the build.sh wrapper or directly with `cmake --build --preset`.
@@ -10,8 +10,8 @@
 #+created: 2026-05-18
 #+updated: 2026-05-18
 
-Configure first if you haven't (see [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]]).
-For preset / output / parallelism details, see [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]].
+Configure first if you haven't (see [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]]).
+For preset / output / parallelism details, see [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 
 * Question
 
@@ -75,6 +75,6 @@ CI builds every preset on every push.
 
 * See also
 
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset naming, output layout, parallelism.
-- [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]]
-- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — once the build is green.
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset naming, output layout, parallelism.
+- [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]]
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] — once the build is green.

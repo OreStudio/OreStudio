@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8afb72cd-44b5-4dcd-a3a8-b12fef693011
+:ID: 8AFB72CD-44B5-4DCD-A3A8-B12FEF693011
 :END:
 #+title: Wire service token provider for all services
 #+description: Only ores.reporting.service currently has make_service_token_provider wired up. All outbound-NATS services need it; add the dependency and wiring as each service grows.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

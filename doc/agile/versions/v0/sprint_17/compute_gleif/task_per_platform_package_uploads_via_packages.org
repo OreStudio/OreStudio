@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 39d52674-0d37-41a5-8c8a-42402b883fd5
+:ID: 39D52674-0D37-41A5-8C8A-42402B883FD5
 :END:
 #+title: Task: Per-platform package uploads via Packages tab
 #+description: Follow-up to #714. That PR moved package_uri to the junction and introduced vcpkg triplets; this one makes the Qt dialog
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e16beabb-cc59-4d6c-b216-dacc1e922047][Compute and GLEIF]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E16BEABB-CC59-4D6C-B216-DACC1E922047][Compute and GLEIF]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add a Packages tab to the app version dialog with a lifecycle-tracking table wid
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:e16beabb-cc59-4d6c-b216-dacc1e922047][Compute and GLEIF]] |
+| Parent story | [[id:E16BEABB-CC59-4D6C-B216-DACC1E922047][Compute and GLEIF]] |
 | Now          | Completed 2026-04-24.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

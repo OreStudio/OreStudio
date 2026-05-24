@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f942dc51-461c-47c2-b435-8f4343eb16be
+:ID: F942DC51-461C-47C2-B435-8F4343EB16BE
 :END:
 #+title: Scheduler: complete Qt UI and promote to top-level menu
 #+description: Scheduler: complete Qt UI and promote to top-level menu
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 *Background*
 

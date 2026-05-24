@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7d893b67-08f2-4f7b-9522-73dd8811e704
+:ID: 7D893B67-08F2-4F7B-9522-73DD8811E704
 :END:
 #+title: Task: Add portfolio explorer
 #+description: PortfolioBookTreeMdiWindow: hierarchical tree of portfolios + books for the session party; trade table on the right filtered by selection; breadcrumb path; trade count aggregation; UI settings persist (incl. splitter); stale indicators on book/portfolio/trade events; trade protocol gains optional book_id + portfolio_id filters with recursive CTE for subtrees; protocol 43.0; EntityListMdiWindow::initializeTableSettings grows optional QSplitter param; book_changed_event + portfolio_changed_event.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:8a04de16-6bdd-4696-9f04-122c92692d59][Portfolio explorer]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A04DE16-6BDD-4696-9F04-122C92692D59][Portfolio explorer]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Combined hierarchical view of portfolios + books with a trade table filtered to 
 | Field        | Value                                                           |
 |--------------+-----------------------------------------------------------------|
 | State        | DONE                                                            |
-| Parent story | [[id:8a04de16-6bdd-4696-9f04-122c92692d59][Portfolio explorer]] |
+| Parent story | [[id:8A04DE16-6BDD-4696-9F04-122C92692D59][Portfolio explorer]] |
 | Now          | Completed 2026-02-25.                                           |
 | Waiting on   | None.                                                           |
 | Next         | None.                                                           |

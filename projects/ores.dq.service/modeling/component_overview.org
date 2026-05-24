@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: fa64a6de-7010-4fd8-a1f8-d153b3cd96a9
+:ID: FA64A6DE-7010-4FD8-A1F8-D153B3CD96A9
 :END:
 #+title: ores.dq.service
 #+description: NATS service entrypoint for the data-quality domain — wires handlers, repositories, and configuration.

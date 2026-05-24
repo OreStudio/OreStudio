@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9c57d467-3f17-469a-a245-5f57e6b20784
+:ID: 9C57D467-3F17-469A-A245-5F57E6B20784
 :END:
 #+title: Story: Party codename
 #+description: Add adjective_noun codenames per party for per-party queue isolation; sequence-based unique suffix; TOCTOU race fix.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A63C60DC-C3A6-4F4F-8977-012A7BF1D566][Sprint 14]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -25,7 +25,7 @@ inserts.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]] |
+| Parent sprint | [[id:A63C60DC-C3A6-4F4F-8977-012A7BF1D566][Sprint 14]] |
 | Now           | Completed 2026-03-12.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -42,9 +42,9 @@ inserts.
 
 In execution order:
 
-- [[id:b57ab6e6-d2f5-431e-92a9-8503ad98b1c7][Add party codename and report scheduling UI]]
-- [[id:04aea289-a720-44c5-90ce-9f9bfdefd571][Fix TOCTOU race in party codename trigger]]
-- [[id:6d79d6ce-8a63-4b76-ad74-b107f54b8456][Fix codename with sequence-based unique suffix]]
+- [[id:B57AB6E6-D2F5-431E-92A9-8503AD98B1C7][Add party codename and report scheduling UI]]
+- [[id:04AEA289-A720-44C5-90CE-9F9BFDEFD571][Fix TOCTOU race in party codename trigger]]
+- [[id:6D79D6CE-8A63-4B76-AD74-B107F54B8456][Fix codename with sequence-based unique suffix]]
 
 * Decisions
 
@@ -58,4 +58,4 @@ In execution order:
 
 * See also
 
-- [[id:84559b48-546b-4724-bdd0-53dbfca2c24a][Reporting subsystem]] — the codename design lived there before this story implemented it.
+- [[id:84559B48-546B-4724-BDD0-53DBFCA2C24A][Reporting subsystem]] — the codename design lived there before this story implemented it.

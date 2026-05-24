@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5bddd435-9f2a-4abc-ba71-5bb3b980c785
+:ID: 5BDDD435-9F2A-4ABC-BA71-5BB3B980C785
 :END:
 #+title: run_sql.sh can run outside the sandbox
 #+description: Claude may use dangerouslyDisableSandbox when running projects/ores.sql/run_sql.sh — the sandbox blocks localhost:5432.

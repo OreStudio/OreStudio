@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8b29a8d8-e004-4e87-b81d-abeaf68f2b98
+:ID: 8B29A8D8-E004-4E87-B81D-ABEAF68F2B98
 :END:
 #+title: Document Types
 #+description: Every type of document, its frontmatter contract, folder, and structure.
@@ -19,7 +19,7 @@ projects/ores.codegen/generate_v2_doc.sh --type <type> --slug <slug> \
   --parent-dir <dir> --title "..." --description "..." --tags "..."
 #+end_src
 
-See [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] for copy-pasteable invocations per
+See [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] for copy-pasteable invocations per
 type. The contract each generated file follows is described below.
 
 * Standard frontmatter
@@ -60,7 +60,14 @@ writing "yesterday" or "next week", convert it.
 
 - =:PROPERTIES: :ID:= — org-roam tracks documents by ID, not by path.
   Every document needs one; generate with =uuidgen=. Paths can change;
-  IDs do not.
+  IDs do not. /Every UUID — both the =:ID:= property and every
+  =[[id:UUID]]= link — is uppercase hex./ The codegen enforces this for
+  new documents (=v2_doc_generate.py= uppercases the freshly minted
+  ID, the templates carry uppercase concept-link UUIDs, and
+  =--parent-id= / =--predecessor-id= are uppercased defensively); any
+  hand-edited or copy-pasted UUID must follow the same rule. The
+  Sprint 18 story [[id:BAF1DEAE-59DF-49AB-BFCD-E6D09496DA43][Lock down uppercase UUID invariant]] records the
+  rationale and the audit trail.
 - =#+filetags:= — the standard org-mode keyword for /applying/ tags to a
   whole file. =#+tags:= in standard org-mode declares the /allowed/ tag
   vocabulary for a file, which is a different concern and not what we
@@ -272,8 +279,8 @@ The audit script enforces this:
 python3 projects/ores.codegen/scripts/doc_version_audit.py --check
 #+end_src
 
-See [[id:23bcac49-325f-4083-b854-87ea747c2abe][How do I audit and fix document version tags?]] for the full tooling
-reference, and [[id:6ac06a04-eb95-4925-8488-c7a47c6a451f][How do I validate component documentation before committing?]]
+See [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]] for the full tooling
+reference, and [[id:6AC06A04-EB95-4925-8488-C7A47C6A451F][How do I validate component documentation before committing?]]
 for the combined pre-commit check.
 
 * Document types
@@ -295,7 +302,7 @@ for the combined pre-commit check.
   (screenshots, attached data), promote that single task to a folder
   ahead of time (=<task_slug>/<task_slug>.org= plus the supporting
   files). The default remains the flat file.
-- How to create :: see [[id:b7fa729c-2d42-408a-9424-b6aa90eb16b4][New task]] in the v2-doc recipe.
+- How to create :: see [[id:B7FA729C-2D42-408A-9424-B6AA90EB16B4][New task]] in the v2-doc recipe.
 
 *** Task frontmatter (additions on top of the standard set)
 
@@ -322,7 +329,7 @@ Required, in this order. The blurb tells the reader what this is; the
 operational state.
 
 - /Blurb/ (one paragraph, no heading) — opens with =This page documents
-  a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the
+  a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the
   [[id:<parent_id>][<parent_title>]] story.=
 - =* Goal= — one paragraph: what user-visible-or-internal change does
   this task produce.
@@ -374,10 +381,10 @@ has gone stale.
 - Level :: =s2=
 - TODO vocabulary :: =BACKLOG STARTED | DONE ABANDONED= (no DISCOVERED or
   BLOCKED at story level).
-- How to create :: see [[id:6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752][New story]] in the v2-doc recipe.
+- How to create :: see [[id:6D6DDB4B-A0AA-42E6-A294-0F9B35CC0752][New story]] in the v2-doc recipe.
 - Required sections (in this order) ::
   - /Blurb/ — opens with =This page documents a
-    [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in
+    [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in
     [[id:<parent_id>][<parent_title>]].=
   - =* Goal= — the user-visible outcome.
   - =* Status= — table; rows =State / Parent sprint / Now / Waiting on
@@ -425,10 +432,10 @@ matching =#+successor= pointing back.
 - TODO vocabulary :: =STARTED | DONE= (sprints don't go through BACKLOG;
   they exist when they exist, and lexicographic order tells you which
   is current).
-- How to create :: see [[id:f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12][New sprint]] in the v2-doc recipe.
+- How to create :: see [[id:F56FBA9B-A3C4-4C7C-8A15-BC9C3CC98A12][New sprint]] in the v2-doc recipe.
 - Required sections (in this order) ::
   - /Blurb/ — opens with =This page documents a
-    [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint NN*) of
+    [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint NN*) of
     ORE Studio. ... see [[id:<parent_version_id>][<parent_version_title>]].=
   - =* Mission= — one or two paragraphs / bullets: what this sprint
     exists to achieve.
@@ -441,7 +448,7 @@ matching =#+successor= pointing back.
 
 A sprint folder may also contain an =inbox/= subfolder for untriaged
 discovered tasks that didn't fit any existing story at the time of
-discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
+discovery (see [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]]).
 
 ** version
 
@@ -451,11 +458,11 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
 - Level :: =s4=
 - TODO vocabulary :: =STARTED | RELEASED= (one in flight at a time;
   the rest are released).
-- How to create :: see [[id:8fc15ea1-ab30-47be-993f-ed624a57f761][New version]] in the v2-doc recipe.
+- How to create :: see [[id:8FC15EA1-AB30-47BE-993F-ED624A57F761][New version]] in the v2-doc recipe.
 - Required sections (in this order) ::
   - /Blurb/ — opens with =This page documents the
-    [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]] *Version N* of
-    ORE Studio. ... see [[id:436fb40c-422a-465b-b949-e9f0760820c1][product identity]].=
+    [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]] *Version N* of
+    ORE Studio. ... see [[id:436FB40C-422A-465B-B949-E9F0760820C1][product identity]].=
   - =* Identity= — what makes this version distinct.
   - =* Mission= — what the version is for.
   - =* Definition of done= — when the version can close.
@@ -467,7 +474,7 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
 
 ** capture
 
-A pre-sprint idea — see [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][Capture]] in the glossary.
+A pre-sprint idea — see [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] in the glossary.
 
 - Folder :: =doc/agile/product_backlog/{near,far}/<slug>.org= — flat
   files inside the bucket. =near/= = candidate work for the next
@@ -484,7 +491,7 @@ A pre-sprint idea — see [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][Capture]] i
   references continue to resolve. The =#+type:= flips from =capture=
   to =story=; the file moves into the appropriate sprint folder; the
   capture is no longer present in its bucket.
-- How to create :: see [[id:978e0a8f-197c-48da-a405-457e0aee91d9][New capture]] in the v2-doc recipe.
+- How to create :: see [[id:978E0A8F-197C-48DA-A405-457E0AEE91D9][New capture]] in the v2-doc recipe.
 - Required sections (in this order) ::
   - /Blurb/ — one sentence linking the word "capture" to the
     glossary entry and naming the bucket.
@@ -498,7 +505,7 @@ A pre-sprint idea — see [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][Capture]] i
 ** memory
 
 A persistent project-scope note an LLM session writes for the benefit
-of future sessions — see [[id:32b3a055-63fa-4edf-8dcc-901e9d883f22][Memory]] in the glossary.
+of future sessions — see [[id:32B3A055-63FA-4EDF-8DCC-901E9D883F22][Memory]] in the glossary.
 
 - Folder :: =doc/llm/memory/<slug>.org= — flat, one memory per file.
 - Level :: =cross= (memories cut across cybernetic levels; they're
@@ -513,7 +520,7 @@ of future sessions — see [[id:32b3a055-63fa-4edf-8dcc-901e9d883f22][Memory]] i
   (facts about the work in flight), =reference= (pointer to an
   external system). Same four-way taxonomy as Claude Code's
   auto-memory.
-- How to create :: see [[id:3b7156cd-3a8d-49e5-bf89-a5f6f2486596][New memory]] in the v2-doc recipe.
+- How to create :: see [[id:3B7156CD-3A8D-49E5-BF89-A5F6F2486596][New memory]] in the v2-doc recipe.
 - Required structure ::
   - /Blurb/ — one short paragraph stating the rule, fact, or
     insight.
@@ -532,7 +539,7 @@ of future sessions — see [[id:32b3a055-63fa-4edf-8dcc-901e9d883f22][Memory]] i
   scope=). The vision and out-of-scope are sections of the identity,
   not separate documents.
 - Not stateful — no TODO. These documents are durable.
-- How to create :: see [[id:f1311596-b8ed-43ad-8c46-76c58c0194c7][New product identity]] in the v2-doc recipe.
+- How to create :: see [[id:F1311596-B8ED-43AD-8C46-76C58C0194C7][New product identity]] in the v2-doc recipe.
 - Required sections ::
   - =* What this is= — the durable statement.
   - =* What this is not= — explicit boundaries.
@@ -542,7 +549,7 @@ of future sessions — see [[id:32b3a055-63fa-4edf-8dcc-901e9d883f22][Memory]] i
 ** function
 
 A function is /role-shaped/: it describes a named role and lists the
-operational [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skills]], recipes, and pre-reads that role uses. Think of
+operational [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]], recipes, and pre-reads that role uses. Think of
 it as the priming context an LLM session loads when it takes on that
 role — "you are S2 orchestrator, here is what you do, here is what you
 do not do, here are the skills available to you." Compare with =skill=
@@ -551,19 +558,19 @@ below, which is /task-shaped/.
 - Folder :: =doc/functions/=
 - Level :: =cross= or a specific level.
 - How to create :: function codegen is not yet wired into
-  [[id:3153aa4b-23d4-4111-9710-5a4971102edc][generate_v2_doc.sh]] (no =--type function= yet); for now, copy an
+  [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][generate_v2_doc.sh]] (no =--type function= yet); for now, copy an
   existing function under =doc/functions/= and adjust the frontmatter
   and sections.
 - Not stateful — no TODO.
 - Required sections ::
   - =* Purpose= — one paragraph: what this role is for.
   - =* Operates at= — which system level(s); link to
-    [[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic levels]].
+    [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic levels]].
   - =* Inputs= — what this role consumes (documents, signals).
   - =* Outputs= — what this role produces.
   - =* Pre-reads= — documents that must be loaded into context before
     the role can act. The contract docs go here.
-  - =* Skills= — id-links to the [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skills]] this role invokes.
+  - =* Skills= — id-links to the [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] this role invokes.
   - =* Recipes= — id-links to the recipes this role exercises.
   - =* Boundaries= — what this role explicitly does /not/ do, and
     which other function picks it up instead.
@@ -575,7 +582,7 @@ below, which is /task-shaped/.
 - Filename :: starts with =how_do_i_= or similar NLP question phrasing.
 - Not stateful by TODO, but audit may set a =:stale:= tag when the
   script fails.
-- How to create :: see [[id:0c57932d-d13a-480f-b426-49525aa8ba3d][New recipe]] in the v2-doc recipe.
+- How to create :: see [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][New recipe]] in the v2-doc recipe.
 - Required sections ::
   - =* Question= — the NLP question.
   - =* Answer= — the steps. Shell commands inside an =* Answer= belong
@@ -598,7 +605,7 @@ below, which is /task-shaped/.
   component, not a full reference. Deeper material (architecture,
   internals, design decisions) lives in linked =knowledge= documents
   alongside the code.
-- How to create :: see [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]]
+- How to create :: see [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]]
 - Required sections ::
   - =* Summary= — three to five sentences: what the component does
     and why it exists.
@@ -627,7 +634,7 @@ identity.
 - Slug :: =kebab-case= (matches existing =cmake-runner=, =v2-doc-author=).
   The slug doubles as the Claude Code skill =name:=.
 - Not stateful — no TODO.
-- How to create :: see [[id:6054cc20-5f41-482f-a587-759512577b1d][New Claude Code skill]] in the v2-doc recipe.
+- How to create :: see [[id:6054CC20-5F41-482F-A587-759512577B1D][New Claude Code skill]] in the v2-doc recipe.
 - Required sections ::
   - A =#+begin_export markdown ... #+end_export= block with
     =name:= / =description:= / =license:= (Claude Code metadata).
@@ -651,14 +658,14 @@ identity.
     component's code) lives co-located at =projects/<comp>/docs/=.
 - Level :: =cross=
 - Not stateful — no TODO. Audit may flag stale facts via a tag.
-- How to create :: see [[id:f497aa0a-f604-436a-8555-c17b14302c99][New knowledge document]] in the v2-doc recipe.
+- How to create :: see [[id:F497AA0A-F604-436A-8555-C17B14302C99][New knowledge document]] in the v2-doc recipe.
 
 *** Index pages (knowledge / meta variant)
 
 When a knowledge or meta document's role is /navigation/ — it
 summarises a tree of related documents and links to them — it is
-called an /index page/. Examples in this repo: [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]],
-[[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]], [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]], the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] and [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]] bucket indexes.
+called an /index page/. Examples in this repo: [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]],
+[[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]], [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]], the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] and [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][far]] bucket indexes.
 
 Index pages have three extra requirements on top of the usual
 knowledge / meta contract:
@@ -709,8 +716,33 @@ it is a normal knowledge document — no extra obligations.
 
 ** retrospective, release_note, audit_report
 
-- Generated where possible. See [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] and the relevant function
+- Generated where possible. See [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]] and the relevant function
   documents.
+
+** investigation
+
+- Folder :: =doc/investigations/= — historical records of technical
+  investigations.
+- Title :: =Investigation: <human readable title>=. The
+  =Investigation: = prefix is added by the codegen automatically when
+  the type is =investigation=.
+- Level :: =cross=.
+- Not stateful — no TODO, no =* Status= table. An investigation
+  report is a point-in-time record.
+- How to create :: see [[id:75F4921B-43D1-4E78-99AB-62A47F761D1D][New investigation report]] in the v2-doc recipe.
+- Required sections ::
+  - =* Context= — one or two paragraphs: what was the original
+    problem or research question.
+  - =* Methodology= — how the investigation was conducted (tools,
+    reproducibility steps).
+  - =* Paths taken= — detailed log of approaches tried, including
+    those that were unsuccessful. Link to related PRs, branches, or
+    commits.
+  - =* Conclusions= — the ultimate findings of the investigation.
+  - =* Recommendations= — suggested next steps or new approaches,
+    avoiding implementation-level detail.
+  - =* See also= — related knowledge docs, tasks, or external
+    references.
 
 ** meta
 

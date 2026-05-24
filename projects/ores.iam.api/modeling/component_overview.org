@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4e0dc581-d74d-4bd1-87d2-7f524a36d20c
+:ID: 4E0DC581-D74D-4BD1-87D2-7F524A36D20C
 :END:
 #+title: ores.iam.api
 #+description: Domain types, JSON/table I/O, and NATS protocol schemas for the IAM component.

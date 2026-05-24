@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f9ec0a78-2233-4241-8c18-ba08572057f5
+:ID: F9EC0A78-2233-4241-8C18-BA08572057F5
 :END:
 #+title: Task: Equity per-type: finish read path + delete legacy generic
 #+description: Completes the equity per-type migration begun in PR #720. That PR
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:00ccc0dc-200c-4951-81e0-6aa93b1503fc][FX forward E2E and equity per-type migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:00CCC0DC-200C-4951-81E0-6AA93B1503FC][FX forward E2E and equity per-type migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Complete the equity per-type migration by flipping the export (read) path onto p
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:00ccc0dc-200c-4951-81e0-6aa93b1503fc][FX forward E2E and equity per-type migration]] |
+| Parent story | [[id:00CCC0DC-200C-4951-81E0-6AA93B1503FC][FX forward E2E and equity per-type migration]] |
 | Now          | Completed 2026-05-01.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 66d3f1d6-1926-40cf-bcf5-aa42f14ad6d5
+:ID: 66D3F1D6-1926-40CF-BCF5-AA42F14AD6D5
 :END:
 #+title: ores.analytics.api
 #+description: Domain types and NATS protocol schemas for the analytics component.
@@ -45,4 +45,4 @@ table I/O via =rfl=, and the NATS protocol schemas consumed by
 
 * See also
 
-- [[id:bc804c31-d6f7-4e4e-9c4f-f4578beaf4f5][ores.analytics.core]] — business logic, persistence, and NATS handlers.
+- [[id:BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5][ores.analytics.core]] — business logic, persistence, and NATS handlers.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ac14558d-a526-4be2-adb6-81bcfe0e7292
+:ID: AC14558D-A526-4BE2-ADB6-81BCFE0E7292
 :END:
 #+title: Story: Build stabilisation
 #+description: Bring Windows and macOS builds to green; sort vcpkg binary caching; remove ImGui; suppress Valgrind noise.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ warnings, and the ImGui experiment that had bit-rotted.
 | Field         | Value                                                                                                                      |
 |---------------+----------------------------------------------------------------------------------------------------------------------------|
 | State         | DONE                                                                                                                       |
-| Parent sprint | [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]                                                                     |
+| Parent sprint | [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]]                                                                     |
 | Now           | Story closed; Windows and macOS builds green, vcpkg binary caching working, Valgrind suppressions in place, ImGui removed. |
 | Waiting on    | None.                                                                                                                      |
 | Next          | None.                                                                                                                      |
@@ -41,9 +41,9 @@ warnings, and the ImGui experiment that had bit-rotted.
 
 In execution order:
 
-- [[id:5d48fec0-d23f-4b22-82c6-ef3353d15f1c][Fix Windows and macOS builds]]
-- [[id:494eb23e-8d38-4372-bf1b-7d23ff07473a][Fix vcpkg binary caching]]
-- [[id:13b90143-aafd-4381-9e9d-3bccb88b8d3b][Add Valgrind suppressions]]
+- [[id:5D48FEC0-D23F-4B22-82C6-EF3353D15F1C][Fix Windows and macOS builds]]
+- [[id:494EB23E-8D38-4372-BF1B-7D23FF07473A][Fix vcpkg binary caching]]
+- [[id:13B90143-AAFD-4381-9E9D-3BCCB88B8D3B][Add Valgrind suppressions]]
 
 Additional tasks belonging to this story in v0 but not migrated in
 the drive-test:
@@ -70,12 +70,12 @@ the drive-test:
 - Code signing on Windows (deferred to a later sprint).
 - macOS notarisation (deferred).
 - Longer-tail Windows / dynamic-library / Valgrind issues — picked up
-  in sprint 03's [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]].
+  in sprint 03's [[id:D246FFBE-11EE-4FF9-9309-2A693E2476EF][Build stabilisation 3]].
 
 * See also
 
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — the vcpkg-caching and Valgrind details this story
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — the vcpkg-caching and Valgrind details this story
   established.
-- [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]] / [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — recipes
+- [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] / [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] — recipes
   that exercise the stabilised pipelines.
-- [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] (sprint 01) — predecessor story this builds on.
+- [[id:1D334356-F123-43B5-A98E-317EBAD2848A][Build quality]] (sprint 01) — predecessor story this builds on.

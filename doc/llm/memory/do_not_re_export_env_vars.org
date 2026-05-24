@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f9b796df-2c06-42ef-aacf-d69e53621ff9
+:ID: F9B796DF-2C06-42EF-AACF-D69E53621FF9
 :END:
 #+title: Do not re-export ORES_* env vars in Bash tool calls
 #+description: The user has already exported ORES_* env vars in their shell session — don't prepend them to commands run via the Bash tool.

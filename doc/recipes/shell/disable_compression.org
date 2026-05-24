@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ec0dd331-1b7f-4971-851a-73c9780ce891
+:ID: EC0DD331-1B7F-4971-851A-73C9780CE891
 :END:
 #+title: Disable Compression
 #+description: Disable Compression

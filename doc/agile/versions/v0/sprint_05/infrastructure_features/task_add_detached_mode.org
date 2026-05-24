@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9ac0485f-8f7b-4c15-a60b-8ea9f6c7a439
+:ID: 9AC0485F-8F7B-4C15-A60B-8EA9F6C7A439
 :END:
 #+title: Task: Add a detached mode
 #+description: Default sub-window mode setting (attached / detached) so new windows respect the user's preference.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:645df0b4-51b5-40bc-be07-0ab986111653][Infrastructure features]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:645DF0B4-51B5-40BC-BE07-0AB986111653][Infrastructure features]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ the default.
 | Field        | Value                                                                |
 |--------------+----------------------------------------------------------------------|
 | State        | DONE                                                                 |
-| Parent story | [[id:645df0b4-51b5-40bc-be07-0ab986111653][Infrastructure features]] |
+| Parent story | [[id:645DF0B4-51B5-40BC-BE07-0AB986111653][Infrastructure features]] |
 | Now          | Completed 2025-11-20.                                                |
 | Waiting on   | None.                                                                |
 | Next         | None.                                                                |

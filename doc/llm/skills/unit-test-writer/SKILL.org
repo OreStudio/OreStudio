@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: cb56337e-4839-4048-b5a7-c481812ce3d0
+:ID: CB56337E-4839-4048-B5A7-C481812CE3D0
 :END:
 #+title: Unit Test Writer Skill
 #+description: Generate Catch2 unit tests following the ORE Studio conventions — file structure, naming, includes, test-case shape, generators, database helpers.
@@ -27,7 +27,7 @@ component. For investigating a /failing/ test, use the sibling
 * How to use this skill
 
 The canonical reference for /how an ORE Studio test looks/ is
-[[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] — file layout, naming patterns, includes,
+[[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] — file layout, naming patterns, includes,
 test-case shape, tags, generators, database helpers. Read it first
 if you have not seen the contract.
 
@@ -47,7 +47,7 @@ if you have not seen the contract.
      generator produces N.
 
 3. /Write each test case/ following the standard shape from
-   [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]]§"Test-case shape":
+   [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]]§"Test-case shape":
    - =auto lg(make_logger(test_suite));= at the top.
    - Build the system under test (use a generator when available).
    - =BOOST_LOG_SEV(lg, info) << sut;= before assertions.
@@ -56,28 +56,28 @@ if you have not seen the contract.
 
 4. /Pick the right database helper/ for repository tests
    (=database_helper= vs =scoped_database_helper= — see
-   [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]]§"Database helpers"). New components
+   [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]]§"Database helpers"). New components
    prefer =scoped_database_helper= (tenant-isolated, no
    truncation needed).
 
-5. /Build and run the new tests/ via [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]]
-   and [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — confirm everything passes locally
+5. /Build and run the new tests/ via [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]
+   and [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] — confirm everything passes locally
    before pushing.
 
 6. /Self-check against the reviewer checklist/ — the "Unit tests"
-   section of [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]] is what reviewers will apply.
+   section of [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review checklist]] is what reviewers will apply.
 
 * Recipes
 
-- [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]] — build the test target.
-- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — run the new tests.
-- [[id:4bf2516d-f37e-4e31-ad7b-124f2639b9ab][How do I enable test logging?]] — if you want to see your
+- [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] — build the test target.
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] — run the new tests.
+- [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I enable test logging?]] — if you want to see your
   =BOOST_LOG_SEV= output during iteration.
 
 * Reference
 
-- [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] — the canonical patterns and helpers.
-- [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]]§"Unit tests" — reviewer-side checks.
+- [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] — the canonical patterns and helpers.
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review checklist]]§"Unit tests" — reviewer-side checks.
 - [[id:A8C7D341-5E92-4F8A-B9E2-1A3D6F8C2E5B][Unit Test Database Integration Guide]] — deeper database-side
   reference inside =ores.testing=.
 - [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][test-failure-investigator]] — sibling skill for when a test goes

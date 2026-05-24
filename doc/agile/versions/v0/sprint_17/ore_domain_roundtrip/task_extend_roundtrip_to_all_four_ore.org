@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9af052ac-0875-4bc5-964b-b4821ed7b161
+:ID: 9AF052AC-0875-4BC5-964B-B4821ED7B161
 :END:
 #+title: Task: Extend roundtrip to all four ORE XML document types
 #+description: - Add `reverse()` to `calendar_adjustment_mapper` and `conventions_mapper` so all four ORE XML document types can be ser
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:66109ae6-1c44-405d-b4d6-08164c457c25][ORE domain roundtrip]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:66109AE6-1C44-405D-B4D6-08164C457C25][ORE domain roundtrip]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Extend the roundtrip command to auto-detect and handle all four ORE XML document
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:66109ae6-1c44-405d-b4d6-08164c457c25][ORE domain roundtrip]] |
+| Parent story | [[id:66109AE6-1C44-405D-B4D6-08164C457C25][ORE domain roundtrip]] |
 | Now          | Completed 2026-05-08.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

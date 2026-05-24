@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e4c1e73d-cd5f-45d0-af10-3dd223b697d1
+:ID: E4C1E73D-CD5F-45D0-AF10-3DD223B697D1
 :END:
 #+title: How do I export currencies?
 #+description: Export currencies via =ores.cli= to ORE XML, CSV, or JSON

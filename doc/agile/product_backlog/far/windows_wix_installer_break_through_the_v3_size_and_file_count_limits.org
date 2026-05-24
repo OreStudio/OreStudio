@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 30d73951-a942-4452-8438-9ab9115ad53a
+:ID: 30D73951-A942-4452-8438-9AB9115AD53A
 :END:
 #+title: Windows WiX installer: break through the v3 size and file-count limits
 #+description: Windows WiX installer: break through the v3 size and file-count limits
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 *Background*
 

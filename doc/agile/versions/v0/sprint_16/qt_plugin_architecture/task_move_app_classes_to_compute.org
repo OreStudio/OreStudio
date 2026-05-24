@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3f1c1cf9-1df9-40d3-885f-7481ad3b512a
+:ID: 3F1C1CF9-1DF9-40D3-885F-7481AD3B512A
 :END:
 #+title: Task: Move App/AppVersion/ClientApp/ClientHost classes to compute
 #+description: Remove dependency on ores.qt.admin library from ores.qt.compute project; classes relocated to compute plugin.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:38c972e1-2dd2-41ae-a770-800fee90d1e6][Qt plugin architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38C972E1-2DD2-41AE-A770-800FEE90D1E6][Qt plugin architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Remove dependency on ores.qt.admin library from ores.qt.compute project; classes
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:38c972e1-2dd2-41ae-a770-800fee90d1e6][Qt plugin architecture]] |
+| Parent story | [[id:38C972E1-2DD2-41AE-A770-800FEE90D1E6][Qt plugin architecture]] |
 | Now          | Completed 2026-04-09.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

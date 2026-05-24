@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b37de668-711d-43c0-b4df-536c04e6b013
+:ID: B37DE668-711D-43C0-B4DF-536C04E6B013
 :END:
 #+title: Stop and start service does not trigger ores.qt reconnection
 #+description: Stop and start service does not trigger ores.qt reconnection
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 We seem to just remain in a weird disconnected state. Clicking disconnect seems
 to freeze UI.

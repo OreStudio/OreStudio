@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3c8912a0-78c8-4cd5-ba75-ef63d606fef4
+:ID: 3C8912A0-78C8-4CD5-BA75-EF63D606FEF4
 :END:
 #+title: IAM/Refdata service boundary cleanup
 #+description: IAM/Refdata service boundary cleanup
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 =ores.iam.core= currently crosses the service boundary in two places. These
 are pre-existing violations noted in the plan and must be fixed to ensure

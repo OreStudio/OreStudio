@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b3ebd70c-dafa-4854-92f3-54e7d90d22c7
+:ID: B3EBD70C-DAFA-4854-92F3-54E7D90D22C7
 :END:
 #+title: Qt: instrument creation in TradeDetailDialog
 #+description: Qt: instrument creation in TradeDetailDialog
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 When a trade is created in =TradeDetailDialog=, the instrument tabs are hidden
 and no instrument can be entered. This is because instruments are currently only

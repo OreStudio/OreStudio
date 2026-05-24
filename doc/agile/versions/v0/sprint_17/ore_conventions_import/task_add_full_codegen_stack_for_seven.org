@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8abed069-682b-4c7d-bb6d-192392305495
+:ID: 8ABED069-682B-4C7D-BB6D-192392305495
 :END:
 #+title: Task: Add full codegen stack for seven ORE convention types
 #+description: - Expands ORE import convention coverage from 2 (zero, deposit) to all 9 types: swap, ois, fra, ibor_index, overnight_in
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:f607b8ce-5d33-424f-a7c2-7ed0243d4728][ORE conventions import]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F607B8CE-5D33-424F-A7C2-7ED0243D4728][ORE conventions import]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Expand ORE import convention coverage from 2 to 9 types by generating the full b
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:f607b8ce-5d33-424f-a7c2-7ed0243d4728][ORE conventions import]] |
+| Parent story | [[id:F607B8CE-5D33-424F-A7C2-7ED0243D4728][ORE conventions import]] |
 | Now          | Completed 2026-05-10.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

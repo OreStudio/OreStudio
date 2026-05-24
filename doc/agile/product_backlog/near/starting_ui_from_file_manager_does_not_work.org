@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 22cbf0a7-06d6-4e0f-a470-6d88967881a5
+:ID: 22CBF0A7-06D6-4E0F-A470-6D88967881A5
 :END:
 #+title: Starting UI from file manager does not work
 #+description: Starting UI from file manager does not work
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 At present we can't start the Qt UI because the file manager thinks its a video.
 Maybe we need a desktop file.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f6e88dcc-9240-4632-a9a3-9f36f79c9262
+:ID: F6E88DCC-9240-4632-A9A3-9F36F79C9262
 :END:
 #+title: How do I monitor a PR until green?
 #+description: Drive a PR to green CI and zero unresolved review threads — via the pr-watch background script, or by hand with gh pr checks.
@@ -10,8 +10,8 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This is the outer loop the [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]] skill drives. The two
-inner branches are [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][addressing review comments]] and [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][fixing failing
+This is the outer loop the [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] skill drives. The two
+inner branches are [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][addressing review comments]] and [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][fixing failing
 CI checks]].
 
 * Question
@@ -60,7 +60,7 @@ When the script is unavailable, run the loop yourself:
    #+end_src
 
    - All green or pending → step 2.
-   - Any failure → jump to [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][fix CI failures]] first.
+   - Any failure → jump to [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][fix CI failures]] first.
 
 2. /Wait the chosen interval/ (default 10 minutes is sensible —
    long enough for CI and reviewers, short enough to be
@@ -76,7 +76,7 @@ When the script is unavailable, run the loop yourself:
    gh pr view --comments
    #+end_src
 
-   For each open thread, follow [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][address review comments]].
+   For each open thread, follow [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][address review comments]].
 
 4. /Check CI again/. The terminal states:
 
@@ -84,7 +84,7 @@ When the script is unavailable, run the loop yourself:
    |------------+------------------------------------------------------|
    | All green  | Loop exits — PR ready for review/merge.              |
    | Pending    | Sleep, return to step 3.                             |
-   | Any red    | Jump to [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][fix CI failures]], then return to step 2. |
+   | Any red    | Jump to [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][fix CI failures]], then return to step 2. |
 
 * Script
 
@@ -97,7 +97,7 @@ Manual. =pr-watch.sh= is exercised in normal day-to-day PR work.
 
 * See also
 
-- [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][How do I address PR review comments?]]
-- [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][How do I fix a failing CI check?]]
-- [[id:95d560c6-3551-4810-9d11-55f9f82b483c][How do I merge a PR?]]
-- [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]] — the skill that drives this recipe autonomously.
+- [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]]
+- [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]]
+- [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]]
+- [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] — the skill that drives this recipe autonomously.

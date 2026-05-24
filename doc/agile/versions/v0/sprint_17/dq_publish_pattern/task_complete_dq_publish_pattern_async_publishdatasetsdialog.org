@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 61ea68c3-e750-431f-8552-fe6e58a567ef
+:ID: 61EA68C3-E750-431F-8552-FE6E58A567EF
 :END:
 #+title: Task: Complete DQ publish pattern: async PublishDatasetsDialog with WorkflowStepsWidget
 #+description: - Replaces the synchronous text-log results page in `PublishDatasetsDialog` with async `QFutureWatcher` dispatch and `Wo
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:dc1effd8-b983-48c7-835b-71333aece016][DQ publish pattern]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DC1EFFD8-B983-48C7-835B-71333AECE016][DQ publish pattern]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Replace the synchronous text-log results page in PublishDatasetsDialog with asyn
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:dc1effd8-b983-48c7-835b-71333aece016][DQ publish pattern]] |
+| Parent story | [[id:DC1EFFD8-B983-48C7-835B-71333AECE016][DQ publish pattern]] |
 | Now          | Completed 2026-05-20.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

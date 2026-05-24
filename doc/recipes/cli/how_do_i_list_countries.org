@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d67f1e36-6cc8-4311-b146-3834e9139829
+:ID: D67F1E36-6CC8-4311-B146-3834E9139829
 :END:
 #+title: How do I list countries?
 #+description: List countries via =ores.cli=

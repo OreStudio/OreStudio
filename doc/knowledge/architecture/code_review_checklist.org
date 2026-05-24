@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2
+:ID: 0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2
 :END:
 #+title: Code Review Checklist
 #+description: The canonical category-by-category checklist ORE Studio reviewers apply — used both for PR-delta reviews and full-component audits.
@@ -11,8 +11,8 @@
 #+updated: 2026-05-21
 
 The categories below are what every ORE Studio code review checks
-against. The [[id:04ca6bd9-7739-4213-a9dc-17aaace43252][code-review-pr]] skill applies them to a PR delta
-(changed files only); the [[id:dadf4117-757a-4eef-a137-cc2ee8023c73][code-review-component]] skill applies them
+against. The [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr]] skill applies them to a PR delta
+(changed files only); the [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component]] skill applies them
 to a whole component (every file plus the structure). Return to
 [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
@@ -76,7 +76,7 @@ to a whole component (every file plus the structure). Return to
 
 * Domain types
 
-For each new or modified domain type, verify the [[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]]
+For each new or modified domain type, verify the [[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]]
 contract is complete:
 
 | Check        | Description                                              |
@@ -102,7 +102,7 @@ For NATS protocol changes:
 
 * Unit tests
 
-See [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] for the full set; the review-time
+See [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] for the full set; the review-time
 subset:
 
 | Check                | Description                                              |
@@ -158,13 +158,13 @@ When filing findings, classify each issue:
 - *Minor (nice to have)* — style, refactoring suggestions,
   documentation polish.
 
-Group related issues into stories per [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]]; use
+Group related issues into stories per [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]]; use
 =:code:= for fixes, =:doc:= for documentation issues.
 
 * See also
 
-- [[id:04ca6bd9-7739-4213-a9dc-17aaace43252][code-review-pr skill]] — applies this checklist to a PR delta.
-- [[id:dadf4117-757a-4eef-a137-cc2ee8023c73][code-review-component skill]] — applies it to a whole component.
-- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component documentation guide]] — companion checks for the
+- [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr skill]] — applies this checklist to a PR delta.
+- [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component skill]] — applies it to a whole component.
+- [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component documentation guide]] — companion checks for the
   =component_overview.org= file.
-- [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] — the deeper test-side reference.
+- [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] — the deeper test-side reference.

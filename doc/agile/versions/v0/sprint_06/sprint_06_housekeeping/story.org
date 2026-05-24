@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 193a779f-a313-414c-9236-d075b84a2f67
+:ID: 193A779F-A313-414C-9236-D075B84A2F67
 :END:
 #+title: Story: Sprint 06 housekeeping
 #+description: Sprint sundries: backlog, AI summary via the new skill, OCR notebooks.
@@ -11,7 +11,7 @@
 #+updated: 2025-12-15
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ AI-summary skill (built in sprint 05); continue scanning paper notebooks.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]] |
+| Parent sprint | [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]] |
 | Now           | Completed 2025-12-15.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -39,9 +39,9 @@ AI-summary skill (built in sprint 05); continue scanning paper notebooks.
 
 In execution order:
 
-- [[id:44c7f43d-38c9-4e5a-b1c3-489bb8a6ab04][Sprint and product backlog refinement]]
-- [[id:7bf0ee19-ab13-4425-89f1-08d476bbd57b][Add AI-generated sprint summary]]
-- [[id:d6568833-3808-4fe6-b58d-e3925a83e238][OCR scan notebooks for this sprint]]
+- [[id:44C7F43D-38C9-4E5A-B1C3-489BB8A6AB04][Sprint and product backlog refinement]]
+- [[id:7BF0EE19-AB13-4425-89F1-08D476BBD57B][Add AI-generated sprint summary]]
+- [[id:D6568833-3808-4FE6-B58D-E3925A83E238][OCR scan notebooks for this sprint]]
 
 * Decisions
 
@@ -54,5 +54,5 @@ In execution order:
 
 * See also
 
-- [[id:de3eee9f-331e-440c-b62c-abdefe1d87e2][Sprint 05 housekeeping]] — predecessor housekeeping story (and home
+- [[id:DE3EEE9F-331E-440C-B62C-ABDEFE1D87E2][Sprint 05 housekeeping]] — predecessor housekeeping story (and home
   of the AI-summary skill this sprint exercises).

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 590899c4-d760-4865-a41c-afaa63f6b018
+:ID: 590899C4-D760-4865-A41C-AFAA63F6B018
 :END:
 #+title: Task: Source report definitions from DQ artefact table
 #+description: Replace hardcoded report definitions in party provisioning wizard with dynamic service-driven templates; new report_definition_template domain + NATS protocol + backend service; ores_dq_report_definitions_artefact_tbl + publish function; 28 standard ORE analytics report definitions seeded.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:08d2b499-53ce-4b1c-92cf-a7c26d036ec9][Reporting and analytics]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:08D2B499-53CE-4B1C-92CF-A7C26D036EC9][Reporting and analytics]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Replace hardcoded report definitions in party provisioning wizard with dynamic s
 | Field        | Value                                                                |
 |--------------+----------------------------------------------------------------------|
 | State        | DONE                                                                 |
-| Parent story | [[id:08d2b499-53ce-4b1c-92cf-a7c26d036ec9][Reporting and analytics]] |
+| Parent story | [[id:08D2B499-53CE-4B1C-92CF-A7C26D036EC9][Reporting and analytics]] |
 | Now          | Completed 2026-04-07.                                                |
 | Waiting on   | None.                                                                |
 | Next         | None.                                                                |

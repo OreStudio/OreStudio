@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 61fb71d8-9fd2-4739-a20a-7cadb3f83f4a
+:ID: 61FB71D8-9FD2-4739-A20A-7CADB3F83F4A
 :END:
 #+title: Task: Refactor CLI entity parsers with generic helper
 #+description: Introduce simple_entity_config + handle_simple_entity_command in parser_helpers; refactor the five new entity parsers behind it. Net reduction ~314 lines.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:09a8d544-22f3-491a-82a9-306b1aa7c756][CLI entity coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09A8D544-22F3-491A-82A9-306B1AA7C756][CLI entity coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Refactor the five new entity parsers behind a generic helper to remove boilerpla
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:09a8d544-22f3-491a-82a9-306b1aa7c756][CLI entity coverage]] |
+| Parent story | [[id:09A8D544-22F3-491A-82A9-306B1AA7C756][CLI entity coverage]] |
 | Now          | Completed 2026-01-12.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

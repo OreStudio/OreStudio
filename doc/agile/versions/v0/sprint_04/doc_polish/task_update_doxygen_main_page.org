@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8d6ff09e-2be2-4600-991c-6c7556ec2484
+:ID: 8D6FF09E-2BE2-4600-991C-6C7556EC2484
 :END:
 #+title: Task: Update Doxygen main page
 #+description: Refresh the Doxygen main page so it links to the v2 entry points instead of the legacy ones.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-30
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:13e4f41f-82e1-400a-9c84-e60a587e2647][Documentation polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:13E4F41F-82E1-400A-9C84-E60A587E2647][Documentation polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -28,7 +28,7 @@ landing rather than a placeholder.
 | Field        | Value                                                             |
 |--------------+-------------------------------------------------------------------|
 | State        | DONE                                                              |
-| Parent story | [[id:13e4f41f-82e1-400a-9c84-e60a587e2647][Documentation polish]] |
+| Parent story | [[id:13E4F41F-82E1-400A-9C84-E60A587E2647][Documentation polish]] |
 | Now          | Completed 2025-11-30.                                             |
 | Waiting on   | None.                                                             |
 | Next         | None.                                                             |

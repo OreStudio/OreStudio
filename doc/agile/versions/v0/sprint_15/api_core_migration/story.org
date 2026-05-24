@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7631c4d3-43c5-4238-a180-337bea863c7f
+:ID: 7631C4D3-43C5-4238-A180-337BEA863C7F
 :END:
 #+title: Story: API/core architecture migration
 #+description: Split all ten service libraries into *.api (contracts) and *.core (implementation): iam + compute first, then refdata, then scheduler / assets / variability / synthetic / trading / reporting.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ pattern.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] |
+| Parent sprint | [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]] |
 | Now           | Completed 2026-03-23.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,9 +41,9 @@ pattern.
 
 In execution order:
 
-- [[id:8c447206-e447-4fa8-9761-ca80eb067427][Extract ores.iam.api + ores.compute.api (Phase 1)]]
-- [[id:11b6e2e3-e097-43ed-8201-494cea57a9f0][Split ores.refdata into api + core]]
-- [[id:1d0fd3d8-fdee-463b-b0c3-f4e3155f8249][Split scheduler / assets / variability / synthetic / trading / reporting (Phase 2)]]
+- [[id:8C447206-E447-4FA8-9761-CA80EB067427][Extract ores.iam.api + ores.compute.api (Phase 1)]]
+- [[id:11B6E2E3-E097-43ED-8201-494CEA57A9F0][Split ores.refdata into api + core]]
+- [[id:1D0FD3D8-FDEE-463B-B0C3-F4E3155F8249][Split scheduler / assets / variability / synthetic / trading / reporting (Phase 2)]]
 
 * Decisions
 
@@ -56,5 +56,5 @@ In execution order:
 
 * See also
 
-- [[id:84fca31b-b6a8-444f-9ea9-33515d50645f][NATS service discovery for HTTP base URL]] — added the migration plan that this story executes.
-- [[id:4837265a-934c-4cfc-9f7a-edc3f86f37c6][Generators to api layer + http.server split]] — the cross-cutting cleanup that completes the migration.
+- [[id:84FCA31B-B6A8-444F-9EA9-33515D50645F][NATS service discovery for HTTP base URL]] — added the migration plan that this story executes.
+- [[id:4837265A-934C-4CFC-9F7A-EDC3F86F37C6][Generators to api layer + http.server split]] — the cross-cutting cleanup that completes the migration.

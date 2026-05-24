@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1f0f5819-88bc-45fc-bfaa-7915c28a91c5
+:ID: 1F0F5819-88BC-45FC-BFAA-7915C28A91C5
 :END:
 #+title: Retrieve NAT'ed IP address from local IP
 #+description: Retrieve NAT'ed IP address from local IP
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 It would be nice to be able to resolve to the NAT'ed IP address. Gemini:
 

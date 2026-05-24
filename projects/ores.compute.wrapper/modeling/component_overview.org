@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f1b19d84-a5c9-4478-bb46-ee6ea62dafca
+:ID: F1B19D84-A5C9-4478-BB46-EE6EA62DAFCA
 :END:
 #+title: ores.compute.wrapper
 #+description: Compute worker wrapper — executes ORE risk runs and reports results to ores.compute.core.
@@ -52,4 +52,4 @@ scale risk computation horizontally.
 
 * See also
 
-- [[id:3bffdf5c-86f5-4d57-9d9f-676d0d62b344][ores.compute.core]] — orchestrator that dispatches jobs to this worker.
+- [[id:3BFFDF5C-86F5-4D57-9D9F-676D0D62B344][ores.compute.core]] — orchestrator that dispatches jobs to this worker.

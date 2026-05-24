@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a4bef88c-1372-46ce-864b-c30ac3be95eb
+:ID: A4BEF88C-1372-46CE-864B-C30AC3BE95EB
 :END:
 #+title: Story: Inline org-roam export into ores.lisp
 #+description: Vendor org-roam-export.el so the CI site build no longer depends on a file in /home/runner/.emacs.d/config/.
@@ -11,26 +11,26 @@
 #+updated: 2026-05-22
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1737c00c-699a-475a-bc94-743c6cda1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status,
+acceptance criteria, and the tasks that compose it.
 
 * Goal
 
-The CI site build no longer fails with =Cannot open load file: No such
-file or directory, /home/runner/.emacs.d/config/org-roam-export.el=.
-The org-roam export code lives in the repository (in =ores.lisp=) so
-the build is self-contained — no dependency on a file under the
-runner's Emacs config directory.
+The CI site build no longer fails with =Cannot open load file: No such file or
+directory, /home/runner/.emacs.d/config/org-roam-export.el=. The org-roam export
+code lives in the repository (in =ores.lisp=) so the build is self-contained —
+no dependency on a file under the runner's Emacs config directory.
 
 * Status
 
-| Field         | Value                                  |
-|---------------+----------------------------------------|
-| State         | BACKLOG                              |
-| Parent sprint | [[id:1737c00c-699a-475a-bc94-743c6cda1001][Sprint 18]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-05-22                               |
+| Field         | Value                         |
+|---------------+-------------------------------|
+| State         | STARTED                       |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                     |
+| Now           | In implementation.            |
+| Waiting on    | Nothing.                      |
+| Next          | Address code review comments. |
+| Last touched  | 2026-05-23                    |
 
 * Acceptance
 
@@ -45,7 +45,7 @@ runner's Emacs config directory.
 
 In execution order:
 
-- [[id:167c48a3-957b-4b58-92a5-e2938f925760][Task: Copy org-roam-export.el code into ores.lisp]]
+- [[id:167C48A3-957B-4B58-92A5-E2938F925760][Task: Copy org-roam-export.el code into ores.lisp]]
 
 * Decisions
 

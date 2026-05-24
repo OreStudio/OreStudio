@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 73dc3a27-295d-4834-97bf-a8d6f0e1e4ca
+:ID: 73DC3A27-295D-4834-97BF-A8D6F0E1E4CA
 :END:
 #+title: Task: Codegen drift remediation: template fixes + report_definitions
 #+description: Continues codegen drift remediation from PR #747, addressing three categories of work:
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:25f0a34b-c547-4550-943b-e8f517eb0f6c][SQL codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:25F0A34B-C547-4550-943B-E8F517EB0F6C][SQL codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Fix the missing SECURITY DEFINER search_path in the domain entity create templat
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:25f0a34b-c547-4550-943b-e8f517eb0f6c][SQL codegen drift remediation]] |
+| Parent story | [[id:25F0A34B-C547-4550-943B-E8F517EB0F6C][SQL codegen drift remediation]] |
 | Now          | Completed 2026-05-17.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

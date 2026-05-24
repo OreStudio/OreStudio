@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4bfd3268-95df-45d0-aead-ed1d533d06cd
+:ID: 4BFD3268-95DF-45D0-AEAD-ED1D533D06CD
 :END:
 #+title: How do I get help for the CLI dq change-reason-categories command?
 #+description: Show available operations under =ores.cli dq change-reason-categories=

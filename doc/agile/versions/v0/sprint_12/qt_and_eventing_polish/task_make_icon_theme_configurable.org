@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1b67fdbb-e039-4f61-92d9-4de117379f34
+:ID: 1B67FDBB-E039-4F61-92D9-4DE117379F34
 :END:
 #+title: Task: Make icon theme configurable
 #+description: Allow switching the icon theme without rebuilding; ideally without restarting.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5B48D17B-F510-4458-8FB9-95832F9782C2][Qt and eventing polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Make the icon theme configurable at runtime so we can shop for a good theme with
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]] |
+| Parent story | [[id:5B48D17B-F510-4458-8FB9-95832F9782C2][Qt and eventing polish]] |
 | Now          | Completed 2026-02-10.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

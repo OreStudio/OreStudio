@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: cb8b2a2a-4adf-4f08-9ee1-c32491b3b50e
+:ID: CB8B2A2A-4ADF-4F08-9EE1-C32491B3B50E
 :END:
 #+title: Update all UML/PlantUML component diagrams
 #+description: Component diagrams are out of date. Update all PlantUML diagrams in modeling/ folders to reflect the current architecture.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

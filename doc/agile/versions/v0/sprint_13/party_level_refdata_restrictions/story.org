@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 241a6de6-8978-4daf-a052-7e1cf06a8fc8
+:ID: 241A6DE6-8978-4DAF-A052-7E1CF06A8FC8
 :END:
 #+title: Story: Party-level refdata restrictions
 #+description: Per-party visibility for currencies + countries via junction tables; framework in place but full enforcement postponed.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ junction tables in place but full enforcement deferred.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | BACKLOG                                                |
-| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Parent sprint | [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]] |
 | Now           | Postponed in sprint 13; carried forward.               |
 | Waiting on    | A sprint with the slot.                                |
 | Next          | Return to this once a sprint has the budget.           |
@@ -40,7 +40,7 @@ junction tables in place but full enforcement deferred.
 
 In execution order:
 
-- [[id:f5ed48d0-31d1-409c-9bb7-672a16208b53][Add party-level currency and country restrictions (framework)]]
+- [[id:F5ED48D0-31D1-409C-9BB7-672A16208B53][Add party-level currency and country restrictions (framework)]]
 
 * Decisions
 
@@ -52,4 +52,4 @@ In execution order:
 
 * See also
 
-- [[id:c431b464-a3bc-4d9c-b33a-7c5b247ebea4][Party-level RLS isolation]] (sprint 12) — the broader RLS framework this extends.
+- [[id:C431B464-A3BC-4D9C-B33A-7C5B247EBEA4][Party-level RLS isolation]] (sprint 12) — the broader RLS framework this extends.

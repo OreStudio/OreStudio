@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: fbe4fc1e-38b7-4840-a1f4-a76294470aec
+:ID: FBE4FC1E-38B7-4840-A1F4-A76294470AEC
 :END:
 #+title: Task: Site theme: dark CSS + sidebar TOC + preamble + Pages enablement
 #+description: Adopts the dark CSS + sidebar-TOC approach from
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:063862A1-C02C-4F76-A212-576A57423F0F][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Adopt a dark CSS theme with sidebar TOC, add a site-wide preamble with nav bar, 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] |
+| Parent story | [[id:063862A1-C02C-4F76-A212-576A57423F0F][v2 documentation architecture]] |
 | Now          | Completed 2026-05-20.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

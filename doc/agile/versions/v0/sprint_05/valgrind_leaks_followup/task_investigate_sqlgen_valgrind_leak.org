@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7d95a76c-f755-44c4-84fa-a00c0e263573
+:ID: 7D95A76C-F755-44C4-84FA-A00C0E263573
 :END:
 #+title: Task: Investigate Valgrind leak on sqlgen
 #+description: Triage the remaining sqlgen-flavoured leaks; confirm upstream fixes have landed.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:69C49095-A91F-41D9-9D7E-0E9478143E93][Valgrind leaks follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ allocations represent new leaks or just retained state.
 | Field        | Value                                                                 |
 |--------------+-----------------------------------------------------------------------|
 | State        | DONE                                                                  |
-| Parent story | [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]] |
+| Parent story | [[id:69C49095-A91F-41D9-9D7E-0E9478143E93][Valgrind leaks follow-up]] |
 | Now          | Completed 2025-11-25.                                                 |
 | Waiting on   | None.                                                                 |
 | Next         | None.                                                                 |

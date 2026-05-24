@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f7e506f5-e8c6-4f5a-a09b-6038b38a5df5
+:ID: F7E506F5-E8C6-4F5A-A09B-6038B38A5DF5
 :END:
 #+title: Task: Implement NNG message broker
 #+description: Stand-alone ores.mq.broker executable on NNG; JWT embedded in message frames via jwt_size field (protocol 50.0); CRC includes JWT bytes; register_service_request/response + token_refresh_request/response broker messages; auth_session_service refactored for JWT validation; ores.comms.service self-registers handled message-type ranges at startup; nng_service_runner adapter; asynchronous dispatch via boost::asio::co_spawn.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:55bf0070-33c2-4f1d-986f-a787138942f6][NNG message broker attempt]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:55BF0070-33C2-4F1D-986F-A787138942F6][NNG message broker attempt]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Stand up an NNG-based broker with JWT-in-frame so services can self-register and
 | Field        | Value                                                                   |
 |--------------+-------------------------------------------------------------------------|
 | State        | DONE                                                                    |
-| Parent story | [[id:55bf0070-33c2-4f1d-986f-a787138942f6][NNG message broker attempt]] |
+| Parent story | [[id:55BF0070-33C2-4F1D-986F-A787138942F6][NNG message broker attempt]] |
 | Now          | Completed 2026-03-12.                                                   |
 | Waiting on   | None.                                                                   |
 | Next         | None.                                                                   |

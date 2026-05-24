@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9c3c142a-92b0-4771-9bb5-725e62a9b870
+:ID: 9C3C142A-92B0-4771-9BB5-725E62A9B870
 :END:
 #+title: Task: Fix Windows CI break due to XSD codegen
 #+description: MSVC C1128 on domain_xsd.hpp; add /bigobj to the ores.ore target for MSVC builds.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A1571428-C1BD-4FD1-9434-21CE5B1A6154][ORE XML codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Resolve the MSVC C1128 break on =domain_xsd.hpp= introduced by the larger genera
 | Field        | Value                                                        |
 |--------------+--------------------------------------------------------------|
 | State        | DONE                                                         |
-| Parent story | [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]] |
+| Parent story | [[id:A1571428-C1BD-4FD1-9434-21CE5B1A6154][ORE XML codegen]] |
 | Now          | Completed 2026-01-26.                                        |
 | Waiting on   | None.                                                        |
 | Next         | None.                                                        |

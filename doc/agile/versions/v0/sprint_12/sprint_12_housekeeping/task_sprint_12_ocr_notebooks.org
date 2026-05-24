@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: eb1eecd6-1705-4bec-9491-b3a7acc5b6f2
+:ID: EB1EECD6-1705-4BEC-9491-B3A7ACC5B6F2
 :END:
 #+title: Task: OCR scan notebooks for this sprint
 #+description: Continue notebook OCR thread.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:8f521a37-bec0-469e-af32-87df684de3b2][Sprint 12 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8F521A37-BEC0-469E-AF32-87DF684DE3B2][Sprint 12 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Continue digitising paper notebooks for the period covered by sprint 12.
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:8f521a37-bec0-469e-af32-87df684de3b2][Sprint 12 housekeeping]] |
+| Parent story | [[id:8F521A37-BEC0-469E-AF32-87DF684DE3B2][Sprint 12 housekeeping]] |
 | Now          | Completed 2026-02-20.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 46dfe47f-967b-4c24-95bf-3e21f97cfd20
+:ID: 46DFE47F-967B-4C24-95BF-3E21F97CFD20
 :END:
 #+title: Agile process
 #+description: How the project's agile loop runs — backlog refinement, opening a sprint, sizing tasks, closing a sprint, and closing a version.
@@ -11,22 +11,22 @@
 #+updated: 2026-05-21
 
 This doc describes how the agile loop runs in practice — distinct from
-the generic [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] (which covers TODO state transitions across
+the generic [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]] (which covers TODO state transitions across
 every stateful document type). Lifecycle is the state machine on each
 document; this is the rhythm /around/ those documents: how ideas move
-from the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]] into a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] as [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][stories]], how those stories
-decompose into [[id:31c868b9-306e-4282-ba8c-07e647021b34][tasks]], and how a sprint opens, runs, and closes.
+from the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]] into a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] as [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][stories]], how those stories
+decompose into [[id:31C868B9-306E-4282-BA8C-07E647021B34][tasks]], and how a sprint opens, runs, and closes.
 
 * The loop
 
 A single turn of the loop:
 
-1. /Refine/ the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]] — keep the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] bucket honest as
-   candidates change shape, and let new ideas land in [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]].
-2. /Plan/ a new sprint — define the [[id:198da730-d9fb-4bde-b1c0-b930cd019917][sprint mission]] first (it
+1. /Refine/ the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]] — keep the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] bucket honest as
+   candidates change shape, and let new ideas land in [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][far]].
+2. /Plan/ a new sprint — define the [[id:198DA730-D9FB-4BDE-B1C0-B930CD019917][sprint mission]] first (it
    orientates which stories to pull), then choose a small set of
-   [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]] from near that fit the mission and promote each into a
-   [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]]. Break stories into one-PR-sized tasks.
+   [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][captures]] from near that fit the mission and promote each into a
+   [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]]. Break stories into one-PR-sized tasks.
 3. /Execute/ — agents pick up =BACKLOG= tasks, transition to =STARTED=,
    open a PR, land it, mark =DONE=. The heartbeat rule keeps Status
    fresh.
@@ -38,23 +38,23 @@ A single turn of the loop:
 
 A version is the outer loop: a coherent group of sprints with a
 shared mission. It opens when its first sprint opens, and closes when
-the version's [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Definition of done]] is met.
+the version's [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Definition of done]] is met.
 
 * Detail
 
 ** Backlog refinement
 
-*Owned by* [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] (sprint coherence drives whether near is honest).
-Captures are filed by [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] when discovered during execution.
-Identity-fit calls are referred to [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]]; near↔far moves for the
-next version are driven by [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]].
+*Owned by* [[id:8F13BA75-EDAA-46CC-9BE2-E356D60BF4F4][System 3]] (sprint coherence drives whether near is honest).
+Captures are filed by [[id:BF4F183F-BB33-44F2-A53F-D9BD602E9BE8][System 2]] when discovered during execution.
+Identity-fit calls are referred to [[id:6DF00A64-7CC3-40A7-950B-55D2B05A31C7][System 5]]; near↔far moves for the
+next version are driven by [[id:6CA8B181-BD81-4EF4-AF27-64F5491D62F0][System 4]].
 
-Refinement is the cheap, ongoing work that keeps the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] bucket
+Refinement is the cheap, ongoing work that keeps the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] bucket
 usable. It is /not/ a meeting — it is small touches whenever a
 capture is touched:
 
 - New ideas land via =generate_v2_doc.sh --type capture=. Pick the
-  bucket using the rules in [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]].
+  bucket using the rules in [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]].
 - A capture's body may be tightened (description, tags) as a sprint
   approaches and it becomes a serious candidate.
 - A capture moves =git mv= between buckets when its horizon changes
@@ -74,12 +74,12 @@ work; the phase boundaries are sharp.
 
 *** Sprint planning
 :PROPERTIES:
-:ID: f5426198-acaf-41da-a043-ff15785e4a1d
+:ID: F5426198-ACAF-41DA-A043-FF15785E4A1D
 :END:
 
-*Owned by* [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]. [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]] vets each candidate against the
-[[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product vision]]; [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] sanity-checks the sprint mission
-against the version mission; [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] decomposes each promoted
+*Owned by* [[id:8F13BA75-EDAA-46CC-9BE2-E356D60BF4F4][System 3]]. [[id:6DF00A64-7CC3-40A7-950B-55D2B05A31C7][System 5]] vets each candidate against the
+[[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product vision]]; [[id:6CA8B181-BD81-4EF4-AF27-64F5491D62F0][System 4]] sanity-checks the sprint mission
+against the version mission; [[id:BF4F183F-BB33-44F2-A53F-D9BD602E9BE8][System 2]] decomposes each promoted
 story into tasks.
 
 A sprint exists when its folder exists. To open sprint N+1:
@@ -88,8 +88,8 @@ A sprint exists when its folder exists. To open sprint N+1:
    to achieve. The mission is the /filter/ that decides whether
    borderline captures make it in. Write it before looking at the
    backlog so the choice of stories is led by the mission, not the
-   other way round. See [[id:198da730-d9fb-4bde-b1c0-b930cd019917][sprint mission]].
-2. *Choose stories.* Look at the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] bucket; pick captures whose
+   other way round. See [[id:198DA730-D9FB-4BDE-B1C0-B930CD019917][sprint mission]].
+2. *Choose stories.* Look at the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] bucket; pick captures whose
    combined size fits one sprint's budget (see /Sizing/ below) /and/
    whose theme matches the mission. Captures that don't fit the
    mission stay in the bucket.
@@ -113,14 +113,14 @@ A sprint exists when its folder exists. To open sprint N+1:
 
 *** Sprint execution
 :PROPERTIES:
-:ID: 227958a5-0f78-4cc6-a116-b83988592b68
+:ID: 227958A5-0F78-4CC6-A116-B83988592B68
 :END:
 
-*Owned by* [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]] (does the work). [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] reviews S1 output and
-triages discovered tasks; [[id:ed29c99b-1507-49c9-9937-d296fffe428e][System 3*]] audits the heartbeat
+*Owned by* [[id:DBFD530B-4B56-48D1-9F03-3A0D0DA16552][System 1]] (does the work). [[id:BF4F183F-BB33-44F2-A53F-D9BD602E9BE8][System 2]] reviews S1 output and
+triages discovered tasks; [[id:ED29C99B-1507-49C9-9937-D296FFFE428E][System 3*]] audits the heartbeat
 invariant and id-link integrity.
 
-Agents pick up =BACKLOG= tasks and run them through the [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]
+Agents pick up =BACKLOG= tasks and run them through the [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]]
 state machine: =BACKLOG → STARTED → (maybe BLOCKED → STARTED) → DONE=.
 Each task is one PR.
 
@@ -133,15 +133,15 @@ yielding control. Audit flags =STARTED= or =BLOCKED= documents whose
 Discovered tasks during execution land in =DISCOVERED= state at the
 sprint's =inbox/= if they don't fit any existing story, or under the
 current story if they do. They must leave =DISCOVERED= within one
-orchestrator session (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
+orchestrator session (see [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]]).
 
 *** Sprint closure
 :PROPERTIES:
-:ID: 7d72a9da-984f-4130-bff6-97b66b233907
+:ID: 7D72A9DA-984F-4130-BFF6-97B66B233907
 :END:
 
-*Owned by* [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] (drives the sequence). [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] resolves each
-story (=DONE= / =ABANDONED= / carried); [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] weighs in on whether
+*Owned by* [[id:8F13BA75-EDAA-46CC-9BE2-E356D60BF4F4][System 3]] (drives the sequence). [[id:BF4F183F-BB33-44F2-A53F-D9BD602E9BE8][System 2]] resolves each
+story (=DONE= / =ABANDONED= / carried); [[id:6CA8B181-BD81-4EF4-AF27-64F5491D62F0][System 4]] weighs in on whether
 to cut a release.
 
 Closure is more than transitioning to =DONE=. The sequence is:
@@ -154,7 +154,7 @@ Closure is more than transitioning to =DONE=. The sequence is:
    PRs that landed.
 3. *Cut the release* (tag, build, publish artefacts) when the version
    warrants it. Not every sprint produces a release; many sprints
-   land mid-version. See [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] for what the release tag means in
+   land mid-version. See [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] for what the release tag means in
    terms of CMake major/minor.
 4. *Run the post-mortem.* Fill the sprint's =* Retrospective= section
    — what went well, what hurt, what changed. Past sprints under
@@ -167,7 +167,7 @@ sprint's planning phase can then begin.
 
 ** Closing a version
 
-A version closes when its [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Definition of done]] is met. The version
+A version closes when its [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Definition of done]] is met. The version
 file's Status moves =STARTED → RELEASED=, =:CLOSED:= is stamped, and
 the Sprints table on the version page is the historical record.
 
@@ -232,9 +232,9 @@ A document is /done/ when:
 
 * See also
 
-- [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][Lifecycle]] — the generic TODO state machine on each document.
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — per-type frontmatter and section contract.
-- [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]] — what the backlog is and how near/far buckets work.
-- [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][Glossary]] — definitions of every term used here.
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — the recipe used at every promotion
+- [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]] — the generic TODO state machine on each document.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — per-type frontmatter and section contract.
+- [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — what the backlog is and how near/far buckets work.
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — definitions of every term used here.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — the recipe used at every promotion
   step above.

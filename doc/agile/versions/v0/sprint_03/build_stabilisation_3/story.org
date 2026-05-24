@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d246ffbe-11ee-4ff9-9309-2a693e2476ef
+:ID: D246FFBE-11EE-4FF9-9309-2A693E2476EF
 :END:
 #+title: Story: Build stabilisation 3
 #+description: Windows clang-cl, dynamic libraries, vcpkg patching on Windows, Postgres in CI.
@@ -11,7 +11,7 @@
 #+updated: 2025-11-15
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3BC3B9ED-60C8-4A86-A6F1-925E58C74B6E][Sprint 03]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ tests.
 | Field         | Value                                                                                                                                    |
 |---------------+------------------------------------------------------------------------------------------------------------------------------------------|
 | State         | DONE                                                                                                                                     |
-| Parent sprint | [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]]                                                                                   |
+| Parent sprint | [[id:3BC3B9ED-60C8-4A86-A6F1-925E58C74B6E][Sprint 03]]                                                                                   |
 | Now           | Story closed; Windows clang-cl preset in place, dynamic-library build healthy, vcpkg patches apply on Windows, Postgres available in CI. |
 | Waiting on    | None.                                                                                                                                    |
 | Next          | None.                                                                                                                                    |
@@ -41,9 +41,9 @@ tests.
 
 In execution order:
 
-- [[id:1352463b-1ebd-40f9-b1eb-3fdb5ffa319c][Add support for windows-msvc-clang-cl]]
-- [[id:ae610608-cfa8-40d4-b8c4-1f3d2b83ab40][Build using dynamic libraries]]
-- [[id:ea9a3802-114c-4250-97db-a2e172a69e67][Fix vcpkg patch application on Windows]]
+- [[id:1352463B-1EBD-40F9-B1EB-3FDB5FFA319C][Add support for windows-msvc-clang-cl]]
+- [[id:AE610608-CFA8-40D4-B8C4-1F3D2B83AB40][Build using dynamic libraries]]
+- [[id:EA9A3802-114C-4250-97DB-A2E172A69E67][Fix vcpkg patch application on Windows]]
 
 Additional v0 entries belonging here, not migrated as full tasks:
 
@@ -69,9 +69,9 @@ Additional v0 entries belonging here, not migrated as full tasks:
 
 * See also
 
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset menu (the new =windows-msvc-clang-cl-debug-ninja=
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset menu (the new =windows-msvc-clang-cl-debug-ninja=
   preset this story landed sits here).
-- [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]] / [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]] —
+- [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]] / [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] —
   recipes that exercise the stabilised build paths.
-- [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] (sprint 01) and [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] (sprint 02)
+- [[id:1D334356-F123-43B5-A98E-317EBAD2848A][Build quality]] (sprint 01) and [[id:AC14558D-A526-4BE2-ADB6-81BCFE0E7292][Build stabilisation]] (sprint 02)
   — predecessor stories in the same thread.

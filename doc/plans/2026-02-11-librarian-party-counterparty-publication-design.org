@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7a3d1e52-b8f4-4c91-a9e7-6f2c3d841b05
+:ID: 7A3D1E52-B8F4-4C91-A9E7-6F2C3D841B05
 :END:
 #+title: Librarian Party & Counterparty Publication Design
 #+version: 1
@@ -22,8 +22,8 @@ import is handled exclusively by the librarian.
 
 | Document                                                 | Relationship                                  |
 |----------------------------------------------------------+-----------------------------------------------|
-| [[id:5c83c9d5-f4ae-4707-ba7a-85d82fb2292b][GLEIF Dataset Librarian Integration Design]]               | Original design for parameterised publication |
-| [[id:9a726128-0e7e-4a82-a61b-c6b1c5cfc070][Party & Counterparty SQL Support Design]]                  | Table schemas and codegen models              |
+| [[id:5C83C9D5-F4AE-4707-BA7A-85D82FB2292B][GLEIF Dataset Librarian Integration Design]]               | Original design for parameterised publication |
+| [[id:9A726128-0E7E-4A82-A61B-C6B1C5CFC070][Party & Counterparty SQL Support Design]]                  | Table schemas and codegen models              |
 | [[id:046217E8-7259-492B-A713-A4043C867FE5][Party-Level Isolation and Tenant Types Design]]            | Party-scoped data ownership patterns          |
 | [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]]                                 | RLS, session management, visibility sets      |
 

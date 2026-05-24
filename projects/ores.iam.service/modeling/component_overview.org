@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 70f2d886-bb3f-4fe0-929c-45509e1ce967
+:ID: 70F2D886-BB3F-4FE0-929C-45509E1CE967
 :END:
 #+title: ores.iam.service
 #+description: NATS service entrypoint for the IAM domain — wires handlers, repositories, and configuration.

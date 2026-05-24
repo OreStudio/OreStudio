@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 544b0c6e-b1d2-426c-88ea-8302634101ee
+:ID: 544B0C6E-B1D2-426C-88EA-8302634101EE
 :END:
 #+title: Task: Add domain sub-menu layer to CLI
 #+description: Four top-level domains: refdata / iam / dq / variability; command syntax becomes ores.cli <domain> <entity> <op>; core parser refactored with domain-specific parsers; documentation + tests + entity parsers updated.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:4d9869da-72ce-4b92-bb19-91c274ca7a2b][CLI domain sub-menu layer]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4D9869DA-72CE-4B92-BB19-91C274CA7A2B][CLI domain sub-menu layer]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add a domain layer to the CLI command syntax so commands are organised by domain
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | DONE                                                                   |
-| Parent story | [[id:4d9869da-72ce-4b92-bb19-91c274ca7a2b][CLI domain sub-menu layer]] |
+| Parent story | [[id:4D9869DA-72CE-4B92-BB19-91C274CA7A2B][CLI domain sub-menu layer]] |
 | Now          | Completed 2026-03-03.                                                  |
 | Waiting on   | None.                                                                  |
 | Next         | None.                                                                  |

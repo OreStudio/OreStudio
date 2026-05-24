@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: efc673d9-f2f2-4a4d-978d-521dcf61e46c
+:ID: EFC673D9-F2F2-4A4D-978D-521DCF61E46C
 :END:
 #+title: Task: Replace MaxMind implementation
 #+description: Replace the MaxMind-licensed GeoIP backend with a permissively-licensed alternative for the geo lookups used in session tracking.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C4C8429-9328-46DD-88EF-27689FB556F2][Observability and telemetry]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Replace the MaxMind-licensed GeoIP backend with a permissively-licensed alternat
 | Field        | Value                                                                    |
 |--------------+--------------------------------------------------------------------------|
 | State        | DONE                                                                     |
-| Parent story | [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] |
+| Parent story | [[id:8C4C8429-9328-46DD-88EF-27689FB556F2][Observability and telemetry]] |
 | Now          | Completed 2025-12-28.                                                    |
 | Waiting on   | None.                                                                    |
 | Next         | None.                                                                    |

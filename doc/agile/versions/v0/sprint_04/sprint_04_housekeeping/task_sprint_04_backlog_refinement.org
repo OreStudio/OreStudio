@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9f3ba7c7-7e51-4d32-be59-82d0dec3bb52
+:ID: 9F3BA7C7-7E51-4D32-BE59-82D0DEC3BB52
 :END:
 #+title: Task: Sprint and product backlog refinement
 #+description: Curate sprint 04 backlog through the sprint and groom the product backlog as work surfaces new ideas.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-30
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d0a1c624-dc57-424e-a958-279f68956976][Sprint 04 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D0A1C624-DC57-424E-A958-279F68956976][Sprint 04 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ follow-ons from the LLM-review pass were captured as new tasks here.
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:d0a1c624-dc57-424e-a958-279f68956976][Sprint 04 housekeeping]] |
+| Parent story | [[id:D0A1C624-DC57-424E-A958-279F68956976][Sprint 04 housekeeping]] |
 | Now          | Completed 2025-11-30.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

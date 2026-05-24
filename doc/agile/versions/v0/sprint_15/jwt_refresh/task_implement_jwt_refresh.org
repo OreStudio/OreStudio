@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 922f4fd0-bef7-4115-88de-d855bfc96bba
+:ID: 922F4FD0-BEF7-4115-88DE-D855BFC96BBA
 :END:
 #+title: Task: Implement JWT refresh
 #+description: Configurable token lifetimes via iam.token.* system settings (access_lifetime, party_selection_lifetime, max_session_seconds, refresh_threshold_pct); iam.v1.auth.refresh NATS endpoint + validate_allow_expired() method; ores_iam_auth_events_tbl TimescaleDB hypertable with hourly + daily continuous aggregate views (90d raw, 3y daily); make_request_context returns std::expected with token_expired / unauthorized; error_reply via X-Error NATS headers; 48 domain handlers updated; hot-reload of token settings on system_setting_changed; shell reactive retry; Qt proactive QTimer at 80% of token lifetime; sessionExpired signal + warning dialog.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:169b15a7-442b-44fd-8e54-436fec8340a6][JWT refresh]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:169B15A7-442B-44FD-8E54-436FEC8340A6][JWT refresh]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Close the loop on JWT auth with refresh + telemetry, so long-running sessions do
 | Field        | Value                                                    |
 |--------------+----------------------------------------------------------|
 | State        | DONE                                                     |
-| Parent story | [[id:169b15a7-442b-44fd-8e54-436fec8340a6][JWT refresh]] |
+| Parent story | [[id:169B15A7-442B-44FD-8E54-436FEC8340A6][JWT refresh]] |
 | Now          | Completed 2026-03-21.                                    |
 | Waiting on   | None.                                                    |
 | Next         | None.                                                    |

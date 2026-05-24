@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: bbe74820-0aa6-44d4-ac05-b66519d0ba33
+:ID: BBE74820-0AA6-44D4-AC05-B66519D0BA33
 :END:
 #+title: Add pricing model parameter validation table
 #+description: Add a table of valid pricing model parameters with their types; validate values on insertion; UI should offer available parameters for a model with type-appropriate fields.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

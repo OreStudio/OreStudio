@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6ba77ef7-5f06-48cb-8be9-a4e9b670e910
+:ID: 6BA77EF7-5F06-48CB-8BE9-A4E9B670E910
 :END:
 #+title: Help Menu
 #+description: Help Menu

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 155b1482-7ec3-4db1-ae4d-44e0371aa5f2
+:ID: 155B1482-7EC3-4DB1-AE4D-44E0371AA5F2
 :END:
 #+title: How do I register a new compute host node?
 #+description: Register a new compute host node

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 83dcdf42-74fa-4c71-b9c6-a31b4e0cc30c
+:ID: 83DCDF42-74FA-4C71-B9C6-A31B4E0CC30C
 :END:
 #+title: Task: Use sqlgen for Postgres
 #+description: Replace hand-written Postgres CRUD with sqlgen-generated code.
@@ -12,7 +12,7 @@
 #+updated: 2025-10-10
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1F9F213C-6BEA-45FB-B0E0-AA5A7A9B7A23][Modernise serialisation and storage]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -25,7 +25,7 @@ without manual marshalling.
 | Field        | Value                                                                            |
 |--------------+----------------------------------------------------------------------------------|
 | State        | DONE                                                                             |
-| Parent story | [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]] |
+| Parent story | [[id:1F9F213C-6BEA-45FB-B0E0-AA5A7A9B7A23][Modernise serialisation and storage]] |
 | Now          | Completed 2025-10-10.                                                            |
 | Waiting on   | None.                                                                            |
 | Next         | None.                                                                            |

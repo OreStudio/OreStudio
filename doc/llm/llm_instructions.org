@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f9ad7932-8e11-433c-a812-b57dbc9bf5d8
+:ID: F9AD7932-8E11-433C-A812-B57DBC9BF5D8
 :END:
 #+title: LLM Instructions
 #+description: Entry point for LLM sessions: the rules and links every AI assistant must load before working on ORE Studio.
@@ -22,32 +22,32 @@ These apply in every session, with no exceptions:
 - /UNIX line endings/ — all new files use LF, never CRLF.
 - /New org docs via codegen only/ — never write =.org= frontmatter by hand.
   Always use =projects/ores.codegen/generate_v2_doc.sh=.
-  See [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]].
+  See [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]].
 - /Check recipes first/ — before searching for how to do anything, open
   [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] and find the matching topic.
 - /Every new =.org= file must carry =#+version: 2=/ — the CI gate rejects
-  files without it. See [[id:23bcac49-325f-4083-b854-87ea747c2abe][How do I audit and fix document version tags?]].
+  files without it. See [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]].
 
 * Orientation
 
 Read these first on a new contact:
 
-- [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] — top-level map of =doc/=; the entry point.
+- [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level map of =doc/=; the entry point.
 - [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] — navigation guide by reader intent.
-- [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][Glossary]] — definitions for task, story, sprint, version, function, recipe.
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — definitions for task, story, sprint, version, function, recipe.
 - [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] — current version and sprint at a glance.
 
 * Build
 
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset names, output layout, build types.
-- [[id:49f7da81-adb7-44ed-be7e-06dbfbb32a84][How do I set up a development environment?]] — fresh-install bootstrap.
-- [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]] — =cmake --preset= step.
-- [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]] — day-to-day build command.
-- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — =cmake --build ... --target rat=.
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset names, output layout, build types.
+- [[id:49F7DA81-ADB7-44ED-BE7E-06DBFBB32A84][How do I set up a development environment?]] — fresh-install bootstrap.
+- [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]] — =cmake --preset= step.
+- [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] — day-to-day build command.
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] — =cmake --build ... --target rat=.
 
 * Code style
 
-- [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]] — naming (snake_case / CamelCase-Qt), include
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review checklist]] — naming (snake_case / CamelCase-Qt), include
   order, comment quality, platform isolation, and all review categories.
 
 * Architecture
@@ -58,11 +58,11 @@ Read these first on a new contact:
 
 * Documentation
 
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — v2 frontmatter contract, version tagging, and the
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — v2 frontmatter contract, version tagging, and the
   touch-it-to-port-it rule for v1 files.
-- [[id:6ac06a04-eb95-4925-8488-c7a47c6a451f][How do I validate component documentation before committing?]] —
+- [[id:6AC06A04-EB95-4925-8488-C7A47C6A451F][How do I validate component documentation before committing?]] —
   =validate_docs.sh= before every push that touches =modeling/=.
-- [[id:23bcac49-325f-4083-b854-87ea747c2abe][How do I audit and fix document version tags?]] — =doc_version_audit.py=
+- [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]] — =doc_version_audit.py=
   for checking and stamping =#+version:= tags.
 
 * Database isolation
@@ -76,33 +76,33 @@ Read these first on a new contact:
 
 * Testing
 
-- [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer Skill]] — Catch2 conventions, file structure, naming,
+- [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][Unit Test Writer Skill]] — Catch2 conventions, file structure, naming,
   table-driven patterns.
-- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — test command.
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] — test command.
 
 * Git and pull requests
 
-- [[id:cc928252-e0c5-4c3c-a7a8-d613593e4e37][How do I create a PR?]] — title format (=[COMPONENT] Description=),
+- [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — title format (=[COMPONENT] Description=),
   body structure, and the no-test-plan rule.
-- [[id:1882d6df-4012-4c6e-bf62-0d943ef805b0][How do I generate a PR summary?]] — assemble the body before =gh pr create=.
+- [[id:1882D6DF-4012-4C6E-BF62-0D943EF805B0][How do I generate a PR summary?]] — assemble the body before =gh pr create=.
 
 * Claude Code configuration
 
-- [[id:2d83251f-0e24-4b97-b736-08f710316634][Claude Code Settings]] — the literate source for =.claude/settings.json=.
+- [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — the literate source for =.claude/settings.json=.
   Lists every permission entry with its security rationale and the concrete
   command variations it covers. Edit this file (not the JSON) to add or
-  remove permissions; regenerate with [[id:3ddb2afa-9caa-44a0-a91a-645a95320a5f][How do I deploy the settings?]].
-- [[id:5acade16-bcc4-46e5-950e-34015b87c4ec][How do I deploy all org-mode artefacts?]] — the =deploy_org= (=dorg=) target
+  remove permissions; regenerate with [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]].
+- [[id:5ACADE16-BCC4-46E5-950E-34015B87C4EC][How do I deploy all org-mode artefacts?]] — the =deploy_org= (=dorg=) target
   rebuilds site, skills, settings, and diagrams in one shot.
 
 * Memory
 
-- [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][Project memory]] — catalogue of session-feedback memories; read and write
+- [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]] — catalogue of session-feedback memories; read and write
   here to persist durable facts across conversations.
-- [[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory skill]] — LLM-side procedure for adding memories.
+- [[id:7357C672-A49F-4974-9399-A166F761D222][ores-memory skill]] — LLM-side procedure for adding memories.
 
 * See also
 
-- [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][Execution model]] — how LLMs and agents operate within the cybernetic
+- [[id:F58CA9E7-C65F-4D17-A9A7-95FDE25B9EBD][Execution model]] — how LLMs and agents operate within the cybernetic
   information architecture during a sprint.
 - [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] — full index of operational how-tos by topic.

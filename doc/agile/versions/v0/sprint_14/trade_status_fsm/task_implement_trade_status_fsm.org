@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: da8ff70f-4d9e-4231-9998-377aeb8d9dfa
+:ID: DA8FF70F-4D9E-4231-9998-377AEB8D9DFA
 :END:
 #+title: Task: Implement trade status state machine
 #+description: Trade status FSM (new / live / expired / cancelled) inside ores.dq integrated into ores.trading; activity_type taxonomy replaces lifecycle_events (categories: new activity, lifecycle event, misbooking, valuation change, cancellation; FpML + FSM mapping); ores_trading_trades_tbl grows activity_type_code + status_id; trade_status_service::resolve_status() enforces transitions; reflectcpp portfile bson fix; ores.refdata cross-tenant leak fix.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:86927ebe-880c-42e4-8c94-e4705c4a622a][Trade status FSM and activity type]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:86927EBE-880C-42E4-8C94-E4705C4A622A][Trade status FSM and activity type]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add a proper FSM for trade status and replace =lifecycle_events= with a richer =
 | Field        | Value                                                                           |
 |--------------+---------------------------------------------------------------------------------|
 | State        | DONE                                                                            |
-| Parent story | [[id:86927ebe-880c-42e4-8c94-e4705c4a622a][Trade status FSM and activity type]] |
+| Parent story | [[id:86927EBE-880C-42E4-8C94-E4705C4A622A][Trade status FSM and activity type]] |
 | Now          | Completed 2026-03-02.                                                           |
 | Waiting on   | None.                                                                           |
 | Next         | None.                                                                           |

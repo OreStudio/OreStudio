@@ -62,7 +62,7 @@ building*. All the heavy mathematical lifting stays in ORE and QuantLib; ORE
 Studio focuses on infrastructure, data management, and making the domain
 accessible to C++ developers without an institutional background.
 
-- *[[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][Product identity]]* — goals, audience, scope and what ORE Studio is not.
+- *[[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][Product identity]]* — goals, audience, scope and what ORE Studio is not.
 - *[[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]]* — how to navigate the documentation.
 - *[[https://orestudio.github.io/OreStudio/][Website]]* — full documentation, recipes, and architecture reference.
 

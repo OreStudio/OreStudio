@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: af7112ba-bf04-4b6b-ae2f-8fb1c7b362fe
+:ID: AF7112BA-BF04-4B6B-AE2F-8FB1C7B362FE
 :END:
 #+title: Story: Counterparty pagination and polish
 #+description: Pagination across the counterparty path; business-centres full CRUD; identifier cardinality + non-Latin text handling.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ identifier-cardinality + non-Latin issues.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Parent sprint | [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]] |
 | Now           | Completed 2026-02-14.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -40,9 +40,9 @@ identifier-cardinality + non-Latin issues.
 
 In execution order:
 
-- [[id:d4c30c00-84c1-45a0-89e3-28c9caee144a][Add pagination to counterparty]]
-- [[id:a6fa8c90-24d1-422e-a1c2-03595bb9e14c][Add support for business centres]]
-- [[id:8d524a42-38b4-421c-b910-d367e768a0d7][Improvements to counterparty and party UI]]
+- [[id:D4C30C00-84C1-45A0-89E3-28C9CAEE144A][Add pagination to counterparty]]
+- [[id:A6FA8C90-24D1-422E-A1C2-03595BB9E14C][Add support for business centres]]
+- [[id:8D524A42-38B4-421C-B910-D367E768A0D7][Improvements to counterparty and party UI]]
 
 * Decisions
 

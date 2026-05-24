@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5a76028f-ab95-49f5-9fbd-2b49ffbd7b53
+:ID: 5A76028F-AB95-49F5-9FBD-2B49FFBD7B53
 :END:
 #+title: Missing shell functionality
 #+description: Missing shell functionality
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 The job of the client is to exercise the entirety of the comms protocol, and to
 provide a way to perform CRUD operations via command line. Note:

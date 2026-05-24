@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 08fea192-496d-43ec-ad2d-9e0680b76001
+:ID: 08FEA192-496D-43EC-AD2D-9E0680B76001
 :END:
 #+title: How do I add a new role with optional permission assignments?
 #+description: Add a new role with optional permission assignments

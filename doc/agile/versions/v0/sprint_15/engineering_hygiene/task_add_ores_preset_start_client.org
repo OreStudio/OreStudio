@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b081370c-c11c-4463-994f-74f06c93a59a
+:ID: B081370C-C11C-4463-994F-74F06C93A59A
 :END:
 #+title: Task: Add ORES_PRESET to .env + start-client.sh
 #+description: init-environment.sh requires --preset and stores ORES_PRESET in .env (single source of truth); start-services.sh / stop-services.sh / status-services.sh source ORES_PRESET; new start-client.sh launches Qt client with preset + custom instance colors (named or hex) + display names; ores-prodigy.el registers services from ORES_PRESET in .env.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:bc195cb4-4cbf-4d9d-8685-8ce3304da3fe][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC195CB4-4CBF-4D9D-8685-8CE3304DA3FE][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Centralise the build-preset configuration in .env and add a flexible start-clien
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:bc195cb4-4cbf-4d9d-8685-8ce3304da3fe][Engineering hygiene]] |
+| Parent story | [[id:BC195CB4-4CBF-4D9D-8685-8CE3304DA3FE][Engineering hygiene]] |
 | Now          | Completed 2026-03-25.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

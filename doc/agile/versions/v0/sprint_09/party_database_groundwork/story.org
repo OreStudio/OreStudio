@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ef555d10-3fd3-4928-8e43-e63284d7706f
+:ID: EF555D10-3FD3-4928-8E43-E63284D7706F
 :END:
 #+title: Story: Party database groundwork
 #+description: First-cut party table structure at the database layer; FpML business-center anchored.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,16 +23,16 @@ the domain layer + UI on top. Postponed within sprint 09.
 | Field         | Value                                                             |
 |---------------+-------------------------------------------------------------------|
 | State         | BACKLOG                                                           |
-| Parent sprint | [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]]            |
+| Parent sprint | [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]]            |
 | Now           | Postponed in sprint 09; carried forward.                          |
 | Waiting on    | A sprint with the slot to land the table + domain layer together. |
 | Next          | Return alongside the party domain layer work.                     |
 | Last touched  | 2026-01-20                                                        |
 
 
-#+successor: 700d4325-2ad1-4e0d-b6af-900abbe1a66e
+#+successor: 700D4325-2AD1-4E0D-B6AF-900ABBE1A66E
 
-Continued in: [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] (sprint 10) —
+Continued in: [[id:700D4325-2AD1-4E0D-B6AF-900ABBE1A66E][Party schemes and FPML reference data]] (sprint 10) —
 lands the 13 reference-data types needed before party can be
 implemented.
 
@@ -46,7 +46,7 @@ implemented.
 
 In execution order:
 
-- [[id:992aad62-c371-4e93-b3d2-311d250aa41a][Party table structure]]
+- [[id:992AAD62-C371-4E93-B3D2-311D250AA41A][Party table structure]]
 
 * Decisions
 

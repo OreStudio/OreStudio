@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 14d86f4f-3fe2-4f3a-bcf1-b91cf9d7ac35
+:ID: 14D86F4F-3FE2-4F3A-BCF1-B91CF9D7AC35
 :END:
 #+title: Task: Add Gemini action
 #+description: Wire a Gemini-based PR review action into GitHub Actions.
@@ -12,7 +12,7 @@
 #+updated: 2025-09-10
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:0fe2033d-180f-4195-a314-998917d570be][Sprint 02 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0FE2033D-180F-4195-A314-998917D570BE][Sprint 02 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -25,7 +25,7 @@ already uses.
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:0fe2033d-180f-4195-a314-998917d570be][Sprint 02 housekeeping]] |
+| Parent story | [[id:0FE2033D-180F-4195-A314-998917D570BE][Sprint 02 housekeeping]] |
 | Now          | Completed 2025-09-10.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

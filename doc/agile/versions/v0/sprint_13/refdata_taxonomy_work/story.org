@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7ae49d47-624c-41c6-8c07-cdbeb71d85ec
+:ID: 7AE49D47-624C-41C6-8C07-CDBEB71D85EC
 :END:
 #+title: Story: Refdata taxonomy work
 #+description: Rounding type as a refdata entity; currency taxonomy split into asset_class + market_tier; asset-class naming cleaned up.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -25,7 +25,7 @@ trading-domain overload.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Parent sprint | [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]] |
 | Now           | Completed 2026-02-24.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,9 +41,9 @@ trading-domain overload.
 
 In execution order:
 
-- [[id:48715de8-2882-45a0-b45f-208603a1dd23][Add rounding type entity]]
-- [[id:36ff8e82-a350-4ae1-a96a-0c644a5e5045][Enhance currency taxonomy]]
-- [[id:7efd1dcf-2729-4e98-bd2d-712f55bdd83d][Rename currency asset classes]]
+- [[id:48715DE8-2882-45A0-B45F-208603A1DD23][Add rounding type entity]]
+- [[id:36FF8E82-A350-4AE1-A96A-0C644A5E5045][Enhance currency taxonomy]]
+- [[id:7EFD1DCF-2729-4E98-BD2D-712F55BDD83D][Rename currency asset classes]]
 
 * Decisions
 

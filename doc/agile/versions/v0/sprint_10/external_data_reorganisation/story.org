@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ebc22454-356d-4b6c-a3be-e8edfd858fca
+:ID: EBC22454-356D-4B6C-A3BE-E8EDFD858FCA
 :END:
 #+title: Story: External data reorganisation
 #+description: Consolidate external/ + populate/ into domain-specific subdirectories with manifests; route ISO + FpML coding schemes through the DQ artefact pipeline.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ other dataset.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Parent sprint | [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]] |
 | Now           | Completed 2026-01-24.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,8 +41,8 @@ other dataset.
 
 In execution order:
 
-- [[id:3038f1e7-97b6-4b5b-bda0-50fcb71c0810][Tidy up external data storage]]
-- [[id:43667103-8a31-45f3-b1fa-b18af8297256][Move coding schemes through DQ artefact pipeline]]
+- [[id:3038F1E7-97B6-4B5B-BDA0-50FCB71C0810][Tidy up external data storage]]
+- [[id:43667103-8A31-45F3-B1FA-B18AF8297256][Move coding schemes through DQ artefact pipeline]]
 
 * Decisions
 

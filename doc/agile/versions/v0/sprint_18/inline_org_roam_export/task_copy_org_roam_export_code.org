@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 167c48a3-957b-4b58-92a5-e2938f925760
+:ID: 167C48A3-957B-4B58-92A5-E2938F925760
 :END:
 #+title: Task: Copy org-roam-export.el code into ores.lisp
 #+description: Inline the org-roam-export functions from ~/.emacs.d/config/org-roam-export.el into projects/ores.lisp (or wherever ores.lisp lives) so the site build does not depend on the runner's emacs config.
@@ -13,42 +13,217 @@
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-22
-#+updated: 2026-05-22
+#+updated: 2026-05-23
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a4bef88c-1372-46ce-864b-c30ac3be95eb][Inline org-roam export into ores.lisp]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A4BEF88C-1372-46CE-864B-C30AC3BE95EB][Inline org-roam export into ores.lisp]] story.
+It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Inline the org-roam export functions from
-=~/.emacs.d/config/org-roam-export.el= into =ores.lisp= so the
-CI site build no longer depends on a file outside the repository.
+Inline the org-roam export functions from =~/.emacs.d/config/org-roam-export.el=
+into =ores.lisp= so the CI site build no longer depends on a file outside the
+repository.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:a4bef88c-1372-46ce-864b-c30ac3be95eb][Inline org-roam export into ores.lisp]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-22                               |
+| Field        | Value                                 |
+|--------------+---------------------------------------|
+| State        | STARTED                               |
+| Parent story | [[id:A4BEF88C-1372-46CE-864B-C30AC3BE95EB][Inline org-roam export into ores.lisp]] |
+| Now          | Completed.                            |
+| Waiting on   | Nothing.                              |
+| Next         | Address code review comments..        |
+| PR           | [[https://github.com/OreStudio/OreStudio/pull/803][#803]]                                  |
+| Last touched | 2026-05-23                            |
 
 * Acceptance
 
-- =org-roam-export.el='s contents are copied into =ores.lisp= (or a
-  sibling file loaded by =ores.lisp=).
+- =org-roam-export.el='s contents are copied into =ores.lisp= (or a sibling file
+  loaded by =ores.lisp=).
 - The site-build script no longer =load=s
   =~/.emacs.d/config/org-roam-export.el=.
 - CI site build is green.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Copy across the elisp functions.
 
 * Notes
+
+Code review comment not addressed:
+
+projects/ores.lisp/ores-org-roam-export.el
+Comment on lines +52 to +126
+
+#+begin_src emacs-lisp
+    (let* ((db       (sqlite-open db-path))
+           (nodes-q  "SELECT id, file, level, pos, title, properties, olp FROM nodes")
+           (tags-q   "SELECT \"node-id\", tag FROM tags")
+           (links-q  "SELECT source, dest, type FROM links")
+           (node-rows (sqlite-select db nodes-q))
+           (tag-rows  (sqlite-select db tags-q))
+           (link-rows (sqlite-select db links-q))
+           ;; node-id -> list of tag strings
+           (tag-map   (make-hash-table :test 'equal))
+           ;; unique tag set
+           (all-tags-set (make-hash-table :test 'equal))
+           ;; file path -> org source (read once per file)
+           (file-cache  (make-hash-table :test 'equal)))
+      ;; emacsql stores all scalars as prin1 strings: "foo" -> the string foo.
+      (cl-flet ((unpack (s) (if s (condition-case nil (read s) (error s)) ""))
+                (to-url (f)
+                  (let* ((rel (if repo-root (file-relative-name f repo-root) f))
+                         (html (replace-regexp-in-string "\\.org$" ".html" rel)))
+                    (if site-prefix (concat site-prefix html) html)))
+                (file-content (path)
+                  (or (gethash path file-cache)
+                      (let ((c (when (and path (file-exists-p path))
+                                 (condition-case nil
+                                     (with-temp-buffer
+                                       (insert-file-contents path)
+                                       (buffer-string))
+                                   (error nil)))))
+                        (puthash path c file-cache)
+                        c))))
+        ;; build tag index
+        (dolist (row tag-rows)
+          (let ((nid (unpack (nth 0 row))) (tag (unpack (nth 1 row))))
+            (puthash nid (cons tag (gethash nid tag-map '())) tag-map)
+            (puthash tag t all-tags-set)))
+        ;; build output structures
+        (let* ((nodes
+                (mapcar
+                 (lambda (row)
+                   (let* ((id       (unpack (nth 0 row)))
+                          (raw-path (unpack (nth 1 row)))
+                          (file     (to-url raw-path))
+                          (level    (or (nth 2 row) 0))
+                          (pos      (or (nth 3 row) 0))
+                          (title    (unpack (nth 4 row)))
+                          (props    (let ((raw (nth 5 row)))
+                                      (when raw
+                                        (condition-case nil (read raw) (error nil)))))
+                          (olp      (let ((raw (nth 6 row)))
+                                      (when raw
+                                        (condition-case nil (read raw) (error nil)))))
+                          (tags     (apply #'vector (gethash id tag-map '())))
+                          (content  (or (file-content raw-path) :json-null)))
+                     (list :id id :file file :level level :pos pos :title title
+                           :tags tags :content content
+                           :properties (or props :json-null)
+                           :olp (if (listp olp) (apply #'vector olp) []))))
+                 node-rows))
+               (links
+                (mapcar (lambda (row)
+                          (list :source (unpack (nth 0 row))
+                                :target (unpack (nth 1 row))
+                                :type   (unpack (nth 2 row))))
+                        link-rows))
+             (all-tags
+              (let (ts)
+                (maphash (lambda (k _) (push k ts)) all-tags-set)
+                (apply #'vector ts)))
+             (graph (list :nodes (apply #'vector nodes)
+                          :links (apply #'vector links)
+                          :tags  all-tags)))
+        (sqlite-close db)
+        (with-temp-file output-file
+          (insert (json-encode graph)))
+        (message "ores/org-roam-export-graph-json: wrote %s (%d nodes, %d links)"
+                 output-file (length nodes) (length links))))))))
+#+end_src
+
+Contributor
+@gemini-code-assist
+gemini-code-assist Bot
+6 hours ago
+medium
+
+The database connection opened with sqlite-open should be managed within an
+unwind-protect block to ensure that sqlite-close is called even if an error
+occurs during processing (e.g., during SQL selection or JSON encoding).
+Additionally, since this utility requires Emacs 29, you can leverage the
+built-in C-based JSON parser via json-insert for significantly better
+performance on large graphs compared to the Lisp-based json-encode.
+
+#+begin_src emacs-lisp
+    (let ((db (sqlite-open db-path)))
+      (unwind-protect
+          (let* ((nodes-q  "SELECT id, file, level, pos, title, properties, olp FROM nodes")
+                 (tags-q   "SELECT \"node-id\", tag FROM tags")
+                 (links-q  "SELECT source, dest, type FROM links")
+                 (node-rows (sqlite-select db nodes-q))
+                 (tag-rows  (sqlite-select db tags-q))
+                 (link-rows (sqlite-select db links-q))
+                 ;; node-id -> list of tag strings
+                 (tag-map   (make-hash-table :test 'equal))
+                 ;; unique tag set
+                 (all-tags-set (make-hash-table :test 'equal))
+                 ;; file path -> org source (read once per file)
+                 (file-cache  (make-hash-table :test 'equal)))
+            ;; emacsql stores all scalars as prin1 strings: "foo" -> the string foo.
+            (cl-flet ((unpack (s) (if s (condition-case nil (read s) (error s)) ""))
+                      (to-url (f)
+                        (let* ((rel (if repo-root (file-relative-name f repo-root) f))
+                               (html (replace-regexp-in-string "\\.org$" ".html" rel)))
+                          (if site-prefix (concat site-prefix html) html)))
+                      (file-content (path)
+                        (or (gethash path file-cache)
+                            (let ((c (when (and path (file-exists-p path))
+                                       (condition-case nil
+                                           (with-temp-buffer
+                                             (insert-file-contents path)
+                                             (buffer-string))
+                                         (error nil)))))
+                              (puthash path c file-cache)
+                              c))))
+              ;; build tag index
+              (dolist (row tag-rows)
+                (let ((nid (unpack (nth 0 row))) (tag (unpack (nth 1 row))))
+                  (puthash nid (cons tag (gethash nid tag-map '())) tag-map)
+                  (puthash tag t all-tags-set)))
+              ;; build output structures
+              (let* ((nodes
+                      (mapcar
+                       (lambda (row)
+                         (let* ((id       (unpack (nth 0 row)))
+                                (raw-path (unpack (nth 1 row)))
+                                (file     (to-url raw-path))
+                                (level    (or (nth 2 row) 0))
+                                (pos      (or (nth 3 row) 0))
+                                (title    (unpack (nth 4 row)))
+                                (props    (let ((raw (nth 5 row)))
+                                            (when raw
+                                              (condition-case nil (read raw) (error nil)))))
+                                (olp      (let ((raw (nth 6 row)))
+                                            (when raw
+                                              (condition-case nil (read raw) (error nil)))))
+                                (tags     (apply #'vector (gethash id tag-map '())))
+                                (content  (or (file-content raw-path) :json-null)))
+                           (list :id id :file file :level level :pos pos :title title
+                                 :tags tags :content content
+                                 :properties (or props :json-null)
+                                 :olp (if (listp olp) (apply #'vector olp) []))))
+                       node-rows))
+                     (links
+                      (mapcar (lambda (row)
+                                (list :source (unpack (nth 0 row))
+                                      :target (unpack (nth 1 row))
+                                      :type   (unpack (nth 2 row))))
+                              link-rows))
+                   (all-tags
+                    (let (ts)
+                      (maphash (lambda (k _) (push k ts)) all-tags-set)
+                      (apply #'vector ts)))
+                   (graph (list :nodes (apply #'vector nodes)
+                                :links (apply #'vector links)
+                                :tags  all-tags)))
+              (with-temp-file output-file
+                (json-insert graph))
+              (message "ores/org-roam-export-graph-json: wrote %s (%d nodes, %d links)"
+                       output-file (length nodes) (length links))))
+        (sqlite-close db))))))
+#+end_src
 
 * Result

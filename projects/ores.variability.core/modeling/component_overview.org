@@ -55,6 +55,6 @@ configurable behaviour without redeployment.
 
 * See also
 
-- [[id:26218ad6-c63e-44e8-9b92-7fb51c366566][ores.variability.api]] — protocol types and domain entities.
-- [[id:95d9e246-27ed-440f-b14a-481a546b7c4f][ores.variability.service]] — NATS service entrypoint.
+- [[id:26218AD6-C63E-44E8-9B92-7FB51C366566][ores.variability.api]] — protocol types and domain entities.
+- [[id:95D9E246-27ED-440F-B14A-481A546B7C4F][ores.variability.service]] — NATS service entrypoint.
 - [[id:E4D5F6A7-B8C9-0123-DEFA-234567890123][ores.variability Messaging Reference]] — full NATS subject and message catalogue.

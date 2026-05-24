@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 621194c4-d438-4215-ae40-21fbe8ff0d85
+:ID: 621194C4-D438-4215-AE40-21FBE8FF0D85
 :END:
 #+title: ores.qt.refdata
 #+description: Qt plugin for reference data UI — currencies, countries, trading conventions, coding schemes, datasets, and the data catalogue.
@@ -61,11 +61,11 @@ window; =ores.qt.party= contributes party-related items to the same menu.
 
 * See also
 
-- [[id:654be6cd-d212-4ee5-a7b4-8af125787522][ores.refdata.api]] — domain types and NATS protocol schemas for reference data.
-- [[id:fd34a3b5-0e24-467a-a9d7-a2f2e7480e1b][ores.trading.api]] — trading convention domain types and NATS schemas.
-- [[id:9a71f1f5-c3ed-4c07-9d7d-c5b42d4a1332][ores.ore.core]] — ORE model types used in convention configuration.
-- [[id:6de9a7b8-f7ba-4e93-bb93-2fb10c53f9ca][ores.qt.party]] — contributes party items to the Reference Data menu.
-- [[id:92492264-b67a-4ac7-8a58-7d706d9f0dab][ores.qt.data_transfer]] — receives Data Catalogue and Data Librarian items.
-- [[id:30a3a7f4-e1a9-42fb-af9d-ff36fa0f3d21][ores.qt.api]] — shared Qt infrastructure and base classes.
-- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt Plugin Architecture]] — plugin lifecycle and menu-contribution model.
-- [[id:fc186d19-9421-45a2-bbcc-4355d66aa41f][Entity Controller Pattern]] — controller/window/dialog/model structure.
+- [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]] — domain types and NATS protocol schemas for reference data.
+- [[id:FD34A3B5-0E24-467A-A9D7-A2F2E7480E1B][ores.trading.api]] — trading convention domain types and NATS schemas.
+- [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]] — ORE model types used in convention configuration.
+- [[id:6DE9A7B8-F7BA-4E93-BB93-2FB10C53F9CA][ores.qt.party]] — contributes party items to the Reference Data menu.
+- [[id:92492264-B67A-4AC7-8A58-7D706D9F0DAB][ores.qt.data_transfer]] — receives Data Catalogue and Data Librarian items.
+- [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] — shared Qt infrastructure and base classes.
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — plugin lifecycle and menu-contribution model.
+- [[id:FC186D19-9421-45A2-BBCC-4355D66AA41F][Entity Controller Pattern]] — controller/window/dialog/model structure.

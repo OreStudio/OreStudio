@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9a71f1f5-c3ed-4c07-9d7d-c5b42d4a1332
+:ID: 9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332
 :END:
 #+title: ores.ore.core
 #+description: ORE XML import/export — currency configuration and ORE-format data exchange for the risk engine.
@@ -52,5 +52,5 @@ data, and log parsing utilities used when invoking ORE risk runs.
 
 * See also
 
-- [[id:0f93b352-f234-4d9d-82e6-05218be645e8][ores.ore.api]] — protocol types and domain entities.
-- [[id:ef8fd20d-0b9c-4379-8bbd-b4fcf2f5f0c7][ores.ore.service]] — NATS service entrypoint.
+- [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]] — protocol types and domain entities.
+- [[id:EF8FD20D-0B9C-4379-8BBD-B4FCF2F5F0C7][ores.ore.service]] — NATS service entrypoint.

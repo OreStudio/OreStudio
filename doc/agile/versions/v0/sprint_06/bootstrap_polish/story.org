@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 50bb2acb-5687-4bad-b03a-12af606e8eab
+:ID: 50BB2ACB-5687-4BAD-B03A-12AF606E8EAB
 :END:
 #+title: Story: Bootstrap polish
 #+description: Move context to the database; remove bootstrap mode from context once it's no longer needed; surface system-level password-validation control via the manifest; verify server checks DB connectivity on startup.
@@ -11,7 +11,7 @@
 #+updated: 2025-12-13
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -25,7 +25,7 @@ password-validation control.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]] |
+| Parent sprint | [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]] |
 | Now           | Completed 2025-12-13.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,9 +41,9 @@ password-validation control.
 
 In execution order:
 
-- [[id:7850a146-bc92-4639-a6ba-ab810aedf3c8][Move context to database]]
-- [[id:9e64d794-0f79-4e34-96be-a637706649bf][Remove bootstrap mode from context]]
-- [[id:08118b0f-bd80-45fb-839f-070e7d4bd5a2][Add =system.disable_password_validation= to manifest]]
+- [[id:7850A146-BC92-4639-A6BA-AB810AEDF3C8][Move context to database]]
+- [[id:9E64D794-0F79-4E34-96BE-A637706649BF][Remove bootstrap mode from context]]
+- [[id:08118B0F-BD80-45FB-839F-070E7D4BD5A2][Add =system.disable_password_validation= to manifest]]
 
 Additional v0 entries belonging here, not migrated as full tasks:
 
@@ -57,6 +57,6 @@ Additional v0 entries belonging here, not migrated as full tasks:
 
 * See also
 
-- [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] (sprint 05) — predecessor.
-- [[id:1d788878-759e-402b-a948-0f035cda9bf2][Implement database configuration]] (sprint 05) — sibling work in
+- [[id:A465D630-5972-484B-A2E8-AD1F91657103][Authentication bootstrap follow-up]] (sprint 05) — predecessor.
+- [[id:1D788878-759E-402B-A948-0F035CDA9BF2][Implement database configuration]] (sprint 05) — sibling work in
   the configuration thread.

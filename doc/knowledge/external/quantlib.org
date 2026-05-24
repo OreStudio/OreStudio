@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0412444a-0a4c-4611-887c-09353a3cb253
+:ID: 0412444A-0A4C-4611-887C-09353A3CB253
 :END:
 #+title: QuantLib
 #+description: The upstream quantitative-finance library that ORE — and through it ORE Studio — depends on.
@@ -14,8 +14,8 @@
 comprehensive software framework for quantitative finance — modelling,
 trading, and risk management in real life." It has been the de-facto
 standard quantitative-finance library in C++ for over twenty years.
-[[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]] builds on top of it; ORE Studio depends on QuantLib transitively
-through ORE. Return to [[id:cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+[[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] builds on top of it; ORE Studio depends on QuantLib transitively
+through ORE. Return to [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Detail
 
@@ -31,7 +31,7 @@ through ORE. Return to [[id:cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11][External knowl
 QuantLib is /two hops upstream/. ORE Studio interacts with QuantLib
 only through ORE's wrappers; nothing in the codebase calls QuantLib
 APIs directly, and QuantLib's instruments / day counters / calendars
-appear in our data only because [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]] surfaces them.
+appear in our data only because [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] surfaces them.
 
 ORE Studio /does not/ extend or modify QuantLib. Any QuantLib bug,
 limitation, or convention is inherited as-is. Patches that belong

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2e83f9b5-67f4-4a1f-95bc-fe1e7ab7d4c0
+:ID: 2E83F9B5-67F4-4A1F-95BC-FE1E7AB7D4C0
 :END:
 #+title: ores.qt.mktdata
 #+description: Qt plugin for market data UI — market series, fixings, observations, and currency market tiers.
@@ -51,9 +51,9 @@ consumed by the analytics and compute layers.
 
 * See also
 
-- [[id:6a62d943-fac9-4b77-9e22-f265557dcf1a][ores.marketdata.api]] — domain types and NATS protocol schemas for market data.
-- [[id:654be6cd-d212-4ee5-a7b4-8af125787522][ores.refdata.api]] — reference data types (currencies) consumed by market data.
-- [[id:ffcfc860-204d-4f48-ae34-d3e382d7a02b][ores.dq.api]] — data quality domain types.
-- [[id:30a3a7f4-e1a9-42fb-af9d-ff36fa0f3d21][ores.qt.api]] — shared Qt infrastructure and base classes.
-- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt Plugin Architecture]] — plugin lifecycle and menu sequence.
-- [[id:fc186d19-9421-45a2-bbcc-4355d66aa41f][Entity Controller Pattern]] — controller/window/dialog/model structure.
+- [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]] — domain types and NATS protocol schemas for market data.
+- [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]] — reference data types (currencies) consumed by market data.
+- [[id:FFCFC860-204D-4F48-AE34-D3E382D7A02B][ores.dq.api]] — data quality domain types.
+- [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] — shared Qt infrastructure and base classes.
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — plugin lifecycle and menu sequence.
+- [[id:FC186D19-9421-45A2-BBCC-4355D66AA41F][Entity Controller Pattern]] — controller/window/dialog/model structure.

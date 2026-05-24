@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7030ab78-b8f1-425c-83ef-a6f9ebf218a8
+:ID: 7030AB78-B8F1-425C-83EF-A6F9EBF218A8
 :END:
 #+title: Story: Workflow engine hardening
 #+description: Package renames, ORE import error reporting and step log, pg_notify pipeline fix, badge RLS, system reset, controller shutdown latency fix.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -39,10 +39,10 @@ latency by offloading DB writes to a thread pool.
 
 In execution order:
 
-- [[id:a4bc5ab1-4f4e-4bfc-a8a8-152379e6ce7e][Task: Workflow engine hardening + package renames]]
-- [[id:526f6418-b4f0-4d7a-a29b-7cc67fe10a0e][Task: [workflow] ORE import error reporting, step log, and service isolation]]
-- [[id:2018f6e5-95f7-443b-9406-9d941ce3934a][Task: [controller] Fix shutdown latency: offload DB writes to thread pool]]
-- [[id:24b4ae53-ad80-455c-8a6d-6d4d5c7793a8][Task: Fix pg_notify pipeline, badge RLS, and system reset]]
+- [[id:A4BC5AB1-4F4E-4BFC-A8A8-152379E6CE7E][Task: Workflow engine hardening + package renames]]
+- [[id:526F6418-B4F0-4D7A-A29B-7CC67FE10A0E][Task: [workflow] ORE import error reporting, step log, and service isolation]]
+- [[id:2018F6E5-95F7-443B-9406-9D941CE3934A][Task: [controller] Fix shutdown latency: offload DB writes to thread pool]]
+- [[id:24B4AE53-AD80-455C-8A6D-6D4D5C7793A8][Task: Fix pg_notify pipeline, badge RLS, and system reset]]
 * Decisions
 
 - /Thread pool for DB writes/ :: offloading DB writes on shutdown removes the

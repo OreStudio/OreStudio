@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0aa8c336-274c-4043-b41f-ecd012d41ae6
+:ID: 0AA8C336-274C-4043-B41F-ECD012D41AE6
 :END:
 #+title: Task: Add :eval never to list-presets sh block to fix site build
 #+description: - Adds `:eval never` to the `#+begin_src sh` block in `how_do_i_list_available_presets.org`
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:063862A1-C02C-4F76-A212-576A57423F0F][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add :eval never to the list-presets sh source block to prevent the org-mode expo
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] |
+| Parent story | [[id:063862A1-C02C-4F76-A212-576A57423F0F][v2 documentation architecture]] |
 | Now          | Completed 2026-05-19.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

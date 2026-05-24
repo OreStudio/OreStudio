@@ -51,7 +51,7 @@ each entry point accepts a custom output directory.
 C++ profiles are declared in =library/profiles.json= and invoked with
 =--profile <name>=. Each profile is a named collection of Mustache
 templates. The type mappings that apply across all profiles are in
-[[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]]§"Type mappings".
+[[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Type mappings".
 
 | Profile | Covers | Key library |
 |---|---|---|
@@ -108,7 +108,7 @@ Generates three file pairs: entity, mapper, and repository.
 ** service
 
 Generates the service layer that wraps the repository. Method names
-follow the convention in [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]]§"Service method naming":
+follow the convention in [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Service method naming":
 =save_*=, =remove_*=, =find_*=, =list_*=, =list_*_since=,
 =get_*_history=.
 
@@ -121,19 +121,19 @@ request/response types for the entity's pub-sub channels.
 
 Generates SQL table create, notify trigger, and drop scripts.
 Naming and idempotency conventions are in
-[[id:5cb31a0e-4e38-4521-b0ee-e4396c3e2936][SQL entity schema patterns]].
+[[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]].
 
 ** qt
 
 Generates 12 files: =ClientModel=, =MdiWindow=, detail/history dialogs,
 controller, and the two =.ui= form files.  Patterns are in
-[[id:2fddc2f6-c510-4a86-8c50-d79c83eddfff][Qt entity patterns]] and [[id:e44891dc-234c-42db-90e1-9421400abd1a][Qt menu and toolbar patterns]].
+[[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]] and [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]].
 
 ** Component scaffold profiles
 
 These profiles create a new component skeleton rather than entity code.
 They generate CMakeLists, a master header, a stub header+impl, and test
-harness.  See [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]] for the split model and CMake dep chain.
+harness.  See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] for the split model and CMake dep chain.
 
 | Profile | Part | Files |
 |---|---|---|
@@ -168,12 +168,12 @@ harness.  See [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]
 - [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][Model Assisted Software Development]] — the conceptual model (logical
   entities, facets, transformations) that the profile catalogue
   implements.
-- [[id:fe693595-6693-459b-ad9b-eb7e3abbbc88][ores.codegen architecture]] — directory layout, internal modules,
+- [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — directory layout, internal modules,
   template system, model-template mapping, modeline configuration,
   features.
-- [[id:20d0a77d-e0c0-492e-b0ec-45c7638dd220][How do I run codegen?]] — operational recipe for the C++/SQL
+- [[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]] — operational recipe for the C++/SQL
   generator.
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — operational recipe for the
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — operational recipe for the
   org-document generator.
 - =docs/cpp_generation_analysis.md= — deep analysis of the C++
   generation paths.

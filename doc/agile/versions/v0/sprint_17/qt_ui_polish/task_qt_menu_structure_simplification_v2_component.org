@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 03bfb2e5-5bdd-46ee-9e7e-8a41e130d4b4
+:ID: 03BFB2E5-5BDD-46EE-9E7E-8A41E130D4B4
 :END:
 #+title: Task: Qt menu structure simplification + V2 component documentation
 #+description: Two cohesive changes on one branch:
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d148b46a-ad14-4391-8b64-46dcfe95c5f1][Qt UI polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D148B46A-AD14-4391-8B64-46DCFE95C5F1][Qt UI polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Restructure the Qt application menu bar into logical submenus (System, Analytics
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:d148b46a-ad14-4391-8b64-46dcfe95c5f1][Qt UI polish]] |
+| Parent story | [[id:D148B46A-AD14-4391-8B64-46DCFE95C5F1][Qt UI polish]] |
 | Now          | Completed 2026-05-20.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

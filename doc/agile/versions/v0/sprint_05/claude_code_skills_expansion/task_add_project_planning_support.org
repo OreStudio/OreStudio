@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: bfb7fb18-06b9-451f-b0d4-d4d47eedd771
+:ID: BFB7FB18-06B9-451F-B0D4-D4D47EEDD771
 :END:
 #+title: Task: Add support for project planning
 #+description: Bring across the Dogen-style project-planning approach (Gantt-style milestones in org-mode) and a supporting skill.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-17
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:656EABB7-C9D1-4FDD-8CAC-0AB77ADCD9B2][Claude Code skills expansion]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -30,7 +30,7 @@ consistent.
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE                                                                      |
-| Parent story | [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]] |
+| Parent story | [[id:656EABB7-C9D1-4FDD-8CAC-0AB77ADCD9B2][Claude Code skills expansion]] |
 | Now          | Completed 2025-11-17.                                                     |
 | Waiting on   | None.                                                                     |
 | Next         | None.                                                                     |

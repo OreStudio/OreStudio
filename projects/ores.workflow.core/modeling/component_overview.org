@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 440294d7-385d-41ee-92cb-cab937e65e81
+:ID: 440294D7-385D-41EE-92CB-CAB937E65E81
 :END:
 #+title: ores.workflow.core
 #+description: Workflow orchestration — workflow definitions, execution, and state tracking for multi-step operations.
@@ -51,5 +51,5 @@ such as report generation pipelines that span multiple services.
 
 * See also
 
-- [[id:85319483-4ae9-4162-91f7-d72a8201134b][ores.workflow.api]] — protocol types and domain entities.
-- [[id:1af4aec8-70ec-496c-821e-4e2e1bb303e5][ores.workflow.service]] — NATS service entrypoint.
+- [[id:85319483-4AE9-4162-91F7-D72A8201134B][ores.workflow.api]] — protocol types and domain entities.
+- [[id:1AF4AEC8-70EC-496C-821E-4E2E1BB303E5][ores.workflow.service]] — NATS service entrypoint.

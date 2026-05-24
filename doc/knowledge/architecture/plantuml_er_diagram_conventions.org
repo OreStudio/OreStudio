@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 496dc90b-8951-42a6-a63e-b1762df496c6
+:ID: 496DC90B-8951-42A6-A63E-B1762DF496C6
 :END:
 #+title: PlantUML ER diagram conventions
 #+description: How ORE Studio writes PlantUML entity-relationship diagrams for the SQL schema — skeleton, entity styling, field notation, relationships, domain packages.
@@ -160,6 +160,6 @@ Read these to confirm:
 * See also
 
 - [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler skill]] — drives the authoring.
-- [[id:271f40da-d0ea-4d08-a4f8-3d2b835df5e7][PlantUML class diagram conventions]] — sibling, for components.
-- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — runs the build.
+- [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]] — sibling, for components.
+- [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]] — runs the build.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the schema this diagram documents.

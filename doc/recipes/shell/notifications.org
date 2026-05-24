@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 43cd4a31-e209-4fa8-b2b9-486345d711c8
+:ID: 43CD4A31-E209-4FA8-B2B9-486345D711C8
 :END:
 #+title: Notifications
 #+description: Notifications

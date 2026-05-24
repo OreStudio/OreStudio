@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e8004b20-ae81-4d48-a677-cde07a300e92
+:ID: E8004B20-AE81-4D48-A677-CDE07A300E92
 :END:
 #+title: Story: sqlgen follow-up
 #+description: Continue the sqlgen work started in sprint 11; bound parameters and raw-libpq removal remain blocked on upstream + vcpkg.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,16 +24,16 @@ merged upstream features.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | BLOCKED                                                |
-| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Parent sprint | [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]] |
 | Now           | BLOCKED on upstream + vcpkg release.                   |
 | Waiting on    | vcpkg picking up the sqlgen release.                   |
 | Next          | Resume once vcpkg has the release.                     |
 | Last touched  | 2026-02-20                                             |
 
 
-#+predecessor: 18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d
+#+predecessor: 18CCF6C9-7D23-48B3-9D4D-2A8AEB4EE30D
 
-Continued from: [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]] (sprint 11). The upstream work
+Continued from: [[id:18CCF6C9-7D23-48B3-9D4D-2A8AEB4EE30D][sqlgen improvements]] (sprint 11). The upstream work
 landed in sqlgen main, but vcpkg hasn't picked up a release yet, so
 both bound-parameters adoption and the raw-libpq removal remain
 blocked.
@@ -47,8 +47,8 @@ blocked.
 
 In execution order:
 
-- [[id:39dff131-19b6-49f9-ae2e-5879994d1870][Add bound parameters to sqlgen]]
-- [[id:fdc3a5ad-821e-4556-90ad-80fa93f54474][Remove uses of raw libpq]]
+- [[id:39DFF131-19B6-49F9-AE2E-5879994D1870][Add bound parameters to sqlgen]]
+- [[id:FDC3A5AD-821E-4556-90AD-80FA93F54474][Remove uses of raw libpq]]
 
 * Decisions
 
@@ -60,4 +60,4 @@ In execution order:
 
 * See also
 
-- [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]] (sprint 11) — predecessor.
+- [[id:18CCF6C9-7D23-48B3-9D4D-2A8AEB4EE30D][sqlgen improvements]] (sprint 11) — predecessor.

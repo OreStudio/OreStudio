@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9024c57f-ee5f-4f9b-9a53-e72687aea90f
+:ID: 9024C57F-EE5F-4F9B-9A53-E72687AEA90F
 :END:
 #+title: Task: Add generic object storage API + HTTP routes
 #+description: ores.storage component with S3-like PUT / GET / DELETE; replaces compute-specific storage endpoints; path traversal vulnerability fix in resolve_path.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7399693e-f61b-4e3d-b37c-f53f3ce5a197][Generic object storage API]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7399693E-F61B-4E3D-B37C-F53F3CE5A197][Generic object storage API]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ ores.storage component with S3-like PUT / GET / DELETE; replaces compute-specifi
 | Field        | Value                                                                   |
 |--------------+-------------------------------------------------------------------------|
 | State        | DONE                                                                    |
-| Parent story | [[id:7399693e-f61b-4e3d-b37c-f53f3ce5a197][Generic object storage API]] |
+| Parent story | [[id:7399693E-F61B-4E3D-B37C-F53F3CE5A197][Generic object storage API]] |
 | Now          | Completed 2026-04-03.                                                   |
 | Waiting on   | None.                                                                   |
 | Next         | None.                                                                   |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: dadf4117-757a-4eef-a137-cc2ee8023c73
+:ID: DADF4117-757A-4EEF-A137-CC2EE8023C73
 :END:
 #+title: Code Review Component Skill
 #+description: Audit an entire component against the ORE Studio code-review checklist — every file plus structure, CMake, modeling, and test coverage.
@@ -24,7 +24,7 @@ When you need a comprehensive audit of a component — not just the
 recent delta. Use before major refactors, when onboarding to assess
 quality, periodically to track technical debt, or before declaring a
 component "production-ready". For PR-delta reviews, use the sibling
-[[id:04ca6bd9-7739-4213-a9dc-17aaace43252][code-review-pr]] skill.
+[[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr]] skill.
 
 * How to use this skill
 
@@ -35,7 +35,7 @@ component "production-ready". For PR-delta reviews, use the sibling
    ./projects/ores.codegen/doc_list.sh --type component
    #+end_src
 
-2. /Walk the full checklist/. The canonical list is [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review
+2. /Walk the full checklist/. The canonical list is [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review
    checklist]]. /All/ categories apply here, including the
    "Component-only checks" section at the end (structure, CMake,
    PlantUML, component_overview.org).
@@ -63,7 +63,7 @@ component "production-ready". For PR-delta reviews, use the sibling
    (Small / Medium / Large) to each.
 
 6. /Group into themed stories/ for the sprint backlog via
-   [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]]. Suggested themes:
+   [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]]. Suggested themes:
    - Structure & CMake
    - Headers & style
    - Domain completeness (missing services for domain types)
@@ -80,17 +80,17 @@ component "production-ready". For PR-delta reviews, use the sibling
 
 * Recipes
 
-- [[id:e8231c22-cb31-4d85-a9c0-7602953764ff][How do I show a doc by UUID?]] — to inspect the component's
+- [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — to inspect the component's
   =component_overview.org= and follow its links.
-- [[id:d1ae0786-5f2f-4437-8449-0e480c278a1b][How do I find docs matching a pattern?]] — to enumerate the
+- [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — to enumerate the
   component's tasks, stories, and related knowledge docs.
 
 * Reference
 
-- [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]] — every category applied here.
-- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component documentation guide]] — the doc-side contract.
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review checklist]] — every category applied here.
+- [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component documentation guide]] — the doc-side contract.
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — cross-component context the audit needs.
-- [[id:04ca6bd9-7739-4213-a9dc-17aaace43252][code-review-pr]] — sibling skill for the delta-only review.
+- [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr]] — sibling skill for the delta-only review.
 
 * Artefacts                                                        :noexport:
 

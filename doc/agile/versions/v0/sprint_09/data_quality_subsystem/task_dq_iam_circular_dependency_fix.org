@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 808db4f2-2191-4600-983c-f83c7438c11e
+:ID: 808DB4F2-2191-4600-983C-F83C7438C11E
 :END:
 #+title: Task: Resolve DQ-IAM circular dependency
 #+description: Relocate change_reason_constants.hpp to the more foundational ores.database module; system models + CMake deps synchronised; deterministic time values via make_timepoint helper for DQ tests; skill docs updated.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3579AB5E-D5D8-45AE-8CB5-00AD1C58644F][Data Quality subsystem and Data Librarian]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Resolve the circular dependency between =ores.dq= and =ores.iam= introduced by t
 | Field        | Value                                                                                  |
 |--------------+----------------------------------------------------------------------------------------|
 | State        | DONE                                                                                   |
-| Parent story | [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]] |
+| Parent story | [[id:3579AB5E-D5D8-45AE-8CB5-00AD1C58644F][Data Quality subsystem and Data Librarian]] |
 | Now          | Completed 2026-01-19.                                                                  |
 | Waiting on   | None.                                                                                  |
 | Next         | None.                                                                                  |

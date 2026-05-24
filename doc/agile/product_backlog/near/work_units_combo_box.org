@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a9b0ee8b-cd11-4524-9a94-7dd65e153e21
+:ID: A9B0EE8B-CD11-4524-9A94-7DD65E153E21
 :END:
 #+title: Work units should use a combo box
 #+description: Work units are currently a free-text field. Replace with a combo box populated from the work unit table.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

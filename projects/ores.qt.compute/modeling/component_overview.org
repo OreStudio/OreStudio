@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 03eae018-5e61-4005-ac9a-eff827a46178
+:ID: 03EAE018-5E61-4005-AC9A-EFF827A46178
 :END:
 #+title: ores.qt.compute
 #+description: Qt plugin for compute/reporting UI — report definitions, instances, apps, compute dashboard, and concurrency policies.
@@ -59,11 +59,11 @@ It also contributes Service Dashboard and Message Queue views to the System menu
 
 * See also
 
-- [[id:a59e121a-b8fb-43f0-a5cd-1fa5f426e66a][ores.compute.api]] — compute domain types and NATS protocol schemas.
-- [[id:e5ac5738-0694-494e-823e-0322f4902ad2][ores.reporting.api]] — report domain types and NATS protocol schemas.
-- [[id:b49ed6e9-20dc-421f-a0f9-d7eab6b54f9b][ores.scheduler.api]] — scheduling domain types.
-- [[id:0f93b352-f234-4d9d-82e6-05218be645e8][ores.ore.api]] — ORE model integration types.
-- [[id:9a71f1f5-c3ed-4c07-9d7d-c5b42d4a1332][ores.ore.core]] — ORE XML import/export and risk engine integration.
-- [[id:970667d1-8ba8-4b49-b047-0d6d4c4ce498][ores.qt.analytics]] — owns the Analytics menu that compute contributes to.
-- [[id:30a3a7f4-e1a9-42fb-af9d-ff36fa0f3d21][ores.qt.api]] — shared Qt infrastructure and base classes.
-- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt Plugin Architecture]] — plugin lifecycle and menu-contribution model.
+- [[id:A59E121A-B8FB-43F0-A5CD-1FA5F426E66A][ores.compute.api]] — compute domain types and NATS protocol schemas.
+- [[id:E5AC5738-0694-494E-823E-0322F4902AD2][ores.reporting.api]] — report domain types and NATS protocol schemas.
+- [[id:B49ED6E9-20DC-421F-A0F9-D7EAB6B54F9B][ores.scheduler.api]] — scheduling domain types.
+- [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]] — ORE model integration types.
+- [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]] — ORE XML import/export and risk engine integration.
+- [[id:970667D1-8BA8-4B49-B047-0D6D4C4CE498][ores.qt.analytics]] — owns the Analytics menu that compute contributes to.
+- [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] — shared Qt infrastructure and base classes.
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — plugin lifecycle and menu-contribution model.

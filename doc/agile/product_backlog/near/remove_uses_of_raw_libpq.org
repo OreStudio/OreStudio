@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 87fd2e94-d791-4b2c-a95c-c0ce8416766e
+:ID: 87FD2E94-D791-4B2C-A95C-C0CE8416766E
 :END:
 #+title: Remove uses of raw libpq
 #+description: Remove uses of raw libpq
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 We have added support for the missing features in sqlgen so that we can replace
 uses of raw libpq. The PRs have been merged in main sqlgen, we just need a

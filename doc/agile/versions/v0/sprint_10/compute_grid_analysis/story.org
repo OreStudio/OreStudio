@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 85f8dc6c-1acd-4610-a877-b0fdba871254
+:ID: 85F8DC6C-1ACD-4610-A877-B0FDBA871254
 :END:
 #+title: Story: Compute grid analysis (BOINC-based)
 #+description: First-pass design for a BOINC-style distributed compute grid using Postgres + PGMQ + TimescaleDB.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,16 +23,16 @@ running ORE / ledger / LLM workloads across multiple locations.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | BACKLOG                                                |
-| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Parent sprint | [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]] |
 | Now           | Postponed in sprint 10; carried forward.               |
 | Waiting on    | A sprint with the slot.                                |
 | Next          | Return alongside the related work.                     |
 | Last touched  | 2026-01-27                                             |
 
 
-#+successor: 3ed3ca4d-8709-4f70-a1a8-1ff287adb8bf
+#+successor: 3ED3CA4D-8709-4F70-A1A8-1FF287ADB8BF
 
-Continued in: [[id:3ed3ca4d-8709-4f70-a1a8-1ff287adb8bf][Compute grid implementation]] (sprint 15) — the
+Continued in: [[id:3ED3CA4D-8709-4F70-A1A8-1FF287ADB8BF][Compute grid implementation]] (sprint 15) — the
 design lands end-to-end (with NATS JetStream replacing the PGMQ
 assumption from the original analysis).
 
@@ -47,7 +47,7 @@ assumption from the original analysis).
 
 In execution order:
 
-- [[id:3e644071-c68b-4a54-9623-87e09bd81d73][BOINC-based compute grid analysis]]
+- [[id:3E644071-C68B-4A54-9623-87E09BD81D73][BOINC-based compute grid analysis]]
 
 * Decisions
 

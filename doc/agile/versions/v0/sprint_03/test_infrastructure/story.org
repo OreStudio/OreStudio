@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 22efe1e8-427f-488a-94a3-8ca78f180966
+:ID: 22EFE1E8-427F-488A-94A3-8CA78F180966
 :END:
 #+title: Story: Test infrastructure
 #+description: Separate test database, split test code, ctest suite-level tests, data generators.
@@ -11,7 +11,7 @@
 #+updated: 2025-12-01
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3BC3B9ED-60C8-4A86-A6F1-925E58C74B6E][Sprint 03]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -25,16 +25,16 @@ its own ctest entry on the dashboard.
 | Field         | Value                                                                                                                   |
 |---------------+-------------------------------------------------------------------------------------------------------------------------|
 | State         | DONE                                                                                                                    |
-| Parent sprint | [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]]                                                                  |
+| Parent sprint | [[id:3BC3B9ED-60C8-4A86-A6F1-925E58C74B6E][Sprint 03]]                                                                  |
 | Now           | Story closed for the items that landed; CTest-per-suite carries over =BLOCKED= into a successor sprint.                 |
 | Waiting on    | None at this story level. The =CTest shows only one test per test suite= follow-up is tracked separately as carry-over. |
 | Next          | None.                                                                                                                   |
 | Last touched  | 2025-12-01                                                                                                              |
 
 
-#+successor: a9055a54-ae06-4cc4-8b51-2cb9627e0d5a
+#+successor: A9055A54-AE06-4CC4-8B51-2CB9627E0D5A
 
-Continued in: [[id:a9055a54-ae06-4cc4-8b51-2cb9627e0d5a][Test infrastructure follow-up]] (sprint 04) — the BLOCKED
+Continued in: [[id:A9055A54-AE06-4CC4-8B51-2CB9627E0D5A][Test infrastructure follow-up]] (sprint 04) — the BLOCKED
 CTest item lands there.
 
 * Acceptance
@@ -47,9 +47,9 @@ CTest item lands there.
 
 In execution order:
 
-- [[id:5e739596-d2b8-4206-b2bf-5171ccc9b954][Separate test database from application]]
-- [[id:36be3e39-dc25-4723-aa29-8a130a1e8c21][Add generators for test data generation]]
-- [[id:1b023b81-0bc0-4733-aacb-89e42c9bf068][Add tests at suite level to ctest]]
+- [[id:5E739596-D2B8-4206-B2BF-5171CCC9B954][Separate test database from application]]
+- [[id:36BE3E39-DC25-4723-AA29-8A130A1E8C21][Add generators for test data generation]]
+- [[id:1B023B81-0BC0-4733-AACB-89E42C9BF068][Add tests at suite level to ctest]]
 
 Additional v0 entries belonging here, not migrated as full tasks:
 
@@ -74,7 +74,7 @@ Additional v0 entries belonging here, not migrated as full tasks:
 * See also
 
 - [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]] — the testing component this story extended.
-- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — recipe that exercises the pipeline.
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset / output-directory reference used by the
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] — recipe that exercises the pipeline.
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset / output-directory reference used by the
   test pipeline.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — Postgres setup the test-database isolation builds on.

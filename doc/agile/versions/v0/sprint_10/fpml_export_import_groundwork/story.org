@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4c7782d0-1382-4fed-a9f3-c209a45caf7e
+:ID: 4C7782D0-1382-4FED-A9F3-C209A45CAF7E
 :END:
 #+title: Story: FPML export and import groundwork
 #+description: ores.fpml component scaffolded for future FPML export/import; full implementation deferred.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ Full export/import implementation is postponed.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | BACKLOG                                                |
-| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Parent sprint | [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]] |
 | Now           | Postponed in sprint 10; carried forward.               |
 | Waiting on    | A sprint with the slot.                                |
 | Next          | Return alongside the related work.                     |
@@ -40,7 +40,7 @@ Full export/import implementation is postponed.
 
 In execution order:
 
-- [[id:b7c0605a-7b13-440b-8099-e628ff5bb0e9][Create ores.fpml component]]
+- [[id:B7C0605A-7B13-440B-8099-E628FF5BB0E9][Create ores.fpml component]]
 
 * Decisions
 

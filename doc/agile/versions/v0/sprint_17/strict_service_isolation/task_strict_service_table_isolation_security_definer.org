@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d159db0f-ad62-4268-b4cf-a30aa55fe1c5
+:ID: D159DB0F-AD62-4268-B4CF-A30AA55FE1C5
 :END:
 #+title: Task: Strict service table isolation: SECURITY DEFINER validators + mandatory role drops
 #+description: This PR implements the strict service table isolation invariant described in
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E762DA90-B92A-41E1-AD4D-29018F17AF32][Strict service table isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Enforce the strict service table isolation invariant: SECURITY DEFINER validator
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]] |
+| Parent story | [[id:E762DA90-B92A-41E1-AD4D-29018F17AF32][Strict service table isolation]] |
 | Now          | Completed 2026-05-14.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 92492264-b67a-4ac7-8a58-7d706d9f0dab
+:ID: 92492264-B67A-4AC7-8A58-7D706D9F0DAB
 :END:
 #+title: ores.qt.data_transfer
 #+description: Qt plugin that owns the Data Management top-level menu and coordinates item contributions from sibling plugins.
@@ -47,8 +47,8 @@ or controllers of its own.
 
 * See also
 
-- [[id:621194c4-d438-4215-ae40-21fbe8ff0d85][ores.qt.refdata]] — contributes Data Catalogue and Data Librarian items.
-- [[id:3fa355d1-38fd-4e35-9e05-2185882b8ac1][ores.qt.trading]] — contributes Import ORE Data item.
-- [[id:31d9c75a-de71-4b98-9d33-d8ed86000c94][ores.qt.workspace]] — contributes Manage Workspaces item.
-- [[id:30a3a7f4-e1a9-42fb-af9d-ff36fa0f3d21][ores.qt.api]] — shared Qt infrastructure and base classes.
-- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt Plugin Architecture]] — plugin lifecycle and the two-phase menu sequence.
+- [[id:621194C4-D438-4215-AE40-21FBE8FF0D85][ores.qt.refdata]] — contributes Data Catalogue and Data Librarian items.
+- [[id:3FA355D1-38FD-4E35-9E05-2185882B8AC1][ores.qt.trading]] — contributes Import ORE Data item.
+- [[id:31D9C75A-DE71-4B98-9D33-D8ED86000C94][ores.qt.workspace]] — contributes Manage Workspaces item.
+- [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] — shared Qt infrastructure and base classes.
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — plugin lifecycle and the two-phase menu sequence.

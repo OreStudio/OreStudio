@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5aae6900-8488-4e22-9f31-a1b9d5320efb
+:ID: 5AAE6900-8488-4E22-9F31-A1B9D5320EFB
 :END:
 #+title: CMake setup
 #+description: Preset menu, output directory layout, build types, and parallelism for the ORE Studio CMake build.
@@ -42,7 +42,7 @@ choices:
 | =windows-msvc-debug-ninja=          | Default debug on Windows.                 |
 | =macos-clang-debug-ninja=           | Default debug on macOS.                   |
 
-To list at the command line: see [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]].
+To list at the command line: see [[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How do I list available presets?]].
 
 ** Output directory layout
 
@@ -93,7 +93,7 @@ to-day work:
 - =ORES_BUILD_PRESET= environment variable overrides the default
   preset.
 
-Used by the build recipe at [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]].
+Used by the build recipe at [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]].
 
 ** Parallel builds and tests
 
@@ -124,19 +124,19 @@ Environment-variable equivalents (override the configure-time
 defaults at run time): =ORES_TEST_LOG_ENABLED=,
 =ORES_TEST_LOG_LEVEL=, =ORES_TEST_LOG_CONSOLE=.
 
-See [[id:4bf2516d-f37e-4e31-ad7b-124f2639b9ab][How do I enable test logging?]] for the operational steps;
-[[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] is the surrounding test-run recipe.
+See [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I enable test logging?]] for the operational steps;
+[[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] is the surrounding test-run recipe.
 
 * See also
 
-- [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]]
-- [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]]
-- [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]]
-- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]]
-- [[id:5acade16-bcc4-46e5-950e-34015b87c4ec][How do I deploy all org-mode artefacts?]]
-- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]]
-- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]]
-- [[id:3ddb2afa-9caa-44a0-a91a-645a95320a5f][How do I deploy the settings?]]
-- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]]
-- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner skill]] — the skill that bundles all the recipes for
+- [[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How do I list available presets?]]
+- [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]]
+- [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]
+- [[id:5ACADE16-BCC4-46E5-950E-34015B87C4EC][How do I deploy all org-mode artefacts?]]
+- [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]]
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]]
+- [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]]
+- [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]]
+- [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner skill]] — the skill that bundles all the recipes for
   Claude Code.

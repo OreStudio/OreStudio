@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0d4a6b08-ab08-4a63-a768-5cbdb692fa18
+:ID: 0D4A6B08-AB08-4A63-A768-5CBDB692FA18
 :END:
 #+title: Task: Migrate all component docs to v2 information architecture
 #+description: - Migrates all component documentation from the legacy stub format to the v2 information architecture (`component_overvi
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:17c590d4-04f0-43c5-9ea5-f89c40c82a4c][PlantUML and modeling refresh]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:17C590D4-04F0-43C5-9EA5-F89C40C82A4C][PlantUML and modeling refresh]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Migrate all 35+ component documentation stubs to the v2 component_overview.org f
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:17c590d4-04f0-43c5-9ea5-f89c40c82a4c][PlantUML and modeling refresh]] |
+| Parent story | [[id:17C590D4-04F0-43C5-9EA5-F89C40C82A4C][PlantUML and modeling refresh]] |
 | Now          | Completed 2026-05-20.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

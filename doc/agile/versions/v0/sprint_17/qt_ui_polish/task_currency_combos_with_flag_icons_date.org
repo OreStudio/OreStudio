@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 32991e7a-e3a7-40bb-b381-767e16f1d83a
+:ID: 32991E7A-E3A7-40BB-B381-767E16F1D83A
 :END:
 #+title: Task: Currency combos with flag icons, date pickers, and dialog polish
 #+description: - OreCurrencyComboBox / OreDateEdit: new global-namespace custom widgets for uic compatibility. `OreDateEdit` shows `yyy
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d148b46a-ad14-4391-8b64-46dcfe95c5f1][Qt UI polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D148B46A-AD14-4391-8B64-46DCFE95C5F1][Qt UI polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add OreCurrencyComboBox and OreDateEdit custom widgets, wire flag icons into all
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:d148b46a-ad14-4391-8b64-46dcfe95c5f1][Qt UI polish]] |
+| Parent story | [[id:D148B46A-AD14-4391-8B64-46DCFE95C5F1][Qt UI polish]] |
 | Now          | Completed 2026-05-04.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 479f858e-aa31-4db4-abe9-a0ed7cebf098
+:ID: 479F858E-AA31-4DB4-ABE9-A0ED7CEBF098
 :END:
 #+title: How do I create a new entity SQL schema?
 #+description: Walk through tables, indexes, grants, and history trigger for a new ORE Studio entity.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 
 Naming conventions and idempotency rules are in
-[[id:5cb31a0e-4e38-4521-b0ee-e4396c3e2936][SQL entity schema patterns]]. The [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][sql-schema-creator]] skill drives this
+[[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]]. The [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][sql-schema-creator]] skill drives this
 process; codegen is mandatory.
 
 * Question
@@ -49,6 +49,6 @@ idempotency and naming conventions for all schema files.
 
 * See also
 
-- [[id:5cb31a0e-4e38-4521-b0ee-e4396c3e2936][SQL entity schema patterns]] — naming conventions and idempotency rules.
-- [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][sql-schema-creator]] — skill that drives this workflow.
-- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.
+- [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]] — naming conventions and idempotency rules.
+- [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][sql-schema-creator]] — skill that drives this workflow.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a30a46fe-f2b7-46da-b1fb-698acecc5f09
+:ID: A30A46FE-F2B7-46DA-B1FB-698ACECC5F09
 :END:
 #+title: How do I add a new permission?
 #+description: Add a new permission

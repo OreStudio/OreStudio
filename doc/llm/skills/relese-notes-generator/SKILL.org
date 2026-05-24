@@ -69,7 +69,7 @@ sprint's PRs, tagging =main=, and opening a draft GitHub release.
 6. /Open the PR/ via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]]. Merge once green.
 
 7. /Tag main and open a draft GitHub release/ (see the =* Tag and
-   release= section in [[id:9f274ee4-3cab-47fd-bb6e-449d8b789d8c][How do I generate release notes?]]):
+   release= section in [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]]):
 
    #+begin_src sh
    git checkout main && git pull --ff-only origin main
@@ -85,8 +85,8 @@ sprint's PRs, tagging =main=, and opening a draft GitHub release.
    so a maintainer can review, attach binaries/screenshots, and
    publish.
 
-The release is the upward signal that work landed (see [[id:fabb50e5-518c-42d6-901e-848644e56ca2][Release]] in
-the glossary). Cutting it is a [[id:7d72a9da-984f-4130-bff6-97b66b233907][Sprint closure]] task — System 3
+The release is the upward signal that work landed (see [[id:FABB50E5-518C-42D6-901E-848644E56CA2][Release]] in
+the glossary). Cutting it is a [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]] task — System 3
 owns it at sprint level.
 
 * Design notes
@@ -114,14 +114,14 @@ Markdown in Emacs (=C-c C-e m m=) for the GitHub release.
 
 * Recipes
 
-- [[id:9f274ee4-3cab-47fd-bb6e-449d8b789d8c][How do I generate release notes?]] — the end-to-end procedure.
+- [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]] — the end-to-end procedure.
 - [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — for the notes PR itself.
 
 * Reference
 
-- [[id:7d72a9da-984f-4130-bff6-97b66b233907][Sprint closure]] phase — where this skill is invoked.
-- [[id:fabb50e5-518c-42d6-901e-848644e56ca2][Release]] (glossary).
-- [[id:571cc11b-e2a2-47c0-ae13-8bd4b974f0c3][Agile recipes]] — sibling recipes for the agile cycle.
+- [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]] phase — where this skill is invoked.
+- [[id:FABB50E5-518C-42D6-901E-848644E56CA2][Release]] (glossary).
+- [[id:571CC11B-E2A2-47C0-AE13-8BD4B974F0C3][Agile recipes]] — sibling recipes for the agile cycle.
 
 * Artefacts                                                        :noexport:
 

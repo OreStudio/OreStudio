@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0dee4230-d7fa-479e-9a22-91093b0eefcc
+:ID: 0DEE4230-D7FA-479E-9A22-91093B0EEFCC
 :END:
 #+title: Task: v2 information architecture (sprints 12-16); close v0
 #+description: Completes the v0 → v2 information architecture migration begun in PR #771 + #775. Five sprints (12-16) bring the final 8
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:063862A1-C02C-4F76-A212-576A57423F0F][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Complete the v0→v2 migration by porting sprints 12-16 (86 stories, 252 tasks) 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] |
+| Parent story | [[id:063862A1-C02C-4F76-A212-576A57423F0F][v2 documentation architecture]] |
 | Now          | Completed 2026-05-20.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

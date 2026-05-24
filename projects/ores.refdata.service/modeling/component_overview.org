@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e75568d2-588a-4fe2-9ed1-6826b60c0e10
+:ID: E75568D2-588A-4FE2-9ED1-6826B60C0E10
 :END:
 #+title: ores.refdata.service
 #+description: NATS service entrypoint for the reference-data domain — wires handlers, repositories, and configuration.

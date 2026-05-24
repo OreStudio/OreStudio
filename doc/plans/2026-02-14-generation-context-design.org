@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9392f2f3-6ecf-4bd7-82d8-9b88175abfba
+:ID: 9392F2F3-6ECF-4BD7-82D8-9B88175ABFBA
 :END:
 #+title: Generation Context Design
 #+version: 1

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1162e635-a8fe-4066-90cb-5887bfbc6c3c
+:ID: 1162E635-A8FE-4066-90CB-5887BFBC6C3C
 :END:
 #+title: How do I list accounts?
 #+description: List accounts via =ores.cli=

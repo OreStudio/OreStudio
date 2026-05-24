@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1d788878-759e-402b-a948-0f035cda9bf2
+:ID: 1D788878-759E-402B-A948-0F035CDA9BF2
 :END:
 #+title: Task: Implement database configuration
 #+description: Replace hard-coded database settings with configuration: CLI flags + env vars + config file, in both console and Qt UI.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:645df0b4-51b5-40bc-be07-0ab986111653][Infrastructure features]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:645DF0B4-51B5-40BC-BE07-0AB986111653][Infrastructure features]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ config file, with sensible defaults.
 | Field        | Value                                                                |
 |--------------+----------------------------------------------------------------------|
 | State        | DONE                                                                 |
-| Parent story | [[id:645df0b4-51b5-40bc-be07-0ab986111653][Infrastructure features]] |
+| Parent story | [[id:645DF0B4-51B5-40BC-BE07-0AB986111653][Infrastructure features]] |
 | Now          | Completed 2025-11-20.                                                |
 | Waiting on   | None.                                                                |
 | Next         | None.                                                                |

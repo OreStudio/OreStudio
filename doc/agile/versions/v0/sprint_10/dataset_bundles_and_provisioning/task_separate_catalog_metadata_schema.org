@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1b78d767-89d3-4646-93db-c8297a66b093
+:ID: 1B78D767-89D3-4646-93DB-C8297A66B093
 :END:
 #+title: Task: Separate catalog metadata schema from production data
 #+description: Split the monolithic ores schema into metadata (dq_*, change_control) and production (refdata_*, iam_*, assets_*, geo_*, variability_*, telemetry_*); schema-qualified references; ER generator updated; data-flow documented (unidirectional metadata → production).
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2d3d3854-748e-4df7-8bbe-e6498c598c2d][Dataset bundles and provisioning]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2D3D3854-748E-4DF7-8BBE-E6498C598C2D][Dataset bundles and provisioning]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Split the monolithic =ores= PostgreSQL schema into =metadata=, =production=, and
 | Field        | Value                                                                         |
 |--------------+-------------------------------------------------------------------------------|
 | State        | DONE                                                                          |
-| Parent story | [[id:2d3d3854-748e-4df7-8bbe-e6498c598c2d][Dataset bundles and provisioning]] |
+| Parent story | [[id:2D3D3854-748E-4DF7-8BBE-E6498C598C2D][Dataset bundles and provisioning]] |
 | Now          | Completed 2026-01-27.                                                         |
 | Waiting on   | None.                                                                         |
 | Next         | None.                                                                         |

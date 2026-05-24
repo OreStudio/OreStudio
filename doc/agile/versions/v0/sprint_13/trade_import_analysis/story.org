@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 68c577a4-b33e-47cb-953f-f3d90a4440d6
+:ID: 68C577A4-B33E-47CB-953F-F3D90A4440D6
 :END:
 #+title: Story: Trade import mapping analysis
 #+description: Document the mapping requirements between ORE portfolio XML and the ORES model (counterparty resolution, book assignment, portfolio mapping, batch configuration).
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,16 +24,16 @@ references.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Parent sprint | [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]] |
 | Now           | Completed 2026-02-25.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-02-25                                             |
 
 
-#+successor: f80bad05-2e66-458d-9223-1db0a83ef694
+#+successor: F80BAD05-2E66-458D-9223-1DB0A83EF694
 
-Continued in: [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]] (sprint 14) — the analysis here
+Continued in: [[id:F80BAD05-2E66-458D-9223-1DB0A83EF694][ORE import wizard]] (sprint 14) — the analysis here
 surfaced that a directory-scanning wizard was the right shape; the
 wizard implements that.
 
@@ -47,7 +47,7 @@ wizard implements that.
 
 In execution order:
 
-- [[id:9c80f9df-31b6-4bb8-8972-ce5569541eda][Analyse ORE trade import mapping requirements]]
+- [[id:9C80F9DF-31B6-4BB8-8972-CE5569541EDA][Analyse ORE trade import mapping requirements]]
 
 * Decisions
 
@@ -59,4 +59,4 @@ In execution order:
 
 * See also
 
-- [[id:f8caa6ce-a36f-464c-a9a2-058e796a0f81][Trade import mapping dialog (Qt UI)]] — the implementation story (BACKLOG).
+- [[id:F8CAA6CE-A36F-464C-A9A2-058E796A0F81][Trade import mapping dialog (Qt UI)]] — the implementation story (BACKLOG).

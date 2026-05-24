@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1d5182fe-8007-49e9-a86c-c414e03fd753
+:ID: 1D5182FE-8007-49E9-A86C-C414E03FD753
 :END:
 #+title: Task: IInstrumentForm registry + per-family form widgets
 #+description: Phase 4: IInstrumentForm interface + InstrumentFormRegistry; family-specific UI tabs replaced with dynamic registry-based approach; one form per family (FX, Swap, Bond, Credit, Equity, Commodity, Composite, Scripted).
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1490e130-08f9-4d43-8f80-d7e0f5022fbd][Trade detail dialog unification]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1490E130-08F9-4D43-8F80-D7E0F5022FBD][Trade detail dialog unification]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Phase 4: IInstrumentForm interface + InstrumentFormRegistry; family-specific UI 
 | Field        | Value                                                                        |
 |--------------+------------------------------------------------------------------------------|
 | State        | DONE                                                                         |
-| Parent story | [[id:1490e130-08f9-4d43-8f80-d7e0f5022fbd][Trade detail dialog unification]] |
+| Parent story | [[id:1490E130-08F9-4D43-8F80-D7E0F5022FBD][Trade detail dialog unification]] |
 | Now          | Completed 2026-04-07.                                                        |
 | Waiting on   | None.                                                                        |
 | Next         | None.                                                                        |

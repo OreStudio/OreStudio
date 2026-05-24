@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b185eb3a-408e-49f0-bc52-7d6e0b9b5728
+:ID: B185EB3A-408E-49F0-BC52-7D6E0B9B5728
 :END:
 #+title: Task: Add remaining instrument mappers and roundtrip tests
 #+description: Forward + reverse mapping for BondRepo, TotalReturnSwap, ContractForDifference + various barrier and scripted options; new round-trip test suite; equity mapper edge-case fixes.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:8361bc43-bd96-433d-889e-367072bad44e][ORE import pipeline]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8361BC43-BD96-433D-889E-367072BAD44E][ORE import pipeline]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Forward + reverse mapping for BondRepo, TotalReturnSwap, ContractForDifference +
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:8361bc43-bd96-433d-889e-367072bad44e][ORE import pipeline]] |
+| Parent story | [[id:8361BC43-BD96-433D-889E-367072BAD44E][ORE import pipeline]] |
 | Now          | Completed 2026-04-04.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

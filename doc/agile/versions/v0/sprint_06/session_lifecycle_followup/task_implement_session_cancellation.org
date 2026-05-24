@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 61986ca2-c815-4cea-b029-26ab503379f5
+:ID: 61986CA2-C815-4CEA-B029-26AB503379F5
 :END:
 #+title: Task: Implement session cancellation
 #+description: Cancel all active sessions when the server stops, so it can shut down cleanly under SIGINT or programmatic shutdown.
@@ -16,7 +16,7 @@
 #+updated: 2025-12-04
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4B50A7E5-D862-47A6-AEBE-353CAD55B058][Session lifecycle follow-up]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ orchestration and service restarts.
 | Field        | Value                                                                    |
 |--------------+--------------------------------------------------------------------------|
 | State        | DONE                                                                     |
-| Parent story | [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]] |
+| Parent story | [[id:4B50A7E5-D862-47A6-AEBE-353CAD55B058][Session lifecycle follow-up]] |
 | Now          | Completed 2025-12-04.                                                    |
 | Waiting on   | None.                                                                    |
 | Next         | None.                                                                    |

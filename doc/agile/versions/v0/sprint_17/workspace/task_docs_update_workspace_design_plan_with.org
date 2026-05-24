@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e56d4ae5-9d91-4943-ac74-f7d9d3a95987
+:ID: E56D4AE5-9D91-4943-AC74-F7D9D3A95987
 :END:
 #+title: Task: docs: Update workspace design plan with Phase 3–4 progress
 #+description: Update the workspace design plan document to reflect completion of Phases 1–2 and substantial progress through Phases 3–
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:77BF049F-ED38-4998-AFA3-672E25895F9A][Workspace]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Update the workspace design plan to reflect Phase 1-2 completion and Phase 3-4 p
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]] |
+| Parent story | [[id:77BF049F-ED38-4998-AFA3-672E25895F9A][Workspace]] |
 | Now          | Completed 2026-05-20.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

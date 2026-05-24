@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: be577e9e-32d2-4191-b8e3-99aeda4beaf4
+:ID: BE577E9E-32D2-4191-B8E3-99AEDA4BEAF4
 :END:
 #+title: Review pricing engine type tenant vs party design
 #+description: PricingEngineType has a tenant but no party. Review whether a party FK is needed and whether defaulting tenant to system() is correct or if a well-known invalid tenant should be required.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

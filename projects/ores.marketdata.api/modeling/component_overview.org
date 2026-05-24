@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6a62d943-fac9-4b77-9e22-f265557dcf1a
+:ID: 6A62D943-FAC9-4B77-9E22-F265557DCF1A
 :END:
 #+title: ores.marketdata.api
 #+description: Domain types and NATS protocol schemas for the market-data component.
@@ -42,4 +42,4 @@ protocol schemas consumed by =ores.marketdata.core= and Qt clients.
 
 * See also
 
-- [[id:759530d8-2314-44f3-a50e-71ce7ad02558][ores.marketdata.core]] — business logic, persistence, and NATS handlers.
+- [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata.core]] — business logic, persistence, and NATS handlers.

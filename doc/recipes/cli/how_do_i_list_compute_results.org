@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4b52c31c-98b0-4904-aef3-bb7899569af8
+:ID: 4B52C31C-98B0-4904-AEF3-BB7899569AF8
 :END:
 #+title: How do I list compute results?
 #+description: List compute results via =ores.cli=

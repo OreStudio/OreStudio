@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 50b83ce1-6e12-44e7-afeb-f6bac09ddc14
+:ID: 50B83CE1-6E12-44E7-AFEB-F6BAC09DDC14
 :END:
 #+title: Story: Claude Code skills introduction
 #+description: Stand up the Claude Code skills layer: first skills, CMake targets for deployment, generalised skill setup, weaving skills with documentation.
@@ -11,7 +11,7 @@
 #+updated: 2025-11-15
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:38DAA167-E791-48FB-AFEB-1813615037DE][Sprint 04]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -26,7 +26,7 @@ skills to documentation.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]] |
+| Parent sprint | [[id:38DAA167-E791-48FB-AFEB-1813615037DE][Sprint 04]] |
 | Now           | Completed 2025-11-15.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -45,9 +45,9 @@ skills to documentation.
 
 In execution order:
 
-- [[id:05ef8ee3-b5b1-41e2-809d-edae9418edd3][Weaving skills and documentation together]]
-- [[id:5766b918-7741-491a-95b5-707ace9c4169][Create a skill for PlantUML documentation]]
-- [[id:e24bb8b0-b599-4c16-a4be-12422f34225a][Add CMake targets for site and skills]]
+- [[id:05EF8EE3-B5B1-41E2-809D-EDAE9418EDD3][Weaving skills and documentation together]]
+- [[id:5766B918-7741-491A-95B5-707ACE9C4169][Create a skill for PlantUML documentation]]
+- [[id:E24BB8B0-B599-4C16-A4BE-12422F34225A][Add CMake targets for site and skills]]
 
 Additional v0 entries belonging here, not migrated as full tasks:
 
@@ -70,9 +70,9 @@ Additional v0 entries belonging here, not migrated as full tasks:
 
 * See also
 
-- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner skill]] — example of the skill pattern this story
+- [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner skill]] — example of the skill pattern this story
   established (slimmed in a later sprint into the v2 thin index).
 - [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][Skill Manager Skill]] — meta-skill descended from the v0
   generalised-skill-setup entry.
-- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] / [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — recipes
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] / [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] — recipes
   for the CMake targets this story put in place.

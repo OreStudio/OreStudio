@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 13e4f41f-82e1-400a-9c84-e60a587e2647
+:ID: 13E4F41F-82E1-400A-9C84-E60A587E2647
 :END:
 #+title: Story: Documentation polish
 #+description: Website cleanup, Doxygen main page, README UI screenshots.
@@ -11,7 +11,7 @@
 #+updated: 2025-11-30
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:38DAA167-E791-48FB-AFEB-1813615037DE][Sprint 04]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ has a clean role, and refresh the Doxygen main page.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]] |
+| Parent sprint | [[id:38DAA167-E791-48FB-AFEB-1813615037DE][Sprint 04]] |
 | Now           | Completed 2025-11-30.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -40,8 +40,8 @@ has a clean role, and refresh the Doxygen main page.
 
 In execution order:
 
-- [[id:b5e31cfc-772f-4c07-a019-4d9cfea615e9][Clean up product website]]
-- [[id:8d6ff09e-2be2-4600-991c-6c7556ec2484][Update Doxygen main page]]
+- [[id:B5E31CFC-772F-4C07-A019-4D9CFEA615E9][Clean up product website]]
+- [[id:8D6FF09E-2BE2-4600-991C-6C7556EC2484][Update Doxygen main page]]
 
 Additional v0 entries belonging here, not migrated as full tasks:
 
@@ -59,8 +59,8 @@ Additional v0 entries belonging here, not migrated as full tasks:
 
 * See also
 
-- [[id:c85f2dca-f7d6-40ae-b796-8b4cf84a7093][Documentation infrastructure]] (sprint 01) — predecessor doc
+- [[id:C85F2DCA-F7D6-40AE-B796-8B4CF84A7093][Documentation infrastructure]] (sprint 01) — predecessor doc
   story.
-- [[id:05ef8ee3-b5b1-41e2-809d-edae9418edd3][Weaving skills and documentation together]] (this sprint) — the
+- [[id:05EF8EE3-B5B1-41E2-809D-EDAE9418EDD3][Weaving skills and documentation together]] (this sprint) — the
   analysis driving this work.
-- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — the recipe for the publish target.
+- [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] — the recipe for the publish target.

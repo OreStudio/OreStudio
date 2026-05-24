@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 46f83ac1-f41f-4878-9a1d-2e49742e1bfe
+:ID: 46F83AC1-F41F-4878-9A1D-2E49742E1BFE
 :END:
 #+title: Always use codegen to create new v2 documents
 #+description: Never write v2 org files directly — always use generate_v2_doc.sh to scaffold them.

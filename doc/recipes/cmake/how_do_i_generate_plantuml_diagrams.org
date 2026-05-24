@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f51360fc-24db-4276-b137-c59d118922ac
+:ID: F51360FC-24DB-4276-B137-C59D118922AC
 :END:
 #+title: How do I generate PlantUML diagrams?
 #+description: Build all PlantUML diagrams with the `mad` target, or a single component's diagram with `generate_<comp>_diagram`.
@@ -10,7 +10,7 @@
 #+created: 2026-05-18
 #+updated: 2026-05-18
 
-For the broader CMake setup, see [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]].
+For the broader CMake setup, see [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 
 * Question
 
@@ -68,5 +68,5 @@ change.
 
 * See also
 
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]]
-- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — picks up the regenerated diagrams.
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]]
+- [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] — picks up the regenerated diagrams.

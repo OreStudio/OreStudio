@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a
+:ID: EAF03BE3-D1EC-4EC4-B18B-4F1C6F35926A
 :END:
 #+title: Story: Tenant provisioning wizards
 #+description: Enforce root party uniqueness; new tenant provisioning wizard (incl. synthetic); gate wizard steps by tenant type; UX polish; evaluation-tenant onboarding on first login.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -25,7 +25,7 @@ evaluation tenants.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Parent sprint | [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]] |
 | Now           | Completed 2026-02-16.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -43,11 +43,11 @@ evaluation tenants.
 
 In execution order:
 
-- [[id:58dcd34b-3ef5-4aa3-b7f2-d531661db110][Enforce root party uniqueness constraints]]
-- [[id:45641916-c11d-4810-ac9d-1298f5e42ab7][Add setup-new-tenant wizard]]
-- [[id:3023b0ec-b07e-4bb5-b981-064e2f49d31f][Gate party + counterparty wizard steps by tenant type]]
-- [[id:3af3a647-67a6-450d-abbf-2777bf967595][Improve tenant provisioning wizard UX]]
-- [[id:8ef061d5-9f21-4610-91b7-610a52da4c75][Add evaluation-tenant onboarding wizard on first login]]
+- [[id:58DCD34B-3EF5-4AA3-B7F2-D531661DB110][Enforce root party uniqueness constraints]]
+- [[id:45641916-C11D-4810-AC9D-1298F5E42AB7][Add setup-new-tenant wizard]]
+- [[id:3023B0EC-B07E-4BB5-B981-064E2F49D31F][Gate party + counterparty wizard steps by tenant type]]
+- [[id:3AF3A647-67A6-450D-ABBF-2777BF967595][Improve tenant provisioning wizard UX]]
+- [[id:8EF061D5-9F21-4610-91B7-610A52DA4C75][Add evaluation-tenant onboarding wizard on first login]]
 
 * Decisions
 
@@ -60,4 +60,4 @@ In execution order:
 
 * See also
 
-- [[id:8aa7657f-a37f-4ab7-85f0-95868cdfd8f3][System Provisioner Wizard]] (sprint 10) — predecessor wizard pattern.
+- [[id:8AA7657F-A37F-4AB7-85F0-95868CDFD8F3][System Provisioner Wizard]] (sprint 10) — predecessor wizard pattern.

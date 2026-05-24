@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 759530d8-2314-44f3-a50e-71ce7ad02558
+:ID: 759530D8-2314-44F3-A50E-71CE7AD02558
 :END:
 #+title: ores.marketdata.core
 #+description: Market data management — market series, observations, fixings, and import from external sources.
@@ -49,5 +49,5 @@ ORE market data files for risk runs.
 
 * See also
 
-- [[id:6a62d943-fac9-4b77-9e22-f265557dcf1a][ores.marketdata.api]] — protocol types and domain entities.
-- [[id:57182ece-6364-421a-a46f-73841f9961b4][ores.marketdata.service]] — NATS service entrypoint.
+- [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]] — protocol types and domain entities.
+- [[id:57182ECE-6364-421A-A46F-73841F9961B4][ores.marketdata.service]] — NATS service entrypoint.

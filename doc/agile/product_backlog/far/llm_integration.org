@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b3cb8b56-198a-4755-8c0e-c88da145aaa9
+:ID: B3CB8B56-198A-4755-8C0E-C88DA145AAA9
 :END:
 #+title: LLM Integration
 #+description: LLM Integration
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 LLMs can be useful when learning a new subject as they can provide additional
 context to the information displayed in the screen. For example, a user can ask

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 62d39f43-5d91-4a82-b1c3-62c2af21befc
+:ID: 62D39F43-5D91-4A82-B1C3-62C2AF21BEFC
 :END:
 #+title: How do I fix a failing CI check?
 #+description: Identify the failing check via gh, read the run log, apply the fix as a new commit, and push.
@@ -10,8 +10,8 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This is one branch of the [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][PR monitoring loop]]. The other branch is
-[[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][addressing review comments]].
+This is one branch of the [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][PR monitoring loop]]. The other branch is
+[[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][addressing review comments]].
 
 * Question
 
@@ -54,7 +54,7 @@ and push the fix?
 
    *Never amend* — preserves review history.
 
-5. /Wait for the rerun/. CI re-triggers on push; return to [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][monitor
+5. /Wait for the rerun/. CI re-triggers on push; return to [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][monitor
    until green]].
 
 * Script
@@ -69,6 +69,6 @@ running them locally is the fastest way to reproduce.
 
 * See also
 
-- [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][How do I monitor a PR until green?]] — the surrounding loop.
-- [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][How do I address PR review comments?]] — sibling branch.
-- [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]].
+- [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] — the surrounding loop.
+- [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] — sibling branch.
+- [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]].

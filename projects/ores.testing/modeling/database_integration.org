@@ -10,7 +10,7 @@
 This document explains how unit tests interact with the database, including
 tenant lifecycle management, logging configuration, and troubleshooting.
 
-For test writing conventions and patterns, see the [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer Skill]].
+For test writing conventions and patterns, see the [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][Unit Test Writer Skill]].
 
 * Overview
 
@@ -383,7 +383,7 @@ SELECT ores_iam_terminate_tenant_fn('tenant-uuid-here'::uuid);
 
 * Related Documentation
 
-- [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer Skill]] - Test writing conventions and patterns
+- [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][Unit Test Writer Skill]] - Test writing conventions and patterns
 - [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ORE Studio Testing Component]] - Component architecture overview
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][Testing Component]] |

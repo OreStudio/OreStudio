@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5b72ec63-dfed-4d75-9e3f-4ee43b3dfb3f
+:ID: 5B72EC63-DFED-4D75-9E3F-4EE43B3DFB3F
 :END:
 #+title: Delete Currencies
 #+description: Delete Currencies

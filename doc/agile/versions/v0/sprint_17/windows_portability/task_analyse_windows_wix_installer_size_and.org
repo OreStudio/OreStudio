@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f099eeeb-345d-419e-a0a3-f7bccaf4a7b2
+:ID: F099EEEB-345D-419E-A0A3-F7BCCAF4A7B2
 :END:
 #+title: Task: Analyse Windows WiX installer size and file-count limits
 #+description: Analysis story for the two WiX v3 failures still blocking the Windows \`cpack\` step, following up on PR #693 and commit
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D84E735-7DFE-4215-AF00-A1F4C9323BDA][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Analyse the two remaining WiX v3 CPack failures — LGHT0263 (oversized static a
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] |
+| Parent story | [[id:7D84E735-7DFE-4215-AF00-A1F4C9323BDA][Windows portability fixes]] |
 | Now          | Completed 2026-04-20.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: fcb09dd7-4f7a-42ff-a82c-423ac15779ad
+:ID: FCB09DD7-4F7A-42FF-A82C-423AC15779AD
 :END:
 #+title: Task: Add database support for currency
 #+description: Create the first project database table and write currency reference data to it.
@@ -12,7 +12,7 @@
 #+updated: 2024-07-12
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AF70CDF6-071F-43A9-91BB-7EB9A59A550F][Currencies end-to-end]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -25,7 +25,7 @@ task defines the pattern every later reference-data type follows.
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
 | State        | DONE                                                               |
-| Parent story | [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]] |
+| Parent story | [[id:AF70CDF6-071F-43A9-91BB-7EB9A59A550F][Currencies end-to-end]] |
 | Now          | Completed 2024-07-12.                                              |
 | Waiting on   | None.                                                              |
 | Next         | None.                                                              |

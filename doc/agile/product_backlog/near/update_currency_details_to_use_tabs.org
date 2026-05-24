@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 57060fab-8da3-4b00-a156-ccc56125bfd7
+:ID: 57060FAB-8DA3-4B00-A156-CCC56125BFD7
 :END:
 #+title: Update currency details to use tabs
 #+description: Update currency details to use tabs
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 We need a main tab with the currency related properties, then a "system" tab
 with temporal data which is read-only even on edit and a "image" tab with the

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a3f7c812-5e2d-4b9a-8c1f-6d0e3a7b2f4c
+:ID: A3F7C812-5E2D-4B9A-8C1F-6D0E3A7B2F4C
 :END:
 #+title: Reporting Component Design
 #+version: 1

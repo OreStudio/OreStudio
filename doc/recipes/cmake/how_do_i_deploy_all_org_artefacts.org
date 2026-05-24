@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5acade16-bcc4-46e5-950e-34015b87c4ec
+:ID: 5ACADE16-BCC4-46E5-950E-34015B87C4EC
 :END:
 #+title: How do I deploy all org-mode artefacts?
 #+description: Build the site, skills, settings, and diagrams in one shot with the deploy_org CMake target.
@@ -11,9 +11,9 @@
 #+updated: 2026-05-22
 
 The =deploy_org= CMake target is the composite for all org-mode publishing.
-For individual targets see [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]],
-[[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]], and [[id:3ddb2afa-9caa-44a0-a91a-645a95320a5f][How do I deploy the settings?]].
-For CMake setup and preset names see [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]].
+For individual targets see [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]],
+[[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]], and [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]].
+For CMake setup and preset names see [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 
 * Question
 
@@ -71,8 +71,8 @@ error.
 
 * See also
 
-- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — sub-target for the website.
-- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — sub-target for Claude Code skills.
-- [[id:3ddb2afa-9caa-44a0-a91a-645a95320a5f][How do I deploy the settings?]] — sub-target for =.claude/settings.json=.
-- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — sub-target for diagrams.
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset names and output directory layout.
+- [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] — sub-target for the website.
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — sub-target for Claude Code skills.
+- [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]] — sub-target for =.claude/settings.json=.
+- [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]] — sub-target for diagrams.
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset names and output directory layout.

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8
+:END:
+#+title: Story: Resolve RFL complexity issues
+#+description: Permanently resolve MSVC C1202 and Clang expression nesting limits via structural isolation.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :msvc:clang:cpp:reflect_cpp:sprint_18:v0:story:
+#+created: 2026-05-23
+#+updated: 2026-05-23
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]].
+
+* Goal
+
+Permanently resolve the compilation failures in =ores.qt.api= on Windows (MSVC C1202) and Linux (Clang bracket depth) by re-applying the structural isolation strategy (TU splits and two-phase parsing) and increasing global compiler limits.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                                |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
+
+| Now           | Investigation complete; planning implementation. |
+| Waiting on    | Nothing.                               |
+| Next          | Implement triple isolation strategy.   |
+| Last touched  | 2026-05-23                           |
+
+* Acceptance
+
+- =projects/ores.qt.api/src/ClientManagerTrades.cpp= compiles successfully on Clang (Linux) and MSVC (Windows).
+- Structural isolation (TU split for =getTradeDetail=) is implemented.
+- Two-phase parsing for =get_trade_detail_response= is restored.
+- Global compiler flags for Clang (=-fbracket-depth=) are increased.
+- No regressions in trade listing or detail retrieval functionality.
+
+* Tasks
+
+- [[id:D1E4921B-B431-4E78-99AB-62A47F761D1D][Task: Investigate RFL complexity root cause]]
+- [[id:D2E4921B-B431-4E78-99AB-62A47F761D1D][Task: Implement triple isolation for RFL complexity]]
+
+* Decisions
+
+- **Structural Isolation over Limit Hacking**: Previous attempts to solve C1202 purely via =/constexpr= limit increases failed because they did not address the hard instantiation depth limit. We will prioritize TU splits and two-phase parsing.
+- **Upstream Collaboration**: We have opened [[https://github.com/getml/reflect-cpp/issues/350][reflect-cpp issue #350]] to advocate for an O(N) field uniqueness check.
+
+* Out of scope
+
+- Refactoring the entire domain model to reduce field counts (this is a multi-sprint architectural change).
+- Migrating away from =reflect-cpp= (it is deeply integrated into the codebase).
+
+* See also
+
+- [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] (Previous story in Sprint 17)
+- [[id:CAEA4E7D-A6DB-4716-83E5-6F47ADD7819D][Task: [trading] Decompose trade into rfl::Flatten sub-structs to fix MSVC C1202]]
+- [[id:970E36F2-DC20-45E4-B1B7-186F86F46650][Task: Restore two-phase rfl parse in getTradeDetail to fix MSVC C1202]]
+- [[https://github.com/getml/reflect-cpp/issues/350][reflect-cpp Issue #350]]

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2f71292f-cdb0-4e2e-b50f-4f02e10597c4
+:ID: 2F71292F-CDB0-4E2E-B50F-4F02E10597C4
 :END:
 #+title: Product Identity
 #+description: The durable statement of what ORE Studio is and is not. Versions (v0, v1.0, ...) come and go; this identity does not.
@@ -10,12 +10,12 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This is the [[id:436fb40c-422a-465b-b949-e9f0760820c1][product identity]] of ORE Studio — the [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]] document in our
-[[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic information architecture]], where identity is the durable policy layer
+This is the [[id:436FB40C-422A-465B-B949-E9F0760820C1][product identity]] of ORE Studio — the [[id:6DF00A64-7CC3-40A7-950B-55D2B05A31C7][System 5]] document in our
+[[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic information architecture]], where identity is the durable policy layer
 that constrains every level below it. It is the statement of what the product
-/is/ and what it /is not/; it predates any [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][version]] and outlives every release.
-Everything else under =doc/= — [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprints]], [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][stories]], [[id:31c868b9-306e-4282-ba8c-07e647021b34][tasks]], [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]] — is filtered
-through this page when deciding whether a candidate idea belongs in the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product
+/is/ and what it /is not/; it predates any [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][version]] and outlives every release.
+Everything else under =doc/= — [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprints]], [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][stories]], [[id:31C868B9-306E-4282-BA8C-07E647021B34][tasks]], [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][captures]] — is filtered
+through this page when deciding whether a candidate idea belongs in the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product
 backlog]] at all.
 
 #+caption: ORE Studio v0.0.17 — the main window, an early implementation of the vision below.
@@ -24,13 +24,13 @@ backlog]] at all.
 * Vision
 
 Here we define the vision for the product — what guides us when we think about
-ORE Studio and what can and cannot go into the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]]. Vision is one
+ORE Studio and what can and cannot go into the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]]. Vision is one
 facet of identity: it states what we are building /toward/.
 
 ** Vision statement
 
-The vision for ORE Studio is to build on top of Acadia's [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][Open
-Source Risk Engine (ORE)]], which itself builds on [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]], with the
+The vision for ORE Studio is to build on top of Acadia's [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open
+Source Risk Engine (ORE)]], which itself builds on [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]], with the
 aim of providing:
 
 - a persistent database storage for all of its inputs and outputs;
@@ -56,19 +56,19 @@ data is proprietary and expensive; production quant models live inside
 institutional systems; the infrastructure of an enterprise risk platform
 tends to obscure rather than reveal the underlying domain. ORE Studio
 addresses these by providing synthetic and generated market data,
-delegating all quantitative mathematics to [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]] and [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]], and keeping
+delegating all quantitative mathematics to [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] and [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]], and keeping
 the architecture intentionally simple (client → service layer → Postgres)
 so that domain concepts stay visible rather than buried.
 
 The target is the software developer — moderately fluent in C++ or a
 similar systems language — who wants to understand how computational
 finance works by building and extending a real system. Not by reading
-textbooks, not by running spreadsheets: by modifying code, running [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]],
+textbooks, not by running spreadsheets: by modifying code, running [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]],
 and observing what changes. A secondary audience is the developer already
-familiar with [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]] or [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]] who wants a graphical environment for
+familiar with [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] or [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]] who wants a graphical environment for
 exploration and experimentation.
 
-ORE Studio is /independent of/ both [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]] and [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]] and has no
+ORE Studio is /independent of/ both [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] and [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]] and has no
 affiliation with either project or any financial institution.
 
 * Out of scope
@@ -86,9 +86,9 @@ What ORE Studio /is not/ — equally important to what it is.
 
 * Relationship to versions
 
-The product identity is durable. [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]] are not. [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][v0]] establishes the shape;
+The product identity is durable. [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] are not. [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][v0]] establishes the shape;
 =v1.0= and beyond will extend it. When something in this document changes, that
 is a re-identification — not a version bump.
 
-See [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]] for the running list of versions that have implemented this
+See [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] for the running list of versions that have implemented this
 identity.

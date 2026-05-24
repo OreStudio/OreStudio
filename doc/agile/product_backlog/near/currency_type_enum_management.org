@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c6758ab3-09f6-4f37-8b77-9984d8cc3c6d
+:ID: C6758AB3-09F6-4F37-8B77-9984D8CC3C6D
 :END:
 #+title: Currency types: enum, management screen, combo box
 #+description: Currency types should be a proper database-backed enum. Add a management screen and tables; use a combo box in the currencies form.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

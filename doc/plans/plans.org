@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6e09902a-5d78-4697-9934-f818073fa5d9
+:ID: 6E09902A-5D78-4697-9934-F818073FA5D9
 :END:
 #+title: Plans
 #+description: Index of legacy design and implementation plans kept for historical reference.
@@ -13,95 +13,95 @@
 These are pre-sprint design documents written during or before implementation.
 They are kept for historical context — to understand why a decision was made
 or what was considered. They are not maintained after the work is done.
-Active work lives in the [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][agile process]] as stories and tasks, not here.
+Active work lives in the [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][agile process]] as stories and tasks, not here.
 
 * Plans
 
-| Date       | Plan                                                               | Status      |
-|------------+--------------------------------------------------------------------+-------------|
-| 2026-02-02 | Enum Table Tenancy Consolidation                                   |             |
-| 2026-02-07 | Party & Counterparty SQL Support Design                            | COMPLETED   |
-| 2026-02-08 | GLEIF Dataset Librarian Integration Design                         |             |
-| 2026-02-09 | Party-Level Isolation and Tenant Types Design                      | COMPLETED   |
-| 2026-02-11 | Librarian Party & Counterparty Publication Design                  |             |
-| 2026-02-14 | Generation Context Design                                          | COMPLETED   |
-| 2026-02-15 | IAM Generators and Test Migration                                  | COMPLETED   |
-| 2026-02-16 | Trade Envelope and FSM Design                                      |             |
-| 2026-02-22 | CLI Domain Sub-menus Design                                        | COMPLETED   |
-| 2026-02-22 | Currency Taxonomy Enhancement: Asset Class and Market Tier         | COMPLETED   |
-| 2026-02-27 | ORE Import Wizard Design                                           | COMPLETED   |
-| 2026-03-01 | Reporting Component Design                                         |             |
-| 2026-03-03 | Party Codename and Queue Isolation Design                          |             |
-| 2026-03-05 | JWT Migration to ores.security + RS256                             | COMPLETED   |
-| 2026-03-13 | NATS Migration: Binary Protocol to NATS/JetStream                  | COMPLETED   |
-| 2026-03-14 | NATS Idiomatic Architecture: Drop Binary Protocol, Adopt MessagePack + JetStream | COMPLETED |
-| 2026-03-16 | NATS Monitor Design                                                |             |
-| 2026-03-16 | NATS Multi-Tenancy and Multi-Party Design                          | COMPLETED   |
-| 2026-03-20 | Compute Grid Design                                                | COMPLETED   |
-| 2026-03-20 | Compute Wrapper Design                                             | COMPLETED   |
-| 2026-03-20 | JWT Token Refresh: Configurable Lifetimes, Proactive Renewal       | COMPLETED   |
-| 2026-03-20 | System Settings Unification: Replace Feature Flags with Typed System Settings | COMPLETED |
-| 2026-03-21 | Compute Grid End-to-End Improvements                               | COMPLETED   |
-| 2026-03-21 | Compute Grid Telemetry Design                                      | COMPLETED   |
-| 2026-03-22 | Service Architecture Migration                                     | COMPLETED   |
-| 2026-03-22 | Secure Provenance Stamping                                         | COMPLETED   |
-| 2026-03-23 | Move Synthetic Generators to API Layer                             | COMPLETED   |
-| 2026-03-26 | CDM-Inspired Instrument Domain Model                               |             |
-| 2026-03-26 | Compute Console UI Refactor                                        |             |
-| 2026-03-27 | Compute Console Rework                                             |             |
-| 2026-03-27 | Service-to-Service Authentication Design                           | DRAFT       |
-| 2026-03-28 | Database-Driven Badge System Design                                |             |
-| 2026-03-28 | CDM-Inspired Instrument Domain Model — Phase 2                     |             |
-| 2026-03-28 | Service Account RBAC Design                                        |             |
-| 2026-03-29 | ORE Instrument Mappers — Phase 9                                   |             |
-| 2026-03-30 | Service-to-Service JWT Delegation                                  | DRAFT       |
-| 2026-03-31 | Instrument-Trade Model Refactor and ORE Portfolio Export           |             |
-| 2026-03-31 | ORE Market Data Domain Model                                       |             |
-| 2026-03-31 | ORE Market Data File Types — Phase 1                               |             |
-| 2026-03-31 | ORE Trading Instrument Support — Complete Implementation           |             |
-| 2026-04-01 | Asset Class Unification                                            |             |
-| 2026-04-01 | Unified Trade + Instrument Detail Dialog                           | DONE        |
-| 2026-04-03 | Server-Side ORE Import                                             | IN PROGRESS |
-| 2026-04-05 | Report Definition to Instance Pipeline                             | COMPLETED   |
-| 2026-04-05 | Report Execution Pipeline                                          | DRAFT       |
-| 2026-04-05 | Workflow Engine Generalisation                                     | IN PROGRESS |
-| 2026-04-06 | Report Execution Workflow — Implementation Plan                    | IN PROGRESS |
-| 2026-04-07 | Data-Driven TradeDetailDialog Refactor                             | DONE        |
-| 2026-04-08 | Qt QPluginLoader Architecture Migration                            |             |
-| 2026-04-08 | Unified Service Hosting                                            | IN PROGRESS |
-| 2026-04-08 | UTC-Everywhere Timestamp Enforcement                               |             |
-| 2026-04-09 | Instrument Tables Redesign — Standalone Asset-Class Tables         |             |
-| 2026-04-10 | Scheduler Real-Time UI                                             | DONE        |
-| 2026-04-10 | Workflow Monitor — Design & Implementation Plan                    |             |
-| 2026-04-21 | FX Forward ORE Import End-to-End Wiring                            |             |
-| 2026-04-21 | ORE Import: Conventions Persistence & Full Import Pipeline         | IN PROGRESS |
-| 2026-04-22 | Equity Per-Type Instrument Migration                               | DONE        |
-| 2026-05-05 | ORE Import / Export Code Cleanup                                   | COMPLETE    |
-| 2026-05-05 | ORE Domain Roundtrip Check                                         | COMPLETE    |
-| 2026-05-12 | Strict Service Table Isolation                                     | COMPLETE    |
-| 2026-05-13 | Cross-Service Write Decoupling                                     | DONE        |
-| 2026-05-13 | PostgreSQL Identifier Length Cleanup                               | COMPLETE    |
-| 2026-05-13 | Symbol Visibility Migration                                        | COMPLETE    |
-| 2026-05-14 | Codegen SQL Debt — Hand-Written Files with Existing Models         | COMPLETE    |
-| 2026-05-14 | DQ Publish Pattern — Architecture and Decision                     | IN PROGRESS |
-| 2026-05-14 | Workflow Engine Hardening                                          | COMPLETE    |
-| 2026-05-15 | Login Dialog Label Filter                                          |             |
-| 2026-05-15 | ORE Import Error Reporting and Step Warning State                  | COMPLETE    |
-| 2026-05-15 | Qt Plugin Isolation: Cross-Plugin Symbol Dependencies              | COMPLETE    |
-| 2026-05-16 | Controller Startup and Shutdown Latency Fix                        | DONE        |
-| 2026-05-16 | Data Import Session and Workflow Partial-Success                   | PROPOSED    |
-| 2026-05-17 | MSVC C1202 — Decompose trade into Sub-Structs                      | IN PROGRESS |
-| 2026-05-17 | Shared audit_record and Codegen Composite-Type Support             | DRAFT       |
-| 2026-05-17 | Tenant and System Bootstrap Reset                                  | DONE        |
-| 2026-05-17 | Virtual Portfolio Design                                           | PROPOSED    |
-| 2026-05-17 | Workspace — Isolated Data Context Design                           |             |
-| 2026-05-18 | Codegen IAM Permissions and Roles Population                       | PROPOSED    |
-| 2026-05-18 | Menu Structure Analysis and Simplification                         | IN PROGRESS |
-| 2026-05-19 | Qt Trading Codegen Drift Remediation                               | IN PROGRESS |
-| 2026-05-19 | UML Model Refresh                                                  | IN PROGRESS |
-| 2026-05-19 | Workspace ID Codegen Propagation                                   | COMPLETE    |
-| 2026-05-20 | Refdata C++ Codegen: Activate Domain/Generator/Repository          | TODO        |
-| 2026-05-20 | Refdata Party Domain: tenant_id Strong-Type Migration              | DONE        |
-| 2026-05-21 | Tagged v1/v2 Coexistence — Merge doc/v2/ and Add Version Markers   |             |
-| 2026-05-21 | Entity Creator Skills Overhaul                                     | TODO        |
-| 2026-05-21 | Entity Creator Skills: v1 → v2 Migration                          | TODO        |
+|       Date | Plan                                                                             | Status      |
+|------------+----------------------------------------------------------------------------------+-------------|
+| 2026-02-02 | Enum Table Tenancy Consolidation                                                 |             |
+| 2026-02-07 | Party & Counterparty SQL Support Design                                          | COMPLETED   |
+| 2026-02-08 | GLEIF Dataset Librarian Integration Design                                       |             |
+| 2026-02-09 | Party-Level Isolation and Tenant Types Design                                    | COMPLETED   |
+| 2026-02-11 | Librarian Party & Counterparty Publication Design                                |             |
+| 2026-02-14 | Generation Context Design                                                        | COMPLETED   |
+| 2026-02-15 | IAM Generators and Test Migration                                                | COMPLETED   |
+| 2026-02-16 | Trade Envelope and FSM Design                                                    |             |
+| 2026-02-22 | CLI Domain Sub-menus Design                                                      | COMPLETED   |
+| 2026-02-22 | Currency Taxonomy Enhancement: Asset Class and Market Tier                       | COMPLETED   |
+| 2026-02-27 | ORE Import Wizard Design                                                         | COMPLETED   |
+| 2026-03-01 | Reporting Component Design                                                       |             |
+| 2026-03-03 | Party Codename and Queue Isolation Design                                        |             |
+| 2026-03-05 | JWT Migration to ores.security + RS256                                           | COMPLETED   |
+| 2026-03-13 | NATS Migration: Binary Protocol to NATS/JetStream                                | COMPLETED   |
+| 2026-03-14 | NATS Idiomatic Architecture: Drop Binary Protocol, Adopt MessagePack + JetStream | COMPLETED   |
+| 2026-03-16 | NATS Monitor Design                                                              |             |
+| 2026-03-16 | NATS Multi-Tenancy and Multi-Party Design                                        | COMPLETED   |
+| 2026-03-20 | Compute Grid Design                                                              | COMPLETED   |
+| 2026-03-20 | Compute Wrapper Design                                                           | COMPLETED   |
+| 2026-03-20 | JWT Token Refresh: Configurable Lifetimes, Proactive Renewal                     | COMPLETED   |
+| 2026-03-20 | System Settings Unification: Replace Feature Flags with Typed System Settings    | COMPLETED   |
+| 2026-03-21 | Compute Grid End-to-End Improvements                                             | COMPLETED   |
+| 2026-03-21 | Compute Grid Telemetry Design                                                    | COMPLETED   |
+| 2026-03-22 | Service Architecture Migration                                                   | COMPLETED   |
+| 2026-03-22 | Secure Provenance Stamping                                                       | COMPLETED   |
+| 2026-03-23 | Move Synthetic Generators to API Layer                                           | COMPLETED   |
+| 2026-03-26 | CDM-Inspired Instrument Domain Model                                             |             |
+| 2026-03-26 | Compute Console UI Refactor                                                      |             |
+| 2026-03-27 | Compute Console Rework                                                           |             |
+| 2026-03-27 | Service-to-Service Authentication Design                                         | DRAFT       |
+| 2026-03-28 | Database-Driven Badge System Design                                              |             |
+| 2026-03-28 | CDM-Inspired Instrument Domain Model — Phase 2                                   |             |
+| 2026-03-28 | Service Account RBAC Design                                                      |             |
+| 2026-03-29 | ORE Instrument Mappers — Phase 9                                                 |             |
+| 2026-03-30 | Service-to-Service JWT Delegation                                                | DRAFT       |
+| 2026-03-31 | Instrument-Trade Model Refactor and ORE Portfolio Export                         |             |
+| 2026-03-31 | ORE Market Data Domain Model                                                     |             |
+| 2026-03-31 | ORE Market Data File Types — Phase 1                                             |             |
+| 2026-03-31 | ORE Trading Instrument Support — Complete Implementation                         |             |
+| 2026-04-01 | Asset Class Unification                                                          |             |
+| 2026-04-01 | Unified Trade + Instrument Detail Dialog                                         | DONE        |
+| 2026-04-03 | Server-Side ORE Import                                                           | IN PROGRESS |
+| 2026-04-05 | Report Definition to Instance Pipeline                                           | COMPLETED   |
+| 2026-04-05 | Report Execution Pipeline                                                        | DRAFT       |
+| 2026-04-05 | Workflow Engine Generalisation                                                   | IN PROGRESS |
+| 2026-04-06 | Report Execution Workflow — Implementation Plan                                  | IN PROGRESS |
+| 2026-04-07 | Data-Driven TradeDetailDialog Refactor                                           | DONE        |
+| 2026-04-08 | Qt QPluginLoader Architecture Migration                                          |             |
+| 2026-04-08 | Unified Service Hosting                                                          | IN PROGRESS |
+| 2026-04-08 | UTC-Everywhere Timestamp Enforcement                                             |             |
+| 2026-04-09 | Instrument Tables Redesign — Standalone Asset-Class Tables                       |             |
+| 2026-04-10 | Scheduler Real-Time UI                                                           | DONE        |
+| 2026-04-10 | Workflow Monitor — Design & Implementation Plan                                  |             |
+| 2026-04-21 | FX Forward ORE Import End-to-End Wiring                                          |             |
+| 2026-04-21 | ORE Import: Conventions Persistence & Full Import Pipeline                       | IN PROGRESS |
+| 2026-04-22 | Equity Per-Type Instrument Migration                                             | DONE        |
+| 2026-05-05 | ORE Import / Export Code Cleanup                                                 | COMPLETE    |
+| 2026-05-05 | ORE Domain Roundtrip Check                                                       | COMPLETE    |
+| 2026-05-12 | Strict Service Table Isolation                                                   | COMPLETE    |
+| 2026-05-13 | Cross-Service Write Decoupling                                                   | DONE        |
+| 2026-05-13 | PostgreSQL Identifier Length Cleanup                                             | COMPLETE    |
+| 2026-05-13 | Symbol Visibility Migration                                                      | COMPLETE    |
+| 2026-05-14 | Codegen SQL Debt — Hand-Written Files with Existing Models                       | COMPLETE    |
+| 2026-05-14 | DQ Publish Pattern — Architecture and Decision                                   | IN PROGRESS |
+| 2026-05-14 | Workflow Engine Hardening                                                        | COMPLETE    |
+| 2026-05-15 | Login Dialog Label Filter                                                        |             |
+| 2026-05-15 | ORE Import Error Reporting and Step Warning State                                | COMPLETE    |
+| 2026-05-15 | Qt Plugin Isolation: Cross-Plugin Symbol Dependencies                            | COMPLETE    |
+| 2026-05-16 | Controller Startup and Shutdown Latency Fix                                      | DONE        |
+| 2026-05-16 | Data Import Session and Workflow Partial-Success                                 | PROPOSED    |
+| 2026-05-17 | MSVC C1202 — Decompose trade into Sub-Structs                                    | IN PROGRESS |
+| 2026-05-17 | Shared audit_record and Codegen Composite-Type Support                           | DRAFT       |
+| 2026-05-17 | Tenant and System Bootstrap Reset                                                | DONE        |
+| 2026-05-17 | Virtual Portfolio Design                                                         | PROPOSED    |
+| 2026-05-17 | Workspace — Isolated Data Context Design                                         |             |
+| 2026-05-18 | Codegen IAM Permissions and Roles Population                                     | PROPOSED    |
+| 2026-05-18 | Menu Structure Analysis and Simplification                                       | IN PROGRESS |
+| 2026-05-19 | Qt Trading Codegen Drift Remediation                                             | IN PROGRESS |
+| 2026-05-19 | UML Model Refresh                                                                | IN PROGRESS |
+| 2026-05-19 | Workspace ID Codegen Propagation                                                 | COMPLETE    |
+| 2026-05-20 | Refdata C++ Codegen: Activate Domain/Generator/Repository                        | TODO        |
+| 2026-05-20 | Refdata Party Domain: tenant_id Strong-Type Migration                            | DONE        |
+| 2026-05-21 | Tagged v1/v2 Coexistence — Merge doc/v2/ and Add Version Markers                 |             |
+| 2026-05-21 | Entity Creator Skills Overhaul                                                   | TODO        |
+| 2026-05-21 | Entity Creator Skills: v1 → v2 Migration                                         | TODO        |

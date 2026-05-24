@@ -34,12 +34,12 @@ catch up, or when documenting newly-added tables.
    Variability, etc. The package colour palette is in the
    conventions doc.
 
-3. /Author the diagram following the conventions/ in [[id:496dc90b-8951-42a6-a63e-b1762df496c6][PlantUML ER
+3. /Author the diagram following the conventions/ in [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER
    diagram conventions]] — skeleton, entity styling
    (=<<temporal>>= / =<<junction>>= / none), field notation,
    relationships, notes, temporal columns.
 
-4. /Validate/ via [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]]:
+4. /Validate/ via [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]]:
 
    #+begin_src sh :results verbatim
    cmake --build --target generate_ores_schema_diagram
@@ -52,11 +52,11 @@ catch up, or when documenting newly-added tables.
 
 * Recipes
 
-- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — build / preview loop.
+- [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]] — build / preview loop.
 
 * Reference
 
-- [[id:496dc90b-8951-42a6-a63e-b1762df496c6][PlantUML ER diagram conventions]] — styling and the evaluation
+- [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]] — styling and the evaluation
   checklist.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the component whose schema this diagram documents.
 - [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] — sibling skill for class diagrams.

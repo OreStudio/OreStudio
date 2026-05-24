@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 387016ad-42cf-4830-b504-f255f6a7d1ab
+:ID: 387016AD-42CF-4830-B504-F255F6A7D1AB
 :END:
 #+title: Check recipes before searching for how to do something
 #+description: When needing to know how to perform a project operation, look in doc/recipes/ first.

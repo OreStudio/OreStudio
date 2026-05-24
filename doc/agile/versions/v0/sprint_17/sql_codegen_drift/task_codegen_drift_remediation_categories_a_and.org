@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 79dfd8ce-1eff-4fe5-82e2-9a93afb4b0ed
+:ID: 79DFD8CE-1EFF-4FE5-82E2-9A93AFB4B0ED
 :END:
 #+title: Task: Codegen drift remediation: Categories A and B
 #+description: - Category B (naming/missing): Fixed index naming inconsistencies and added missing `lifecycle_events` SQL that codegen 
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:25f0a34b-c547-4550-943b-e8f517eb0f6c][SQL codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:25F0A34B-C547-4550-943B-E8F517EB0F6C][SQL codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Replace five hand-crafted trading reference data tables and reporting enum table
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:25f0a34b-c547-4550-943b-e8f517eb0f6c][SQL codegen drift remediation]] |
+| Parent story | [[id:25F0A34B-C547-4550-943B-E8F517EB0F6C][SQL codegen drift remediation]] |
 | Now          | Completed 2026-05-16.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

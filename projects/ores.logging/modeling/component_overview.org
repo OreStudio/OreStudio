@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1fbcc86b-8e04-4f81-8558-85c0b6c54836
+:ID: 1FBCC86B-8E04-4F81-8558-85C0B6C54836
 :END:
 #+title: ores.logging
 #+description: Core logging library on Boost.Log — severity levels, logger factory, and lifecycle management for all ORE Studio components.

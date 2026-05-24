@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 324a9c16-add5-4889-be0c-48a7186883bb
+:ID: 324A9C16-ADD5-4889-BE0C-48A7186883BB
 :END:
 #+title: Task: Import market.txt and fixings.txt in ORE import
 #+description: TradeController reads market.txt + fixings.txt alongside trade XML; ImportTradeDialog handles market data import in background thread before trade import.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:44ecad9c-332a-48f5-acb4-7c30f9eb8ddf][ORE import supporting files]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:44ECAD9C-332A-48F5-ACB4-7C30F9EB8DDF][ORE import supporting files]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ TradeController reads market.txt + fixings.txt alongside trade XML; ImportTradeD
 | Field        | Value                                                                    |
 |--------------+--------------------------------------------------------------------------|
 | State        | DONE                                                                     |
-| Parent story | [[id:44ecad9c-332a-48f5-acb4-7c30f9eb8ddf][ORE import supporting files]] |
+| Parent story | [[id:44ECAD9C-332A-48F5-ACB4-7C30F9EB8DDF][ORE import supporting files]] |
 | Now          | Completed 2026-04-03.                                                    |
 | Waiting on   | None.                                                                    |
 | Next         | None.                                                                    |

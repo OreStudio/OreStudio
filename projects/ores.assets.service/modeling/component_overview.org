@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6d1aa78f-f37b-4030-b32c-b8b5eb4b0eee
+:ID: 6D1AA78F-F37B-4030-B32C-B8B5EB4B0EEE
 :END:
 #+title: ores.assets.service
 #+description: NATS service entrypoint for the assets domain — wires handlers, repositories, and configuration.

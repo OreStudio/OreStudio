@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 32448b40-ed11-4ee4-8ff8-49daa81a70a9
+:ID: 32448B40-ED11-4EE4-8FF8-49DAA81A70A9
 :END:
 #+title: Task: Implement adding new currencies
 #+description: Add a new-currency dialog and wire it to the repository.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1e99eee4-dca5-4384-942e-0ce28b0a467c][Currencies UI]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1E99EEE4-DCA5-4384-942E-0CE28B0A467C][Currencies UI]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ so the server side picks up the new row.
 | Field        | Value                                                      |
 |--------------+------------------------------------------------------------|
 | State        | DONE                                                       |
-| Parent story | [[id:1e99eee4-dca5-4384-942e-0ce28b0a467c][Currencies UI]] |
+| Parent story | [[id:1E99EEE4-DCA5-4384-942E-0CE28B0A467C][Currencies UI]] |
 | Now          | Completed 2025-11-25.                                      |
 | Waiting on   | None.                                                      |
 | Next         | None.                                                      |

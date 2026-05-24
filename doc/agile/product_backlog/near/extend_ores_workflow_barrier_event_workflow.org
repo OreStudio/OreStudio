@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c06027b8-66ee-418f-920c-beb6eed68a4a
+:ID: C06027B8-66EE-418F-920C-BEB6EED68A4A
 :END:
 #+title: Extend ores.workflow: barrier-event workflow
 #+description: Extend ores.workflow: barrier-event workflow
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Second financial workflow: apply a knock-in/out barrier event to a trade and
 cascade to Greeks recomputation and reporting. See Phase 5 in

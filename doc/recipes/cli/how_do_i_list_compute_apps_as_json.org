@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c8709697-1082-44e3-863f-776332d890c1
+:ID: C8709697-1082-44E3-863F-776332D890C1
 :END:
 #+title: How do I list compute apps as JSON?
 #+description: List compute apps via =ores.cli= as JSON for piping into =jq=

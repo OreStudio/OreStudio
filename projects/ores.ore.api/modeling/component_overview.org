@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0f93b352-f234-4d9d-82e6-05218be645e8
+:ID: 0F93B352-F234-4D9D-82E6-05218BE645E8
 :END:
 #+title: ores.ore.api
 #+description: Domain types and NATS protocol schemas for the ORE integration component.
@@ -43,4 +43,4 @@ clients that invoke ORE risk runs.
 
 * See also
 
-- [[id:9a71f1f5-c3ed-4c07-9d7d-c5b42d4a1332][ores.ore.core]] — ORE import/export logic and NATS handlers.
+- [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]] — ORE import/export logic and NATS handlers.

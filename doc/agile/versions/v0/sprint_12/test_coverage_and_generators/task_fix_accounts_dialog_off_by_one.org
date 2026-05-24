@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a3f4549f-3e40-47f3-bcf2-397205129c00
+:ID: A3F4549F-3E40-47F3-BCF2-397205129C00
 :END:
 #+title: Task: Fix off-by-one in accounts dialog
 #+description: Account list view off-by-one after AccountType column added; public Column enum + delegate refactor; documented in qt-entity-creator skill.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4CE5CC79-DC9B-491F-A8F7-F635DE33D55A][Test coverage and FK-aware generators]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Fix the off-by-one display error in the accounts list view after =AccountType= c
 | Field        | Value                                                                              |
 |--------------+------------------------------------------------------------------------------------|
 | State        | DONE                                                                               |
-| Parent story | [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] |
+| Parent story | [[id:4CE5CC79-DC9B-491F-A8F7-F635DE33D55A][Test coverage and FK-aware generators]] |
 | Now          | Completed 2026-02-10.                                                              |
 | Waiting on   | None.                                                                              |
 | Next         | None.                                                                              |

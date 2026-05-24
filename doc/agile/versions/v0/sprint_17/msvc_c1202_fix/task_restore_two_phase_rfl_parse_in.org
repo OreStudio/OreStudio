@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 970e36f2-dc20-45e4-b1b7-186f86f46650
+:ID: 970E36F2-DC20-45E4-B1B7-186F86F46650
 :END:
 #+title: Task: Restore two-phase rfl parse in getTradeDetail to fix MSVC C1202
 #+description: PR #763 merged `getTradeDetail` back into `ClientManagerTrades.cpp` and replaced the two-phase rfl parse with a single `
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Restore the two-phase rfl parse in getTradeDetail to work around MSVC C1202 stil
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] |
+| Parent story | [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] |
 | Now          | Completed 2026-05-19.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

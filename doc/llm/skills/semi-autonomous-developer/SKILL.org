@@ -34,17 +34,17 @@ no tasks exist yet, create them with =TaskCreate= before coding.
 
 ** Step 2 — Create a feature branch and mark STARTED
 
-Follow [[id:da003a23-1604-43e7-a98f-a305148fbcf4][How do I start work on a story?]] — branch from =main= using
+Follow [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] — branch from =main= using
 =feature/concise-lowercase-description=, mark the story =STARTED=,
 and commit the status change.  The full state machine is in
-[[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][Lifecycle]]; the execution-phase context is in [[id:227958a5-0f78-4cc6-a116-b83988592b68][Sprint execution]].
+[[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]]; the execution-phase context is in [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]].
 
 ** Step 3 — Implement incrementally
 
 For each task, follow this cycle without exception:
 
 1. *Implement* — make the minimal change for the task.
-2. *Compile* — use [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]] for build and test commands.
+2. *Compile* — use [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]] for build and test commands.
    Fix errors before proceeding.
 3. *Test* — run the affected component's tests.  Fix failures before
    proceeding.
@@ -66,16 +66,16 @@ table.
 
 * Reference
 
-- [[id:da003a23-1604-43e7-a98f-a305148fbcf4][How do I start work on a story?]] — branch creation and story
+- [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] — branch creation and story
   activation.
-- [[id:479e7e27-4060-4bfd-ac38-f11efa3bb306][How do I start a new feature branch phase?]] — for multi-phase
+- [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]] — for multi-phase
   stories after the first PR merges.
-- [[id:227958a5-0f78-4cc6-a116-b83988592b68][Sprint execution]] — the cybernetic context (System 1 owns; System 2
+- [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]] — the cybernetic context (System 1 owns; System 2
   reviews; System 3* audits heartbeat).
-- [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][Lifecycle]] — full state machine: =BACKLOG → STARTED → DONE=.
-- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]] — build and test commands.
+- [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]] — full state machine: =BACKLOG → STARTED → DONE=.
+- [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]] — build and test commands.
 - [[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]] — PR creation, monitoring, and merge lifecycle.
-- [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]] — sprint and story management conventions.
+- [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]] — sprint and story management conventions.
 
 * Artefacts                                                        :noexport:
 

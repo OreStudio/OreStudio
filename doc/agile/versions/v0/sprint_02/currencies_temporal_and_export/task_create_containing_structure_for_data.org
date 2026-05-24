@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: acb832a6-da5e-4463-83a8-4bfa06bd607f
+:ID: ACB832A6-DA5E-4463-83A8-4BFA06BD607F
 :END:
 #+title: Task: Create a containing structure for data
 #+description: Introduce a top-level container for ORE example data so groups of related files can be loaded together.
@@ -12,7 +12,7 @@
 #+updated: 2025-08-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:ED5BC735-FB54-4CE0-9A08-6DAB88C242D0][Currencies temporal and export]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -26,7 +26,7 @@ example as a unit.
 | Field        | Value                                                                       |
 |--------------+-----------------------------------------------------------------------------|
 | State        | DONE                                                                        |
-| Parent story | [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and export]] |
+| Parent story | [[id:ED5BC735-FB54-4CE0-9A08-6DAB88C242D0][Currencies temporal and export]] |
 | Now          | Completed 2025-08-25.                                                       |
 | Waiting on   | None.                                                                       |
 | Next         | None.                                                                       |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3afa8a40-2b03-4317-8ff0-96ef5e2b9249
+:ID: 3AFA8A40-2B03-4317-8FF0-96EF5E2B9249
 :END:
 #+title: Task: Add messaging for risk
 #+description: Wire the risk module as the first consumer of the comms library — request/response over cobalt.
@@ -12,7 +12,7 @@
 #+updated: 2025-09-30
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:145ADEDE-C3DD-4B51-AD3B-D6B5506C6C37][Client/server foundations]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -25,7 +25,7 @@ client and server, and prove it works end-to-end.
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | DONE                                                                   |
-| Parent story | [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] |
+| Parent story | [[id:145ADEDE-C3DD-4B51-AD3B-D6B5506C6C37][Client/server foundations]] |
 | Now          | Completed 2025-09-30.                                                  |
 | Waiting on   | None.                                                                  |
 | Next         | None.                                                                  |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a6c3f702-ec89-41db-b662-79ac971d30a9
+:ID: A6C3F702-EC89-41DB-B662-79AC971D30A9
 :END:
 #+title: Task: Review HTTP service
 #+description: Validate swagger; write recipes covering the HTTP surface; document the OpenAPI generator.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:13fbe901-b255-49f7-88c3-13b2a2506bf3][Wt and HTTP review]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:13FBE901-B255-49F7-88C3-13B2A2506BF3][Wt and HTTP review]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Validate the HTTP service introduced in sprint 07: swagger correctness, recipes 
 | Field        | Value                                                           |
 |--------------+-----------------------------------------------------------------|
 | State        | DONE                                                            |
-| Parent story | [[id:13fbe901-b255-49f7-88c3-13b2a2506bf3][Wt and HTTP review]] |
+| Parent story | [[id:13FBE901-B255-49F7-88C3-13B2A2506BF3][Wt and HTTP review]] |
 | Now          | Completed 2026-01-06.                                           |
 | Waiting on   | None.                                                           |
 | Next         | None.                                                           |

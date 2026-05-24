@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a1105ed1-a491-4c76-ae0c-d320b989e397
+:ID: A1105ED1-A491-4C76-AE0C-D320B989E397
 :END:
 #+title: Add proper enumerations for trade key fields
 #+description: Key trade fields (product type, call/put) currently use raw strings. Add typed enumerations backed by database tables; UI uses combo boxes populated from these tables.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 11694c94-3aff-4759-a51c-7b0450d0e2b9
+:ID: 11694C94-3AFF-4759-A51C-7B0450D0E2B9
 :END:
 #+title: Task: cmake: Switch MSVC debug info to Embedded (/Z7)
 #+description: Switch MSVC debug information format from external PDB to embedded; /FS flag removed in consequence.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Switch MSVC debug information format from external PDB to embedded; /FS flag rem
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | DONE                                                                   |
-| Parent story | [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]] |
+| Parent story | [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]] |
 | Now          | Completed 2026-04-11.                                                  |
 | Waiting on   | None.                                                                  |
 | Next         | None.                                                                  |

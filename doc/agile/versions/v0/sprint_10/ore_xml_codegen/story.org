@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a1571428-c1bd-4fd1-9434-21ce5b1a6154
+:ID: A1571428-C1BD-4FD1-9434-21CE5B1A6154
 :END:
 #+title: Story: ORE XML codegen
 #+description: New ores.ore component; generate C++ for ORE via xsdcpp; round-trip tests; Windows MSVC build fix.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ samples round-trip.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Parent sprint | [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]] |
 | Now           | Completed 2026-01-27.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -42,10 +42,10 @@ samples round-trip.
 
 In execution order:
 
-- [[id:27b76a70-df1d-4c66-89a9-fba3cb801353][Add ores.ore component for import/export]]
-- [[id:2a497ceb-40e2-47ad-8cf5-cfb40226dfbd][Generate C++ code for ORE via xsdcpp]]
-- [[id:755c3e7e-372b-4014-8698-41f6404255f2][Fix issues with xsdcpp when generating ORE code]]
-- [[id:9c3c142a-92b0-4771-9bb5-725e62a9b870][Fix Windows CI break due to XSD codegen]]
+- [[id:27B76A70-DF1D-4C66-89A9-FBA3CB801353][Add ores.ore component for import/export]]
+- [[id:2A497CEB-40E2-47AD-8CF5-CFB40226DFBD][Generate C++ code for ORE via xsdcpp]]
+- [[id:755C3E7E-372B-4014-8698-41F6404255F2][Fix issues with xsdcpp when generating ORE code]]
+- [[id:9C3C142A-92B0-4771-9BB5-725E62A9B870][Fix Windows CI break due to XSD codegen]]
 
 * Decisions
 

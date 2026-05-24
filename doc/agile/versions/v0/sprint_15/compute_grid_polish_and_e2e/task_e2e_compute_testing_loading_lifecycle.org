@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7daa4131-019b-4191-802d-cb67b22d102f
+:ID: 7DAA4131-019B-4191-802D-CB67B22D102F
 :END:
 #+title: Task: E2E compute testing fixes and loading lifecycle refactor
 #+description: AbstractClientModel base class with dataLoaded() + loadError() signals wired to endLoading() via EntityListMdiWindow::connectModel(); applies_to_new on change reason domain + SQL; centralised change-reason prompting in DetailDialogBase; compute RLS for app + app_versions as system-owned global registries; UUID generation in ORE app seed; ReflectCPP consteval workaround; app_version multi-platform via ores_compute_app_version_platforms_tbl junction; AppVersionDetailDialog + WorkunitDetailDialog combo boxes.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0DCEDAE5-E5F0-4AF8-AE85-37C7618237A6][Compute grid polish and E2E fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Round of compute-grid polish + cross-cutting loading-lifecycle refactor.
 | Field        | Value                                                                          |
 |--------------+--------------------------------------------------------------------------------|
 | State        | DONE                                                                           |
-| Parent story | [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]] |
+| Parent story | [[id:0DCEDAE5-E5F0-4AF8-AE85-37C7618237A6][Compute grid polish and E2E fixes]] |
 | Now          | Completed 2026-03-22.                                                          |
 | Waiting on   | None.                                                                          |
 | Next         | None.                                                                          |

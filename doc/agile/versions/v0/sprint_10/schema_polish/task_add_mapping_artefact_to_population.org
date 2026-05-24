@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: bd7f39d4-46b1-41ce-992b-7feedf0cc59d
+:ID: BD7F39D4-46B1-41CE-992B-7FEEDF0CC59D
 :END:
 #+title: Task: Add mapping artefact to population functions
 #+description: Hard-coded mapping moved into the artefact pipeline.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5BAFBEB2-C875-4655-BB78-801A3BF65022][Schema polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Remove the hard-coded mapping in population functions; route it through the arte
 | Field        | Value                                                      |
 |--------------+------------------------------------------------------------|
 | State        | DONE                                                       |
-| Parent story | [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]] |
+| Parent story | [[id:5BAFBEB2-C875-4655-BB78-801A3BF65022][Schema polish]] |
 | Now          | Completed 2026-01-25.                                      |
 | Waiting on   | None.                                                      |
 | Next         | None.                                                      |

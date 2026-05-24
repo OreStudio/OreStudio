@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2a497ceb-40e2-47ad-8cf5-cfb40226dfbd
+:ID: 2A497CEB-40E2-47AD-8CF5-CFB40226DFBD
 :END:
 #+title: Task: Generate C++ code for ORE via xsdcpp
 #+description: xsdcpp integrated; manually-crafted CurrencyConfig/CurrencyElement replaced by generated types; artefact_type domain centralises target_table + populate_function lookup; dq_populate_*_fn naming convention enforced; currency rounding-type values corrected.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A1571428-C1BD-4FD1-9434-21CE5B1A6154][ORE XML codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Generate C++ types for ORE XML configuration via xsdcpp; centralise publication 
 | Field        | Value                                                        |
 |--------------+--------------------------------------------------------------|
 | State        | DONE                                                         |
-| Parent story | [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]] |
+| Parent story | [[id:A1571428-C1BD-4FD1-9434-21CE5B1A6154][ORE XML codegen]] |
 | Now          | Completed 2026-01-25.                                        |
 | Waiting on   | None.                                                        |
 | Next         | None.                                                        |

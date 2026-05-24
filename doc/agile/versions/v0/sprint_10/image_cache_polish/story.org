@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2a572d8a-644c-40d9-87d2-7a49a9c07d1b
+:ID: 2A572D8A-644C-40D9-87D2-7A49A9C07D1B
 :END:
 #+title: Story: Image cache polish
 #+description: Reload on new datasets; incremental loading via =modified_since=.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ new datasets, and a full reload was expensive.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Parent sprint | [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]] |
 | Now           | Completed 2026-01-23.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -40,8 +40,8 @@ new datasets, and a full reload was expensive.
 
 In execution order:
 
-- [[id:8153e98e-839f-4c19-9517-8fd41ac7052b][Image cache reloads on new datasets]]
-- [[id:f8794373-3e9c-4ee2-912a-43f7bf33a446][Incremental image cache loading with modified_since]]
+- [[id:8153E98E-839F-4C19-9517-8FD41AC7052B][Image cache reloads on new datasets]]
+- [[id:F8794373-3E9C-4EE2-912A-43F7BF33A446][Incremental image cache loading with modified_since]]
 
 * Decisions
 

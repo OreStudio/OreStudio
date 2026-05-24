@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ec6d8e8d-4421-412a-9331-9bba5b542d54
+:ID: EC6D8E8D-4421-412A-9331-9BBA5B542D54
 :END:
 #+title: Story: Detail dialogs modernisation
 #+description: Convert all detail dialogs to tabbed layout with a Provenance tab; remove the in-dialog toolbars.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ in-dialog toolbars in favour of plain buttons.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Parent sprint | [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]] |
 | Now           | Completed 2026-02-25.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -40,8 +40,8 @@ in-dialog toolbars in favour of plain buttons.
 
 In execution order:
 
-- [[id:ba771ea9-fbf1-420e-b708-e12a3276758f][Make all detail dialogs tabbed]]
-- [[id:6b0d2950-4144-4c15-b4fa-356b6ec0770b][Remove toolbars from detail dialogs]]
+- [[id:BA771EA9-FBF1-420E-B708-E12A3276758F][Make all detail dialogs tabbed]]
+- [[id:6B0D2950-4144-4C15-B4FA-356B6EC0770B][Remove toolbars from detail dialogs]]
 
 * Decisions
 

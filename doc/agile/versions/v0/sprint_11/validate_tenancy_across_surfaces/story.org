@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 52bbea16-0344-4299-88ba-ec6a341fbd21
+:ID: 52BBEA16-0344-4299-88BA-EC6A341FBD21
 :END:
 #+title: Story: Validate tenancy across surfaces
 #+description: Shell, Data Librarian publication, DQ metadata indexes, and event-bus subscriptions all checked for correct tenant isolation; gaps fixed.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ event bus. Fix the gaps.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Parent sprint | [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]] |
 | Now           | Completed 2026-02-06.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -40,10 +40,10 @@ event bus. Fix the gaps.
 
 In execution order:
 
-- [[id:94a87d79-bae3-46a1-b1b3-81784f3d8c2b][Test shell functionality with tenancy enabled]]
-- [[id:d1b73897-ed9a-49a8-9fc6-8d77b941d1d2][Review DQ metadata tables for multi-tenancy]]
-- [[id:27ee7d4c-c59e-4b9f-a6c6-3920dcce5c77][Check Data Librarian can publish across tenants]]
-- [[id:10f2ee08-c4c4-4b2d-af8a-10898ff2d309][Check eventing across tenants]]
+- [[id:94A87D79-BAE3-46A1-B1B3-81784F3D8C2B][Test shell functionality with tenancy enabled]]
+- [[id:D1B73897-ED9A-49A8-9FC6-8D77B941D1D2][Review DQ metadata tables for multi-tenancy]]
+- [[id:27EE7D4C-C59E-4B9F-A6C6-3920DCCE5C77][Check Data Librarian can publish across tenants]]
+- [[id:10F2EE08-C4C4-4B2D-AF8A-10898FF2D309][Check eventing across tenants]]
 
 * Decisions
 
@@ -56,4 +56,4 @@ In execution order:
 
 * See also
 
-- [[id:976a2745-6728-435e-970e-d1205d46dc7a][Per-request tenant context]] — must land before this validation can trust the handler layer.
+- [[id:976A2745-6728-435E-970E-D1205D46DC7A][Per-request tenant context]] — must land before this validation can trust the handler layer.

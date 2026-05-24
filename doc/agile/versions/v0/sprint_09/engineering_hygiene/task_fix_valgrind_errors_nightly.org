@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 251a6ed5-33f1-4a9b-b450-1eb91c7c7b49
+:ID: 251A6ED5-33F1-4A9B-B450-1EB91C7C7B49
 :END:
 #+title: Task: Fix valgrind errors in nightly
 #+description: Eventing tests fail under clang valgrind; one new possible leak on both clang and gcc.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e7ddb653-ceaa-4922-b0f9-8bd5393a747e][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E7DDB653-CEAA-4922-B0F9-8BD5393A747E][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Address the valgrind regressions surfaced in the nightly run.
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:e7ddb653-ceaa-4922-b0f9-8bd5393a747e][Engineering hygiene]] |
+| Parent story | [[id:E7DDB653-CEAA-4922-B0F9-8BD5393A747E][Engineering hygiene]] |
 | Now          | Completed 2026-01-14.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

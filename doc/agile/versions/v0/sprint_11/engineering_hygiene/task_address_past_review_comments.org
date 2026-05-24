@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 12f3d5ed-fb2b-41e6-8cc5-15392522c2c0
+:ID: 12F3D5ED-FB2B-41E6-8CC5-15392522C2C0
 :END:
 #+title: Task: Address past review comments
 #+description: Clear backlog of review comments from PRs #389 and #387: header-state restoration, DataLibrarianWindow optimisation, bundle validation messages, dataset_protocol helpers extracted, ORE CMake dependency cleanup, doc pruning.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:0a69cb02-19df-4df7-bedd-81c57a604737][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0A69CB02-19DF-4DF7-BEDD-81C57A604737][Engineering hygiene]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Clear the backlog of review comments from PRs #389 and #387 across Qt, DQ, and O
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:0a69cb02-19df-4df7-bedd-81c57a604737][Engineering hygiene]] |
+| Parent story | [[id:0A69CB02-19DF-4DF7-BEDD-81C57A604737][Engineering hygiene]] |
 | Now          | Completed 2026-01-29.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

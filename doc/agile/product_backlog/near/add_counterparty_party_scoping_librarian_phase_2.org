@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8bb2b76b-3043-4b68-8d8c-693934edf41d
+:ID: 8BB2B76B-3043-4B68-8D8C-693934EDF41D
 :END:
 #+title: Add counterparty party scoping (librarian Phase 2)
 #+description: Add counterparty party scoping (librarian Phase 2)
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Phase 2 of the librarian party/counterparty publication plan
 (=2026-02-11=). Phase 1 (dataset dependencies, optional bundle members, party

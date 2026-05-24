@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a59e121a-b8fb-43f0-a5cd-1fa5f426e66a
+:ID: A59E121A-B8FB-43F0-A5CD-1FA5F426E66A
 :END:
 #+title: ores.compute.api
 #+description: Domain types and NATS protocol schemas for the compute component.
@@ -43,5 +43,5 @@ schemas used by both the orchestrator (=ores.compute.core=) and worker nodes
 
 * See also
 
-- [[id:3bffdf5c-86f5-4d57-9d9f-676d0d62b344][ores.compute.core]] — orchestrator side.
-- [[id:f1b19d84-a5c9-4478-bb46-ee6ea62dafca][ores.compute.wrapper]] — worker side.
+- [[id:3BFFDF5C-86F5-4D57-9D9F-676D0D62B344][ores.compute.core]] — orchestrator side.
+- [[id:F1B19D84-A5C9-4478-BB46-EE6EA62DAFCA][ores.compute.wrapper]] — worker side.

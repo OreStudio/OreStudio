@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 84545fff-58e6-4c97-821c-0d3bb0375f08
+:ID: 84545FFF-58E6-4C97-821C-0D3BB0375F08
 :END:
 #+title: Story: Advanced counterparty dialog
 #+description: Five-tab counterparty dialog (General / Identifiers / Contacts / Hierarchy / Metadata); refactor party + counterparty dialogs behind a strategy pattern.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ party + counterparty dialogs behind a strategy pattern.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Parent sprint | [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]] |
 | Now           | Completed 2026-02-19.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,8 +41,8 @@ party + counterparty dialogs behind a strategy pattern.
 
 In execution order:
 
-- [[id:bc6a1b9e-253a-4727-badf-324d86a98313][Counterparty dialog: 5-tab layout]]
-- [[id:1b51b5e2-b0e2-4839-a911-50c1069300b4][Refactor party + counterparty dialogs]]
+- [[id:BC6A1B9E-253A-4727-BADF-324D86A98313][Counterparty dialog: 5-tab layout]]
+- [[id:1B51B5E2-B0E2-4839-A911-50C1069300B4][Refactor party + counterparty dialogs]]
 
 * Decisions
 

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1352463b-1ebd-40f9-b1eb-3fdb5ffa319c
+:ID: 1352463B-1EBD-40F9-B1EB-3FDB5FFA319C
 :END:
 #+title: Task: Add support for windows-msvc-clang-cl
 #+description: Add a CMake preset and toolchain wiring for clang-cl on Windows alongside MSVC.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D246FFBE-11EE-4FF9-9309-2A693E2476EF][Build stabilisation 3]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ Linux clang warning configuration on Windows builds.
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
 | State        | DONE                                                               |
-| Parent story | [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]] |
+| Parent story | [[id:D246FFBE-11EE-4FF9-9309-2A693E2476EF][Build stabilisation 3]] |
 | Now          | Completed 2025-11-15.                                              |
 | Waiting on   | None.                                                              |
 | Next         | None.                                                              |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ef2c005f-9eb1-4b1e-933d-efaccf06bf9c
+:ID: EF2C005F-9EB1-4B1E-933D-EFACCF06BF9C
 :END:
 #+title: Add support for protocol debugging in Qt
 #+description: Add support for protocol debugging in Qt
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 We should add a view of all messages sent and received like the comms champ
 tools. It should be possible to record a session to file (maybe all the

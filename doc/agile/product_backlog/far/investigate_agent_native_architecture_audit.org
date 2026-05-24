@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f7c5ad58-f45d-4819-a1c3-05422fd6d164
+:ID: F7C5AD58-F45D-4819-A1C3-05422FD6D164
 :END:
 #+title: Investigate Agent-Native Architecture Audit
 #+description: Investigate Agent-Native Architecture Audit
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 #+begin_quote
 Conduct a comprehensive review of the codebase against agent-native architecture

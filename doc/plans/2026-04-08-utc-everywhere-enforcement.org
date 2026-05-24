@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: C7E3B2A4-8F15-4D9A-B3E7-H4C95G1F2678
+:ID: 3268BB6F-E87B-4EDD-B622-015888C1A6D3
 :END:
 #+title: UTC-Everywhere Timestamp Enforcement
 #+version: 1

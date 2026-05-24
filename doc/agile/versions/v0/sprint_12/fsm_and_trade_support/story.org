@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: bd4110c2-fdf7-47b0-a726-f4cd83ded8e5
+:ID: BD4110C2-FDF7-47B0-A726-F4CD83DED8E5
 :END:
 #+title: Story: FSM and trade support
 #+description: Generic FSM framework in Postgres; trade envelope schema (trades + identifiers + party roles); ORE envelope view; rename ores.trade → ores.trading.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,16 +24,16 @@ process.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Parent sprint | [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]] |
 | Now           | Completed 2026-02-20.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-02-20                                             |
 
 
-#+successor: 6ac2981b-ba0a-4916-a2c1-6b5a816a9148
+#+successor: 6AC2981B-BA0A-4916-A2C1-6B5A816A9148
 
-Continued in: [[id:6ac2981b-ba0a-4916-a2c1-6b5a816a9148][FSM consolidation into DQ]] (sprint 13) — moves the FSM
+Continued in: [[id:6AC2981B-BA0A-4916-A2C1-6B5A816A9148][FSM consolidation into DQ]] (sprint 13) — moves the FSM
 framework into the DQ layer where it conceptually belongs.
 
 * Acceptance
@@ -48,8 +48,8 @@ framework into the DQ layer where it conceptually belongs.
 
 In execution order:
 
-- [[id:196729ef-6042-4b3d-8c91-96cfe6c67a5c][Add FSM support to Postgres]]
-- [[id:78c1bec5-d1f6-49ec-89f5-8b485ce8fb96][Add trade support]]
+- [[id:196729EF-6042-4B3D-8C91-96CFE6C67A5C][Add FSM support to Postgres]]
+- [[id:78C1BEC5-D1F6-49EC-89F5-8B485CE8FB96][Add trade support]]
 
 * Decisions
 
@@ -63,4 +63,4 @@ In execution order:
 
 * See also
 
-- [[id:27b76a70-df1d-4c66-89a9-fba3cb801353][Add ores.ore component]] (sprint 10) — supplies the ORE envelope structure this story flattens to.
+- [[id:27B76A70-DF1D-4C66-89A9-FBA3CB801353][Add ores.ore component]] (sprint 10) — supplies the ORE envelope structure this story flattens to.

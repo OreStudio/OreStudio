@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3d83489c-f7e5-43e9-b42d-fa45ee9afaf4
+:ID: 3D83489C-F7E5-43E9-B42D-FA45EE9AFAF4
 :END:
 #+title: Books must belong to a business unit; portfolio explorer toggle
 #+description: Books need a business unit FK. The portfolio explorer should have a show/hide option for business unit nodes in the tree.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

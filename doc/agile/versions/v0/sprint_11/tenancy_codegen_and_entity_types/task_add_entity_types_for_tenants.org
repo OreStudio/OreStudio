@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: eec6cea6-4f37-4f23-b88a-1f505eb9cbc0
+:ID: EEC6CEA6-4F37-4F23-B88A-1F505EB9CBC0
 :END:
 #+title: Task: Add entity types for tenants
 #+description: C++ tenant + tenant_status + tenant_type + currency + rounding_type entities tenant-aware; primary key types handled (UUID / text); protocol bump 26.1; shell tenants command + bootstrap/login tenant awareness; principal parsing username@hostname.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:467e909e-ceac-4829-8688-d43179d38f18][Tenancy codegen and entity types]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:467E909E-CEAC-4829-8688-D43179D38F18][Tenancy codegen and entity types]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Bring tenants into the C++ side: domain entities, shell commands, protocol bump.
 | Field        | Value                                                                         |
 |--------------+-------------------------------------------------------------------------------|
 | State        | DONE                                                                          |
-| Parent story | [[id:467e909e-ceac-4829-8688-d43179d38f18][Tenancy codegen and entity types]] |
+| Parent story | [[id:467E909E-CEAC-4829-8688-D43179D38F18][Tenancy codegen and entity types]] |
 | Now          | Completed 2026-02-03.                                                         |
 | Waiting on   | None.                                                                         |
 | Next         | None.                                                                         |

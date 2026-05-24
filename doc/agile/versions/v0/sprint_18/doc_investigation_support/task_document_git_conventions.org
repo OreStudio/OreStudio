@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 3B399253-D172-4CC7-B0B1-DD7D3204E1E3
+:END:
+#+title: Task: Document git commit conventions
+#+description: Establish a formal recipe for git commits, including component prefixes and AI attribution.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :git:conventions:doc_investigation_support:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-23
+#+updated: 2026-05-23
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47296A33-5CF4-49B5-B3D4-1B74C23FAEE9][Add investigation support to document system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:47296A33-5CF4-49B5-B3D4-1B74C23FAEE9][Add investigation support to document system]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-23                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* Result

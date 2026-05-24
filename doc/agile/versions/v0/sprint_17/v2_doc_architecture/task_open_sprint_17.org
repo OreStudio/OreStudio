@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 30e9701e-fc42-4e9a-b486-980ab3a8fe3c
+:ID: 30E9701E-FC42-4E9A-B486-980AB3A8FE3C
 :END:
 #+title: Task: Open Sprint 17
 #+description: - Opens Sprint 17 for development.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:063862A1-C02C-4F76-A212-576A57423F0F][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Open Sprint 17: bump the product version to 0.0.17 across CMake, vcpkg, workflow
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] |
+| Parent story | [[id:063862A1-C02C-4F76-A212-576A57423F0F][v2 documentation architecture]] |
 | Now          | Completed 2026-04-18.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

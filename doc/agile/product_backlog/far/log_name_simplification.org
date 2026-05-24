@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a3e9fdce-f1b9-40c2-9e57-53dba05fe3e6
+:ID: A3E9FDCE-F1B9-40C2-9E57-53DBA05FE3E6
 :END:
 #+title: Simplify verbose handler log names
 #+description: Handler log names like pricing_engine_type_handler_lg() should just be lg(). Affects all generated handler templates.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

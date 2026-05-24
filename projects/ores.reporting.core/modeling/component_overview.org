@@ -55,6 +55,6 @@ persists all report metadata to the =ores_reporting= schema.
 
 * See also
 
-- [[id:e5ac5738-0694-494e-823e-0322f4902ad2][ores.reporting.api]] — protocol types and domain entities.
-- [[id:544947d0-7e23-4145-8f62-ec8341ed42ff][ores.reporting.service]] — NATS service entrypoint.
+- [[id:E5AC5738-0694-494E-823E-0322F4902AD2][ores.reporting.api]] — protocol types and domain entities.
+- [[id:544947D0-7E23-4145-8F62-EC8341ED42FF][ores.reporting.service]] — NATS service entrypoint.
 - [[id:B1A5C952-B709-444B-8A63-5FD834D87D52][ores.reporting Messaging Reference]] — full NATS subject and message catalogue.

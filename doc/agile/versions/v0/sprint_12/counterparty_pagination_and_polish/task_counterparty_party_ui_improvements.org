@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8d524a42-38b4-421c-b910-d367e768a0d7
+:ID: 8D524A42-38B4-421C-B910-D367E768A0D7
 :END:
 #+title: Task: Improvements to counterparty and party UI
 #+description: max_cardinality on identifier schemes (BIC dedup); rename 'Business Center' → 'Centre'; merge transliterated names into Name column with non-Latin detection; ResizeToContents standard; centralised window-settings persistence in EntityListMdiWindow.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:af7112ba-bf04-4b6b-ae2f-8fb1c7b362fe][Counterparty pagination and polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AF7112BA-BF04-4B6B-AE2F-8FB1C7B362FE][Counterparty pagination and polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Polish party + counterparty UI further: identifier cardinality, naming, column s
 | Field        | Value                                                                           |
 |--------------+---------------------------------------------------------------------------------|
 | State        | DONE                                                                            |
-| Parent story | [[id:af7112ba-bf04-4b6b-ae2f-8fb1c7b362fe][Counterparty pagination and polish]] |
+| Parent story | [[id:AF7112BA-BF04-4B6B-AE2F-8FB1C7B362FE][Counterparty pagination and polish]] |
 | Now          | Completed 2026-02-14.                                                           |
 | Waiting on   | None.                                                                           |
 | Next         | None.                                                                           |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5766b918-7741-491a-95b5-707ace9c4169
+:ID: 5766B918-7741-491A-95B5-707ACE9C4169
 :END:
 #+title: Task: Create a skill for PlantUML documentation
 #+description: First Claude Code skill: how to author and refresh PlantUML diagrams within the project.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:50b83ce1-6e12-44e7-afeb-f6bac09ddc14][Claude Code skills introduction]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:50B83CE1-6E12-44E7-AFEB-F6BAC09DDC14][Claude Code skills introduction]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -30,7 +30,7 @@ format.
 | Field        | Value                                                                        |
 |--------------+------------------------------------------------------------------------------|
 | State        | DONE                                                                         |
-| Parent story | [[id:50b83ce1-6e12-44e7-afeb-f6bac09ddc14][Claude Code skills introduction]] |
+| Parent story | [[id:50B83CE1-6E12-44E7-AFEB-F6BAC09DDC14][Claude Code skills introduction]] |
 | Now          | Completed 2025-11-15.                                                        |
 | Waiting on   | None.                                                                        |
 | Next         | None.                                                                        |

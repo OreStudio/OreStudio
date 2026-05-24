@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 956fcd0e-41c3-46e4-9895-b64b4c143e6d
+:ID: 956FCD0E-41C3-46E4-9895-B64B4C143E6D
 :END:
 #+title: Story: Account-party management and login
 #+description: Multi-party login flow: link accounts to multiple parties, server returns choices, client picks (or auto-selects); AccountPartiesWidget in account detail dialog; protocol 38.0.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,16 +24,16 @@ account-party assignments. This is the future-story note from sprint
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] |
+| Parent sprint | [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]] |
 | Now           | Completed 2026-02-23.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-02-23                                             |
 
 
-#+predecessor: c431b464-a3bc-4d9c-b33a-7c5b247ebea4
+#+predecessor: C431B464-A3BC-4D9C-B33A-7C5B247EBEA4
 
-Continued from: [[id:c431b464-a3bc-4d9c-b33a-7c5b247ebea4][Party-level RLS isolation]] (sprint 12). That story
+Continued from: [[id:C431B464-A3BC-4D9C-B33A-7C5B247EBEA4][Party-level RLS isolation]] (sprint 12). That story
 laid the schema + RLS + session plumbing and noted that the
 multi-party login picker was a future story; this is that story.
 
@@ -50,7 +50,7 @@ multi-party login picker was a future story; this is that story.
 
 In execution order:
 
-- [[id:ad223e7d-033f-4162-b376-560a07c70c61][Add account-party management and login support]]
+- [[id:AD223E7D-033F-4162-B376-560A07C70C61][Add account-party management and login support]]
 
 * Decisions
 
@@ -63,4 +63,4 @@ In execution order:
 
 * See also
 
-- [[id:c431b464-a3bc-4d9c-b33a-7c5b247ebea4][Party-level RLS isolation]] (sprint 12) — predecessor.
+- [[id:C431B464-A3BC-4D9C-B33A-7C5B247EBEA4][Party-level RLS isolation]] (sprint 12) — predecessor.

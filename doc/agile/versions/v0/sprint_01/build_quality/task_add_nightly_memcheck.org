@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 125319dd-7a6e-4df9-a3f7-0458f4c11256
+:ID: 125319DD-7A6E-4DF9-A3F7-0458F4C11256
 :END:
 #+title: Task: Add nightly support with memcheck
 #+description: Add a nightly CI pipeline that runs the tests under memcheck.
@@ -12,7 +12,7 @@
 #+updated: 2024-07-08
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D334356-F123-43B5-A98E-317EBAD2848A][Build quality]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -25,7 +25,7 @@ the regular feedback loop.
 | Field        | Value                                                      |
 |--------------+------------------------------------------------------------|
 | State        | DONE                                                       |
-| Parent story | [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] |
+| Parent story | [[id:1D334356-F123-43B5-A98E-317EBAD2848A][Build quality]] |
 | Now          | Completed 2024-07-08.                                      |
 | Waiting on   | None.                                                      |
 | Next         | None.                                                      |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6aaea401-96a8-4027-8887-375b978771b3
+:ID: 6AAEA401-96A8-4027-8887-375B978771B3
 :END:
 #+title: Story: Qt column handling centralisation
 #+description: Centralise column metadata across all list windows behind a ColumnMetadata struct.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ configuration lives in one place per entity.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Parent sprint | [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]] |
 | Now           | Completed 2026-02-19.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -39,7 +39,7 @@ configuration lives in one place per entity.
 
 In execution order:
 
-- [[id:9d02285a-ef43-4a80-9a10-ba67e75ddd5b][Improve column handling in list widgets]]
+- [[id:9D02285A-EF43-4A80-9A10-BA67E75DDD5B][Improve column handling in list widgets]]
 
 * Decisions
 

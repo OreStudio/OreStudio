@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: cb12dda8-4b02-44a2-95a2-c27090aa53cc
+:ID: CB12DDA8-4B02-44A2-95A2-C27090AA53CC
 :END:
 #+title: Task: Add basic widgets to display currencies
 #+description: Display currency reference data in the Qt UI via a model/view tree + list widget.
@@ -12,7 +12,7 @@
 #+updated: 2024-07-13
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AF70CDF6-071F-43A9-91BB-7EB9A59A550F][Currencies end-to-end]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -25,7 +25,7 @@ pattern for every reference-data widget that follows.
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
 | State        | DONE                                                               |
-| Parent story | [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]] |
+| Parent story | [[id:AF70CDF6-071F-43A9-91BB-7EB9A59A550F][Currencies end-to-end]] |
 | Now          | Completed 2024-07-13.                                              |
 | Waiting on   | None.                                                              |
 | Next         | None.                                                              |

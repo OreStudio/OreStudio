@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 86b4ecd8-ff01-438a-99bb-55b4ca523aed
+:ID: 86B4ECD8-FF01-438A-99BB-55B4CA523AED
 :END:
 #+title: ores.scheduler.service
 #+description: NATS service entrypoint for the scheduler domain — wires job handlers and runs the cron loop.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ea9a3802-114c-4250-97db-a2e172a69e67
+:ID: EA9A3802-114C-4250-97DB-A2E172A69E67
 :END:
 #+title: Task: Fix vcpkg patch application on Windows
 #+description: Diagnose and work around vcpkg failing to apply a port patch on Windows.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D246FFBE-11EE-4FF9-9309-2A693E2476EF][Build stabilisation 3]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -30,7 +30,7 @@ rejected on Windows runners.
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
 | State        | DONE                                                               |
-| Parent story | [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]] |
+| Parent story | [[id:D246FFBE-11EE-4FF9-9309-2A693E2476EF][Build stabilisation 3]] |
 | Now          | Completed 2025-11-15.                                              |
 | Waiting on   | None.                                                              |
 | Next         | None.                                                              |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b4e2f931-7a1c-4d8e-9b3f-5c0d6a8e1f2b
+:ID: B4E2F931-7A1C-4D8E-9B3F-5C0D6A8E1F2B
 :END:
 #+title: Party Codename and Queue Isolation Design
 #+version: 1

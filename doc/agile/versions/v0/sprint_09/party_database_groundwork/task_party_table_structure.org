@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 992aad62-c371-4e93-b3d2-311d250aa41a
+:ID: 992AAD62-C371-4E93-B3D2-311D250AA41A
 :END:
 #+title: Task: Party table structure
 #+description: First-cut SQL table for party (LEI, tenant_id, party_type_id, business_center_id, status, etc.). Foundation for later domain layer + UI.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ef555d10-3fd3-4928-8e43-e63284d7706f][Party database groundwork]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EF555D10-3FD3-4928-8E43-E63284D7706F][Party database groundwork]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Lay the first SQL table for =party= so subsequent sprints can build the domain l
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | BACKLOG                                                                |
-| Parent story | [[id:ef555d10-3fd3-4928-8e43-e63284d7706f][Party database groundwork]] |
+| Parent story | [[id:EF555D10-3FD3-4928-8E43-E63284D7706F][Party database groundwork]] |
 | Now          | POSTPONED in sprint 09; carried forward.                               |
 | Waiting on   | A sprint with the slot to land it.                                     |
 | Next         | Return to this once a sprint has the budget.                           |

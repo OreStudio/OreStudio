@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7a34c5a4-abd4-4103-b82b-a25f2aef7da3
+:ID: 7A34C5A4-ABD4-4103-B82B-A25F2AEF7DA3
 :END:
 #+title: Task: Migrate 11 party domain types to utility::uuid::tenant_id strong type
 #+description: - Replaces `std::string tenant_id` with `utility::uuid::tenant_id` across all 11 party-cluster domain types (`party`, `b
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cc9a5f89-ea6e-46ec-9f95-8891bd1c1a8e][Refdata tenant_id strong-type migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CC9A5F89-EA6E-46EC-9F95-8891BD1C1A8E][Refdata tenant_id strong-type migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Replace std::string tenant_id with the utility::uuid::tenant_id strong type acro
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:cc9a5f89-ea6e-46ec-9f95-8891bd1c1a8e][Refdata tenant_id strong-type migration]] |
+| Parent story | [[id:CC9A5F89-EA6E-46EC-9F95-8891BD1C1A8E][Refdata tenant_id strong-type migration]] |
 | Now          | Completed 2026-05-20.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

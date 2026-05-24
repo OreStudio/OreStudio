@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 94f9949a-1580-4d47-9331-aa0597543c99
+:ID: 94F9949A-1580-4D47-9331-AA0597543C99
 :END:
 #+title: LLM Configuration and Artefacts
 #+description: Index of LLM-related content under doc/llm/: instructions, settings, skills, and project memories.
@@ -12,35 +12,35 @@
 
 Everything an LLM session needs to operate on ORE Studio lives under
 =doc/llm/=: the session entry point, Claude Code permissions, skills,
-and project-scope memories. Return to [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] for the full =doc/= map.
+and project-scope memories. Return to [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] for the full =doc/= map.
 
 * Detail
 
 ** Entry point
 
-[[id:f9ad7932-8e11-433c-a812-b57dbc9bf5d8][LLM instructions]] (=llm_instructions.org=) is the mandatory first read
+[[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] (=llm_instructions.org=) is the mandatory first read
 for every session. It lists the non-negotiable rules, links to the
 build, code style, architecture, database isolation, testing, git/PR
 conventions, and project memory documents.
 
 ** Claude Code permissions
 
-[[id:2d83251f-0e24-4b97-b736-08f710316634][Claude Code Settings]] (=claude_code_settings.org=) is the literate
+[[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] (=claude_code_settings.org=) is the literate
 source for =.claude/settings.json=. It contains the minimal set of
 Bash globs and sandbox overrides needed to operate in this repository.
 Never edit =.claude/settings.json= directly; regenerate it with the
-[[id:3ddb2afa-9caa-44a0-a91a-645a95320a5f][deploy_settings]] CMake target.
+[[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][deploy_settings]] CMake target.
 
 ** Skills
 
-The =skills/= subtree holds all Claude Code [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skills]]. Each skill lives
+The =skills/= subtree holds all Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]]. Each skill lives
 at =doc/llm/skills/<slug>/SKILL.org= and is task-shaped: it describes
 /when/ to invoke it and /how/ to execute it end-to-end. The full
 catalogue is at [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]].
 
 Skills are deployed to =.claude/skills/= with the
-=deploy_skills= CMake target (see [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]]).
-To create a new skill, see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] §"New
+=deploy_skills= CMake target (see [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]]).
+To create a new skill, see [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New
 Claude Code skill".
 
 ** Project memories
@@ -49,15 +49,15 @@ The =memory/= subtree holds persistent project-scope memories for LLM
 sessions — feedback the user gave, facts about the work in flight, and
 pointers to external systems. Each memory is a single short file
 (=<slug>.org=, =#+type: memory=). The catalogue and inclusion rules
-are at [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][Project memory]].
+are at [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]].
 
-To write a new memory, use the [[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory skill]] or follow
-[[id:391b9231-dba8-4e8c-97ab-a75e2b9fea07][How do I create a memory?]].
+To write a new memory, use the [[id:7357C672-A49F-4974-9399-A166F761D222][ores-memory skill]] or follow
+[[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]].
 
 * See also
 
-- [[id:f9ad7932-8e11-433c-a812-b57dbc9bf5d8][LLM instructions]] — entry point; read before acting.
-- [[id:2d83251f-0e24-4b97-b736-08f710316634][Claude Code Settings]] — literate source for =.claude/settings.json=.
+- [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] — entry point; read before acting.
+- [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — literate source for =.claude/settings.json=.
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]] — full skill catalogue.
-- [[id:dc0bba22-9d4f-4fdd-b011-e30b02b4b82f][Project memory]] — memory catalogue and inclusion/exclusion rules.
-- [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] — top-level map of =doc/=.
+- [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]] — memory catalogue and inclusion/exclusion rules.
+- [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level map of =doc/=.

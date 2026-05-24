@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e5ac5738-0694-494e-823e-0322f4902ad2
+:ID: E5AC5738-0694-494E-823E-0322F4902AD2
 :END:
 #+title: ores.reporting.api
 #+description: Domain types and NATS protocol schemas for the reporting component.

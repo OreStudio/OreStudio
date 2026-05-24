@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ad223e7d-033f-4162-b376-560a07c70c61
+:ID: AD223E7D-033F-4162-B376-560A07C70C61
 :END:
 #+title: Task: Add account-party management and login support
 #+description: Multi-party login: select_party_request/response messages; login_response carries available parties; AccountDetailDialog Parties tab + AccountPartiesWidget; server-side get_account_parties_by_account / save_account_party / delete_account_party handlers; ores_iam_account_parties_system_party_id_fn auto-assigns system party to initial admin; protocol 37 → 38 (breaking); multi_party.org doc.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:956fcd0e-41c3-46e4-9895-b64b4c143e6d][Account-party management and login]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:956FCD0E-41C3-46E4-9895-B64B4C143E6D][Account-party management and login]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Land the missing piece from sprint 12 party-RLS: multi-party login picker + UI f
 | Field        | Value                                                                           |
 |--------------+---------------------------------------------------------------------------------|
 | State        | DONE                                                                            |
-| Parent story | [[id:956fcd0e-41c3-46e4-9895-b64b4c143e6d][Account-party management and login]] |
+| Parent story | [[id:956FCD0E-41C3-46E4-9895-B64B4C143E6D][Account-party management and login]] |
 | Now          | Completed 2026-02-23.                                                           |
 | Waiting on   | None.                                                                           |
 | Next         | None.                                                                           |

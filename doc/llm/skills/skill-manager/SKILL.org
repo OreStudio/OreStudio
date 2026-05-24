@@ -29,18 +29,18 @@ shipped bundle so the skill changes propagate to Claude Code.
 1. /Confirm the work is skill-shaped/. A skill is /task-shaped/ — a
    thin index over recipes plus a reference doc, not the recipes
    themselves. If the doc describes /what someone does/ across
-   many tasks, it is a [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], not a skill. See
-   [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]§=skill= for the contract.
+   many tasks, it is a [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]], not a skill. See
+   [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]§=skill= for the contract.
 
 2. /Identify the recipes the skill will index/. Each operational
    how-to belongs in its own =how_do_i_<thing>.org= file. If a
    needed recipe doesn't exist yet, create it first via
-   [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]].
+   [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]].
 
 3. /Scaffold the skill/ via the codegen. Use kebab-case for the
    slug; it doubles as the Claude Code =name:= field and the
    folder name (=doc/llm/skills/<slug>/SKILL.org=). See
-   [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] §"New Claude Code skill" for
+   [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New Claude Code skill" for
    the exact invocation.
 
 4. /Fill in the skeleton/, in this order:
@@ -56,11 +56,11 @@ shipped bundle so the skill changes propagate to Claude Code.
    =description:= is what Claude Code shows in its skill selector;
    make it crisp and actionable.
 
-6. /Verify against the v2 contract/. The [[id:44d7a328-f69c-4ee9-83a5-74bd3634ad69][skill-review]] skill is
+6. /Verify against the v2 contract/. The [[id:44D7A328-F69C-4EE9-83A5-74BD3634AD69][skill-review]] skill is
    the canonical checklist — frontmatter, required sections,
    task-shape, no embedded inventories.
 
-7. /Cross-reference the new skill from the relevant [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][function]] docs/.
+7. /Cross-reference the new skill from the relevant [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][function]] docs/.
    Functions list the skills each cybernetic level invokes (see
    the =* Skills= section of each =doc/functions/s*.org=). A new
    skill that isn't linked from at least one function is
@@ -72,22 +72,22 @@ shipped bundle so the skill changes propagate to Claude Code.
    appropriate area heading. This is the canonical inventory.
 
 9. /Rebuild the shipped bundle/ so Claude Code picks up the new or
-   updated skill — see [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]].
+   updated skill — see [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]].
 
 * Recipes
 
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] §"New Claude Code skill" — the
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New Claude Code skill" — the
   scaffold flow.
-- [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]] — for any new recipes the skill
+- [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]] — for any new recipes the skill
   needs to index.
-- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — rebuild the bundle.
-- [[id:4c526597-c668-486b-a4ab-95775c01089a][How do I refresh org-babel results?]] — for skills with
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — rebuild the bundle.
+- [[id:4C526597-C668-486B-A4AB-95775C01089A][How do I refresh org-babel results?]] — for skills with
   =#+RESULTS:= snapshots you want kept fresh.
 
 * Reference
 
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]]§=skill= — the v2 skill contract.
-- [[id:44d7a328-f69c-4ee9-83a5-74bd3634ad69][skill-review skill]] — the sibling skill that audits a skill
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]]§=skill= — the v2 skill contract.
+- [[id:44D7A328-F69C-4EE9-83A5-74BD3634AD69][skill-review skill]] — the sibling skill that audits a skill
   against the contract.
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]] — the full inventory.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the component that hosts the skill template

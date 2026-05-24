@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 28a7af22-1eb1-4989-b4bd-a383d09605f3
+:ID: 28A7AF22-1EB1-4989-B4BD-A383D09605F3
 :END:
 #+title: ores.iam.client
 #+description: Client-side IAM library — session management and authentication helper for Qt and service consumers.

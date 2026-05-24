@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 95d9e246-27ed-440f-b14a-481a546b7c4f
+:ID: 95D9E246-27ED-440F-B14A-481A546B7C4F
 :END:
 #+title: ores.variability.service
 #+description: NATS service entrypoint for the variability domain.

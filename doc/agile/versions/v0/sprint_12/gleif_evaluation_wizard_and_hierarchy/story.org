@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5886ffa7-170f-471c-a9db-37996e650cb6
+:ID: 5886FFA7-170F-471C-A9DB-37996E650CB6
 :END:
 #+title: Story: GLEIF evaluation wizard and party hierarchy
 #+description: GLEIF-based evaluation-tenant onboarding wizard; party hierarchy graph visualisation.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ from tenant provisioning) and a party-hierarchy graph visualisation.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] |
+| Parent sprint | [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]] |
 | Now           | Completed 2026-02-19.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -39,8 +39,8 @@ from tenant provisioning) and a party-hierarchy graph visualisation.
 
 In execution order:
 
-- [[id:0ad52060-dddc-43dd-b0a8-4fbbf42c7670][Add GLEIF-based evaluation tenant onboarding wizard]]
-- [[id:7ca00ff6-4d43-4663-aaae-3b074ce127dc][Add party hierarchy graph visualisation]]
+- [[id:0AD52060-DDDC-43DD-B0A8-4FBBF42C7670][Add GLEIF-based evaluation tenant onboarding wizard]]
+- [[id:7CA00FF6-4D43-4663-AAAE-3B074CE127DC][Add party hierarchy graph visualisation]]
 
 * Decisions
 

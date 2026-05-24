@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f58a9a29-fa89-43af-bd4d-864448cfbb33
+:ID: F58A9A29-FA89-43AF-BD4D-864448CFBB33
 :END:
 #+title: Task: Sprint and product backlog refinement
 #+description: Maintain sprint 13 backlog and groom the product backlog.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:90161bf2-67f0-4542-899c-5d844a3f6f95][Sprint 13 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90161BF2-67F0-4542-899C-5D844A3F6F95][Sprint 13 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Maintain the sprint 13 backlog and groom the product backlog.
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:90161bf2-67f0-4542-899c-5d844a3f6f95][Sprint 13 housekeeping]] |
+| Parent story | [[id:90161BF2-67F0-4542-899C-5D844A3F6F95][Sprint 13 housekeeping]] |
 | Now          | Completed 2026-02-24.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

@@ -44,6 +44,7 @@ TYPE_TO_TEMPLATE = {
     "capture": "v2_doc_capture.org.mustache",
     "memory": "v2_doc_memory.org.mustache",
     "release_notes": "v2_doc_release_notes.org.mustache",
+    "investigation": "v2_doc_investigation.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {
@@ -59,6 +60,7 @@ DEFAULT_INITIAL_STATE = {
     "capture": "",
     "release_notes": "",
     "memory": "",
+    "investigation": "",
 }
 
 # Composition: each type's direct parent type.
@@ -66,14 +68,14 @@ PARENT_OF_TYPE = {
     "task": "story",
     "story": "sprint",
     "sprint": "version",
-    # version, component, recipe, knowledge, skill, product_identity have no
-    # composition parent.
+    # version, component, recipe, knowledge, skill, product_identity,
+    # investigation have no composition parent.
 }
 
 # Types that don't take a parent (and aren't stateful).
 PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "skill", "product_identity",
-    "capture", "memory", "release_notes",
+    "capture", "memory", "release_notes", "investigation",
 }
 
 
@@ -283,6 +285,8 @@ def main(argv=None):
         args.title = "Task: " + args.title
     elif args.type == "story" and not args.title.lower().startswith("story:"):
         args.title = "Story: " + args.title
+    elif args.type == "investigation" and not args.title.lower().startswith("investigation:"):
+        args.title = "Investigation: " + args.title
 
     # Optional fields.
     args.tags = fill_optional("tags", args.tags,
@@ -300,7 +304,7 @@ def main(argv=None):
             "predecessor-title", "",
             prompt_label="Predecessor title")
 
-    state = args.state or DEFAULT_INITIAL_STATE[args.type]
+    state = args.state or DEFAULT_INITIAL_STATE.get(args.type, "")
 
     # Compose ancestor tags: walk the composition tree upward from the
     # parent dir. An explicit --parent-slug (if it doesn't coincide with
@@ -311,7 +315,7 @@ def main(argv=None):
         ancestor_slugs.insert(0, args.parent_slug)
     filetags = build_filetags(args.tags, ancestor_slugs)
     today = date.today().isoformat()
-    new_id = args.id if args.id else str(uuid.uuid4())
+    new_id = (args.id if args.id else str(uuid.uuid4())).upper()
 
     # Captures derive their bucket (near | far) from the parent-dir name.
     bucket = parent_dir.name if args.type == "capture" else ""
@@ -334,9 +338,9 @@ def main(argv=None):
         "owner": args.owner or "marco",
         "date": today,
         "state": state,
-        "parent_id": args.parent_id,
+        "parent_id": (args.parent_id or "").upper(),
         "parent_title": args.parent_title,
-        "predecessor_id": args.predecessor_id or "",
+        "predecessor_id": (args.predecessor_id or "").upper(),
         "predecessor_title": args.predecessor_title or "",
         "bucket": bucket,
         "memory_subtype": memory_subtype,
@@ -363,7 +367,7 @@ def main(argv=None):
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
     elif args.type in ("component", "recipe", "knowledge", "product_identity",
-                       "capture", "memory"):
+                       "capture", "memory", "investigation"):
         # Captures live at agile/product_backlog/<bucket>/<slug>.org. The
         # caller passes --parent-dir as that bucket directory; we validate
         # the bucket name only loosely (audit can tighten later).

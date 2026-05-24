@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6e6dd2db-e421-41b4-bad8-1fedbe788be9
+:ID: 6E6DD2DB-E421-41B4-BAD8-1FEDBE788BE9
 :END:
 #+title: Task: Merge equity + commodity instruments into TradeDetailDialog
 #+description: PR 4 of 6: equity + commodity standalone components removed; integrated into TradeDetailDialog; instrument_id linkage fix; tab visibility logic fix; reactive widget reads; sentinel value caveat.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1490e130-08f9-4d43-8f80-d7e0f5022fbd][Trade detail dialog unification]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1490E130-08F9-4D43-8F80-D7E0F5022FBD][Trade detail dialog unification]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ PR 4 of 6: equity + commodity standalone components removed; integrated into Tra
 | Field        | Value                                                                        |
 |--------------+------------------------------------------------------------------------------|
 | State        | DONE                                                                         |
-| Parent story | [[id:1490e130-08f9-4d43-8f80-d7e0f5022fbd][Trade detail dialog unification]] |
+| Parent story | [[id:1490E130-08F9-4D43-8F80-D7E0F5022FBD][Trade detail dialog unification]] |
 | Now          | Completed 2026-04-07.                                                        |
 | Waiting on   | None.                                                                        |
 | Next         | None.                                                                        |

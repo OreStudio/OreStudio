@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 42e6c351-795f-48aa-a435-eb3d1c9b6704
+:ID: 42E6C351-795F-48AA-A435-EB3D1C9B6704
 :END:
 #+title: Story: Database schema and seeding overhaul
 #+description: Rerun SQL from scratch with TimescaleDB tier detection; move all seeding from C++ to SQL populate scripts.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -25,7 +25,7 @@ schema.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] |
+| Parent sprint | [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]] |
 | Now           | Completed 2025-12-31.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -42,8 +42,8 @@ schema.
 
 In execution order:
 
-- [[id:27768a0e-d9dc-4958-9731-adef4385f23e][Rerun SQL scripts from scratch]]
-- [[id:2d4c153b-1aa9-4eb3-b6de-69c409401499][Remove code seeders; seed from SQL populate scripts]]
+- [[id:27768A0E-D9DC-4958-9731-ADEF4385F23E][Rerun SQL scripts from scratch]]
+- [[id:2D4C153B-1AA9-4EB3-B6DE-69C409401499][Remove code seeders; seed from SQL populate scripts]]
 
 * Decisions
 

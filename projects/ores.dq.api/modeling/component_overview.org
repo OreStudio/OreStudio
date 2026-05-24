@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ffcfc860-204d-4f48-ae34-d3e382d7a02b
+:ID: FFCFC860-204D-4F48-AE34-D3E382D7A02B
 :END:
 #+title: ores.dq.api
 #+description: Domain types, JSON/table I/O, and NATS protocol schemas for the data-quality component.

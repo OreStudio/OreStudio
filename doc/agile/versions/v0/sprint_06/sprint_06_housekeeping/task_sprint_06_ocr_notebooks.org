@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d6568833-3808-4fe6-b58d-e3925a83e238
+:ID: D6568833-3808-4FE6-B58D-E3925A83E238
 :END:
 #+title: Task: OCR scan notebooks for this sprint
 #+description: Continue the notebook-scan thread; capture design sketches from sprint 06 design sessions.
@@ -16,7 +16,7 @@
 #+updated: 2025-12-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:193a779f-a313-414c-9236-d075b84a2f67][Sprint 06 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:193A779F-A313-414C-9236-D075B84A2F67][Sprint 06 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Continue the notebook-scan thread: capture design sketches from this sprint's pa
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:193a779f-a313-414c-9236-d075b84a2f67][Sprint 06 housekeeping]] |
+| Parent story | [[id:193A779F-A313-414C-9236-D075B84A2F67][Sprint 06 housekeeping]] |
 | Now          | Completed 2025-12-15.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

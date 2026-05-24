@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 05b40ace-1db9-46e5-aee7-cfb32e32c0ff
+:ID: 05B40ACE-1DB9-46E5-AEE7-CFB32E32C0FF
 :END:
 #+title: How do I list compute results as JSON?
 #+description: List compute results via =ores.cli= as JSON for piping into =jq=

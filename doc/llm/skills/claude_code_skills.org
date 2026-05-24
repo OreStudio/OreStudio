@@ -10,73 +10,73 @@
 #+created: 2024-06-15
 #+updated: 2026-05-21
 
-Every Claude Code [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skill]] used with ORE Studio lives at
+Every Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skill]] used with ORE Studio lives at
 =doc/llm/skills/<slug>/SKILL.org= and is listed below, grouped by area. Skills are
 /task-shaped/: each one is the playbook an LLM session loads to perform a
-specific unit of work end-to-end. Compare with [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], which is /role-shaped/.
-See [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]] for the deployment workflow or return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+specific unit of work end-to-end. Compare with [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]], which is /role-shaped/.
+See [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner]] for the deployment workflow or return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Meta-skills
 
 - [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][Skill Manager]] — create new skills.
-- [[id:44d7a328-f69c-4ee9-83a5-74bd3634ad69][Skill Review]] — review skills for consistency, conflicts,
+- [[id:44D7A328-F69C-4EE9-83A5-74BD3634AD69][Skill Review]] — review skills for consistency, conflicts,
   duplication, alignment with the codebase.
 - [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch Manager]] — manage feature branches across
   multi-phase implementations with a clean git history.
 
 * Documentation
 
-- [[id:2df8adaf-20c9-4757-9399-798eec6df828][Agile Product Owner]] — manage the team through story creation,
+- [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile Product Owner]] — manage the team through story creation,
   prioritisation, sprint planning.
-- [[id:7357c672-a49f-4974-9399-a166f761d222][ORES Memory]] — decide when to write a project-scope memory and
+- [[id:7357C672-A49F-4974-9399-A166F761D222][ORES Memory]] — decide when to write a project-scope memory and
   scaffold it into =doc/llm/memory/=.
 - [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]] — class diagrams for C++ components.
-- [[id:b0b99088-d88e-4980-a4ee-7d6a9a8e96a5][Component Model Creator]] — component model documentation in
+- [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][Component Model Creator]] — component model documentation in
   org-mode with PlantUML diagrams.
 - [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][PlantUML ER Modeler]] — entity-relationship diagrams for database
   schema.
 - [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint]] — create new sprint backlogs.
 - [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][Release Notes Generator]] — generate release notes for a sprint.
-- [[id:28aaf9a6-b1e4-402a-83bb-289090990fb8][Recipe Author]] — create new recipe files and recipe-updating
+- [[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][Recipe Author]] — create new recipe files and recipe-updating
   skills.
-- [[id:b5766b0e-24f0-45c3-b35d-e762bbab5206][ORES Recipe Sync]] — keep recipe documentation in sync with its
+- [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][ORES Recipe Sync]] — keep recipe documentation in sync with its
   source (CLI parsers, HTTP routes, shell commands, etc.).
   Replaces the per-topic recipe-sync skills.
 
 * Development
 
-- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]] — run CMake targets.
+- [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner]] — run CMake targets.
 - [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][Test Failure Investigator]] — parse test results and analyse
   logs.
-- [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] — create a new domain type with its basic
+- [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]] — create a new domain type with its basic
   services.
-- [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][Qt Entity Creator]] — Qt UI components for a domain entity:
+- [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][Qt Entity Creator]] — Qt UI components for a domain entity:
   list windows, detail dialogs, history dialogs, controllers.
 - [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][Wt Entity Creator]] — Wt web UI components for a domain entity.
-- [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][Shell Entity Creator]] — shell commands for a domain entity in
+- [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][Shell Entity Creator]] — shell commands for a domain entity in
   =ores.shell=.
-- [[id:bdcc47d4-b050-409e-8c50-3d179843a274][HTTP Entity Creator]] — REST endpoints for a domain entity in
+- [[id:BDCC47D4-B050-409E-8C50-3D179843A274][HTTP Entity Creator]] — REST endpoints for a domain entity in
   =ores.http.server=.
-- [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][CLI Entity Creator]] — CLI commands for a domain entity in
+- [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][CLI Entity Creator]] — CLI commands for a domain entity in
   =ores.cli=.
-- [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator]] — SQL table definitions, triggers, and
+- [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][SQL Schema Creator]] — SQL table definitions, triggers, and
   population scripts.
-- [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer]] — Catch2 unit tests following ORE Studio
+- [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][Unit Test Writer]] — Catch2 unit tests following ORE Studio
   conventions.
 - [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — pull request lifecycle from creation through
   merge.
-- [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]] — autonomously monitor a PR after creation,
+- [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] — autonomously monitor a PR after creation,
   addressing review comments and CI failures until green.
 - [[id:06BDB43A-EA9D-D474-68DB-198696A2B758][Semi Autonomous Developer]] — given a story, perform most of the
   development activities unsupervised.
-- [[id:37b88704-7a45-4347-a80a-9d9b4ee71bef][System Architect]] — analyse system architecture and plan
+- [[id:37B88704-7A45-4347-A80A-9D9B4EE71BEF][System Architect]] — analyse system architecture and plan
   incremental migrations for system-wide changes.
 - [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][Component Creator]] — create new components in the ORE Studio
   product.
 
 * Design
 
-- [[id:460c89da-50d2-40c3-88b2-be52e430d170][Brainstorming]] — turn a fuzzy idea into a validated design via
+- [[id:460C89DA-50D2-40C3-88B2-BE52E430D170][Brainstorming]] — turn a fuzzy idea into a validated design via
   one-question-at-a-time dialogue.
 - [[id:89935F29-7C6C-1E84-EAD3-EC4BD20421F5][Design Principles]] — apply the ORE Studio UI design system
   (Jony Ive-level precision with intentional personality).
@@ -85,19 +85,19 @@ See [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]] for the deployment
 
 * Code review
 
-- [[id:04ca6bd9-7739-4213-a9dc-17aaace43252][Code Review PR]] — review pull request changes for code quality,
+- [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][Code Review PR]] — review pull request changes for code quality,
   conventions, correctness.
-- [[id:dadf4117-757a-4eef-a137-cc2ee8023c73][Code Review Component]] — deep review of a component for
+- [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][Code Review Component]] — deep review of a component for
   technical debt, modernisation, convention compliance.
 
 * Rebuilding skills
 
 When skills change, redeploy them via the =deploy_skills= CMake
-target. See [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] for the recipe and the
+target. See [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] for the recipe and the
 CI hook that calls it.
 
 * See also
 
-- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component documentation guide]] — skills that author component
+- [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component documentation guide]] — skills that author component
   overviews use this contract.
-- [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][Functions]] — sibling concept: role-shaped, not task-shaped.
+- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Functions]] — sibling concept: role-shaped, not task-shaped.

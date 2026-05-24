@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5bafbeb2-c875-4655-bb78-801a3bf65022
+:ID: 5BAFBEB2-C875-4655-BB78-801A3BF65022
 :END:
 #+title: Story: Schema polish
 #+description: Clean up data-population layers, add rounding type table, add CSV/ORE/FPML labels to icons, add mapping artefact to population functions.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ icons, and route the mapping data through the artefact pipeline.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Parent sprint | [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]] |
 | Now           | Completed 2026-01-26.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,10 +41,10 @@ icons, and route the mapping data through the artefact pipeline.
 
 In execution order:
 
-- [[id:f2062027-b1fa-4b51-84e8-f589f4e14849][Clean up data layers]]
-- [[id:850e10f2-d84c-4a25-b30b-0328edb33ae8][Add rounding type table]]
-- [[id:47bf0f41-5e6b-4da9-b99d-e73ad80686a5][Add labels (CSV/ORE/FPML) to import/export icons]]
-- [[id:bd7f39d4-46b1-41ce-992b-7feedf0cc59d][Add mapping artefact to population functions]]
+- [[id:F2062027-B1FA-4B51-84E8-F589F4E14849][Clean up data layers]]
+- [[id:850E10F2-D84C-4A25-B30B-0328EDB33AE8][Add rounding type table]]
+- [[id:47BF0F41-5E6B-4DA9-B99D-E73AD80686A5][Add labels (CSV/ORE/FPML) to import/export icons]]
+- [[id:BD7F39D4-46B1-41CE-992B-7FEEDF0CC59D][Add mapping artefact to population functions]]
 
 * Decisions
 

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5213a729-ef10-4292-8b38-c5d73219f1df
+:ID: 5213A729-EF10-4292-8B38-C5D73219F1DF
 :END:
 #+title: Task: Improve generators with FK-aware test data
 #+description: Generators for entities with FK UUID columns no longer produce dangling references; KVP-based generation context proposed.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4CE5CC79-DC9B-491F-A8F7-F635DE33D55A][Test coverage and FK-aware generators]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Make generators produce FK-valid test data instead of dangling random UUIDs.
 | Field        | Value                                                                              |
 |--------------+------------------------------------------------------------------------------------|
 | State        | DONE                                                                               |
-| Parent story | [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] |
+| Parent story | [[id:4CE5CC79-DC9B-491F-A8F7-F635DE33D55A][Test coverage and FK-aware generators]] |
 | Now          | Completed 2026-02-11.                                                              |
 | Waiting on   | None.                                                                              |
 | Next         | None.                                                                              |

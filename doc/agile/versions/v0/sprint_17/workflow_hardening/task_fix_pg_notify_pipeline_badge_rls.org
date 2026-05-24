@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 24b4ae53-ad80-455c-8a6d-6d4d5c7793a8
+:ID: 24B4AE53-AD80-455C-8A6D-6D4D5C7793A8
 :END:
 #+title: Task: Fix pg_notify pipeline, badge RLS, and system reset
 #+description: - pg_notify timestamp format: All 143 notify triggers now emit ISO 8601 UTC (`YYYY-MM-DDThh:mm:ssZ`); `datetime::from_is
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7030AB78-B8F1-425C-83EF-A6F9EBF218A8][Workflow engine hardening]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Fix the pg_notify timestamp format to ISO 8601 UTC, correct an entity name misma
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] |
+| Parent story | [[id:7030AB78-B8F1-425C-83EF-A6F9EBF218A8][Workflow engine hardening]] |
 | Now          | Completed 2026-05-19.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

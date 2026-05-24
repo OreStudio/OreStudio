@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 90fb8b88-eeed-4f9c-a5ee-631a1d2baac6
+:ID: 90FB8B88-EEED-4F9C-A5EE-631A1D2BAAC6
 :END:
 #+title: Task: Use std::string_view for loggers
 #+description: Take std::string_view rather than std::string in the logging API so call sites avoid an allocation per log line.
@@ -16,7 +16,7 @@
 #+updated: 2025-12-12
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d9c5fcef-da11-45da-b7fb-2a7b62c8aa0b][Logging refactor (std::string_view)]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D9C5FCEF-DA11-45DA-B7FB-2A7B62C8AA0B][Logging refactor (std::string_view)]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Take std::string_view rather than std::string in the logging API so call sites a
 | Field        | Value                                                                            |
 |--------------+----------------------------------------------------------------------------------|
 | State        | DONE                                                                             |
-| Parent story | [[id:d9c5fcef-da11-45da-b7fb-2a7b62c8aa0b][Logging refactor (std::string_view)]] |
+| Parent story | [[id:D9C5FCEF-DA11-45DA-B7FB-2A7B62C8AA0B][Logging refactor (std::string_view)]] |
 | Now          | Completed 2025-12-12.                                                            |
 | Waiting on   | None.                                                                            |
 | Next         | None.                                                                            |

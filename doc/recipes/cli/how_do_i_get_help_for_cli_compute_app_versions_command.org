@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 87976633-b5c7-422d-8d54-5a8f1a9a7be5
+:ID: 87976633-B5C7-422D-8D54-5A8F1A9A7BE5
 :END:
 #+title: How do I get help for the CLI compute app-versions command?
 #+description: Show available operations under =ores.cli compute app-versions=

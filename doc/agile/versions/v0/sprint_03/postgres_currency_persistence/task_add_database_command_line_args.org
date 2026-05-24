@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: db5b3729-820d-4d11-8dc4-5a2fed022463
+:ID: DB5B3729-820D-4D11-8DC4-5A2FED022463
 :END:
 #+title: Task: Add database command-line arguments to service
 #+description: Expose database connection parameters as CLI flags for the service runtime.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:3f819ee3-0834-4522-8b01-df4a7d09e77f][Postgres-backed currency persistence]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3F819EE3-0834-4522-8B01-DF4A7D09E77F][Postgres-backed currency persistence]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -30,7 +30,7 @@ integration.
 | Field        | Value                                                                             |
 |--------------+-----------------------------------------------------------------------------------|
 | State        | DONE                                                                              |
-| Parent story | [[id:3f819ee3-0834-4522-8b01-df4a7d09e77f][Postgres-backed currency persistence]] |
+| Parent story | [[id:3F819EE3-0834-4522-8B01-DF4A7D09E77F][Postgres-backed currency persistence]] |
 | Now          | Completed 2025-11-25.                                                             |
 | Waiting on   | None.                                                                             |
 | Next         | None.                                                                             |

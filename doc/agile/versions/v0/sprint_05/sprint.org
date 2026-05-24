@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2429db80-ec7b-482c-9ff3-4d1933035863
+:ID: 2429DB80-EC7B-482C-9FF3-4D1933035863
 :END:
 #+title: Sprint 05
 #+description: Implement the authentication bootstrap workflow; finish up domain-entity surfaces (currencies, accounts); expand the Claude Code skills layer.
@@ -11,10 +11,10 @@
 #+updated: 2025-12-01
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 05*) of ORE Studio v0. It captures the
+This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 05*) of ORE Studio v0. It captures the
 sprint's mission, current status, and the stories that compose it. For the
 surrounding context — version goals, sprint order, and product identity — see
-[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+[[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
 
 * Mission
 
@@ -27,7 +27,7 @@ skills layer.
 | Field          | Value                                                                                                                                                                                                |
 |----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                                                 |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                                                                            |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                                                            |
 | Now            | Sprint closed 2025-12-01. Bootstrap workflow live; CLI/REPL reshape landed; currency messaging collapsed to =save_currency=; skills layer grew to cover sprint-opening and release-notes generation. |
 | Waiting on     | None.                                                                                                                                                                                                |
 | Next           | None.                                                                                                                                                                                                |
@@ -38,14 +38,14 @@ skills layer.
 #+ATTR_HTML: :class hug-leading
 | Story                                                                           | State | Start      | End        | Theme                                                                                                   |
 |---------------------------------------------------------------------------------+-------+------------+------------+---------------------------------------------------------------------------------------------------------|
-| [[id:de3eee9f-331e-440c-b62c-abdefe1d87e2][Sprint 05 housekeeping]]             | DONE  |            | 2025-12-01 | backlog, AI sprint summary, OCR notebooks.                                                              |
-| [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]]       | DONE  |            | 2025-11-17 | new-sprint skill, release-notes skill, project-planning support.                                        |
-| [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]]           | DONE  |            | 2025-11-25 | successor of sprint 03's OpenSSL BLOCKED item; sweeps up sqlgen residuals and comms-test leaks.         |
-| [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] | DONE  |            | 2025-11-22 | successor of sprint 03's POSTPONED bootstrap workflow; adds delete-account and the feature-flags split. |
-| [[id:645df0b4-51b5-40bc-be07-0ab986111653][Infrastructure features]]            | DONE  |            | 2025-11-20 | detached-mode default; database configuration unified across console and Qt.                            |
-| [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]]                 | DONE  |            | 2025-11-25 | entity-first command syntax across CLI and REPL; synchronous REPL sockets.                              |
-| [[id:9836e113-dea9-4605-ae1b-9b0c955b6b73][Currencies UI polish]]               | DONE  |            | 2025-11-28 | JSON parsing, merged save_currency message, XML-import dialog.                                          |
-| [[id:3a763afb-22f3-4e9a-b121-a71997221c3f][Documentation and diagrams]]         | DONE  |            | 2025-12-01 | UML refresh after the reshape; per-component diagram links.                                             |
+| [[id:DE3EEE9F-331E-440C-B62C-ABDEFE1D87E2][Sprint 05 housekeeping]]             | DONE  |            | 2025-12-01 | backlog, AI sprint summary, OCR notebooks.                                                              |
+| [[id:656EABB7-C9D1-4FDD-8CAC-0AB77ADCD9B2][Claude Code skills expansion]]       | DONE  |            | 2025-11-17 | new-sprint skill, release-notes skill, project-planning support.                                        |
+| [[id:69C49095-A91F-41D9-9D7E-0E9478143E93][Valgrind leaks follow-up]]           | DONE  |            | 2025-11-25 | successor of sprint 03's OpenSSL BLOCKED item; sweeps up sqlgen residuals and comms-test leaks.         |
+| [[id:A465D630-5972-484B-A2E8-AD1F91657103][Authentication bootstrap follow-up]] | DONE  |            | 2025-11-22 | successor of sprint 03's POSTPONED bootstrap workflow; adds delete-account and the feature-flags split. |
+| [[id:645DF0B4-51B5-40BC-BE07-0AB986111653][Infrastructure features]]            | DONE  |            | 2025-11-20 | detached-mode default; database configuration unified across console and Qt.                            |
+| [[id:7BE09D1C-E25A-4783-A911-C37DEC55CC43][CLI / REPL reshape]]                 | DONE  |            | 2025-11-25 | entity-first command syntax across CLI and REPL; synchronous REPL sockets.                              |
+| [[id:9836E113-DEA9-4605-AE1B-9B0C955B6B73][Currencies UI polish]]               | DONE  |            | 2025-11-28 | JSON parsing, merged save_currency message, XML-import dialog.                                          |
+| [[id:3A763AFB-22F3-4E9A-B121-A71997221C3F][Documentation and diagrams]]         | DONE  |            | 2025-12-01 | UML refresh after the reshape; per-component diagram links.                                             |
 
 * Retrospective
 

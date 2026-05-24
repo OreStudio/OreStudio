@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 104891b2-0266-4d01-baac-7f3ef9184008
+:ID: 104891B2-0266-4D01-BAAC-7F3EF9184008
 :END:
 #+title: Task: Add export functionality for currencies
 #+description: Export currencies from the Qt UI to file (JSON / XML) via a menu action.
@@ -16,7 +16,7 @@
 #+updated: 2025-11-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1e99eee4-dca5-4384-942e-0ce28b0a467c][Currencies UI]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1E99EEE4-DCA5-4384-942E-0CE28B0A467C][Currencies UI]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -28,7 +28,7 @@ current data either to ORE-flavoured XML or to CSV.
 | Field        | Value                                                      |
 |--------------+------------------------------------------------------------|
 | State        | DONE                                                       |
-| Parent story | [[id:1e99eee4-dca5-4384-942e-0ce28b0a467c][Currencies UI]] |
+| Parent story | [[id:1E99EEE4-DCA5-4384-942E-0CE28B0A467C][Currencies UI]] |
 | Now          | Completed 2025-11-25.                                      |
 | Waiting on   | None.                                                      |
 | Next         | None.                                                      |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 66f76398-519d-4ee1-aaad-ae7e0f6c6161
+:ID: 66F76398-519D-4EE1-AAAD-AE7E0F6C6161
 :END:
 #+title: Task: Add a Qt hello world
 #+description: Create a trivial Qt application that exercises the build pipeline end-to-end.
@@ -12,7 +12,7 @@
 #+updated: 2024-06-23
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36A36BCB-6D25-4CEA-A2DE-53741EDAD563][Qt UI scaffold]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -25,7 +25,7 @@ vcpkg + Qt + CI chain works end-to-end.
 | Field        | Value                                                       |
 |--------------+-------------------------------------------------------------|
 | State        | DONE                                                        |
-| Parent story | [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]] |
+| Parent story | [[id:36A36BCB-6D25-4CEA-A2DE-53741EDAD563][Qt UI scaffold]] |
 | Now          | Completed 2024-06-23.                                       |
 | Waiting on   | None.                                                       |
 | Next         | None.                                                       |

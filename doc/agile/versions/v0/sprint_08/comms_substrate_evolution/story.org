@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: da77fb50-27e8-4b42-a826-cab289c7826e
+:ID: DA77FB50-27E8-4B42-A826-CAB289C7826E
 :END:
 #+title: Story: Comms substrate evolution
 #+description: Composable CLI options/parser; rename ores.shell to ores.comms.shell; dynamic notification-channel discovery.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ hardcoded channel list with server-side discovery.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] |
+| Parent sprint | [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]] |
 | Now           | Completed 2026-01-11.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -40,9 +40,9 @@ hardcoded channel list with server-side discovery.
 
 In execution order:
 
-- [[id:fdeb08b4-fd95-46df-b868-eb57ae4666c6][Refactor options and parser]]
-- [[id:443b546e-357b-4809-8c20-b804e62fa31e][Rename ores.shell to ores.comms.shell]]
-- [[id:410ef5b4-9e13-4357-8b20-d78c63419572][Discover notification channels dynamically]]
+- [[id:FDEB08B4-FD95-46DF-B868-EB57AE4666C6][Refactor options and parser]]
+- [[id:443B546E-357B-4809-8C20-B804E62FA31E][Rename ores.shell to ores.comms.shell]]
+- [[id:410EF5B4-9E13-4357-8B20-D78C63419572][Discover notification channels dynamically]]
 
 * Decisions
 
@@ -57,4 +57,4 @@ In execution order:
 * See also
 
 - [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.comms.shell]] — the renamed component.
-- [[id:13fbe901-b255-49f7-88c3-13b2a2506bf3][Wt and HTTP review]] — the HTTP entry point that consumes the same dispatch.
+- [[id:13FBE901-B255-49F7-88C3-13B2A2506BF3][Wt and HTTP review]] — the HTTP entry point that consumes the same dispatch.

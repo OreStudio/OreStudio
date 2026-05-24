@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d3857fe6-8b07-4276-ad2a-8f32efb3755e
+:ID: D3857FE6-8B07-4276-AD2A-8F32EFB3755E
 :END:
 #+title: How do I add a new country?
 #+description: Add a new country

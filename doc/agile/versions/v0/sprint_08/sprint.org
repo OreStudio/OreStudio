@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 49c4e380-68ee-4d80-839a-41311a99c734
+:ID: 49C4E380-68EE-4D80-839A-41311A99C734
 :END:
 #+title: Sprint 08
 #+description: Database/seeding overhaul, ISO countries, change-management infrastructure, Qt UX polish, Wt/HTTP review, comms substrate evolution, native pagination, entity-creator skills suite, books domain analysis.
@@ -11,10 +11,10 @@
 #+updated: 2026-05-19
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 08*) of ORE Studio v0. It captures the
+This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 08*) of ORE Studio v0. It captures the
 sprint's mission, current status, and the stories that compose it. For the
 surrounding context — version goals, sprint order, and product identity — see
-[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+[[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
 
 * Mission
 
@@ -29,7 +29,7 @@ skills to make the next entity cheaper.
 | Field          | Value                                                                                                    |
 |----------------+----------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                     |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                |
 | Now            | Sprint closed 2026-01-11. Three observability-review items and the accounts-dialog polish carry forward. |
 | Waiting on     | None — carried-forward items are scheduled for sprint 09+.                                               |
 | Next           | Sprint 09 picks up the deferred items and continues the reference-data work (countries → next entity).   |
@@ -40,17 +40,17 @@ skills to make the next entity cheaper.
 #+ATTR_HTML: :class hug-leading
 | Story                                                                             | State   | Start      | End        | Theme                                                                                      |
 |-----------------------------------------------------------------------------------+---------+------------+------------+--------------------------------------------------------------------------------------------|
-| [[id:f40e0162-a092-4716-a256-206fdba93452][Sprint 08 housekeeping]]               | DONE    |            | 2026-01-11 | backlog refinement, OCR scans; AI summary deferred.                                        |
-| [[id:42e6c351-795f-48aa-a435-eb3d1c9b6704][Database schema and seeding overhaul]] | DONE    |            | 2025-12-31 | rerun SQL from scratch with TimescaleDB tier detection; remove code seeders.               |
-| [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]]                         | DONE    |            | 2026-01-11 | validate holiday features; assorted dialog fixes; log-viewer UI; accounts polish deferred. |
-| [[id:da77fb50-27e8-4b42-a826-cab289c7826e][Comms substrate evolution]]            | DONE    |            | 2026-01-11 | composable options, rename =ores.shell= → =ores.comms.shell=, dynamic channel discovery.   |
-| [[id:40d153e3-4a87-44b6-b605-1e3e28a44d03][Native pagination support]]            | DONE    |            | 2026-01-07 | adopt sqlgen 0.6.0.                                                                        |
-| [[id:13fbe901-b255-49f7-88c3-13b2a2506bf3][Wt and HTTP review]]                   | DONE    |            | 2026-01-06 | validate the sprint-07 surfaces; document the HTTP service.                                |
-| [[id:150e3c44-aadb-48c8-a11e-322b44a0357a][Change management infrastructure]]     | DONE    |            | 2026-01-11 | reasons base + UI.                                                                         |
-| [[id:501c05b5-aa7f-4807-a4f2-627b857ce2aa][Reference data: countries]]            | DONE    |            | 2026-01-11 | first proper refdata entity, end-to-end.                                                   |
-| [[id:b302b2b6-13f8-49cc-a6af-88418668be31][Entity-creator skills suite]]          | DONE    |            | 2026-01-11 | Qt, shell, HTTP (incl. recipes), Wt, CLI.                                                  |
-| [[id:77211166-9316-40c0-88d6-c92f983a00b5][Books domain modelling analysis]]      | DONE    |            | 2026-01-11 | strategic next-modelling effort.                                                           |
-| [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]]              | BACKLOG |            |            | review pass only; three implementation tasks carry forward.                                |
+| [[id:F40E0162-A092-4716-A256-206FDBA93452][Sprint 08 housekeeping]]               | DONE    |            | 2026-01-11 | backlog refinement, OCR scans; AI summary deferred.                                        |
+| [[id:42E6C351-795F-48AA-A435-EB3D1C9B6704][Database schema and seeding overhaul]] | DONE    |            | 2025-12-31 | rerun SQL from scratch with TimescaleDB tier detection; remove code seeders.               |
+| [[id:CB564C6A-F248-4740-8D1C-A1BE148CE576][Qt UX polish]]                         | DONE    |            | 2026-01-11 | validate holiday features; assorted dialog fixes; log-viewer UI; accounts polish deferred. |
+| [[id:DA77FB50-27E8-4B42-A826-CAB289C7826E][Comms substrate evolution]]            | DONE    |            | 2026-01-11 | composable options, rename =ores.shell= → =ores.comms.shell=, dynamic channel discovery.   |
+| [[id:40D153E3-4A87-44B6-B605-1E3E28A44D03][Native pagination support]]            | DONE    |            | 2026-01-07 | adopt sqlgen 0.6.0.                                                                        |
+| [[id:13FBE901-B255-49F7-88C3-13B2A2506BF3][Wt and HTTP review]]                   | DONE    |            | 2026-01-06 | validate the sprint-07 surfaces; document the HTTP service.                                |
+| [[id:150E3C44-AADB-48C8-A11E-322B44A0357A][Change management infrastructure]]     | DONE    |            | 2026-01-11 | reasons base + UI.                                                                         |
+| [[id:501C05B5-AA7F-4807-A4F2-627B857CE2AA][Reference data: countries]]            | DONE    |            | 2026-01-11 | first proper refdata entity, end-to-end.                                                   |
+| [[id:B302B2B6-13F8-49CC-A6AF-88418668BE31][Entity-creator skills suite]]          | DONE    |            | 2026-01-11 | Qt, shell, HTTP (incl. recipes), Wt, CLI.                                                  |
+| [[id:77211166-9316-40C0-88D6-C92F983A00B5][Books domain modelling analysis]]      | DONE    |            | 2026-01-11 | strategic next-modelling effort.                                                           |
+| [[id:CD9E9D04-44D2-4D0D-95CE-719D55C40DA4][Observability follow-up]]              | BACKLOG |            |            | review pass only; three implementation tasks carry forward.                                |
 
 * Retrospective
 

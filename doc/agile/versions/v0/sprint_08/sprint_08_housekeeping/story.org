@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f40e0162-a092-4716-a256-206fdba93452
+:ID: F40E0162-A092-4716-A256-206FDBA93452
 :END:
 #+title: Story: Sprint 08 housekeeping
 #+description: Sprint backlog refinement, AI summary, notebook OCR scans.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ continue the notebook OCR thread. AI summary was postponed.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] |
+| Parent sprint | [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]] |
 | Now           | Completed 2026-01-11.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -39,9 +39,9 @@ continue the notebook OCR thread. AI summary was postponed.
 
 In execution order:
 
-- [[id:06c1cb96-b27d-41cd-9b1e-5b450110bc5f][Sprint and product backlog refinement]]
-- [[id:6777df63-b6f7-4290-9482-d1103749ee7c][OCR scan notebooks for this sprint]]
-- [[id:89d71399-3e8c-4e39-94cf-4f1f173d3ff5][Add AI-generated sprint summary]]
+- [[id:06C1CB96-B27D-41CD-9B1E-5B450110BC5F][Sprint and product backlog refinement]]
+- [[id:6777DF63-B6F7-4290-9482-D1103749EE7C][OCR scan notebooks for this sprint]]
+- [[id:89D71399-3E8C-4E39-94CF-4F1F173D3FF5][Add AI-generated sprint summary]]
 
 * Decisions
 

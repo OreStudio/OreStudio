@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c3b6efb2-6a52-4f32-8aa2-10f71ab6bc5f
+:ID: C3B6EFB2-6A52-4F32-8AA2-10F71AB6BC5F
 :END:
 #+title: How do I list compute batches as JSON?
 #+description: List compute batches via =ores.cli= as JSON for piping into =jq=

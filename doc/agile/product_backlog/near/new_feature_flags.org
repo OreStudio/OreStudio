@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0dcdf2b0-e944-412c-aba3-0e30b5d96b0c
+:ID: 0DCDF2B0-E944-412C-ABA3-0E30B5D96B0C
 :END:
 #+title: New feature flags
 #+description: New feature flags
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 - allow sign-ups. If true, users can create their own accounts. Done.
 - auto-authorise sign-ups. If true, the account is automatically created. If

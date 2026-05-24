@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: cc2094d9-9394-4490-88bf-bf7f9c6ebd58
+:ID: CC2094D9-9394-4490-88BF-BF7F9C6EBD58
 :END:
 #+title: Task: Service lifecycle, menu restructure, GCC 15 fix, Qt plugin split
 #+description: Service diagnostics improvements; analytics plugin added; menu restructure (Identity / Pricing / Scheduler / Data Transfer top-level menus); GCC 15 incomplete-type errors fixed; xsd::vector copy assignment fix; service detail panel; report definitions list fills wizard page.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:014352D4-AAA5-48E7-903D-C06B5B4F7D62][Service lifecycle controller]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Service diagnostics improvements; analytics plugin added; menu restructure (Iden
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE                                                                      |
-| Parent story | [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]] |
+| Parent story | [[id:014352D4-AAA5-48E7-903D-C06B5B4F7D62][Service lifecycle controller]] |
 | Now          | Completed 2026-04-08.                                                     |
 | Waiting on   | None.                                                                     |
 | Next         | None.                                                                     |

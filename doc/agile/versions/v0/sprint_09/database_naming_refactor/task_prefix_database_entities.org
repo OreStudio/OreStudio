@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6c292f2c-9a0a-479c-9632-59a3f5028da7
+:ID: 6C292F2C-9A0A-479C-9632-59A3F5028DA7
 :END:
 #+title: Task: Prefix database entities with component
 #+description: All SQL tables/functions/triggers/rules follow {component}_{entity}_{suffix}: iam_, refdata_, assets_, telemetry_, geo_, variability_, utility_; entity suffixes _tbl, _fn, _trg, _rule, _idx, _uniq_idx, _gist_idx. C++ tablename constants updated.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:61485635-64ba-4c31-a35b-2f60d7fb41aa][Database naming refactor]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61485635-64BA-4C31-A35B-2F60D7FB41AA][Database naming refactor]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Apply a consistent =<component>_<entity>_<suffix>= naming pattern across every S
 | Field        | Value                                                                 |
 |--------------+-----------------------------------------------------------------------|
 | State        | DONE                                                                  |
-| Parent story | [[id:61485635-64ba-4c31-a35b-2f60d7fb41aa][Database naming refactor]] |
+| Parent story | [[id:61485635-64BA-4C31-A35B-2F60D7FB41AA][Database naming refactor]] |
 | Now          | Completed 2026-01-14.                                                 |
 | Waiting on   | None.                                                                 |
 | Next         | None.                                                                 |

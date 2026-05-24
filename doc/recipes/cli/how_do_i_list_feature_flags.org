@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 806cb8dd-27e7-4c2c-9f65-462cd1a96a60
+:ID: 806CB8DD-27E7-4C2C-9F65-462CD1A96A60
 :END:
 #+title: How do I list feature flags?
 #+description: List feature flags via =ores.cli=

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8e9e542c-4b59-4d0c-aa2f-ec6a90922dfc
+:ID: 8E9E542C-4B59-4D0C-AA2F-EC6A90922DFC
 :END:
 #+title: Improve session management and server-side housekeeping
 #+description: Improve session management and server-side housekeeping
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Session tracking and lifecycle management needs improvement.
 

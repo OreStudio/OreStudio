@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f8bb67a5-8975-4967-9751-0ca9550e237f
+:ID: F8BB67A5-8975-4967-9751-0CA9550E237F
 :END:
 #+title: Task: Expand unit test coverage for ORE codegened types
 #+description: XML round-trip tests for 9 ORE domain types; file I/O round-trip tests; xsdcpp substitution-group support landed. Adds read_system_party path.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4CE5CC79-DC9B-491F-A8F7-F635DE33D55A][Test coverage and FK-aware generators]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Expand unit-test coverage on the xsdcpp-generated ORE types.
 | Field        | Value                                                                              |
 |--------------+------------------------------------------------------------------------------------|
 | State        | DONE                                                                               |
-| Parent story | [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]] |
+| Parent story | [[id:4CE5CC79-DC9B-491F-A8F7-F635DE33D55A][Test coverage and FK-aware generators]] |
 | Now          | Completed 2026-02-11.                                                              |
 | Waiting on   | None.                                                                              |
 | Next         | None.                                                                              |

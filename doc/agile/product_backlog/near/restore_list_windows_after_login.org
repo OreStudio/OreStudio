@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: bde90df5-0142-4b31-bd54-49feef5aa1a2
+:ID: BDE90DF5-0142-4B31-BD54-49FEEF5AA1A2
 :END:
 #+title: Restore list windows after login
 #+description: Restore list windows after login
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 After login, reopen all entity list windows that were open when the user last
 closed the application. Save the set of open list windows and their geometry in

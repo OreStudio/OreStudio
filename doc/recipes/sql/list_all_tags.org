@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4fcb5abb-cce6-4ed2-a7e6-f6014b071faf
+:ID: 4FCB5ABB-CCE6-4ED2-A7E6-F6014B071FAF
 :END:
 #+title: List All Tags
 #+description: List All Tags

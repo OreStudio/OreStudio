@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3e57dcdc-f728-4b42-b262-74dfc751d04a
+:ID: 3E57DCDC-F728-4B42-B262-74DFC751D04A
 :END:
 #+title: Task: Add account support
 #+description: Domain type, repository, and end-to-end import/export path for user accounts.
@@ -16,7 +16,7 @@
 #+updated: 2025-12-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:b09e0d06-0314-4424-ad57-2da31a335d99][Login and sessions]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B09E0D06-0314-4424-AD57-2DA31A335D99][Login and sessions]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ session-based authentication and any later authorisation work.
 | Field        | Value                                                           |
 |--------------+-----------------------------------------------------------------|
 | State        | DONE                                                            |
-| Parent story | [[id:b09e0d06-0314-4424-ad57-2da31a335d99][Login and sessions]] |
+| Parent story | [[id:B09E0D06-0314-4424-AD57-2DA31A335D99][Login and sessions]] |
 | Now          | Completed 2025-12-20.                                           |
 | Waiting on   | None.                                                           |
 | Next         | None.                                                           |

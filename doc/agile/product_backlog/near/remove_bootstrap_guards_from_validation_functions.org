@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f96991cd-fded-4c7d-b82d-91188d0ff622
+:ID: F96991CD-FDED-4C7D-B82D-91188D0FF622
 :END:
 #+title: Remove bootstrap guards from validation functions
 #+description: Remove bootstrap guards from validation functions
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 The codegen template =sql_schema_table_create.mustache= generates a bootstrap
 guard in every validation function:

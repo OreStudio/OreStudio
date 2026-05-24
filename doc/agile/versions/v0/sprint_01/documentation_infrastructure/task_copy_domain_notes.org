@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c098d15a-156b-4195-a1ef-575289d89770
+:ID: C098D15A-156B-4195-A1EF-575289D89770
 :END:
 #+title: Task: Copy domain notes on core concepts
 #+description: Import the seed domain notes from the legacy source into the project's documentation tree.
@@ -12,7 +12,7 @@
 #+updated: 2024-07-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:c85f2dca-f7d6-40ae-b796-8b4cf84a7093][Documentation infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C85F2DCA-F7D6-40AE-B796-8B4CF84A7093][Documentation infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -25,7 +25,7 @@ blank page.
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE                                                                      |
-| Parent story | [[id:c85f2dca-f7d6-40ae-b796-8b4cf84a7093][Documentation infrastructure]] |
+| Parent story | [[id:C85F2DCA-F7D6-40AE-B796-8B4CF84A7093][Documentation infrastructure]] |
 | Now          | Completed 2024-07-05.                                                     |
 | Waiting on   | None.                                                                     |
 | Next         | None.                                                                     |

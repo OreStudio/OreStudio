@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 579910d3-89ff-4820-9a9b-57508ff39096
+:ID: 579910D3-89FF-4820-9A9B-57508FF39096
 :END:
 #+title: HTTP entity patterns
 #+description: REST route structure, handler skeleton, and CRUD conventions for ores.http.server entity endpoints.
@@ -72,6 +72,6 @@ and =.response<...>()= for the response type.
 
 * See also
 
-- [[id:bdcc47d4-b050-409e-8c50-3d179843a274][http-entity-creator]] — skill that drives this workflow.
-- [[id:c9eeaad1-1e78-4775-a05f-19573e669bd9][How do I create HTTP endpoints for a new entity?]] — recipe walkthrough.
-- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.
+- [[id:BDCC47D4-B050-409E-8C50-3D179843A274][http-entity-creator]] — skill that drives this workflow.
+- [[id:C9EEAAD1-1E78-4775-A05F-19573E669BD9][How do I create HTTP endpoints for a new entity?]] — recipe walkthrough.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

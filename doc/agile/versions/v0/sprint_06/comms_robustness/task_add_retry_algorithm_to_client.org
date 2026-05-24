@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7a4ce6b9-06ef-42e2-bda1-fb69ed082dfe
+:ID: 7A4CE6B9-06EF-42E2-BDA1-FB69ED082DFE
 :END:
 #+title: Task: Add retry algorithm to client
 #+description: Exponential-backoff retry on transient failures; surface a give-up event so the UI can react.
@@ -16,7 +16,7 @@
 #+updated: 2025-12-10
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:88971AFE-E0B4-4E54-B0D7-B1C627C2F239][Comms robustness]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Exponential-backoff retry on transient failures; surface a give-up event so the 
 | Field        | Value                                                         |
 |--------------+---------------------------------------------------------------|
 | State        | DONE                                                          |
-| Parent story | [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]] |
+| Parent story | [[id:88971AFE-E0B4-4E54-B0D7-B1C627C2F239][Comms robustness]] |
 | Now          | Completed 2025-12-10.                                         |
 | Waiting on   | None.                                                         |
 | Next         | None.                                                         |

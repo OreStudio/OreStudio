@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3153aa4b-23d4-4111-9710-5a4971102edc
+:ID: 3153AA4B-23D4-4111-9710-5A4971102EDC
 :END:
 #+title: How do I create a new v2 doc?
 #+description: Use generate_v2_doc.sh to create any v2 document type with frontmatter, UUID, and skeleton sections pre-filled.
@@ -11,14 +11,14 @@
 #+updated: 2026-05-20
 
 For the contract every generated document follows (frontmatter, sections, TODO
-vocabulary), see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]. For background on the generator itself, see
+vocabulary), see [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]. For background on the generator itself, see
 [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].
 
 * Question
 
-How do I create a new v2 information-architecture document — [[id:b7fa729c-2d42-408a-9424-b6aa90eb16b4][task]], [[id:6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752][story]],
-[[id:f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12][sprint]], [[id:8fc15ea1-ab30-47be-993f-ed624a57f761][version]], [[id:0a28b9ca-dc07-4a1d-9942-7843eabf8a40][component]], [[id:0c57932d-d13a-480f-b426-49525aa8ba3d][recipe]], [[id:f497aa0a-f604-436a-8555-c17b14302c99][knowledge]], [[id:6054cc20-5f41-482f-a587-759512577b1d][skill]], [[id:f1311596-b8ed-43ad-8c46-76c58c0194c7][product identity]], or
-[[id:978e0a8f-197c-48da-a405-457e0aee91d9][capture]], or [[id:32b3a055-63fa-4edf-8dcc-901e9d883f22][memory]] — without hand-writing the
+How do I create a new v2 information-architecture document — [[id:B7FA729C-2D42-408A-9424-B6AA90EB16B4][task]], [[id:6D6DDB4B-A0AA-42E6-A294-0F9B35CC0752][story]],
+[[id:F56FBA9B-A3C4-4C7C-8A15-BC9C3CC98A12][sprint]], [[id:8FC15EA1-AB30-47BE-993F-ED624A57F761][version]], [[id:0A28B9CA-DC07-4A1D-9942-7843EABF8A40][component]], [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipe]], [[id:F497AA0A-F604-436A-8555-C17B14302C99][knowledge]], [[id:6054CC20-5F41-482F-A587-759512577B1D][skill]], [[id:F1311596-B8ED-43AD-8C46-76C58C0194C7][product identity]], or
+[[id:978E0A8F-197C-48DA-A405-457E0AEE91D9][capture]], or [[id:32B3A055-63FA-4EDF-8DCC-901E9D883F22][memory]] — without hand-writing the
 frontmatter?
 
 * Answer
@@ -40,7 +40,7 @@ script from a terminal and it prompts for any missing required field.
 
 ** New task
 :PROPERTIES:
-:ID: b7fa729c-2d42-408a-9424-b6aa90eb16b4
+:ID: B7FA729C-2D42-408A-9424-B6AA90EB16B4
 :END:
 
 #+begin_src sh :results verbatim
@@ -57,7 +57,7 @@ Parent story info is auto-detected from
 
 ** New story
 :PROPERTIES:
-:ID: 6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752
+:ID: 6D6DDB4B-A0AA-42E6-A294-0F9B35CC0752
 :END:
 
 #+begin_src sh :results verbatim
@@ -71,7 +71,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 
 ** New story continuing from a previous sprint
 :PROPERTIES:
-:ID: 084ec5b7-8174-482e-83e5-3c22e0b57329
+:ID: 084EC5B7-8174-482E-83E5-3C22E0B57329
 :END:
 
 Add =--predecessor-id= and =--predecessor-title=. The script renders
@@ -96,7 +96,7 @@ section.
 
 ** New sprint
 :PROPERTIES:
-:ID: f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12
+:ID: F56FBA9B-A3C4-4C7C-8A15-BC9C3CC98A12
 :END:
 
 #+begin_src sh :results verbatim
@@ -110,7 +110,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 
 ** New version
 :PROPERTIES:
-:ID: 8fc15ea1-ab30-47be-993f-ed624a57f761
+:ID: 8FC15EA1-AB30-47BE-993F-ED624A57F761
 :END:
 
 #+begin_src sh :results verbatim
@@ -124,7 +124,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 
 ** New component model
 :PROPERTIES:
-:ID: 0a28b9ca-dc07-4a1d-9942-7843eabf8a40
+:ID: 0A28B9CA-DC07-4A1D-9942-7843EABF8A40
 :END:
 
 Component overview files are always named =component_overview.org=.
@@ -140,11 +140,11 @@ projects/ores.codegen/generate_v2_doc.sh \
 #+end_src
 
 Output: =projects/ores.example/modeling/component_overview.org=.
-See [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] for how to fill in each section.
+See [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] for how to fill in each section.
 
 ** New recipe
 :PROPERTIES:
-:ID: 0c57932d-d13a-480f-b426-49525aa8ba3d
+:ID: 0C57932D-D13A-480F-B426-49525AA8BA3D
 :END:
 
 Use the =how_do_i_<thing>= slug convention. The output is
@@ -161,12 +161,12 @@ projects/ores.codegen/generate_v2_doc.sh \
 
 When the recipe's =* Answer= involves a shell command, write it in
 an =#+begin_src sh :results verbatim= block so the recipe is
-executable in emacs (=C-c C-c=) — see [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]]
+executable in emacs (=C-c C-c=) — see [[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How do I list available presets?]]
 for an example that also captures a =#+RESULTS:= snapshot.
 
 ** New knowledge document
 :PROPERTIES:
-:ID: f497aa0a-f604-436a-8555-c17b14302c99
+:ID: F497AA0A-F604-436A-8555-C17B14302C99
 :END:
 
 #+begin_src sh :results verbatim
@@ -180,7 +180,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 
 ** New Claude Code skill
 :PROPERTIES:
-:ID: 6054cc20-5f41-482f-a587-759512577b1d
+:ID: 6054CC20-5F41-482F-A587-759512577B1D
 :END:
 
 Use kebab-case for the slug (matches existing =cmake-runner=,
@@ -200,7 +200,7 @@ Output: =doc/llm/skills/my-new-skill/SKILL.org=.
 
 ** New product identity
 :PROPERTIES:
-:ID: f1311596-b8ed-43ad-8c46-76c58c0194c7
+:ID: F1311596-B8ED-43AD-8C46-76C58C0194C7
 :END:
 
 There is one product identity document per product (=product_identity.org=
@@ -217,14 +217,31 @@ projects/ores.codegen/generate_v2_doc.sh \
   --tags "identity,vision"
 #+end_src
 
-** New capture
+** New investigation report
 :PROPERTIES:
-:ID: 978e0a8f-197c-48da-a405-457e0aee91d9
+:ID: 75F4921B-43D1-4E78-99AB-62A47F761D1D
 :END:
 
-Captures live in the product backlog under =doc/agile/product_backlog/=
-in either the =near/= bucket (candidate work for the next version) or
-=far/= (longer-term wishlist). The =--parent-dir= picks the bucket.
+[[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][Investigation reports]] live in =doc/investigations/=. They are formal records
+of technical research or debugging sessions.
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type investigation --slug msvc_c1202_rfl_complexity \
+  --parent-dir doc/investigations \
+  --title "MSVC C1202 and rfl complexity" \
+  --description "Root cause analysis of recursive template depth limits in reflect-cpp." \
+  --tags "msvc,cpp,reflect_cpp,investigation"
+#+end_src
+
+** New capture
+:PROPERTIES:
+:ID: 978E0A8F-197C-48DA-A405-457E0AEE91D9
+:END:
+
+[[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Captures]] live in the product backlog under =doc/agile/product_backlog/= in
+either the =near/= bucket (candidate work for the next version) or =far/=
+(longer-term wishlist). The =--parent-dir= picks the bucket.
 
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
@@ -240,7 +257,7 @@ name from the =--parent-dir= basename.
 
 ** New memory
 :PROPERTIES:
-:ID: 3b7156cd-3a8d-49e5-bf89-a5f6f2486596
+:ID: 3B7156CD-3A8D-49E5-BF89-A5F6F2486596
 :END:
 
 Memories live under =doc/llm/memory/=. Pass =--memory-subtype= to pick
@@ -258,8 +275,8 @@ projects/ores.codegen/generate_v2_doc.sh \
 #+end_src
 
 For the LLM-side decision flow (when to write vs push back), see
-the [[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory skill]]; for the standalone recipe with body
-conventions, see [[id:391b9231-dba8-4e8c-97ab-a75e2b9fea07][How do I create a memory?]].
+the [[id:7357C672-A49F-4974-9399-A166F761D222][ores-memory skill]]; for the standalone recipe with body
+conventions, see [[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]].
 
 ** Creating a set of inter-linked documents
 
@@ -293,7 +310,9 @@ pre-assign an ID to a brand-new document.
 
 * What the script does
 
-- Generates a fresh UUID and puts it in =:ID:=.
+- Generates a fresh UUID (always uppercase hex) and puts it in =:ID:=.
+  Every =:ID:= property and =[[id:UUID]]= link in the documentation graph
+  must use uppercase hex — see [[id:BAF1DEAE-59DF-49AB-BFCD-E6D09496DA43][Lock down uppercase UUID invariant]].
 - Sets =#+created= and =#+updated= to today.
 - Adds =--parent-slug= as a filetag, so the parent-tag invariant holds.
 - Auto-detects parent =:ID:= and =#+title:= from
@@ -311,12 +330,12 @@ Manual smoke tests during initial development. No automated test yet
 
 * See also
 
-- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — component-specific workflow
+- [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] — component-specific workflow
   with section-by-section guidance.
-- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component Documentation Guide]] — what makes a good component doc.
-- [[id:20d0a77d-e0c0-492e-b0ec-45c7638dd220][How do I run codegen?]] — the C++ model-driven generator on the same
+- [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component Documentation Guide]] — what makes a good component doc.
+- [[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]] — the C++ model-driven generator on the same
   infrastructure.
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] — the contract every generated document follows.
-- [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] — cross-sprint stories use =#+predecessor=/=#+successor=.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] — the contract every generated document follows.
+- [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]] — cross-sprint stories use =#+predecessor=/=#+successor=.
 - =projects/ores.codegen/docs/v2_doc_generator.md= — full CLI
   reference.

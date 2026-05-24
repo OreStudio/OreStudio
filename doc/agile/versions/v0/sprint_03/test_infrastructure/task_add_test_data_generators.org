@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 36be3e39-dc25-4723-aa29-8a130a1e8c21
+:ID: 36BE3E39-DC25-4723-AA29-8A130A1E8C21
 :END:
 #+title: Task: Add generators for test data generation
 #+description: Add deterministic data generators so each test can build representative input without ad-hoc fixtures.
@@ -16,7 +16,7 @@
 #+updated: 2025-12-01
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:22EFE1E8-427F-488A-94A3-8CA78F180966][Test infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ with the temporal-aware domain types from sprint 02.
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]] |
+| Parent story | [[id:22EFE1E8-427F-488A-94A3-8CA78F180966][Test infrastructure]] |
 | Now          | Completed 2025-12-01.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

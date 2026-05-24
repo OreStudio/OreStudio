@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 03d189e0-1960-4f19-b71f-ee7c8d0941a7
+:ID: 03D189E0-1960-4F19-B71F-EE7C8D0941A7
 :END:
 #+title: Sprint 15
 #+description: Implement compute grid: BOINC-inspired distributed grid; telemetry + RAG dashboard; api/core architecture split across 10 services; JWT refresh; unified system_settings replacing feature_flags; CDM instrument domain models (rates, FX, bond, credit); ORE import bug fixes.
@@ -11,10 +11,10 @@
 #+updated: 2026-05-20
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 15*) of ORE Studio v0. It captures the
+This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 15*) of ORE Studio v0. It captures the
 sprint's mission, current status, and the stories that compose it. For the
 surrounding context — version goals, sprint order, and product identity — see
-[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+[[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
 
 * Mission
 
@@ -32,7 +32,7 @@ FX, bond, credit).
 | Field          | Value                                                                                                                |
 |----------------+----------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                 |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                            |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                            |
 | Now            | Sprint closed 2026-03-30. No BACKLOG carry-overs this sprint.                                                        |
 | Waiting on     | None.                                                                                                                |
 | Next           | Sprint 16 closes out v0 — likely the three-level provisioning workflow + remaining CDM phases + RBAC handler guards. |
@@ -43,21 +43,21 @@ FX, bond, credit).
 #+ATTR_HTML: :class hug-leading
 | Story                                                                                    | State | Start      | End        | Theme                                                                   |
 |------------------------------------------------------------------------------------------+-------+------------+------------+-------------------------------------------------------------------------|
-| [[id:df3c08d8-a11e-4e2e-908a-5bd0ddc29626][Sprint 15 housekeeping]]                      | DONE  |            | 2026-03-24 | backlog refinement.                                                     |
-| [[id:fd12bbd4-bd95-454a-a636-5f22c928c4d1][Fix ORE import bugs]]                         | DONE  |            | 2026-03-19 | real-data shakedown of the sprint-14 wizard.                            |
-| [[id:7b5e0c11-8c1f-4d91-adea-2596197cd0d4][Loading indicator on entity list windows]]    | DONE  |            | 2026-03-20 | UI consistency.                                                         |
-| [[id:bfac3a00-1684-4546-b10b-5ba358b5a867][Unified system_settings]]                     | DONE  |            | 2026-03-20 | replace feature_flags.                                                  |
-| [[id:3ed3ca4d-8709-4f70-a1a8-1ff287adb8bf][Compute grid implementation]]                 | DONE  |            | 2026-03-21 | the sprint's mission. Continues from sprint 10 compute_grid_analysis.   |
-| [[id:679da033-934a-4330-951f-5016675cc8af][Compute grid observability]]                  | DONE  |            | 2026-03-21 | telemetry + RAG dashboard.                                              |
-| [[id:169b15a7-442b-44fd-8e54-436fec8340a6][JWT refresh]]                                 | DONE  |            | 2026-03-21 | closes the loop on sprint-14 RS256.                                     |
-| [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]]           | DONE  |            | 2026-03-26 | real-data testing + loading-lifecycle refactor.                         |
-| [[id:84fca31b-b6a8-444f-9ea9-33515d50645f][NATS service discovery for HTTP base URL]]    | DONE  |            | 2026-03-22 | and the architecture migration plan.                                    |
-| [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]]             | DONE  |            | 2026-03-23 | 10 service libraries split into *.api + *.core.                         |
-| [[id:bc195cb4-4cbf-4d9d-8685-8ce3304da3fe][Engineering hygiene]]                         | DONE  |            | 2026-03-25 | sccache cache bloat, tenant_id in tests, ORES_PRESET + start-client.sh. |
-| [[id:4837265a-934c-4cfc-9f7a-edc3f86f37c6][Generators to api layer + http.server split]] | DONE  |            | 2026-03-25 | cross-cutting cleanup completing the migration.                         |
-| [[id:1af340aa-fb79-4870-bc13-0dd2fc75af2b][Environment isolation for database roles]]    | DONE  |            | 2026-03-25 | prefixed PostgreSQL roles.                                              |
-| [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]]                | DONE  |            | 2026-03-30 | rates / FX / credit / bond, in four phases.                             |
-| [[id:2aa3562a-9e27-4efc-a2a0-492098f9ebbb][Badges to database (phase 1)]]                | DONE  |            | 2026-03-28 | DB-driven badge metadata.                                               |
+| [[id:DF3C08D8-A11E-4E2E-908A-5BD0DDC29626][Sprint 15 housekeeping]]                      | DONE  |            | 2026-03-24 | backlog refinement.                                                     |
+| [[id:FD12BBD4-BD95-454A-A636-5F22C928C4D1][Fix ORE import bugs]]                         | DONE  |            | 2026-03-19 | real-data shakedown of the sprint-14 wizard.                            |
+| [[id:7B5E0C11-8C1F-4D91-ADEA-2596197CD0D4][Loading indicator on entity list windows]]    | DONE  |            | 2026-03-20 | UI consistency.                                                         |
+| [[id:BFAC3A00-1684-4546-B10B-5BA358B5A867][Unified system_settings]]                     | DONE  |            | 2026-03-20 | replace feature_flags.                                                  |
+| [[id:3ED3CA4D-8709-4F70-A1A8-1FF287ADB8BF][Compute grid implementation]]                 | DONE  |            | 2026-03-21 | the sprint's mission. Continues from sprint 10 compute_grid_analysis.   |
+| [[id:679DA033-934A-4330-951F-5016675CC8AF][Compute grid observability]]                  | DONE  |            | 2026-03-21 | telemetry + RAG dashboard.                                              |
+| [[id:169B15A7-442B-44FD-8E54-436FEC8340A6][JWT refresh]]                                 | DONE  |            | 2026-03-21 | closes the loop on sprint-14 RS256.                                     |
+| [[id:0DCEDAE5-E5F0-4AF8-AE85-37C7618237A6][Compute grid polish and E2E fixes]]           | DONE  |            | 2026-03-26 | real-data testing + loading-lifecycle refactor.                         |
+| [[id:84FCA31B-B6A8-444F-9EA9-33515D50645F][NATS service discovery for HTTP base URL]]    | DONE  |            | 2026-03-22 | and the architecture migration plan.                                    |
+| [[id:7631C4D3-43C5-4238-A180-337BEA863C7F][API/core architecture migration]]             | DONE  |            | 2026-03-23 | 10 service libraries split into *.api + *.core.                         |
+| [[id:BC195CB4-4CBF-4D9D-8685-8CE3304DA3FE][Engineering hygiene]]                         | DONE  |            | 2026-03-25 | sccache cache bloat, tenant_id in tests, ORES_PRESET + start-client.sh. |
+| [[id:4837265A-934C-4CFC-9F7A-EDC3F86F37C6][Generators to api layer + http.server split]] | DONE  |            | 2026-03-25 | cross-cutting cleanup completing the migration.                         |
+| [[id:1AF340AA-FB79-4870-BC13-0DD2FC75AF2B][Environment isolation for database roles]]    | DONE  |            | 2026-03-25 | prefixed PostgreSQL roles.                                              |
+| [[id:F8E6374B-AAAF-4D50-98CE-844DA4558172][CDM instrument domain models]]                | DONE  |            | 2026-03-30 | rates / FX / credit / bond, in four phases.                             |
+| [[id:2AA3562A-9E27-4EFC-A2A0-492098F9EBBB][Badges to database (phase 1)]]                | DONE  |            | 2026-03-28 | DB-driven badge metadata.                                               |
 
 * Retrospective
 

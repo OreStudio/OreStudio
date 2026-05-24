@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d
+:ID: 18CCF6C9-7D23-48B3-9D4D-2A8AEB4EE30D
 :END:
 #+title: Story: sqlgen improvements
 #+description: Audit raw libpq use; upstream NOTICE logging support to sqlgen; bound parameters proposed (blocked upstream).
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,16 +23,16 @@ libpq for the cases sqlgen doesn't yet cover.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Parent sprint | [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]] |
 | Now           | Completed 2026-02-06.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-02-06                                             |
 
 
-#+successor: e8004b20-ae81-4d48-a677-cde07a300e92
+#+successor: E8004B20-AE81-4D48-A677-CDE07A300E92
 
-Continued in: [[id:e8004b20-ae81-4d48-a677-cde07a300e92][sqlgen follow-up]] (sprint 12) — the upstream PRs
+Continued in: [[id:E8004B20-AE81-4D48-A677-CDE07A300E92][sqlgen follow-up]] (sprint 12) — the upstream PRs
 merged but vcpkg hasn't picked up a release; adoption work remains
 blocked there.
 
@@ -46,9 +46,9 @@ blocked there.
 
 In execution order:
 
-- [[id:f0c71fe7-1920-44aa-b98f-9147aaa00032][Audit for uses of raw libpq]]
-- [[id:db4461dd-a98e-4847-9b16-a76cfd1afcbe][Add NOTICE logging support to sqlgen]]
-- [[id:a6d63825-d592-47bb-a1c6-b6e9564fd55c][Add bound parameters to sqlgen]]
+- [[id:F0C71FE7-1920-44AA-B98F-9147AAA00032][Audit for uses of raw libpq]]
+- [[id:DB4461DD-A98E-4847-9B16-A76CFD1AFCBE][Add NOTICE logging support to sqlgen]]
+- [[id:A6D63825-D592-47BB-A1C6-B6E9564FD55C][Add bound parameters to sqlgen]]
 
 * Decisions
 

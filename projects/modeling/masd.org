@@ -49,7 +49,7 @@ The key attributes of the logical element we intend to model are kept
 within the /type/ facet — regular C++ code that defines a =struct= with
 the domain type. Each logical element lives on its "native" component
 (e.g. =account= in =ores.iam=). They are defined via the
-[[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] skill, which bundles a number of facets together.
+[[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]] skill, which bundles a number of facets together.
 Other facets then refer to the domain type files to extract required
 information.
 
@@ -76,7 +76,7 @@ and the Mustache templates each profile invokes.
 
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the code generator that implements the facet
   transformations.
-- [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] — skill for generating all facets of a domain
+- [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]] — skill for generating all facets of a domain
   entity.
-- [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]] — how components are structured and which
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — how components are structured and which
   facets belong in each part (=.api= / =.core= / =.service=).

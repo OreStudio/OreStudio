@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 36ff8e82-a350-4ae1-a96a-0c644a5e5045
+:ID: 36FF8E82-A350-4AE1-A96A-0C644A5E5045
 :END:
 #+title: Task: Enhance currency taxonomy
 #+description: Replace currency_type free-text with structured asset_class (fiat / crypto / commodity / synthetic / supranational) + market_tier (g10 / emerging / exotic / frontier / historical); two new refdata entities currency_asset_class + currency_market_tier (SQL + domain + repo + service + messaging + Qt + Wt + CLI); protocol 41.0 (breaking).
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7ae49d47-624c-41c6-8c07-cdbeb71d85ec][Refdata taxonomy work]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7AE49D47-624C-41C6-8C07-CDBEB71D85EC][Refdata taxonomy work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Replace the monolithic =currency_type= free-text field with structured =asset_cl
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
 | State        | DONE                                                               |
-| Parent story | [[id:7ae49d47-624c-41c6-8c07-cdbeb71d85ec][Refdata taxonomy work]] |
+| Parent story | [[id:7AE49D47-624C-41C6-8C07-CDBEB71D85EC][Refdata taxonomy work]] |
 | Now          | Completed 2026-02-24.                                              |
 | Waiting on   | None.                                                              |
 | Next         | None.                                                              |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 838a254c-e9ee-4a06-8f72-97c4f84e3e75
+:ID: 838A254C-E9EE-4A06-8F72-97C4F84E3E75
 :END:
 #+title: Task: Add component PlantUML generation script and bulk-refresh all diagrams
 #+description: - Add `build/scripts/generate_component_puml.py`: a regex-based script that walks each project's `include/` headers and 
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:17c590d4-04f0-43c5-9ea5-f89c40c82a4c][PlantUML and modeling refresh]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:17C590D4-04F0-43C5-9EA5-F89C40C82A4C][PlantUML and modeling refresh]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add generate_component_puml.py to create skeleton PlantUML class diagrams from p
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:17c590d4-04f0-43c5-9ea5-f89c40c82a4c][PlantUML and modeling refresh]] |
+| Parent story | [[id:17C590D4-04F0-43C5-9EA5-F89C40C82A4C][PlantUML and modeling refresh]] |
 | Now          | Completed 2026-05-19.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

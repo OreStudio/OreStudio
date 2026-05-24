@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 593cd821-11b6-4667-a5b1-66f131e81765
+:ID: 593CD821-11B6-4667-A5B1-66F131E81765
 :END:
 #+title: Task: Fix broken org-mode links in identifier-length-cleanup plan
 #+description: - Three `[[*Special Cases]]` links in `doc/plans/2026-05-13-identifier-length-cleanup.org` failed to resolve during org-
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:063862A1-C02C-4F76-A212-576A57423F0F][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Fix three broken org-mode internal links in the identifier-length-cleanup plan t
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] |
+| Parent story | [[id:063862A1-C02C-4F76-A212-576A57423F0F][v2 documentation architecture]] |
 | Now          | Completed 2026-05-14.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

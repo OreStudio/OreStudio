@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d3b34b6f-7fbf-461e-8660-d9bf90176ca0
+:ID: D3B34B6F-7FBF-461E-8660-D9BF90176CA0
 :END:
 #+title: Bootstrap Initial Admin
 #+description: Bootstrap Initial Admin

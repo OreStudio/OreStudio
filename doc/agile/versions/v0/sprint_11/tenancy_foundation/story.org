@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f6748da4-e8d7-48b6-b91f-bc05e68f53d8
+:ID: F6748DA4-E8D7-48B6-B91F-BC05E68F53D8
 :END:
 #+title: Story: Tenancy foundation
 #+description: Tenant_id on every entity table; system tenant; validation function; seeding scoped to system tenant; auto-populate triggers and test infrastructure.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ trigger machinery that lets existing C++ code 'just work'.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] |
+| Parent sprint | [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]] |
 | Now           | Completed 2026-02-01.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -42,9 +42,9 @@ trigger machinery that lets existing C++ code 'just work'.
 
 In execution order:
 
-- [[id:59582d45-b4f4-47b9-8cf2-06e597f9651c][Initial tenant setup (schema)]]
-- [[id:27aeb340-b98c-4b6d-aa92-d4da2dc5c629][Tenancy and seeding]]
-- [[id:73a005de-626e-4b62-8fed-f385aecdf02a][Tenancy, login and tests]]
+- [[id:59582D45-B4F4-47B9-8CF2-06E597F9651C][Initial tenant setup (schema)]]
+- [[id:27AEB340-B98C-4B6D-AA92-D4DA2DC5C629][Tenancy and seeding]]
+- [[id:73A005DE-626E-4B62-8FED-F385AECDF02A][Tenancy, login and tests]]
 
 * Decisions
 

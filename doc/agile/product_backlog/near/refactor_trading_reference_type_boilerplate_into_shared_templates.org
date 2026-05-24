@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 63dd4ad6-4f3b-4dcf-8c66-9cb399e970ff
+:ID: 63DD4AD6-4F3B-4DCF-8C66-9CB399E970FF
 :END:
 #+title: Refactor trading reference type boilerplate into shared templates
 #+description: Refactor trading reference type boilerplate into shared templates
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 The five new trading instrument reference data types (DayCountFractionType,
 BusinessDayConventionType, FloatingIndexType, PaymentFrequencyType, LegType)

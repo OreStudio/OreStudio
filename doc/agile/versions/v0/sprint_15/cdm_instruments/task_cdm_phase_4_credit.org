@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c97528c9-7e46-4f3e-a1ac-7213e933c601
+:ID: C97528C9-7E46-4F3E-A1AC-7213E933C601
 :END:
 #+title: Task: CDM Phase 4: Credit instrument domain model
 #+description: Credit instruments: CreditDefaultSwap, CDSIndex, SyntheticCDO. SQL: ores_trading_credit_instruments_tbl (reference_entity, currency, notional, spread, recovery_rate, tenor, dates, day_count, payment_frequency, optional fields for index + seniority + restructuring). Domain + repo + service + Qt UI.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F8E6374B-AAAF-4D50-98CE-844DA4558172][CDM instrument domain models]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Phase 4: credit instruments (CreditDefaultSwap, CDSIndex, SyntheticCDO).
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE                                                                      |
-| Parent story | [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]] |
+| Parent story | [[id:F8E6374B-AAAF-4D50-98CE-844DA4558172][CDM instrument domain models]] |
 | Now          | Completed 2026-03-28.                                                     |
 | Waiting on   | None.                                                                     |
 | Next         | None.                                                                     |

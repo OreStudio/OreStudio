@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 84365a4e-5921-4921-ab81-e8ea15c17eaf
+:ID: 84365A4E-5921-4921-AB81-E8EA15C17EAF
 :END:
 #+title: Task: Implement NATS support
 #+description: Replace the entire binary protocol stack (SSL/ASIO transport + NNG broker) with cnats request/reply: ~107k lines removed, ~20k lines added; new ores.nats component with nats::service::client interface; 10 domain services wired to NATS (iam, variability, refdata, assets, trading, dq, reporting, scheduler, synthetic, telemetry); ores.comms.shell + ores.http.server + ores.qt all migrated; subject prefix ores.{tier}.{instance} for environment isolation; _INBOX.* reply-subject prefix bug fixed; ores.mq removed in favour of JetStream via jetstream_admin.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23D1F2BB-D2D3-423A-8167-657098E30542][NATS migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Replace the entire binary protocol stack with NATS — the messaging-infrastruct
 | Field        | Value                                                       |
 |--------------+-------------------------------------------------------------|
 | State        | DONE                                                        |
-| Parent story | [[id:23d1f2bb-d2d3-423a-8167-657098e30542][NATS migration]] |
+| Parent story | [[id:23D1F2BB-D2D3-423A-8167-657098E30542][NATS migration]] |
 | Now          | Completed 2026-03-15.                                       |
 | Waiting on   | None.                                                       |
 | Next         | None.                                                       |

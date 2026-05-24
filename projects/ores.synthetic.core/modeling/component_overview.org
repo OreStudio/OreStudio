@@ -52,6 +52,6 @@ generation operations to remote callers.
 
 * See also
 
-- [[id:44039e5b-3435-4bcb-824f-3990af341fbe][ores.synthetic.api]] — protocol types and domain entities.
-- [[id:702753e8-0e07-4690-afab-d75514ade660][ores.synthetic.service]] — NATS service entrypoint.
+- [[id:44039E5B-3435-4BCB-824F-3990AF341FBE][ores.synthetic.api]] — protocol types and domain entities.
+- [[id:702753E8-0E07-4690-AFAB-D75514ADE660][ores.synthetic.service]] — NATS service entrypoint.
 - [[id:7AF2DCAB-BC62-43A9-885A-E557FCD4254F][ores.synthetic Messaging Reference]] — full NATS subject and message catalogue.

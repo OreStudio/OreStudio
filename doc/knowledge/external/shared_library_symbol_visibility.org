@@ -16,7 +16,7 @@ library (=.dll= on Windows, =.so= on Linux, =.dylib= on macOS) are
 accessible to other code that links against it. The default in ORE
 Studio is /hidden-by-default/: only symbols explicitly annotated for
 export are visible to consumers. Everything else is an internal
-implementation detail. Return to [[id:cf2c4f3a-9c5c-4e7a-9e16-2a3a8c1d4c11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+implementation detail. Return to [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Why it matters
 
@@ -195,7 +195,7 @@ UI/HTTP code to database implementation details.
 
 * See also
 
-- [[id:B5D2A1F3-7E94-4C8B-A2D6-G3B84F0E1567][Qt QPluginLoader Architecture Migration]] — established the pattern in
+- [[id:720D74A0-DAD3-4F11-BC5F-AD78BF5A9DD2][Qt QPluginLoader Architecture Migration]] — established the pattern in
   =ores.qt.api=.
 - [[id:F2A4C6E8-B1D3-4E5F-A7B9-2C4D6E8F0A1B][Symbol Visibility Migration Plan]] — phased rollout across all
   libraries.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3579ab5e-d5d8-45ae-8cb5-00ad1c58644f
+:ID: 3579AB5E-D5D8-45AE-8CB5-00AD1C58644F
 :END:
 #+title: Story: Data Quality subsystem and Data Librarian
 #+description: Stand up ores.dq as a first-class component: domain types, ER schema, messaging subsystem, Data Librarian UI, publication workflow, fake-world dataset.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -26,16 +26,16 @@ workflow, and a fake-world validation dataset.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]] |
+| Parent sprint | [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]] |
 | Now           | Completed 2026-01-20.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2026-01-20                                             |
 
 
-#+successor: 75442a55-dbbb-4bc1-875e-981679e05621
+#+successor: 75442A55-DBBB-4BC1-875E-981679E05621
 
-Continued in: [[id:75442a55-dbbb-4bc1-875e-981679e05621][Librarian polish]] (sprint 10) — PR-review feedback on
+Continued in: [[id:75442A55-DBBB-4BC1-875E-981679E05621][Librarian polish]] (sprint 10) — PR-review feedback on
 the librarian landed here.
 
 * Acceptance
@@ -54,15 +54,15 @@ the librarian landed here.
 
 In execution order:
 
-- [[id:b03fee7c-2156-4b80-a2bd-020a9a5b6077][Create Data Quality infrastructure]]
-- [[id:1dc4639c-893d-4cbe-b4ac-a4bc9a04b932][DQ domain types and FpML reference data]]
-- [[id:b1969bed-3c53-42c9-b316-cacc90814ca7][DQ catalog and ER refactor]]
-- [[id:530624ef-e76e-40ce-82be-3efc8420d938][Data Librarian UI]]
-- [[id:293a5704-3138-40d4-9903-6d09b67f3456][DQ subject areas management]]
-- [[id:21dfacf9-f1cc-4c99-9e46-586fd8c6b23c][DQ messaging subsystem]]
-- [[id:808db4f2-2191-4600-983c-f83c7438c11e][Resolve DQ-IAM circular dependency]]
-- [[id:fee9f73a-16b2-4692-9a22-b6c8b23ca451][Data Librarian publication workflow]]
-- [[id:efd5093d-5bf0-43f2-a2c6-443405f849e3][Add fake-world dataset]]
+- [[id:B03FEE7C-2156-4B80-A2BD-020A9A5B6077][Create Data Quality infrastructure]]
+- [[id:1DC4639C-893D-4CBE-B4AC-A4BC9A04B932][DQ domain types and FpML reference data]]
+- [[id:B1969BED-3C53-42C9-B316-CACC90814CA7][DQ catalog and ER refactor]]
+- [[id:530624EF-E76E-40CE-82BE-3EFC8420D938][Data Librarian UI]]
+- [[id:293A5704-3138-40D4-9903-6D09B67F3456][DQ subject areas management]]
+- [[id:21DFACF9-F1CC-4C99-9E46-586FD8C6B23C][DQ messaging subsystem]]
+- [[id:808DB4F2-2191-4600-983C-F83C7438C11E][Resolve DQ-IAM circular dependency]]
+- [[id:FEE9F73A-16B2-4692-9A22-B6C8B23CA451][Data Librarian publication workflow]]
+- [[id:EFD5093D-5BF0-43F2-A2C6-443405F849E3][Add fake-world dataset]]
 
 * Decisions
 
@@ -79,5 +79,5 @@ In execution order:
 
 * See also
 
-- [[id:61485635-64ba-4c31-a35b-2f60d7fb41aa][Database naming refactor]] — the ER refactor consumes its naming convention.
-- [[id:150e3c44-aadb-48c8-a11e-322b44a0357a][Change management infrastructure]] (sprint 08) — change-management messages migrate from there into DQ here.
+- [[id:61485635-64BA-4C31-A35B-2F60D7FB41AA][Database naming refactor]] — the ER refactor consumes its naming convention.
+- [[id:150E3C44-AADB-48C8-A11E-322B44A0357A][Change management infrastructure]] (sprint 08) — change-management messages migrate from there into DQ here.

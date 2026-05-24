@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a4556487-4842-462b-9f87-b330d7db740d
+:ID: A4556487-4842-462B-9F87-B330D7DB740D
 :END:
 #+title: How do I add a new account?
 #+description: Add a new account using =ores.cli= command-line arguments

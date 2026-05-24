@@ -8,17 +8,21 @@
 #+level: cross
 #+filetags: :recipe:git:index:knowledge:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-05-23
 
 Recipes for pure git workflows — branches, stashes, submodules.
 GitHub-specific operations (PRs, CI, review threads, =gh= CLI) live
-under [[id:fcf81f0b-afbf-4169-bd24-04dbd08180a9][GitHub recipes]] separately.
+under [[id:FCF81F0B-AFBF-4169-BD24-04DBD08180A9][GitHub recipes]] separately.
+
+* Committing
+
+- [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][How do I commit to git using ORE Studio conventions?]]
 
 * Branches
 
-- [[id:da003a23-1604-43e7-a98f-a305148fbcf4][How do I start work on a story?]]
-- [[id:479e7e27-4060-4bfd-ac38-f11efa3bb306][How do I start a new feature branch phase?]]
+- [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]]
+- [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]]
 
 * Repo housekeeping
 
-- [[id:2a8f0d61-b3f9-4c20-9e76-1d92c8a47fb5][How do I update submodules to latest?]]
+- [[id:2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5][How do I update submodules to latest?]]

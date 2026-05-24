@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c28c799e-ecd8-4907-b48b-c7462521503b
+:ID: C28C799E-ECD8-4907-B48B-C7462521503B
 :END:
 #+title: Task: Rename instrument_family to product_type
 #+description: Pure rename of the DB routing discriminator field across SQL DDL, PG enum type (instrument_family_t → product_type_t), C++ domain structs, NATS message types, repository mapper, Qt trade window. Aligns with FpML productType + ISDA CDM language.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ffc60db1-b82a-4c8a-961e-2c6720379508][Asset class and product_type unification]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC60DB1-B82A-4C8A-961E-2C6720379508][Asset class and product_type unification]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Pure rename of the DB routing discriminator field across SQL DDL, PG enum type (
 | Field        | Value                                                                                 |
 |--------------+---------------------------------------------------------------------------------------|
 | State        | DONE                                                                                  |
-| Parent story | [[id:ffc60db1-b82a-4c8a-961e-2c6720379508][Asset class and product_type unification]] |
+| Parent story | [[id:FFC60DB1-B82A-4C8A-961E-2C6720379508][Asset class and product_type unification]] |
 | Now          | Completed 2026-04-03.                                                                 |
 | Waiting on   | None.                                                                                 |
 | Next         | None.                                                                                 |

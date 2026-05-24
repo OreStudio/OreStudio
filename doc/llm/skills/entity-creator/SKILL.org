@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0cba2f23-7f5f-433d-921a-d9c056bd9ca8
+:ID: 0CBA2F23-7F5F-433D-921A-D9C056BD9CA8
 :END:
 #+title: Entity Creator
 #+description: Create a complete full-stack ORE Studio entity across all layers via codegen — the orchestrator skill.
@@ -42,12 +42,12 @@ it is out of scope for this entity.
 
 | # | Layer | Sub-skill | Codegen |
 |---|---|---|---|
-| 1 | Domain · SQL · repository · service · protocol · generator | [[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]] | =--profile all= |
-| 2 | Qt UI (model, windows, dialogs, controller) | [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][qt-entity-creator]] | =--profile qt= |
-| 3 | Qt plugin wiring (menus, toolbar) | [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][qt-entity-creator]] §wiring | see [[id:e44891dc-234c-42db-90e1-9421400abd1a][Qt menu and toolbar patterns]] |
-| 4 | HTTP REST endpoints | [[id:bdcc47d4-b050-409e-8c50-3d179843a274][http-entity-creator]] | ❌ GAP |
-| 5 | CLI commands | [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][cli-entity-creator]] | ❌ GAP |
-| 6 | Shell REPL commands | [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][shell-entity-creator]] | ❌ GAP |
+| 1 | Domain · SQL · repository · service · protocol · generator | [[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]] | =--profile all= |
+| 2 | Qt UI (model, windows, dialogs, controller) | [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] | =--profile qt= |
+| 3 | Qt plugin wiring (menus, toolbar) | [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] §wiring | see [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]] |
+| 4 | HTTP REST endpoints | [[id:BDCC47D4-B050-409E-8C50-3D179843A274][http-entity-creator]] | ❌ GAP |
+| 5 | CLI commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][cli-entity-creator]] | ❌ GAP |
+| 6 | Shell REPL commands | [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][shell-entity-creator]] | ❌ GAP |
 | 7 | Wt web UI | [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][wt-entity-creator]] | ❌ GAP |
 
 ** Step 3 — Gap protocol
@@ -56,7 +56,7 @@ When a layer is marked ❌ GAP:
 
 1. *Do not hand-code the layer.*
 2. Raise a sprint story: "Implement codegen profile for {layer}."
-3. Reference [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]]§"Codegen gaps" for what the profile must cover.
+3. Reference [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Codegen gaps" for what the profile must cover.
 4. Link the story to the entity task before marking the layer done.
 5. Once the profile exists, regenerate and discard any hand-written interim code.
 
@@ -67,7 +67,7 @@ Until the gap is resolved the layer is incomplete.  The entity is not
 
 After all layer tasks are green, create two more tasks:
 
-- *Tests*: invoke [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][unit-test-writer]] for domain, repository, and service layers.
+- *Tests*: invoke [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][unit-test-writer]] for domain, repository, and service layers.
 - *Diagrams*: invoke [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] and [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]].
 
 ** Step 5 — PR strategy
@@ -78,13 +78,13 @@ and phase boundaries). Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-br
 
 * Recipes
 
-- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — canonical file checklist, template inventory, layer diagram.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — canonical file checklist, template inventory, layer diagram.
 
 * Reference
 
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, profile catalogue, =run_generator.sh= usage.
-- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — complete file checklist; links to every layer skill and pattern doc.
-- [[id:e44891dc-234c-42db-90e1-9421400abd1a][Qt menu and toolbar patterns]] — plugin wiring required for step 3.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — complete file checklist; links to every layer skill and pattern doc.
+- [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]] — plugin wiring required for step 3.
 
 * Artefacts                                                        :noexport:
 

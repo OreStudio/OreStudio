@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 44d7a328-f69c-4ee9-83a5-74bd3634ad69
+:ID: 44D7A328-F69C-4EE9-83A5-74BD3634AD69
 :END:
 #+title: Skill Review Skill
 #+description: Review one or more Claude Code skills against the v2 skill contract — frontmatter, required sections, task-shape, no duplicated content.
@@ -46,7 +46,7 @@ might overlap.
    that link to it).
 
 3. /Check each skill against the v2 contract/. The contract is the
-   authoritative source — read =skill= in [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]; the items
+   authoritative source — read =skill= in [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]; the items
    below are the ones to focus on during review:
 
    - *Frontmatter*: =:ID:=, =#+title:=, =#+description:=,
@@ -61,7 +61,7 @@ might overlap.
 
 4. /Check that the skill is task-shaped/, not role-shaped. A skill is
    /how to do a unit of work/. If the doc describes /what someone
-   does/ across many tasks, it is a [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], not a skill — flag
+   does/ across many tasks, it is a [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]], not a skill — flag
    for re-homing.
 
 5. /Check that procedural detail lives in recipes, not in the skill/.
@@ -79,20 +79,20 @@ might overlap.
    =doc_show.sh= output will flag broken =[[id:...]]= as =BROKEN=.
 
 8. /File findings/. Either:
-   - Open a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the current sprint for each fix-shaped finding,
-   - Open a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in =near/= for larger restructures, or
+   - Open a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the current sprint for each fix-shaped finding,
+   - Open a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in =near/= for larger restructures, or
    - Apply the fix directly when it's a one-line correction.
 
 * Recipes
 
-- [[id:d1ae0786-5f2f-4437-8449-0e480c278a1b][How do I find docs matching a pattern?]] — list the skills.
-- [[id:e8231c22-cb31-4d85-a9c0-7602953764ff][How do I show a doc by UUID?]] — inspect one skill's metadata.
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]]§"New Claude Code skill" — the
+- [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — list the skills.
+- [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — inspect one skill's metadata.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]]§"New Claude Code skill" — the
   scaffold the contract is built around.
 
 * Reference
 
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]]§=skill= — the v2 contract every skill satisfies.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]]§=skill= — the v2 contract every skill satisfies.
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]] — canonical inventory of all skills.
 
 * Artefacts                                                        :noexport:

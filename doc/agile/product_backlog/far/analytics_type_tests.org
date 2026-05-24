@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: fea0593a-8ecb-43fb-83f9-6eff120492eb
+:ID: FEA0593A-8ECB-43FB-83F9-6EFF120492EB
 :END:
 #+title: Add serialisation tests for analytics domain types
 #+description: No tests exist for analytics domain types (pricing engine type, pricing model config, etc.). Add basic round-trip serialisation tests for each.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

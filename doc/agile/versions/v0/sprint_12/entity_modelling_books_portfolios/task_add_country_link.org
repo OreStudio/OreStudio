@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 34bfe3e3-62e7-4e2f-a98e-c39a0ad205a1
+:ID: 34BFE3E3-62E7-4E2F-A98E-C39A0AD205A1
 :END:
 #+title: Task: Add country link to currencies
 #+description: Verify the existing country support links cleanly to currencies.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:3afc713a-754e-42dc-ae10-022ac1dfdaba][Books, portfolios, business units modelling]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3AFC713A-754E-42DC-AE10-022AC1DFDABA][Books, portfolios, business units modelling]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Verify the existing country support links cleanly to currencies (post-refdata ch
 | Field        | Value                                                                                    |
 |--------------+------------------------------------------------------------------------------------------|
 | State        | DONE                                                                                     |
-| Parent story | [[id:3afc713a-754e-42dc-ae10-022ac1dfdaba][Books, portfolios, business units modelling]] |
+| Parent story | [[id:3AFC713A-754E-42DC-AE10-022AC1DFDABA][Books, portfolios, business units modelling]] |
 | Now          | Completed 2026-02-19.                                                                    |
 | Waiting on   | None.                                                                                    |
 | Next         | None.                                                                                    |

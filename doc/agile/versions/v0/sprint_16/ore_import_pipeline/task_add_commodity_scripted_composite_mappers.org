@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d315148c-5309-4bfa-9b35-11d4aaef937d
+:ID: D315148C-5309-4BFA-9B35-11D4AAEF937D
 :END:
 #+title: Task: Add commodity, scripted and composite instrument mappers
 #+description: Commodity + composite + scripted mappers for ORE XML → ORES; round-trip tests; unified trade mapper updates.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:8361bc43-bd96-433d-889e-367072bad44e][ORE import pipeline]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8361BC43-BD96-433D-889E-367072BAD44E][ORE import pipeline]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Commodity + composite + scripted mappers for ORE XML → ORES; round-trip tests;
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
-| Parent story | [[id:8361bc43-bd96-433d-889e-367072bad44e][ORE import pipeline]] |
+| Parent story | [[id:8361BC43-BD96-433D-889E-367072BAD44E][ORE import pipeline]] |
 | Now          | Completed 2026-04-04.                                            |
 | Waiting on   | None.                                                            |
 | Next         | None.                                                            |

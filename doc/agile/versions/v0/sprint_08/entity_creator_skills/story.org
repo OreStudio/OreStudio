@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b302b2b6-13f8-49cc-a6af-88418668be31
+:ID: B302B2B6-13F8-49CC-A6AF-88418668BE31
 :END:
 #+title: Story: Entity-creator skills suite
 #+description: Skills for adding a new entity end-to-end: Qt, Shell, HTTP (incl. recipes), Wt, CLI.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ and CLI surfaces.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] |
+| Parent sprint | [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]] |
 | Now           | Completed 2026-01-11.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -40,12 +40,12 @@ and CLI surfaces.
 
 In execution order:
 
-- [[id:a6afe796-dcfb-40c1-a9c8-bd7a20091930][Qt entity creator skill]]
-- [[id:0127aa75-dca4-432e-b892-edd1caa334b4][Shell entity creator skill]]
-- [[id:d2ced93a-5642-4374-bd26-0c7d5dc2ca13][HTTP entity creator skill]]
-- [[id:e00e8fd6-82f2-4ab4-9456-c6f44f855129][HTTP recipes skill]]
-- [[id:31a1d475-3941-4429-a7ec-2b52096c07a7][Wt entity creator skill]]
-- [[id:de76313f-3c9e-441a-aa5e-6212a3841eed][CLI entity creator skill]]
+- [[id:A6AFE796-DCFB-40C1-A9C8-BD7A20091930][Qt entity creator skill]]
+- [[id:0127AA75-DCA4-432E-B892-EDD1CAA334B4][Shell entity creator skill]]
+- [[id:D2CED93A-5642-4374-BD26-0C7D5DC2CA13][HTTP entity creator skill]]
+- [[id:E00E8FD6-82F2-4AB4-9456-C6F44F855129][HTTP recipes skill]]
+- [[id:31A1D475-3941-4429-A7EC-2B52096C07A7][Wt entity creator skill]]
+- [[id:DE76313F-3C9E-441A-AA5E-6212A3841EED][CLI entity creator skill]]
 
 * Decisions
 
@@ -58,4 +58,4 @@ In execution order:
 
 * See also
 
-- [[id:501c05b5-aa7f-4807-a4f2-627b857ce2aa][Reference data: countries]] — first real exerciser of the skill set.
+- [[id:501C05B5-AA7F-4807-A4F2-627B857CE2AA][Reference data: countries]] — first real exerciser of the skill set.

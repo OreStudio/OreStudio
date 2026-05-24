@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 57182ece-6364-421a-a46f-73841f9961b4
+:ID: 57182ECE-6364-421A-A46F-73841F9961B4
 :END:
 #+title: ores.marketdata.service
 #+description: NATS service entrypoint for the market-data domain.
@@ -41,4 +41,4 @@ domain. It opens database and NATS connections, registers handlers from
 
 * See also
 
-- [[id:759530d8-2314-44f3-a50e-71ce7ad02558][ores.marketdata.core]] — all market-data business logic.
+- [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata.core]] — all market-data business logic.

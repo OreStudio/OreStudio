@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a7c737f4-ca5e-4e23-b93d-a2a061b97d32
+:ID: A7C737F4-CA5E-4E23-B93D-A2A061B97D32
 :END:
 #+title: Drop database roles before recreating the database
 #+description: recreate_database.sh does not drop roles before re-creating the database. Add role-drop logic to ensure a clean slate.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

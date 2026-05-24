@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b0b99088-d88e-4980-a4ee-7d6a9a8e96a5
+:ID: B0B99088-D88E-4980-A4EE-7D6A9A8E96A5
 :END:
 #+title: Component Model Creator
 #+description: Create or update component_overview.org and the PlantUML class diagram for an ORE Studio component.
@@ -31,9 +31,9 @@ component's domain types or structure change significantly.
 
 1. /Scaffold the org file/ using codegen:
    =projects/ores.codegen/generate_v2_doc.sh --type component --slug component_overview --parent-dir projects/COMPONENT/modeling --title "ores.COMPONENT" --description "One-line summary."=
-   See [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] for the full walkthrough.
+   See [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] for the full walkthrough.
 
-2. /Fill in each section/ following [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component Documentation Guide]]:
+2. /Fill in each section/ following [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component Documentation Guide]]:
    Summary, Inputs, Outputs, Entry points, Dependencies, See also.
    For a split component (=.api= / =.core= / =.service=) create one
    =component_overview.org= per part.
@@ -54,11 +54,11 @@ component's domain types or structure change significantly.
 
 * Reference
 
-- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — step-by-step recipe.
-- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component Documentation Guide]] — what each section means and how to
+- [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] — step-by-step recipe.
+- [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component Documentation Guide]] — what each section means and how to
   fill it in.
 - [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] — diagram conventions and layout tips.
-- [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]] — api/core/service split, facets, CMake deps.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — api/core/service split, facets, CMake deps.
 - [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][component-creator]] — scaffold the component before documenting it.
 
 * Artefacts                                                        :noexport:

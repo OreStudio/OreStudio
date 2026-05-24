@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2d4c153b-1aa9-4eb3-b6de-69c409401499
+:ID: 2D4C153B-1AA9-4EB3-B6DE-69C409401499
 :END:
 #+title: Task: Remove code seeders; seed from SQL populate scripts
 #+description: Replace C++ rbac_seeder and system_flags_seeder with SQL populate scripts; rename sql/data/ to sql/populate/; adapt tests to a pre-seeded database.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:42e6c351-795f-48aa-a435-eb3d1c9b6704][Database schema and seeding overhaul]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:42E6C351-795F-48AA-A435-EB3D1C9B6704][Database schema and seeding overhaul]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Move all initial seeding (permissions, roles, system flags) out of C++ into SQL 
 | Field        | Value                                                                             |
 |--------------+-----------------------------------------------------------------------------------|
 | State        | DONE                                                                              |
-| Parent story | [[id:42e6c351-795f-48aa-a435-eb3d1c9b6704][Database schema and seeding overhaul]] |
+| Parent story | [[id:42E6C351-795F-48AA-A435-EB3D1C9B6704][Database schema and seeding overhaul]] |
 | Now          | Completed 2025-12-31.                                                             |
 | Waiting on   | None.                                                                             |
 | Next         | None.                                                                             |

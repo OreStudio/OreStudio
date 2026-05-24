@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2f9a2883-abb1-4065-936e-902100330f3f
+:ID: 2F9A2883-ABB1-4065-936E-902100330F3F
 :END:
 #+title: How do I list compute workunits?
 #+description: List compute workunits via =ores.cli=

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8
+:ID: 06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8
 :END:
 #+title: Sprint 06
 #+description: Finish domain-entity follow-ups: session cancellation, feature-flag service, comms robustness; tidy bootstrap and logging.
@@ -11,10 +11,10 @@
 #+updated: 2025-12-15
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 06*) of ORE Studio v0. It captures the
+This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 06*) of ORE Studio v0. It captures the
 sprint's mission, current status, and the stories that compose it. For the
 surrounding context — version goals, sprint order, and product identity — see
-[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+[[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
 
 * Mission
 
@@ -32,7 +32,7 @@ later sprints with the codegen-driven approach.)
 | Field          | Value                                                                                                                                                                                                                                                                          |
 |----------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                                                                                                                           |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                                                                                                                                                      |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                                                                                                                                      |
 | Now            | Sprint closed 2025-12-15. Session cancellation live; variability is its own service; comms substrate has handshake/protocol split and retry; logging migrated to =std::string_view= (with the inevitable post-migration cleanup); two predecessor links from sprint 05 closed. |
 | Waiting on     | None.                                                                                                                                                                                                                                                                          |
 | Next           | None.                                                                                                                                                                                                                                                                          |
@@ -43,14 +43,14 @@ later sprints with the codegen-driven approach.)
 #+ATTR_HTML: :class hug-leading
 | Story                                                                            | State | Start      | End        | Theme                                                                                                      |
 |----------------------------------------------------------------------------------+-------+------------+------------+------------------------------------------------------------------------------------------------------------|
-| [[id:193a779f-a313-414c-9236-d075b84a2f67][Sprint 06 housekeeping]]              | DONE  |            | 2025-12-15 | backlog, AI summary via the skill, OCR.                                                                    |
-| [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]]         | DONE  |            | 2025-12-04 | successor of sprint 05's authentication bootstrap; lands session cancellation + logout + client heartbeat. |
-| [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]]                    | DONE  |            | 2025-12-10 | split protocol, handshake service, multi-thread coverage, retry-with-give-up.                              |
-| [[id:55c35962-46a0-4353-93ad-fc15bf847c7e][Variability service]]                 | DONE  |            | 2025-12-08 | feature-flag service end-to-end.                                                                           |
-| [[id:d9c5fcef-da11-45da-b7fb-2a7b62c8aa0b][Logging refactor (std::string_view)]] | DONE  |            | 2025-12-12 | migration + fallout.                                                                                       |
-| [[id:50bb2acb-5687-4bad-b03a-12af606e8eab][Bootstrap polish]]                    | DONE  |            | 2025-12-13 | context to DB, drop bootstrap flag, manifest password-validation knob.                                     |
-| [[id:06c56ca2-9846-4dc9-b2f3-271bf4f084ce][CLI entity syntax follow-up]]         | DONE  |            | 2025-12-13 | successor of sprint 05's CLI/REPL reshape; mops up snags and adds top-level shell login/logout.            |
-| [[id:dbb7eeab-c8e3-4af9-b04f-e54fabd34a8f][Infrastructure features]]             | DONE  |            | 2025-12-15 | event bus, system tray, past-timepoint faker.                                                              |
+| [[id:193A779F-A313-414C-9236-D075B84A2F67][Sprint 06 housekeeping]]              | DONE  |            | 2025-12-15 | backlog, AI summary via the skill, OCR.                                                                    |
+| [[id:4B50A7E5-D862-47A6-AEBE-353CAD55B058][Session lifecycle follow-up]]         | DONE  |            | 2025-12-04 | successor of sprint 05's authentication bootstrap; lands session cancellation + logout + client heartbeat. |
+| [[id:88971AFE-E0B4-4E54-B0D7-B1C627C2F239][Comms robustness]]                    | DONE  |            | 2025-12-10 | split protocol, handshake service, multi-thread coverage, retry-with-give-up.                              |
+| [[id:55C35962-46A0-4353-93AD-FC15BF847C7E][Variability service]]                 | DONE  |            | 2025-12-08 | feature-flag service end-to-end.                                                                           |
+| [[id:D9C5FCEF-DA11-45DA-B7FB-2A7B62C8AA0B][Logging refactor (std::string_view)]] | DONE  |            | 2025-12-12 | migration + fallout.                                                                                       |
+| [[id:50BB2ACB-5687-4BAD-B03A-12AF606E8EAB][Bootstrap polish]]                    | DONE  |            | 2025-12-13 | context to DB, drop bootstrap flag, manifest password-validation knob.                                     |
+| [[id:06C56CA2-9846-4DC9-B2F3-271BF4F084CE][CLI entity syntax follow-up]]         | DONE  |            | 2025-12-13 | successor of sprint 05's CLI/REPL reshape; mops up snags and adds top-level shell login/logout.            |
+| [[id:DBB7EEAB-C8E3-4AF9-B04F-E54FABD34A8F][Infrastructure features]]             | DONE  |            | 2025-12-15 | event bus, system tray, past-timepoint faker.                                                              |
 
 * Retrospective
 

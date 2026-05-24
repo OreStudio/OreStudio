@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 62f216a9-1bdf-4889-9a85-01eba7cbb24e
+:ID: 62F216A9-1BDF-4889-9A85-01EBA7CBB24E
 :END:
 #+title: api and core are not namespaces — fix naming
 #+description: Project component names like ores.qt.api and ores.compute.core use api/core as if they were namespaces, but they are not. Clarify the naming convention or rename accordingly.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

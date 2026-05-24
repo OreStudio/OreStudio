@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 89d71399-3e8c-4e39-94cf-4f1f173d3ff5
+:ID: 89D71399-3E8C-4E39-94CF-4F1F173D3FF5
 :END:
 #+title: Task: Add AI-generated sprint summary
 #+description: Produce sprint 08's summary via the AI-summary skill.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:f40e0162-a092-4716-a256-206fdba93452][Sprint 08 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F40E0162-A092-4716-A256-206FDBA93452][Sprint 08 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Generate sprint 08's AI summary using the sprint-summariser skill.
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | BACKLOG                                                             |
-| Parent story | [[id:f40e0162-a092-4716-a256-206fdba93452][Sprint 08 housekeeping]] |
+| Parent story | [[id:F40E0162-A092-4716-A256-206FDBA93452][Sprint 08 housekeeping]] |
 | Now          | POSTPONED in sprint 08; carried forward to a later sprint.          |
 | Waiting on   | Nothing.                                                            |
 | Next         | Return to this once a sprint has the slot.                          |

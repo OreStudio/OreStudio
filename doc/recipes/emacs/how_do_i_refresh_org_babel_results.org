@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4c526597-c668-486b-a4ab-95775c01089a
+:ID: 4C526597-C668-486B-A4AB-95775C01089A
 :END:
 #+title: How do I refresh org-babel results?
 #+description: Run emacs in batch mode to execute org-babel src blocks in a file and save the updated #+RESULTS back to disk.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-18
 
 For the convention on which recipes should carry a =#+RESULTS:=
-snapshot, see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] (the recipe section).
+snapshot, see [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] (the recipe section).
 
 * Question
 
@@ -84,14 +84,14 @@ this becomes a frequent operation, fold it into a script under
 * Tested by
 
 Used during the v2 information-architecture rollout to populate the
-=#+RESULTS:= snapshot in [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]]. Not yet
+=#+RESULTS:= snapshot in [[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How do I list available presets?]]. Not yet
 exercised in CI.
 
 * See also
 
-- [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]] — uses a captured =#+RESULTS:=
+- [[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How do I list available presets?]] — uses a captured =#+RESULTS:=
   snapshot.
-- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — the publish pipeline also runs emacs in
+- [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] — the publish pipeline also runs emacs in
   batch mode against the org tree.
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] — recipe section, where the snapshot convention
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] — recipe section, where the snapshot convention
   is defined.

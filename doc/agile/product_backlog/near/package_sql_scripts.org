@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 78c089cb-8717-4351-831b-e9a735228b99
+:ID: 78C089CB-8717-4351-831B-E9A735228B99
 :END:
 #+title: Package SQL scripts
 #+description: Package SQL scripts
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 We need to initialise the database on installation. The package should contain
 all of the necessary SQL as well as a script to do it.

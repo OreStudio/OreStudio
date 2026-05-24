@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 44ecad9c-332a-48f5-acb4-7c30f9eb8ddf
+:ID: 44ECAD9C-332A-48F5-ACB4-7C30F9EB8DDF
 :END:
 #+title: Story: ORE import supporting files
 #+description: Import market.txt + fixings.txt alongside trade XML; calendar adjustments + market convention imports from ORE XML.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -22,7 +22,7 @@ Import market.txt + fixings.txt alongside trade XML; calendar adjustments + mark
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] |
+| Parent sprint | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]] |
 | Now           | Completed 2026-04-03.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -36,8 +36,8 @@ Import market.txt + fixings.txt alongside trade XML; calendar adjustments + mark
 
 In execution order:
 
-- [[id:295762f7-db67-4ce4-a79c-5c3e90950106][Add calendar adjustment and market convention imports]]
-- [[id:324a9c16-add5-4889-be0c-48a7186883bb][Import market.txt and fixings.txt in ORE import]]
+- [[id:295762F7-DB67-4CE4-A79C-5C3E90950106][Add calendar adjustment and market convention imports]]
+- [[id:324A9C16-ADD5-4889-BE0C-48A7186883BB][Import market.txt and fixings.txt in ORE import]]
 
 * Decisions
 

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e7ddb653-ceaa-4922-b0f9-8bd5393a747e
+:ID: E7DDB653-CEAA-4922-B0F9-8BD5393A747E
 :END:
 #+title: Story: Engineering hygiene
 #+description: System-model refresh, PR-skill consolidation, valgrind fixes; documentation refactor postponed.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -25,7 +25,7 @@ documentation refactor — is postponed.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]] |
+| Parent sprint | [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]] |
 | Now           | Completed 2026-01-14.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -42,10 +42,10 @@ documentation refactor — is postponed.
 
 In execution order:
 
-- [[id:49bd7089-c2dd-4349-807b-57646076c043][Clean up system models and component models]]
-- [[id:c8d1e83a-d4c7-4b40-9fd1-210c9af0ecf2][Refactor PR-related skills into pr-manager]]
-- [[id:251a6ed5-33f1-4a9b-b450-1eb91c7c7b49][Fix valgrind errors in nightly]]
-- [[id:1bc0f53e-529a-4b38-a428-41ee1da7581d][Refactor documentation per entity]]
+- [[id:49BD7089-C2DD-4349-807B-57646076C043][Clean up system models and component models]]
+- [[id:C8D1E83A-D4C7-4B40-9FD1-210C9AF0ECF2][Refactor PR-related skills into pr-manager]]
+- [[id:251A6ED5-33F1-4A9B-B450-1EB91C7C7B49][Fix valgrind errors in nightly]]
+- [[id:1BC0F53E-529A-4B38-A428-41EE1DA7581D][Refactor documentation per entity]]
 
 * Decisions
 

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 41a9ccc5-8a2b-4f0c-a403-8641c2d0318a
+:ID: 41A9CCC5-8A2B-4F0C-A403-8641C2D0318A
 :END:
 #+title: Task: Refactor Qt icon implementation
 #+description: Introduce enum class Icon + enum class IconTheme in IconUtils; centralise iconPath / createRecoloredIcon; standardise icon colours (DefaultIconColor, ConnectedColor, DisconnectedColor); add Solarized Linear + Bold icon set.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:abd80ec4-e7e4-4bb2-b5ae-4fc7f8c46fd3][Qt visual refresh]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:ABD80EC4-E7E4-4BB2-B5AE-4FC7F8C46FD3][Qt visual refresh]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Replace scattered SVG-path string literals with a semantic icon-enum + theme-awa
 | Field        | Value                                                          |
 |--------------+----------------------------------------------------------------|
 | State        | DONE                                                           |
-| Parent story | [[id:abd80ec4-e7e4-4bb2-b5ae-4fc7f8c46fd3][Qt visual refresh]] |
+| Parent story | [[id:ABD80EC4-E7E4-4BB2-B5AE-4FC7F8C46FD3][Qt visual refresh]] |
 | Now          | Completed 2026-01-20.                                          |
 | Waiting on   | None.                                                          |
 | Next         | None.                                                          |

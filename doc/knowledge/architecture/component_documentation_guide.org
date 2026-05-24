@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b9d3d469-9e59-465f-8c18-34546b680d13
+:ID: B9D3D469-9E59-465F-8C18-34546B680D13
 :END:
 #+title: Component Documentation Guide
 #+description: Practical guide to writing component_overview.org files: what each section means, how to fill it in, and what makes a good entry.
@@ -115,7 +115,7 @@ next, without digging through the code.
 
 * See also
 
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — the formal spec for component document structure.
-- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — the recipe that scaffolds the file.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — the formal spec for component document structure.
+- [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] — the recipe that scaffolds the file.
 - [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — example of a complete component overview.
 - [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — another example with a well-populated See also section.

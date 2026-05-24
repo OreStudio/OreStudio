@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: bac9030f-a95d-4ba4-a78e-426fc7439894
+:ID: BAC9030F-A95D-4BA4-A78E-426FC7439894
 :END:
 #+title: Task: Analyse asset class modelling
 #+description: Full reconciliation audit: trading instrument_family_t, marketdata asset_class C++ enum, refdata bitemporal table, Qt hardcoded labels. Conclude that asset_class (risk taxonomy) + product_type (structural discriminator) are orthogonal and must coexist with shared refdata source of truth.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ffc60db1-b82a-4c8a-961e-2c6720379508][Asset class and product_type unification]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC60DB1-B82A-4C8A-961E-2C6720379508][Asset class and product_type unification]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Full reconciliation audit: trading instrument_family_t, marketdata asset_class C
 | Field        | Value                                                                                 |
 |--------------+---------------------------------------------------------------------------------------|
 | State        | DONE                                                                                  |
-| Parent story | [[id:ffc60db1-b82a-4c8a-961e-2c6720379508][Asset class and product_type unification]] |
+| Parent story | [[id:FFC60DB1-B82A-4C8A-961E-2C6720379508][Asset class and product_type unification]] |
 | Now          | Completed 2026-04-03.                                                                 |
 | Waiting on   | None.                                                                                 |
 | Next         | None.                                                                                 |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a79d42af-1b38-43ee-9607-848a4a84c09a
+:ID: A79D42AF-1B38-43EE-9607-848A4A84C09A
 :END:
 #+title: Sprint 07
 #+description: IAM rename, RBAC, currencies history polish, Qt UX polish, comms features, observability & telemetry components, Wt + HTTP introduction, build platform follow-up.
@@ -11,10 +11,10 @@
 #+updated: 2026-05-19
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 07*) of ORE Studio v0. It captures the
+This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 07*) of ORE Studio v0. It captures the
 sprint's mission, current status, and the stories that compose it. For the
 surrounding context — version goals, sprint order, and product identity — see
-[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+[[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
 
 * Mission
 
@@ -27,7 +27,7 @@ telemetry as first-class components, and tidy the build platform.
 | Field          | Value                                                               |
 |----------------+---------------------------------------------------------------------|
 | State          | DONE                                                                |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                           |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                           |
 | Now            | Sprint closed 2025-12-30.                                           |
 | Waiting on     | None.                                                               |
 | Next           | Sprint 08 picks up the threads opened by Wt/HTTP and observability. |
@@ -38,15 +38,15 @@ telemetry as first-class components, and tidy the build platform.
 #+ATTR_HTML: :class hug-leading
 | Story                                                                    | State | Start      | End        | Theme                                                                                |
 |--------------------------------------------------------------------------+-------+------------+------------+--------------------------------------------------------------------------------------|
-| [[id:a5060b3b-a3c0-40ff-b5d3-36ed1e74b609][Sprint 07 housekeeping]]      | DONE  |            | 2025-12-30 | recurring per-sprint chores: backlog, AI summary, notebook OCR.                      |
-| [[id:bb39ecbd-1ea5-4d53-a117-a0c88e0463c1][Build platform follow-up]]    | DONE  |            | 2025-12-18 | WSL setup, prebuilt Qt, Windows clang build breaks. Continues from sprint 04.        |
-| [[id:818b6261-1780-4fb3-aa89-da02c91da363][Currencies history polish]]   | DONE  |            | 2025-12-20 | visual distinction for the active version, revert action, country flags.             |
-| [[id:72f723f4-378c-4e0a-b6f1-6ba3c29f5bea][Qt UX polish]]                | DONE  |            | 2025-12-22 | account management UI, exit confirmation, relative-time formatting.                  |
-| [[id:b306f938-f939-44ca-9d69-6faedbf91c08][Comms features]]              | DONE  |            | 2025-12-25 | optional compression, =LISTEN=/=NOTIFY= through the shell, type traits for messages. |
-| [[id:6b57c190-4bb7-4f63-bf3d-7fb6d81d8d94][Accounts to IAM]]             | DONE  |            | 2025-12-25 | rename =ores.accounts= to =ores.iam=, add lock, password reset, sign-up.             |
-| [[id:6255bc9f-95bc-4fc7-98c8-6060b8679b85][Roles and permissions]]       | DONE  |            | 2025-12-28 | RBAC core, enforcement, Qt UI.                                                       |
-| [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] | DONE  |            | 2025-12-28 | new components, MaxMind replacement.                                                 |
-| [[id:db625c07-811a-4a61-8de8-910b29913744][Wt and HTTP introduction]]    | DONE  |            | 2025-12-30 | Wt scaffolding, HTTP entry point.                                                    |
+| [[id:A5060B3B-A3C0-40FF-B5D3-36ED1E74B609][Sprint 07 housekeeping]]      | DONE  |            | 2025-12-30 | recurring per-sprint chores: backlog, AI summary, notebook OCR.                      |
+| [[id:BB39ECBD-1EA5-4D53-A117-A0C88E0463C1][Build platform follow-up]]    | DONE  |            | 2025-12-18 | WSL setup, prebuilt Qt, Windows clang build breaks. Continues from sprint 04.        |
+| [[id:818B6261-1780-4FB3-AA89-DA02C91DA363][Currencies history polish]]   | DONE  |            | 2025-12-20 | visual distinction for the active version, revert action, country flags.             |
+| [[id:72F723F4-378C-4E0A-B6F1-6BA3C29F5BEA][Qt UX polish]]                | DONE  |            | 2025-12-22 | account management UI, exit confirmation, relative-time formatting.                  |
+| [[id:B306F938-F939-44CA-9D69-6FAEDBF91C08][Comms features]]              | DONE  |            | 2025-12-25 | optional compression, =LISTEN=/=NOTIFY= through the shell, type traits for messages. |
+| [[id:6B57C190-4BB7-4F63-BF3D-7FB6D81D8D94][Accounts to IAM]]             | DONE  |            | 2025-12-25 | rename =ores.accounts= to =ores.iam=, add lock, password reset, sign-up.             |
+| [[id:6255BC9F-95BC-4FC7-98C8-6060B8679B85][Roles and permissions]]       | DONE  |            | 2025-12-28 | RBAC core, enforcement, Qt UI.                                                       |
+| [[id:8C4C8429-9328-46DD-88EF-27689FB556F2][Observability and telemetry]] | DONE  |            | 2025-12-28 | new components, MaxMind replacement.                                                 |
+| [[id:DB625C07-811A-4A61-8DE8-910B29913744][Wt and HTTP introduction]]    | DONE  |            | 2025-12-30 | Wt scaffolding, HTTP entry point.                                                    |
 
 * Retrospective
 

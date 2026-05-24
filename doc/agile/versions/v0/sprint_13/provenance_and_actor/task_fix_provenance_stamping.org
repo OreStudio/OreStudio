@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f04113fc-16ab-44d2-9545-54ca632c45e9
+:ID: F04113FC-16AB-44D2-9545-54CA632C45E9
 :END:
 #+title: Task: Fix performed_by and modified_by stamping
 #+description: Remove current_user escape hatch from ores_iam_validate_account_username_fn; reorder foundation_populate.sql so IAM service accounts populate first; introduce ores_iam_current_actor_fn reading app.current_actor GUC; use resolved actor in all inserts under ores_iam_provision_tenant_fn; replace silent current_user defaults for assigned_by in image_tags + account_roles.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7b926ace-57f6-414d-8f3e-568175041f87][Provenance and actor stamping]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7B926ACE-57F6-414D-8F3E-568175041F87][Provenance and actor stamping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Get =performed_by= + =modified_by= stamping honest by removing the escape hatch 
 | Field        | Value                                                                      |
 |--------------+----------------------------------------------------------------------------|
 | State        | DONE                                                                       |
-| Parent story | [[id:7b926ace-57f6-414d-8f3e-568175041f87][Provenance and actor stamping]] |
+| Parent story | [[id:7B926ACE-57F6-414D-8F3E-568175041F87][Provenance and actor stamping]] |
 | Now          | Completed 2026-02-21.                                                      |
 | Waiting on   | None.                                                                      |
 | Next         | None.                                                                      |

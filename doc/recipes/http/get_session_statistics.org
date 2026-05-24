@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 85c2e902-c3e1-4434-b867-0c2cdd9a207a
+:ID: 85C2E902-C3E1-4434-B867-0C2CDD9A207A
 :END:
 #+title: Get Session Statistics
 #+description: Get Session Statistics

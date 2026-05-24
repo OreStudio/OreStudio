@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 84ccbec1-136e-41f2-b024-104669ac6b99
+:ID: 84CCBEC1-136E-41F2-B024-104669AC6B99
 :END:
 #+title: How do I list compute batches?
 #+description: List compute batches via =ores.cli=

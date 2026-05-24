@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: d4f96bab-f96e-4441-8e53-584bbc046398
+:ID: D4F96BAB-F96E-4441-8E53-584BBC046398
 :END:
 #+title: Help Menu
 #+description: Help Menu

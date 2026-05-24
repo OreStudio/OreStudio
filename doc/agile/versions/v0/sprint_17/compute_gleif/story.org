@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e16beabb-cc59-4d6c-b216-dacc1e922047
+:ID: E16BEABB-CC59-4D6C-B216-DACC1E922047
 :END:
 #+title: Story: Compute and GLEIF
 #+description: Large GLEIF counterparty bundle wiring; per-triplet app_version packages; per-platform package uploads; compute mop-up fixes.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -39,10 +39,10 @@ per-row Retry button).
 
 In execution order:
 
-- [[id:e8553690-dd3d-4818-8722-cf614f8bca4f][Task: [ores.sql/qt.compute] Large GLEIF counterparty bundle wiring, tenant reset, upload logging]]
-- [[id:602ebc68-1a40-4fe8-b578-fd482a56ee12][Task: [compute] Per-triplet app_version packages via junction table]]
-- [[id:39d52674-0d37-41a5-8c8a-42402b883fd5][Task: [qt,compute] Per-platform package uploads via Packages tab]]
-- [[id:44f7c2af-35ce-4cff-b09a-e90b6024096f][Task: [qt,compute] Mop-up: autogen leak, URI scheme, per-row Retry]]
+- [[id:E8553690-DD3D-4818-8722-CF614F8BCA4F][Task: [ores.sql/qt.compute] Large GLEIF counterparty bundle wiring, tenant reset, upload logging]]
+- [[id:602EBC68-1A40-4FE8-B578-FD482A56EE12][Task: [compute] Per-triplet app_version packages via junction table]]
+- [[id:39D52674-0D37-41A5-8C8A-42402B883FD5][Task: [qt,compute] Per-platform package uploads via Packages tab]]
+- [[id:44F7C2AF-35CE-4CFF-B09A-E90B6024096F][Task: [qt,compute] Mop-up: autogen leak, URI scheme, per-row Retry]]
 * Decisions
 
 - (none significant)

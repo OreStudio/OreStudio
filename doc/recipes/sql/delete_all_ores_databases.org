@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3ebf5f97-6090-4329-bbec-e5bfd2fa2026
+:ID: 3EBF5F97-6090-4329-BBEC-E5BFD2FA2026
 :END:
 #+title: Delete All ORES Databases
 #+description: Delete All ORES Databases

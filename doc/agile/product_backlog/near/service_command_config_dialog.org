@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e0c103b9-cced-4446-82ab-b8657a3b46c3
+:ID: E0C103B9-CCED-4446-82AB-B8657A3B46C3
 :END:
 #+title: Service command-line configuration dialog with bitemporal support
 #+description: A dialog to view and change each service's command-line options (log level, telemetry flags, etc.) saved to the database with bitemporal history so changes are audited.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

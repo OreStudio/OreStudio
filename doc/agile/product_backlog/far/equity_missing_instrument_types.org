@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 749e7016-a97c-4ee0-9074-1adf90ff3135
+:ID: 749E7016-A97C-4EE0-9074-1ADF90FF3135
 :END:
 #+title: Implement missing equity instrument types
 #+description: Not yet implemented: Equity_Margin_Trade_TRS_on_EquityIndexFuture, Equity_OutperformanceOption, Equity_Swap_Indexed_Funding_Leg (complex indexed leg).
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

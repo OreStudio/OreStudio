@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2d6ead25-0654-4231-a64c-a4a45ccc9e09
+:ID: 2D6EAD25-0654-4231-A64C-A4A45CCC9E09
 :END:
 #+title: How do I get help for the CLI compute apps command?
 #+description: Show available operations under =ores.cli compute apps=

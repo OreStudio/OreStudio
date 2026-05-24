@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6822f0a2-bb7e-4979-8d4c-af01c1a7ce75
+:ID: 6822F0A2-BB7E-4979-8D4C-AF01C1A7CE75
 :END:
 #+title: Task: Add cross-platform null device support for psql output redirection
 #+description: Add platform-agnostic null device detection to support database setup on both Unix-like systems and Windows/MINGW enviro
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:25f0a34b-c547-4550-943b-e8f517eb0f6c][SQL codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:25F0A34B-C547-4550-943B-E8F517EB0F6C][SQL codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add platform-agnostic null device detection (/dev/null vs NUL) so psql output re
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:25f0a34b-c547-4550-943b-e8f517eb0f6c][SQL codegen drift remediation]] |
+| Parent story | [[id:25F0A34B-C547-4550-943B-E8F517EB0F6C][SQL codegen drift remediation]] |
 | Now          | Completed 2026-05-14.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

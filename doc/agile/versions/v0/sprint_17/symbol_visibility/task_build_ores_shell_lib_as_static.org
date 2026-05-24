@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 79e3c451-97e5-4c2b-820d-0d6f4d4e8bf7
+:ID: 79E3C451-97E5-4C2B-820D-0D6F4D4E8BF7
 :END:
 #+title: Task: Build ores.shell.lib as STATIC to fix Windows plugin DLL link
 #+description: Hotfix for the Windows `Continuous Windows` workflow on `main`, which has been failing all four configurations (msvc/cla
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Convert ores.shell.lib from shared to STATIC to fix lld-link undefined symbol er
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] |
+| Parent story | [[id:32852964-D407-43A9-BD94-A6524BB73A8E][Symbol visibility migration]] |
 | Now          | Completed 2026-05-18.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

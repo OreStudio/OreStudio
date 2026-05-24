@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8c4c8429-9328-46dd-88ef-27689fb556f2
+:ID: 8C4C8429-9328-46DD-88EF-27689FB556F2
 :END:
 #+title: Story: Observability and telemetry
 #+description: Create ores.observability and incorporate the new telemetry component; replace MaxMind for geo lookup.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A79D42AF-1B38-43EE-9607-848A4A84C09A][Sprint 07]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,16 +24,16 @@ licensed alternative.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]] |
+| Parent sprint | [[id:A79D42AF-1B38-43EE-9607-848A4A84C09A][Sprint 07]] |
 | Now           | Completed 2025-12-28.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2025-12-28                                             |
 
 
-#+successor: cd9e9d04-44d2-4d0d-95ce-719d55c40da4
+#+successor: CD9E9D04-44D2-4D0D-95CE-719D55C40DA4
 
-Continued in: [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]] (sprint 08) — review pass of
+Continued in: [[id:CD9E9D04-44D2-4D0D-95CE-719D55C40DA4][Observability follow-up]] (sprint 08) — review pass of
 telemetry, comms analyser, and event viewer; implementations carried
 forward.
 
@@ -47,9 +47,9 @@ forward.
 
 In execution order:
 
-- [[id:af82e4cf-125d-4c32-b52a-cc1cd4ac5246][Create the observability component]]
-- [[id:345e5202-cb02-42df-a355-9d872a53ed29][Incorporate new telemetry component]]
-- [[id:efc673d9-f2f2-4a4d-978d-521dcf61e46c][Replace MaxMind implementation]]
+- [[id:AF82E4CF-125D-4C32-B52A-CC1CD4AC5246][Create the observability component]]
+- [[id:345E5202-CB02-42DF-A355-9D872A53ED29][Incorporate new telemetry component]]
+- [[id:EFC673D9-F2F2-4A4D-978D-521DCF61E46C][Replace MaxMind implementation]]
 
 * Decisions
 

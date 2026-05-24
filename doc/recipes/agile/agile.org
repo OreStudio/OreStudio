@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 571cc11b-e2a2-47c0-ae13-8bd4b974f0c3
+:ID: 571CC11B-E2A2-47C0-AE13-8BD4B974F0C3
 :END:
 #+title: Agile recipes
 #+description: Operational recipes for the agile cycle — opening sprints, generating release notes, and the housekeeping that goes with both.
@@ -13,18 +13,18 @@
 Recipes for operating the agile cycle: opening new sprints,
 generating release notes, and the housekeeping that goes with both.
 The conceptual model — phases, ownership by cybernetic level, what a
-sprint /is/ — lives in [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Agile process]].
+sprint /is/ — lives in [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]].
 
 * Sprint lifecycle
 
-- [[id:1e666848-a785-437e-a463-3d5a0da0765f][How do I open a new sprint?]]
-- [[id:9f274ee4-3cab-47fd-bb6e-449d8b789d8c][How do I generate release notes?]]
+- [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]]
+- [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]]
 
 * See also
 
-- [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Agile process]] — the four phases (planning, execution,
+- [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — the four phases (planning, execution,
   closure, between-sprint).
-- [[id:e9f98da1-cf33-4b53-bc4d-a034c652f3b0][How do I bump the project version?]] (under CMake recipes) —
+- [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]] (under CMake recipes) —
   the build-side housekeeping that follows a new sprint.
-- [[id:2df8adaf-20c9-4757-9399-798eec6df828][Agile Product Owner]] / [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint]] / [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][Release Notes Generator]]
+- [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile Product Owner]] / [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint]] / [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][Release Notes Generator]]
   — skills that drive these recipes.

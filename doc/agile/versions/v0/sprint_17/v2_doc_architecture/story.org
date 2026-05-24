@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 063862a1-c02c-4f76-a212-576a57423f0f
+:ID: 063862A1-C02C-4F76-A212-576A57423F0F
 :END:
 #+title: Story: v2 documentation architecture
 #+description: Port all sprint retrospectives (01-16) to v2 cybernetic information architecture; site theme with dark CSS, sidebar TOC, and Pages enablement; close v0 sprint history.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-21
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -39,14 +39,14 @@ sprint history.
 
 In execution order:
 
-- [[id:30e9701e-fc42-4e9a-b486-980ab3a8fe3c][Task: [agile] Open Sprint 17]]
-- [[id:593cd821-11b6-4667-a5b1-66f131e81765][Task: [doc] Fix broken org-mode links in identifier-length-cleanup plan]]
-- [[id:b174a3c8-031f-40f1-ada0-a9cc79983ed8][Task: [doc] v2 cybernetic information architecture (sprints 01-07)]]
-- [[id:5b0c49bf-dbc8-442c-95aa-6ff739928e72][Task: [doc] v2 information architecture (sprints 08-11)]]
-- [[id:0aa8c336-274c-4043-b41f-ecd012d41ae6][Task: [doc] Add :eval never to list-presets sh block to fix site build]]
-- [[id:0dee4230-d7fa-479e-9a22-91093b0eefcc][Task: [doc] v2 information architecture (sprints 12-16); close v0]]
-- [[id:fbe4fc1e-38b7-4840-a1f4-a76294470aec][Task: [doc] Site theme: dark CSS + sidebar TOC + preamble + Pages enablement]]
-- [[id:119d103a-81df-4aad-9106-214080bfcc53][Task: [doc] Drop site banner, restore index cards, GitHub icon in nav]]
+- [[id:30E9701E-FC42-4E9A-B486-980AB3A8FE3C][Task: [agile] Open Sprint 17]]
+- [[id:593CD821-11B6-4667-A5B1-66F131E81765][Task: [doc] Fix broken org-mode links in identifier-length-cleanup plan]]
+- [[id:B174A3C8-031F-40F1-ADA0-A9CC79983ED8][Task: [doc] v2 cybernetic information architecture (sprints 01-07)]]
+- [[id:5B0C49BF-DBC8-442C-95AA-6FF739928E72][Task: [doc] v2 information architecture (sprints 08-11)]]
+- [[id:0AA8C336-274C-4043-B41F-ECD012D41AE6][Task: [doc] Add :eval never to list-presets sh block to fix site build]]
+- [[id:0DEE4230-D7FA-479E-9A22-91093B0EEFCC][Task: [doc] v2 information architecture (sprints 12-16); close v0]]
+- [[id:FBE4FC1E-38B7-4840-A1F4-A76294470AEC][Task: [doc] Site theme: dark CSS + sidebar TOC + preamble + Pages enablement]]
+- [[id:119D103A-81DF-4AAD-9106-214080BFCC53][Task: [doc] Drop site banner, restore index cards, GitHub icon in nav]]
 * Decisions
 
 - /All at once/ :: the full sprint history was ported in one sprint rather

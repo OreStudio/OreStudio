@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: e4bb125c-832a-43c9-910f-a2f4a2ab552f
+:ID: E4BB125C-832A-43C9-910F-A2F4A2AB552F
 :END:
 #+title: Management of roles
 #+description: Management of roles
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 At present we have system level roles. This is not ideal, you may want to delete
 roles, add them etc. Do some analysis on the best way to implement these. We

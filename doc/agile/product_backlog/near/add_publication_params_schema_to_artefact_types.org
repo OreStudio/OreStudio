@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 20535de5-3044-4119-96fa-6b16afb98eb4
+:ID: 20535DE5-3044-4119-96FA-6B16AFB98EB4
 :END:
 #+title: Add =publication_params_schema= to artefact types
 #+description: Add =publication_params_schema= to artefact types
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 The GLEIF librarian integration plan (=2026-02-08=) requires artefact types to
 declare what parameters they accept so that the publish wizard can render

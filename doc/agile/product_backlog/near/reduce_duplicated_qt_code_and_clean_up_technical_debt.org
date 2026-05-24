@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5a832213-3df9-4c5e-9630-bc0d86ca492c
+:ID: 5A832213-3DF9-4C5E-9630-BC0D86CA492C
 :END:
 #+title: Reduce duplicated Qt code and clean up technical debt
 #+description: Reduce duplicated Qt code and clean up technical debt
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Several areas of duplicated code and legacy artefacts that should be cleaned up.
 

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9fe4da29-f05e-405e-9ad1-8268ba85efed
+:ID: 9FE4DA29-F05E-405E-9AD1-8268BA85EFED
 :END:
 #+title: Task: Investigate Valgrind leaks
 #+description: Triage the leaks Valgrind reports and fix or suppress them with documented rationale.
@@ -16,7 +16,7 @@
 #+updated: 2025-12-30
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observability]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1A411B50-2C3A-4248-9AE7-59A835EF6774][Logging and observability]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -29,7 +29,7 @@ a suppression rather than a fix.
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | DONE                                                                   |
-| Parent story | [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observability]] |
+| Parent story | [[id:1A411B50-2C3A-4248-9AE7-59A835EF6774][Logging and observability]] |
 | Now          | Completed 2025-12-30.                                                  |
 | Waiting on   | None.                                                                  |
 | Next         | None.                                                                  |

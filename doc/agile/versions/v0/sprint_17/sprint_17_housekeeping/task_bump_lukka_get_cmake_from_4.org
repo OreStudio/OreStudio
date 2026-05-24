@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 784e38a9-a447-4836-95ad-99ac95699c51
+:ID: 784E38A9-A447-4836-95AD-99AC95699C51
 :END:
 #+title: Task: Bump lukka/get-cmake from 4.3.1 to 4.3.2
 #+description: Bumps [lukka/get-cmake](https://github.com/lukka/get-cmake) from 4.3.1 to 4.3.2.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a5abed76-b4f5-4e37-8ccc-220d360501b4][Sprint 17 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A5ABED76-B4F5-4E37-8CCC-220D360501B4][Sprint 17 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Bump the lukka/get-cmake GitHub Action from 4.3.1 to 4.3.2.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:a5abed76-b4f5-4e37-8ccc-220d360501b4][Sprint 17 housekeeping]] |
+| Parent story | [[id:A5ABED76-B4F5-4E37-8CCC-220D360501B4][Sprint 17 housekeeping]] |
 | Now          | Completed 2026-04-28.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

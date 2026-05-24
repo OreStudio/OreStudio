@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 882143c2-e9af-46bf-ab5e-b5da7637db48
+:ID: 882143C2-E9AF-46BF-AB5E-B5DA7637DB48
 :END:
 #+title: Task: Add party-related support to Qt
 #+description: Comprehensive Party UI: detail dialog, history dialog, MDI window, controller, client model. Configurable detail_fields in codegen; key-field handling for short_code. Existing party / counterparty / tenant screens regenerated.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:76d84778-4544-4ee6-a17a-033019dbacb0][Party database and domain]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:76D84778-4544-4EE6-A17A-033019DBACB0][Party database and domain]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Expose the party + counterparty + tenant entities through Qt.
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | DONE                                                                   |
-| Parent story | [[id:76d84778-4544-4ee6-a17a-033019dbacb0][Party database and domain]] |
+| Parent story | [[id:76D84778-4544-4EE6-A17A-033019DBACB0][Party database and domain]] |
 | Now          | Completed 2026-02-09.                                                  |
 | Waiting on   | None.                                                                  |
 | Next         | None.                                                                  |

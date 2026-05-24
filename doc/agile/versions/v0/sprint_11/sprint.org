@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a48c03ec-395b-4842-b60d-de93dd24bf57
+:ID: A48C03EC-395B-4842-B60D-DE93DD24BF57
 :END:
 #+title: Sprint 11
 #+description: Multi-tenant support end-to-end: RBAC + schema consolidation; tenancy foundation, codegen, and test isolation; per-request tenant context; sqlgen improvements; telemetry database sink; tenant validation across surfaces.
@@ -11,10 +11,10 @@
 #+updated: 2026-05-19
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 11*) of ORE Studio v0. It captures the
+This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 11*) of ORE Studio v0. It captures the
 sprint's mission, current status, and the stories that compose it. For the
 surrounding context — version goals, sprint order, and product identity — see
-[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+[[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
 
 * Mission
 
@@ -31,7 +31,7 @@ metadata, eventing).
 | Field          | Value                                                                                                                                                                |
 |----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                 |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                                            |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                            |
 | Now            | Sprint closed 2026-02-06. One task carries forward: the sqlgen bound-parameters work, BLOCKED on upstream =getml/sqlgen#119=.                                        |
 | Waiting on     | Upstream sqlgen bound-parameter support.                                                                                                                             |
 | Next           | Sprint 12 picks up the tenancy work in any surface that needs it (Qt, Wt, HTTP all benefit) and exercises the system end-to-end under a realistic multi-tenant load. |
@@ -42,17 +42,17 @@ metadata, eventing).
 #+ATTR_HTML: :class hug-leading
 | Story                                                                                     | State | Start      | End        | Theme                                                               |
 |-------------------------------------------------------------------------------------------+-------+------------+------------+---------------------------------------------------------------------|
-| [[id:572c63f9-9a87-40fb-8609-8d4d7c1ccd39][Sprint 11 housekeeping]]                       | DONE  |            | 2026-02-06 | backlog + OCR.                                                      |
-| [[id:0a69cb02-19df-4df7-bedd-81c57a604737][Engineering hygiene]]                          | DONE  |            | 2026-02-06 | past review comments; apt-get retry; vcpkg cache fix.               |
-| [[id:b726d4ea-4e80-4d54-a5cc-0cd895ce883c][Database role split and schema consolidation]] | DONE  |            | 2026-01-31 | preconditions: RBAC, single public schema, SQL tree tidy-up.        |
-| [[id:f6748da4-e8d7-48b6-b91f-bc05e68f53d8][Tenancy foundation]]                           | DONE  |            | 2026-02-01 | schema, seeding, login/test plumbing.                               |
-| [[id:1eff8c9c-e4c2-49cc-a563-bb91923ec406][Tenancy-based test isolation]]                 | DONE  |            | 2026-02-01 | tenant_context service, per-test tenants, RLS.                      |
-| [[id:467e909e-ceac-4829-8688-d43179d38f18][Tenancy codegen and entity types]]             | DONE  |            | 2026-02-03 | Mustache templates, pgTAP, C++ tenant entities, protocol bump 26.1. |
-| [[id:18ccf6c9-7d23-48b3-9d4d-2a8aeb4ee30d][sqlgen improvements]]                          | DONE  |            | 2026-02-06 | libpq audit; upstream notice + bound-params work.                   |
-| [[id:2920a00e-538d-455e-9013-44a1c3a7ed36][Telemetry database sink]]                      | DONE  |            | 2026-02-03 | ores.telemetry.database; test logging; three-tier tenant lifecycle. |
-| [[id:b23bfd60-4604-4d43-92b3-3ef3e1d5dbe6][Service accounts and audit]]                   | DONE  |            | 2026-02-04 | account_type + performed_by audit field + telemetry deadlock fix.   |
-| [[id:976a2745-6728-435e-970e-d1205d46dc7a][Per-request tenant context]]                   | DONE  |            | 2026-02-06 | security fix; tenant_id wrapper; system tenant nil → max UUID.      |
-| [[id:52bbea16-0344-4299-88ba-ec6a341fbd21][Validate tenancy across surfaces]]             | DONE  |            | 2026-02-06 | shell, librarian, DQ metadata, eventing.                            |
+| [[id:572C63F9-9A87-40FB-8609-8D4D7C1CCD39][Sprint 11 housekeeping]]                       | DONE  |            | 2026-02-06 | backlog + OCR.                                                      |
+| [[id:0A69CB02-19DF-4DF7-BEDD-81C57A604737][Engineering hygiene]]                          | DONE  |            | 2026-02-06 | past review comments; apt-get retry; vcpkg cache fix.               |
+| [[id:B726D4EA-4E80-4D54-A5CC-0CD895CE883C][Database role split and schema consolidation]] | DONE  |            | 2026-01-31 | preconditions: RBAC, single public schema, SQL tree tidy-up.        |
+| [[id:F6748DA4-E8D7-48B6-B91F-BC05E68F53D8][Tenancy foundation]]                           | DONE  |            | 2026-02-01 | schema, seeding, login/test plumbing.                               |
+| [[id:1EFF8C9C-E4C2-49CC-A563-BB91923EC406][Tenancy-based test isolation]]                 | DONE  |            | 2026-02-01 | tenant_context service, per-test tenants, RLS.                      |
+| [[id:467E909E-CEAC-4829-8688-D43179D38F18][Tenancy codegen and entity types]]             | DONE  |            | 2026-02-03 | Mustache templates, pgTAP, C++ tenant entities, protocol bump 26.1. |
+| [[id:18CCF6C9-7D23-48B3-9D4D-2A8AEB4EE30D][sqlgen improvements]]                          | DONE  |            | 2026-02-06 | libpq audit; upstream notice + bound-params work.                   |
+| [[id:2920A00E-538D-455E-9013-44A1C3A7ED36][Telemetry database sink]]                      | DONE  |            | 2026-02-03 | ores.telemetry.database; test logging; three-tier tenant lifecycle. |
+| [[id:B23BFD60-4604-4D43-92B3-3EF3E1D5DBE6][Service accounts and audit]]                   | DONE  |            | 2026-02-04 | account_type + performed_by audit field + telemetry deadlock fix.   |
+| [[id:976A2745-6728-435E-970E-D1205D46DC7A][Per-request tenant context]]                   | DONE  |            | 2026-02-06 | security fix; tenant_id wrapper; system tenant nil → max UUID.      |
+| [[id:52BBEA16-0344-4299-88BA-EC6A341FBD21][Validate tenancy across surfaces]]             | DONE  |            | 2026-02-06 | shell, librarian, DQ metadata, eventing.                            |
 
 * Retrospective
 

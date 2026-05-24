@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 95027540-ce71-4971-af9b-2ae3645a5fce
+:ID: 95027540-CE71-4971-AF9B-2AE3645A5FCE
 :END:
 #+title: Add validation and ISO compliance flags for reference data
 #+description: Add validation and ISO compliance flags for reference data
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Several validation gaps and missing metadata in reference data entities.
 

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ed5bc735-fb54-4ce0-9a08-6dab88c242d0
+:ID: ED5BC735-FB54-4CE0-9A08-6DAB88C242D0
 :END:
 #+title: Story: Currencies temporal and export
 #+description: Add temporal versioning to currencies, ship a CLI dump command, and build a containing structure for ORE example data.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -25,7 +25,7 @@ example files so they can be loaded as a group.
 | Field         | Value                                                                                                           |
 |---------------+-----------------------------------------------------------------------------------------------------------------|
 | State         | DONE                                                                                                            |
-| Parent sprint | [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]                                                          |
+| Parent sprint | [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]]                                                          |
 | Now           | Story closed; currencies are versioned in time, CLI can dump them, ORE example data has a containing structure. |
 | Waiting on    | None.                                                                                                           |
 | Next          | None.                                                                                                           |
@@ -42,9 +42,9 @@ example files so they can be loaded as a group.
 
 In execution order:
 
-- [[id:acb832a6-da5e-4463-83a8-4bfa06bd607f][Create a containing structure for data]]
-- [[id:665dc710-e8a1-4c1f-9f66-2ee30aa94849][Add temporal support to currencies]]
-- [[id:562ed395-d245-4e05-b8ae-22f8ff689f59][Add command to dump currencies]]
+- [[id:ACB832A6-DA5E-4463-83A8-4BFA06BD607F][Create a containing structure for data]]
+- [[id:665DC710-E8A1-4C1F-9F66-2EE30AA94849][Add temporal support to currencies]]
+- [[id:562ED395-D245-4E05-B8AE-22F8FF689F59][Add command to dump currencies]]
 
 Additional tasks belonging to this story in v0 but not migrated in
 the drive-test:
@@ -68,11 +68,11 @@ the drive-test:
   its own task when needed).
 - A general-purpose ORE-data viewer (deferred).
 - Full Postgres write path for currencies — completed in sprint 03's
-  [[id:3f819ee3-0834-4522-8b01-df4a7d09e77f][Postgres-backed currency persistence]].
+  [[id:3F819EE3-0834-4522-8B01-DF4A7D09E77F][Postgres-backed currency persistence]].
 
 * See also
 
 - [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]] — the reference-data component carrying currencies.
 - [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] — host of the new =currencies dump= command.
-- [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]] (sprint 01) — predecessor story.
+- [[id:AF70CDF6-071F-43A9-91BB-7EB9A59A550F][Currencies end-to-end]] (sprint 01) — predecessor story.
 - Currency (domain note).

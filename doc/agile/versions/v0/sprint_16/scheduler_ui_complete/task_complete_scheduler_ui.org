@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2fbe8a93-696d-447a-b9b9-707c9e500618
+:ID: 2FBE8A93-696D-447A-B9B9-707C9E500618
 :END:
 #+title: Task: Complete Scheduler UI: Job Instances and Monitor
 #+description: Job Instances execution history + Scheduler Monitor live status views; new Qt UI components + NATS protocol definitions + backend handlers; real-time job lifecycle events; reactive UI.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2d496a77-5238-4b5b-8cc6-c61fc59fa9c1][Scheduler UI complete]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2D496A77-5238-4B5B-8CC6-C61FC59FA9C1][Scheduler UI complete]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Job Instances execution history + Scheduler Monitor live status views; new Qt UI
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
 | State        | DONE                                                               |
-| Parent story | [[id:2d496a77-5238-4b5b-8cc6-c61fc59fa9c1][Scheduler UI complete]] |
+| Parent story | [[id:2D496A77-5238-4B5B-8CC6-C61FC59FA9C1][Scheduler UI complete]] |
 | Now          | Completed 2026-04-11.                                              |
 | Waiting on   | None.                                                              |
 | Next         | None.                                                              |

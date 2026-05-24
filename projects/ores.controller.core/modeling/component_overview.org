@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c871c5df-a521-4815-9572-72d07da62cc7
+:ID: C871C5DF-A521-4815-9572-72D07DA62CC7
 :END:
 #+title: ores.controller.core
 #+description: Service registry and lifecycle controller — tracks running services, instances, and health events.
@@ -49,5 +49,5 @@ Qt clients and other services.
 
 * See also
 
-- [[id:85d20e29-0ebd-41ff-9f32-10f60af074a8][ores.controller.api]] — protocol types and domain entities.
-- [[id:1a4e357c-0b10-44cf-9096-47ee42e6f1a4][ores.controller.service]] — NATS service entrypoint.
+- [[id:85D20E29-0EBD-41FF-9F32-10F60AF074A8][ores.controller.api]] — protocol types and domain entities.
+- [[id:1A4E357C-0B10-44CF-9096-47EE42E6F1A4][ores.controller.service]] — NATS service entrypoint.

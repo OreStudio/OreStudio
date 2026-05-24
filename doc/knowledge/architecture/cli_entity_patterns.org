@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 05891220-2503-48a0-adf5-13ec95b605d7
+:ID: 05891220-2503-48A0-ADF5-13EC95B605D7
 :END:
 #+title: CLI entity patterns
 #+description: Options structs, parser layout, and command-dispatch conventions for ores.cli entity commands.
@@ -79,6 +79,6 @@ operation (list, export, add, delete).
 
 * See also
 
-- [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][cli-entity-creator]] — skill that drives this workflow.
-- [[id:662881dc-1371-4dad-a868-72d8bae0e919][How do I create CLI commands for a new entity?]] — recipe walkthrough.
-- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.
+- [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][cli-entity-creator]] — skill that drives this workflow.
+- [[id:662881DC-1371-4DAD-A868-72D8BAE0E919][How do I create CLI commands for a new entity?]] — recipe walkthrough.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

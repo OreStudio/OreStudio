@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 145adede-c3dd-4b51-ad3b-d6b5506c6c37
+:ID: 145ADEDE-C3DD-4B51-AD3B-D6B5506C6C37
 :END:
 #+title: Story: Client/server foundations
 #+description: Introduce a client/server split via a cobalt-based runtime, a comms library, and risk messaging — recording GRPC/0MQ pivots.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -25,7 +25,7 @@ messages between them, and the risk module is the first consumer.
 | Field         | Value                                                                                                |
 |---------------+------------------------------------------------------------------------------------------------------|
 | State         | DONE                                                                                                 |
-| Parent sprint | [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]]                                               |
+| Parent sprint | [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]]                                               |
 | Now           | Story closed; cobalt server/client running, comms library extracted, risk module exchanges messages. |
 | Waiting on    | None.                                                                                                |
 | Next          | None.                                                                                                |
@@ -44,10 +44,10 @@ messages between them, and the risk module is the first consumer.
 
 In execution order:
 
-- [[id:396ebda8-ca0d-4bfc-ac5e-01e61cae0a6a][Implement a cobalt-based server and client]]
-- [[id:9c9b5954-e01c-495d-94e9-2de3cb10c75c][Create a comms library]]
-- [[id:3afa8a40-2b03-4317-8ff0-96ef5e2b9249][Add messaging for risk]]
-- [[id:095140a1-0dd9-41e0-a346-418f1114d259][Create a GRPC-based service]] (ABANDONED — pivoted to cobalt)
+- [[id:396EBDA8-CA0D-4BFC-AC5E-01E61CAE0A6A][Implement a cobalt-based server and client]]
+- [[id:9C9B5954-E01C-495D-94E9-2DE3CB10C75C][Create a comms library]]
+- [[id:3AFA8A40-2B03-4317-8FF0-96EF5E2B9249][Add messaging for risk]]
+- [[id:095140A1-0DD9-41E0-A346-418F1114D259][Create a GRPC-based service]] (ABANDONED — pivoted to cobalt)
 
 Additional tasks belonging to this story in v0 but not migrated in
 the drive-test:
@@ -72,11 +72,11 @@ the drive-test:
 * Out of scope
 
 - Authentication beyond the basic accounts/logins task — comes back as
-  sprint 03's [[id:b09e0d06-0314-4424-ad57-2da31a335d99][Login and sessions]] (with the authentication-bootstrap
+  sprint 03's [[id:B09E0D06-0314-4424-AD57-2DA31A335D99][Login and sessions]] (with the authentication-bootstrap
   workflow itself further deferred).
 - Performance tuning of the cobalt event loop.
 - Reconnection / resilience semantics.
-- Wiring the Qt client onto the cobalt server — sprint 03's [[id:eda3d069-f3c1-43b5-93fb-e5705a8f9adc][Client
+- Wiring the Qt client onto the cobalt server — sprint 03's [[id:EDA3D069-F3C1-43B5-93FB-E5705A8F9ADC][Client
   console and Qt integration]] picks this up.
 
 * See also

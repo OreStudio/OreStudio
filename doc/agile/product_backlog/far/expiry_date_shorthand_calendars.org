@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3a6ba429-3b7c-4490-902b-257d66cd97be
+:ID: 3A6BA429-3B7C-4490-902B-257D66CD97BE
 :END:
 #+title: Support expiry date shorthand with calendar integration
 #+description: Allow expiry date entry as a shorthand (e.g. 9Y). Requires calendar support — either from QuantLib or another library. Backlog until calendar infrastructure is in place.
@@ -10,7 +10,7 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 

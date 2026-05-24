@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 926b916e-a57e-498e-99ab-720b583c0362
+:ID: 926B916E-A57E-498E-99AB-720B583C0362
 :END:
 #+title: Cybernetic Levels
 #+description: Definitions of System 1–5, what each is responsible for, and how they interact.
@@ -24,7 +24,7 @@ they /constrain/ them.
 
 * System 1: Operations
 :PROPERTIES:
-:ID: dbfd530b-4b56-48d1-9f03-3a0d0da16552
+:ID: DBFD530B-4B56-48D1-9F03-3A0D0DA16552
 :END:
 
 In Beer's VSM, /System 1/ is the operational unit that interacts directly with
@@ -42,12 +42,12 @@ Everything above S1 only exists to keep S1 fed with coherent, well-scoped work.
 | Inputs                | A task document and the codebase.                                                                                                                                                            |
 | Outputs               | A PR, an updated task document marked done, any discovered tasks filed for triage.                                                                                                           |
 | Owns                  | The implementation of the task. Nothing more.                                                                                                                                                |
-| Lifecycle touchpoints | Runs the [[id:227958a5-0f78-4cc6-a116-b83988592b68][Sprint execution]] phase — claims =BACKLOG= tasks, transitions them through =STARTED= / =BLOCKED= / =DONE=, opens and lands one PR per task. Files [[id:4ea506f5-c3e9-4f92-8024-a5eed0b3df43][discovered tasks]] for S2 to triage. |
-| Function              | [[id:b544713a-ba23-4d5a-9cee-084212d7c8ba][S1 Agent]] — load this doc when taking on the S1 role.                                                                                                                                                                                |
+| Lifecycle touchpoints | Runs the [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]] phase — claims =BACKLOG= tasks, transitions them through =STARTED= / =BLOCKED= / =DONE=, opens and lands one PR per task. Files [[id:4EA506F5-C3E9-4F92-8024-A5EED0B3DF43][discovered tasks]] for S2 to triage. |
+| Function              | [[id:B544713A-BA23-4D5A-9CEE-084212D7C8BA][S1 Agent]] — load this doc when taking on the S1 role.                                                                                                                                                                                |
 
 * System 2: Coordination
 :PROPERTIES:
-:ID: bf4f183f-bb33-44f2-a53f-d9bd602e9be8
+:ID: BF4F183F-BB33-44F2-A53F-D9BD602E9BE8
 :END:
 
 In Beer's VSM, /System 2/ is the anti-oscillation layer: it coordinates the
@@ -66,12 +66,12 @@ what to do with anything discovered along the way.
 | Inputs                | A story document, the sprint mission, the codebase.                                                                                                                                                                                                                                                               |
 | Outputs               | Tasks, decisions, review of agent output, story completion.                                                                                                                                                                                                                                                       |
 | Owns                  | Scoping, task sizing, in-story prioritisation, review.                                                                                                                                                                                                                                                            |
-| Lifecycle touchpoints | Decomposes promoted stories into tasks during [[id:f5426198-acaf-41da-a043-ff15785e4a1d][Sprint planning]]; reviews S1 output and triages discovered work during [[id:227958a5-0f78-4cc6-a116-b83988592b68][Sprint execution]]; resolves each story (=DONE= / =ABANDONED= / carried) during [[id:7d72a9da-984f-4130-bff6-97b66b233907][Sprint closure]]. Also files captures into the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]] when discovered work cannot fit any current story. |
-| Function              | [[id:eeca6981-3240-44d9-ada7-4b8c64a76b44][S2 Orchestrator]] — load this doc when taking on the S2 role.                                                                                                                                                                                                                                                            |
+| Lifecycle touchpoints | Decomposes promoted stories into tasks during [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][Sprint planning]]; reviews S1 output and triages discovered work during [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]]; resolves each story (=DONE= / =ABANDONED= / carried) during [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]]. Also files captures into the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]] when discovered work cannot fit any current story. |
+| Function              | [[id:EECA6981-3240-44D9-ADA7-4B8C64A76B44][S2 Orchestrator]] — load this doc when taking on the S2 role.                                                                                                                                                                                                                                                            |
 
 * System 3: Control
 :PROPERTIES:
-:ID: 8f13ba75-edaa-46cc-9be2-e356d60bf4f4
+:ID: 8F13BA75-EDAA-46CC-9BE2-E356D60BF4F4
 :END:
 
 In Beer's VSM, /System 3/ is operational management — it allocates resources to
@@ -90,12 +90,12 @@ and verifies they cohere around one mission.
 | Inputs                | The sprint backlog, completed sprints, current sprint mission.                                                                                                                                                                                                                                             |
 | Outputs               | Sprint planning, story prioritisation, retrospectives.                                                                                                                                                                                                                                                     |
 | Owns                  | Medium-term planning, sprint coherence.                                                                                                                                                                                                                                                                    |
-| Lifecycle touchpoints | Drives the entire [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][sprint phases]] sequence — refines the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]] continuously, defines the sprint mission and chooses stories in /Sprint planning/, generates release notes and runs the post-mortem in /Sprint closure/, and decides when a near→far demotion or far→near promotion is appropriate. |
-| Function              | [[id:f1d99662-c6b1-4839-92e1-d061ccf6b83f][S3 Sprint Planner]] — load this doc when taking on the S3 role.                                                                                                                                                                                                                                                              |
+| Lifecycle touchpoints | Drives the entire [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][sprint phases]] sequence — refines the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]] continuously, defines the sprint mission and chooses stories in /Sprint planning/, generates release notes and runs the post-mortem in /Sprint closure/, and decides when a near→far demotion or far→near promotion is appropriate. |
+| Function              | [[id:F1D99662-C6B1-4839-92E1-D061CCF6B83F][S3 Sprint Planner]] — load this doc when taking on the S3 role.                                                                                                                                                                                                                                                              |
 
 * System 3*: Audit
 :PROPERTIES:
-:ID: ed29c99b-1507-49c9-9937-d296fffe428e
+:ID: ED29C99B-1507-49C9-9937-D296FFFE428E
 :END:
 
 In Beer's VSM, /System 3*/ ("three-star") is the independent audit channel — it
@@ -114,12 +114,12 @@ per sprint.
 | Inputs                | Every document under =doc/=.                                                                                                                                                                                                                                    |
 | Outputs               | Audit reports, automatic state corrections, tasks to fix drift.                                                                                                                                                                                                 |
 | Owns                  | The integrity of the system itself.                                                                                                                                                                                                                             |
-| Lifecycle touchpoints | Observes the heartbeat invariant during [[id:227958a5-0f78-4cc6-a116-b83988592b68][Sprint execution]] (=STARTED= / =BLOCKED= staleness), checks every id-link resolves, audits =DISCOVERED= tasks that overstay one orchestrator session, verifies predecessor / successor symmetry on cross-sprint stories. |
-| Function              | [[id:049b086e-f131-4d7a-8244-c1b2ff297ab6][S3* Auditor]] — load this doc when taking on the S3* role.                                                                                                                                              |
+| Lifecycle touchpoints | Observes the heartbeat invariant during [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]] (=STARTED= / =BLOCKED= staleness), checks every id-link resolves, audits =DISCOVERED= tasks that overstay one orchestrator session, verifies predecessor / successor symmetry on cross-sprint stories. |
+| Function              | [[id:049B086E-F131-4D7A-8244-C1B2FF297AB6][S3* Auditor]] — load this doc when taking on the S3* role.                                                                                                                                              |
 
 * System 4: Intelligence
 :PROPERTIES:
-:ID: 6ca8b181-bd81-4ef4-af27-64f5491d62f0
+:ID: 6CA8B181-BD81-4EF4-AF27-64F5491D62F0
 :END:
 
 In Beer's VSM, /System 4/ is the outward-looking, strategic layer — it watches
@@ -137,16 +137,16 @@ sprints adds up to the version mission and intervenes when it doesn't.
 | Inputs                | The version identity, the sprint sequence, the product identity.                                                                                                                                                                                                                         |
 | Outputs               | Version plan, sprint sequencing, release scope decisions.                                                                                                                                                                                                                                |
 | Owns                  | Medium-to-long-term planning.                                                                                                                                                                                                                                                            |
-| Lifecycle touchpoints | Cross-checks each sprint's mission against the version mission during [[id:f5426198-acaf-41da-a043-ff15785e4a1d][Sprint planning]]; participates in /release cut/ decisions during [[id:7d72a9da-984f-4130-bff6-97b66b233907][Sprint closure]] (whether to publish a release or land mid-version); responsible for moving captures near↔far when the next version's focus changes. |
-| Function              | [[id:66eb6824-52b8-4603-b302-f805da9ec443][S4 Version Planner]] — load this doc when taking on the S4 role.                                                                                                                                                                                                                                                |
+| Lifecycle touchpoints | Cross-checks each sprint's mission against the version mission during [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][Sprint planning]]; participates in /release cut/ decisions during [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]] (whether to publish a release or land mid-version); responsible for moving captures near↔far when the next version's focus changes. |
+| Function              | [[id:66EB6824-52B8-4603-B302-F805DA9EC443][S4 Version Planner]] — load this doc when taking on the S4 role.                                                                                                                                                                                                                                                |
 
 * System 5: Policy / Identity
 :PROPERTIES:
-:ID: 6df00a64-7cc3-40a7-950b-55d2b05a31c7
+:ID: 6DF00A64-7CC3-40A7-950B-55D2B05A31C7
 :END:
 
 In Beer's VSM, /System 5/ is the policy layer — it carries the identity of the
-organism, the durable answer to "what are we?". In ORE Studio it is the [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product
+organism, the durable answer to "what are we?". In ORE Studio it is the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product
 identity]] doc and the sessions that maintain it; everything below S5 is filtered
 through that identity when deciding what counts as "ORE Studio" at all.
 
@@ -160,8 +160,8 @@ through that identity when deciding what counts as "ORE Studio" at all.
 | Inputs                | The product identity, candidate versions, candidate far stories.                                                                                                                                                                                                        |
 | Outputs               | Identity updates, scope decisions (accept / reject / defer), out-of-scope notes.                                                                                                                                                                                        |
 | Owns                  | What ORE Studio /is/ and /is not/.                                                                                                                                                                                                                                      |
-| Lifecycle touchpoints | Filters story choice during [[id:f5426198-acaf-41da-a043-ff15785e4a1d][Sprint planning]] (does each candidate fit the [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product vision]]?); reviews [[id:d4219199-7b17-4a89-b4bc-6019738642da][backlog]] captures for identity-fit and decides accept (the capture stays in near/far) or reject (the capture is deleted, with the rationale noted in commit history). |
-| Function              | [[id:5cad21da-21fb-460b-9286-8998b4c6ef52][S5 Identity Steward]] — load this doc when taking on the S5 role.                                                                                                                                                                                                                                                                            |
+| Lifecycle touchpoints | Filters story choice during [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][Sprint planning]] (does each candidate fit the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product vision]]?); reviews [[id:D4219199-7B17-4A89-B4BC-6019738642DA][backlog]] captures for identity-fit and decides accept (the capture stays in near/far) or reject (the capture is deleted, with the rationale noted in commit history). |
+| Function              | [[id:5CAD21DA-21FB-460B-9286-8998B4C6EF52][S5 Identity Steward]] — load this doc when taking on the S5 role.                                                                                                                                                                                                                                                                            |
 
 * Information flow
 

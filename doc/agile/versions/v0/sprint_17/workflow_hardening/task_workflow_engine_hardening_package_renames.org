@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a4bc5ab1-4f4e-4bfc-a8a8-152379e6ce7e
+:ID: A4BC5AB1-4F4E-4BFC-A8A8-152379E6CE7E
 :END:
 #+title: Task: Workflow engine hardening + package renames
 #+description: - Item 1: Dynamic step lists — `workflow_instance` gains `step_count` and `materialised_steps_json` so the step sequence
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7030AB78-B8F1-425C-83EF-A6F9EBF218A8][Workflow engine hardening]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add persisted materialised step lists, move workflow definitions to their owning
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] |
+| Parent story | [[id:7030AB78-B8F1-425C-83EF-A6F9EBF218A8][Workflow engine hardening]] |
 | Now          | Completed 2026-05-15.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

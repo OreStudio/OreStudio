@@ -25,7 +25,7 @@ root cause from test result XML and log output.
 
 * How to use this skill
 
-The full operational procedure is in [[id:e1a68ed5-20cb-426c-91c6-97984a692505][How do I investigate a test
+The full operational procedure is in [[id:E1A68ED5-20CB-426C-91C6-97984A692505][How do I investigate a test
 failure?]]. The skill exists to surface that recipe under a name an
 LLM session can invoke, and to add the framing decisions a recipe
 cannot make on its own.
@@ -37,7 +37,7 @@ cannot make on its own.
    in scope. A single failure usually means deep dive; a sweep
    means catalogue them, then prioritise.
 
-3. /Run/ [[id:e1a68ed5-20cb-426c-91c6-97984a692505][How do I investigate a test failure?]] end-to-end:
+3. /Run/ [[id:E1A68ED5-20CB-426C-91C6-97984A692505][How do I investigate a test failure?]] end-to-end:
    enable logging → run suite → parse results → walk the
    investigation order (exception → test source → per-test log →
    suite log → re-run with trace → targeted debug logging).
@@ -45,9 +45,9 @@ cannot make on its own.
 4. /When you find the cause/, decide:
    - /Test bug/ → fix the test; commit on a feature branch.
    - /Production bug/ → fix the code, /and/ keep the test that
-     surfaced it (or add a tighter one); open a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the
+     surfaced it (or add a tighter one); open a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the
      current sprint.
-   - /Flaky test/ → file a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] with the seed (=RNG Seed= from
+   - /Flaky test/ → file a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] with the seed (=RNG Seed= from
      the result XML) so it can be reproduced.
 
 5. /Disable logging when you're done/ — keeps the rest of the test
@@ -55,16 +55,16 @@ cannot make on its own.
 
 * Recipes
 
-- [[id:e1a68ed5-20cb-426c-91c6-97984a692505][How do I investigate a test failure?]] — the full procedure.
-- [[id:4bf2516d-f37e-4e31-ad7b-124f2639b9ab][How do I enable test logging?]] — the prerequisite.
-- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — the surrounding run loop.
+- [[id:E1A68ED5-20CB-426C-91C6-97984A692505][How do I investigate a test failure?]] — the full procedure.
+- [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I enable test logging?]] — the prerequisite.
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] — the surrounding run loop.
 
 * Reference
 
-- [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] — file structure, naming, helpers — to
+- [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] — file structure, naming, helpers — to
   orient yourself once you open the failing test file.
-- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset / output-directory background.
-- [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][unit-test-writer]] — sibling skill for authoring tests.
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset / output-directory background.
+- [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][unit-test-writer]] — sibling skill for authoring tests.
 
 * Artefacts                                                        :noexport:
 

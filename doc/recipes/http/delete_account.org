@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3a31efd8-12e4-4027-a0a0-1bbfc96b8989
+:ID: 3A31EFD8-12E4-4027-A0A0-1BBFC96B8989
 :END:
 #+title: Delete Account
 #+description: Delete Account

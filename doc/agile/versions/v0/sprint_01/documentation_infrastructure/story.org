@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c85f2dca-f7d6-40ae-b796-8b4cf84a7093
+:ID: C85F2DCA-F7D6-40AE-B796-8B4CF84A7093
 :END:
 #+title: Story: Documentation infrastructure
 #+description: Establish the documentation pipeline — project site, Doxygen, README, and the seed domain notes.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2CF90D10-890D-4CB0-A71B-5E8C3261BC54][Sprint 01]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -25,7 +25,7 @@ on.
 | Field         | Value                                                                     |
 |---------------+---------------------------------------------------------------------------|
 | State         | DONE                                                                      |
-| Parent sprint | [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]                    |
+| Parent sprint | [[id:2CF90D10-890D-4CB0-A71B-5E8C3261BC54][Sprint 01]]                    |
 | Now           | Story closed; project site live, Doxygen integrated, domain notes seeded. |
 | Waiting on    | None.                                                                     |
 | Next          | None.                                                                     |
@@ -45,9 +45,9 @@ on.
 
 In execution order:
 
-- [[id:7c6151b0-3a3b-4562-83fe-e0ec2459aeae][Add basic site]]
-- [[id:6030cced-00fd-4375-8798-fed75d2385cd][Generate Doxygen documentation and add it to the site]]
-- [[id:c098d15a-156b-4195-a1ef-575289d89770][Copy domain notes on core concepts]]
+- [[id:7C6151B0-3A3B-4562-83FE-E0EC2459AEAE][Add basic site]]
+- [[id:6030CCED-00FD-4375-8798-FED75D2385CD][Generate Doxygen documentation and add it to the site]]
+- [[id:C098D15A-156B-4195-A1EF-575289D89770][Copy domain notes on core concepts]]
 
 Additional tasks belonging to this story in v0 but not migrated in
 the drive-test:
@@ -74,13 +74,13 @@ the drive-test:
 
 * See also
 
-- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — recipe for the =deploy_site= CMake
+- [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] — recipe for the =deploy_site= CMake
   target that this story stood up.
-- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — sibling pipeline for the Claude Code
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — sibling pipeline for the Claude Code
   skill bundle.
-- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — the diagram pipeline that
+- [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]] — the diagram pipeline that
   later replaced the abandoned org-babel PlantUML conversion.
 - =doc/doc.org= — the top-level v1 documentation index that the basic
   site renders.
-- [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] (v2 entry point) — successor of the org-publish driven site
+- [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] (v2 entry point) — successor of the org-publish driven site
   for the new information architecture.

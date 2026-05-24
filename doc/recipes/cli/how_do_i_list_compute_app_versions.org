@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 47bcd022-22c8-4504-a4e9-c4e7cee76cb5
+:ID: 47BCD022-22C8-4504-A4E9-C4E7CEE76CB5
 :END:
 #+title: How do I list compute app versions?
 #+description: List compute app versions via =ores.cli=

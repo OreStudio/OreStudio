@@ -25,31 +25,31 @@ PR — title, body, push, monitor, merge.
 
 * How to use this skill
 
-1. /Generate the title and body/ from your commits — [[id:1882d6df-4012-4c6e-bf62-0d943ef805b0][How do I
+1. /Generate the title and body/ from your commits — [[id:1882D6DF-4012-4C6E-BF62-0D943EF805B0][How do I
    generate a PR summary?]].
-2. /Open the PR/ via =gh pr create= — [[id:cc928252-e0c5-4c3c-a7a8-d613593e4e37][How do I create a PR?]].
+2. /Open the PR/ via =gh pr create= — [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]].
 3. /Hand off to the watch loop/. The post-creation phase
    (monitoring CI, addressing review comments, fixing failures) is
-   the [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]] skill. Invoke it; do not embed the loop here.
-4. /Merge once green/ and after explicit user confirmation — [[id:95d560c6-3551-4810-9d11-55f9f82b483c][How
+   the [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] skill. Invoke it; do not embed the loop here.
+4. /Merge once green/ and after explicit user confirmation — [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How
    do I merge a PR?]]. The =--delete-branch= flag handles cleanup.
 5. /If more phases follow/ on the same feature, transition cleanly
    to the next branch via [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch Manager]].
 
 * Recipes
 
-- [[id:1882d6df-4012-4c6e-bf62-0d943ef805b0][How do I generate a PR summary?]]
-- [[id:cc928252-e0c5-4c3c-a7a8-d613593e4e37][How do I create a PR?]]
-- [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][How do I monitor a PR until green?]] (used via PR Shepherd)
-- [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][How do I address PR review comments?]]
-- [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][How do I fix a failing CI check?]]
-- [[id:95d560c6-3551-4810-9d11-55f9f82b483c][How do I merge a PR?]]
+- [[id:1882D6DF-4012-4C6E-BF62-0D943EF805B0][How do I generate a PR summary?]]
+- [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]]
+- [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] (used via PR Shepherd)
+- [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]]
+- [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]]
+- [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]]
 
 * Reference
 
-- [[id:fcf81f0b-afbf-4169-bd24-04dbd08180a9][GitHub recipes]] — the inventory the PR-lifecycle recipes hang
+- [[id:FCF81F0B-AFBF-4169-BD24-04DBD08180A9][GitHub recipes]] — the inventory the PR-lifecycle recipes hang
   off.
-- [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]] — the sibling skill for the post-creation watch
+- [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] — the sibling skill for the post-creation watch
   loop.
 - [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch Manager]] — sibling skill for multi-phase
   branch transitions.

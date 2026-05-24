@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 54371d4e-6b27-4ebb-9368-158a63faec9a
+:ID: 54371D4E-6B27-4EBB-9368-158A63FAEC9A
 :END:
 #+title: Channels
 #+description: Channels

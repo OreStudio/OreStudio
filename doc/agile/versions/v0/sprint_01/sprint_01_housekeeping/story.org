@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: bca419e2-dff2-474b-969e-cfbd19e7c832
+:ID: BCA419E2-DFF2-474B-969E-CFBD19E7C832
 :END:
 #+title: Story: Sprint 01 housekeeping
 #+description: Sprint-level work that doesn't fit a product story — sprint instrumentation, dev setup, community channels.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2CF90D10-890D-4CB0-A71B-5E8C3261BC54][Sprint 01]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -29,7 +29,7 @@ story keeps the composition invariant (task → story → sprint) intact.
 | Field         | Value                                                                                                                                   |
 |---------------+-----------------------------------------------------------------------------------------------------------------------------------------|
 | State         | DONE                                                                                                                                    |
-| Parent sprint | [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]                                                                                  |
+| Parent sprint | [[id:2CF90D10-890D-4CB0-A71B-5E8C3261BC54][Sprint 01]]                                                                                  |
 | Now           | Story closed; sprint backlog refined, resourcing chart in place, stories classified by tag, dev laptop set up, Discord channel created. |
 | Waiting on    | None.                                                                                                                                   |
 | Next          | None.                                                                                                                                   |
@@ -48,9 +48,9 @@ story keeps the composition invariant (task → story → sprint) intact.
 
 In execution order:
 
-- [[id:237d992b-9901-4003-9d39-1acf13c2f1de][Use a bar chart for sprint resourcing cost]]
-- [[id:617ad8a3-2903-465b-beda-abb7128613a2][Classify stories by type]]
-- [[id:db9f5667-7716-4f99-86f2-eed09a79de61][Setup laptop for development]]
+- [[id:237D992B-9901-4003-9D39-1ACF13C2F1DE][Use a bar chart for sprint resourcing cost]]
+- [[id:617AD8A3-2903-465B-BEDA-ABB7128613A2][Classify stories by type]]
+- [[id:DB9F5667-7716-4F99-86F2-EED09A79DE61][Setup laptop for development]]
 
 Additional tasks belonging to this story in v0 but not migrated in
 the drive-test:
@@ -72,8 +72,8 @@ the drive-test:
 
 * See also
 
-- [[id:0fe2033d-180f-4195-a314-998917d570be][Sprint 02 housekeeping]] / [[id:bcef2c68-65fe-4848-95ba-6ddb01b2ab9f][Sprint 03 housekeeping]] — successor
+- [[id:0FE2033D-180F-4195-A314-998917D570BE][Sprint 02 housekeeping]] / [[id:BCEF2C68-65FE-4848-95BA-6DDB01B2AB9F][Sprint 03 housekeeping]] — successor
   housekeeping stories. Pattern: one per sprint.
-- [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] — v2 retired the per-entry tag classification (its v0
+- [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — v2 retired the per-entry tag classification (its v0
   tag-by-letter mechanism became the v2 multi-dimensional filetag
   system).

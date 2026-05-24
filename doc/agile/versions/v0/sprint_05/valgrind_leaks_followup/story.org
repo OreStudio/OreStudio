@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 69c49095-a91f-41d9-9d7e-0e9478143e93
+:ID: 69C49095-A91F-41D9-9D7E-0E9478143E93
 :END:
 #+title: Story: Valgrind leaks follow-up
 #+description: Resolve the BLOCKED OpenSSL leaks from sprint 03 plus sqlgen and comms-test leaks discovered since.
@@ -11,7 +11,7 @@
 #+updated: 2025-11-25
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:2429db80-ec7b-482c-9ff3-4d1933035863][Sprint 05]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2429DB80-EC7B-482C-9FF3-4D1933035863][Sprint 05]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,16 +24,16 @@ since (sqlgen residuals, real leaks in =ores.comms= tests).
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:2429db80-ec7b-482c-9ff3-4d1933035863][Sprint 05]] |
+| Parent sprint | [[id:2429DB80-EC7B-482C-9FF3-4D1933035863][Sprint 05]] |
 | Now           | Completed 2025-11-25.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
 | Last touched  | 2025-11-25                                             |
 
 
-#+predecessor: 1a411b50-2c3a-4248-9ae7-59a835ef6774
+#+predecessor: 1A411B50-2C3A-4248-9AE7-59A835EF6774
 
-Continued from: [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observability]].
+Continued from: [[id:1A411B50-2C3A-4248-9AE7-59A835EF6774][Logging and observability]].
 
 * Acceptance
 
@@ -46,9 +46,9 @@ Continued from: [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observabi
 
 In execution order:
 
-- [[id:c4aafe26-a61f-48c1-9f8d-00c64898ca17][Resolve all of the OpenSSL leaks in Valgrind]]
-- [[id:7d95a76c-f755-44c4-84fa-a00c0e263573][Investigate Valgrind leak on sqlgen]]
-- [[id:0cd5f988-f59c-47a4-869f-7fec3b5416ec][Fix Valgrind leaks for comms tests]]
+- [[id:C4AAFE26-A61F-48C1-9F8D-00C64898CA17][Resolve all of the OpenSSL leaks in Valgrind]]
+- [[id:7D95A76C-F755-44C4-84FA-A00C0E263573][Investigate Valgrind leak on sqlgen]]
+- [[id:0CD5F988-F59C-47A4-869F-7FEC3B5416EC][Fix Valgrind leaks for comms tests]]
 
 * Decisions
 
@@ -64,6 +64,6 @@ In execution order:
 
 * See also
 
-- [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observability]] (sprint 03) — predecessor story.
-- [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] (sprint 02) — first added Valgrind
+- [[id:1A411B50-2C3A-4248-9AE7-59A835EF6774][Logging and observability]] (sprint 03) — predecessor story.
+- [[id:AC14558D-A526-4BE2-ADB6-81BCFE0E7292][Build stabilisation]] (sprint 02) — first added Valgrind
   suppressions.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b174a3c8-031f-40f1-ada0-a9cc79983ed8
+:ID: B174A3C8-031F-40F1-ADA0-A9CC79983ED8
 :END:
 #+title: Task: v2 cybernetic information architecture (sprints 01-07)
 #+description: Stands up the v2 information architecture under =doc/v2/= and migrates the first
@@ -16,7 +16,7 @@
 #+updated: 2026-05-22
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:063862A1-C02C-4F76-A212-576A57423F0F][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Stand up the v2 cybernetic information architecture and migrate sprints 01-07 of
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] |
+| Parent story | [[id:063862A1-C02C-4F76-A212-576A57423F0F][v2 documentation architecture]] |
 | Now          | Completed 2026-05-19.               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |

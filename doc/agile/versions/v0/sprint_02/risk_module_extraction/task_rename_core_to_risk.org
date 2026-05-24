@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5016b990-bb38-4386-a6d8-082a524f5359
+:ID: 5016B990-BB38-4386-A6D8-082A524F5359
 :END:
 #+title: Task: Rename core to risk
 #+description: Pure rename of the =core= module to =risk= — no semantic changes.
@@ -12,7 +12,7 @@
 #+updated: 2025-10-02
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6C63D2B2-7065-4AFC-AE54-86220C427B20][Risk module extraction]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -25,7 +25,7 @@ documentation. No semantic changes; only a name change.
 | Field        | Value                                                               |
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
-| Parent story | [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]] |
+| Parent story | [[id:6C63D2B2-7065-4AFC-AE54-86220C427B20][Risk module extraction]] |
 | Now          | Completed 2025-10-02.                                               |
 | Waiting on   | None.                                                               |
 | Next         | None.                                                               |

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3023b0ec-b07e-4bb5-b981-064e2f49d31f
+:ID: 3023B0EC-B07E-4BB5-B981-064E2F49D31F
 :END:
 #+title: Task: Gate party + counterparty wizard steps by tenant type
 #+description: Party / counterparty setup only enabled for evaluation tenants; production tenants see the steps disabled with explanation.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a][Tenant provisioning wizards]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EAF03BE3-D1EC-4EC4-B18B-4F1C6F35926A][Tenant provisioning wizards]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Only allow party + counterparty setup steps in the wizard for evaluation tenants
 | Field        | Value                                                                    |
 |--------------+--------------------------------------------------------------------------|
 | State        | DONE                                                                     |
-| Parent story | [[id:eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a][Tenant provisioning wizards]] |
+| Parent story | [[id:EAF03BE3-D1EC-4EC4-B18B-4F1C6F35926A][Tenant provisioning wizards]] |
 | Now          | Completed 2026-02-14.                                                    |
 | Waiting on   | None.                                                                    |
 | Next         | None.                                                                    |

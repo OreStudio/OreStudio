@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: cb85c105-afcb-49f6-bd62-2a5f9ca62590
+:ID: CB85C105-AFCB-49F6-BD62-2A5F9CA62590
 :END:
 #+title: How do I get help for the CLI refdata currencies command?
 #+description: Show available operations under =ores.cli refdata currencies=

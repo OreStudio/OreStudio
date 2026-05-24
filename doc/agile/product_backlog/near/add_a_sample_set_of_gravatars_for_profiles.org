@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8c53f763-1db4-4287-ab72-7471e1a7de29
+:ID: 8C53F763-1DB4-4287-AB72-7471E1A7DE29
 :END:
 #+title: Add a sample set of gravatars for profiles
 #+description: Add a sample set of gravatars for profiles
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 We've downloaded the [[https://www.kaggle.com/datasets/osmankagankurnaz/human-profile-photos-dataset][Human Profile Photos Dataset]]. The images are not labelled
 (img123.jpg etc). There are also too many of them. We need to label them so we

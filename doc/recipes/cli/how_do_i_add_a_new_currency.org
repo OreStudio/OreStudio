@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 71cabb20-a7b2-46c3-9a19-f8c0662a5422
+:ID: 71CABB20-A7B2-46C3-9A19-F8C0662A5422
 :END:
 #+title: How do I add a new currency?
 #+description: Add a new currency

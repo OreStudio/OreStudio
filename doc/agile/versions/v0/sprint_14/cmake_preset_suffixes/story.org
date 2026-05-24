@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 05cbd9fa-b1f2-4b53-8f83-2952a892c94d
+:ID: 05CBD9FA-B1F2-4B53-8F83-2952A892C94D
 :END:
 #+title: Story: CMake preset build-tool suffixes
 #+description: Add Ninja / Make suffix to every preset name; hidden ninja + make presets centralise generator settings; Linux + macOS support both, Windows on Ninja only.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A63C60DC-C3A6-4F4F-8977-012A7BF1D566][Sprint 14]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -23,7 +23,7 @@ Ninja or Make explicitly.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]] |
+| Parent sprint | [[id:A63C60DC-C3A6-4F4F-8977-012A7BF1D566][Sprint 14]] |
 | Now           | Completed 2026-03-10.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,7 +41,7 @@ Ninja or Make explicitly.
 
 In execution order:
 
-- [[id:a77a88d5-737a-4136-85fa-f89e013d4908][Add build-tool suffix to CMake presets]]
+- [[id:A77A88D5-737A-4136-85FA-F89E013D4908][Add build-tool suffix to CMake presets]]
 
 * Decisions
 

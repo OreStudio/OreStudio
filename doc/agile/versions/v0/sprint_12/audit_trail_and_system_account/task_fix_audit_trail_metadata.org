@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: f991419c-3c22-4545-980b-cf4b3ef6693f
+:ID: F991419C-3C22-4545-980B-CF4B3EF6693F
 :END:
 #+title: Task: Fix audit trail metadata for recorded_by and modified_by
 #+description: modified_by + performed_by soft FK to accounts; super-admin no longer 'modified by bootstrap'; tenant admin no longer 'recorded by onboarding'; performed_by visible in UI; terminology standardised.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2901CE42-268C-4ADE-A3E4-CF6E01B8668E][Audit trail and system account]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Standardise audit-trail metadata across entities; surface =performed_by= in the 
 | Field        | Value                                                                       |
 |--------------+-----------------------------------------------------------------------------|
 | State        | DONE                                                                        |
-| Parent story | [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]] |
+| Parent story | [[id:2901CE42-268C-4ADE-A3E4-CF6E01B8668E][Audit trail and system account]] |
 | Now          | Completed 2026-02-16.                                                       |
 | Waiting on   | None.                                                                       |
 | Next         | None.                                                                       |

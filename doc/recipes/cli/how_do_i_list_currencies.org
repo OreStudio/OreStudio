@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 91b80133-bce8-4ecd-bd87-3196d04bd58b
+:ID: 91B80133-BCE8-4ECD-BD87-3196D04BD58B
 :END:
 #+title: How do I list currencies?
 #+description: List currencies via =ores.cli= as JSON or as a table

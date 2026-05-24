@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 592c6373-dc2f-45fe-ae2c-810fc1d3e40f
+:ID: 592C6373-DC2F-45FE-AE2C-810FC1D3E40F
 :END:
 #+title: How do I get help for the CLI refdata countries command?
 #+description: Show available operations under =ores.cli refdata countries=

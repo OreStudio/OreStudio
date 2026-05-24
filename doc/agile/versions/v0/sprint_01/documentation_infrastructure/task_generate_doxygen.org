@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 6030cced-00fd-4375-8798-fed75d2385cd
+:ID: 6030CCED-00FD-4375-8798-FED75D2385CD
 :END:
 #+title: Task: Generate Doxygen documentation and add it to the site
 #+description: Wire Doxygen into the build and publish its output as part of the project site.
@@ -12,7 +12,7 @@
 #+updated: 2024-07-01
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:c85f2dca-f7d6-40ae-b796-8b4cf84a7093][Documentation infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C85F2DCA-F7D6-40AE-B796-8B4CF84A7093][Documentation infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -25,7 +25,7 @@ browsed without checking out the source.
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE                                                                      |
-| Parent story | [[id:c85f2dca-f7d6-40ae-b796-8b4cf84a7093][Documentation infrastructure]] |
+| Parent story | [[id:C85F2DCA-F7D6-40AE-B796-8B4CF84A7093][Documentation infrastructure]] |
 | Now          | Completed 2024-07-01.                                                     |
 | Waiting on   | None.                                                                     |
 | Next         | None.                                                                     |

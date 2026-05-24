@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 06a0919d-b741-40ea-bff2-376bd36c4a27
+:ID: 06A0919D-B741-40EA-BFF2-376BD36C4A27
 :END:
 #+title: Builds can run outside the sandbox
 #+description: Claude may use dangerouslyDisableSandbox when running cmake or make build targets — the compiler toolchain and sccache are not accessible inside the sandbox.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: c9669586-41bb-41b7-b6da-5a1181055d52
+:ID: C9669586-41BB-41B7-B6DA-5A1181055D52
 :END:
 #+title: Unify compute wrapper nodes as replicated services
 #+description: Unify compute wrapper nodes as replicated services
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Currently compute wrapper nodes are a special case: hardcoded instance names
 (=node1=, =node2=, ...), pattern-matched separately in =status-services.sh=,

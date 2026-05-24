@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 247c3a99-f44b-40b4-a699-cae8622ec350
+:ID: 247C3A99-F44B-40B4-A699-CAE8622EC350
 :END:
 #+title: Currencies: Country relationship
 #+description: Currencies: Country relationship
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 At present currencies are linked to flags directly via an image id. We should
 also be linked to a country, where such a linkage exists.

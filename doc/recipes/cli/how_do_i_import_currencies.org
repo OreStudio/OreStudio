@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 16b0472b-acb9-4f20-9f43-74c7e8f53593
+:ID: 16B0472B-ACB9-4F20-9F43-74C7E8F53593
 :END:
 #+title: How do I import currencies?
 #+description: Import currencies into the database via =ores.cli= from ORE XML files

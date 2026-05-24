@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 53b62f83-fb48-42ed-aa25-851259b0341c
+:ID: 53B62F83-FB48-42ED-AA25-851259B0341C
 :END:
 #+title: Task: Party identifier scheme analysis
 #+description: Analysis pass: catalogue the party identifier schemes we need (LEI, BIC, MIC, CEDB, Natural Person, National ID, Internal, ACER, DTCC, AII/MPID).
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:700D4325-2AD1-4E0D-B6AF-900ABBE1A66E][Party schemes and FPML reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Catalogue the party-identifier schemes the system needs to support before party 
 | Field        | Value                                                                              |
 |--------------+------------------------------------------------------------------------------------|
 | State        | DONE                                                                               |
-| Parent story | [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] |
+| Parent story | [[id:700D4325-2AD1-4E0D-B6AF-900ABBE1A66E][Party schemes and FPML reference data]] |
 | Now          | Completed 2026-01-21.                                                              |
 | Waiting on   | None.                                                                              |
 | Next         | None.                                                                              |

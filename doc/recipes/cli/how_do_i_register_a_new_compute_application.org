@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 0f1d158a-01c2-4296-9f3b-4cf2ab5e1619
+:ID: 0F1D158A-01C2-4296-9F3B-4CF2AB5E1619
 :END:
 #+title: How do I register a new compute application?
 #+description: Register a new compute application

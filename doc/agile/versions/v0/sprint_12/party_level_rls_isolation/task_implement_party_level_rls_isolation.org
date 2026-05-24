@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: b2982628-d398-4d98-a25f-eb21c1fccc94
+:ID: B2982628-D398-4D98-A25F-EB21C1FCCC94
 :END:
 #+title: Task: Implement party-level RLS isolation
 #+description: Second RLS layer scoped to party-subtree within a tenant. SQL: ores_refdata_visible_party_ids_fn (recursive CTE); ores_iam_current_party_id_fn + ores_iam_visible_party_ids_fn helpers. C++: extend tenant_aware_pool + context with party context; session_data + tenant_aware_handler carry party_id + visible_party_ids; login resolves party via account_parties. SQL: ores_refdata_party_counterparties_tbl as first party-scoped junction with dual (tenant + party) RLS.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:c431b464-a3bc-4d9c-b33a-7c5b247ebea4][Party-level RLS isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C431B464-A3BC-4D9C-B33A-7C5B247EBEA4][Party-level RLS isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Add a second RLS layer scoped to the party subtree within a tenant. System parti
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
 | State        | DONE                                                                   |
-| Parent story | [[id:c431b464-a3bc-4d9c-b33a-7c5b247ebea4][Party-level RLS isolation]] |
+| Parent story | [[id:C431B464-A3BC-4D9C-B33A-7C5B247EBEA4][Party-level RLS isolation]] |
 | Now          | Completed 2026-02-15.                                                  |
 | Waiting on   | None.                                                                  |
 | Next         | None.                                                                  |

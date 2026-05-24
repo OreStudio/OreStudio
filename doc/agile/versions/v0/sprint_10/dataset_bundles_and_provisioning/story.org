@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2d3d3854-748e-4df7-8bbe-e6498c598c2d
+:ID: 2D3D3854-748E-4DF7-8BBE-E6498C598C2D
 :END:
 #+title: Story: Dataset bundles and provisioning
 #+description: Separate catalog metadata from production data; introduce dataset bundles; add the System Provisioner Wizard in Qt.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ bundles; build the wizard.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] |
+| Parent sprint | [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]] |
 | Now           | Completed 2026-01-27.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -41,9 +41,9 @@ bundles; build the wizard.
 
 In execution order:
 
-- [[id:1b78d767-89d3-4646-93db-c8297a66b093][Separate catalog metadata schema from production data]]
-- [[id:03c2977e-ca76-43a1-9cf6-46a5648be40a][Add dataset bundles]]
-- [[id:8aa7657f-a37f-4ab7-85f0-95868cdfd8f3][Add System Provisioner Wizard to Qt]]
+- [[id:1B78D767-89D3-4646-93DB-C8297A66B093][Separate catalog metadata schema from production data]]
+- [[id:03C2977E-CA76-43A1-9CF6-46A5648BE40A][Add dataset bundles]]
+- [[id:8AA7657F-A37F-4AB7-85F0-95868CDFD8F3][Add System Provisioner Wizard to Qt]]
 
 * Decisions
 
@@ -58,4 +58,4 @@ In execution order:
 
 * See also
 
-- [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]] — the layer cleanup the wizard consumes.
+- [[id:5BAFBEB2-C875-4655-BB78-801A3BF65022][Schema polish]] — the layer cleanup the wizard consumes.

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 687b46b5-ef84-4016-a699-391edc443072
+:ID: 687B46B5-EF84-4016-A699-391EDC443072
 :END:
 #+title: Task: Add a default sqliterc with formatting and ergonomic defaults
 #+description: Author projects/ores.sql/utility/sqliterc.sql with commented defaults for output formatting, wide non-wrapping columns, and session settings.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-24
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:0a2cb5bd-67b8-4096-bac4-8e110333893a][SQLite CLI quality-of-life setup]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0A2CB5BD-67B8-4096-BAC4-8E110333893A][SQLite CLI quality-of-life setup]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -30,7 +30,7 @@ connection-level safety defaults.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | STARTED                              |
-| Parent story | [[id:0a2cb5bd-67b8-4096-bac4-8e110333893a][SQLite CLI quality-of-life setup]] |
+| Parent story | [[id:0A2CB5BD-67B8-4096-BAC4-8E110333893A][SQLite CLI quality-of-life setup]] |
 | Now          | rc file authored; verified against sqlite3 3.46.1. |
 | Waiting on   | Nothing.                               |
 | Next         | Land via PR.                           |

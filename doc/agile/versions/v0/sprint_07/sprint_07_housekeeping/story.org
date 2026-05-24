@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: a5060b3b-a3c0-40ff-b5d3-36ed1e74b609
+:ID: A5060B3B-A3C0-40FF-B5D3-36ED1E74B609
 :END:
 #+title: Story: Sprint 07 housekeeping
 #+description: Sprint sundries: backlog, AI summary, OCR notebooks.
@@ -11,7 +11,7 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:A79D42AF-1B38-43EE-9607-848A4A84C09A][Sprint 07]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,7 +24,7 @@ thread for the sprint window.
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
 | State         | DONE                                                   |
-| Parent sprint | [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]] |
+| Parent sprint | [[id:A79D42AF-1B38-43EE-9607-848A4A84C09A][Sprint 07]] |
 | Now           | Completed 2025-12-30.                                  |
 | Waiting on    | None.                                                  |
 | Next          | None.                                                  |
@@ -40,9 +40,9 @@ thread for the sprint window.
 
 In execution order:
 
-- [[id:25c4d7e5-d2c2-40c5-93e8-6f2fd00e0dd8][Sprint and product backlog refinement]]
-- [[id:e10ad67b-fb97-4a39-af79-37c087094157][Add AI-generated sprint summary]]
-- [[id:83f5e109-11f7-4e9d-9261-294fbae0b506][OCR scan notebooks for this sprint]]
+- [[id:25C4D7E5-D2C2-40C5-93E8-6F2FD00E0DD8][Sprint and product backlog refinement]]
+- [[id:E10AD67B-FB97-4A39-AF79-37C087094157][Add AI-generated sprint summary]]
+- [[id:83F5E109-11F7-4E9D-9261-294FBAE0B506][OCR scan notebooks for this sprint]]
 
 * Decisions
 

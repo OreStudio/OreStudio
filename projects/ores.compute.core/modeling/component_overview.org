@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 3bffdf5c-86f5-4d57-9d9f-676d0d62b344
+:ID: 3BFFDF5C-86F5-4D57-9D9F-676D0D62B344
 :END:
 #+title: ores.compute.core
 #+description: Compute cluster management — app registration, batch dispatch, and result collection for risk compute jobs.
@@ -52,6 +52,6 @@ job assignments via NATS; results flow back through the same channel.
 
 * See also
 
-- [[id:a59e121a-b8fb-43f0-a5cd-1fa5f426e66a][ores.compute.api]] — protocol types and domain entities.
-- [[id:152c4a5e-9947-4ee1-a5d4-893305d235b5][ores.compute.service]] — NATS service entrypoint.
-- [[id:f1b19d84-a5c9-4478-bb46-ee6ea62dafca][ores.compute.wrapper]] — worker node that executes ORE runs.
+- [[id:A59E121A-B8FB-43F0-A5CD-1FA5F426E66A][ores.compute.api]] — protocol types and domain entities.
+- [[id:152C4A5E-9947-4EE1-A5D4-893305D235B5][ores.compute.service]] — NATS service entrypoint.
+- [[id:F1B19D84-A5C9-4478-BB46-EE6EA62DAFCA][ores.compute.wrapper]] — worker node that executes ORE runs.

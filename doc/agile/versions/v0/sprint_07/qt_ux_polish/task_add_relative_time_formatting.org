@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ecaa9c44-d03e-49b2-8cc9-b6aca86e5825
+:ID: ECAA9C44-D03E-49B2-8CC9-B6ACA86E5825
 :END:
 #+title: Task: Add support for relative time formatting
 #+description: Render timestamps as relative time ("3 minutes ago") with a tooltip showing the absolute time.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:72f723f4-378c-4e0a-b6f1-6ba3c29f5bea][Qt UX polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:72F723F4-378C-4E0A-B6F1-6BA3C29F5BEA][Qt UX polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Render timestamps as relative time ("3 minutes ago") with a tooltip showing the 
 | Field        | Value                                                     |
 |--------------+-----------------------------------------------------------|
 | State        | DONE                                                      |
-| Parent story | [[id:72f723f4-378c-4e0a-b6f1-6ba3c29f5bea][Qt UX polish]] |
+| Parent story | [[id:72F723F4-378C-4E0A-B6F1-6BA3C29F5BEA][Qt UX polish]] |
 | Now          | Completed 2025-12-22.                                     |
 | Waiting on   | None.                                                     |
 | Next         | None.                                                     |

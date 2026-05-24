@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: ba771ea9-fbf1-420e-b708-e12a3276758f
+:ID: BA771EA9-FBF1-420E-B708-E12A3276758F
 :END:
 #+title: Task: Make all detail dialogs tabbed
 #+description: Tabbed layout standardised; Provenance tab consolidated; Country detail moves flag to General; Currency detail relocates icon button into General; Methodology + Treatment + Catalog + others have read-only change_commentary in Provenance; Methodology Implementation grew to 300px; My Sessions + My Account converted to MDI subwindows; business-centre flag label next to combo box.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ec6d8e8d-4421-412a-9331-9bba5b542d54][Detail dialogs modernisation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC6D8E8D-4421-412A-9331-9BBA5B542D54][Detail dialogs modernisation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Convert every detail dialog to a tabbed layout with a dedicated Provenance tab; 
 | Field        | Value                                                                     |
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE                                                                      |
-| Parent story | [[id:ec6d8e8d-4421-412a-9331-9bba5b542d54][Detail dialogs modernisation]] |
+| Parent story | [[id:EC6D8E8D-4421-412A-9331-9BBA5B542D54][Detail dialogs modernisation]] |
 | Now          | Completed 2026-02-20.                                                     |
 | Waiting on   | None.                                                                     |
 | Next         | None.                                                                     |

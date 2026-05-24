@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 463467f7-e02a-483b-a5f8-6c930cdd9e4c
+:ID: 463467F7-E02A-483B-A5F8-6C930CDD9E4C
 :END:
 #+title: Add a "is alive" message
 #+description: Add a "is alive" message
@@ -10,7 +10,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 We need to brainstorm this. At present we can only tell if a server is there or
 not by connecting. It would be nice to give some visual indicator to the user

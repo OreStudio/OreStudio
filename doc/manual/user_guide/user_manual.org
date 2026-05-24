@@ -33,6 +33,8 @@
 #+latex: \thispagestyle{empty}
 #+latex: \newpage
 
+#+HTML: <p><a href="/OreStudio/doc/manual/user_guide/user_manual.pdf">Download PDF</a></p>
+
 * Introduction
 
 #+include: "chapters/chapter_00/introduction.org" :minlevel 2

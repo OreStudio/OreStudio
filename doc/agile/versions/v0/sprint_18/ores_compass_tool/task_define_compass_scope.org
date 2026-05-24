@@ -51,15 +51,33 @@ The deliverable is the project skeleton plus a filled-in
 
 * Plan
 
-1. Mine the Sprint 18 capture (=* Tools=) and the existing
-   =compass.py= for the intended capabilities. (done)
-2. Scaffold the project and relocate the prototype with =git mv=. (done)
-3. Write =component_overview.org= with the three-pillar design and the
-   open questions. (done)
-4. Scaffold this story + task in Sprint 18 and wire the story into the
-   sprint's =* Stories= table. (done)
-5. Review the scope with the product owner; fold conclusions into the
-   story's =* Decisions=.
+Summary of the plan actually followed (this task is closed; the plan is
+retained here as a record of the approach):
+
+1. /Recover the source material./ The Sprint 18 =capture.org= — which
+   holds the compass spec under =* Tools= — was on a separate,
+   unmerged branch. Located it, confirmed it landed on =main= (via
+   PR #805), and rebased =feature/compass-tool= onto current =main= so
+   the capture was present in the working tree.
+2. /Anchor the context./ Read the recipes and the [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile product owner]]
+   skill; confirmed the current version (=v0=) and sprint (=Sprint 18=).
+3. /Derive the scope./ Mined the capture's =* Tools= entry and the
+   existing =scripts/compass.py= prototype into three pillars:
+   Locate / Search / Scaffold.
+4. /Create the project./ Scaffolded =projects/ores.compass= mirroring
+   =ores.codegen=, relocating the prototype with =git mv= (history
+   preserved) and re-pointing the wrapper; verified =search= still runs
+   from the new home (indexed 1,609 docs).
+5. /Document it./ Wrote =modeling/component_overview.org= (purpose,
+   three pillars, I/O, structure, open questions) and an
+   =ores.compass.puml= diagram; ran =validate_docs.sh=.
+6. /Scaffold the agile artefacts via codegen./ Generated the umbrella
+   story and this scoping task; wired the story into the sprint's
+   =* Stories= table.
+7. /Review and split out the pillars./ On product-owner sign-off,
+   created the [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][Locate]] and [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][Scaffold]] stories in the sprint backlog,
+   resolved the "codegen boundary" question (wrap, don't duplicate),
+   and logged the =doc/compass.org= disambiguation action.
 
 * Notes
 

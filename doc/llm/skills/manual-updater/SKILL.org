@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 00F85A2F-547A-4F11-99EB-A46A7DE5AB1C
+:END:
+#+title: Manual Updater
+#+version: 1
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skill:manual:doc:pdf:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+
+#+begin_export markdown
+---
+name: manual-updater
+description: When to update the user manual and how: find the right chapter, update prose, add screenshot placeholders, and rebuild the PDF.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Use this skill whenever a user-facing feature is added, changed, or
+removed: a new wizard, a renamed menu item, a new toolbar button, a
+changed workflow, or a new command-line option. The user manual must
+reflect what the application actually does; stale documentation is a
+defect.
+
+Also use it proactively at the end of any task that changes UI
+behaviour, even if the user did not explicitly ask for a manual update.
+
+* How to use this skill
+
+1. *Identify the affected chapter.* The manual lives under
+   =doc/manual/user_guide/=. The root file is =user_manual.org=; chapters
+   are under =chapters/=. Map the changed feature to its chapter:
+
+   | Feature area                       | Chapter file                          |
+   |------------------------------------+---------------------------------------|
+   | Login, connections, status bar, CLI | =chapter_01/system_bootstrapping.org= |
+   | Bootstrapping, tenants, parties    | =chapter_01/system_bootstrapping_concepts.org= |
+   | Reference data (currencies, etc.)  | (future chapter)                      |
+   | Instruments and trades             | (future chapter)                      |
+   | Market data                        | (future chapter)                      |
+   | Analytics                          | (future chapter)                      |
+
+   If the feature does not map to an existing chapter, note it so a new
+   chapter can be planned.
+
+2. *Update the prose.* Edit the relevant =.org= file to reflect the new
+   or changed behaviour. Keep the tone consistent: plain language,
+   second person ("you"), British English, non-programmer audience.
+   Describe /what the user does and sees/, not /how the code works/.
+
+3. *Add screenshot placeholders for any new UI.* Every new dialog, page,
+   or significant UI state needs a =#+caption:= block and a
+   =TODO_= placeholder link:
+
+   #+begin_example
+   #+caption: [SCREENSHOT NEEDED] <what to show>.
+   # Capture: <precise instruction for what to capture and how>.
+   [[../../../../assets/images/TODO_descriptive_name.png]]
+   #+end_example
+
+   Name placeholder files with the =TODO_= prefix so they stand out in
+   the file list and are easy to search for.
+
+4. *Update existing screenshot captions* if the UI changed enough that
+   an existing screenshot is now wrong or misleading. Mark it:
+
+   #+begin_example
+   #+caption: [SCREENSHOT OUTDATED — retake needed] <updated description>.
+   #+end_example
+
+5. *Rebuild the PDF* to verify the chapter compiles without errors:
+
+   #+begin_src sh
+   cmake --build --preset linux-clang-debug-ninja --target deploy_manual
+   #+end_src
+
+   Fix any LaTeX errors before committing.
+
+6. *Commit the updated chapter* on the relevant feature branch as part
+   of the same PR as the code change. Documentation and code ship
+   together; a PR that changes UI without updating the manual is
+   incomplete.
+
+7. *Rebuild and commit the PDF* if the content changed substantially
+   enough to warrant an updated binary:
+
+   #+begin_src sh
+   cmake --build --preset linux-clang-debug-ninja --target deploy_manual
+   git add doc/manual/user_guide/user_manual.pdf
+   git commit -m "[doc] Rebuild user manual PDF"
+   #+end_src
+
+* Recipes
+
+- [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] — the review loop that follows
+  the PR containing manual updates.
+
+* Reference
+
+- [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] — the root manual file.
+- =doc/manual/user_guide/chapters/= — all chapter source files.
+- =deploy_manual= CMake target — builds the PDF via =.build-manual.el=.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

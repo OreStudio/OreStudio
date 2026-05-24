@@ -44,7 +44,9 @@ In execution order:
 
 - [[id:30AFB759-D3F2-4DD9-A5C7-209735F35B38][Task: User manual restructure]] (DONE — PR #807; prerequisite for PDF build)
 - [[id:001f63b6-c4e8-4dd2-b680-364393b15d51][Task: Add CMake target to build user manual PDF and commit it]] (DONE — PR #810)
-- [[id:63BF06CF-B61E-4163-A017-0E2D13586510][Task: Write Chapter 1: Login and Connection Manager]]
+- [[id:63BF06CF-B61E-4163-A017-0E2D13586510][Task: Write Chapter 1: Login and Connection Manager]] (PR #811)
+- [[id:4834460E-0799-4379-ADD7-462A4BCF9FDF][Task: Write Chapter 1: System bootstrapping concepts and provisioning wizards]]
+- [[id:29379454-1B29-4BB5-905D-F129E0AC41FD][Task: Create documentation update skill]]
 
 * Decisions
 

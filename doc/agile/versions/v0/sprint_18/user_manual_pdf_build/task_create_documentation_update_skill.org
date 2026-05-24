@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 29379454-1B29-4BB5-905D-F129E0AC41FD
+:END:
+#+title: Task: Create documentation update skill
+#+description: A Claude Code skill that instructs the LLM to update the user manual whenever functionality is added or changed.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :doc:manual:skill:llm:user_manual_pdf_build:sprint_18:v0:
+#+owner: marco
+#+branch: feature/user-manual-system-bootstrapping
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A =manual-updater= Claude Code skill that instructs the LLM to keep
+the user manual current: when a feature is added or changed in the
+codebase, the skill guides updating the relevant chapter, adding
+screenshot placeholders, and rebuilding the PDF.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | BACKLOG                                                     |
+| Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
+| Now          | Not yet started.                                            |
+| Waiting on   | Nothing.                                                    |
+| Next         | Scaffold skill via codegen; write skill body.               |
+| Last touched | 2026-05-24                                                  |
+
+* Acceptance
+
+- =doc/llm/skills/manual-updater/SKILL.org= exists and is deployed.
+- Skill describes when to trigger (feature added/changed), which
+  chapter to find/update, how to add screenshot placeholders, and
+  when to rebuild the PDF.
+- Skill is linked from the skills catalogue.
+- =deploy_skills= target picks it up.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

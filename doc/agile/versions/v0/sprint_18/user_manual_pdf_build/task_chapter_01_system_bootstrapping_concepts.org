@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 4834460E-0799-4379-ADD7-462A4BCF9FDF
+:END:
+#+title: Task: Write Chapter 1: System bootstrapping concepts and provisioning wizards
+#+description: Explain the multi-tenant/multi-party model and walk through the system, tenant, and party provisioner wizards with screenshot placeholders.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :doc:manual:chapter_01:bootstrapping:user_manual_pdf_build:sprint_18:v0:
+#+owner: marco
+#+branch: feature/user-manual-system-bootstrapping
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extend =system_bootstrapping.org= with a conceptual section on the
+multi-tenant/multi-party model and step-by-step walkthroughs of the
+three provisioning wizards (System Provisioner, Tenant Provisioner,
+Party Provisioner), with screenshot placeholders throughout.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | STARTED                                                     |
+| Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
+| Now          | Writing chapter content.                                    |
+| Waiting on   | Nothing.                                                    |
+| Next         | Author takes screenshots per placeholders; rebuild PDF.     |
+| Last touched | 2026-05-24                                                  |
+
+* Acceptance
+
+- Conceptual section explains tenants, tenant types, parties, and
+  party hierarchy in plain language for a non-technical audience.
+- System Provisioner wizard is documented page-by-page.
+- Tenant Provisioner wizard is documented page-by-page.
+- Party Provisioner wizard is documented page-by-page.
+- Every wizard page has a screenshot placeholder with capture
+  instructions.
+- Chapter builds without errors via =deploy_manual=.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

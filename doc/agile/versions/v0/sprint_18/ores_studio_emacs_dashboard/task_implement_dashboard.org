@@ -8,12 +8,12 @@
 #+level: s1
 #+filetags: :emacs:lisp:dashboard:ores_studio_emacs_dashboard:sprint_18:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/ores-dashboard-implement
 #+pr:
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
-#+updated: 2026-05-24
+#+updated: 2026-05-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -21,19 +21,19 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Create =projects/ores.lisp/ores-dashboard.el= — a fully functional
-ORE Studio console built on =emacs-dashboard=, with env binding,
-command groups, bookmarks, recipe links, ORE shell, and splash image.
+ORE Studio console using =special-mode= + buttons, with buffer-local
+env binding, 11 command sections, bookmarks, recipe links, and ORE shell.
 
 * Status
 
 | Field        | Value                                            |
 |--------------+--------------------------------------------------|
-| State        | BACKLOG                                          |
+| State        | STARTED                                          |
 | Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                       |
-| Now          | Blocked on [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][audit/design task]].                   |
-| Waiting on   | [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][task_audit_and_design]] sign-off.                  |
-| Next         | Implement once design is approved.               |
-| Last touched | 2026-05-24                                       |
+| Now          | =ores-dashboard.el= written; wired into =.dir-locals.el=. |
+| Waiting on   | PR review.                                       |
+| Next         | Shepherd PR to merge.                            |
+| Last touched | 2026-05-25                                       |
 
 * Acceptance
 

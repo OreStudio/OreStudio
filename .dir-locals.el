@@ -11,4 +11,10 @@
                         (locate-dominating-file
                          (or buffer-file-name default-directory)
                          ".dir-locals.el"))
+                       :no-error :no-message))
+         (eval . (load (expand-file-name
+                        "projects/ores.lisp/ores-dashboard.el"
+                        (locate-dominating-file
+                         (or buffer-file-name default-directory)
+                         ".dir-locals.el"))
                        :no-error :no-message)))))

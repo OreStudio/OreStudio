@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 0a2cb5bd-67b8-4096-bac4-8e110333893a
+:END:
+#+title: Story: SQLite CLI quality-of-life setup
+#+description: Ship a default .sqliterc that gives sensible formatting and ergonomic defaults when connecting to SQLite via the command-line shell.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :sql:sqlite:tooling:developer_experience:sprint_18:v0:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:1737c00c-699a-475a-bc94-743c6cda1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Connecting to an ORE Studio SQLite database from the =sqlite3= shell
+gives a sane, readable experience out of the box: headed, box-drawn
+output with columns wide enough to show their content (no wrapping),
+visible NULL markers, query timing, and connection-level safety
+defaults — all from a single committed, well-commented rc file.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:1737c00c-699a-475a-bc94-743c6cda1001][Sprint 18]] |
+| Now           | rc file authored and verified against sqlite3 3.46. |
+| Waiting on    | Nothing.                               |
+| Next          | Land via PR.                           |
+| Last touched  | 2026-05-24                               |
+
+* Acceptance
+
+- A committed rc file lives at =projects/ores.sql/utility/sqliterc.sql=.
+- Every active entry carries a comment explaining what it does.
+- Long column values are shown in full on one line (no wrapping); the
+  columns simply grow wider.
+- NULLs are rendered with a visible marker.
+- The file loads via =sqlite3 -init <file>= with no errors.
+
+* Tasks
+
+In execution order:
+
+- [[id:687b46b5-ef84-4016-a699-391edc443072][Task: Add a default sqliterc with formatting and ergonomic defaults]]
+
+* Decisions
+
+- =.mode box --wrap 0= is the lever that fixes wrapping: plain
+  =.mode box= folds long values onto multiple lines, =--wrap 0= lets
+  the column expand to fit instead.
+- =PRAGMA journal_mode = WAL= is left commented: it persists to the
+  database file and affects all connections, so it must be set
+  deliberately, not from an interactive rc.
+
+* Out of scope
+
+- A PostgreSQL =.psqlrc= equivalent (ORE Studio's primary database is
+  PostgreSQL; this story covers the SQLite shell only).

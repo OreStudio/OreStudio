@@ -63,6 +63,7 @@ In execution order.
 | [[id:B3EBD70C-DAFA-4854-92F3-54E7D90D22C7][Qt: instrument creation in TradeDetailDialog]] | BACKLOG | 2026-05-24 |      | Create/associate instruments directly from TradeDetailDialog.                                |
 | [[id:7EF64A67-EB1C-4F79-9FF2-1C59DD6146AB][Track PRs per task and surface in compass where]] | DONE    | 2026-05-24 | 2026-05-24 | PRs table in task docs; =compass where --prs= fetches live PR status via =gh=.          |
 | [[id:026AA423-68A1-43A1-8F2A-D9D3D6379E6C][Add org-roam index links to compass.org folder entries]] | DONE | 2026-05-24 | 2026-05-24 | Each folder in compass.org links to its index file; missing index files created. |
+| [[id:A2B3BFD0-F44C-48F3-BB01-6BAECB851356][Remove unused GitHub Actions workflows]] | DONE | 2026-05-24 | 2026-05-24 | Delete the four dormant Gemini workflows; PR review stays via the gemini-code-assist app. |
 
 * Retrospective
 

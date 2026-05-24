@@ -1,0 +1,11 @@
+:PROPERTIES:
+:ID: 37EA004E-340C-5FE4-14AB-D9678749733B
+:END:
+#+title: Introduction
+#+description: Introduction of the ORE Studio User Manual
+#+type: manual
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:chapter:
+#+created: 2024-06-23
+#+updated: 2026-06-23

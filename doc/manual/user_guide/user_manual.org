@@ -1,7 +1,16 @@
-#+title: ORE Studio Manual
-#+version: 1
+:PROPERTIES:
+:ID: 6A1A333C-A83A-8954-B9C3-C3AB1AEC3046
+:END:
+#+title: ORE Studio User Manual
 #+author: Marco Craveiro
+#+version: 2
 #+options: date:nil <:nil c:nil todo:nil H:7 ^:{}
+#+description: Index of the agile information architecture — versions, sprints, stories, tasks, captures, and the process that connects them.
+#+type: manual
+#+level: cross
+#+filetags: :knowledge:
+#+created: 2024-06-23
+#+updated: 2026-06-23
 #+latex_class: article
 #+latex_class_options: [a4paper,11pt]
 #+latex_header: \usepackage[margin=1in]{geometry}
@@ -25,5 +34,7 @@
 #+latex: \newpage
 
 ** Introduction
+
+#+include: "chapters/chapter_00/introduction.org" :minlevel 1
 
 ** Chapter 1

@@ -1,0 +1,11 @@
+:PROPERTIES:
+:ID: DF779317-BDEB-49E4-E9AB-48C46615D0CF
+:END:
+#+title: System Bootstrapping
+#+description: How to bootstrap a ORE Studio system.
+#+type: manual
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:chapter:
+#+created: 2024-06-23
+#+updated: 2026-06-23

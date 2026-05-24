@@ -86,3 +86,6 @@ build/nats/
 node_modules/
 /package.json
 /package-lock.json
+
+# compass tool local cache
+.compass.db

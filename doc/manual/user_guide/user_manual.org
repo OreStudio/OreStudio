@@ -5,7 +5,7 @@
 #+author: Marco Craveiro
 #+version: 2
 #+options: date:nil <:nil c:nil todo:nil H:7 ^:{}
-#+description: Index of the agile information architecture — versions, sprints, stories, tasks, captures, and the process that connects them.
+#+description: User manual for ORE Studio, a desktop application for exploring, configuring, and running quantitative finance calculations.
 #+type: manual
 #+level: cross
 #+filetags: :knowledge:
@@ -33,13 +33,13 @@
 #+latex: \thispagestyle{empty}
 #+latex: \newpage
 
-** Introduction
+* Introduction
 
-#+include: "chapters/chapter_00/introduction.org" :minlevel 1
+#+include: "chapters/chapter_00/introduction.org" :minlevel 2
 
 #+caption: The ORE Studio main window on first launch, before connecting to the backend service.
 [[../../../assets/images/ores_qt_non_logged_in_window.png]]
 
-** Chapter 1
+* Chapter 1
 
-#+include: "chapters/chapter_01/system_bootstrapping.org" :minlevel 1
+#+include: "chapters/chapter_01/system_bootstrapping.org" :minlevel 2

@@ -310,7 +310,9 @@ pre-assign an ID to a brand-new document.
 
 * What the script does
 
-- Generates a fresh UUID and puts it in =:ID:=.
+- Generates a fresh UUID (always uppercase hex) and puts it in =:ID:=.
+  Every =:ID:= property and =[[id:UUID]]= link in the documentation graph
+  must use uppercase hex — see [[id:BAF1DEAE-59DF-49AB-BFCD-E6D09496DA43][Lock down uppercase UUID invariant]].
 - Sets =#+created= and =#+updated= to today.
 - Adds =--parent-slug= as a filetag, so the parent-tag invariant holds.
 - Auto-detects parent =:ID:= and =#+title:= from

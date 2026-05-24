@@ -20,6 +20,18 @@ requested fixes, and close the review threads?
 
 * Answer
 
+0. /Sync with main first/. Before touching any code, ensure your
+   branch is up to date:
+
+   #+begin_src sh :results verbatim
+   git fetch origin main
+   git rebase origin/main
+   #+end_src
+
+   Addressing comments on a stale branch risks rebase conflicts later
+   and can cause merge noise that confuses reviewers. Rebase first,
+   then address; never the other way around.
+
 1. /Read the open comments/:
 
    #+begin_src sh :results verbatim

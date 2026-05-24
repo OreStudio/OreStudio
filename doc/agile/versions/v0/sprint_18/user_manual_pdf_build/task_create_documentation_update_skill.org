@@ -9,7 +9,7 @@
 #+filetags: :doc:manual:skill:llm:user_manual_pdf_build:sprint_18:v0:
 #+owner: marco
 #+branch: feature/user-manual-system-bootstrapping
-#+pr:
+#+pr: 814
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24

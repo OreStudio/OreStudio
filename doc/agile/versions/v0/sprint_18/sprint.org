@@ -64,6 +64,7 @@ In execution order.
 | [[id:7EF64A67-EB1C-4F79-9FF2-1C59DD6146AB][Track PRs per task and surface in compass where]] | DONE    | 2026-05-24 | 2026-05-24 | PRs table in task docs; =compass where --prs= fetches live PR status via =gh=.          |
 | [[id:026AA423-68A1-43A1-8F2A-D9D3D6379E6C][Add org-roam index links to compass.org folder entries]] | DONE | 2026-05-24 | 2026-05-24 | Each folder in compass.org links to its index file; missing index files created. |
 | [[id:A2B3BFD0-F44C-48F3-BB01-6BAECB851356][Remove unused GitHub Actions workflows]] | DONE | 2026-05-24 | 2026-05-24 | Delete the four dormant Gemini workflows; PR review stays via the gemini-code-assist app. |
+| [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — near and far listing]] | BACKLOG | 2026-05-24 | | =compass backlog= lists near/far captures with counts, mirroring =where= in-flight display. |
 
 * Retrospective
 

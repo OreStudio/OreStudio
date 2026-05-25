@@ -461,10 +461,10 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
          (dashbuf (nth 2 ctx))
          (args    (transient-args 'ores/dashboard--start-client-transient))
          (script  (expand-file-name "build/scripts/start-client.sh" root))
-         (cmd     (concat "setsid " script
-                          (if args
-                              (concat " " (mapconcat #'shell-quote-argument args " "))
-                            ""))))
+         (args-str (if args (concat " " (mapconcat #'shell-quote-argument args " ")) ""))
+         (cmd      (if (executable-find "setsid")
+                       (concat "setsid " script args-str)
+                     (concat script args-str))))
     (ores/dashboard--compile label cmd "start-client" root dashbuf)))
 
 (transient-define-prefix ores/dashboard--start-client-transient ()

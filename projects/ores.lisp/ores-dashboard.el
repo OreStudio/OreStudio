@@ -147,7 +147,12 @@
     m))
 
 (define-derived-mode ores/dashboard-mode special-mode "ORES-Dashboard"
-  "Major mode for the ORE Studio development console.")
+  "Major mode for the ORE Studio development console."
+  ;; Whitespace-mode highlights entire lines and trailing spaces, which
+  ;; overrides the character-level face properties used for card title colors.
+  (when (fboundp 'whitespace-mode)
+    (whitespace-mode -1))
+  (setq-local show-trailing-whitespace nil))
 
 ;; ---------------------------------------------------------------------------
 ;; Window helpers — output window is created lazily on first action
@@ -466,16 +471,26 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
             (let ((lbl label) (db dash-buf))
               (lambda (_)
                 (ores-db/setup-connections)
-                (let ((buf-name (format "*ores-%s-db*" lbl))
-                      (conn     (intern (format "ores_%s" lbl))))
-                  (condition-case err
-                      (progn
-                        (save-window-excursion
-                          (sql-connect conn buf-name))
-                        (when-let ((buf (get-buffer buf-name)))
-                          (ores/dashboard--display buf db)))
-                    (error
-                     (user-error "Cannot connect: %s" (error-message-string err))))))))
+                (let* ((prefix (format "ores-%s-" lbl))
+                       (conns  (seq-filter (lambda (e) (string-prefix-p prefix (car e)))
+                                           sql-connection-alist))
+                       (names  (mapcar #'car conns)))
+                  (if (null names)
+                      (user-error "No SQL connections for %s — check .env" lbl)
+                    (let* ((choice (if (= (length names) 1)
+                                       (car names)
+                                     (completing-read (format "Service [%s]: " lbl)
+                                                      names nil t)))
+                           (svc      (string-remove-prefix prefix choice))
+                           (buf-name (format "*ores-%s-db-%s*" lbl svc)))
+                      (condition-case err
+                          (progn
+                            (save-window-excursion (sql-connect choice buf-name))
+                            (when-let ((buf (get-buffer buf-name)))
+                              (ores/dashboard--display buf db)))
+                        (error
+                         (user-error "Cannot connect: %s"
+                                     (error-message-string err)))))))))
            (ores/dashboard--mkitem
             "Recreate environment" 'nerd-icons-faicon "nf-fa-trash"
             (let ((lbl label) (r root))

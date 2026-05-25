@@ -26,14 +26,14 @@ propagation, UI data-loading path, or missing join); and apply the fix.
 
 * Status
 
-| Field        | Value                                     |
-|--------------+-------------------------------------------|
-| State        | BACKLOG                                   |
-| Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]]       |
-| Now          | Not yet started.                          |
-| Waiting on   | Nothing.                                  |
-| Next         | Reproduce the bug; read relevant queries. |
-| Last touched | 2026-05-25                                |
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | STARTED                                                            |
+| Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]]                                |
+| Now          | Fix applied to portfolio_repository.cpp and book_repository.cpp.  |
+| Waiting on   | Nothing.                                                           |
+| Next         | Commit, push, open PR.                                             |
+| Last touched | 2026-05-25                                                         |
 
 * Acceptance
 
@@ -71,6 +71,29 @@ cause is found:
    changes; a stale model may show empty data after a workspace switch.
 
 * Notes
+
+** Root Cause
+
+Portfolios and books are =Live=-only entities: every record is stored with
+=workspace_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'= (the Live sentinel,
+=ores::utility::uuid::live_workspace_uuid_str=).
+
+When a non-Live workspace is active the Qt =ClientManager= propagates its UUID
+via the NATS =X-Workspace-Id= header.  =request_context.cpp= reads that header
+and stores it in =database::context::workspace_id_=.  The repository read
+queries then filtered on =workspace_id = <non-live-uuid>=, returning zero rows.
+
+** Fix
+
+In =portfolio_repository.cpp= and =book_repository.cpp=, all three read
+methods (=read_latest()=, =read_latest(id)=, =read_all(id)=) used
+=ctx.workspace_id()= in the WHERE clause.  Changed to always use
+=live_workspace_uuid_str= so reads are never workspace-scoped.  Write and
+delete operations are left unchanged — they correctly use the context
+workspace so mutations are workspace-scoped.
+
+The constant is transitively available via =bitemporal_operations.hpp= →
+=context.hpp= → =tenant_id.hpp=; no new =#include= was required.
 
 * PRs
 

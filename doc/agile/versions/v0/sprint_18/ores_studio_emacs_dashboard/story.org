@@ -26,12 +26,12 @@ offers an ORE Studio shell, and shows the ORE splash image.
 
 | Field         | Value                                      |
 |---------------+--------------------------------------------|
-| State         | DONE                                       |
-| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                  |
-| Now           | Dashboard implemented and shipped; PR #831.|
-| Waiting on    | Nothing.                                   |
-| Next          | Nothing.                                   |
-| Last touched  | 2026-05-26                                 |
+| State         | STARTED                                                  |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                                |
+| Now           | Bug fix task added: DB ops use discovery instead of .env.|
+| Waiting on    | Nothing.                                                 |
+| Next          | Implement and merge fix task.                            |
+| Last touched  | 2026-05-25                                               |
 
 * Acceptance
 
@@ -58,6 +58,7 @@ In execution order:
 - [[id:7E86CDB4-3FE6-46AD-BCC8-C0E9AD8857D6][Remove superseded ores.lisp modules]]
 - [[id:3C888F53-0522-4A56-A50A-A7AFEA101468][Write the ORE Studio dashboard user manual section]]
 - [[id:3C569365-B253-4BC6-9385-7CAF7B4FB54D][Make compass output paths clickable in dashboard output pane]]
+- [[id:FC26D072-3E4C-488B-BE3A-958F29041D02][Fix DB dashboard operations to use .env database name]]
 
 * Decisions
 

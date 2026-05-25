@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: FC26D072-3E4C-488B-BE3A-958F29041D02
+:END:
+#+title: Task: Fix DB dashboard operations to use .env database name
+#+description: Kill connections, Teardown DB and Recreate DB all prompt for a database via completing-read instead of reading ORES_DATABASE_NAME from .env.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ores_studio_emacs_dashboard:sprint_18:v0:
+#+owner: marco
+#+branch: feature/dashboard-env-fix
+#+pr: 849
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the three DB-group dashboard operations — "Kill connections",
+"Teardown DB", and "Recreate DB" — so they act on the database
+obtained from =.env= (=ORES_DATABASE_NAME=, or =ores_dev_<label>= when
+absent) instead of discovering all ORES databases on localhost and
+prompting the user to choose one via =completing-read=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] |
+| Now          | PR #849 raised; review comments addressed.     |
+| Waiting on   | CI green, merge.                               |
+| Next         | Merge after CI passes.                         |
+| Last touched | 2026-05-25                               |
+
+* Acceptance
+
+- "Kill connections" runs against the database from =.env= with no
+  =completing-read= prompt.
+- "Teardown DB" runs against the database from =.env= with no
+  =completing-read= prompt.
+- "Recreate DB" runs against the database from =.env= with no
+  =completing-read= prompt.
+- "Recreate environment" uses =ORES_DATABASE_NAME= (or =ores_dev_<label>=)
+  — no hardcoded pattern divergence.
+- No other dashboard option prompts for an environment or database name.
+- All confirmation dialogs (=yes-or-no-p=) remain in place.
+- Dashboard still functions correctly when =ORES_DATABASE_NAME= is absent
+  (falls back to =ores_dev_<label>=).
+
+* Plan
+
+1. In =ores/dashboard--db-group= (=ores-dashboard.el=), =db-name= is
+   already bound from =ORES_DATABASE_NAME= / =ores_dev_<label>=.
+
+2. *Kill connections* — remove the =ores-db/database-list-discovery=
+   call and =completing-read=; obtain the host from =db-name=
+   (localhost), pass =db-name= directly to the kill script.
+
+3. *Teardown DB* — same: remove discovery + prompt; pass =db-name=
+   directly to the teardown script.
+
+4. *Recreate DB* — same: remove discovery + prompt; pass =db-name=
+   directly to =ores-db/--run-recreate-db=.
+
+5. *Recreate environment* — already uses =lbl= from env; verify it
+   also honours =ORES_DATABASE_NAME= if set (adjust if needed).
+
+6. Audit all other groups for any =completing-read= or =read-string=
+   calls that ask for an environment or database — none found (see
+   Analysis below).
+
+* Analysis — all dashboard options audited
+
+All groups were inspected in =ores-dashboard.el=.
+
+| Group       | Option                  | Env source                  | Prompts? | Status |
+|-------------+-------------------------+-----------------------------+----------+--------|
+| Environment | Init environment        | =ORES_PRESET= / =label=     | No       | OK     |
+| Environment | Edit environment        | =root= from =.env=          | No       | OK     |
+| Environment | Reload environment      | re-reads =.env=             | No       | OK     |
+| Environment | Diff .env vs .env.old   | =root= from =.env=          | No       | OK     |
+| Database    | Open database connection| =label=, service names      | Yes*     | OK*    |
+| Database    | Kill connections        | hardcoded discovery         | Yes      | *BUG*  |
+| Database    | Teardown DB             | hardcoded discovery         | Yes      | *BUG*  |
+| Database    | Recreate DB             | hardcoded discovery         | Yes      | *BUG*  |
+| Database    | Recreate environment    | =label= (hardcoded pattern) | No       | Minor  |
+| Services    | Start/Stop/Status/Client| =label=                     | No       | OK     |
+| Compass     | where/list/status/fleet | =label=                     | No       | OK     |
+| Build       | Configure/Build/Test    | =label=, =ORES_PRESET=      | No       | OK     |
+| Site        | Rebuild/Start/Stop site | =label=, =ORES_PRESET=      | No       | OK     |
+| Skills      | Open folder / Deploy    | =label=, =ORES_PRESET=      | No       | OK     |
+| Bookmarks   | Log dir / Bin dir       | =ORES_PRESET=               | No       | OK     |
+| Links       | Manual / Recipes / Agile| hardcoded relative path     | No       | OK     |
+| Shell       | Open ORE Studio shell   | =label=, =ORES_PRESET=      | No       | OK     |
+| NATS        | Init NATS / +provision  | =label=                     | No       | OK     |
+
+*=Open database connection= prompts only to choose between multiple
+ service connections for the /same/ environment (e.g. =ores-local1-refdata=
+ vs =ores-local1-trading=); it does not ask which environment to use.
+ This is intentional and correct.
+
+* Notes
+
+* PRs
+
+| PR  | Title                                                               |
+|-----+---------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/849][#849]] | [ores.lisp] Fix DB dashboard operations to use .env database name |
+
+* Review
+
+| # | Comment summary                                  | File                  | Decision | Notes                                                                                                         |
+|---+--------------------------------------------------+-----------------------+----------+---------------------------------------------------------------------------------------------------------------|
+| 1 | Kill connections hardcodes =--host localhost=    | ores-dashboard.el:546 | Applied  | Added =pg-host= binding reading =PGHOST= from =.env= alist (fallback =localhost=). Fixed in 2832519e0.        |
+| 2 | Teardown DB hardcodes =--host localhost=         | ores-dashboard.el:562 | Applied  | Same fix as #1. Fixed in 2832519e0.                                                                           |
+| 3 | Recreate environment shows =dbn= but ignores it | ores-dashboard.el:580 | Applied  | Reverted confirmation to =ores_dev_<label>=; =ores-db/--run-recreate-env= uses label naming, not =ORES_DATABASE_NAME=. Fixed in 2832519e0. |
+
+* Result

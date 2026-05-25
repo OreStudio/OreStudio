@@ -642,7 +642,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
             (let ((lbl label)
                   (s   (expand-file-name "build/scripts/start-services.sh" root))
                   (r   root) (db dash-buf))
-              (lambda (_) (ores/dashboard--compile lbl s "start-services" r db))))
+              (lambda (_) (ores/dashboard--compile lbl (concat "setsid " s) "start-services" r db))))
            (ores/dashboard--mkitem
             "Start client" 'nerd-icons-faicon "nf-fa-play_circle"
             (let ((lbl label) (r root) (db dash-buf))

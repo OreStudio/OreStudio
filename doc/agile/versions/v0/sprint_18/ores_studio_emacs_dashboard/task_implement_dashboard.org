@@ -48,9 +48,42 @@ env binding, 11 command sections, bookmarks, recipe links, and ORE shell.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Implemented =ores-dashboard.el= as a =special-mode=-derived major mode
+rather than using the =emacs-dashboard= framework, as the card/box layout
+required full control over rendering.
+
+Key design choices:
+
+- *Rendering*: Custom box-drawing characters (┌─┐ ├─┤ └─┘ │) produce a
+  3-column card grid. =ores/dashboard--group-cells= builds equal-height
+  cell columns; =ores/dashboard--render-row= inserts them side by side.
+  Text properties carry =ores/action= lambdas; =RET= and mouse-1 dispatch
+  via =ores/dashboard--activate=.
+
+- *Keyboard shortcuts*: =ores/dashboard--alloc-key= assigns =a=–=z= then
+  =A=–=Z= globally across all items during render. Each action is wrapped
+  in an interactive lambda and registered in a per-render sparse keymap
+  =ores/dashboard--item-keys=. After render, =use-local-map= activates a
+  =make-composed-keymap= of item keys over =ores/dashboard-mode-map= so
+  =g= and =q= still work.
+
+- *Env binding*: =default-directory= is set to checkout root on the buffer
+  at open time. All action lambdas close over =root= and =env= captured
+  during =ores/dashboard--render=.
+
+- *Output display*: =ores/dashboard--display= calls =switch-to-buffer= +
+  =delete-other-windows= so output always fills the full frame, matching
+  the dashboard layout.
+
+- *DB connections*: =ores-db/setup-connections= populates per-service
+  connections; a postgres superuser entry is added pointing to
+  =ores_dev_<label>=. =cl-letf= overrides =read-passwd= inside
+  =sql-connect= so the alist password is used silently without prompting.
+  =PGPASSWORD= is also injected into =process-environment= for the psql
+  subprocess.
+
+- *Project structure*: All =.el= sources moved to =projects/ores.lisp/src/=;
+  =modeling/component_overview.org= written. =.build-site.el= path updated.
 
 * Notes
 

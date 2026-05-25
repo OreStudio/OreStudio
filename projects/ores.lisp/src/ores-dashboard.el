@@ -34,6 +34,7 @@
 (require 'ores-shell)
 (require 'ores-db)
 (require 'transient)
+(require 'sql)
 
 ;; ---------------------------------------------------------------------------
 ;; Faces
@@ -452,6 +453,8 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
 (defun ores/dashboard--start-client-do ()
   "Launch ores.qt using the options chosen in the transient."
   (interactive)
+  (unless ores/dashboard--client-context
+    (user-error "No client context — invoke Start client from the dashboard"))
   (let* ((ctx     ores/dashboard--client-context)
          (root    (nth 0 ctx))
          (label   (nth 1 ctx))

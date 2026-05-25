@@ -13,7 +13,7 @@
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
-#+updated: 2026-05-25
+#+updated: 2026-05-26
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,12 +28,12 @@ env binding, 11 command sections, bookmarks, recipe links, and ORE shell.
 
 | Field        | Value                                            |
 |--------------+--------------------------------------------------|
-| State        | STARTED                                          |
+| State        | DONE                                             |
 | Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                       |
-| Now          | =ores-dashboard.el= written; wired into =.dir-locals.el=. |
-| Waiting on   | PR review.                                       |
-| Next         | Shepherd PR to merge.                            |
-| Last touched | 2026-05-25                                       |
+| Now          | Implemented and shipped on PR #831.              |
+| Waiting on   | Nothing.                                         |
+| Next         | Nothing.                                         |
+| Last touched | 2026-05-26                                       |
 
 * Acceptance
 
@@ -56,9 +56,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                            |
+|-----+------------------------------------------------------------------|
+| 831 | [ores.lisp] Implement ores-dashboard.el — ORE Studio dev console |
 
 * Review
 
@@ -67,3 +67,20 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+=projects/ores.lisp/src/ores-dashboard.el= implemented as a
+=special-mode=-derived major mode with:
+
+- 11 card groups: Environment, Database, Services, Compass, Build, Site,
+  Skills, Bookmarks, Links, Shell, NATS.
+- Global keyboard shortcuts =a=–=z=/=A=–=Z= assigned to every item;
+  each label shows its key as a dimmed =(x)= suffix.
+- Env-aware: binds to the checkout =.env= via =ores-env.el=; default-directory
+  set to checkout root so all action lambdas resolve project-current correctly.
+- Database card: full SQL connection picker with per-service PGPASSWORD
+  injection; postgres superuser connects to =ores_dev_<label>=; Kill
+  connections, Teardown DB, Recreate DB, Recreate environment items.
+- NATS card: Init NATS and Init NATS + provision.
+- Output always shown full-frame via =switch-to-buffer= + =delete-other-windows=.
+- =ores.lisp= sources moved to =src/=; =modeling/component_overview.org= added.
+- =.build-site.el= path updated to follow the =src/= move.

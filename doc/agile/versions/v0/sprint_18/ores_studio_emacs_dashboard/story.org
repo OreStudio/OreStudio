@@ -8,7 +8,7 @@
 #+level: s2
 #+filetags: :emacs:lisp:dashboard:sprint_18:v0:
 #+created: 2026-05-24
-#+updated: 2026-05-24
+#+updated: 2026-05-26
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -26,12 +26,12 @@ offers an ORE Studio shell, and shows the ORE splash image.
 
 | Field         | Value                                      |
 |---------------+--------------------------------------------|
-| State         | STARTED                                    |
+| State         | DONE                                       |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                  |
-| Now           | Tasks scaffolded; [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][audit/design task]] first.  |
+| Now           | Dashboard implemented and shipped; PR #831.|
 | Waiting on    | Nothing.                                   |
-| Next          | Begin [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][task_audit_and_design]].              |
-| Last touched  | 2026-05-24                                 |
+| Next          | Nothing.                                   |
+| Last touched  | 2026-05-26                                 |
 
 * Acceptance
 
@@ -61,12 +61,15 @@ In execution order:
 
 * Decisions
 
-- Use =emacs-dashboard= as the host framework rather than a custom
-  buffer, so ORE commands land in an established, maintainable widget
-  system.
+- Used a custom =special-mode=-derived major mode rather than =emacs-dashboard=:
+  the card/box layout, keyboard shortcuts, and full-frame output display
+  are all home-grown and tightly fitted to ORE Studio's needs.
 - Dashboard is dev-only; no production-environment integration.
-- Each Emacs instance reads =.env= at load time — no global singleton
-  that could leak state between checkouts.
+- Each Emacs instance reads =.env= at load time; =default-directory= is
+  set to the checkout root on the buffer so =project-current= always
+  resolves correctly from action lambdas.
+- All =.el= sources moved to =projects/ores.lisp/src/=; =modeling/=
+  directory added with =component_overview.org=.
 
 * Out of scope
 

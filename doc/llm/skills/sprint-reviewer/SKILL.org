@@ -81,14 +81,14 @@ project the total at sprint close (typically 7 days from start).
 *** PR velocity
 
 #+begin_src sh :results verbatim
-projects/ores.compass/compass.sh fleet -f json 2>/dev/null
+$(git rev-parse --show-toplevel)/projects/ores.compass/compass.sh fleet -f json 2>/dev/null
 #+end_src
 
 Also run:
 
 #+begin_src sh :results verbatim
-git log --oneline --all --since=<sprint-start-date> | grep "Merge pull request" | wc -l
-git log --oneline --all --since=<sprint-start-date> | grep "Merge pull request"
+gh pr list --state merged --search "merged:>=<sprint-start-date>" --limit 100
+gh pr list --state merged --search "merged:>=<sprint-start-date>" --limit 100 | wc -l
 #+end_src
 
 Identify: PRs merged per day, open PRs (from =compass fleet=), any
@@ -119,9 +119,9 @@ advances it.
 Targets: ≤ 300 commits, ≤ 7 days.
 - Commits so far, elapsed days, commits/day average.
 - Projected total at close (commits/day × remaining days).
-- Verdict: under 250 = GREEN; 250–350 = AMBER; over 350 = RED.
-  A sprint that is slightly over is amber, not automatically red —
-  these are soft thresholds.
+- Verdict: ≤ 300 = GREEN; 301–400 = AMBER; over 400 = RED.
+  A sprint that is slightly over target is amber, not automatically
+  red — these are soft thresholds.
 
 Challenge: is the commit rate sustainable? Are bursts hiding idle
 periods? Is the per-day average masking a sprint that started fast
@@ -220,11 +220,13 @@ Format:
 After writing, confirm the section replaced (not appended) and
 report the file path.
 
-** Step 5 — Update the task
+** Step 5 — Update agile paperwork
 
-Update the =task_implement_sprint_reviewer.org= status to STARTED
-(if running for the first time) or leave it DONE if the skill is
-complete.
+If the sprint has a sprint-health-review story and task in its
+directory, update their =State= and =Now= fields to reflect the
+review having been run. This step is optional and context-dependent —
+skip it if the review is being run informally or the story does not
+exist.
 
 * Sprint template note
 

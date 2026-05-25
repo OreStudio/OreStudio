@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 4E375DD6-E300-4A0A-BD20-3D06AC8ED7A1
+:END:
+#+title: Story: Port domain concept notes to knowledge documents
+#+description: Tidy personal notes on finance/ORE domain concepts into v2 knowledge documents under doc/knowledge/domain, splitting by topic and aligning terminology with ORE Studio terms.
+#+type: story
+#+version: 2
+#+level: s2
+#+category: enabler
+#+filetags: :knowledge:domain:finance:ore:sprint_18:v0:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Convert nine personal domain notes from =/home/marco/Development/Notebooks/summaries/= into v2 knowledge documents under =doc/knowledge/domain/=. The notes cover FX volatility surfaces, compute infrastructure, P&L attribution, pricing configuration, rates and curves bootstrapping, reporting, risk reporting, time structures/tenors, and the trade blotter. They need to be split where appropriate, cross-linked, and updated to use ORE Studio terminology (e.g. "compute engine" rather than "grid", ORE Studio's report/batch concepts rather than generic "job" language).
+
+* Status
+
+| Field         | Value                                        |
+|---------------+----------------------------------------------|
+| State         | STARTED                                      |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                    |
+| Now           | Survey and port in progress.                 |
+| Waiting on    | Nothing.                                     |
+| Next          | Complete first task; raise PR.               |
+| Last touched  | 2026-05-25                                   |
+
+* Acceptance
+
+- All nine source notes processed; none silently dropped.
+- =reporting.org= (already marked superseded) merged into the
+  =risk-reporting= and =pl-attribution= documents — not ported as a
+  standalone doc.
+- Each resulting knowledge document is a valid v2 =.org= file with
+  correct frontmatter (=#+type: knowledge=, UUID, =#+filetags:=, etc.).
+- Documents placed under =doc/knowledge/domain/= with one file per
+  coherent concept; a note that covers two distinct concepts is split
+  into two files with a cross-link between them.
+- Grid/job terminology updated to ORE Studio equivalents:
+  - "grid" → "compute engine"
+  - "Job Set Definition / Job Definition" → ORE Studio batch/run concepts
+    (or explicitly noted as an unresolved mapping if no equivalent exists yet)
+  - "trade blotter" section cross-linked to the ORE Studio Qt UI concepts
+    (=TradeDetailDialog=, instrument view) where applicable.
+- Every new knowledge doc linked from =doc/knowledge/domain/knowledge.org=
+  (or the relevant index) so it is reachable from the graph.
+
+* Tasks
+
+In execution order:
+
+- [[id:FBB4FEE3-5DB0-4404-893E-6FE298E22088][Task: Survey notes and create initial knowledge documents]]
+
+* Decisions
+
+* Out of scope
+
+- Implementing any functionality described in the notes (this story is
+  documentation only).
+- Resolving every terminology gap — notes can flag unresolved mappings for
+  a follow-up story.
+- Porting notes that are not in the =summaries/= directory.

@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: FBB4FEE3-5DB0-4404-893E-6FE298E22088
+:END:
+#+title: Task: Survey notes and create initial knowledge documents
+#+description: Read all nine source notes, decide on document split, create v2 knowledge documents under doc/knowledge/domain/, align terminology with ORE Studio.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :port_domain_concept_notes:sprint_18:v0:
+#+owner: marco
+#+branch: feature/port-domain-concept-notes
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4E375DD6-E300-4A0A-BD20-3D06AC8ED7A1][Port domain concept notes to knowledge documents]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Read all nine source notes under =/home/marco/Development/Notebooks/summaries/=, produce a document split plan, then create the v2 knowledge documents under =doc/knowledge/domain/= with correct frontmatter, cross-links, and ORE Studio-aligned terminology.
+
+* Status
+
+| Field        | Value                                                      |
+|--------------+------------------------------------------------------------|
+| State        | STARTED                                                    |
+| Parent story | [[id:4E375DD6-E300-4A0A-BD20-3D06AC8ED7A1][Port domain concept notes to knowledge documents]]           |
+| Now          | Reading source notes; planning document split.             |
+| Waiting on   | Nothing.                                                   |
+| Next         | Create knowledge documents; raise PR.                      |
+| Last touched | 2026-05-25                                                 |
+
+* Acceptance
+
+- All nine source notes read and accounted for.
+- Document split plan recorded in =* Notes= below before writing begins.
+- All resulting files are valid v2 knowledge documents.
+- Terminology gaps (e.g. "grid", "jobs") either resolved or explicitly
+  flagged inline for follow-up.
+- New docs linked from the domain knowledge index.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+Source files to process (=/home/marco/Development/Notebooks/summaries/=):
+
+| File                           | Status  | Notes                                                      |
+|--------------------------------+---------+------------------------------------------------------------|
+| fx-vol-surface.org             | Pending |                                                            |
+| grid-infrastructure.org        | Pending | Rename: "compute engine". Map job/grid terms to ORE Studio |
+| pl-attribution.org             | Pending |                                                            |
+| pricing-configuration.org      | Pending |                                                            |
+| rates-curves-bootstrapping.org | Pending | May split: rates vs curves vs bootstrapping                |
+| reporting.org                  | Pending | Already superseded; merge into risk-reporting + pl-attribution |
+| risk-reporting.org             | Pending |                                                            |
+| time-structures-tenors.org     | Pending | May split: time structures vs tenor conventions            |
+| trade-blotter.org              | Pending | Cross-link to Qt UI concepts (TradeDetailDialog, etc.)     |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

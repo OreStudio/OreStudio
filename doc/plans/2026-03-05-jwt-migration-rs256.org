@@ -1,5 +1,8 @@
-#+TITLE: JWT Migration to ores.security + RS256
-#+version: 1
+:PROPERTIES:
+:ID: 3D041443-0717-49A9-B3A7-E0262CA3C608
+:END:
+#+title: JWT Migration to ores.security + RS256
+#+version: 2
 #+DATE: 2026-03-05
 #+AUTHOR: ORE Studio Team
 #+STATUS: COMPLETED

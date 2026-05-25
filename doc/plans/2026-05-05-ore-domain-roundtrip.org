@@ -1,5 +1,8 @@
+:PROPERTIES:
+:ID: AF6A4F45-1AFB-46C6-8955-D88F67F9DA91
+:END:
 #+title: ORE Domain Roundtrip Check (Thing 3)
-#+version: 1
+#+version: 2
 #+STATUS: COMPLETE
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+note: Type bridge section updated 2026-05-06 — import/export cleanup (PR #728)

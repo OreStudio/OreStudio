@@ -2,7 +2,7 @@
 :ID: A7F3E1C2-8D4A-4B91-9E6F-2C1D8F5A3B70
 :END:
 #+title: IAM Generators and Test Migration
-#+version: 1
+#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

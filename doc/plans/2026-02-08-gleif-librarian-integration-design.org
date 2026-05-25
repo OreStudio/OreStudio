@@ -2,7 +2,7 @@
 :ID: 5C83C9D5-F4AE-4707-BA7A-85D82FB2292B
 :END:
 #+title: GLEIF Dataset Librarian Integration Design
-#+version: 1
+#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

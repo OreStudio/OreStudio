@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 001f63b6-c4e8-4dd2-b680-364393b15d51
+:ID: 001F63B6-C4E8-4DD2-B680-364393B15D51
 :END:
 #+title: Task: Add CMake target to build user manual PDF and commit it
 #+description: Follow the existing deploy_site pattern to add a deploy_manual CMake target that runs Emacs/LaTeX to export user_manual.org as PDF. Commit the PDF and add a download link.
@@ -16,7 +16,7 @@
 #+updated: 2026-05-24
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:c42c3563-671f-4721-8ce8-5ee05925255f][Build and publish user manual PDF via CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

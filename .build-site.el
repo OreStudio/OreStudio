@@ -202,21 +202,28 @@
 
 (condition-case err
     (progn
-      (org-publish-all t)
-      (ores-deploy-org-roam-ui "./build/output/site/OreStudio")
-      ;; Sync org-roam DB (mirrors .dir-locals.el project-local settings)
+      ;; Sync org-roam DB before publishing so id: links are resolvable
       (setq org-roam-directory (expand-file-name "./"))
       (setq org-roam-db-location (expand-file-name "./.org-roam.db"))
       (setq org-roam-file-exclude-regexp
             "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui")
       (require 'org-roam)
-      (org-roam-db-sync)
-      (load-file (expand-file-name "./projects/ores.lisp/ores-org-roam-export.el"))
-      (ores/org-roam-export-graph-json
-       (expand-file-name "./.org-roam.db")
-       (expand-file-name "./build/output/site/OreStudio/graph/graphdata.json")
-       (expand-file-name "./")
-       "/OreStudio/")
+      (condition-case roam-err
+          (org-roam-db-sync)
+        (error (message "Warning: org-roam DB sync failed: %s"
+                        (error-message-string roam-err))))
+      (org-publish-all nil)
+      (ores-deploy-org-roam-ui "./build/output/site/OreStudio")
+      (condition-case roam-err
+          (progn
+            (load-file (expand-file-name "./projects/ores.lisp/ores-org-roam-export.el"))
+            (ores/org-roam-export-graph-json
+             (expand-file-name "./.org-roam.db")
+             (expand-file-name "./build/output/site/OreStudio/graph/graphdata.json")
+             (expand-file-name "./")
+             "/OreStudio/"))
+        (error (message "Warning: org-roam graph export skipped: %s"
+                        (error-message-string roam-err))))
       (message "Build succeeded.")
       (kill-emacs 0))
   (error

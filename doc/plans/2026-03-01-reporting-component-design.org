@@ -2,7 +2,7 @@
 :ID: A3F7C812-5E2D-4B9A-8C1F-6D0E3A7B2F4C
 :END:
 #+title: Reporting Component Design
-#+version: 1
+#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

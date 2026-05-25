@@ -2,7 +2,7 @@
 :ID: F703B8AE-BD05-4B55-9E18-856F61920DDD
 :END:
 #+title: Compute Wrapper Design
-#+version: 1
+#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

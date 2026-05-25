@@ -1,5 +1,8 @@
-#+TITLE: UML Model Refresh
-#+version: 1
+:PROPERTIES:
+:ID: F806E77A-A8CC-4683-9563-06EE5DE3644F
+:END:
+#+title: UML Model Refresh
+#+version: 2
 #+SUBTITLE: Bring all component class diagrams up to date; introduce a generation script
 #+DATE: 2026-05-19
 #+AUTHOR: ORE Studio Team

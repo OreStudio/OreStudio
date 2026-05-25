@@ -1,5 +1,8 @@
-#+TITLE: Service Account RBAC Design
-#+version: 1
+:PROPERTIES:
+:ID: DC79D8CE-FBEB-4FC9-9DB5-D39724F2DF86
+:END:
+#+title: Service Account RBAC Design
+#+version: 2
 #+DATE: 2026-03-28
 #+AUTHOR: ORE Studio Team
 #+STATUS: REVISED 2026-05-13

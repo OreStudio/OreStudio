@@ -1,6 +1,9 @@
+:PROPERTIES:
+:ID: 5DDB8AD7-DEC7-4706-A1CE-B547A6CE0951
+:END:
 # -*- mode: org; indent-tabs-mode: nil -*-
-#+TITLE: Compute Grid Design Plan
-#+version: 1
+#+title: Compute Grid Design
+#+version: 2
 #+DATE: 2026-03-20
 #+AUTHOR: Marco Craveiro
 #+STATUS: COMPLETED

@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :plans:index:knowledge:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-05-24
 
 These are pre-sprint design documents written during or before implementation.
 They are kept for historical context — to understand why a decision was made
@@ -19,89 +19,89 @@ Active work lives in the [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][agile proces
 
 |       Date | Plan                                                                             | Status      |
 |------------+----------------------------------------------------------------------------------+-------------|
-| 2026-02-02 | Enum Table Tenancy Consolidation                                                 |             |
-| 2026-02-07 | Party & Counterparty SQL Support Design                                          | COMPLETED   |
-| 2026-02-08 | GLEIF Dataset Librarian Integration Design                                       |             |
-| 2026-02-09 | Party-Level Isolation and Tenant Types Design                                    | COMPLETED   |
-| 2026-02-11 | Librarian Party & Counterparty Publication Design                                |             |
-| 2026-02-14 | Generation Context Design                                                        | COMPLETED   |
-| 2026-02-15 | IAM Generators and Test Migration                                                | COMPLETED   |
-| 2026-02-16 | Trade Envelope and FSM Design                                                    |             |
-| 2026-02-22 | CLI Domain Sub-menus Design                                                      | COMPLETED   |
-| 2026-02-22 | Currency Taxonomy Enhancement: Asset Class and Market Tier                       | COMPLETED   |
-| 2026-02-27 | ORE Import Wizard Design                                                         | COMPLETED   |
-| 2026-03-01 | Reporting Component Design                                                       |             |
-| 2026-03-03 | Party Codename and Queue Isolation Design                                        |             |
-| 2026-03-05 | JWT Migration to ores.security + RS256                                           | COMPLETED   |
-| 2026-03-13 | NATS Migration: Binary Protocol to NATS/JetStream                                | COMPLETED   |
-| 2026-03-14 | NATS Idiomatic Architecture: Drop Binary Protocol, Adopt MessagePack + JetStream | COMPLETED   |
-| 2026-03-16 | NATS Monitor Design                                                              |             |
-| 2026-03-16 | NATS Multi-Tenancy and Multi-Party Design                                        | COMPLETED   |
-| 2026-03-20 | Compute Grid Design                                                              | COMPLETED   |
-| 2026-03-20 | Compute Wrapper Design                                                           | COMPLETED   |
-| 2026-03-20 | JWT Token Refresh: Configurable Lifetimes, Proactive Renewal                     | COMPLETED   |
-| 2026-03-20 | System Settings Unification: Replace Feature Flags with Typed System Settings    | COMPLETED   |
-| 2026-03-21 | Compute Grid End-to-End Improvements                                             | COMPLETED   |
-| 2026-03-21 | Compute Grid Telemetry Design                                                    | COMPLETED   |
-| 2026-03-22 | Service Architecture Migration                                                   | COMPLETED   |
-| 2026-03-22 | Secure Provenance Stamping                                                       | COMPLETED   |
-| 2026-03-23 | Move Synthetic Generators to API Layer                                           | COMPLETED   |
-| 2026-03-26 | CDM-Inspired Instrument Domain Model                                             |             |
-| 2026-03-26 | Compute Console UI Refactor                                                      |             |
-| 2026-03-27 | Compute Console Rework                                                           |             |
-| 2026-03-27 | Service-to-Service Authentication Design                                         | DRAFT       |
-| 2026-03-28 | Database-Driven Badge System Design                                              |             |
-| 2026-03-28 | CDM-Inspired Instrument Domain Model — Phase 2                                   |             |
-| 2026-03-28 | Service Account RBAC Design                                                      |             |
-| 2026-03-29 | ORE Instrument Mappers — Phase 9                                                 |             |
-| 2026-03-30 | Service-to-Service JWT Delegation                                                | DRAFT       |
-| 2026-03-31 | Instrument-Trade Model Refactor and ORE Portfolio Export                         |             |
-| 2026-03-31 | ORE Market Data Domain Model                                                     |             |
-| 2026-03-31 | ORE Market Data File Types — Phase 1                                             |             |
-| 2026-03-31 | ORE Trading Instrument Support — Complete Implementation                         |             |
-| 2026-04-01 | Asset Class Unification                                                          |             |
-| 2026-04-01 | Unified Trade + Instrument Detail Dialog                                         | DONE        |
-| 2026-04-03 | Server-Side ORE Import                                                           | IN PROGRESS |
-| 2026-04-05 | Report Definition to Instance Pipeline                                           | COMPLETED   |
-| 2026-04-05 | Report Execution Pipeline                                                        | DRAFT       |
-| 2026-04-05 | Workflow Engine Generalisation                                                   | IN PROGRESS |
-| 2026-04-06 | Report Execution Workflow — Implementation Plan                                  | IN PROGRESS |
-| 2026-04-07 | Data-Driven TradeDetailDialog Refactor                                           | DONE        |
-| 2026-04-08 | Qt QPluginLoader Architecture Migration                                          |             |
-| 2026-04-08 | Unified Service Hosting                                                          | IN PROGRESS |
-| 2026-04-08 | UTC-Everywhere Timestamp Enforcement                                             |             |
-| 2026-04-09 | Instrument Tables Redesign — Standalone Asset-Class Tables                       |             |
-| 2026-04-10 | Scheduler Real-Time UI                                                           | DONE        |
-| 2026-04-10 | Workflow Monitor — Design & Implementation Plan                                  |             |
-| 2026-04-21 | FX Forward ORE Import End-to-End Wiring                                          |             |
-| 2026-04-21 | ORE Import: Conventions Persistence & Full Import Pipeline                       | IN PROGRESS |
-| 2026-04-22 | Equity Per-Type Instrument Migration                                             | DONE        |
-| 2026-05-05 | ORE Import / Export Code Cleanup                                                 | COMPLETE    |
-| 2026-05-05 | ORE Domain Roundtrip Check                                                       | COMPLETE    |
-| 2026-05-12 | Strict Service Table Isolation                                                   | COMPLETE    |
-| 2026-05-13 | Cross-Service Write Decoupling                                                   | DONE        |
-| 2026-05-13 | PostgreSQL Identifier Length Cleanup                                             | COMPLETE    |
-| 2026-05-13 | Symbol Visibility Migration                                                      | COMPLETE    |
-| 2026-05-14 | Codegen SQL Debt — Hand-Written Files with Existing Models                       | COMPLETE    |
-| 2026-05-14 | DQ Publish Pattern — Architecture and Decision                                   | IN PROGRESS |
-| 2026-05-14 | Workflow Engine Hardening                                                        | COMPLETE    |
-| 2026-05-15 | Login Dialog Label Filter                                                        |             |
-| 2026-05-15 | ORE Import Error Reporting and Step Warning State                                | COMPLETE    |
-| 2026-05-15 | Qt Plugin Isolation: Cross-Plugin Symbol Dependencies                            | COMPLETE    |
-| 2026-05-16 | Controller Startup and Shutdown Latency Fix                                      | DONE        |
-| 2026-05-16 | Data Import Session and Workflow Partial-Success                                 | PROPOSED    |
-| 2026-05-17 | MSVC C1202 — Decompose trade into Sub-Structs                                    | IN PROGRESS |
-| 2026-05-17 | Shared audit_record and Codegen Composite-Type Support                           | DRAFT       |
-| 2026-05-17 | Tenant and System Bootstrap Reset                                                | DONE        |
-| 2026-05-17 | Virtual Portfolio Design                                                         | PROPOSED    |
-| 2026-05-17 | Workspace — Isolated Data Context Design                                         |             |
-| 2026-05-18 | Codegen IAM Permissions and Roles Population                                     | PROPOSED    |
-| 2026-05-18 | Menu Structure Analysis and Simplification                                       | IN PROGRESS |
-| 2026-05-19 | Qt Trading Codegen Drift Remediation                                             | IN PROGRESS |
-| 2026-05-19 | UML Model Refresh                                                                | IN PROGRESS |
-| 2026-05-19 | Workspace ID Codegen Propagation                                                 | COMPLETE    |
-| 2026-05-20 | Refdata C++ Codegen: Activate Domain/Generator/Repository                        | TODO        |
-| 2026-05-20 | Refdata Party Domain: tenant_id Strong-Type Migration                            | DONE        |
-| 2026-05-21 | Tagged v1/v2 Coexistence — Merge doc/v2/ and Add Version Markers                 |             |
-| 2026-05-21 | Entity Creator Skills Overhaul                                                   | TODO        |
-| 2026-05-21 | Entity Creator Skills: v1 → v2 Migration                                         | TODO        |
+| 2026-02-02 | [[id:8917A5A9-D7CA-4B52-9B19-329BBE8315D6][Enum Table Tenancy Consolidation]]                                                 |             |
+| 2026-02-07 | [[id:9A726128-0E7E-4A82-A61B-C6B1C5CFC070][Party & Counterparty SQL Support Design]]                                          | DONE        |
+| 2026-02-08 | [[id:5C83C9D5-F4AE-4707-BA7A-85D82FB2292B][GLEIF Dataset Librarian Integration Design]]                                       |             |
+| 2026-02-09 | [[id:046217E8-7259-492B-A713-A4043C867FE5][Party-Level Isolation and Tenant Types Design]]                                    | DONE        |
+| 2026-02-11 | [[id:7A3D1E52-B8F4-4C91-A9E7-6F2C3D841B05][Librarian Party & Counterparty Publication Design]]                                |             |
+| 2026-02-14 | [[id:9392F2F3-6ECF-4BD7-82D8-9B88175ABFBA][Generation Context Design]]                                                        | DONE        |
+| 2026-02-15 | [[id:A7F3E1C2-8D4A-4B91-9E6F-2C1D8F5A3B70][IAM Generators and Test Migration]]                                                | DONE        |
+| 2026-02-16 | [[id:EEC13CF9-9665-4BF0-B18D-8801275709CD][Trade Envelope and FSM Design]]                                                    |             |
+| 2026-02-22 | [[id:B7D4E2A1-3C9F-4E8B-A5D2-1F6B8C0E3A94][CLI Domain Sub-menus Design]]                                                      | DONE        |
+| 2026-02-22 | [[id:B3E7F2A1-9C5D-4E82-AF1B-7D8C3E6B0F24][Currency Taxonomy Enhancement: Asset Class and Market Tier]]                       | DONE        |
+| 2026-02-27 | [[id:8F3A1C2E-4B7D-4E9F-A1C3-2D5E6F8A0B1C][ORE Import Wizard Design]]                                                         | DONE        |
+| 2026-03-01 | [[id:A3F7C812-5E2D-4B9A-8C1F-6D0E3A7B2F4C][Reporting Component Design]]                                                       |             |
+| 2026-03-03 | [[id:B4E2F931-7A1C-4D8E-9B3F-5C0D6A8E1F2B][Party Codename and Queue Isolation Design]]                                        |             |
+| 2026-03-05 | [[id:3D041443-0717-49A9-B3A7-E0262CA3C608][JWT Migration to ores.security + RS256]]                                           | DONE        |
+| 2026-03-13 | [[id:D7D33E74-F42C-4908-BC5C-BC2BF652D0B5][NATS Migration: Binary Protocol to NATS/JetStream]]                                | DONE        |
+| 2026-03-14 | [[id:10A1F61F-859E-4ACE-BE8C-361E404AE2A5][NATS Idiomatic Architecture: Drop Binary Protocol, Adopt MessagePack + JetStream]] | DONE        |
+| 2026-03-16 | [[id:A3F2E1D0-B4C5-6789-ABCD-EF0123456789][NATS Monitor Design]]                                                              |             |
+| 2026-03-16 | [[id:4E762126-2152-11F1-B1D1-40B0768014EB][NATS Multi-Tenancy and Multi-Party Design]]                                        | DONE        |
+| 2026-03-20 | [[id:5DDB8AD7-DEC7-4706-A1CE-B547A6CE0951][Compute Grid Design]]                                                              | DONE        |
+| 2026-03-20 | [[id:F703B8AE-BD05-4B55-9E18-856F61920DDD][Compute Wrapper Design]]                                                           | DONE        |
+| 2026-03-20 | [[id:03FA2F6D-9920-4BA1-A895-F8F796C94789][JWT Token Refresh: Configurable Lifetimes, Proactive Renewal]]                     | DONE        |
+| 2026-03-20 | [[id:8219C384-3CD8-449B-A0C1-40E7C36316C1][System Settings Unification: Replace Feature Flags with Typed System Settings]]    | DONE        |
+| 2026-03-21 | [[id:7A4E9C1B-3F2D-4E8A-B6D5-0C1E2F3A4B5C][Compute Grid End-to-End Improvements]]                                             | DONE        |
+| 2026-03-21 | [[id:7E3F9A2B-4C81-4D5E-8F2A-1B9C3D4E5F6A][Compute Grid Telemetry Design]]                                                    | DONE        |
+| 2026-03-22 | [[id:7F3A8B21-4C9E-4E5B-B2D0-3F8A9C6D1E4F][Service Architecture Migration]]                                                   | DONE        |
+| 2026-03-22 | [[id:7F3A1B2C-8D4E-4F5A-9B6C-1D2E3F4A5B6C][Secure Provenance Stamping]]                                                       | DONE        |
+| 2026-03-23 | [[id:B3F7D2A1-9C5E-4D82-8B1F-3E6A7C4F1D90][Move Synthetic Generators to API Layer]]                                           | DONE        |
+| 2026-03-26 | [[id:A3F2C1D0-AB12-11F1-8E4A-40B0768014EB][CDM-Inspired Instrument Domain Model]]                                             |             |
+| 2026-03-26 | [[id:C57242F9-3D75-43DB-9D09-31EA5F147CC4][Compute Console UI Refactor]]                                                      |             |
+| 2026-03-27 | [[id:8FBACF31-CFFC-4C98-9964-92B58952FC69][Compute Console Rework]]                                                           |             |
+| 2026-03-27 | [[id:E11C4C56-5722-4A5B-9779-7BE2C658A3EF][Service-to-Service Authentication Design]]                                         | DRAFT       |
+| 2026-03-28 | [[id:7E4B1C93-2F8A-4D56-B3E7-9A0C5F812D6E][Database-Driven Badge System Design]]                                              |             |
+| 2026-03-28 | [[id:B7E4D2A1-CD23-11F1-9F1E-40B0768014EB][CDM-Inspired Instrument Domain Model — Phase 2]]                                   |             |
+| 2026-03-28 | [[id:DC79D8CE-FBEB-4FC9-9DB5-D39724F2DF86][Service Account RBAC Design]]                                                      |             |
+| 2026-03-29 | [[id:C9E3A2F4-DE45-11F1-B02C-40B0768014EB][ORE Instrument Mappers — Phase 9]]                                                 |             |
+| 2026-03-30 | [[id:4B02695C-7C59-487A-8450-4240EC836685][Service-to-Service JWT Delegation]]                                                | DRAFT       |
+| 2026-03-31 | [[id:D4D975DB-A525-45E3-B383-581E51AEA8DB][Instrument-Trade Model Refactor and ORE Portfolio Export]]                         |             |
+| 2026-03-31 | [[id:9F3C2D87-5B14-4E8A-B6D1-0A7C3F921E45][ORE Market Data Domain Model]]                                                     |             |
+| 2026-03-31 | [[id:F4A17B30-FE81-11F0-A3C4-40B0768014EB][ORE Market Data File Types — Phase 1]]                                             |             |
+| 2026-03-31 | [[id:E3663D45-AE04-42AE-B588-06DCAE4DE119][ORE Trading Instrument Support — Complete Implementation]]                         |             |
+| 2026-04-01 | [[id:4A7E9C12-3B85-4F2D-A8D6-1C5E0B734F92][Asset Class Unification]]                                                          |             |
+| 2026-04-01 | [[id:B0D35884-6703-4889-8B47-ED0E279F5E2F][Unified Trade + Instrument Detail Dialog]]                                         | DONE        |
+| 2026-04-03 | [[id:40F4FC83-3552-4788-8520-1570A74A8BCA][Server-Side ORE Import]]                                                           | IN PROGRESS |
+| 2026-04-05 | [[id:A3F7C2D1-8E4B-4F9A-B6C3-2D1E8F5A7B9C][Report Definition to Instance Pipeline]]                                           | DONE        |
+| 2026-04-05 | [[id:B4E8D3F2-9C5A-4B7E-C7D4-3E2F9A6C8D0E][Report Execution Pipeline]]                                                        | DRAFT       |
+| 2026-04-05 | [[id:C5F9E4A3-0D6B-5C8F-D8E5-4F3A0B7D9E1F][Workflow Engine Generalisation]]                                                   | IN PROGRESS |
+| 2026-04-06 | [[id:D7E2F1A3-4B8C-5D9E-A6F3-1C0D8E7B4A2F][Report Execution Workflow — Implementation Plan]]                                  | IN PROGRESS |
+| 2026-04-07 | [[id:AB46A15C-A46C-4317-8563-A3674BEE83AF][Data-Driven TradeDetailDialog Refactor]]                                           | DONE        |
+| 2026-04-08 | [[id:720D74A0-DAD3-4F11-BC5F-AD78BF5A9DD2][Qt QPluginLoader Architecture Migration]]                                          |             |
+| 2026-04-08 | [[id:1411D94A-24FA-4164-AD75-F3CE7415903B][Unified Service Hosting]]                                                          | IN PROGRESS |
+| 2026-04-08 | [[id:3268BB6F-E87B-4EDD-B622-015888C1A6D3][UTC-Everywhere Timestamp Enforcement]]                                             |             |
+| 2026-04-09 | [[id:8F82C72D-CB65-45A8-AD91-3DBDFBD4BEDE][Instrument Tables Redesign — Standalone Asset-Class Tables]]                       |             |
+| 2026-04-10 | [[id:8B8E0568-AF14-4820-B7AD-6FCA99C40626][Scheduler Real-Time UI]]                                                           | DONE        |
+| 2026-04-10 | [[id:3453C341-C060-4FE8-9F14-6B4A8570F308][Workflow Monitor — Design & Implementation Plan]]                                  |             |
+| 2026-04-21 | [[id:982EC471-A825-45C1-982F-38681A2C14FD][FX Forward ORE Import End-to-End Wiring]]                                          |             |
+| 2026-04-21 | [[id:7D4E1A08-1F3E-11F2-B4B1-40B0768014EB][ORE Import: Conventions Persistence & Full Import Pipeline]]                       | IN PROGRESS |
+| 2026-04-22 | [[id:091B481F-914A-43D3-B86B-58E35ED0E463][Equity Per-Type Instrument Migration]]                                             | DONE        |
+| 2026-05-05 | [[id:E2401716-C8B1-4FEA-8DB9-8EB4877328C8][ORE Import / Export Code Cleanup]]                                                 | DONE        |
+| 2026-05-05 | [[id:AF6A4F45-1AFB-46C6-8955-D88F67F9DA91][ORE Domain Roundtrip Check]]                                                       | DONE        |
+| 2026-05-12 | [[id:27A575D3-DB84-411D-B3C0-58122128E424][Strict Service Table Isolation]]                                                   | DONE        |
+| 2026-05-13 | [[id:004B427A-2B3E-4556-8345-A72251238202][Cross-Service Write Decoupling]]                                                   | DONE        |
+| 2026-05-13 | [[id:7BBA5627-F13D-4BFC-9E03-C15B61A11AD5][PostgreSQL Identifier Length Cleanup]]                                             | DONE        |
+| 2026-05-13 | [[id:F2A4C6E8-B1D3-4E5F-A7B9-2C4D6E8F0A1B][Symbol Visibility Migration]]                                                      | DONE        |
+| 2026-05-14 | [[id:05661A18-616C-4C39-8A88-BFBB4C68FD2E][Codegen SQL Debt — Hand-Written Files with Existing Models]]                       | DONE        |
+| 2026-05-14 | [[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern — Architecture and Decision]]                                   | IN PROGRESS |
+| 2026-05-14 | [[id:D9143823-DFCD-4208-96BE-8AD647A78C8D][Workflow Engine Hardening]]                                                        | DONE        |
+| 2026-05-15 | [[id:D7F263C4-7A0C-4ABD-85E7-0BD90C0C4D98][Login Dialog Label Filter]]                                                        |             |
+| 2026-05-15 | [[id:E7976556-8EA4-4A54-A414-BE0D11762DEC][ORE Import Error Reporting and Step Warning State]]                                | DONE        |
+| 2026-05-15 | [[id:3125F901-7AC2-421C-8AEF-8C508B0E315B][Qt Plugin Isolation: Cross-Plugin Symbol Dependencies]]                            | DONE        |
+| 2026-05-16 | [[id:45312FEA-BE7D-452E-8432-55E8AD04B3F1][Controller Startup and Shutdown Latency Fix]]                                      | DONE        |
+| 2026-05-16 | [[id:5DAEC346-CB22-4CE1-8293-12A1986AFDB6][Data Import Session and Workflow Partial-Success]]                                 | PROPOSED    |
+| 2026-05-17 | [[id:5319618A-FEB6-46F4-9588-11495CA8E164][MSVC C1202 — Decompose trade into Sub-Structs]]                                    | IN PROGRESS |
+| 2026-05-17 | [[id:1EF768F1-5B86-402F-866A-5CB730F48319][Shared audit_record and Codegen Composite-Type Support]]                           | DRAFT       |
+| 2026-05-17 | [[id:B5EB3B4F-681A-48C9-BAF2-9256FE889A45][Tenant and System Bootstrap Reset]]                                                | DONE        |
+| 2026-05-17 | [[id:AD2D6529-4870-4BD0-9B68-6DF3CCAAFBCA][Virtual Portfolio Design]]                                                         | PROPOSED    |
+| 2026-05-17 | [[id:CEAD2E6A-8C12-489F-B64A-652EE2B81811][Workspace — Isolated Data Context Design]]                                         |             |
+| 2026-05-18 | [[id:847AECEA-D0E6-4D4F-870A-F0E720B49256][Codegen IAM Permissions and Roles Population]]                                     | PROPOSED    |
+| 2026-05-18 | [[id:8F08358F-3909-479A-872D-E1A362F9DF4F][Menu Structure Analysis and Simplification]]                                       | IN PROGRESS |
+| 2026-05-19 | [[id:69FBCA3B-CDFE-43F5-8C4F-4C26B4D19ADD][Qt Trading Codegen Drift Remediation]]                                             | IN PROGRESS |
+| 2026-05-19 | [[id:F806E77A-A8CC-4683-9563-06EE5DE3644F][UML Model Refresh]]                                                                | IN PROGRESS |
+| 2026-05-19 | [[id:827CB04D-AE39-40BA-A291-CAAE5360CD92][Workspace ID Codegen Propagation]]                                                 | DONE        |
+| 2026-05-20 | [[id:8B4C1D2E-93F7-4A68-C5B9-6D0E1F4A2B83][Refdata C++ Codegen: Activate Domain/Generator/Repository]]                        | TODO        |
+| 2026-05-20 | [[id:3A7F2B1C-84E6-4D59-B2A8-5C9E0F3D1A72][Refdata Party Domain: tenant_id Strong-Type Migration]]                            | DONE        |
+| 2026-05-21 | [[id:7305A77A-3A41-42CA-BD1D-227E2FB18DF0][Tagged v1/v2 Coexistence — Merge doc/v2/ and Add Version Markers]]                 |             |
+| 2026-05-21 | [[id:A4B5C6D7-E8F9-0A1B-2C3D-4E5F6A7B8C9D][Entity Creator Skills Overhaul]]                                                   | TODO        |
+| 2026-05-21 | [[id:3F7A2C1D-84BE-4E9F-B261-5C0D9A3E7B48][Entity Creator Skills: v1 → v2 Migration]]                                         | TODO        |

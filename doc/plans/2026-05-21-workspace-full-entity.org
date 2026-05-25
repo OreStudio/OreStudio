@@ -1,3 +1,6 @@
+:PROPERTIES:
+:ID: B9A1498E-5903-4C82-8A19-3CE43A0BA5FA
+:END:
 #+TITLE: Promote Workspace to Full Standard Entity
 #+DATE: 2026-05-21
 #+STATUS: In Progress

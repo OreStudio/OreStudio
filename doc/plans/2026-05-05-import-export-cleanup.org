@@ -1,5 +1,8 @@
+:PROPERTIES:
+:ID: E2401716-C8B1-4FEA-8DB9-8EB4877328C8
+:END:
 #+title: ORE Import / Export Code Cleanup
-#+version: 1
+#+version: 2
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+status: COMPLETE
 #+completed: 2026-05-06

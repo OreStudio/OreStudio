@@ -1,5 +1,8 @@
-#+TITLE: Tagged v1/v2 Coexistence — Merge doc/v2/ and add #+version: markers
-#+version: 1
+:PROPERTIES:
+:ID: 7305A77A-3A41-42CA-BD1D-227E2FB18DF0
+:END:
+#+title: Tagged v1/v2 Coexistence — Merge doc/v2/ and Add Version Markers
+#+version: 2
 #+AUTHOR: Claude
 #+DATE: 2026-05-21
 

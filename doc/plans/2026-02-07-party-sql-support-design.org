@@ -2,7 +2,7 @@
 :ID: 9A726128-0E7E-4A82-A61B-C6B1C5CFC070
 :END:
 #+title: Party & Counterparty SQL Support Design
-#+version: 1
+#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

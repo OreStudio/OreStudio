@@ -1,5 +1,8 @@
-#+TITLE: Workspace — Isolated Data Context Design
-#+version: 1
+:PROPERTIES:
+:ID: CEAD2E6A-8C12-489F-B64A-652EE2B81811
+:END:
+#+title: Workspace — Isolated Data Context Design
+#+version: 2
 #+SUBTITLE: Self-contained, layered data workspaces within OreStudio; prerequisite for ORE sample import and multi-track data import
 #+DATE: 2026-05-17
 #+AUTHOR: ORE Studio Team

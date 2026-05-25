@@ -1,5 +1,8 @@
-#+TITLE: Service-to-Service JWT Delegation
-#+version: 1
+:PROPERTIES:
+:ID: 4B02695C-7C59-487A-8450-4240EC836685
+:END:
+#+title: Service-to-Service JWT Delegation
+#+version: 2
 #+DATE: 2026-03-30
 #+AUTHOR: ORE Studio Team
 #+STATUS: DRAFT

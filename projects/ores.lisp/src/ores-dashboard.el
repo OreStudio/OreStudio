@@ -33,6 +33,7 @@
 (require 'ores-env)
 (require 'ores-shell)
 (require 'ores-db)
+(require 'transient)
 
 ;; ---------------------------------------------------------------------------
 ;; Faces
@@ -437,6 +438,42 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
     (ores/dashboard--display comp-buf dash-buf)))
 
 ;; ---------------------------------------------------------------------------
+;; Start-client transient
+;;
+;; "Start client" uses setsid so ores.qt survives the compilation shell's
+;; exit.  Without it, Emacs's process-group cleanup kills the child before
+;; the Qt window appears — the log stays empty because the process dies
+;; before it can write anything.
+;; ---------------------------------------------------------------------------
+
+(defvar ores/dashboard--client-context nil
+  "List (root label dash-buf) passed into the start-client transient.")
+
+(defun ores/dashboard--start-client-do ()
+  "Launch ores.qt using the options chosen in the transient."
+  (interactive)
+  (let* ((ctx     ores/dashboard--client-context)
+         (root    (nth 0 ctx))
+         (label   (nth 1 ctx))
+         (dashbuf (nth 2 ctx))
+         (args    (transient-args 'ores/dashboard--start-client-transient))
+         (script  (expand-file-name "build/scripts/start-client.sh" root))
+         (cmd     (concat "setsid " script
+                          (if args
+                              (concat " " (mapconcat #'shell-quote-argument args " "))
+                            ""))))
+    (ores/dashboard--compile label cmd "start-client" root dashbuf)))
+
+(transient-define-prefix ores/dashboard--start-client-transient ()
+  "Start the ORE Studio Qt client."
+  ["Instance"
+   ("-c" "Colour"    "--colour="    :choices ("red" "green" "blue"))
+   ("-n" "Name"      "--name=")
+   ("-l" "Log level" "--log-level=" :choices ("trace" "debug" "info" "warn" "error"))]
+  ["Actions"
+   ("s" "Start" ores/dashboard--start-client-do)])
+
+;; ---------------------------------------------------------------------------
 ;; Group builders — each returns (title icon-fn icon-arg items title-face)
 ;; All use nerd-icons-faicon (Font Awesome 4) for reliable icon availability.
 ;; Colors are Nord palette hues via named deffaces above.
@@ -584,21 +621,31 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
 (defun ores/dashboard--services-group (env root dash-buf)
   (let ((label (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local")))
     (list "Services" 'nerd-icons-faicon "nf-fa-server"
-          (mapcar
-           (lambda (spec)
-             (ores/dashboard--mkitem
-              (nth 0 spec) 'nerd-icons-faicon (nth 3 spec)
-              (let ((lbl label)
-                    (s   (expand-file-name (nth 1 spec)
-                                           (expand-file-name "build/scripts" root)))
-                    (sfx (nth 2 spec))
-                    (r   root)
-                    (db  dash-buf))
-                (lambda (_) (ores/dashboard--compile lbl s sfx r db)))))
-           '(("Start services" "start-services.sh"  "start-services"  "nf-fa-play")
-             ("Start client"   "start-client.sh"    "start-client"    "nf-fa-play_circle")
-             ("Service status" "status-services.sh" "service-status"  "nf-fa-info_circle")
-             ("Stop services"  "stop-services.sh"   "stop-services"   "nf-fa-stop")))
+          (list
+           (ores/dashboard--mkitem
+            "Start services" 'nerd-icons-faicon "nf-fa-play"
+            (let ((lbl label)
+                  (s   (expand-file-name "build/scripts/start-services.sh" root))
+                  (r   root) (db dash-buf))
+              (lambda (_) (ores/dashboard--compile lbl s "start-services" r db))))
+           (ores/dashboard--mkitem
+            "Start client" 'nerd-icons-faicon "nf-fa-play_circle"
+            (let ((lbl label) (r root) (db dash-buf))
+              (lambda (_)
+                (setq ores/dashboard--client-context (list r lbl db))
+                (ores/dashboard--start-client-transient))))
+           (ores/dashboard--mkitem
+            "Service status" 'nerd-icons-faicon "nf-fa-info_circle"
+            (let ((lbl label)
+                  (s   (expand-file-name "build/scripts/status-services.sh" root))
+                  (r   root) (db dash-buf))
+              (lambda (_) (ores/dashboard--compile lbl s "service-status" r db))))
+           (ores/dashboard--mkitem
+            "Stop services" 'nerd-icons-faicon "nf-fa-stop"
+            (let ((lbl label)
+                  (s   (expand-file-name "build/scripts/stop-services.sh" root))
+                  (r   root) (db dash-buf))
+              (lambda (_) (ores/dashboard--compile lbl s "stop-services" r db)))))
           'ores/dashboard-group-services-face)))
 
 (defun ores/dashboard--compass-group (env root dash-buf)

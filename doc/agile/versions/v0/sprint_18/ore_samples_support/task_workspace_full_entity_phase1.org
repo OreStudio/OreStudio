@@ -29,11 +29,11 @@ types. PR title: =[workspace] Add history support and generator to workspace ent
 
 | Field        | Value                                     |
 |--------------+-------------------------------------------|
-| State        | BACKLOG                                   |
+| State        | DONE                                      |
 | Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]]       |
-| Now          | Not yet started.                          |
+| Now          | Complete.                                 |
 | Waiting on   | Nothing.                                  |
-| Next         | Begin implementation.                     |
+| Next         | Nothing.                                  |
 | Last touched | 2026-05-25                                |
 
 * Acceptance
@@ -110,6 +110,18 @@ make -C build/output/linux-clang-debug-make -j$(nproc) ores.workspace.api
 
 * Notes
 
+All acceptance criteria were already met in the codebase prior to task
+execution — the model, generator, and protocol types had been written as part
+of earlier sprint work.  Verification confirmed:
+
+- =workspace_domain_entity.json= has =has_history: true=, all six =detail_fields=,
+  =history_request_class/response_class/message_type=, and all three deviation
+  rationales (tenant_id, workspace_id, pagination).
+- =workspace_generator.hpp/.cpp= exist in =ores.workspace.api=.
+- =workspace_protocol.hpp= declares =get_workspace_history_request/response=.
+
+No code changes were required; this task closes as a verification pass.
+
 * PRs
 
 | PR | Title |
@@ -123,3 +135,6 @@ make -C build/output/linux-clang-debug-make -j$(nproc) ores.workspace.api
 |   |                 |      |          |       |
 
 * Result
+
+All acceptance criteria confirmed met via verification pass. No code changes
+made. Closed without a PR.

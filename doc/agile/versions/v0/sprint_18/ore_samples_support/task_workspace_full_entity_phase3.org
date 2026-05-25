@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: FF7AAAB1-9C6D-4304-A74C-62FA45188D45
+:END:
+#+title: Task: Workspace full entity: Qt UI
+#+description: Regenerate WorkspaceDetailDialog and add WorkspaceHistoryDialog; wire history toolbar action in WorkspaceMdiWindow.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ore_samples_support:sprint_18:v0:
+#+owner: marco
+#+branch: feature/workspace-full-entity-phase3
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Regenerate =WorkspaceDetailDialog= (replacing the hand-crafted version) and
+generate a new =WorkspaceHistoryDialog=; wire a History toolbar action in
+=WorkspaceMdiWindow=. Do NOT commit the regenerated =WorkspaceMdiWindow= or
+=ClientWorkspaceModel= — tree view is a justified deviation.
+PR title: =[qt] Add workspace history dialog and replace hand-crafted detail dialog=.
+
+* Status
+
+| Field        | Value                                                  |
+|--------------+--------------------------------------------------------|
+| State        | BACKLOG                                                |
+| Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]]                    |
+| Now          | Not yet started.                                       |
+| Waiting on   | [[id:71EB9DB0-1F5C-48D0-AA2E-E47A9F487B86][Task: Workspace full entity: C++ core]] (Phase 2)       |
+| Next         | Begin implementation after Phase 2 merges.             |
+| Last touched | 2026-05-25                                             |
+
+* Acceptance
+
+- Generated =WorkspaceDetailDialog= replaces hand-crafted version; Provenance tab merged if absent from generated output.
+- =WorkspaceHistoryDialog= generated and compiles.
+- History toolbar button added to =WorkspaceMdiWindow=; enabled/disabled with selection.
+- Clicking History opens =WorkspaceHistoryDialog= with full version list.
+- =ores.qt.workspace= builds and smoke test passes (see plan).
+
+* Plan
+
+Extracted from [[id:B9A1498E-5903-4C82-8A19-3CE43A0BA5FA][Promote Workspace to Full Standard Entity]] Phase 3.
+
+** 3.1 Regenerate Qt layer (selectively)
+
+#+begin_src sh
+cd projects/ores.codegen
+./run_generator.sh models/workspace/workspace_domain_entity.json --profile qt
+#+end_src
+
+*Do not commit* the regenerated =WorkspaceMdiWindow= or =ClientWorkspaceModel=
+files — these are justified deviations (tree view, no pagination). Only integrate:
+
+- =WorkspaceDetailDialog.hpp/.cpp/.ui= — replaces hand-crafted version
+- =WorkspaceHistoryDialog.hpp/.cpp/.ui= — *new*
+
+Review generated =WorkspaceDetailDialog=: the existing hand-crafted dialog has
+a Provenance tab with read-only audit fields. Manually merge if the generator
+omits it.
+
+** 3.2 Update WorkspaceMdiWindow
+
+Add to the private section of the header:
+
+#+begin_src cpp
+QAction* historyAction_{nullptr};
+void onHistoryRequested();
+#+end_src
+
+In the toolbar setup block (after =editAction_=):
+
+#+begin_src cpp
+historyAction_ = toolbar_->addAction(
+    QIcon::fromTheme("document-open-recent"), tr("History"));
+historyAction_->setEnabled(false);
+connect(historyAction_, &QAction::triggered,
+        this, &WorkspaceMdiWindow::onHistoryRequested);
+#+end_src
+
+Enable/disable =historyAction_= alongside =editAction_= in the
+selection-changed handler.
+
+Implement =onHistoryRequested()=:
+
+#+begin_src cpp
+void WorkspaceMdiWindow::onHistoryRequested() {
+    const auto* item = treeWidget_->currentItem();
+    if (!item) return;
+    const auto id = item->data(0, Qt::UserRole).toString();
+    auto* dlg = new WorkspaceHistoryDialog(clientManager_, id, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->exec();
+}
+#+end_src
+
+** 3.3 CMakeLists integration
+
+Add =WorkspaceHistoryDialog.hpp/.cpp/.ui= to
+=projects/ores.qt.workspace/CMakeLists.txt= if not picked up by GLOB.
+
+** 3.4 Build and smoke test
+
+#+begin_src sh
+make -C build/output/linux-clang-debug-make -j$(nproc) ores.qt.workspace
+#+end_src
+
+Manual test:
+1. Open Workspace MDI window; select a workspace → History button enables.
+2. Click History → =WorkspaceHistoryDialog= opens with full version list.
+3. Click Edit/Add → generated =WorkspaceDetailDialog= opens with all fields.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

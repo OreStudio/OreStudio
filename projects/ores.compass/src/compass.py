@@ -900,9 +900,12 @@ def resolve_story(ident):
     if exact:
         cands = exact
     else:
+        # Combine id-prefix and (case-insensitive) folder-slug matches and
+        # require a single unique match — so an id-prefix and a different
+        # story's slug don't silently resolve to the id one.
         prefix = [d for d in stories if d.id.lower().startswith(il)]
-        slug = [d for d in stories if Path(d.rel_path).parent.name == ident]
-        cands = prefix or slug
+        slug = [d for d in stories if Path(d.rel_path).parent.name.lower() == il]
+        cands = list({d.id: d for d in prefix + slug}.values())
     if len(cands) == 1:
         d = cands[0]
         return _parent_dir(d.rel_path), _strip_type_prefix(d.title)
@@ -1015,7 +1018,7 @@ def cmd_goto(argv):
     print("\nNext steps:")
     if new_story:
         print(f"  - wire the story into {sprint_dir}/sprint.org (* Stories table)")
-    print(f"  - flip the task State to STARTED when you begin")
+    print(f"  - flip the {'story and task' if new_story else 'task'} State to STARTED when you begin")
     print(f"  - git push -u origin {branch}   &&   open a PR")
     return 0
 

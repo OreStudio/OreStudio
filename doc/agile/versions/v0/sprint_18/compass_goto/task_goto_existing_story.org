@@ -78,15 +78,6 @@ and by =:ID:= prefix; new-story unchanged) and the three error paths
 (=git switch= + =add task --parent-dir=) is the one already exercised by
 new-story =goto= and by =add=.
 
-* Result
-
-=cmd_goto= now has two modes. Existing-story mode: =goto --story
-<id-or-slug> --task-slug <slug> --task "<title>" [--description …]=
-resolves the story via =resolve_story= (by =:ID:= exact/prefix or folder
-slug), branches =feature/<task-slug>=, adds a task to the existing story
-(=add=), sets =#+branch=, and prints next steps. New-story mode is
-unchanged. The two modes are mutually exclusive with clear validation.
-
 * PRs
 
 | PR | Title |
@@ -100,3 +91,10 @@ unchanged. The two modes are mutually exclusive with clear validation.
 |   |                 |      |          |       |
 
 * Result
+
+=cmd_goto= now has two modes. Existing-story mode: =goto --story
+<id-or-slug> --task-slug <slug> --task "<title>" [--description …]=
+resolves the story via =resolve_story= (by =:ID:= exact/prefix or folder
+slug), branches =feature/<task-slug>=, adds a task to the existing story
+(=add=), sets =#+branch=, and prints next steps. New-story mode is
+unchanged. The two modes are mutually exclusive with clear validation.

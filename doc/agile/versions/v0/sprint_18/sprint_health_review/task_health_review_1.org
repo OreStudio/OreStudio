@@ -59,8 +59,12 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                     | File                | Decision | Notes                                          |
+|---+-----------------------------------------------------+---------------------+----------+------------------------------------------------|
+| 1 | Day/date mismatch; future dashboard end date (−26) | sprint.org          | Fixed    | Day 2→Day 3; date 2026-05-24–26→25; day-5→day-4 |
+| 2 | ORE imports table shows 4 stories, narrative says 5 | sprint.org          | Fixed    | 0/0/4→0/0/5                                   |
+| 3 | "day-5 rate" typo for a day-4 review                | sprint.org          | Fixed    | Combined with comment 1                        |
+| 4 | DONE/total counts inconsistent (14/25 vs table 23)  | sprint.org          | Fixed    | 13/24=54%; throughput 3.5→3.25/day; max cycle 2→1 day |
+| 5 | #+category: template has unsupported ; inline comments | document_types.org | Fixed    | Moved field docs to prose below src block      |
 
 * Result

@@ -30,9 +30,9 @@ shows its figures instead of =TODO_*.png= placeholders.
 |--------------+----------------------------------------|
 | State        | STARTED                                |
 | Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
-| Now          | Capturing screenshots on =feature/screenshot_work=. |
-| Waiting on   | Nothing.                               |
-| Next         | Work through the remaining placeholders. |
+| Now          | Buckets A/B/D done: 19 captures renamed into =assets/images/= and wired; new sections added (splash, master password, folders, environments, version, system tray, quick connect). |
+| Waiting on   | 22 captures from product owner (6 in chapter 1, 16 provisioner/concepts + 1 diagram). |
+| Next         | Drop the captured PNGs under their final names; assemble the 3-state status-bar composite; generate the party-hierarchy diagram. |
 | Last touched | 2026-05-25                             |
 
 * Acceptance
@@ -110,17 +110,52 @@ System / Tenant / Party Provisioner wizard pages
 - "the login screen" → =assets/images/login_screen.png= (but a newer
   =login_dialog.png= was captured — see A; decide whether it supersedes)
 
-** Execution order (deferred — this task)
+** Decisions applied
 
-1. Confirm the A mappings and the B decisions with the product owner.
-2. =git mv= the chapter_01/ PNGs to =assets/images/= under their final names
-   (drop the duplicate edit shot).
-3. Replace each =TODO_*.png= link and remove the =[SCREENSHOT NEEDED]= marker.
-4. For B: add the missing subsections (master password, folders, version,
-   system tray) and wire the figures in.
-5. For C: capture the outstanding shots (provisioner wizards, tag filter,
-   connection-lost, connected/composite status bar, instance colour).
-6. Rebuild the manual (=deploy_manual=) and verify every figure renders.
+- /login_dialog/: the newer =login_dialog.png= supersedes =login_screen.png=
+  for the login figure (product owner).
+- /add environment/: =connection_manager_add_environment.png= turned out to be
+  an /Edit Connection with a linked environment/, not an add dialog; folded
+  into the Environments section as =connection_manager_environment_linked.png=.
+- /new connection/: the two "Add Item" shots were blank vs filled; the filled
+  one (=edit_connection_form.png=) became =connection_manager_new_connection.png=
+  and the blank =new_connection_form.png= was dropped (recoverable from history).
+- The dialog is titled "Connection /Browser/" in the UI; captions reflect that.
+
+** Execution order
+
+1. [X] Confirm the A mappings and the B decisions with the product owner.
+2. [X] =git mv= the chapter_01/ PNGs to =assets/images/= under their final names
+   (dropped the redundant blank Add form).
+3. [X] Replace each =TODO_*.png= link; removed =[SCREENSHOT NEEDED]= from the
+   satisfied figures (kept it on the 6 still-to-capture chapter-1 figures and
+   the 16 concepts figures).
+4. [X] For B: added the new subsections (splash, master password, folders,
+   environments add/link, version, system tray, quick connect) and wired the
+   figures in.
+5. [ ] For C: capture the outstanding shots (see "Still to capture" below).
+6. [ ] Assemble the 3-state status-bar composite (=status_bar_states.png=) from
+   the disconnected + connected + lost crops; generate the party-hierarchy
+   diagram (=party_hierarchy_diagram.png=, PlantUML/Graphviz, not a screenshot).
+7. [ ] Rebuild the manual (=deploy_manual=) and the site and verify every figure
+   renders.
+
+** Still to capture (bucket C — 22 files, save under =assets/images/=)
+
+Chapter 1 (=system_bootstrapping.org=, 6):
+- =connection_manager_tag_filter.png= — tag-filter bar with =client-acme= typed.
+- =main_window_connect_dropdown.png= — toolbar Connect button + connection dropdown.
+- =connection_lost_banner.png= — disconnected-while-logged-in warning + Reconnect.
+- =status_bar_connected.png= — full connected status bar, all zones.
+- =status_bar_states.png= — 3-state composite (assembled from disconnected/connected/lost).
+- =main_window_instance_colour.png= — two windows with different instance colours/names.
+
+Concepts (=system_bootstrapping_concepts.org=, 15 screenshots + 1 diagram):
+- System Provisioner: =system_provisioner_welcome/_admin_account/_review/_complete.png=.
+- =admin_menu_provision_tenant.png=.
+- Tenant Provisioner: =tenant_provisioner_welcome/_details/_admin/_review/_complete.png=.
+- Party Provisioner: =party_provisioner_welcome/_root/_children/_review/_complete.png=.
+- =party_hierarchy_diagram.png= — a tree diagram, not a screenshot.
 
 * Notes
 

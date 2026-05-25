@@ -54,6 +54,7 @@ table, set states, etc. It composes =git= + =compass add= into the
 In execution order:
 
 - [[id:4A06DE45-1C09-4A24-88A7-E767CD293B24][Task: Implement the goto command]]
+- [[id:ECEC4B5C-3731-4E53-8282-28FCD41FC5EE][Task: goto: add a task to an existing story]]
 
 * Decisions
 

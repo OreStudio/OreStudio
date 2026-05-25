@@ -248,6 +248,30 @@ the ancestor slugs from the =--parent-dir= path (following the
 =versions/<version>/<sprint>/<story>/= layout) and adds them all to
 =#+filetags= automatically, on top of any =--tags= the user supplies.
 
+** Story categories
+
+Stories carry a =#+category:= frontmatter field (not a tag) that
+classifies their intent. Categories are used to slice velocity metrics:
+feature throughput, housekeeping load, and enabler investment are
+tracked separately so the team can see whether sprint time is going to
+the right places.
+
+| Category      | Meaning                                                               |
+|---------------+-----------------------------------------------------------------------|
+| =feature=     | Adds or changes user-visible behaviour. Counted in feature velocity.  |
+| =housekeeping= | Cleanup, refactoring, dependency upgrades, docs, tooling fixes. Does not advance features but is necessary work. |
+| =enabler=     | Infrastructure, scaffolding, CI, build, or platform work that unblocks future features but delivers nothing user-visible on its own. |
+
+Rules:
+
+- Every story must carry exactly one category.
+- When a story spans multiple categories, assign the /dominant/ intent.
+  A story that mostly refactors but incidentally adds an endpoint is
+  still =housekeeping=.
+- Sprints should aim for ≥ 50% =feature= stories by count. A sprint
+  skewed toward =housekeeping= or =enabler= should be noted in the
+  health review focus signal.
+
 ** Governance
 
 - The audit job (System 3*) lists every tag in use and flags singletons
@@ -422,6 +446,18 @@ The successor's slug is the original slug suffixed with =_continued=,
 
 Audit verifies bidirectional links: every =#+predecessor= has a
 matching =#+successor= pointing back.
+
+*** Story frontmatter (additions on top of the standard set)
+
+#+begin_src org
+,#+category: <feature|housekeeping|enabler>  ; required; drives velocity tracking
+,#+predecessor: <id-of-prior-story>           ; optional; on continuations
+,#+successor:   <id-of-next-story>            ; optional; on closed stories that continue
+#+end_src
+
+The =#+category:= field classifies the story's intent so velocity
+metrics can be sliced by type (see =** Story categories= in =* Tags=
+above). It is required on every story created from sprint 18 onward.
 
 ** sprint
 

@@ -28,11 +28,11 @@ template so every new sprint has an empty =* Health Review= placeholder.
 
 | Field        | Value                                        |
 |--------------+----------------------------------------------|
-| State        | STARTED                                      |
+| State        | DONE                                         |
 | Parent story | [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]]     |
-| Now          | =doc/llm/skills/sprint-reviewer/SKILL.org= written; sprint template and catalogue updated. |
+| Now          | Merged on PR #839.                           |
 | Waiting on   | Nothing.                                     |
-| Next         | Review and merge.                            |
+| Next         | Nothing.                                     |
 | Last touched | 2026-05-25                                   |
 
 * Acceptance
@@ -60,9 +60,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                                                 | Title                                                             |
+|------------------------------------------------------------------------------------+-------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/839][#839]] | [skills,agile] Implement sprint-reviewer skill (System 2 health review) |
 
 * Review
 

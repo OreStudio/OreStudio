@@ -439,6 +439,56 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
     (ores/dashboard--display comp-buf dash-buf)))
 
 ;; ---------------------------------------------------------------------------
+;; Service runner — persistent pipe-based process buffer
+;;
+;; start-services.sh runs synchronously for ~2 minutes (waits for NATS and
+;; the controller), then exits — the services continue as background jobs.
+;; compilation-start uses a PTY; when the PTY master closes, the kernel
+;; sends SIGHUP to the foreground process group, killing the services.
+;;
+;; Fix: run the script via make-process with :connection-type 'pipe.  A pipe
+;; never sends SIGHUP, so background children survive the script's exit.
+;; The buffer stays open and the full startup log streams in in real time.
+;; ---------------------------------------------------------------------------
+
+(defun ores/dashboard--service-filter (proc string)
+  "Insert process output into the services buffer, bypassing read-only."
+  (when (buffer-live-p (process-buffer proc))
+    (with-current-buffer (process-buffer proc)
+      (let ((inhibit-read-only t))
+        (save-excursion
+          (goto-char (process-mark proc))
+          (insert string)
+          (set-marker (process-mark proc) (point)))))))
+
+(defun ores/dashboard--run-services (label script root dash-buf)
+  "Run SCRIPT in a persistent buffer via a pipe; show it in the dashboard.
+Background services survive the script's exit because pipes do not deliver
+SIGHUP on close — no setsid needed."
+  (let* ((buf-name (format "*ores:%s:services*" label))
+         (buf      (get-buffer-create buf-name)))
+    (when (get-buffer-process buf)
+      (user-error "Services already running in %s" buf-name))
+    (with-current-buffer buf
+      (let ((inhibit-read-only t)) (erase-buffer))
+      (special-mode)
+      (setq-local default-directory root))
+    (make-process
+     :name            (format "ores-services-%s" label)
+     :buffer          buf
+     :command         (list "/bin/bash" script)
+     :connection-type 'pipe
+     :filter          #'ores/dashboard--service-filter
+     :noquery         t
+     :sentinel        (lambda (proc event)
+                        (when (buffer-live-p (process-buffer proc))
+                          (with-current-buffer (process-buffer proc)
+                            (let ((inhibit-read-only t))
+                              (goto-char (point-max))
+                              (insert (format "\n[%s]\n" (string-trim event))))))))
+    (ores/dashboard--display buf dash-buf)))
+
+;; ---------------------------------------------------------------------------
 ;; Start-client transient
 ;;
 ;; "Start client" uses setsid so ores.qt survives the compilation shell's
@@ -651,7 +701,7 @@ On other systems `setsid' is used when available, otherwise an error is raised."
                   (s   (expand-file-name "build/scripts/start-services.sh" root))
                   (r   root) (db dash-buf))
               (lambda (_)
-                (ores/dashboard--compile lbl (concat (ores/dashboard--detach-prefix) s) "start-services" r db))))
+                (ores/dashboard--run-services lbl s r db))))
            (ores/dashboard--mkitem
             "Start client" 'nerd-icons-faicon "nf-fa-play_circle"
             (let ((lbl label) (r root) (db dash-buf))

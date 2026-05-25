@@ -50,6 +50,7 @@ is on the longer-term wishlist without opening any files.
 In execution order:
 
 - [[id:092931C3-633E-4885-8AA0-31B88E196A65][Task: Implement product backlog near/far listing in compass]]
+- [[id:C1EADB9F-633E-4A22-B86C-AB2E1F633F66][Add compass remember command]]
 
 * Decisions
 

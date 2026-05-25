@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: EAE593F5-B549-4705-A598-344405196574
+:END:
+#+title: ores.lisp
+#+description: Emacs Lisp developer tooling for ORE Studio — dashboard, database browser, shell integration, and org-roam export.
+#+type: component
+#+version: 2
+#+level: cross
+#+filetags: :lisp:tooling:emacs:component:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+
+* Dashboard
+
+#+attr_html: :width 100% :alt ORE Studio Dashboard
+#+caption: ORE Studio Dashboard
+[[file:dashboard_window.png][file:dashboard_window.png]]
+
+* Summary
+
+=ores.lisp= is the Emacs Lisp tooling layer for ORE Studio development. It
+provides a per-checkout interactive console (=ores-dashboard=), database
+management UI (=ores-db=), shell integration (=ores-shell=), environment
+loading (=ores-env=), org-roam export pipeline (=ores-org-roam-export=),
+and process supervision via Prodigy (=ores-prodigy=). None of these modules
+are part of the production system; they exist solely to improve developer
+ergonomics.
+
+* Inputs
+
+- =.env= — checkout-specific environment variables (label, preset, passwords,
+  per-service DB credentials).
+- =sql-connection-alist= — populated at session start via =ores-db/setup-connections=.
+- =build/scripts/= — shell scripts invoked for init, build, site, NATS, and DB
+  operations.
+
+* Outputs
+
+- =ORES Dashboard= Emacs buffer — interactive card-based console with
+  keyboard shortcuts for every action.
+- =*ores-<label>-db-<svc>*= SQL interaction buffers.
+- =*ores-<label>-shell*= ores.shell REPL buffer.
+- Compilation buffers for build, site, services, and DB scripts.
+- Org-roam HTML export artefacts (via =ores-org-roam-export=).
+
+* Source files
+
+- =ores-env.el= — parses the checkout =.env= file into an alist and exposes
+  =ores/load-dotenv= and =ores/checkout-root=. Foundation module; required by
+  all others.
+- =ores-dashboard.el= — per-checkout interactive development console. Renders
+  a card-based layout (Environment, Database, Services, Compass, Build, Site,
+  Skills, Bookmarks, Links, Shell, NATS) with global keyboard shortcuts
+  (=a=–=z=, =A=–=Z=). Entry point: =M-x ores/dashboard=.
+- =ores-db.el= — tabulated database browser and SQL connection manager.
+  Discovers all =ores_*= databases on localhost, supports connect, kill
+  connections, teardown, and recreate operations. Entry point:
+  =M-x ores-db/list-databases=.
+- =ores-shell.el= — launches an =ores.shell= REPL as a comint buffer, pointed
+  at the preset's published binary. Entry point: =M-x ores-shell=.
+- =ores-shell-mode.el= — trivial major mode for the =ores.shell= REPL buffer.
+  Provides font-lock highlighting for shell commands (=connect=, =login=,
+  =accounts=, =create=, =exit=) so they stand out from arguments.
+- =ores-babel.el= — configures Org Babel =#+begin_src sh= blocks in recipe
+  files to run with =default-directory= set to the repo root, so paths like
+  =./projects/ores.compass/compass.sh= resolve consistently regardless of
+  where the =.org= file lives.
+- =ores-prodigy.el= — registers all ORE Studio background services
+  (databases, NATS, HTTP server, domain services) with Prodigy for
+  point-and-click process lifecycle management.
+- =ores-org-roam-export.el= — org-roam → HTML export pipeline; walks the
+  node graph and publishes the documentation site.
+
+* Dependencies
+
+- =sql-mode= (Emacs built-in) — interactive SQL buffers.
+- =nerd-icons= — icon glyphs in the dashboard.
+- =org-roam= — node graph for export pipeline.
+- =prodigy= — service process management.
+- =compilation-mode= (Emacs built-in) — script output buffers.
+
+* See also
+
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — architectural context.
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the REPL that the dashboard launches.
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — database scripts invoked by the dashboard.

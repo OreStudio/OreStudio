@@ -145,6 +145,9 @@ Client applications and compute processes that consume domain services.
 - [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]]: Orchestration controller — assembles compute
   pipelines, sequences scheduler/compute/reporting stages, and tracks run
   state.
+- [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]]: Emacs Lisp developer tooling — per-checkout dashboard,
+  database browser, shell integration, and org-roam export. Not part of
+  the production system.
 - Depends on: All layers.
 
 * Database Isolation

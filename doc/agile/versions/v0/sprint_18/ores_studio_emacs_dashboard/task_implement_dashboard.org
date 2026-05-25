@@ -8,12 +8,12 @@
 #+level: s1
 #+filetags: :emacs:lisp:dashboard:ores_studio_emacs_dashboard:sprint_18:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/ores-dashboard-implement
 #+pr:
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
-#+updated: 2026-05-24
+#+updated: 2026-05-26
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -21,19 +21,19 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Create =projects/ores.lisp/ores-dashboard.el= — a fully functional
-ORE Studio console built on =emacs-dashboard=, with env binding,
-command groups, bookmarks, recipe links, ORE shell, and splash image.
+ORE Studio console using =special-mode= + buttons, with buffer-local
+env binding, 11 command sections, bookmarks, recipe links, and ORE shell.
 
 * Status
 
 | Field        | Value                                            |
 |--------------+--------------------------------------------------|
-| State        | BACKLOG                                          |
+| State        | DONE                                             |
 | Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                       |
-| Now          | Blocked on [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][audit/design task]].                   |
-| Waiting on   | [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][task_audit_and_design]] sign-off.                  |
-| Next         | Implement once design is approved.               |
-| Last touched | 2026-05-24                                       |
+| Now          | Implemented and shipped on PR #831.              |
+| Waiting on   | Nothing.                                         |
+| Next         | Nothing.                                         |
+| Last touched | 2026-05-26                                       |
 
 * Acceptance
 
@@ -48,22 +48,76 @@ command groups, bookmarks, recipe links, ORE shell, and splash image.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Implemented =ores-dashboard.el= as a =special-mode=-derived major mode
+rather than using the =emacs-dashboard= framework, as the card/box layout
+required full control over rendering.
+
+Key design choices:
+
+- *Rendering*: Custom box-drawing characters (┌─┐ ├─┤ └─┘ │) produce a
+  3-column card grid. =ores/dashboard--group-cells= builds equal-height
+  cell columns; =ores/dashboard--render-row= inserts them side by side.
+  Text properties carry =ores/action= lambdas; =RET= and mouse-1 dispatch
+  via =ores/dashboard--activate=.
+
+- *Keyboard shortcuts*: =ores/dashboard--alloc-key= assigns =a=–=z= then
+  =A=–=Z= globally across all items during render. Each action is wrapped
+  in an interactive lambda and registered in a per-render sparse keymap
+  =ores/dashboard--item-keys=. After render, =use-local-map= activates a
+  =make-composed-keymap= of item keys over =ores/dashboard-mode-map= so
+  =g= and =q= still work.
+
+- *Env binding*: =default-directory= is set to checkout root on the buffer
+  at open time. All action lambdas close over =root= and =env= captured
+  during =ores/dashboard--render=.
+
+- *Output display*: =ores/dashboard--display= calls =switch-to-buffer= +
+  =delete-other-windows= so output always fills the full frame, matching
+  the dashboard layout.
+
+- *DB connections*: =ores-db/setup-connections= populates per-service
+  connections; a postgres superuser entry is added pointing to
+  =ores_dev_<label>=. =cl-letf= overrides =read-passwd= inside
+  =sql-connect= so the alist password is used silently without prompting.
+  =PGPASSWORD= is also injected into =process-environment= for the psql
+  subprocess.
+
+- *Project structure*: All =.el= sources moved to =projects/ores.lisp/src/=;
+  =modeling/component_overview.org= written. =.build-site.el= path updated.
 
 * Notes
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                            |
+|-----+------------------------------------------------------------------|
+| 831 | [ores.lisp] Implement ores-dashboard.el — ORE Studio dev console |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                    | File               | Decision | Notes                                                          |
+|---+----------------------------------------------------+--------------------+----------+----------------------------------------------------------------|
+| 1 | Use =shell-quote-argument= on script paths/presets | =ores-dashboard.el= | Accept   | Paths from =expand-file-name=, low real risk; fix in follow-up |
+| 2 | Set =buffer-undo-list t= in mode — pure overhead   | =ores-dashboard.el= | Accept   | Fixed — buffer is read-only and fully redrawn on every reload  |
+| 3 | Redundant =let= wrappers before lambdas            | =ores-dashboard.el= | Defer    | Valid with =lexical-binding=; mechanical refactor, no behaviour change |
+| 4 | Use =pcase-dolist= instead of =nth= on spec lists  | =ores-dashboard.el= | Defer    | Cosmetic; =mapcar=/=nth= is functional for small lists         |
+| 5 | =fuser -k= is Linux-only; track process instead    | =ores-dashboard.el= | Reject   | Project is Linux-only; server launched via =compilation-start=, no process object available |
 
 * Result
+
+=projects/ores.lisp/src/ores-dashboard.el= implemented as a
+=special-mode=-derived major mode with:
+
+- 11 card groups: Environment, Database, Services, Compass, Build, Site,
+  Skills, Bookmarks, Links, Shell, NATS.
+- Global keyboard shortcuts =a=–=z=/=A=–=Z= assigned to every item;
+  each label shows its key as a dimmed =(x)= suffix.
+- Env-aware: binds to the checkout =.env= via =ores-env.el=; default-directory
+  set to checkout root so all action lambdas resolve project-current correctly.
+- Database card: full SQL connection picker with per-service PGPASSWORD
+  injection; postgres superuser connects to =ores_dev_<label>=; Kill
+  connections, Teardown DB, Recreate DB, Recreate environment items.
+- NATS card: Init NATS and Init NATS + provision.
+- Output always shown full-frame via =switch-to-buffer= + =delete-other-windows=.
+- =ores.lisp= sources moved to =src/=; =modeling/component_overview.org= added.
+- =.build-site.el= path updated to follow the =src/= move.

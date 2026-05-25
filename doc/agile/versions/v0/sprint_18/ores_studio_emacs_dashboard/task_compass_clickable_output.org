@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 3C569365-B253-4BC6-9385-7CAF7B4FB54D
+:END:
+#+title: Task: Make compass output paths clickable in dashboard output pane
+#+description: Post-process compass where/list/status output so that org-mode file paths appear as clickable links that open the target file in the dashboard output pane.
+#+type: task
+#+version: 1
+#+level: s1
+#+filetags: :emacs:lisp:dashboard:compass:ores_studio_emacs_dashboard:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 696612A2-A9D5-47FE-BC5A-2F90FDCA4E15
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+When =compass where=, =compass list=, or =compass status= output is
+displayed in the dashboard output pane, any file path (e.g.
+=doc/agile/versions/v0/sprint_18/ores_studio_emacs_dashboard/story.org=)
+should be clickable: pressing =RET= or clicking it opens the file in
+the same output pane, keeping the dashboard visible.
+
+* Status
+
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | DISCOVERED                                                   |
+| Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                                   |
+| Now          | Idea captured; implementation not started.                   |
+| Waiting on   | [[id:696612A2-A9D5-47FE-BC5A-2F90FDCA4E15][task_implement_dashboard]] merged.                             |
+| Next         | Design approach (see =* Notes=); implement in a follow-up PR. |
+| Last touched | 2026-05-25                                                   |
+
+* Acceptance
+
+- =compass where= / =compass list= / =compass status= output shown in
+  dashboard output pane.
+- Any relative or absolute =.org= file path in the output is
+  highlighted and interactive: =RET= or mouse-click opens the file in
+  the dashboard output pane.
+- Non-file lines are not affected.
+- Works correctly for both =local1= and =local2= checkouts (paths are
+  resolved relative to the checkout root).
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+** Approach options
+
+*** Option A — compilation-error-regexp
+
+Add a custom entry to =compilation-error-regexp-alist= that matches
+the file paths in compass output (e.g. lines matching
+=^\s*\(doc/[^ ]+\.org\)=).  Compilation mode then renders those as
+clickable links automatically.
+
+Pros: zero custom rendering code; integrates with existing compilation
+buffer.  Cons: regexp must match compass output format exactly; format
+could change.
+
+*** Option B — post-process buffer with overlays
+
+After the compilation buffer is populated, scan for =.org= paths and
+add button overlays.  This is more robust to format changes but
+requires knowing when the compilation finishes.
+
+*** Option C — custom compass output mode
+
+Write a small =ores/compass-output-mode= minor mode that activates in
+compass compilation buffers and uses =font-lock= + =button.el= to
+highlight paths.
+
+** Preferred approach
+
+Option A (compilation-error-regexp) if compass output has a stable,
+parseable format.  If the format is irregular, fall back to Option C
+(custom minor mode with font-lock buttons).
+
+Paths should be resolved relative to the checkout root, which is
+available via =ores/checkout-root= at the time the compass command is
+launched.  The button action should call =ores/dashboard--display= so
+the file opens in the dashboard output pane rather than a new window.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

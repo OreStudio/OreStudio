@@ -9,7 +9,7 @@
 #+filetags: :port_domain_concept_notes:sprint_18:v0:
 #+owner: marco
 #+branch: feature/port-domain-concept-notes
-#+pr: [[https://github.com/OreStudio/OreStudio/pull/844][844]]
+#+pr: 844
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25

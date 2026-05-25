@@ -216,7 +216,7 @@
       (ores-deploy-org-roam-ui "./build/output/site/OreStudio")
       (condition-case roam-err
           (progn
-            (load-file (expand-file-name "./projects/ores.lisp/ores-org-roam-export.el"))
+            (load-file (expand-file-name "./projects/ores.lisp/src/ores-org-roam-export.el"))
             (ores/org-roam-export-graph-json
              (expand-file-name "./.org-roam.db")
              (expand-file-name "./build/output/site/OreStudio/graph/graphdata.json")

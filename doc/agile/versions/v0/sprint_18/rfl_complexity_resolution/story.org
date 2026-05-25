@@ -21,12 +21,12 @@ Permanently resolve the compilation failures in =ores.qt.api= on Windows (MSVC C
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | DONE                                   |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                              |
-| Now           | PR #819 raised; awaiting CI validation. |
-| Waiting on    | Windows CI build confirmation.          |
-| Next          | Merge PR 819; close story.              |
-| Last touched  | 2026-05-24                              |
+| Now           | Completed 2026-05-24.                  |
+| Waiting on    | Nothing.                               |
+| Next          | None.                                  |
+| Last touched  | 2026-05-24                             |
 
 * Acceptance
 

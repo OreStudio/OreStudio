@@ -26,12 +26,12 @@ Apply the structural isolation strategy to permanently fix compilation failures 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                   |
 | Parent story | [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] |
-| Now          | PR #819 raised; awaiting CI validation. |
-| Waiting on   | Windows CI build confirmation.          |
-| Next         | Merge PR 819 after CI passes.           |
-| Last touched | 2026-05-24                              |
+| Now          | Completed. PR #819 merged.             |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-24                             |
 
 * Acceptance
 
@@ -63,3 +63,13 @@ Apply the structural isolation strategy to permanently fix compilation failures 
 * Notes
 
 * Result
+
+- =projects/ores.qt.api/src/ClientManagerTradeDetail.cpp= — new TU; =getTradeDetail=
+  with two-phase parse (phase 1: trade only; phase 2: instrument variant with
+  =rfl::AddTagsToVariants=).
+- =projects/ores.qt.api/src/ClientManagerTrades.cpp= — =getTradeDetail= removed;
+  =listTrades= only.
+- =projects/ores.trading.api/src/CMakeLists.txt= — added PUBLIC =-fbracket-depth=1024=
+  for Clang; propagates to all consumers.
+- =projects/ores.trading.api/include/ores.trading.api/messaging/trade_protocol.hpp= —
+  added =get_trade_detail_response_base= and =get_trade_detail_instrument_wrapper=.

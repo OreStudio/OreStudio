@@ -103,8 +103,9 @@ The constant is transitively available via =bitemporal_operations.hpp= →
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                             | File                        | Decision | Notes                                  |
+|---+-------------------------------------------------------------+-----------------------------+----------+----------------------------------------|
+| 1 | Use =const std::string&= to avoid copying =live_workspace_uuid_str= | book_repository.cpp (×3)    | Fixed    | Changed all 3 sites to bind by ref.    |
+| 2 | Use =const std::string&= to avoid copying =live_workspace_uuid_str= | portfolio_repository.cpp (×3) | Fixed  | Changed all 3 sites to bind by ref.    |
 
 * Result

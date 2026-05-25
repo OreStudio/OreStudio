@@ -28,9 +28,9 @@ the team is focused — rather than merely summarising status.
 |---------------+----------------------------------------|
 | State         | STARTED                                |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                              |
-| Now           | SKILL.org implemented; sprint template and catalogue updated. |
+| Now           | Skill shipped (PR #839); first review in progress. |
 | Waiting on    | Nothing.                               |
-| Next          | Review and merge.                      |
+| Next          | Complete review 1; raise PR.           |
 | Last touched  | 2026-05-25                             |
 
 * Acceptance
@@ -71,6 +71,7 @@ the team is focused — rather than merely summarising status.
 In execution order:
 
 - [[id:4B327802-3E59-438F-8726-6984B2BC2BB0][Task: Implement sprint-reviewer skill]]
+- [[id:FA5A76DC-913B-481C-8D65-13F58032D950][Task: Health review 1 — sprint 18 mid-sprint analysis]]
 
 * Decisions
 

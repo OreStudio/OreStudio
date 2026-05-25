@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: FA5A76DC-913B-481C-8D65-13F58032D950
+:END:
+#+title: Task: Health review 1 — sprint 18 mid-sprint analysis
+#+description: First System 2 health review of sprint 18: goal alignment, load, PR velocity, story/task balance, focus signal, velocity, and overall verdict.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sprint_health_review:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run the first System 2 health review of sprint 18 using the
+=sprint-reviewer= skill; write the findings into =sprint.org= under
+=* Health Review=; include velocity metrics and recommendations.
+
+* Status
+
+| Field        | Value                                    |
+|--------------+------------------------------------------|
+| State        | STARTED                                  |
+| Parent story | [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]] |
+| Now          | Analysis in progress.                    |
+| Waiting on   | Nothing.                                 |
+| Next         | Complete analysis; write review section. |
+| Last touched | 2026-05-25                               |
+
+* Acceptance
+
+- =* Health Review= section written into sprint 18 =sprint.org=.
+- All seven dimensions covered: goal alignment, sprint load, PR
+  velocity, story/task balance, focus signal, velocity (throughput +
+  cycle time), overall verdict.
+- Concrete recommendations included for each AMBER or RED dimension.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary                                     | File                | Decision | Notes                                          |
+|---+-----------------------------------------------------+---------------------+----------+------------------------------------------------|
+| 1 | Day/date mismatch; future dashboard end date (−26) | sprint.org          | Fixed    | Day 2→Day 3; date 2026-05-24–26→25; day-5→day-4 |
+| 2 | ORE imports table shows 4 stories, narrative says 5 | sprint.org          | Fixed    | 0/0/4→0/0/5                                   |
+| 3 | "day-5 rate" typo for a day-4 review                | sprint.org          | Fixed    | Combined with comment 1                        |
+| 4 | DONE/total counts inconsistent (14/25 vs table 23)  | sprint.org          | Fixed    | 13/24=54%; throughput 3.5→3.25/day; max cycle 2→1 day |
+| 5 | #+category: template has unsupported ; inline comments | document_types.org | Fixed    | Moved field docs to prose below src block      |
+
+* Result

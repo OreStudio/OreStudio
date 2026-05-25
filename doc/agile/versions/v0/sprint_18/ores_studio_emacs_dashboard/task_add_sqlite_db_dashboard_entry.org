@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: A1347F1E-C771-4762-9159-88EB624C0CCB
+:END:
+#+title: Task: Add SQLite connections DB entry to dashboard DB card
+#+description: Add an item to the dashboard DB card that opens ~/.local/share/ores.qt/connections.db in sql-sqlite, loading the project sqliterc for ergonomic display.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ores_studio_emacs_dashboard:sprint_18:v0:
+#+owner: marco
+#+branch: feature/fix-dashboard-start-client
+#+pr: 851
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add an "Open connections DB (SQLite)" entry to the dashboard Database
+card. When activated it opens =~/.local/share/ores.qt/connections.db=
+in an =sql-sqlite= buffer, pre-loading
+=projects/ores.sql/utility/sqliterc.sql= via =-init= so column
+headers, box formatting, NULL display, and prompt branding are active
+immediately. The DB path is environment-independent (one shared file).
+
+* Status
+
+| Field        | Value                                      |
+|--------------+--------------------------------------------|
+| State        | DONE                                       |
+| Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                 |
+| Now          | Complete.                                  |
+| Waiting on   | Nothing.                                   |
+| Next         | —                                          |
+| Last touched | 2026-05-25                                 |
+
+* Acceptance
+
+- The Database card has an "Open connections DB (SQLite)" item.
+- Activating it opens =~/.local/share/ores.qt/connections.db= in a
+  dedicated =*ores-connections-db*= buffer using =sql-sqlite=.
+- The sqliterc at =projects/ores.sql/utility/sqliterc.sql= is loaded
+  via =-init=, giving box output, headers, NULL marker, and =ore>= prompt.
+- The item is environment-agnostic (same DB path for all presets).
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR                                                              | Title                                                                              |
+|-----------------------------------------------------------------+------------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/851][#851]] | Dashboard: fix start-client and add SQLite connections DB entry |
+
+* Review
+
+| # | Comment summary                                                        | File                | Decision | Notes                                                              |
+|---+------------------------------------------------------------------------+---------------------+----------+--------------------------------------------------------------------|
+| 1 | Missing (require 'sql): sql-* vars not declared special under lex-bind | ores-dashboard.el   | Fixed    | Added (require 'sql) to requires block                             |
+| 2 | ores/dashboard--start-client-do crashes if context nil (direct M-x)   | ores-dashboard.el   | Fixed    | Added user-error guard before let* binding                         |
+
+* Result

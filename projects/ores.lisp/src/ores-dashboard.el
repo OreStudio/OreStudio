@@ -476,13 +476,15 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
           'ores/dashboard-group-env-face)))
 
 (defun ores/dashboard--db-group (env root dash-buf)
-  (let* ((label (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
-         (pgpw  (cdr (assoc "PGPASSWORD" env))))
+  (let* ((label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
+         (pgpw   (cdr (assoc "PGPASSWORD" env)))
+         (db-name (or (cdr (assoc "ORES_DATABASE_NAME" env))
+                      (format "ores_dev_%s" label))))
     (list "Database" 'nerd-icons-faicon "nf-fa-database"
           (list
            (ores/dashboard--mkitem
             "Open database connection" 'nerd-icons-faicon "nf-fa-plug"
-            (let ((lbl label) (db dash-buf) (pw pgpw))
+            (let ((lbl label) (db dash-buf) (pw pgpw) (dbn db-name))
               (lambda (_)
                 (ores-db/setup-connections)
                 ;; Ensure a postgres superuser connection exists for this label
@@ -493,7 +495,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                                 (list 'sql-user     "postgres")
                                 (list 'sql-password pw)
                                 (list 'sql-server   "localhost")
-                                (list 'sql-database "postgres"))
+                                (list 'sql-database dbn))
                           sql-connection-alist)))
                 (let* ((prefix (format "ores-%s-" lbl))
                        (conns  (seq-filter (lambda (e) (string-prefix-p prefix (car e)))

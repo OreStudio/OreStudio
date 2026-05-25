@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: ECEC4B5C-3731-4E53-8282-28FCD41FC5EE
+:END:
+#+title: Task: goto: add a task to an existing story
+#+description: Extend compass goto with an existing-story mode (--story) that branches and adds a task to an existing story instead of creating a new one.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compass:workflow:python:compass_goto:sprint_18:v0:
+#+owner: marco
+#+branch: feature/compass-goto-existing-story
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C0B87858-4EDA-40F3-B4DF-1CDEA5CC712E][compass goto: start a unit of work in one command]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extend =compass goto= so it can /also/ start work on an *existing*
+story: branch + add a task to that story, instead of only ever creating
+a new story. Today =goto= always scaffolds a new story and fails if the
+slug already exists.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:C0B87858-4EDA-40F3-B4DF-1CDEA5CC712E][compass goto: start a unit of work in one command]] |
+| Now          | Implemented; both modes verified via --dry-run. |
+| Waiting on   | Nothing.                               |
+| Next         | Review.                                |
+| Last touched | 2026-05-25                             |
+
+* Acceptance
+
+- /Existing-story mode/: =compass goto --story <id-or-slug> --task-slug
+  <slug> --task "<title>" [--description …]= fetches main, creates a
+  feature branch (=feature/<task-slug>=), adds a task to the resolved
+  story (via =add=), sets the task =#+branch:=, and prints next steps.
+- =--story= resolves by =:ID:= (UUID or unambiguous prefix) /or/ by the
+  story's folder slug, using =doc_index=.
+- =--story= is mutually exclusive with the new-story flags
+  (=--slug=/=--title=/=--description=); a clear error if both/neither
+  are given.
+- New-story mode is unchanged; =--dry-run= works for both.
+
+* Plan
+
+Interface decision ("have a think"): keep the current new-story mode and
+add an /existing-story/ mode keyed on =--story=:
+
+- =--story <id-or-slug>= → existing-story mode. Resolve via =doc_index=:
+  if the value is hex it matches a story =:ID:= (or prefix); otherwise
+  it matches the story folder name (slug). Accepting both keeps it
+  ergonomic (humans know slugs; tooling/links know UUIDs).
+- Required with =--story=: =--task-slug= and =--task= (title);
+  =--description= optional. Branch defaults to =feature/<task-slug>=.
+- Mutually exclusive with =--slug=/=--title=/=--description= (new-story).
+
+Steps:
+1. Add =--story= / =--task-slug= to =cmd_goto='s argparse; validate the
+   two modes are not mixed.
+2. =resolve_story(ident)= → (story_dir, story_title) via =doc_index=.
+3. In existing mode: branch from =task-slug=; skip story creation; one
+   =add task --parent-dir <story_dir>=; set =#+branch=; next steps.
+4. Dry-run + dogfood; update component overview + the goto recipe.
+
+* Notes
+
+Verified via =--dry-run= for both modes (existing-story by folder slug
+and by =:ID:= prefix; new-story unchanged) and the three error paths
+(mixed modes, =--story= without task, unknown story). The execution path
+(=git switch= + =add task --parent-dir=) is the one already exercised by
+new-story =goto= and by =add=.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=cmd_goto= now has two modes. Existing-story mode: =goto --story
+<id-or-slug> --task-slug <slug> --task "<title>" [--description …]=
+resolves the story via =resolve_story= (by =:ID:= exact/prefix or folder
+slug), branches =feature/<task-slug>=, adds a task to the existing story
+(=add=), sets =#+branch=, and prints next steps. New-story mode is
+unchanged. The two modes are mutually exclusive with clear validation.

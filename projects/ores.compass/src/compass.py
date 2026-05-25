@@ -888,36 +888,95 @@ def _set_frontmatter_branch(path, branch):
     if new != text:                      # avoid a redundant write
         Path(path).write_text(new, encoding="utf-8")
 
+def resolve_story(ident):
+    """Resolve a story identifier to (story_dir, title), or (None, None).
+
+    `ident` is matched against story docs by :ID: (exact, else unique prefix)
+    or by folder slug. Returns (None, None) if there is no unique match.
+    """
+    stories = [d for d in doc_index.load_all().values() if d.doctype == "story"]
+    il = ident.lower()
+    exact = [d for d in stories if d.id.lower() == il]
+    if exact:
+        cands = exact
+    else:
+        # Combine id-prefix and (case-insensitive) folder-slug matches and
+        # require a single unique match — so an id-prefix and a different
+        # story's slug don't silently resolve to the id one.
+        prefix = [d for d in stories if d.id.lower().startswith(il)]
+        slug = [d for d in stories if Path(d.rel_path).parent.name.lower() == il]
+        cands = list({d.id: d for d in prefix + slug}.values())
+    if len(cands) == 1:
+        d = cands[0]
+        return _parent_dir(d.rel_path), _strip_type_prefix(d.title)
+    return None, None
+
 def cmd_goto(argv):
-    """Start a unit of work in one command: fetch main, branch, scaffold a
-    linked story + task (via codegen), and print the remaining manual steps."""
+    """Start a unit of work in one command. Two modes:
+
+      new story:      --slug --title --description [--tags] [--task]
+      existing story: --story <id-or-slug> --task-slug --task [--description]
+
+    Both fetch main, create a feature branch, scaffold the task (and the
+    story, in new-story mode) via codegen, set the task #+branch, and print
+    the remaining manual steps."""
     ap = argparse.ArgumentParser(prog="compass goto",
-                                 description="Fetch main, branch, scaffold a linked story+task, print next steps.")
-    ap.add_argument("--slug", required=True, help="snake_case slug; drives the branch and doc folder")
-    ap.add_argument("--title", required=True, help="story title")
-    ap.add_argument("--description", required=True, help="story description")
-    ap.add_argument("--tags", default="", help="comma-separated content tags")
-    ap.add_argument("--task", default="", help="initial task title (default: 'Implement <title>')")
+                                 description="Fetch main, branch, scaffold a story/task, print next steps.")
+    ap.add_argument("--story", default="", help="existing story (UUID/prefix or folder slug) — existing-story mode")
+    ap.add_argument("--slug", default="", help="new-story mode: snake_case slug (drives branch + folder)")
+    ap.add_argument("--title", default="", help="new-story mode: story title")
+    ap.add_argument("--description", default="", help="story description (new mode) or task description (existing mode)")
+    ap.add_argument("--tags", default="", help="new-story mode: comma-separated content tags")
+    ap.add_argument("--task", default="", help="task title (default in new mode: 'Implement <title>')")
+    ap.add_argument("--task-slug", default="", help="existing-story mode: task slug (drives the branch)")
     ap.add_argument("--base", default="origin/main", help="branch base (default: origin/main)")
     ap.add_argument("--dry-run", action="store_true", help="print the plan without executing")
     args = ap.parse_args(argv)
-
-    branch = "feature/" + args.slug.replace("_", "-")
-    task_title = args.task or f"Implement {args.title}"
-    task_slug = "implement_" + args.slug
 
     _, current_sprint = current_version_sprint(doc_index.load_all())
     if current_sprint is None:
         print("❌ No current sprint found under doc/agile/versions/.", file=sys.stderr)
         return 1
     sprint_dir = _parent_dir(current_sprint.rel_path)
-    story_dir = f"{sprint_dir}/{args.slug}"
+
+    if args.story:
+        # --- existing-story mode ---
+        if args.slug or args.title:
+            print("❌ --story cannot be combined with --slug/--title (new-story mode).", file=sys.stderr)
+            return 1
+        if not (args.task_slug and args.task):
+            print("❌ --story requires --task-slug and --task.", file=sys.stderr)
+            return 1
+        story_dir, story_title = resolve_story(args.story)
+        if story_dir is None:
+            print(f"❌ Could not resolve a unique story for '{args.story}'.", file=sys.stderr)
+            return 1
+        new_story = None
+        task_slug, task_title = args.task_slug, args.task
+        task_desc = args.description or f"Task for: {story_title}"
+        branch = "feature/" + task_slug.replace("_", "-")
+    else:
+        # --- new-story mode ---
+        if not (args.slug and args.title and args.description):
+            print("❌ new-story mode needs --slug, --title and --description "
+                  "(or use --story for an existing story).", file=sys.stderr)
+            return 1
+        story_dir = f"{sprint_dir}/{args.slug}"
+        story_title = args.title
+        new_story = (args.slug, args.title, args.description, args.tags)
+        task_slug = "implement_" + args.slug
+        task_title = args.task or f"Implement {args.title}"
+        task_desc = f"Initial task for: {args.title}"
+        branch = "feature/" + args.slug.replace("_", "-")
+
     task_path = Path(PROJECT_ROOT) / story_dir / f"task_{task_slug}.org"
 
     if args.dry_run:
         print("compass goto — plan (dry run):")
+        print(f"  mode:    {'new story' if new_story else 'existing story'}")
         print(f"  branch:  {branch}   (base {args.base})")
-        print(f"  story:   {story_dir}/story.org")
+        print(f"  story:   {story_dir}/story.org   "
+              f"({'new' if new_story else f'existing: {story_title}'})")
         print(f"  task:    {story_dir}/task_{task_slug}.org   (#+branch: {branch})")
         print(f"  sprint:  {current_sprint.title}")
         return 0
@@ -934,17 +993,17 @@ def cmd_goto(argv):
         return 1
     print(f"✅ created and switched to {branch} (off {args.base})")
 
-    # 2. scaffold story + task via codegen (as a library). Check each call's
-    # result and stop on the first failure so we don't leave a half-made unit
-    # (gen.main returns 0 on success but may sys.exit on error).
+    # 2. scaffold the story (new mode only) + the task via codegen, stopping on
+    # the first failure (gen.main returns 0 on success but may sys.exit on error).
     try:
-        rc = gen.main(["--type", "story", "--slug", args.slug, "--parent-dir", sprint_dir,
-                       "--title", args.title, "--description", args.description, "--tags", args.tags])
-        if rc:
-            return rc
+        if new_story:
+            slug, title, desc, tags = new_story
+            rc = gen.main(["--type", "story", "--slug", slug, "--parent-dir", sprint_dir,
+                           "--title", title, "--description", desc, "--tags", tags])
+            if rc:
+                return rc
         rc = gen.main(["--type", "task", "--slug", task_slug, "--parent-dir", story_dir,
-                       "--title", task_title,
-                       "--description", f"Initial task for: {args.title}"])
+                       "--title", task_title, "--description", task_desc])
         if rc:
             return rc
     except SystemExit as exc:
@@ -957,8 +1016,9 @@ def cmd_goto(argv):
 
     # 4. next steps (deliberately manual — needs judgement)
     print("\nNext steps:")
-    print(f"  - wire the story into {sprint_dir}/sprint.org (* Stories table)")
-    print(f"  - flip the story/task State to STARTED when you begin")
+    if new_story:
+        print(f"  - wire the story into {sprint_dir}/sprint.org (* Stories table)")
+    print(f"  - flip the {'story and task' if new_story else 'task'} State to STARTED when you begin")
     print(f"  - git push -u origin {branch}   &&   open a PR")
     return 0
 

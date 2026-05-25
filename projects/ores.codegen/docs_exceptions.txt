@@ -17,3 +17,8 @@
 MISSING_OVERVIEW ores.workspace.api
 MISSING_OVERVIEW ores.workspace.core
 MISSING_OVERVIEW ores.workspace.service
+
+# ores.lisp is an Emacs-Lisp project, not a standard C++/Python component:
+# it has no PlantUML diagram and "Entry points" does not fit its module shape.
+MISSING_SECTION ores.lisp
+MISSING_PUML ores.lisp

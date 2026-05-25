@@ -12,6 +12,8 @@ Pillars:
     library — generation stays in codegen, not duplicated here.
   - Fleet: what every git worktree is doing — branch, story, task, PR
     (fleet), so parallel checkouts/agents don't collide.
+  - Goto: start a unit of work in one step — fetch main, branch, scaffold
+    a linked story+task, print next steps (goto).
 """
 
 import argparse
@@ -841,16 +843,9 @@ def cmd_add(argv):
                   f"{_DEFAULTABLE_PARENT[doc_type]}: {default_parent}", file=sys.stderr)
 
     # Lazy, optional import: the generator lives in ores.codegen and needs
-    # pystache. Only `add` requires it, so importing here keeps the other
-    # commands dependency-free.
-    sys.path.insert(0, str(PROJECT_ROOT / "projects" / "ores.codegen" / "src"))
-    try:
-        import v2_doc_generate
-    except ImportError as exc:
-        print(f"❌ `add` needs ores.codegen's generator ({exc}). Install its "
-              f"dependency into the compass venv: pip install pystache",
-              file=sys.stderr)
-        return 1
+    # pystache. Only `add` / `goto` require it; the other commands stay
+    # dependency-free.
+    v2_doc_generate = _import_generator()
 
     # v2_doc_generate.main returns 0 on success but may sys.exit on error;
     # catch SystemExit so the reminder prints only on success and the
@@ -868,6 +863,95 @@ def cmd_add(argv):
         return 1
     return rc
 
+def _import_generator():
+    """Import ores.codegen's v2_doc_generate (needs pystache). Exit on failure."""
+    sys.path.insert(0, str(PROJECT_ROOT / "projects" / "ores.codegen" / "src"))
+    try:
+        import v2_doc_generate
+        return v2_doc_generate
+    except ImportError as exc:
+        print(f"❌ This needs ores.codegen's generator ({exc}). Install its "
+              f"dependency into the compass venv: pip install pystache",
+              file=sys.stderr)
+        sys.exit(1)
+
+def _set_frontmatter_branch(path, branch):
+    """Set the #+branch field of a task doc (so fleet/where pick it up)."""
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except OSError:
+        return
+    new = re.sub(r"^#\+branch:.*$", f"#+branch: {branch}", text, count=1,
+                 flags=re.MULTILINE)
+    Path(path).write_text(new, encoding="utf-8")
+
+def cmd_goto(argv):
+    """Start a unit of work in one command: fetch main, branch, scaffold a
+    linked story + task (via codegen), and print the remaining manual steps."""
+    ap = argparse.ArgumentParser(prog="compass goto",
+                                 description="Fetch main, branch, scaffold a linked story+task, print next steps.")
+    ap.add_argument("--slug", required=True, help="snake_case slug; drives the branch and doc folder")
+    ap.add_argument("--title", required=True, help="story title")
+    ap.add_argument("--description", required=True, help="story description")
+    ap.add_argument("--tags", default="", help="comma-separated content tags")
+    ap.add_argument("--task", default="", help="initial task title (default: 'Implement <title>')")
+    ap.add_argument("--base", default="origin/main", help="branch base (default: origin/main)")
+    ap.add_argument("--dry-run", action="store_true", help="print the plan without executing")
+    args = ap.parse_args(argv)
+
+    branch = "feature/" + args.slug.replace("_", "-")
+    task_title = args.task or f"Implement {args.title}"
+    task_slug = "implement_" + args.slug
+
+    _, current_sprint = current_version_sprint(doc_index.load_all())
+    if current_sprint is None:
+        print("❌ No current sprint found under doc/agile/versions/.", file=sys.stderr)
+        return 1
+    sprint_dir = _parent_dir(current_sprint.rel_path)
+    story_dir = f"{sprint_dir}/{args.slug}"
+    task_path = Path(PROJECT_ROOT) / story_dir / f"task_{task_slug}.org"
+
+    if args.dry_run:
+        print("compass goto — plan (dry run):")
+        print(f"  branch:  {branch}   (base {args.base})")
+        print(f"  story:   {story_dir}/story.org")
+        print(f"  task:    {story_dir}/task_{task_slug}.org   (#+branch: {branch})")
+        print(f"  sprint:  {current_sprint.title}")
+        return 0
+
+    gen = _import_generator()
+
+    # 1. fetch + new branch off base
+    subprocess.run(["git", "fetch", "origin"], cwd=str(PROJECT_ROOT), check=False)
+    sw = subprocess.run(["git", "switch", "-c", branch, args.base],
+                        cwd=str(PROJECT_ROOT), capture_output=True, text=True)
+    if sw.returncode != 0:
+        print(f"❌ git switch -c {branch} {args.base} failed:\n{sw.stderr.strip()}",
+              file=sys.stderr)
+        return 1
+    print(f"✅ created and switched to {branch} (off {args.base})")
+
+    # 2. scaffold story + task via codegen (as a library)
+    try:
+        gen.main(["--type", "story", "--slug", args.slug, "--parent-dir", sprint_dir,
+                  "--title", args.title, "--description", args.description, "--tags", args.tags])
+        gen.main(["--type", "task", "--slug", task_slug, "--parent-dir", story_dir,
+                  "--title", task_title,
+                  "--description", f"Initial task for: {args.title}"])
+    except SystemExit as exc:
+        print(f"❌ scaffolding failed: {exc.code}", file=sys.stderr)
+        return 1
+
+    # 3. record the branch on the task so fleet/where can map this worktree
+    _set_frontmatter_branch(task_path, branch)
+
+    # 4. next steps (deliberately manual — needs judgement)
+    print("\nNext steps:")
+    print(f"  - wire the story into {sprint_dir}/sprint.org (* Stories table)")
+    print(f"  - flip the story/task State to STARTED when you begin")
+    print(f"  - git push -u origin {branch}   &&   open a PR")
+    return 0
+
 def main():
     # `list` and `show` pass every remaining argument straight through to the
     # bundled doc tools (full flag compatibility, including their own --help).
@@ -879,6 +963,8 @@ def main():
         sys.exit(doc_show.main(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "add":
         sys.exit(cmd_add(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "goto":
+        sys.exit(cmd_goto(sys.argv[2:]))
 
     parser = argparse.ArgumentParser(description="Compass: orientation tool for ORE Studio")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -915,6 +1001,8 @@ def main():
                           help="Show one doc by UUID/prefix: metadata, blurb, in/out links")
     subparsers.add_parser("add",
                           help="Create a v2 doc via ores.codegen (story/task/sprint/...); 'add --help' for usage")
+    subparsers.add_parser("goto",
+                          help="Start work: fetch main, branch, scaffold story+task, print next steps ('goto --help')")
 
     args = parser.parse_args()
 

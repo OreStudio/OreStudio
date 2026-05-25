@@ -30,6 +30,8 @@ How to use =compass=, the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][repository 
 
 - [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] — create a v2 doc via codegen
   (=add=).
+- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — fetch main, branch,
+  scaffold a linked story+task (=goto=).
 
 * Navigating the doc graph
 

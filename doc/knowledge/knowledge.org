@@ -84,6 +84,14 @@ Authentication, authorisation, and tenancy.
 - [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — the RBAC model that backs IAM:
   roles compose permissions, the assignment graph.
 
+* Manuals
+
+Published user-facing documentation for ORE Studio.
+
+- [[id:914738C6-7C77-41CD-A949-55DBBE0B6908][ORE Studio Manuals]] — index of all manuals and guides.
+- [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] — full user manual; covers all screens and
+  workflows.
+
 * External reference
 
 Concepts and systems we don't own — captured here so other docs can

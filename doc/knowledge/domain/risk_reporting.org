@@ -1,0 +1,580 @@
+:PROPERTIES:
+:ID: 04C68B55-E0B5-41CD-B90E-D670C17530B6
+:END:
+#+title: Risk Reporting
+#+description: Market risk and trading desk reporting: report definitions, instances, measures, Greek sets, classification taxonomy (cycle/frequency/audience/scope/methodology), full report catalogue, EOD batch set, and report configuration reference.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:domain:finance:reporting:ore:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+
+This document covers market risk and trading desk reporting in
+[[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]: the reports used by traders, risk managers, and quantitative
+analysts to monitor and attribute risk and P&L. It does not cover finance,
+regulatory capital, or accounting reports. P&L attribution methodology is
+documented separately in [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]]. For the pricing configuration that
+drives each report see [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]].
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Core Concepts
+
+** Report Definition
+
+A *Report Definition* is a named, reusable template specifying what to compute.
+It contains no trade or market data. It captures:
+
+- The report /type/ (which valuation and bumping methodology to use)
+- The /Greek set/ (which measures to compute and in what form)
+- All /configuration parameters/ (bump sizes, smile model, roll method,
+  display currency, aggregation level, etc.)
+
+Report Definitions can have multiple saved configurations. For example, a
+trader may maintain a ".1 Triple — Asia EM" configuration and a ".1 Triple —
+G10" configuration from the same report type.
+
+*ORE equivalent*: An analytics block in =ore.xml= plus the associated
+=sensitivity.xml= / =stresstest.xml= configuration.
+
+** Report Instance
+
+A *Report Instance* is a specific execution of a Report Definition against
+concrete inputs: a trade population snapshot, a market data snapshot, and a
+valuation date. Instances are versioned and reproducible; all inputs are
+captured at run time.
+
+** Measure
+
+A *Measure* is a single computable quantity for a trade or portfolio. Measures
+are either /base valuations/ (PV, NPV) or /sensitivities/ (Greeks). The set of
+measures to compute is defined by a Greek set attached to the report.
+
+** Greek Set (Greek Template)
+
+A *Greek Set* is a named, reusable collection of measures. Users define sets
+appropriate to their role (e.g. a vol desk set: PV, Vega, Rega, Sega, Gamma;
+a rates desk set: PV, Delta, DV01, Rho). A report may reference one or more
+Greek sets.
+
+** Aggregation Level
+
+Results may be produced and viewed at multiple levels of the organisational
+hierarchy:
+
+: Trade → Structure → Book → Sub-Portfolio → Portfolio → Branch → Firm
+
+Each book belongs to one branch and carries one aggregation currency. Risk
+figures at book level and above are converted to the aggregation currency.
+
+* Classification Taxonomy
+
+Every report is tagged across five orthogonal axes.
+
+** Axis: Cycle
+
+| Value     | Meaning                                                                                       |
+|-----------+-----------------------------------------------------------------------------------------------|
+| =intraday= | Runs against live/current market data during the trading day. Results are indicative.        |
+| =eod=     | Runs against the officially signed-off EOD market data cut. Results are authoritative.       |
+
+All =eod= reports are =scheduled= by definition.
+
+** Axis: Frequency
+
+| Value          | Meaning                                                                                 |
+|----------------+-----------------------------------------------------------------------------------------|
+| =on-demand=    | Launched explicitly by a user at any time.                                              |
+| =scheduled=    | Launched automatically at a pre-configured time or as part of an ordered batch.         |
+| =event-driven= | Launched automatically in response to a system event (new trade, vol surface rebuild). |
+
+** Axis: Audience
+
+| Value          | Who                                                                              |
+|----------------+----------------------------------------------------------------------------------|
+| =trading-desk= | Front-office traders and sales. Day-to-day position monitoring, intraday P&L.  |
+| =market-risk=  | Risk managers. Official EOD Greeks, stress scenarios, regulatory risk monitoring.|
+| =finance=      | P&L controllers. IPV, official valuations, sign-off reports.                    |
+| =middle-office= | MO/Operations staff. Trade lifecycle events, STP, confirmations, settlement.   |
+| =quant=        | Quantitative analysts. Model validation, vol surface quality checks.            |
+
+** Axis: Scope
+
+| Value      | Meaning                                                     |
+|------------+-------------------------------------------------------------|
+| =trade=    | One result row per trade or deal leg                        |
+| =book=     | One result row per trading book                             |
+| =portfolio= | One result row per portfolio or sub-portfolio              |
+| =firm=     | Firm-wide aggregation                                       |
+
+** Axis: Methodology
+
+| Value           | Meaning                                                                           |
+|-----------------+-----------------------------------------------------------------------------------|
+| =numeric-bump=  | Finite-difference sensitivity: re-value with bumped input, subtract base PV       |
+| =analytic=      | Closed-form derivative expression                                                 |
+| =risk-predict=  | Approximate P&L from stored Greeks via Taylor expansion; no re-valuation          |
+| =audit-derived= | Derived from trade or market data state; no valuation engine involvement          |
+
+* Methodologies
+
+** Numeric (Bumped) Greeks
+
+The standard method for computing sensitivities. The valuation engine is called
+twice: once with the base market data and once with a single input perturbed by
+a small /bump/. The Greek is the finite difference:
+
+$$\text{Greek} = \frac{PV(\text{bumped}) - PV(\text{base})}{\text{bump size}}$$
+
+Bump parameters:
+
+- *Bump size*: Magnitude of the perturbation (e.g. 0.1 vol point, 1 bp, 1% spot).
+- *Bump type*: Absolute (add the size) or relative/multiplicative.
+- *Bump count*: Number of symmetric bumps for grid reports (e.g. ±1%, ±2%, ±5%).
+- *Which underlyings to bump*: Specific currency pairs, specific tenors, or all.
+
+** Analytic (Closed-Form) Greeks
+
+For certain product/model combinations the sensitivity has a closed-form
+expression (e.g. Black-Scholes Delta: $\Delta = e^{-r_f T} N(d_1)$). Where
+supported, analytic Greeks are faster and more precise than bumped Greeks.
+
+** Bump and Reset
+
+A P&L attribution methodology. Each market data component is perturbed
+independently while all others remain at their Day 0 levels. Individual
+components are additive up to cross effects. Full description in
+[[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]].
+
+** Bump and Run
+
+A cumulative P&L attribution methodology. Bumps are applied in a defined
+sequence; each step adds one more component on top of all previously applied
+bumps. Full description in [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]].
+
+** Risk Predict
+
+An approximation of P&L resulting from a hypothetical market data move,
+computed from stored Greeks rather than by re-running the valuation engine:
+
+$$\Delta P\&L \approx \sum_i \text{Greek}_i \times \text{Shift}_i + \tfrac{1}{2} \sum_i \Gamma_i \times \text{Shift}_i^2$$
+
+For spot deltas the market movement is computed as a relative change:
+$MM = (D_1 - D_0) / D_0$, not an absolute shift. Greeks must be re-centred
+against the spot rates matrix before the predict is computed. Risk Predict is
+used by Finance to scale IPV Greeks by the difference between internal and
+independent rates, producing the /IPV risk number/.
+
+Note: Risk Predict is an approximation. Cross effects and higher-order terms
+beyond second order are not captured.
+
+* Measures Catalogue
+
+** Base Measures
+
+| Measure | Description                                          |
+|---------+------------------------------------------------------|
+| PV      | Present value: discounted future cash flows          |
+| NPV     | Net present value: PV net of past settled amounts    |
+| MTM     | Mark-to-Market: NPV against the official EOD cut     |
+
+** Greeks
+
+| Greek | Symbol   | Input bumped        | Notes                                        |
+|-------+----------+---------------------+----------------------------------------------|
+| Delta | $\Delta$ | FX Spot rate        | Primary directional risk                     |
+| Gamma | $\Gamma$ | FX Spot (2nd order) | Curvature; approximated via Taylor expansion |
+| Vega  | $\nu$    | ATM volatility      | Tenor-by-tenor                               |
+| Rega  | —        | Risk Reversal       | Skew sensitivity                             |
+| Sega  | —        | Strangle            | Curvature/wing sensitivity                   |
+| Theta | $\Theta$ | Time (date roll)    | Time decay                                   |
+| Rho   | $\rho$   | Interest rate       | Discount and projection separately           |
+
+** Greek Variants
+
+| Variant  | Description                                                           |
+|----------+-----------------------------------------------------------------------|
+| Unbumped | PV with no perturbation (the base valuation)                          |
+| Bumped   | Numeric finite-difference computation                                 |
+| Analytic | Closed-form computation where model supports it                       |
+| Weighted | Greek scaled by a notional or price weighting                         |
+| Model    | Greek produced by a specific model variant (e.g. BS Delta vs Smile Delta) |
+
+** P&L Measures
+
+| Measure     | Description                                                     |
+|-------------+-----------------------------------------------------------------|
+| Daily P&L   | NPV change since previous business day                          |
+| MTD P&L     | NPV minus previous month-end NPV                               |
+| YTD P&L     | NPV minus previous year-end NPV                                |
+| LTD P&L     | Current MTM without adjustments; the raw NPV                   |
+| P&L Impact  | Estimated P&L change from a hypothetical shift (Risk Predict)  |
+| BS Daily P&L | Black-Scholes equivalent of Daily P&L                         |
+| BS MTD P&L  | Black-Scholes equivalent of MTD P&L                            |
+
+** Vol Sensitivity Measures
+
+| Measure   | Description                                           |
+|-----------+-------------------------------------------------------|
+| .1 ATM    | PV change from 0.1 bump to ATM vol                   |
+| .1 RR     | PV change from 0.1 bump to Risk Reversal              |
+| .1 STR    | PV change from 0.1 bump to Strangle                  |
+| .1 Triple | PV change from 0.1 bump applied to ATM + RR + STR    |
+| .1 Quad   | As Triple plus a fourth surface component             |
+
+* Report Catalogue
+
+** Headline Position
+
+| Cycle       | intraday · eod              |
+| Frequency   | on-demand · scheduled       |
+| Audience    | trading-desk · market-risk  |
+| Scope       | book · portfolio            |
+| Methodology | risk-predict · numeric-bump |
+
+*Purpose*: Displays the most important Greeks across the entire trade set for a
+book or portfolio. The primary real-time risk overview report for traders and
+risk managers. Provides high-level sign-off visibility on the current state of
+risk.
+
+*Measures*: Configurable; typically PV, Daily P&L, MTD P&L, YTD P&L, Delta
+P&L.
+
+*Aggregation*: Book, Portfolio, Currency Pair, Greek, Unit Hedge.
+
+** Spot Ladder
+
+| Cycle       | intraday      |
+| Frequency   | on-demand     |
+| Audience    | trading-desk  |
+| Scope       | book          |
+| Methodology | audit-derived |
+
+*Purpose*: For a given currency pair, shows the full forward curve (all tenor
+outright rates) in a ladder format. Primary tool for quoting and hedging at
+specific tenors.
+
+*Measures*: Forward outright rates at each tenor; optionally swap/forward
+points. Aggregation can be "Out of Today", "Out of Tomorrow", or "Out of Spot"
+(see [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]]).
+
+** Spot Greeks Report
+
+| Cycle       | intraday · eod             |
+| Frequency   | on-demand · scheduled      |
+| Audience    | trading-desk · market-risk |
+| Scope       | book                       |
+| Methodology | numeric-bump · risk-predict |
+
+*Purpose*: Displays P&L and Delta at a grid of spot shift levels. Answers
+"what happens to my P&L if spot moves by X%?" Provides a scenario view of
+directional risk; used by market risk for stress testing.
+
+*Measures*: Per shift level: Daily P&L, MTD P&L, YTD P&L, P&L Impact, BS
+equivalents, PV, Delta, BS Delta.
+
+** Triple Vol Spot Ladder
+
+| Cycle       | intraday · eod             |
+| Frequency   | on-demand · scheduled      |
+| Audience    | trading-desk · market-risk |
+| Scope       | book                       |
+| Methodology | numeric-bump               |
+
+*Purpose*: Headline sensitivity report combining vol sensitivity (Vega) and
+skew sensitivities (Rega, Sega) across all curve tenors at multiple spot shift
+levels. The primary vol risk overview report. Splits exotic and vanilla
+populations separately.
+
+*Measures*: Per tenor × per spot shift: Vega, Rega, Sega. Standard shift
+series: 30, 20, 10, 5, 2, 1, 0.5, 0.
+
+** .1 ATM Report
+
+| Cycle       | intraday · eod             |
+| Frequency   | on-demand · scheduled      |
+| Audience    | trading-desk · market-risk |
+| Scope       | trade · book               |
+| Methodology | numeric-bump               |
+
+*Purpose*: Measures sensitivity to a parallel 0.1-unit shift in ATM
+volatility, broken out by currency pair and tenor.
+
+** .1 Triple Report
+
+| Cycle       | intraday · eod             |
+| Frequency   | on-demand · scheduled      |
+| Audience    | trading-desk · market-risk |
+| Scope       | trade · book               |
+| Methodology | numeric-bump               |
+
+*Purpose*: Measures the combined effect of bumping ATM + RR + STR
+simultaneously by 0.1. Captures total vol sensitivity including smile
+structure. Equivalent to shifting the entire vol surface by 0.1 while
+preserving its shape.
+
+** .1 Quad Report
+
+| Cycle       | intraday · eod             |
+| Frequency   | on-demand · scheduled      |
+| Audience    | trading-desk · market-risk |
+| Scope       | trade · book               |
+| Methodology | numeric-bump               |
+
+*Purpose*: Extension of the Triple adding a fourth vol surface component.
+Used for surface models with a fourth degree of freedom beyond ATM/RR/STR.
+
+** .1 Rate (Rho) Report
+
+| Cycle       | intraday · eod         |
+| Frequency   | on-demand · scheduled  |
+| Audience    | market-risk            |
+| Scope       | book                   |
+| Methodology | numeric-bump           |
+
+*Purpose*: Measures the effect of a 0.1% change in interest rates at each
+point in the rate term structure. Discount and projection effects shown
+separately.
+
+** .1 RR/STR Report
+
+| Cycle       | intraday · eod             |
+| Frequency   | on-demand · scheduled      |
+| Audience    | trading-desk · market-risk |
+| Scope       | trade · book               |
+| Methodology | numeric-bump               |
+
+*Purpose*: Measures sensitivity to Risk Reversal and Strangle independently
+(not combined as in Triple). Separates the skew contribution (Rega) from the
+wing/curvature contribution (Sega).
+
+** Rho/Vol Matrix Report
+
+| Cycle       | eod          |
+| Frequency   | scheduled    |
+| Audience    | market-risk  |
+| Scope       | book         |
+| Methodology | numeric-bump |
+
+*Purpose*: Shows the P&L effect of simultaneously bumping ATM vols and
+interest rates across a grid of joint shift levels. Captures the cross-sensitivity
+between rates and vols.
+
+*Example axes*: Rho: −25 bps to +25 bps in 5 bp increments; Vol: −2% to +10%.
+
+** Spot/Vol Matrix Report
+
+| Cycle       | eod          |
+| Frequency   | scheduled    |
+| Audience    | market-risk  |
+| Scope       | book         |
+| Methodology | numeric-bump |
+
+*Purpose*: Sensitivity to simultaneous spot and vol shifts across a grid.
+
+** Spot/Rho Matrix Report
+
+| Cycle       | eod          |
+| Frequency   | scheduled    |
+| Audience    | market-risk  |
+| Scope       | book         |
+| Methodology | numeric-bump |
+
+*Purpose*: Combined spot and interest rate sensitivity matrix.
+
+** Spot Ladder — All Crosses (Market Risk EOD)
+
+| Cycle       | eod          |
+| Frequency   | scheduled    |
+| Audience    | market-risk  |
+| Scope       | book         |
+| Methodology | numeric-bump |
+
+*Purpose*: Spot sensitivity across all currency crosses at standard shift
+levels. EOD market risk version is a systematic run across all books and all
+currency pairs, distinct from the trader's real-time Spot Ladder.
+
+** Spot Vol Ladder — Base and Quote Currency
+
+| Cycle       | eod          |
+| Frequency   | scheduled    |
+| Audience    | market-risk  |
+| Scope       | trade · book |
+| Methodology | numeric-bump |
+
+*Purpose*: Trade-level spot and vol sensitivity report, produced separately
+for the base currency and the quote currency.
+
+** Trade Level Ladder — Premium Currency Bumped
+
+| Cycle       | eod          |
+| Frequency   | scheduled    |
+| Audience    | market-risk  |
+| Scope       | trade        |
+| Methodology | numeric-bump |
+
+*Purpose*: Spot ladder at trade level where the premium currency is the
+bumped spot underlier. Used for structures where the option premium currency
+differs from the base currency.
+
+** Vol Manipulation Report
+
+| Cycle       | eod                  |
+| Frequency   | event-driven         |
+| Audience    | quant · market-risk  |
+| Scope       | book                 |
+| Methodology | audit-derived        |
+
+*Purpose*: Audit report. For any vol surface adjustments (e.g. wing
+stabilisation, smile corrections), reports the adjustment made by tenor and
+adjustment type. Provides transparency between raw market quotes and the vols
+actually used in pricing.
+
+** Spike Map
+
+| Cycle       | intraday                   |
+| Frequency   | on-demand · event-driven   |
+| Audience    | trading-desk · market-risk |
+| Scope       | book                       |
+| Methodology | audit-derived              |
+
+*Purpose*: Per currency pair, a visual map of option notional concentration
+(or theoretical value) against expiry date and spot level. Helps traders
+identify large concentrations of barrier and digital risk across time and spot
+space.
+
+*Modes*: American Notional, American TV, European Notional, European TV.
+
+** Strike Map
+
+| Cycle       | intraday      |
+| Frequency   | on-demand     |
+| Audience    | trading-desk  |
+| Scope       | book          |
+| Methodology | audit-derived |
+
+*Purpose*: Similar to the Spike Map but bucketed by option strike rather than
+expiry date. Shows notional concentration across strike space at each tenor.
+
+** Option Map
+
+| Cycle       | intraday      |
+| Frequency   | on-demand     |
+| Audience    | trading-desk  |
+| Scope       | book          |
+| Methodology | audit-derived |
+
+*Purpose*: Combines the traditional option map (bucketed by delta) with a
+strike view. Unified view of notional distribution across both delta and strike.
+
+** Intraday Change Report (Daily Activity Report)
+
+| Cycle       | intraday                 |
+| Frequency   | scheduled · event-driven |
+| Audience    | trading-desk             |
+| Scope       | book · portfolio         |
+| Methodology | risk-predict             |
+
+*Purpose*: Shows how market data and risk have changed since a configurable
+reference time. Provides a continuous intraday P&L attribution without
+requiring a full EOD explain run.
+
+** IPV Explain Report
+
+| Cycle       | eod                        |
+| Frequency   | scheduled                  |
+| Audience    | finance · market-risk      |
+| Scope       | book · portfolio           |
+| Methodology | risk-predict · numeric-bump |
+
+*Purpose*: Quantifies the P&L difference between internal bank rates and
+independently sourced rates (the IPV cut). Used by Finance to identify
+mis-marks. Greeks are always computed even for points with no IPV data, so
+uncovered risk is visible.
+
+*Measures*: PV at EOD rates, PV at IPV rates, difference (IPV adjustment),
+scaled risk (IPV risk number = Greek × IPV market data move).
+
+** Trades Since Last In Report
+
+| Cycle       | intraday                      |
+| Frequency   | on-demand                     |
+| Audience    | trading-desk · middle-office  |
+| Scope       | book · portfolio              |
+| Methodology | audit-derived                 |
+
+*Purpose*: Shows all trades booked since a specified date-time. Used for
+morning review and monitoring activity on shared books.
+
+* Market Risk EOD Report Set
+
+The following reports constitute the standard end-of-day market risk batch.
+All are =eod= cycle, =scheduled= frequency. They run after the market data cut
+is signed off and the curve bootstrap and vol surface build are complete.
+
+|  # | Report                              | Scope         | Methodology     | Audience                |
+|----+-------------------------------------+---------------+-----------------+-------------------------|
+|  1 | .1 Rho                              | Book          | Numeric bump    | market-risk             |
+|  2 | Rho/Vol Matrix                      | Book, per ccy | Numeric bump    | market-risk             |
+|  3 | Spot/Vol Matrix                     | Book          | Numeric bump    | market-risk             |
+|  4 | Spot/Rho Matrix                     | Book          | Numeric bump    | market-risk             |
+|  5 | Spot Vol Ladder (Base Currency)     | Trade & Book  | Numeric bump    | market-risk             |
+|  6 | Spot Vol Ladder (Quote Currency)    | Trade & Book  | Numeric bump    | market-risk             |
+|  7 | Spot Ladder (all crosses)           | Book          | Numeric bump    | market-risk             |
+|  8 | Trade Level Ladder (Premium Ccy)    | Trade         | Numeric bump    | market-risk             |
+|  9 | Trade and Book Level .1 Triple Vol  | Trade & Book  | Numeric bump    | trading-desk · mkt-risk |
+| 10 | Vol Manipulation Report             | Book          | Audit-derived   | quant · market-risk     |
+
+Estimated batch start: 18:30–19:00 London time (branch-dependent). The full
+batch must complete before the start of the next trading session.
+
+* Report Configuration Reference
+
+** Valuation Model
+
+- *Smile model*: SABR, 5-point spline, Black-Scholes (flat). Per-currency-pair
+  overrides; a default is applied when no override exists.
+- *ATM curve interpolation*: Interpolation type for the ATM vol term structure.
+- *Rates interpolation*: Interpolation for discount and projection curves.
+- *Vol interpolation*: Market or Physical (see [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]]).
+- *Value past coupons*: Whether to include cash flows before the valuation date.
+- *PV offset in days*: Number of spot days used for discounting.
+
+** Bump Parameters
+
+- Bump size, bump type (absolute / relative), bump count.
+- Which underlyings to bump (specific pairs, all pairs, specific tenors).
+- Whether to bump model term-structure parameters (e.g. SABR correlation).
+
+** Monte Carlo
+
+- Number of simulations, use of Sobol, Brownian bridge, number of time steps,
+  number of spatial points.
+
+** Rolling
+
+- *Spot roll method*: Fixed roll or other; how spot is treated when advancing
+  the valuation date.
+- *Vol roll method*: How vol tenors roll with time.
+- *Date steps*: Weekday only vs. calendar day.
+- *Days forward*: Number of days to roll for theta/multi-day risk.
+
+** Display and Aggregation
+
+- Display currency, aggregation currency, aggregation mode.
+- Summary levels: Book, Sub-Portfolio, Portfolio, Branch.
+- Threshold filters (min/max Greek value) for Headline-style reports.
+
+* ORE Studio Notes
+
+ORE produces many of the above reports as analytics outputs:
+
+- =NPV=, =CASHFLOWS=: Base valuation measures.
+- =SENSITIVITY=: Numeric bumped Greeks (configured in =sensitivity.xml=).
+- =STRESS=: Scenario / stress testing (configured in =stresstest.xml=).
+- =VAR=: Value-at-Risk (configured in =var.xml=).
+
+ORE Studio will need to expose report configuration as domain entities, allow
+users to define Greek sets and report definitions, and display results in the
+Qt UI. The report catalogue above defines the target set of reports for the
+ORE Studio trading desk UI.

@@ -73,6 +73,7 @@ In execution order.
 | [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]]           | STARTED | 2026-05-25 | | =sprint-reviewer= skill writes a structured health-check section into =sprint.org=. |
 | [[id:C3B6F514-559F-4038-A1D7-947BC9F7F398][Add Downloads and Agile nav entries to the site]]    | BACKLOG | 2026-05-25 | | =doc/downloads.org= with release table; =Downloads= and =Agile= links in site nav.         |
 | [[id:6EBB206D-167F-4A0F-8F50-04D7EB4B7E33][Fix PDF site delivery and switch manual to book class]] | STARTED | 2026-05-25 | | Add =site:pdf= publish component; switch manual to =book= LaTeX class; regenerate PDF.     |
+| [[id:4E375DD6-E300-4A0A-BD20-3D06AC8ED7A1][Port domain concept notes to knowledge documents]]      | STARTED | 2026-05-25 | | Tidy personal finance/ORE domain notes into v2 knowledge docs; align with ORE Studio terms. |
 
 * Health Review
 

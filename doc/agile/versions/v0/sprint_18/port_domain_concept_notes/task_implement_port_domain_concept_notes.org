@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: FBB4FEE3-5DB0-4404-893E-6FE298E22088
+:END:
+#+title: Task: Survey notes and create initial knowledge documents
+#+description: Read all nine source notes, decide on document split, create v2 knowledge documents under doc/knowledge/domain/, align terminology with ORE Studio.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :port_domain_concept_notes:sprint_18:v0:
+#+owner: marco
+#+branch: feature/port-domain-concept-notes
+#+pr: 844
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4E375DD6-E300-4A0A-BD20-3D06AC8ED7A1][Port domain concept notes to knowledge documents]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Read all nine source notes under =/home/marco/Development/Notebooks/summaries/=, produce a document split plan, then create the v2 knowledge documents under =doc/knowledge/domain/= with correct frontmatter, cross-links, and ORE Studio-aligned terminology.
+
+* Status
+
+| Field        | Value                                                      |
+|--------------+------------------------------------------------------------|
+| State        | DONE                                                       |
+| Parent story | [[id:4E375DD6-E300-4A0A-BD20-3D06AC8ED7A1][Port domain concept notes to knowledge documents]]           |
+| Now          | Complete.                                                  |
+| Waiting on   | Nothing.                                                   |
+| Next         | Raise PR.                                                  |
+| Last touched | 2026-05-25                                                 |
+
+* Acceptance
+
+- All nine source notes read and accounted for.
+- Document split plan recorded in =* Notes= below before writing begins.
+- All resulting files are valid v2 knowledge documents.
+- Terminology gaps (e.g. "grid", "jobs") either resolved or explicitly
+  flagged inline for follow-up.
+- New docs linked from the domain knowledge index.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+Source files to process (=/home/marco/Development/Notebooks/summaries/=):
+
+| File                           | Status | Notes                                                         |
+|--------------------------------+--------+---------------------------------------------------------------|
+| fx-vol-surface.org             | Done   | → fx_volatility_surface.org (5B513D53)                       |
+| grid-infrastructure.org        | Done   | → compute_engine.org (98B9FE2A); grid/job terms → ORE Studio |
+| pl-attribution.org             | Done   | → pl_attribution.org (B50355E0); reporting.org merged here   |
+| pricing-configuration.org      | Done   | → pricing_configuration.org (EDAE3C87)                       |
+| rates-curves-bootstrapping.org | Done   | → interest_rate_curves.org (E808F432)                        |
+| reporting.org                  | Done   | Superseded; content merged into pl_attribution + risk_reporting |
+| risk-reporting.org             | Done   | → risk_reporting.org (04C68B55)                              |
+| time-structures-tenors.org     | Done   | → time_structures_and_tenors.org (1427C01C)                  |
+| trade-blotter.org              | Done   | → trade_blotter.org (3976695F)                               |
+
+* PRs
+
+| PR                                                                  | Title                                            |
+|---------------------------------------------------------------------+--------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/844][#844]]          | Port domain concept notes to knowledge documents |
+
+* Review
+
+| # | Comment summary                                              | File                                    | Decision | Notes                               |
+|---+--------------------------------------------------------------+-----------------------------------------+----------+-------------------------------------|
+| 1 | DONE task: Now field should be "Complete" not prose          | task_implement_port_domain_concept_notes.org | Fixed | Changed to "Complete."          |
+| 2 | Aggregation hierarchy uses "Trade Aggregate"; should be "Structure" | pl_attribution.org             | Fixed | Updated hierarchy line              |
+
+* Result
+
+8 v2 knowledge documents created under =doc/knowledge/domain/=:
+=fx_volatility_surface.org=, =interest_rate_curves.org=,
+=time_structures_and_tenors.org=, =compute_engine.org=,
+=pricing_configuration.org=, =pl_attribution.org=,
+=risk_reporting.org=, =trade_blotter.org=.
+=reporting.org= was superseded; its content merged into
+=pl_attribution.org= and =risk_reporting.org=.
+All documents committed on =feature/port-domain-concept-notes=.

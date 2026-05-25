@@ -18,7 +18,8 @@ in two places, that concept belongs here.
 
 Knowledge is grouped by topic; jump to the section that fits what you
 are looking for. The [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][external/]] subfolder contains pure reference docs
-about systems and concepts ORE Studio does not own.
+about systems and concepts ORE Studio does not own. For user-facing
+documentation see [[id:914738C6-7C77-41CD-A949-55DBBE0B6908][ORE Studio Manuals]].
 
 * Domain
 

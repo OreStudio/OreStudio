@@ -1,0 +1,316 @@
+:PROPERTIES:
+:ID: EDAE3C87-7733-4D0C-881F-5AA65DD832AC
+:END:
+#+title: Pricing Configuration
+#+description: Named, versioned bundle of valuation settings: valuation model mapping, smile surface configuration, Greek configuration, general valuation settings, model parameters, layered overrides, and MRU views.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:domain:finance:pricing:ore:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+
+A *Pricing Configuration* is a named, versioned bundle of valuation settings
+that fully determines how the pricing engine values a set of trades. It bridges
+a report definition (which says /what/ to compute) and the engine (which needs
+to know /how/ to compute it). In [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] the equivalent is =EngineData=
+(=pricingengines.xml=). This document covers the five configuration layers,
+the override hierarchy, snapshotting for reproducibility, and MRU views. For
+the reports that consume pricing configurations see [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]]. For the vol
+surface configuration layer see [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]].
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Overview
+
+Pricing configurations exist because:
+
+1. Different reports need different valuation configurations. A trader's
+   intraday risk report may use SABR with physical interpolation, while the
+   official EOD may use 5-point spline with market interpolation.
+2. Different users (FO, Finance, Quant) may use different models and model
+   parameters for the same trade population. These differences must be
+   explained, not hidden.
+3. Valuations must be reproducible. All model configuration used for a
+   valuation must be snapshotted alongside the market data cut and the deal
+   population.
+
+The pricing configuration is what makes it possible to re-run a historical
+valuation and obtain the same result: it captures not just which model was used,
+but every parameter, interpolation setting, and override that shaped the output.
+
+* Anatomy of a Pricing Configuration
+
+A pricing configuration is composed of five distinct layers. Each layer
+addresses a different aspect of how the engine values a trade.
+
+#+begin_example
+┌──────────────────────────────────────────────────────────────┐
+│                   PRICING CONFIGURATION                      │
+│                    (named, versioned)                        │
+├──────────────────────────────────────────────────────────────┤
+│  1. Valuation Model Configuration                            │
+│     (product type → pricing model mapping)                   │
+│                                                              │
+│  2. Smile Surface Configuration                              │
+│     (currency pair → smile model + interpolation)            │
+│                                                              │
+│  3. Greek Configuration                                      │
+│     (which Greeks, numeric/analytic, bump parameters)        │
+│                                                              │
+│  4. General Valuation Settings                               │
+│     (cross-model settings: interpolation, roll, coupons)     │
+│                                                              │
+│  5. Model Parameters                                         │
+│     (scalar + term-structure parameters for each model)      │
+└──────────────────────────────────────────────────────────────┘
+#+end_example
+
+** Valuation Model Configuration
+
+The *Valuation Model Configuration* maps each product type to the pricing model
+(or models) used to value it. This is the first-order decision: for a given
+vanilla option, which model prices it?
+
+The mapping can be conditional:
+
+- *By product property*: "If expiry > 3M use Model X, else use Model Y."
+- *By time property*: "For maturity < 2Y use Model X, for maturity ≥ 2Y use
+  Model Y."
+- *By currency pair*: "For EUR/USD use Model X; for all EM pairs use Model Y."
+- *Composite*: "The value of a Greek is a weighted composite of values produced
+  by multiple models." Used for models that produce skew adjustments (e.g.
+  replication models).
+- *Fallback*: "If Model X fails to calibrate, fall back to Model Y."
+
+Not all product types are supported by every model. For simple products
+(forwards, deposits) there may be only one model. For exotic products, the set
+of available models is narrower and the choice may have a material impact on
+valuation.
+
+*ORE equivalent*: =pricingengines.xml= — maps trade type identifiers to ORE
+engine and model names.
+
+** Smile Surface Configuration
+
+The *Smile Surface Configuration* determines which vol surface model is used
+for each currency pair, and how the surface is built and interpolated.
+
+Three values define the smile surface:
+
+| Setting              | Description                                                                                                                                      |
+|----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------|
+| Smile model          | The surface construction model: SABR, 5-point spline, Black-Scholes (flat)                                                                       |
+| Smile parameter form | Which form of smile parameters to use as input (ATM + RR + STR, or raw vols, etc.)                                                              |
+| Interpolation method | How the surface is stitched across maturities: linear in variance, linear in vol, physical (model parameter space), market (market quote space) |
+
+Constraints between these settings:
+
+- The smile model and parameter form are coupled: not all permutations are
+  valid. For Black-Scholes, only ATM DNS or ATM Forward is valid.
+- Market interpolation should not be used with Black-Scholes because the
+  DNS/Forward switch creates a discontinuity in the term structure.
+- SABR does not support 5-point calibration; 5-point requires spline
+  interpolation.
+
+*** Main and Backup Surfaces
+
+Every pricing configuration maintains two vol surfaces:
+
+- *Main surface*: The primary surface used for pricing (SABR, 5-point, or BS).
+- *Black-Scholes surface*: Always BS. Used as a backup, for reparameterisation,
+  and for producing BS-equivalent Greeks.
+
+*** Per-Currency-Pair Assignment
+
+The smile surface configuration can be set per currency pair, following a
+layered model:
+
+1. *System default*: A global default smile model and interpolation.
+2. *Currency pair override*: An explicit configuration for a specific pair.
+3. *Force override*: Forces all currency pairs to use a given smile model
+   and/or interpolation, regardless of per-pair settings. Used for scenario
+   analysis (e.g. "revalue everything under flat vol").
+
+** Greek Configuration
+
+The *Greek Configuration* determines which sensitivities are computed and how.
+It consists of:
+
+- A selection from the canonical list of Greeks (PV, Delta, Gamma, Vega, Rega,
+  Sega, Theta, Rho, etc.).
+- For each selected Greek, the computation mode:
+  - *Unbumped*: base PV (no perturbation).
+  - *Bumped*: numeric finite-difference.
+  - *Analytic*: closed-form where the model supports it.
+  - *Weighted*: scaled by a weighting factor.
+  - *Model*: produced by a specific model variant (e.g. BS Delta vs Smile Delta).
+
+A Greek only has meaning in the context of a Valuation Model Configuration.
+Greek configurations are typically packaged into reusable /Greek Sets/
+(templates) that users select by name (e.g. "MTD P&L", "Daily Risk",
+"Exotic Full Greeks"). A Greek set implies its pricing configuration.
+
+*ORE equivalent*: The =<Analytics>= block in =ore.xml= specifies which analytics
+(NPV, SENSITIVITY, CASHFLOWS, etc.) ORE computes. Sensitivity configuration
+lives in =sensitivity.xml=.
+
+** General Valuation Settings
+
+*General Valuation Settings* are cross-model parameters that apply uniformly
+to all valuations within the pricing configuration.
+
+| Setting                 | Description                                                                               |
+|-------------------------+-------------------------------------------------------------------------------------------|
+| Rates interpolation     | Interpolation method for discount and projection curves                                   |
+| Vols interpolation      | Interpolation method for the vol surface time dimension                                   |
+| Use of ATM curve        | Whether ATM curve interpolation is used vs. direct vol interpolation                      |
+| Roll types              | How curves and surfaces roll when the valuation date advances                             |
+| PV offset in days       | Number of spot days for discounting (normally 2)                                          |
+| Value past coupons      | Whether to include cash flows before the valuation date                                   |
+| Include brokerage       | Whether brokerage trades enter the valuation                                              |
+| Multi-threading         | Whether the engine parallelises valuation across trades                                   |
+| Hull-White vol bump size | Size of the vol bump used in Hull-White stochastic rates models                          |
+| Rate bump size          | Default size for interest rate bumps                                                      |
+
+** Model Parameters
+
+Model parameters are the numeric inputs to each pricing model.
+
+*** Scalar Parameters
+
+Single-valued inputs with no tenor dimension:
+
+| Category                | Override per report? | Examples                                                                                    |
+|-------------------------+----------------------+---------------------------------------------------------------------------------------------|
+| Default scalars         | No                   | Bid/offer strike shift, Hull-White mean reversion (mid), number of replication dates        |
+| Report-specific scalars | Yes                  | Number of Monte Carlo simulations, number of spatial points, time steps, use of Sobol       |
+
+*** Term Structure Parameters
+
+Parameters that have a value at each tenor, structurally identical to a market
+data curve but used as model inputs. Examples for SABR:
+
+- Correlation sensitivity (up/down)
+- Vol adjustments
+- RR infinite flag
+- Vol swap adjustments
+- Standard deviation weighting
+
+See [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] for the scalar vs. term-structure distinction.
+
+* Configuration Layering and Overrides
+
+Pricing configuration follows a layered override hierarchy:
+
+#+begin_example
+┌──────────────────────────────────────────────────┐
+│  Layer 4: Deal-Level Overrides                   │  ← highest priority
+├──────────────────────────────────────────────────┤
+│  Layer 3: Report Instance Overrides              │
+├──────────────────────────────────────────────────┤
+│  Layer 2: Report Definition Defaults             │
+├──────────────────────────────────────────────────┤
+│  Layer 1: System Defaults                        │
+└──────────────────────────────────────────────────┘  ← lowest priority
+#+end_example
+
+- *System defaults* (Layer 1): The baseline. Every setting has a system-wide
+  default; if no override exists at any higher layer, this value is used.
+- *Report definition defaults* (Layer 2): When a user saves a named report
+  configuration (e.g. ".1 Triple — G10"), they are saving a Layer 2 override
+  set.
+- *Report instance overrides* (Layer 3): Ad-hoc overrides applied at the time
+  a report is run. Persisted with the report instance for reproducibility but
+  do not affect the saved report definition.
+- *Deal-level overrides* (Layer 4): Non-standard valuation settings for
+  specific deals or deal types. Finance must be able to track all changes at
+  this level.
+
+** Front Office vs. Back Office Settings
+
+FO and Finance may use different pricing configurations for the same trade
+population. Common differences include more aggressive models or model
+parameters in FO vs. more conservative settings in Finance. The differences
+must be explained: the P&L attribution framework (see [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]])
+includes a "Models" bucket that captures the P&L impact of changing model
+settings between Day 0 and Day 1:
+
+$$\text{Models P\&L} = NPV(D_0, M_0, T_0)_{\text{Day}_1\text{ model}} - NPV(D_0, M_0, T_0)_{\text{Day}_0\text{ model}}$$
+
+* Snapshotting and Reproducibility
+
+A reproducible valuation requires the conjunction of:
+
+1. *Trade population snapshot*: Versioned at the trade cut.
+2. *Market data snapshot*: Versioned at the market data cut.
+3. *Pricing configuration snapshot*: Versioned at the same time as the market
+   data cut. Includes all general valuation settings, scalar parameters, term
+   structure parameters, valuation model configuration, and smile surface
+   configuration.
+4. *Report definition*: The saved configuration (Layer 2) at run time.
+5. *Report instance overrides*: Any Layer 3 or Layer 4 overrides applied at
+   run time.
+
+Given these five inputs, the engine must produce the same output. This is the
+core reproducibility contract.
+
+*ORE Studio*: The equivalent inputs are the ORE XML files (=ore.xml=,
+=pricingengines.xml=, =market.xml=, =portfolio.xml=) plus the market data
+fixtures. ORE Studio must snapshot and version these at each analytics run.
+
+* MRU and Alternative Valuations
+
+The Model Risk Unit (MRU) and quantitative analysts need to produce alternative
+valuations against historical snapshots to assess model risk.
+
+** Views
+
+A *View* is a set of overrides applied on top of a baseline pricing
+configuration snapshot. Views:
+
+- Can be applied to any historical snapshot (not just the current one).
+- Are versioned and maintained independently of the snapshot.
+- Can be composed: multiple views maintained and applied selectively.
+- Must be recorded alongside the snapshot for audit purposes.
+
+** Standard MRU Scenarios
+
+| Scenario                  | What changes in the view                                                  |
+|---------------------------+---------------------------------------------------------------------------|
+| Baseline EOD              | No overrides (the control)                                                |
+| Different Skews           | Alternative RR/STR parameters or skew model                               |
+| Black-Scholes Valuation   | Force all products to BS flat vol (no smile)                              |
+| Stochastic Interest Rates | Switch to a stochastic IR model (e.g. Hull-White)                         |
+| High Model Parameters     | Push all model parameters to their upper bounds                           |
+| Low Model Parameters      | Push all model parameters to their lower bounds                           |
+| Alternative Models        | Substitute the primary model with a challenger (e.g. replication vs. SABR) |
+
+The result of MRU analysis is a set of P&L reserves and model uncertainty
+bounds that feed into the reserve calculations described in
+[[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]].
+
+* Relationship to Reports
+
+#+begin_example
+  Report Definition
+       │
+       ├── Report Type (methodology: bump-and-reset, sensitivity, etc.)
+       ├── Greek Set ──────────►  Greek Configuration
+       │                              │
+       │                              ▼
+       │                         Valuation Model Configuration
+       │                              │
+       │                              ▼
+       │                         Smile Surface Configuration
+       ├── General Valuation Settings
+       ├── Scalar Parameters (report-specific)
+       └── Bump Parameters (spot/vol/rate bump sizes, types, counts)
+
+  ─────────── snapshotted at run time ───────────
+
+  Report Instance = Report Definition
+                  + Trade Population Snapshot
+                  + Market Data Snapshot
+                  + Pricing Configuration Snapshot
+                  + Instance Overrides
+#+end_example

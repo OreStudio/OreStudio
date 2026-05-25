@@ -31,6 +31,7 @@
 #+latex: \thispagestyle{empty}
 #+latex: \newpage
 
+#+html: <script>document.title = "ORE Studio User Manual";</script>
 #+HTML: <p><a href="user_manual.pdf">Download PDF</a></p>
 
 * Introduction

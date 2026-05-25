@@ -1,0 +1,247 @@
+:PROPERTIES:
+:ID: 5B513D53-5DF7-4540-99C0-60D909678873
+:END:
+#+title: FX Volatility Surface
+#+description: Structure, construction, and conventions of the FX implied volatility surface: pillar quoting (ATM/RR/STR), delta conventions, smile models (SABR, BS, spline), and cross-time interpolation.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:domain:finance:fx:volatility:ore:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+
+The FX volatility surface is the primary market data input for pricing and
+risk-managing FX options in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. It is a two-dimensional function of
+implied Black-Scholes volatility across strike (or delta) and expiry tenor.
+This document covers pillar structure, delta conventions, smile models, and
+surface construction. For how vol surfaces interact with pricing configuration
+see [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]].
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Overview
+
+An FX volatility surface is a two-dimensional function of implied Black-Scholes
+volatility across strike (or delta) and expiry tenor. Unlike equity vol surfaces
+— which are quoted strike-by-strike — FX vol surfaces are quoted using a set of
+/market pillars/ expressed in terms of option structure and delta: the ATM
+straddle, the Risk Reversal (RR), and the Strangle (STR). These three pillars,
+at each tenor, fully parameterise the surface under standard smile models such
+as SABR.
+
+The surface must be constructed consistently across both dimensions: across
+strikes at a fixed maturity (the /smile/) and across maturities at a fixed
+strike or delta (the /term structure/).
+
+* Core Pillar Structures
+
+** ATM Volatility
+
+The ATM (at-the-money) quote is the implied volatility of the option struck at
+the ATM level, quoted as a single number per tenor. The definition of "ATM"
+matters and is convention-dependent (see =* ATM Conventions= below).
+
+A *straddle* is a long call and long put at the same strike and expiry.
+At-the-money, the two delta components cancel and the position has (approximately)
+zero delta. The straddle price is driven almost entirely by volatility level.
+
+ATM vol captures the /height/ of the smile at a given tenor.
+
+** Risk Reversal (RR)
+
+A risk reversal is the difference in implied volatility between an
+out-of-the-money call and an OTM put at the same delta magnitude:
+
+$$\sigma_{RR}^{25\Delta} = \sigma_{call}^{25\Delta} - \sigma_{put}^{25\Delta}$$
+
+A positive RR means the call is more expensive than the put (market is paying
+for upside protection in the foreign currency). RR measures the /skew/ of the
+smile — the asymmetry between the two wings.
+
+At 25Δ the convention is to quote the 25-delta call vol minus the 25-delta put
+vol. At 10Δ the same structure gives a wider, more extreme read on the wings.
+
+** Strangle (STR) / Butterfly (BF)
+
+A strangle (or butterfly in some conventions) measures the average premium of
+the two OTM wings relative to ATM:
+
+$$\sigma_{STR}^{25\Delta} = \frac{\sigma_{call}^{25\Delta} + \sigma_{put}^{25\Delta}}{2} - \sigma_{ATM}$$
+
+The strangle captures the /curvature/ of the smile — how "fat" the wings are
+relative to the centre. A positive strangle means OTM options are more
+expensive than ATM, as is typical in FX.
+
+** The Three-Pillar Parameterisation
+
+ATM, RR, and STR together encode the first three degrees of freedom of the
+smile at each tenor: level (ATM), skew (RR), and curvature (STR). Under SABR
+and similar models, these three numbers uniquely determine the smile.
+
+Standard delta grids used in practice:
+
+| Delta | Structures quoted             |
+|-------+-------------------------------|
+| 25Δ   | ATM, 25Δ RR, 25Δ STR         |
+| 10Δ   | 10Δ RR, 10Δ STR (wings)      |
+
+The full five-pillar quote (10Δ put, 25Δ put, ATM, 25Δ call, 10Δ call) gives
+a richer representation of the wings and is needed for more exotic pricing.
+SABR does not natively support five-point smiles; five-point spline
+interpolation is used for those cases.
+
+* Delta Conventions
+
+The definition of delta used to locate option strikes is not universal in FX
+and must be agreed between counterparties and within systems.
+
+** Spot Delta vs. Forward Delta
+
+- *Spot Delta*: $\Delta_{spot} = e^{-r_f T} N(d_1)$ — measures sensitivity of
+  option value to the spot rate. Standard in the short end.
+- *Forward Delta*: $\Delta_{fwd} = N(d_1)$ — measures sensitivity to the
+  forward rate. Standard for longer maturities.
+
+The convention switch from spot to forward delta typically occurs around 1Y for
+most currency pairs, but varies. Quoting and risk systems must flag which
+convention is in use (often denoted S/F on screens).
+
+** Premium-Adjusted Delta
+
+When the option premium is paid in the foreign currency (as is common for
+currency pairs where the foreign currency is the numeraire), the delta must be
+adjusted for the premium received. Premium-adjusted delta differs from
+unadjusted delta by the option value divided by spot; the difference is small
+for OTM options but significant for ITM ones. This affects where OTM strikes
+sit and must be handled consistently across the surface.
+
+** Strike from Delta
+
+Given a delta convention and a vol, the corresponding strike is backed out from
+the Black-Scholes formula. The surface is therefore ultimately stored in strike
+space (or log-moneyness) internally, even though it is quoted in delta space in
+the market.
+
+* ATM Conventions
+
+The definition of "ATM" determines the anchor of the smile. Two conventions
+are in common use:
+
+- *Delta-Neutral Straddle (DNS / Zero-Delta Straddle)*: The strike at which a
+  straddle has zero delta. For a currency pair with significant interest rate
+  differential, this differs from the forward. This is the standard convention
+  for tenors up to =10Y=.
+
+- *ATM Forward (ATMF)*: The strike equal to the forward rate. Simpler to
+  compute; standard for tenors =12Y= and beyond (=12Y=--=30Y=).
+
+Systems must implement the DNS/ATMF switch cleanly, as the transition creates a
+discontinuity in delta space at the switch tenor if not handled carefully.
+
+* Smile Models
+
+** SABR
+
+SABR (Stochastic Alpha Beta Rho) is the standard smile model for FX. With
+$\beta = 1$ (log-normal backbone), SABR is a three-parameter model:
+
+- $\alpha$: initial volatility (maps to ATM)
+- $\nu$ (vol-of-vol): controls curvature (maps to STR)
+- $\rho$ (spot-vol correlation): controls skew (maps to RR)
+
+The calibration procedure maps the three market pillars (ATM, RR, STR) to the
+three SABR parameters at each tenor. SABR produces smooth, arbitrage-free smiles
+in the body but can exhibit instability in the far wings (very low or very high
+deltas), requiring wing stabilisation.
+
+Additional SABR term-structure parameters — per tenor — include correlation
+sensitivity (up/down), vol adjustments, RR infinite flag, vol swap adjustments,
+and standard deviation weighting. These are model parameters rather than market
+observables. In [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] these appear as entries in the =EngineData= XML
+configuration.
+
+** Black-Scholes (Flat Vol)
+
+A flat Black-Scholes surface (one vol per tenor, no smile) is always maintained
+alongside the main smile model. It is used for re-parameterisation, as a
+fallback, and for ATM-only pricing. For EM currency pairs where smile data is
+sparse, a flat vol surface may be the primary representation.
+
+** Five-Point Spline
+
+For currency pairs that are well-quoted at 10Δ and 25Δ, a five-point spline
+gives a more detailed smile. SABR does not support five-point calibration;
+instead, spline interpolation is applied directly across the five strikes. The
+extra points give finer control over the wings but require more calibration
+data and introduce more model risk.
+
+* Surface Construction: Across Time
+
+The smile at each tenor is calibrated independently; the surface is then
+stitched together across maturities using one of two interpolation conventions:
+
+- *Market Interpolation*: Interpolate directly in market parameter space. For
+  example, if RR is 2% at =1Y= and 2.5% at =2Y=, then at =18M= it is
+  interpolated to ~2.25%. Simple and produces surfaces consistent with market
+  quotes at standard tenors.
+
+- *Physical Interpolation*: Convert market parameters to model (physical)
+  parameters first (e.g. RR → $\rho$, STR → $\nu$), interpolate in model
+  space, then convert back. Produces smoother model dynamics across time but
+  can deviate from quoted market levels at off-pillar tenors.
+
+The choice of interpolation convention (market vs. physical) is a system-level
+or currency-pair-level configuration. EM currency pairs often prefer linear vol
+or linear variance interpolation when ATM curve data is unreliable due to
+missing holidays or events.
+
+Standard vol tenors for consensus submission and surface construction:
+=1W=, =2W=, =1M=, =2M=, =3M=, =6M=, =9M=, =12M=, =18M=, =2Y=, =3Y=, =4Y=,
+=5Y=, =7Y=, =10Y=, =12Y=, =15Y=, =20Y=, =25Y=, =30Y=.
+
+** Curve Split Tenor
+
+A split tenor (typically =5Y=) separates the spline interpolation of the short
+end and long end of the surface. This prevents changes in long-dated vols from
+affecting short-dated smiles and vice versa. For curves that extend only to a
+short maturity, the last tenor is used as the split tenor.
+
+* Volatility Kinds
+
+Different volatility concepts are in use simultaneously; they must not be
+conflated:
+
+| Kind                            | Description                                                             |
+|---------------------------------+-------------------------------------------------------------------------|
+| Implied Vol                     | ATM implied vol of the spot-delta-neutral straddle at a given expiry   |
+| Forward-Forward Vol             | Implied vol for a forward-starting option between two future dates      |
+| Normalised Vol                  | Volatility with a standardised day count (e.g. 252 or 365)             |
+| Historic Vol                    | Realised volatility computed from historical spot moves                 |
+| Decreasing-Maturity Forward Vol | Historic vol computed over a window that ends at a fixed future date    |
+
+* Volatility Masters and Slaves
+
+In a multi-currency system, some currency pairs may not have independent vol
+surfaces. Instead, a /slave/ pair derives its ATM vol, RR, and STR from one or
+more /master/ pairs via a defined relationship:
+
+- *Correlation slaving*: The slave surface is implied from a triangular
+  relationship (e.g. EUR/GBP from EUR/USD and GBP/USD vols and their
+  correlation).
+- *Basis slaving*: The slave ATM vol is the master ATM plus a spread; RR and
+  STR may be independently set or also slaved.
+
+This mechanism reduces the number of independently managed surfaces while
+maintaining consistency across crosses.
+
+* ORE Studio Notes
+
+ORE uses the =FxVolatility= market datum type for FX vol surfaces. Relevant
+ORE configuration files:
+
+- =market.xml= — declares which vol surface type (=FxBlackVolatilitySurface=,
+  =FxBlackVolatilitySurfaceDelta=, etc.) is used per currency pair.
+- =pricingengines.xml= — maps product types to pricers; the pricer selects
+  which vol surface to consume.
+
+ORE Studio will need to model vol surface configurations as domain entities (see
+[[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] for the wider configuration landscape).

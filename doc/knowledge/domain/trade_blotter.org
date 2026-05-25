@@ -1,0 +1,717 @@
+:PROPERTIES:
+:ID: 3976695F-F526-4C2A-80ED-89B54854CF6D
+:END:
+#+title: Trade Blotter
+#+description: Primary front-office screen: multi-panel architecture, deal grid columns and colour coding, deal actions (new/amend/cancel/link/allocate), deal entry form and field interdependence, structure view, STP panel, dynamic books, Expiry Manager, Fixing Manager, Barrier Management, Delta Jump Screen, Spike Map, and cross-screen navigation.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:blotter:ore:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+
+The *Trade Blotter* is the primary front-office screen: the central hub
+from which traders, sales staff, and middle office (MO) staff view, manage,
+and act on the live book of trades. It is not a passive read-only view — the
+blotter is the entry point for booking new deals, amending existing ones, and
+routing trades through their lifecycle: expiry, fixing, delivery, exercise, and
+settlement. Lifecycle management screens (Expiry Manager, Fixing Manager,
+Barrier Management) are separate but linked from the blotter; a user should be
+able to navigate to any of these from a deal row with a single action.
+For the reports consumed alongside the blotter see [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]].
+For the P&L attribution that records trade activity categories see [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]].
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Users
+
+| Role                 | Primary need                                                                          |
+|----------------------+---------------------------------------------------------------------------------------|
+| Trader               | Monitor live positions; amend and book trades; navigate to risk reports               |
+| Sales                | Book client trades; check premium and settlement details; manage allocations          |
+| Middle Office        | Validate trades awaiting confirmation; process STP messages; manage lifecycle events  |
+| Risk Manager         | Inspect deal population for a book or portfolio; cross-navigate to Greeks and P&L    |
+| Quantitative Analyst | Investigate pricing errors; inspect deal properties for model validation              |
+
+* Panel Layout
+
+The blotter is structured as a multi-panel application. All panels are
+resizable; the layout is user-configurable and saved per user session.
+
+#+begin_example
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  TOOLBAR: [ Search ] │ Valuation Date/Time │ NPV │ Actions                 │
+├──────────────┬──────────────────────────────────────────────────────────────┤
+│              │                                                              │
+│  BOOK TREE   │                  DEAL GRID                                   │
+│              │  (Deals matching book selection + search/filter)             │
+│  [▾] Portfolio│                                                             │
+│   ├─ [▾] A   │                                                              │
+│   └─ [▾] B   │                                                              │
+│              │                                                              │
+├──────────────┴──────────────────────────────────────────────────────────────┤
+│  DETAIL PANEL  — Deal Properties  /  Structure Mini-Blotter                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  GREEKS PANEL  — Greeks for Selection  |  Total Greeks for Book             │
+└─────────────────────────────────────────────────────────────────────────────┘
+#+end_example
+
+** Toolbar
+
+- *Search box*: Free-text filter across all visible columns and key deal
+  properties. Supports expressions (=T-7=, =T+5=) and field prefixes (=cpty:HSBC=).
+- *Valuation date/time*: Current valuation context; displayed in red if stale or
+  historical.
+- *NPV of selection*: Live aggregated NPV of the current grid selection.
+- *Action buttons*: New, Clone, Amend, Cancel, Reload, Link with keyboard shortcuts.
+
+** Book Tree
+
+A hierarchical tree of books and portfolios (Portfolio → Sub-Portfolio → Book).
+Selecting any node filters the deal grid to deals in that node and its
+descendants. Multi-select is supported. The book tree also displays /Dynamic
+Books/ — user-defined virtual groupings based on filter criteria (see
+[[*Dynamic Books and Filtering]]).
+
+** Deal Grid
+
+The central deal list, showing all trades matching the current book tree
+selection and applied search/filter:
+
+- Sortable by any column; multi-column sort supported.
+- Columns configurable per user: show, hide, reorder.
+- Multi-row selection for bulk actions (cancel, aggregate).
+- Structures collapse to a single header row with a disclosure triangle; expanding
+  shows component legs inline.
+- New deals and amendments appear immediately on booking without a manual refresh.
+
+** Detail Panel
+
+A context-sensitive panel below the grid:
+
+- *Deal view*: Full deal fields for a single selected trade.
+- *Structure view*: When a structure header row is selected, shows a mini-blotter
+  with all component legs tabbed by product type.
+
+** Greeks Panel
+
+Shows Greeks and P&L measures for the current selection and separately for the
+full book tree selection. Refreshes on demand or on a user-configurable interval.
+
+* Deal Grid Columns
+
+** Identity and Booking
+
+| Column          | Description                                                            |
+|-----------------+------------------------------------------------------------------------|
+| Deal ID         | Unique deal identifier across the system                               |
+| Structure ID    | Parent structure identifier; blank for standalone trades               |
+| Version         | Amendment counter; 0 = original booking                               |
+| Trade Date      | Date the deal was booked                                               |
+| Book            | Trading book that owns the deal                                        |
+| Entity / Branch | Legal entity and branch                                                |
+| Trader          | Name of the trader who booked                                          |
+| Sales Person    | Associated sales person (if any)                                       |
+| Counterparty    | Full legal name of the counterparty                                    |
+| Broker          | Broker (populated for brokered trades only)                            |
+| Status          | Live, Expired, Exercised, Cancelled, Matured, Triggered, Fixing Pending |
+| Origin          | How the trade arrived: Manual, STP, ECN, Allocation                   |
+
+** Economics
+
+| Column           | Description                                                           |
+|------------------+-----------------------------------------------------------------------|
+| Product Type     | Vanilla Option, Barrier, Digital, Forward, Depo, IRS, NDF, NDO, etc. |
+| Ccy Pair         | Currency pair in market convention (e.g. EUR/USD)                    |
+| Buy / Sell       | Direction from the bank's perspective                                 |
+| Notional (Base)  | Notional in the base currency                                         |
+| Notional (Quote) | Notional in the quote currency                                        |
+| Spot Rate        | Spot rate at time of booking                                          |
+| Strike           | Strike for options/forwards                                           |
+| Strategy         | Named structure: RR, Butterfly, Strangle, Spread, DNT, etc.          |
+| Premium          | Premium amount                                                        |
+| Premium Ccy      | Currency in which the premium is denominated                          |
+| Premium Date     | Settlement date for the premium                                       |
+
+** Dates
+
+| Column        | Description                                                       |
+|---------------+-------------------------------------------------------------------|
+| Value Date    | Spot settlement date                                              |
+| Expiry Date   | Option expiry date (date and cut code determine exact expiry time)|
+| Delivery Date | Physical or cash delivery date                                    |
+| Cut Code      | Expiry cut: NY 10:00, Tokyo 15:00, ECB, etc.                     |
+| Fixing Date   | NDF or floating rate fixing date                                  |
+
+** Risk and Status Indicators
+
+| Column          | Description                                              |
+|-----------------+----------------------------------------------------------|
+| NPV             | Current NPV in display currency                          |
+| Delta           | Delta in display currency                                |
+| Vega            | ATM vega                                                 |
+| % Away          | For barrier trades: distance of current spot from barrier|
+| Smile Error     | Non-empty if vol surface construction failed             |
+| Valuation Error | Non-empty if the pricer returned an error                |
+
+** Colour Coding
+
+| Condition                            | Visual                            |
+|--------------------------------------+-----------------------------------|
+| Expired today                        | Grey row                          |
+| Matures or delivers today            | Orange row                        |
+| Cancelled today                      | Strikethrough text, dark red      |
+| Booked today                         | Green highlight                   |
+| Pre-spot forward (value date < spot) | Yellow                            |
+| Back-dated trade                     | Blue                              |
+| Barrier within strike tolerance      | Light blue (row or % Away cell)   |
+| Triggered barrier                    | Red                               |
+| STP trade awaiting booking           | Amber                             |
+| Stale market data reference          | Red timestamp in toolbar          |
+
+* Deal Actions
+
+All actions are available from the toolbar, right-click context menu, and
+keyboard shortcuts. Bulk actions operate on multi-row selections.
+
+** New
+
+Opens a blank deal entry form for the user's choice of product type. On save,
+the deal appears in the grid immediately and an STP confirmation (where
+applicable) is dispatched.
+
+** Clone
+
+Creates a copy of the selected deal, pre-populating the entry form with all
+fields from the source. The fastest way to book a series of similar trades.
+
+** Amend
+
+Opens the selected deal in edit mode. On save, the deal version is incremented
+and the prior version is archived and auditable. Amendment types include:
+
+- Financial amendment (rate, notional, strike, dates, premium)
+- Client information update (counterparty, sales person, broker)
+- Spot roll (advance value date; recalculate forward points)
+- Forward roll back (move value date earlier)
+- Convert spot to forward or forward to spot, or either to swap
+
+Credit checks are triggered automatically for changes to counterparty, deal
+amount, or value date.
+
+** Cancel
+
+Marks the selected deal(s) as cancelled. A cancellation reason is mandatory.
+The system generates a P&L attribution entry (Category: CANCELLED — see
+[[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]]) and produces any required settlement reversals. Cancelled
+trades remain visible in a greyed/struck-through state unless explicitly
+filtered out.
+
+** Reload
+
+Discards unsaved local changes and reloads from the database. Used when an
+external amendment has arrived via STP.
+
+** Link / Unlink
+
+Associates two or more trades into a linked group. Use cases:
+
+- Linking an ECN block trade to its client allocations.
+- Linking a hedge forward to the option it hedges.
+- Linking legs of a multi-deal structure booked separately.
+
+| Operation  | Description                                                        |
+|------------+--------------------------------------------------------------------|
+| Link Amend | Amend the linked counterpart trade to match changes in the primary |
+| Link Net   | Net multiple trades of the same currency pair and value date       |
+| Link Split | Break an existing link                                             |
+
+When starting a link from a block trade, eligible counterpart targets are
+restricted by type (Spot links to Spot/Outright/Swap; Outright to Outright/Spot;
+Swap to Swap only).
+
+** Allocate (Split)
+
+Splits a block trade into multiple child trades across different clients,
+notionals, or value dates. The user can enter each child manually, apply a
+saved allocation template, use auto-split, or submit allocations to an ECN
+via FIX.
+
+** Roll Forward
+
+Extends the value date of a trade, adjusting forward points to the new date.
+
+** Aggregate / Net
+
+Combines multiple selected trades of the same currency pair and value date into
+a single net position. Validates eligibility for netting before proceeding.
+
+* Deal Entry Form
+
+Presented as a modal dialog or docked panel when booking or amending. The form
+is product-aware: the fields shown depend on the product type.
+
+#+begin_example
+┌──────────────────────────────────────────────────────────────────┐
+│  [ Clone ] [ Amend ] [ Reload ] [ Close ]                        │
+├──────────────────────────────────────────────────────────────────┤
+│  Counterparty: [             ]  Book:   [     ]  Entity: [     ] │
+│  Branch:       [             ]  Broker: [     ]  Trader: [     ] │
+│  AV/CTU:       [             ]  Sales:  [     ]                  │
+├──────────────────────────────────────────────────────────────────┤
+│  [ Overview ] [ F/O Details ] [ Confos/Settlements ] [ Deal ]   │
+├──────────────────────────────────────────────────────────────────┤
+│  Sub-tabs: [ Forward ] [ Option ]    ← one tab per product leg   │
+│                                                                  │
+│  Trade Date: [          ]  Delivery:  [         ]                │
+│  Ccy Pair:   [          ]  Spot Rate: [         ]                │
+│  Notional:   [          ]  Strike:    [         ]                │
+│  Expiry:     [          ]  Cut Code:  [         ]                │
+│  Buy / Sell: [          ]  Strategy:  [         ]                │
+│  Premium:    [          ]  Prem Ccy:  [         ]                │
+└──────────────────────────────────────────────────────────────────┘
+#+end_example
+
+** Tabs
+
+- *Overview*: All primary economic fields. Default view on open.
+- *F/O Details*: Front-office metadata — broker, STP origin system, OS deal ID,
+  OS counterparty, OS trader account, message ID, Cit code, deal notes.
+- *Confos / Settlements*: Confirmation and settlement status (sent, received,
+  matched), SWIFT details, netting group assignment.
+- *Deal*: Full audit trail — version history with diffs, lifecycle event log,
+  user and timestamp for every change.
+
+** Field Groups and Interdependence
+
+Many fields recalculate each other when any one member changes:
+
+- The explicitly keyed field is shown with a distinct highlight (e.g. blue border).
+- Derived fields are shown in a secondary colour (e.g. light grey background).
+- If input is inconsistent or overdetermined, conflicting fields are highlighted
+  in red and the user is prompted.
+
+Key field groups for options:
+
+| Group              | Members                                                      |
+|--------------------+--------------------------------------------------------------|
+| Option term        | Named tenor, expiry date, delivery date, days to expiry      |
+| Strike / Delta     | Strike, delta (spot or forward), call/put direction          |
+| Premium / Vol      | Premium amount, implied volatility                           |
+| Notional (base/quote) | Notional base ccy, notional quote ccy, spot rate          |
+
+** Strike and Delta Entry
+
+- Typing in Strike: delta recalculates. Typing in Delta: strike recalculates.
+- Suffix =S= or =F= sets spot or forward delta convention (=25F= = 25 forward delta).
+- Typing just =S= or =F= toggles the convention; the strike recalculates.
+- Double-clicking the delta field opens a combo selector.
+- Special strike shortcuts: =A= (ATM DNS), =F= (ATM Forward), =S= (ATM Spot).
+- Press =R= to display the reciprocal of the current strike.
+- Call/Put defaults to the OTM option for the given strike; press =C= or =P= to
+  override.
+
+** Option-Specific Fields
+
+| Field         | Behaviour                                                              |
+|---------------+------------------------------------------------------------------------|
+| Currency Pair | Auto-flipped to market convention if entered inverted                  |
+| Expiry Date   | Entered as tenor (=1M=) or specific date; holidays and ambiguous dates warned |
+| Delivery Date | Auto-set to expiry spot date; can be overridden for late-delivery options |
+| Cut Code      | Defines the time portion of expiry; system-wide default per currency pair |
+| Premium Ccy   | Defaults to pair convention; third-currency premiums highlighted        |
+| Strategy      | Opens a multi-leg entry template for composite products                 |
+
+** IRS Multi-Leg Form
+
+For Interest Rate Swaps, the form expands to a two-column leg comparison layout
+with fields for currency, pay/receive, fixed/float, fixing source, fix time,
+start date, maturity, delivery, coupon/rate, notional, pay period, yield basis,
+and payment convention.
+
+* Structure View
+
+When a multi-leg structure (e.g. a Risk Reversal consisting of a call leg, a
+put leg, a premium leg, and a brokerage leg) is selected in the deal grid, the
+Detail Panel switches to Structure View.
+
+#+begin_example
+┌──────────────────────────────────────────────────────────────────┐
+│  Structure ID: 127        Sales Person: ADC                      │
+├──────────────────────────────────────────────────────────────────┤
+│  [ Option ]  [ Forward ]  [ Depo ]  [ … ]   ← tab per leg type  │
+├──────────────────────────────────────────────────────────────────┤
+│  Mini Blotter — all legs for this structure                      │
+│  ┌──────────┬──────────┬──────────┬──────────┬────────────────┐  │
+│  │ Deal ID  │ Type     │ Ccy Pair │ Notional │ Strike / Rate  │  │
+│  ├──────────┼──────────┼──────────┼──────────┼────────────────┤  │
+│  │ 10042    │ Option   │ EUR/USD  │ 5,000,000│ 1.0900 Call    │  │
+│  │ 10043    │ Option   │ EUR/USD  │ 5,000,000│ 1.0700 Put     │  │
+│  │ 10044    │ Premium  │ EUR/USD  │          │ 45,000 USD     │  │
+│  │ 10045    │ Brokerage│ EUR/USD  │          │ 500 USD        │  │
+│  └──────────┴──────────┴──────────┴──────────┴────────────────┘  │
+│                                                                  │
+│  ← Selecting a leg row populates the deal view below →          │
+└──────────────────────────────────────────────────────────────────┘
+#+end_example
+
+Every leg — including legs with no standalone economic meaning such as premium
+and brokerage legs — has its own row and can be inspected or amended
+individually. In the main deal grid, structures are displayed as a single
+collapsed row with a disclosure triangle.
+
+* STP Panel
+
+Straight-Through Processing (STP) trades arrive from external systems —
+brokers, ECNs, voice-capture systems — and queue for booking. The STP panel
+(docked sub-view or separate tab within the blotter) shows pending messages.
+
+#+begin_example
+┌──────────────────────────────────────────────────────────────────────┐
+│  STP QUEUE                              [ Refresh ]  [ Book ]       │
+├────────┬───────────┬────────────┬─────────┬──────────┬──────────────┤
+│ Msg ID │ Broker    │ Received   │ Waiting │ Status   │ Ccy Pair     │
+├────────┼───────────┼────────────┼─────────┼──────────┼──────────────┤
+│ 00421  │ GFI       │ 09:14:22   │ 00:03   │ Received │ EUR/USD      │
+│ 00422  │ Tullett   │ 09:17:01   │ 00:01   │ Received │ USD/JPY      │
+│ 00418  │ e-Speed   │ 09:10:44   │ 00:10   │ Failed   │ GBP/USD      │ ← red
+│ 00419  │ Vol Broker│ 09:11:55   │ 00:09   │ Pending  │ EUR/GBP      │ ← amber
+└────────┴───────────┴────────────┴─────────┴──────────┴──────────────┘
+#+end_example
+
+Key behaviours:
+
+- Order of entry is preserved; if a message is subsequently amended by the
+  originating system it does not move from its original queue position.
+- Waiting time colour-escalates: neutral → amber (>5 min) → red (>15 min).
+- Status lifecycle: Received → Pending → Booked. Failed indicates a parse or
+  validation error; the raw message can be inspected for manual re-keying.
+
+The F/O Details tab of the deal entry form shows STP-specific metadata:
+originating system name, broker ID, version in the OS, OS deal ID, OS
+counterparty, OS trader account, Cit code, message ID, STP status.
+
+* Dynamic Books and Filtering
+
+Beyond the standard book tree, users can define *Dynamic Books* — named virtual
+groupings aggregating deals based on filter criteria rather than organisational
+hierarchy (e.g. "All EUR/USD options expiring this week", "All NDF fixings
+tomorrow").
+
+** Filter Configuration
+
+#+begin_example
+┌────────────────────────────────────────────────────────────────┐
+│  Filter Name: [  All HSBC NDF Fixings Tomorrow  ]             │
+├────────────────────┬───────────────────┬───────────────────────┤
+│  Property          │ Operator          │ Value                 │
+├────────────────────┼───────────────────┼───────────────────────┤
+│  Counterparty      │ =                 │ HSBC                  │
+│  Product Type      │ =                 │ NDF                   │
+│  Fixing Date       │ =                 │ T+1                   │
+│  Status            │ =                 │ Live                  │
+└────────────────────┴───────────────────┴───────────────────────┘
+#+end_example
+
+- Properties: any deal column.
+- Operators: =, ≠, <, >, ≤, ≥, in, not in, contains.
+- Values: literals, date expressions (=T=, =T±n=, named tenors), multi-select.
+
+Saved Dynamic Books appear in the book tree and behave like real books.
+Free-text toolbar search and Dynamic Books are composable (both apply
+simultaneously).
+
+* Expiry Manager
+
+The Expiry Manager handles the expiry of options at each cut. It is the primary
+MO tool at each cut time (typically once or twice per day per cut).
+
+** Purpose
+
+At each option cut time (NY 10:00, Tokyo 15:00, ECB), a set of options reaches
+expiry. For each, one of four actions must be taken: *Exercise* (in the money),
+*Expire* (out of the money), *Fix* (NDF options: the underlying NDF requires
+fixing), or *Leave* (defer).
+
+** Settings and Filters
+
+#+begin_example
+┌─────────────────────────────────────────────────────────────────┐
+│  CUT DETAILS                                                    │
+│  Expiry Date: [ 2026-03-31  ]   Cut: [ NY 10:00 ▾ ]           │
+│  Ccy Pair:    [ EUR/USD ▾ ]  (All pairs / specific pair)       │
+│                                                                 │
+│  STRIKE TOLERANCE  (highlight deals within this distance of spot)│
+│  ( ) Percentage    (•) Pips    [ 5 ]                           │
+│                                                                 │
+│  SPOTS  (load on demand — do not auto-refresh)                 │
+│  ┌──────────┬────────────┐                                     │
+│  │ EUR/USD  │  1.0823    │  ← red border when stale           │
+│  └──────────┴────────────┘                                     │
+└─────────────────────────────────────────────────────────────────┘
+#+end_example
+
+Spots are loaded at session start or on user demand and are deliberately *not*
+auto-refreshed so that deals do not change status while the operator is
+mid-process. A last-chance staleness check is performed before final submission.
+
+** Cut Timeline
+
+A visual timeline shows which cuts have been processed and which are outstanding:
+
+#+begin_example
+  ●──────────────●──────────────○──────────────○
+  NY 10:00 ✓     Tokyo 15:00 ✓  ECB ✗          NY Close ✗
+#+end_example
+
+** Flat View
+
+#+begin_example
+┌──────────┬──────┬───────────┬─────────┬────────────┬────────┬────────────────┬─────────┐
+│ Ccy Pair │ Book │ Cpty      │ Product │ Buy/Sell   │ Strike │ Expiry Status  │ Action  │
+├──────────┼──────┼───────────┼─────────┼────────────┼────────┼────────────────┼─────────┤
+│ EUR/USD  │ FX1  │ Barclays  │ VanCall │ Buy 5M EUR │ 1.0900 │ Leave          │ [▾]     │
+│ EUR/USD  │ FX1  │ HSBC      │ VanPut  │ Sell 2M EUR│ 1.0750 │                │ Expire  │
+└──────────┴──────┴───────────┴─────────┴────────────┴────────┴────────────────┴─────────┘
+     ↑ blue rows are within strike tolerance
+#+end_example
+
+The Action column is a per-row dropdown: Exercise / Expire / Fix / Leave. Deals
+can be multi-selected for bulk action assignment. Interbank counterparties are
+visually distinguished.
+
+** Grouped View
+
+An alternative to the flat view where deals are grouped into four panes: Leave |
+Exercise | Expire | Fix. The user drags deals between panes or uses the action
+dropdown. Preferred when many deals are near spot; flat view is better for large
+deal counts.
+
+** NDF / NDO Two-Step Flow
+
+Non-Deliverable Options require:
+
+1. Exercise the NDO → system generates an NDF.
+2. User reloads the deal list (the new NDF now appears).
+3. Fix the NDF.
+
+The NDF fixing date is shown alongside the NDO; it is normally today but can
+differ due to holiday calendars (see [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]]).
+
+** Undo
+
+Every action taken in the session is recorded in an in-session action log.
+Users can view the log and undo any action or all actions (unexpiry, unfixing,
+exercise reversal).
+
+#+begin_example
+│ [ List Actions ]   [ Undo Selected ]   [ Undo All ]          │
+#+end_example
+
+* Fixing Manager
+
+The Fixing Manager handles authorisation of floating rate fixings: NDF fixings,
+LIBOR/SOFR/EURIBOR fixings for coupon resets, and other published reference
+rates. Used primarily by Operations (MO/BO).
+
+** Authorisation Workflow
+
+Six operations are supported (all require the published fixing time to have passed):
+
+1. *Authorise a published fixing*: Reuters rate has arrived; operator confirms and authorises.
+2. *Authorise an Ops-keyed fixing*: Operator has manually entered a rate and authorises it.
+3. *Authorise an FO-keyed fixing*: FO has keyed a rate; Ops verifies and authorises.
+4. *Overkey an FO fixing and authorise*: Ops disagrees, enters a different value, and authorises that.
+5. *Overkey a published fixing and authorise*: Ops substitutes a manual value for the Reuters rate.
+6. *Unauthorise and re-authorise*: Reverts an authorised fixing for correction.
+
+** Grid
+
+#+begin_example
+┌────────────────┬────────────────┬──────────────────┬────────┬─────┬─────────────┐
+│ Fixing Source  │ NY Fix Date    │ Local Fix Date   │ Asset  │ Src │ Fix Value   │
+├────────────────┼────────────────┼──────────────────┼────────┼─────┼─────────────┤
+│ ECB EUR fix    │ 2026-03-31     │ 2026-03-31 13:00 │ EUR    │ Pub │ 1.0823      │
+│ USD LIBOR 3M   │ 2026-03-31     │ 2026-03-31 11:00 │ USD    │ Key │ 4.8200      │
+└────────────────┴────────────────┴──────────────────┴────────┴─────┴─────────────┘
+│ Reuters Rate │ Fix T-1 │ Spot/Proj Rate │ Status    │ Origin    │ Published │
+│ 1.0823       │ 1.0801  │ 1.0819         │ Official  │ Published │ ✓         │
+│ —            │ 4.7950  │ 4.8150         │ Unofficial│ FO Keyed  │           │
+└──────────────┴─────────┴────────────────┴───────────┴───────────┴───────────┘
+#+end_example
+
+| Column           | Description                                                      |
+|------------------+------------------------------------------------------------------|
+| Fixing Source    | Name of the fixing (ECB EUR, EURIBOR 3M, USD/JPY NDF, etc.)    |
+| NY / Local Fix Date | NY date and local market date/time side by side               |
+| Asset            | Currency (IR fixings) or currency pair (FX fixings)             |
+| Fix Value        | Rate to be authorised; up to 6 decimal places                   |
+| Reuters Rate     | Officially published rate; always recorded even if overridden    |
+| Fixing T-1       | Yesterday's value; quick sanity check                           |
+| Spot/Proj Rate   | Current spot, forward, or projection rate for comparison         |
+| Status           | Official (authorised) or Unofficial (keyed but not authorised)  |
+| Origin           | Published / FO Keyed / Ops Keyed / Default Valuation / etc.    |
+
+** Control Reports
+
+- *Fixings Audit Report*: Every fixing entered, authorised, overkeyed, or
+  unauthorised — by whom, what value, and when.
+- *Missing Fixings Report*: Fixings required by the deal book but not yet
+  authorised by a configurable cutoff time; used as a morning checklist.
+
+* Barrier Management
+
+The Barrier Management screen monitors live American/continuous barriers and
+triggers those breached by spot during the trading day.
+
+** Purpose
+
+American-style barriers (knock-ins, knock-outs) trigger the moment spot touches
+or crosses the barrier level, at any time during market hours. A large book can
+have hundreds of active barriers; the screen must surface the critical ones —
+those close to current spot — without burying them in noise.
+
+** Layout
+
+The screen uses a two-pane master-detail design:
+
+- *Top pane (master)*: One row per distinct barrier level — level, cut, distance
+  from current spot, and count of deals at that level.
+- *Bottom pane (detail)*: When a top-pane row is selected, individual deals at
+  that level; each deal can be ticked or unticked for the trigger action.
+
+#+begin_example
+┌──────────────────┬──────────┬─────────────────────────┬────────┬─────────┐
+│ Barrier Level    │ CUT      │ % Away from Spot        │ Deals  │ Select  │
+├──────────────────┼──────────┼─────────────────────────┼────────┼─────────┤
+│ 1.0750  DnOut    │ NY       │ ████░░░░░░  1.0%        │ 3      │ [x]     │
+│ 1.0900  UpOut    │ NY       │ ░░░░████░░  1.5%        │ 1      │ [ ]     │
+│ 1.0500  DnIn     │ Tokyo    │ ░░░░░░░░██  2.8%        │ 2      │ [ ]     │
+└──────────────────┴──────────┴─────────────────────────┴────────┴─────────┘
+#+end_example
+
+When individual deals are deselected in the bottom pane, the top-pane tick box
+for that level is greyed out, preventing accidental bulk triggers of an
+incomplete set.
+
+** Colour Coding
+
+| State                              | Colour            |
+|------------------------------------+-------------------|
+| Triggered                          | Red row           |
+| Partially triggered (some legs done) | Amber           |
+| Selected to trigger                | Green highlight   |
+| Within strike tolerance            | Blue              |
+| Interbank trade                    | Bold or flag icon |
+| Stale market data                  | Red spot indicator|
+
+** Operational Considerations
+
+- Multiple operators may run the barrier screen simultaneously; the system must
+  implement locking at the trigger level to prevent double-triggering.
+- Interbank trades are flagged because triggering them requires a Reuters
+  confirmation call to the counterparty.
+- *Late trigger*: If a barrier was breached while the screen was unmonitored
+  (e.g. overnight), the operator can trigger it after the fact with a timestamp
+  reflecting the actual breach time.
+
+* Delta Jump Screen
+
+A read-only analytical report showing the expected change in delta if any live
+barrier is hit. It answers: "if spot touches this barrier right now, how much
+delta will I suddenly have?"
+
+#+begin_example
+ Currency Pair: [ EUR/USD ▾ ]
+
+┌──────────────────┬────────────────────┬────────────────────────────┐
+│ Barrier Level    │ Net Delta Jump Ccy1│ Net Delta Jump / Deal Val  │
+├──────────────────┼────────────────────┼────────────────────────────┤
+│ 1.0750 DnOut     │                    │                            │
+│ 1.0900 UpOut     │                    │                            │
+└──────────────────┴────────────────────┴────────────────────────────┘
+#+end_example
+
+Days to Maturity is an important additional column: the delta jump magnitude is
+maturity-dependent for both continuous and discrete barriers.
+
+* Spike Map
+
+The Spike Map visualises notional (or theoretical value) concentration across
+the option book, bucketed by expiry date and spot level. It is the primary tool
+for understanding where concentrations of barrier and digital risk lie in time
+and space.
+
+** Settings
+
+#+begin_example
+┌─────────────────────────────────────────────────────────────────┐
+│  SPOT BUCKETS    Number: [ 10 ▾ ]   Size: [ 0.0131 ]           │
+│  DATE BUCKETS    Days: [ 14 ]  Weeks: [ 5 ]  Months: [ 10 ]  Years: [ 4 ]│
+│  Ccy Pair:       [ EUR/USD ▾ ]    Display Ccy: [ EUR ▾ ]       │
+│  Include Reserves: [x]                                          │
+│  Display Mode:   ( ) Notional   (•) Theoretical Value          │
+│  Population:     ( ) American   ( ) European   (•) Both        │
+└─────────────────────────────────────────────────────────────────┘
+#+end_example
+
+American and European spikes are displayed separately: American barriers trigger
+at any time; European barriers trigger only at expiry.
+
+** Output Grid
+
+#+begin_example
+┌────────┬────────┬─────────────┬──────────────────┬───┬────────────────┬──────────┐
+│ Books  │ Date   │ ≤ 1.0550    │ 1.0550 – 1.0600  │ … │  Spot (1.0823) │ ≥ 1.1200 │
+├────────┼────────┼─────────────┼──────────────────┼───┼────────────────┼──────────┤
+│ [▾] A  │ Apr-26 │             │  12.5M           │   │                │          │
+│ [▾] A  │ May-26 │  8.0M       │                  │   │                │  4.0M    │
+└────────┴────────┴─────────────┴──────────────────┴───┴────────────────┴──────────┘
+     ↑ yellow/red for warnings (e.g. forward-starting barrier in wrong date bucket)
+#+end_example
+
+- The column centred on current spot is highlighted.
+- Clicking a cell drills down to the contributing deals.
+- Each cell shows spike TV (theoretical value) and TV% (TV as percentage of notional).
+- Cells turn yellow (warning) or red (error) for anomalies.
+
+* Cross-Screen Navigation
+
+The blotter is the hub from which all lifecycle screens are reachable via
+right-click context menu on any deal row. Navigation is context-preserving:
+arriving at the Expiry Manager from a deal row pre-filters to that deal's cut,
+date, and currency pair.
+
+| From                        | Destination                                                     |
+|-----------------------------+-----------------------------------------------------------------|
+| Any deal row                | Deal entry form (Amend or Clone)                                |
+| Option row                  | Expiry Manager (pre-filtered to deal's cut and date)            |
+| Barrier deal row            | Barrier Management (pre-filtered to currency pair and level)    |
+| NDF / floating deal row     | Fixing Manager (pre-filtered to deal's fixing source)           |
+| Any deal row                | Single-deal risk report                                         |
+| Book tree selection         | Headline Position                                               |
+| Headline Position tile      | Full Greek report for that book                                 |
+| Spike Map cell              | Deal blotter filtered to cell's deals                           |
+| Barrier level (top pane)    | Deal list for that level (bottom pane)                          |
+| Fixing Manager → View Deals | Deal blotter filtered to affected deals                         |
+
+* ORE Studio Notes
+
+ORE Studio is implementing blotter functionality as part of the front-office
+interface layer. Key implementation considerations:
+
+- The deal entry form corresponds to the =TradeDetailDialog= component in the
+  ORE Studio Qt UI. The form's product-aware field display maps directly to ORE's
+  trade XML schema differences across product types (see [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]]).
+- The deal grid's NPV, Delta, and Vega columns are produced by ORE's NPV and
+  SENSITIVITY analytics. In ORE Studio, these are computed via in-process
+  execution (see [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]]) and displayed per-deal.
+- Colour coding for Valuation Error and Smile Error maps to the error flags
+  returned by ORE analytics runs.
+- Expiry Manager cut times align with the cut codes defined in ORE's
+  =conventions.xml= reference data.
+- The Fixing Manager authorisation workflow corresponds to the fixing management
+  APIs and relates directly to the fixing inputs that ORE requires for NDF and
+  floating-coupon pricing.
+- The Spike Map spot and date bucketing is configurable; its underlying data is
+  produced by running the ORE NPV analytic across the full trade population
+  partitioned by expiry and barrier level.

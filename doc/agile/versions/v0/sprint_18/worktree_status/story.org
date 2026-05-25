@@ -26,11 +26,11 @@ this is how you avoid two agents trampling the same story/files.
 
 | Field         | Value                              |
 |---------------+------------------------------------|
-| State         | STARTED                            |
+| State         | DONE                               |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                          |
-| Now           | =compass fleet= implemented and dogfooded. |
+| Now           | Merged on PR #832.                 |
 | Waiting on    | Nothing.                           |
-| Next          | Review; then close.                |
+| Next          | Nothing.                           |
 | Last touched  | 2026-05-25                         |
 
 * Design (brainstorm)

@@ -531,70 +531,51 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                                      (error-message-string err))))))))))
            (ores/dashboard--mkitem
             "Kill connections" 'nerd-icons-faicon "nf-fa-times_circle"
-            (let ((r root) (pw pgpw) (db dash-buf))
+            (let ((r root) (pw pgpw) (dbn db-name) (db dash-buf))
               (lambda (_)
-                (let* ((dbs   (let ((default-directory r)) (ores-db/database-list-discovery)))
-                       (names (mapcar #'car dbs)))
-                  (if (null names)
-                      (user-error "No ORES databases found on localhost")
-                    (let* ((choice (completing-read "Kill connections to DB: " names nil t))
-                           (entry  (cl-find choice dbs :key #'car :test #'string=))
-                           (host   (nth 1 entry))
-                           (script (expand-file-name
-                                    "projects/ores.sql/utility/kill_db_connections.sh" r))
-                           (process-environment
-                            (if pw (cons (format "PGPASSWORD=%s" pw) process-environment)
-                              process-environment))
-                           (buf-name (format "*ores-db-kill-%s*" choice)))
-                      (unless (yes-or-no-p (format "Kill all connections to %s? " choice))
-                        (user-error "Aborted"))
-                      (let ((comp-buf (compilation-start
-                                       (format "%s --host %s %s" script host choice)
-                                       nil (lambda (_) buf-name))))
-                        (ores/dashboard--display comp-buf db))))))))
+                (unless (yes-or-no-p (format "Kill all connections to %s? " dbn))
+                  (user-error "Aborted"))
+                (let* ((script (expand-file-name
+                                "projects/ores.sql/utility/kill_db_connections.sh" r))
+                       (process-environment
+                        (if pw (cons (format "PGPASSWORD=%s" pw) process-environment)
+                          process-environment))
+                       (buf-name (format "*ores-db-kill-%s*" dbn))
+                       (comp-buf (compilation-start
+                                  (format "%s --host localhost %s" script dbn)
+                                  nil (lambda (_) buf-name))))
+                  (ores/dashboard--display comp-buf db)))))
            (ores/dashboard--mkitem
             "Teardown DB" 'nerd-icons-faicon "nf-fa-bomb"
-            (let ((r root) (pw pgpw) (db dash-buf))
+            (let ((r root) (pw pgpw) (dbn db-name) (db dash-buf))
               (lambda (_)
-                (let* ((dbs   (let ((default-directory r)) (ores-db/database-list-discovery)))
-                       (names (mapcar #'car dbs)))
-                  (if (null names)
-                      (user-error "No ORES databases found on localhost")
-                    (let* ((choice (completing-read "Teardown database: " names nil t))
-                           (entry  (cl-find choice dbs :key #'car :test #'string=))
-                           (host   (nth 1 entry))
-                           (script (expand-file-name
-                                    "projects/ores.sql/teardown_database.sh" r))
-                           (process-environment
-                            (if pw (cons (format "PGPASSWORD=%s" pw) process-environment)
-                              process-environment))
-                           (buf-name "*ores-db-teardown*"))
-                      (unless (yes-or-no-p (format "Teardown %s (kill + drop)? " choice))
-                        (user-error "Aborted"))
-                      (let ((comp-buf (compilation-start
-                                       (format "%s -y --host %s %s" script host choice)
-                                       nil (lambda (_) buf-name))))
-                        (ores/dashboard--display comp-buf db))))))))
+                (unless (yes-or-no-p (format "Teardown %s (kill + drop)? " dbn))
+                  (user-error "Aborted"))
+                (let* ((script (expand-file-name
+                                "projects/ores.sql/teardown_database.sh" r))
+                       (process-environment
+                        (if pw (cons (format "PGPASSWORD=%s" pw) process-environment)
+                          process-environment))
+                       (buf-name "*ores-db-teardown*")
+                       (comp-buf (compilation-start
+                                  (format "%s -y --host localhost %s" script dbn)
+                                  nil (lambda (_) buf-name))))
+                  (ores/dashboard--display comp-buf db)))))
            (ores/dashboard--mkitem
             "Recreate DB" 'nerd-icons-faicon "nf-fa-recycle"
-            (let ((r root) (db dash-buf))
+            (let ((r root) (dbn db-name) (db dash-buf))
               (lambda (_)
-                (let* ((dbs   (let ((default-directory r)) (ores-db/database-list-discovery)))
-                       (names (mapcar #'car dbs)))
-                  (if (null names)
-                      (user-error "No ORES databases found on localhost")
-                    (let* ((choice (completing-read "Recreate database: " names nil t)))
-                      (unless (yes-or-no-p (format "DROP and recreate %s? " choice))
-                        (user-error "Aborted"))
-                      (let ((comp-buf (let ((default-directory r))
-                                        (ores-db/--run-recreate-db choice))))
-                        (when comp-buf
-                          (ores/dashboard--display comp-buf db)))))))))
+                (unless (yes-or-no-p (format "DROP and recreate %s? " dbn))
+                  (user-error "Aborted"))
+                (let ((comp-buf (let ((default-directory r))
+                                  (ores-db/--run-recreate-db dbn))))
+                  (when comp-buf
+                    (ores/dashboard--display comp-buf db))))))
            (ores/dashboard--mkitem
             "Recreate environment" 'nerd-icons-faicon "nf-fa-trash"
-            (let ((lbl label) (r root))
+            (let ((lbl label) (dbn db-name) (r root))
               (lambda (_)
-                (unless (yes-or-no-p (format "DROP and recreate ores_dev_%s? " lbl))
+                (unless (yes-or-no-p (format "DROP and recreate %s? " dbn))
                   (user-error "Aborted"))
                 (ores-db/--run-recreate-env lbl r)))))
           'ores/dashboard-group-db-face)))

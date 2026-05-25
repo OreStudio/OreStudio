@@ -27,7 +27,7 @@
 #+latex_header: \usepackage{hyperref}
 #+latex_header: \hypersetup{colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=cyan}
 #+latex_header: \usepackage{titlesec}
-#+latex_header: \titleformat{\chapter}[hang]{\normalfont\Huge\bfseries}{}{0em}{}
+#+latex_header: \titleformat{\chapter}[hang]{\normalfont\Huge\bfseries}{\thechapter.}{1em}{}
 #+latex: \thispagestyle{empty}
 #+latex: \newpage
 

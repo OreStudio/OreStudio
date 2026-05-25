@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 4A06DE45-1C09-4A24-88A7-E767CD293B24
+:END:
+#+title: Task: Implement the goto command
+#+description: Add a compass goto command: fetch main, create a feature branch, scaffold a linked story+task, print next steps.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compass:workflow:python:compass_goto:sprint_18:v0:
+#+owner: marco
+#+branch: feature/compass-goto
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C0B87858-4EDA-40F3-B4DF-1CDEA5CC712E][compass goto: start a unit of work in one command]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Implement =compass goto=: one command that fetches =main=, creates a
+feature branch, scaffolds a linked story + task (codegen as a library),
+sets the task's =#+branch:=, and prints the remaining manual steps.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:C0B87858-4EDA-40F3-B4DF-1CDEA5CC712E][compass goto: start a unit of work in one command]] |
+| Now          | Implemented; dry-run + real run verified. |
+| Waiting on   | Nothing.                               |
+| Next         | Review.                                |
+| Last touched | 2026-05-25                             |
+
+* Acceptance
+
+- =compass goto --slug … --title … --description … [--tags …] [--task …]=
+  fetches =main=, =git switch -c feature/<slug>=, scaffolds the story
+  (current sprint) + a linked task, and sets the task =#+branch:=.
+- =--dry-run= prints the plan (branch / story / task / sprint) with no
+  side effects; =--base= overrides the branch base.
+- Generation goes through =v2_doc_generate= (shared =_import_generator=
+  with =add=) — no duplicated generator logic.
+- Prints next steps (wire into sprint table, set states, push/PR); does
+  not silently edit the sprint table.
+
+* Plan
+
+1. Share the lazy generator import between =add= and =goto=
+   (=_import_generator=).
+2. =cmd_goto=: argparse (slug/title/description/tags/task/base/dry-run);
+   resolve current sprint; =git fetch= + =git switch -c=; two
+   =v2_doc_generate.main= calls; =_set_frontmatter_branch=; next-steps.
+3. Short-circuit =goto= in =main()= (own argparse); register for =--help=.
+
+* Notes
+
+Dogfooded — though =goto= can't scaffold /its own/ story (that already
+exists), it was verified by =--dry-run= and a throwaway real run
+(branch + story + task created, =#+branch= set), then cleaned up.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

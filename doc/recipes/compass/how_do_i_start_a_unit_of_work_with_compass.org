@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 84C9177E-C737-428A-BDF9-E55FA6C9680C
+:END:
+#+title: How do I start a unit of work with compass?
+#+description: Use compass goto to fetch main, create a feature branch, and scaffold a linked story and task in one step.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :compass:workflow:agile:recipe:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+
+The /Goto/ pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]] — it composes =git= and the
+Scaffold pillar ([[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][=add=]]) into the "start a story" ritual.
+
+* Question
+
+How do I start a new piece of work — fresh branch off =main= plus a
+linked story and task — without running the four manual commands?
+
+* Answer
+
+Run =compass.sh goto= with the story details:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh goto \
+  --slug my_feature --title "My feature" \
+  --description "What it delivers." --tags "topic"
+#+end_src
+
+It fetches =main=, creates =feature/my-feature= off it, scaffolds the
+story (in the current sprint) and a linked task (with the task's
+=#+branch:= set so [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][=fleet=]] picks it up), and prints the remaining
+manual steps (wire the story into the sprint =* Stories= table, set
+states, push/PR).
+
+Preview without making any changes using =--dry-run=:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh goto --slug my_feature \
+  --title "My feature" --description "…" --dry-run
+#+end_src
+
+=--task "<title>"= sets the initial task title (default: =Implement
+<title>=); =--base= overrides the branch base (default =origin/main=).
+
+* Script
+
+=projects/ores.compass/compass.sh goto= → =src/compass.py= (=cmd_goto=),
+which calls =git fetch= / =git switch -c= and =ores.codegen='s
+=v2_doc_generate= (via the shared =_import_generator=, same as =add=).
+
+* Tested by
+
+Manual: =--dry-run= plus a throwaway real run (branch + story + task
+created, =#+branch= set), then cleaned up.
+
+* See also
+
+- [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] — the =add= primitive =goto= builds on.
+- [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][How do I see what every worktree is doing?]] — =fleet=, the companion view.

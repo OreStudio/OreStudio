@@ -62,9 +62,13 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                    | File               | Decision | Notes                                                          |
+|---+----------------------------------------------------+--------------------+----------+----------------------------------------------------------------|
+| 1 | Use =shell-quote-argument= on script paths/presets | =ores-dashboard.el= | Accept   | Paths from =expand-file-name=, low real risk; fix in follow-up |
+| 2 | Set =buffer-undo-list t= in mode — pure overhead   | =ores-dashboard.el= | Accept   | Fixed — buffer is read-only and fully redrawn on every reload  |
+| 3 | Redundant =let= wrappers before lambdas            | =ores-dashboard.el= | Defer    | Valid with =lexical-binding=; mechanical refactor, no behaviour change |
+| 4 | Use =pcase-dolist= instead of =nth= on spec lists  | =ores-dashboard.el= | Defer    | Cosmetic; =mapcar=/=nth= is functional for small lists         |
+| 5 | =fuser -k= is Linux-only; track process instead    | =ores-dashboard.el= | Reject   | Project is Linux-only; server launched via =compilation-start=, no process object available |
 
 * Result
 

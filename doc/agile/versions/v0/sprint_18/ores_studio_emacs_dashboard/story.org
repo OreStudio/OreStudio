@@ -59,6 +59,7 @@ In execution order:
 - [[id:3C888F53-0522-4A56-A50A-A7AFEA101468][Write the ORE Studio dashboard user manual section]]
 - [[id:3C569365-B253-4BC6-9385-7CAF7B4FB54D][Make compass output paths clickable in dashboard output pane]]
 - [[id:FC26D072-3E4C-488B-BE3A-958F29041D02][Fix DB dashboard operations to use .env database name]]
+- [[id:A1347F1E-C771-4762-9159-88EB624C0CCB][Add SQLite connections DB entry to dashboard DB card]]
 
 * Decisions
 

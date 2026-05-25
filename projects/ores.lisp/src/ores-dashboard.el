@@ -615,7 +615,19 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
               (lambda (_)
                 (unless (yes-or-no-p (format "DROP and recreate ores_dev_%s? " lbl))
                   (user-error "Aborted"))
-                (ores-db/--run-recreate-env lbl r)))))
+                (ores-db/--run-recreate-env lbl r))))
+           (ores/dashboard--mkitem
+            "Open connections DB (SQLite)" 'nerd-icons-faicon "nf-fa-table"
+            (let ((sqlite-db (expand-file-name "~/.local/share/ores.qt/connections.db"))
+                  (sqliterc  (expand-file-name "projects/ores.sql/utility/sqliterc.sql" root))
+                  (dash      dash-buf))
+              (lambda (_)
+                (let* ((buf-name "*ores-connections-db*")
+                       (sql-sqlite-options `("-init" ,sqliterc))
+                       (sql-database       sqlite-db))
+                  (save-window-excursion (sql-sqlite buf-name))
+                  (when-let ((buf (get-buffer buf-name)))
+                    (ores/dashboard--display buf dash)))))))
           'ores/dashboard-group-db-face)))
 
 (defun ores/dashboard--services-group (env root dash-buf)

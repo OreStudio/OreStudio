@@ -130,6 +130,7 @@
     <a href='/OreStudio/doc/recipes/recipes.html'>Recipes</a>
     <a href='/OreStudio/doc/llm/skills/claude_code_skills.html'>Skills</a>
     <a href='/OreStudio/doc/manual/manuals.html'>Manuals</a>
+    <a href='/OreStudio/doc/developer.html'>Developer</a>
     <a href='/OreStudio/doc/agile/versions/versions.html'>Roadmap</a>
     <a href='/OreStudio/graph/index.html'>Knowledge Graph</a>
     <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>

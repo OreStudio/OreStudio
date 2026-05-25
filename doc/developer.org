@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 5B271351-399A-4BD7-A096-E5DF1EDAD8F5
+:END:
+#+title: Developer Links
+#+description: Quick-reference index of developer-facing external resources: GitHub, Doxygen, Discord, CDash, and CI.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :developer:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+
+* Summary
+
+Quick-reference index of the external services and dashboards used in
+the ORE Studio developer workflow. Covers source hosting, API
+documentation, community chat, build dashboards, and CI pipelines. Use
+this page to orient yourself or to share onboarding links with a new
+contributor or LLM agent.
+
+* Detail
+
+** Source and Documentation
+
+| Resource  | Link                                                                                         |
+|-----------+----------------------------------------------------------------------------------------------|
+| GitHub    | [[https://github.com/OreStudio/OreStudio][github.com/OreStudio/OreStudio]]                   |
+| Doxygen   | [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][orestudio.github.io — Doxygen API docs]] |
+| Site      | [[https://orestudio.github.io/OreStudio/][orestudio.github.io/OreStudio]]            |
+
+** Community
+
+| Resource | Link                                         |
+|----------+----------------------------------------------|
+| Discord  | [[https://discord.gg/ztAaxmsnUJ][discord.gg/ztAaxmsnUJ]]        |
+
+** Build and Quality
+
+| Resource           | Link                                                                                                      |
+|--------------------+-----------------------------------------------------------------------------------------------------------|
+| CDash Dashboard    | [[https://my.cdash.org/index.php?project=OreStudio][my.cdash.org — OreStudio]]                          |
+| CI — Linux         | [[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-linux.yml][continuous-linux.yml]]   |
+| CI — Windows       | [[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-windows.yml][continuous-windows.yml]] |
+| CI — macOS         | [[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml][continuous-macos.yml]]   |
+| CI — Nightly Linux | [[https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml][nightly-linux.yml]]       |
+
+** Releases
+
+| Resource | Link                                                                    |
+|----------+-------------------------------------------------------------------------|
+| Releases | [[https://github.com/OreStudio/OreStudio/releases][github.com/OreStudio/OreStudio/releases]] |
+| DeepWiki | [[https://deepwiki.com/OreStudio/OreStudio][deepwiki.com/OreStudio/OreStudio]]        |
+
+* See also
+
+- [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level orientation for the =doc/= tree.

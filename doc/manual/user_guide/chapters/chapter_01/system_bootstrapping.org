@@ -179,6 +179,42 @@ Enter (or comma) to add it; click the × on an existing tag chip to
 remove it. Tags are created on first use — there is no separate tag
 management screen.
 
+*** Where your connections are stored
+
+ORE Studio keeps your connections — together with their environments,
+folders, and tags — in a single local SQLite database file named
+=connections.db=. Your UI settings (preferences and window layout) are
+stored separately, in the operating system's standard settings store.
+Neither leaves your machine.
+
+#+attr_html: :class hug-leading
+| Operating system | Settings directory                            | Database location (=connections.db=)                   |
+|------------------+-----------------------------------------------+--------------------------------------------------------|
+| Linux            | =~/.config/OreStudio/=                         | =~/.local/share/ores.qt/connections.db=                |
+| macOS            | =~/Library/Preferences/=                       | =~/Library/Application Support/ores.qt/connections.db= |
+| Windows          | Registry: =HKCU\Software\OreStudio\OreStudio= | =%APPDATA%\ores.qt\connections.db=                     |
+
+If =connections.db= is missing when ORE Studio starts, it creates a new
+empty one — so the Connection Manager simply opens with no entries.
+
+*** Backing up and restoring your connections
+
+Because everything you configure here lives in that one =connections.db=
+file, backing it up is a file copy:
+
+1. Quit ORE Studio, so the database is fully written and not locked.
+2. Copy =connections.db= from the location above to a safe place — on
+   Linux, for example:
+
+   #+begin_src sh
+   cp ~/.local/share/ores.qt/connections.db ~/connections-backup.db
+   #+end_src
+
+To restore, quit ORE Studio and copy the backup back over
+=connections.db=. To move your connections to another machine, copy the
+file to the same location there. The file is self-contained, so a single
+copy preserves all your connections, environments, folders, and tags.
+
 ** Connecting and logging in
 
 Once you have at least one connection configured, you can log in.
@@ -325,11 +361,13 @@ The =--color= spelling (without the 'u') is accepted as an alias.
 
 *** Configuration directory
 
-By default ORE Studio stores its settings — saved connections,
-preferences, window layout — in the platform's standard user
-configuration directory (=~/.config/OreStudio/= on Linux,
+By default ORE Studio stores its UI settings — preferences and window
+layout — in the platform's standard user configuration directory
+(=~/.config/OreStudio/= on Linux,
 =~/Library/Application Support/OreStudio/= on macOS,
-=%APPDATA%\OreStudio\= on Windows). To use a different directory:
+=%APPDATA%\OreStudio\= on Windows). Your saved connections live
+separately, in =connections.db= (see [[*Where your connections are stored][Where your connections are
+stored]]). To use a different directory:
 
 #+begin_src sh
 ores --config-dir /path/to/config

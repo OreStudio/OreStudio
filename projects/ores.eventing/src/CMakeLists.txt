@@ -50,9 +50,13 @@ target_link_libraries(${lib_target_name}
         libfort::fort)
 
 
-target_precompile_headers(${lib_target_name} PRIVATE
-    <rfl.hpp>
-    <rfl/json.hpp>
-    <ores.utility/rfl/reflectors.hpp>)
+# PCH is skipped when building with coverage: sccache expects a .gcno file
+# alongside every output but the PCH step does not produce one.
+if(NOT WITH_PROFILING)
+    target_precompile_headers(${lib_target_name} PRIVATE
+        <rfl.hpp>
+        <rfl/json.hpp>
+        <ores.utility/rfl/reflectors.hpp>)
+endif()
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -25,7 +25,7 @@ data import session backend and UI, and surface ORE results in the UI.
 |---------------+----------------------------------------------|
 | State         | STARTED                                      |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                    |
-| Now           | All 8 work tasks scaffolded; scaffold PR pending. |
+| Now           | All 9 work tasks scaffolded; scaffold PR pending. |
 | Waiting on    | Nothing.                                          |
 | Next          | Open scaffold PR; begin Phase 1.                  |
 | Last touched  | 2026-05-25                                   |
@@ -40,6 +40,7 @@ data import session backend and UI, and surface ORE results in the UI.
 - Workflow UI for import progress and results.
 - UI reorganised to surface workspace and import features.
 - ORE results visible from within the workspace context.
+- Portfolios and books visible when any workspace is active.
 
 * Tasks
 
@@ -54,6 +55,7 @@ In execution order:
 - [[id:37459E42-96A6-4A31-B4E8-96DFE36C77B0][Task: Data import: trading API and Pending Book]]
 - [[id:508554C1-214F-430C-9AB1-3C99C9F497D5][Task: Data import: ORE import handler]]
 - [[id:D10420E1-7447-4F80-B53E-42A20F8D353E][Task: Data import: session window and workflow UI]]
+- [[id:1BFBA7F6-59BF-4814-BECE-C2AB75F78C41][Task: Fix: portfolios and books not visible in workspace context]]
 
 * Decisions
 

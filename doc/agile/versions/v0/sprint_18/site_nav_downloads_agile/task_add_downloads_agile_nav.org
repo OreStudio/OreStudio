@@ -29,11 +29,11 @@ add =Downloads= and =Agile= nav entries.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                   |
 | Parent story | [[id:C3B6F514-559F-4038-A1D7-947BC9F7F398][Add Downloads and Agile nav entries to the site]] |
-| Now          | Not yet started.                       |
+| Now          | Complete. Pending PR merge.            |
 | Waiting on   | Nothing.                               |
-| Next         | Write downloads.org; patch nav.        |
+| Next         | —                                      |
 | Last touched | 2026-05-25                             |
 
 * Acceptance
@@ -97,9 +97,9 @@ Manuals → *Downloads* → *Agile* → Roadmap → Knowledge Graph → GitHub
 
 * PRs
 
-| PR  | Title                                              |
-|-----+----------------------------------------------------|
-|     |                                                    |
+| PR                                                              | Title                                                               |
+|-----------------------------------------------------------------+---------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/843][#843]] | Add Downloads page and Downloads + Agile + Developer nav entries |
 
 * Review
 

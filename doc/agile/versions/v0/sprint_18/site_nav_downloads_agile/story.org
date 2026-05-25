@@ -28,11 +28,11 @@ The site header gains two new nav entries:
 
 | Field         | Value                              |
 |---------------+------------------------------------|
-| State         | BACKLOG                            |
+| State         | DONE                               |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                          |
-| Now           | Not yet started.                   |
+| Now           | Complete. Pending PR merge.        |
 | Waiting on    | Nothing.                           |
-| Next          | Create downloads.org; patch nav.   |
+| Next          | —                                  |
 | Last touched  | 2026-05-25                         |
 
 * Acceptance

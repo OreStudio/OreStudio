@@ -199,7 +199,8 @@
     (with-current-buffer buf
       (ores/dashboard-mode)
       (setq ores/dashboard--env  env
-            ores/dashboard--root root)
+            ores/dashboard--root root
+            default-directory    root)
       (let ((inhibit-read-only t))
         (ores/dashboard--render env root)))
     (ores/dashboard--setup-layout buf)))

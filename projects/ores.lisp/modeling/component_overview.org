@@ -10,6 +10,12 @@
 #+created: 2026-05-25
 #+updated: 2026-05-25
 
+* Dashboard
+
+#+attr_html: :width 100% :alt ORE Studio Dashboard
+#+caption: ORE Studio Dashboard
+[[file:dashboard_window.png][file:dashboard_window.png]]
+
 * Summary
 
 =ores.lisp= is the Emacs Lisp tooling layer for ORE Studio development. It

@@ -26,11 +26,11 @@ Read all nine source notes under =/home/marco/Development/Notebooks/summaries/=,
 
 | Field        | Value                                                      |
 |--------------+------------------------------------------------------------|
-| State        | STARTED                                                    |
+| State        | DONE                                                       |
 | Parent story | [[id:4E375DD6-E300-4A0A-BD20-3D06AC8ED7A1][Port domain concept notes to knowledge documents]]           |
-| Now          | Reading source notes; planning document split.             |
+| Now          | All 8 knowledge documents created and committed.           |
 | Waiting on   | Nothing.                                                   |
-| Next         | Create knowledge documents; raise PR.                      |
+| Next         | Raise PR.                                                  |
 | Last touched | 2026-05-25                                                 |
 
 * Acceptance
@@ -52,17 +52,17 @@ task closes. Plans do not outlive their task.)
 
 Source files to process (=/home/marco/Development/Notebooks/summaries/=):
 
-| File                           | Status  | Notes                                                      |
-|--------------------------------+---------+------------------------------------------------------------|
-| fx-vol-surface.org             | Pending |                                                            |
-| grid-infrastructure.org        | Pending | Rename: "compute engine". Map job/grid terms to ORE Studio |
-| pl-attribution.org             | Pending |                                                            |
-| pricing-configuration.org      | Pending |                                                            |
-| rates-curves-bootstrapping.org | Pending | May split: rates vs curves vs bootstrapping                |
-| reporting.org                  | Pending | Already superseded; merge into risk-reporting + pl-attribution |
-| risk-reporting.org             | Pending |                                                            |
-| time-structures-tenors.org     | Pending | May split: time structures vs tenor conventions            |
-| trade-blotter.org              | Pending | Cross-link to Qt UI concepts (TradeDetailDialog, etc.)     |
+| File                           | Status | Notes                                                         |
+|--------------------------------+--------+---------------------------------------------------------------|
+| fx-vol-surface.org             | Done   | → fx_volatility_surface.org (5B513D53)                       |
+| grid-infrastructure.org        | Done   | → compute_engine.org (98B9FE2A); grid/job terms → ORE Studio |
+| pl-attribution.org             | Done   | → pl_attribution.org (B50355E0); reporting.org merged here   |
+| pricing-configuration.org      | Done   | → pricing_configuration.org (EDAE3C87)                       |
+| rates-curves-bootstrapping.org | Done   | → interest_rate_curves.org (E808F432)                        |
+| reporting.org                  | Done   | Superseded; content merged into pl_attribution + risk_reporting |
+| risk-reporting.org             | Done   | → risk_reporting.org (04C68B55)                              |
+| time-structures-tenors.org     | Done   | → time_structures_and_tenors.org (1427C01C)                  |
+| trade-blotter.org              | Done   | → trade_blotter.org (3976695F)                               |
 
 * PRs
 
@@ -77,3 +77,12 @@ Source files to process (=/home/marco/Development/Notebooks/summaries/=):
 |   |                 |      |          |       |
 
 * Result
+
+8 v2 knowledge documents created under =doc/knowledge/domain/=:
+=fx_volatility_surface.org=, =interest_rate_curves.org=,
+=time_structures_and_tenors.org=, =compute_engine.org=,
+=pricing_configuration.org=, =pl_attribution.org=,
+=risk_reporting.org=, =trade_blotter.org=.
+=reporting.org= was superseded; its content merged into
+=pl_attribution.org= and =risk_reporting.org=.
+All documents committed on =feature/port-domain-concept-notes=.

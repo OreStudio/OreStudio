@@ -29,11 +29,11 @@ slug already exists.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                   |
 | Parent story | [[id:C0B87858-4EDA-40F3-B4DF-1CDEA5CC712E][compass goto: start a unit of work in one command]] |
-| Now          | Designing the interface; implementing. |
+| Now          | Implemented; both modes verified via --dry-run. |
 | Waiting on   | Nothing.                               |
-| Next         | Implement and dogfood.                 |
+| Next         | Review.                                |
 | Last touched | 2026-05-25                             |
 
 * Acceptance
@@ -71,6 +71,21 @@ Steps:
 4. Dry-run + dogfood; update component overview + the goto recipe.
 
 * Notes
+
+Verified via =--dry-run= for both modes (existing-story by folder slug
+and by =:ID:= prefix; new-story unchanged) and the three error paths
+(mixed modes, =--story= without task, unknown story). The execution path
+(=git switch= + =add task --parent-dir=) is the one already exercised by
+new-story =goto= and by =add=.
+
+* Result
+
+=cmd_goto= now has two modes. Existing-story mode: =goto --story
+<id-or-slug> --task-slug <slug> --task "<title>" [--description …]=
+resolves the story via =resolve_story= (by =:ID:= exact/prefix or folder
+slug), branches =feature/<task-slug>=, adds a task to the existing story
+(=add=), sets =#+branch=, and prints next steps. New-story mode is
+unchanged. The two modes are mutually exclusive with clear validation.
 
 * PRs
 

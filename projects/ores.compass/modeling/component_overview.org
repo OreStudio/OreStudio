@@ -53,10 +53,12 @@ Pillars (the first three drawn from the Sprint 18 capture =* Tools=):
    /Implemented/ as =fleet= — see the [[id:CB368AF8-3144-4CFF-B782-05CDF87366A6][Fleet story]].
 
 5. /Goto — "start a unit of work."/ Fetch =main=, create a feature
-   branch, scaffold a linked story + task (Scaffold/codegen) with the
-   task's =#+branch:= set, and print the remaining manual steps — the
-   "start a story" ritual in one command. /Implemented/ as =goto= — see
-   the [[id:C0B87858-4EDA-40F3-B4DF-1CDEA5CC712E][Goto story]].
+   branch, scaffold the task (and, for a /new/ story, the story too) via
+   Scaffold/codegen with the task's =#+branch:= set, and print the
+   remaining manual steps — the "start a story" ritual in one command.
+   Two modes: new story (=--slug/--title/--description=) or add a task to
+   an existing story (=--story <id-or-slug> --task-slug --task=).
+   /Implemented/ as =goto= — see the [[id:C0B87858-4EDA-40F3-B4DF-1CDEA5CC712E][Goto story]].
 
 * Inputs
 
@@ -90,7 +92,8 @@ Pillars (the first three drawn from the Sprint 18 capture =* Tools=):
   =debug [-f FILE]= (Search); =where= / =status= [=-f pretty|json=]
   (Locate); =list [filters]= and =show <uuid>= (Navigate);
   =add <type> [flags]= (Scaffold); =fleet [-f pretty|json]= (Fleet); and
-  =goto --slug … --title … --description … [--dry-run]= (Goto).
+  =goto= (Goto) — new story (=--slug/--title/--description=) or existing
+  story (=--story <id-or-slug> --task-slug --task=); =--dry-run= for both.
 
 * Dependencies
 

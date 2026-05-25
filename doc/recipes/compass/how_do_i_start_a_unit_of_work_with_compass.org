@@ -15,12 +15,15 @@ Scaffold pillar ([[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][=add=]]) into the "s
 
 * Question
 
-How do I start a new piece of work — fresh branch off =main= plus a
-linked story and task — without running the four manual commands?
+How do I start a piece of work — fresh branch off =main= plus a linked
+story/task — without running the manual commands? (Both for a brand-new
+story and for adding a task to an existing one.)
 
 * Answer
 
-Run =compass.sh goto= with the story details:
+=goto= has two modes.
+
+** New story
 
 #+begin_src sh :results verbatim
 ./projects/ores.compass/compass.sh goto \
@@ -28,21 +31,29 @@ Run =compass.sh goto= with the story details:
   --description "What it delivers." --tags "topic"
 #+end_src
 
-It fetches =main=, creates =feature/my-feature= off it, scaffolds the
-story (in the current sprint) and a linked task (with the task's
-=#+branch:= set so [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][=fleet=]] picks it up), and prints the remaining
-manual steps (wire the story into the sprint =* Stories= table, set
-states, push/PR).
+Fetches =main=, creates =feature/my-feature=, scaffolds the story (in
+the current sprint) + a linked task (with =#+branch:= set so [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][=fleet=]]
+picks it up), and prints the remaining manual steps (wire the story into
+the sprint =* Stories= table, set states, push/PR).
 
-Preview without making any changes using =--dry-run=:
+** Add a task to an existing story
+
+Identify the story by its =:ID:= (or unique prefix) or its folder slug:
 
 #+begin_src sh :results verbatim
-./projects/ores.compass/compass.sh goto --slug my_feature \
-  --title "My feature" --description "…" --dry-run
+./projects/ores.compass/compass.sh goto \
+  --story compass_goto --task-slug fix_help_text \
+  --task "Fix the goto help text" --description "…"
 #+end_src
 
-=--task "<title>"= sets the initial task title (default: =Implement
-<title>=); =--base= overrides the branch base (default =origin/main=).
+Creates =feature/fix-help-text= and adds the task to that story (no new
+story). =--story= is mutually exclusive with =--slug/--title=.
+
+** Notes
+
+Preview either mode with =--dry-run= (no side effects). =--task= sets
+the task title (new mode default: =Implement <title>=); =--base=
+overrides the branch base (default =origin/main=).
 
 * Script
 

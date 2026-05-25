@@ -9,7 +9,7 @@
 #+filetags: :compass:python:agile:compass_locate:sprint_18:v0:
 #+owner: marco
 #+branch: feature/compass-locate
-#+pr:
+#+pr: 813
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
@@ -71,6 +71,12 @@ subparser). Verified: =where= reports Version 0 / Sprint 18 and eight
 in-flight items; =-f json= emits the structured document; =search=
 unaffected; =py_compile= clean. Reuses =ores.codegen='s =doc_index=, so
 no frontmatter parsing is duplicated.
+
+* PRs
+
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/813][#813]] | [ores.compass] Locate pillar + fold doc-navigation out of codegen |
 
 * Review
 

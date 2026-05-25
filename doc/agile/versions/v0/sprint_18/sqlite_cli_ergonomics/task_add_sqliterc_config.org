@@ -9,7 +9,7 @@
 #+filetags: :sql:sqlite:tooling:sqlite_cli_ergonomics:sprint_18:v0:
 #+owner: marco
 #+branch: feature/sqliterc-helper
-#+pr:
+#+pr: 804
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
@@ -61,6 +61,12 @@ by smoke-testing with =sqlite3 -init=.
   =sqlite3= dot-command (verified against 3.46.1).
 - Plain =.mode box= was confirmed to wrap long values even when no
   =~/.sqliterc= is present; =--wrap 0= disables it.
+
+* PRs
+
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/804][#804]] | [sql,agile] SQLite shell quality-of-life config (.sqliterc) |
 
 * Result
 

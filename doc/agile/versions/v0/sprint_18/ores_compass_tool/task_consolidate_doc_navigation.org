@@ -9,7 +9,7 @@
 #+filetags: :compass:codegen:docs:recipes:refactor:ores_compass_tool:sprint_18:v0:
 #+owner: marco
 #+branch: feature/compass-locate
-#+pr:
+#+pr: 808
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
@@ -73,6 +73,12 @@ Architecture confirmed with the product owner: /functionality must not
 be duplicated between codegen and compass/. Generation stays in codegen
 and is consumed by compass /as a library/; navigation/orientation lives
 in compass. =doc_index= now has a single home (compass).
+
+* PRs
+
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/808][#808]] | [ores.compass] Promote compass into a project and scope its pillars |
 
 * Result
 

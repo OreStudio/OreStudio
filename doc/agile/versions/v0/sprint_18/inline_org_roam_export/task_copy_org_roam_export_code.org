@@ -9,7 +9,7 @@
 #+filetags: :site:ci:build:bug_fix:inline_org_roam_export:sprint_18:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 803
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-22
@@ -34,7 +34,6 @@ repository.
 | Now          | Complete — merged in PR #803.         |
 | Waiting on   | Nothing.                              |
 | Next         | Address code review comments..        |
-| PR           | [[https://github.com/OreStudio/OreStudio/pull/803][#803]]                                  |
 | Last touched | 2026-05-23                            |
 
 * Acceptance
@@ -225,5 +224,11 @@ performance on large graphs compared to the Lisp-based json-encode.
                        output-file (length nodes) (length links))))
         (sqlite-close db))))))
 #+end_src
+
+* PRs
+
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/803][#803]] | [site] Inline org-roam export utilities into ores.lisp |
 
 * Result

@@ -9,7 +9,7 @@
 #+filetags: :emacs:lisp:dashboard:ores_studio_emacs_dashboard:sprint_18:v0:
 #+owner: marco
 #+branch: feature/ores-dashboard-audit-design
-#+pr:
+#+pr: 828
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24

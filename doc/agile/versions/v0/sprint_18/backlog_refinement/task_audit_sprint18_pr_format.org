@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 4076E101-814B-4EAF-AD32-06F472C16333
+:END:
+#+title: Task: Audit sprint 18 tasks: ensure all PRs have URLs and consistent format
+#+description: Check every task in sprint 18 has a PR URL set and that all PR tables use the canonical [[url][#NNN]] format.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :backlog_refinement:sprint_18:v0:
+#+owner: marco
+#+branch: main
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Audit every task in sprint 18 and ensure:
+1. The =#+pr:= frontmatter field is set to the PR number (not blank).
+2. The =* PRs= section contains a table with the canonical
+   =[[url][#NNN]]= link format and the PR title.
+
+Direct commits without PRs (rare, early sprint) are noted as such.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]] |
+| Now          | Complete — 21 task files updated.      |
+| Waiting on   | Nothing.                               |
+| Next         | —                                      |
+| Last touched | 2026-05-25                             |
+
+* Acceptance
+
+- All DONE task files in sprint 18 have =#+pr: NNN= set.
+- All DONE task files have a =* PRs= table with =[[url][#NNN]]= links.
+- BACKLOG/DISCOVERED/STARTED tasks are left with blank PR fields (correct — no PR yet).
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

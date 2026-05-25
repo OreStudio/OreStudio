@@ -9,7 +9,7 @@
 #+filetags: :ci:github:cleanup:remove_unused_workflows:sprint_18:v0:
 #+owner: marco
 #+branch: feature/prune-unused-workflows
-#+pr:
+#+pr: 825
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
@@ -57,9 +57,9 @@ via =*~=) and were removed from the working tree.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/825][#825]] | [ci] Remove the four unused Gemini workflows |
 
 * Review
 

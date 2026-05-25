@@ -9,7 +9,7 @@
 #+filetags: :meta:codegen:doc_investigation_support:sprint_18:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 805
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-23
@@ -44,5 +44,11 @@ distilled into the parent story's =* Decisions= and cleared when the
 task closes. Plans do not outlive their task.)
 
 * Notes
+
+* PRs
+
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/805][#805]] | [doc,codegen] Minor doc fixes and uppercase UUID invariant |
 
 * Result

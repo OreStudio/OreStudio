@@ -9,7 +9,7 @@
 #+filetags: :compass:python:codegen:compass_scaffold:sprint_18:v0:
 #+owner: marco
 #+branch: feature/compass-scaffold
-#+pr:
+#+pr: 815
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
@@ -62,6 +62,12 @@ choice is unambiguous.
 * Notes
 
 Dogfooded: this very task file was created with =compass add task=.
+
+* PRs
+
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/815][#815]] | [ores.compass] Implement the Scaffold pillar (add command) |
 
 * Review
 

@@ -1,0 +1,306 @@
+:PROPERTIES:
+:ID: B50355E0-F016-4CA1-9932-404DAF83EA7A
+:END:
+#+title: P&L Attribution
+#+description: P&L attribution (Explain) methodology: the attribution identity, Bump and Reset, Bump and Run, trade activity categories, market data bucketing, time component, deal population rules, EOD sign-off, and aggregation.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:domain:finance:pnl:reporting:ore:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+
+P&L Attribution (also called /Explain/) decomposes the change in a book's
+P&L between two time periods into a set of identified, labelled causes. The
+purpose is to ensure that every unit of P&L movement has an explanation;
+unexplained P&L is not permitted. This document describes the attribution
+methodology, decomposition categories, bucketing hierarchy, and EOD sign-off
+process. The reports that consume this methodology are described in
+[[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]]. For the pricing configuration that drives each valuation step
+see [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]].
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* P&L Types
+
+Before describing attribution it is necessary to define the P&L types that
+appear as reference values and outputs.
+
+| Type           | Definition                                                                          |
+|----------------+-------------------------------------------------------------------------------------|
+| LTD P&L        | Life-to-Date P&L. The current MTM without any manual adjustments. The raw NPV.     |
+| Daily P&L      | NPV change since the previous business day close.                                   |
+| MTD P&L        | Current NPV minus the NPV at the previous month-end.                               |
+| YTD P&L        | Current NPV minus the NPV at the previous year-end.                                |
+| Flash P&L      | Preliminary P&L computed against a draft market data cut before formal sign-off.   |
+| Actual P&L     | Final P&L after sign-off, including all journals and adjustments.                  |
+| Variance       | Difference between Flash and Actual P&L.                                           |
+| Hypo P&L       | Hypothetical P&L — a what-if estimate computed from Risk Predict without re-valuation. |
+| Clean P&L      | P&L excluding a defined set of adjustments (e.g. brokerage, CVA).                 |
+| Post Month-End | Adjustments applied after month-end close.                                         |
+
+MTD and YTD P&L are computed as:
+
+$$\text{MTD P\&L} = PV_\text{now} - \text{Monthly Adjustments} - \text{Brokerage Adjustments}$$
+$$\text{YTD P\&L} = PV_\text{now} - \text{YTD Adjustments} - \text{Brokerage Adjustments}$$
+
+* The Attribution Identity
+
+The fundamental decomposition of daily P&L is:
+
+$$\underbrace{D_1 M_1 T_1 - D_0 M_0 T_0}_{\text{Total P\&L}} =
+  \underbrace{(D_1 M_1 T_1 - D_0 M_1 T_1)}_{\text{Trade Activity}} +
+  \underbrace{(D_0 M_1 T_0 - D_0 M_0 T_0)}_{\text{Market Data}} +
+  \underbrace{(D_0 M_1 T_1 - D_0 M_1 T_0)}_{\text{Time}}$$
+
+Where:
+- $D_0$, $D_1$: Trade population at Day 0 and Day 1
+- $M_0$, $M_1$: Market data (spots, vols, rates) at Day 0 and Day 1
+- $T_0$, $T_1$: Valuation dates at Day 0 and Day 1
+
+The three components are mutually exclusive and exhaustive:
+
+#+begin_example
+                                    ┌─ NEW
+               ┌─ TRADE ACTIVITY ──┤─ AMEND / RESTRUCTURE
+               │                   │─ CANCEL
+               │                   │─ EXPIRED
+               │                   │─ EXERCISED
+               │                   │─ FIXINGS
+               │                   │─ FUNDING ROLLS
+  TOTAL P&L ───┤                   │─ CONTRA REVENUE (Brokerage)
+               │                   └─ CVA / RESERVES
+               │
+               ├─ MARKET DATA ─────┬─ FX SPOT
+               │                   ├─ ATM VOL
+               │                   ├─ RISK REVERSAL
+               │                   ├─ STRANGLE
+               │                   ├─ IR PROJECTION
+               │                   ├─ IR DISCOUNT
+               │                   └─ CROSS EFFECTS
+               │
+               └─ TIME (THETA)
+#+end_example
+
+A fourth category, *Unexplained P&L*, captures any residual. A well-implemented
+attribution should drive this to zero. Its presence indicates missing or
+misclassified attribution components.
+
+The full formula including cross effects:
+
+$$\text{Market Movements} = (\text{ATM} + \text{RR} + \text{STR} + \text{FX Spot} + \text{IR Discount} + \text{IR Projection}) + \text{Cross Effects}$$
+$$\text{Cross Effects} = \text{Bump All} - (\text{ATM} + \text{RR} + \text{STR} + \text{FX Spot} + \text{IR Discount} + \text{IR Projection})$$
+
+* Bump and Reset: The Attribution Methodology
+
+Bump and Reset is the standard methodology for market data attribution. Each
+component is computed by bumping only that component from Day 0 to Day 1 while
+holding all others at Day 0 levels. The baseline is always Day 0.
+
+| Component     | Formula                                                           |
+|---------------+-------------------------------------------------------------------|
+| FX Spot       | $D_0 \{S_1, V_0, IR_0\} T_0 - D_0 M_0 T_0$                     |
+| ATM Vol       | $D_0 \{S_0, ATM_1, RR_0, STR_0, IR_0\} T_0 - D_0 M_0 T_0$     |
+| Risk Reversal | $D_0 \{S_0, ATM_0, RR_1, STR_0, IR_0\} T_0 - D_0 M_0 T_0$     |
+| Strangle      | $D_0 \{S_0, ATM_0, RR_0, STR_1, IR_0\} T_0 - D_0 M_0 T_0$     |
+| IR (combined) | $D_0 \{S_0, V_0, IR_1\} T_0 - D_0 M_0 T_0$                     |
+| Time          | $D_0 M_0 T_1 - D_0 M_0 T_0$                                     |
+| Models        | Change in valuation due to model setting changes Day 0 → Day 1  |
+
+Bump and Reset ensures all components add to total market movements (up to
+cross effects). It does not capture interaction terms between components; those
+appear in the Cross Effects bucket.
+
+* Bump and Run: Cumulative Attribution
+
+In Bump and Run, bumps are applied /cumulatively/ in a defined order. The
+$\Delta P\&L$ at each step is measured against the previous step, not against
+Day 0.
+
+| Step | Components active                           | $\Delta P\&L$ interpretation            |
+|------+---------------------------------------------+------------------------------------------|
+|    1 | FX Spot                                     | Spot-only P&L move                       |
+|    2 | FX Spot + ATM                               | Incremental ATM contribution             |
+|    3 | FX Spot + ATM + RR                          | Incremental RR contribution              |
+|    4 | FX Spot + ATM + RR + STR                    | Incremental STR contribution             |
+|    5 | FX Vol + IR Projection + IR Discount        | Incremental rates contribution           |
+|    6 | All above + Model Parameters                | Incremental model change contribution    |
+|    7 | All market data                             | Residual market data effects             |
+|    8 | All market data + Time                      | Time/theta contribution                  |
+
+Bump and Run is complementary to Bump and Reset. It is better for detecting
+cross-effects (a large step 2 increment implies a strong ATM×Spot interaction).
+Bump and Reset is better for attributing absolute magnitudes to individual
+components.
+
+** Theta: First vs. Last
+
+- *Theta Last* (standard for Bump and Run): Update market data to Day 1 first,
+  then roll the date: $\Theta = NPV(D_0, M_1, T_1) - NPV(D_0, M_1, T_0)$
+- *Theta First* (standard for Bump and Reset): Roll the date first, then apply
+  market data: $\Theta = NPV(D_0, M_0, T_1) - NPV(D_0, M_0, T_0)$
+
+The Bump and Run time bucket is not a pure theta: it absorbs any residual P&L
+not otherwise attributed, so it may differ from a clean Theta First calculation.
+The guiding rule: Fix/Fix/Fix — fix the order, fix the convention, fix the
+methodology.
+
+* Trade Activity Component
+
+Trade Activity explains the P&L contribution from changes to the trade
+population between Day 0 and Day 1. It uses Day 1 market data for all
+sub-components so that trade changes and market data changes do not interact.
+
+$$\text{Trade Activity} = D_1 M_1 T_1 - D_0 M_1 T_1$$
+
+Sub-buckets (additive):
+
+$$\text{Trade Activity} = \text{New} + \text{Amended} + \text{Cancelled} + \text{Expired} + \text{Exercised} + \text{Fixings} + \text{Funding Rolls} + \text{Contra Revenue} + \text{CVA} + \text{Reserves}$$
+
+** Trade Activity Categories
+
+- *NEW*: A new legal contract. $\text{NEW} = NPV(D_{\text{new}}, M_1, T_1)$
+- *CLOSE-OUT*: Customer or bank wishes to close an existing position. The
+  close-out deal is equal and opposite to the original.
+- *EARLY TERMINATION*: Close-out by mutual agreement before scheduled maturity.
+  Includes tear-ups and compression exercises.
+- *RESTRUCTURE / ROLL*: Terms of an existing trade renegotiated (e.g. extending
+  maturity or changing the strike).
+- *PARTIAL CLOSE-OUT*: Notional of an existing trade reduced.
+- *UPSIZE*: Notional of an existing trade increased.
+- *NOVATION*: Counterparty of an existing trade changes.
+- *AMENDED*: An amendment that does not require new confirmation.
+  $\text{AMENDED} = NPV(D_{\text{amended}}, M_1, T_1) - NPV(D_{\text{original}}, M_1, T_1)$
+- *CANCELLED*: Trades deleted on Day 1.
+  $\text{CANCELLED} = -NPV(D_{\text{cancelled}}, M_1, T_1)$
+- *EXPIRED*: Day 0 trades whose scheduled expiry fell on Day 1.
+  $\text{EXPIRED} = -NPV(D_{\text{expired}}, M_1, T_1)$
+- *EXERCISED*: Exercise of options. Also captures rebates booked at exercise.
+- *FIXINGS*: Trades that fixed on Day 1; attribution captures the P&L impact
+  of the rate being fixed vs. the expected rate.
+- *RATE RESET / FLOATING RESET*: Coupon or floating rate reset to a new level.
+- *NOTIONAL RESET / STRIKE RESET*: Notional or strike adjusted in structured
+  products with resetting features.
+- *TRIGGERED*: Barrier events (knock-in or knock-out).
+- *REBALANCE / AMORTISATION*: Scheduled notional reductions or rebalancings.
+- *PHYSICAL DELIVERY / CASH SETTLEMENT*: Trade maturing into physical delivery
+  or cash settlement.
+- *MATURITY*: A forward or deposit that has reached its maturity date and is
+  delivered. Matured trades are converted into cash positions (Nostro entries);
+  omitting them generates spurious unexplained P&L.
+- *FUNDING ROLLS*: New funding tickets from rolling existing funding positions.
+
+** Contra Revenue
+
+Items that are not primary trading P&L but are attributed to specific trades:
+
+- *Brokerage*: Fees paid to brokers. Calculated per trade using brokerage
+  templates.
+- *Agency Commissions*: Similar to brokerage for agency-model trades.
+- *Sales Credits*: Internal revenue-sharing credits.
+- *Transfer Pricing*: Inter-entity charges.
+- *Bullion Fees*: For precious metals products.
+
+** CVA (Credit Valuation Adjustment)
+
+CVA is the market value of counterparty credit risk:
+
+$$CVA = -LGD \int_0^T EE(t) \cdot dPD(t)$$
+
+Where $LGD$ is Loss Given Default, $EE(t)$ is Expected Exposure at time $t$,
+and $PD(t)$ is the probability of default by time $t$.
+
+CVA is tracked separately because its P&L can be large and volatile, it is
+managed by a separate CVA desk, and Finance require a clear view of its
+contribution.
+
+** Reserves and Valuation Adjustments
+
+| Reserve Type                   | Description                                                    |
+|--------------------------------+----------------------------------------------------------------|
+| Bid/Offer                      | Liquidity reserve for the cost of unwinding a position         |
+| Model Limitation — Barrier Shifts | Reserve for model uncertainty on barrier products           |
+| Unobservable Parameters        | Reserve for parameters not observable in the market            |
+| OIS Discounting                | Reserve for the switch from LIBOR to OIS discounting           |
+| Model Limitation — Stochastic IR | Reserve for not modelling stochastic interest rates          |
+| Prudential Valuation           | Regulatory-driven conservative valuation adjustment            |
+
+* Market Data Component
+
+The market data component captures the P&L from changes in market rates and
+prices between Day 0 and Day 1, holding the trade population and date constant.
+
+$$\text{Market Data} = D_0 M_1 T_0 - D_0 M_0 T_0$$
+
+Sub-buckets (Bump and Reset methodology):
+
+| Bucket        | What is bumped     | Scope                          |
+|---------------+--------------------+--------------------------------|
+| FX Spot       | Spot rate          | Per currency pair              |
+| ATM Vol       | ATM volatility     | Per currency pair, per tenor   |
+| Risk Reversal | RR                 | Per currency pair, per tenor   |
+| Strangle      | STR                | Per currency pair, per tenor   |
+| IR Projection | Projection curves  | Per currency, per tenor        |
+| IR Discount   | Discount curves    | Per currency, per tenor        |
+| Cross Effects | All combined − sum | Residual interaction terms     |
+
+** Bucketing Granularity
+
+Attribution can be presented at multiple levels:
+
+- *Finest level*: Per underlier and per type.
+- *Mid level*: By type: all projection curves together, all discount curves
+  together, all IR, all vol.
+- *Top level*: FX Spot, FX Vol, IR, Cross Effects.
+
+$$\text{Cross Effects at level } L = \text{Bump All at level } L - \sum_i \text{Bucket}_i$$
+
+* Time Component (Theta)
+
+The time component captures the P&L resulting purely from the passage of one
+business day, holding market data and trade population constant.
+
+Under Bump and Reset (Theta First):
+$$\Theta = NPV(D_0, M_0, T_1) - NPV(D_0, M_0, T_0)$$
+
+Under Bump and Run (Theta Last):
+$$\Theta = NPV(D_0, M_1, T_1) - NPV(D_0, M_1, T_0)$$
+
+* Deal Population for Attribution
+
+Determining the correct deal population for an explain requires care:
+
+- From a *Market Data* perspective, only Day 0 trades matter.
+- From a *Trade Activity* perspective, all trade changes must be captured:
+  trades that only exist on Day 0 (matured, cancelled, expired), trades that
+  only exist on Day 1 (new), and trades that exist on both days.
+- *Settled positions* must be included. A forward that matured on Day 1 appears
+  as a cash Nostro position in the ledger on Day 1; if the cash position is
+  omitted from trade activity, a spurious unexplained P&L appears.
+
+* EOD Sign-Off Process
+
+1. *Trade cut*: Snapshot of the trade population.
+2. *Market data cut*: Snapshot of market data (spots, forwards, vols, rates).
+3. *AM Flash / PM Flash*: Preliminary P&L. Finance generates an exception
+   report comparing traders' expected P&L against the Finance P&L. Traders
+   sign off exceptions.
+4. *Rate sign-off*: Finance formally approves the market data cut.
+5. *Full P&L execution*: The official Flash is produced with all exceptions and
+   trader comments attached and published.
+6. *Diff analysis*: Comparison of AM Flash vs EOD Flash; exceptions reviewed.
+   Final sign-off can only be completed once the total P&L difference is below
+   a configured threshold.
+7. *EOD start*: Full Actual P&L begins.
+
+* Aggregation and Currency Conversion
+
+P&L is held in its /natural currency/ (the denomination of each cash flow).
+At EOD, all amounts are consolidated into the branch /functional currency/
+(the domestic currency of the branch, e.g. GBP for a London branch).
+
+Any P&L from spot conversion of non-domestic P&L is recorded as a *P&L
+Adjustment* (FX Adjustment). Traders are expected to hedge this FX exposure.
+
+The aggregation hierarchy:
+
+: Trade → Trade Aggregate → Book → Sub-Portfolio → Portfolio → Branch → Firm

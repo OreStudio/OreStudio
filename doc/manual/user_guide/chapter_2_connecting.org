@@ -380,7 +380,6 @@ In the disconnected state the strip is reduced to the environment marker
 and the connection label, with the broken-link icon on the right:
 
 #+caption: The status bar in the disconnected state, showing the environment marker, the connection label (=local1=), and the broken-link indicator.
-#+attr_latex: :width 0.35\linewidth
 [[../../../assets/images/status_bar_disconnected.png]]
 
 The fully connected state is shown at the start of this section; the
@@ -514,7 +513,6 @@ its window is minimised or hidden, and shows the instance name so you can
 tell multiple windows apart.
 
 #+caption: The ORE Studio icon in the system tray, labelled with the instance name so you can identify the window it belongs to.
-#+attr_latex: :width 0.25\linewidth
 [[../../../assets/images/application_system_tray.png]]
 
 ** Logging out

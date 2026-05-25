@@ -15,7 +15,7 @@
 #+latex_header: \usepackage[margin=1in]{geometry}
 #+latex_header: \usepackage{graphicx}
 #+latex_header: \makeatletter
-#+latex_header: \def\maxwidth{\ifdim\Gin@nat@width>0.6\linewidth 0.6\linewidth\else\Gin@nat@width\fi}
+#+latex_header: \def\maxwidth{\ifdim\Gin@nat@width>0.5\linewidth 0.5\linewidth\else\Gin@nat@width\fi}
 #+latex_header: \makeatother
 #+latex_header: \usepackage{fancyhdr}
 #+latex_header: \usepackage{parskip}

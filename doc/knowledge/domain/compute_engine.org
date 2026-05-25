@@ -1,0 +1,348 @@
+:PROPERTIES:
+:ID: 98B9FE2A-57FB-464F-A4E5-198461FE6987
+:END:
+#+title: Compute Engine
+#+description: Distributed computation architecture for valuation and reporting: run configurations, compute jobs, orchestration, chunking, environments, lifecycle, priorities, and auditability.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:domain:finance:compute:ore:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+
+The *compute engine* is the execution backbone of the valuation and reporting
+system. All significant valuation work — risk reports, P&L explains, EOD MTM
+runs, credit exposure aggregations — is dispatched through it. This document
+describes the conceptual architecture of a production-grade distributed compute
+engine as it applies to FX/derivatives valuation, with notes on how these
+concepts map to [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] and [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. For report definitions and
+Greek configuration see [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]]. For pricing configuration
+see [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]].
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Overview
+
+The compute engine separates /what to compute/ (run configurations, report
+definitions) from /how to compute it/ (the execution mechanics: workers,
+chunking, queuing). This separation allows the same report definition to be
+executed ad-hoc by a trader or as part of a scheduled overnight batch without
+changes to the definition itself.
+
+The infrastructure is responsible for scheduling, partitioning, dispatching,
+monitoring, and collecting the outputs of these computations.
+
+*ORE Studio mapping*: In ORE Studio, [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] (Open Source Risk Engine) is the
+compute engine. ORE is currently single-process; it does not implement
+distributed orchestration itself. The concepts described below apply to
+production deployments that wrap ORE (or equivalent engines) in a distributed
+execution layer. ORE Studio will eventually add a multi-process execution layer
+on top of ORE; these concepts will apply directly when that work begins.
+
+* Core Entities
+
+** Run Configuration
+
+A *Run Configuration* (in generic grid systems called a /Job Set Definition/)
+is a template describing a logically related collection of work — for example,
+the full EOD P&L run for a branch. It groups one or more Computation
+Definitions and captures the dependencies between them. It is a
+/definition/, not an execution: it carries no runtime state.
+
+*ORE equivalent*: An ORE =ore.xml= analytics configuration file, which lists
+which analytics to run and in what order.
+
+** Computation Definition
+
+A *Computation Definition* (generic: /Job Definition/) is a template for a
+single unit of computation. It specifies:
+
+- *Inputs*: What data the computation needs. Inputs may be:
+  - Direct values (XML blobs, JSON payloads)
+  - /Tokens/: symbolic references resolved at runtime into concrete values
+    (e.g. a reference to "today's EOD market data cut" resolves to a specific
+    versioned snapshot when the computation is dispatched)
+- *Executor*: The service responsible for running the computation (e.g. the
+  ORE analytics service).
+- *Expected outputs*: The result schema.
+
+*ORE equivalent*: An individual analytics block in =ore.xml=, such as
+=<Analytic type="NPV">= or =<Analytic type="SENSITIVITY">=.
+
+** Computation Run
+
+A *Computation Run* (generic: /Job/) is a runtime instance of a Computation
+Definition. It is created by supplying concrete values for all inputs
+(including resolved tokens). A Computation Run is the atomic unit of
+scheduled and tracked work. Runs have:
+
+- A status (pending, running, succeeded, failed)
+- A priority
+- A reference to the Computation Definition it instantiates
+- Zero or more dependencies on other Runs
+
+** Batch
+
+A *Batch* (generic: /Job Set/) is a runtime instance of a Run Configuration
+— a collection of Computation Runs tracked and managed together. The Batch is
+the unit of /orchestrated work/ submitted by a user or a scheduler.
+
+** Run Dependency
+
+A *Run Dependency* links two Computation Runs within a Batch, specifying that
+one must complete successfully before another may begin. Dependencies form a
+directed acyclic graph (DAG) within a Batch.
+
+** Run Queue
+
+The *Run Queue* is the ordered list of ready-to-run Computation Runs — those
+whose dependencies have been satisfied and which are waiting for a free
+executor. The queue is ordered by priority. Persistent storage (e.g. an RDBMS)
+backs the queue to survive process restarts and node failures.
+
+* Execution Components
+
+** Orchestrator
+
+The *Orchestrator* (generic: /Director/) is the central coordinator of the
+compute engine. Its responsibilities:
+
+- Monitoring all active Executors and handling their failures
+- Dispatching Computation Runs from the queue to available Executors
+- Receiving status and progress reports from Executors
+- Managing Batch lifecycle (creation, completion, cancellation)
+- Applying retry logic for failed Runs
+
+The Orchestrator is the single authoritative source of engine state. It ensures
+that at most one Executor is running any given Computation Run at any time.
+
+** Executor
+
+An *Executor* (also called a /Worker/) is a service that runs on a Compute Node
+and is capable of executing Computation Runs of one or more types. Executors:
+
+- Register with the Orchestrator and report capacity
+- Accept dispatches from the Orchestrator
+- Invoke the appropriate Engine for the computation type
+- Report progress and completion back to the Orchestrator
+- Return results (or error details) on completion
+
+** Engine
+
+The *Engine* is the code running inside an Executor that performs the actual
+computation. It is the /domain-logic/ component:
+
+- *Quant Library*: Low-level numerical primitives (e.g. QuantLib, [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]]). Not
+  suitable for direct invocation; provides building blocks for the Risk Engine.
+- *Risk Engine*: Higher-level orchestration layer built on the Quant Library.
+  Handles trade population loading, market data assembly, pricer dispatch, and
+  result collection. Single-process. In ORE Studio this is ORE.
+
+The Risk Engine is versioned independently of the execution infrastructure.
+Users deploy a specific version of the Risk Engine to a cluster; Computation
+Runs reference the engine and version they require.
+
+** Chunker
+
+The *Chunker* is responsible for partitioning a large input set into
+sub-units — /chunks/ or /partitions/ — of roughly equal computational cost,
+distributed across available Executors. Chunking happens /up front/ before
+dispatch.
+
+Different chunking strategies are required depending on the nature of the input:
+
+- *By book*: partition the trade population by trading book
+- *By trade*: partition individual trades (for fine-grained parallelism)
+- *By scenario*: partition Monte Carlo scenarios
+- *By tenor*: partition curve bootstrapping by maturity segment
+
+The Chunker's goal is a /fair distribution/ of work: each Executor should
+finish at approximately the same time to avoid stragglers holding up the Batch.
+
+** Compute Node
+
+A *Compute Node* is a machine (physical or virtual) that hosts one or more
+Executors. It has the ability to run the Risk Engine. A Compute Node manages:
+
+- Receiving computation inputs from the Orchestrator / message bus
+- Invoking the Risk Engine
+- Retrieving and returning results
+
+** Cluster
+
+A *Cluster* is a named group of Compute Nodes. Each cluster has:
+
+- A defined set of authorised users
+- Specific technology interfaces and protocols (message queue, REST API, etc.)
+- An associated Environment label
+
+* Environments
+
+A cluster is always deployed within an *Environment*, which describes its
+purpose and production-readiness:
+
+| Environment    | Description                                                         |
+|----------------+---------------------------------------------------------------------|
+| Local          | Developer's own workstation; single-node, no HA                     |
+| Shared Dev     | Shared development environment; multiple developers                 |
+| Shared Testing | Shared environment for QA and integration testing                   |
+| Staging        | Near-production replica used for final pre-release validation       |
+| Pre-Live       | Limited release to end users before full rollout                    |
+| Live           | Full production environment                                         |
+
+*Blue/Green Deployment*: A staged rollout strategy that gradually shifts traffic
+from the previous version of the Risk Engine to a new one, enabling rollback
+without downtime.
+
+* In-Process Execution
+
+A Computation Run may be executed /in-process/ — without going through the
+distributed engine at all. This mode is used for:
+
+- Ad-hoc developer testing
+- Local-environment runs where distribution overhead is not justified
+- Fast single-trade valuations triggered from the trading UI
+
+In-process execution uses the same Risk Engine code path as distributed
+execution; only the transport and orchestration layers are bypassed.
+
+*ORE Studio today*: ORE Studio currently uses in-process execution exclusively.
+ORE is invoked directly from the application process. Distributing execution
+across multiple nodes is a future capability.
+
+* Computation Run Lifecycle
+
+#+begin_example
+  Definition
+      |
+      | (instantiate with inputs)
+      v
+   Pending ──► Chunking ──► Queued ──► Dispatched ──► Running ──► Succeeded
+                                                           |
+                                                           └──────────────► Failed ──► Retry / Abandoned
+#+end_example
+
+1. A Batch is created from a Run Configuration with concrete inputs (tokens
+   resolved).
+2. The Chunker partitions inputs and creates individual Computation Runs.
+3. Runs with no unsatisfied dependencies enter the queue.
+4. The Orchestrator dispatches queued Runs to available Executors in priority
+   order.
+5. The Executor runs the Engine and reports completion.
+6. Dependent Runs are released to the queue as their prerequisites complete.
+7. The Batch completes when all constituent Runs have succeeded (or the batch
+   is cancelled / failed).
+
+* Run Priorities
+
+Computation Runs carry a numeric priority. The Orchestrator dispatches
+higher-priority Runs first when multiple Runs are queued for the same Executor
+pool. Priority sources include:
+
+- Run type (intraday ad-hoc risk typically has higher priority than overnight
+  batch)
+- User or book (senior traders / risk managers may have elevated priority)
+- Deadline (runs with an approaching SLA deadline are escalated)
+
+* EOD Run Types
+
+The following run types execute as part of the standard end-of-day batch:
+
+| Run Type                | Description                                                          |
+|-------------------------+----------------------------------------------------------------------|
+| MTM Valuation           | Full valuation of all live trades against the EOD market data cut   |
+| P&L Explain (Day 0→1)   | Bump-and-Reset / Bump-and-Run P&L attribution for the day's move    |
+| IPV Explain             | P&L movement from internal bank rates to independently sourced rates|
+| Credit Aggregation      | Full counterparty portfolio aggregation (Monte Carlo + SCA)         |
+| Curve Bootstrapping     | Rebuild of all discount and projection curves from new market data  |
+| Vol Surface Build       | Reconstruction of all vol surfaces from updated pillars             |
+
+EOD runs may depend on each other (e.g. curve bootstrapping must complete
+before MTM valuation; MTM valuation must complete before the Explain). These
+dependencies are captured in the Run Configuration for the EOD batch.
+
+* Intraday and Scheduled Runs
+
+** Ad-Hoc Risk Requests
+
+Traders can submit ad-hoc reports at any time. These are instantiated as
+single-Run Batches with high priority and execute against a snapshot of current
+market data. Results are returned to the requesting UI session.
+
+** Scheduled Runs
+
+Runs can be scheduled to run at predefined times (e.g. AM Flash P&L at 08:00,
+PM Flash at 16:00, EOD batch at 18:30). The schedule is configured per Run
+Configuration and per environment.
+
+** Rules-Based Run Triggers
+
+Runs may be triggered automatically when a monitored condition is breached:
+
+- *Throughput Panic*: Triggered when the number of transactions in a currency
+  pair over a rolling window exceeds a configured threshold.
+- *Amount Breach*: Triggered when a notional amount exceeds a limit.
+- *Market Data Move*: Triggered when spot or vol moves by more than a
+  configured threshold.
+
+Triggered runs are recorded with a timestamp and the triggering event, creating
+an audit trail.
+
+* Credit Exposure Grid Points
+
+For credit exposure computation the engine has additional structure: future
+scenarios are simulated at a set of /grid points/ (future dates), and trade
+MtMs are computed at each grid point for each scenario.
+
+- *Grid Point*: A specific future date at which the portfolio value is
+  simulated under each Monte Carlo scenario.
+- *Scenario*: A realisation of all market variables (spots, rates, vols) at a
+  future grid point.
+
+Aggregation across scenarios at each grid point yields an MtM distribution; the
+95th percentile of that distribution is the *Credit Line Utilisation (CLU)*
+contribution from that grid point.
+
+Two aggregation modes:
+
+- *Full Aggregation*: Complete re-simulation and re-aggregation of the entire
+  counterparty portfolio.
+- *Gross Add-On*: An incremental mechanism to handle intraday trades without
+  re-running a full aggregation.
+
+$$\text{Uncollateralised CLU} = \text{MC 95th pct} + \text{SCA Max Shift} + \text{Trade Overwrites} + \text{Gross Add-On}$$
+
+* Tokenisation
+
+Inputs to Computation Definitions may be *tokens* — symbolic references to
+data that does not exist at definition time but will be resolved at run
+instantiation. Examples:
+
+- =TODAY_EOD_CUT= resolves to the specific versioned market data snapshot
+  signed off for today's EOD.
+- =ACTIVE_BOOKS(BRANCH_LONDON)= resolves to the current set of trading books
+  for the London branch.
+
+Tokenisation decouples the definition (written once, reused daily) from the
+runtime inputs (resolved fresh each time the run executes). The Tokenisation
+Table in the persistent store records the mapping from token to resolved value
+for each Run instance, ensuring reproducibility.
+
+* Reproducibility and Auditability
+
+A key requirement is that any Computation Run instance can be re-run and
+produce the same output. This requires:
+
+- All inputs (market data snapshots, trade population snapshots, model
+  configuration) to be version-stamped and immutable once captured.
+- Resolved token values to be persisted alongside the Run record.
+- The Risk Engine version used to be recorded on the Run.
+- Results to be stored and queryable independently of whether the original run
+  is still executing.
+
+Finance and Risk use this audit trail to reproduce EOD valuations, investigate
+P&L discrepancies, and respond to regulatory queries.
+
+*ORE Studio*: ORE's =ore.xml= together with the market data and trade
+population XML files constitute the full reproducible input set. ORE Studio
+must snapshot these at each analytics run and store them alongside the results
+for auditability.

@@ -29,11 +29,11 @@ PR title: =[workspace] Add workspace history repository and service methods=.
 
 | Field        | Value                                                  |
 |--------------+--------------------------------------------------------|
-| State        | BACKLOG                                                |
+| State        | DONE                                                   |
 | Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]]                    |
-| Now          | Not yet started.                                       |
-| Waiting on   | [[id:C10117BF-4054-4B31-AF2F-158EE8ABE88A][Task: Workspace full entity: model and API]] (Phase 1)  |
-| Next         | Begin implementation after Phase 1 merges.             |
+| Now          | Complete.                                              |
+| Waiting on   | Nothing.                                               |
+| Next         | Nothing.                                               |
 | Last touched | 2026-05-25                                             |
 
 * Acceptance
@@ -89,6 +89,18 @@ make -C build/output/linux-clang-debug-make -j$(nproc) ores.workspace.core
 
 * Notes
 
+All acceptance criteria were already met in the codebase prior to task
+execution.  Verification confirmed:
+
+- =workspace_repository.hpp= declares =read_history(ctx, id)= (line 65); implementation
+  delegates to =read_all=, ordered newest-first by =version DESC= (equivalent to
+  =valid_from DESC= as each version increments monotonically).
+- =workspace_service= exposes =get_workspace_history(id)= (service header line 107).
+- =workspace_handler= routes =get_workspace_history_request= and returns
+  =get_workspace_history_response= (handler header lines 333–344).
+
+No code changes were required; this task closes as a verification pass.
+
 * PRs
 
 | PR | Title |
@@ -102,3 +114,6 @@ make -C build/output/linux-clang-debug-make -j$(nproc) ores.workspace.core
 |   |                 |      |          |       |
 
 * Result
+
+All acceptance criteria confirmed met via verification pass. No code changes
+made. Closed without a PR.

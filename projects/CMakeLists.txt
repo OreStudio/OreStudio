@@ -47,6 +47,19 @@ set(ORES_CATCH2_ARGS --allow-running-no-tests --durations yes --filenames-as-tag
 # Projects
 #
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.utility)
+
+# Interface library for RFL precompiled headers. Link PRIVATE to any target
+# that includes <rfl.hpp> or <rfl/json.hpp>. PCH is omitted when
+# WITH_PROFILING is set: sccache expects a .gcno alongside every compiled
+# output, but the PCH step does not produce one.
+add_library(ores.rfl.pch INTERFACE)
+if(NOT WITH_PROFILING)
+    target_precompile_headers(ores.rfl.pch INTERFACE
+        <rfl.hpp>
+        <rfl/json.hpp>
+        <ores.utility/rfl/reflectors.hpp>)
+endif()
+
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.platform)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.logging)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.database)

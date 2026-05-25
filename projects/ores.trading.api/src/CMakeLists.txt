@@ -58,13 +58,6 @@ target_compile_options(${lib_target_name} PUBLIC
     $<$<AND:$<CXX_COMPILER_ID:Clang>,$<COMPILE_LANGUAGE:CXX>>:-fbracket-depth=1024>)
 
 
-# PCH is skipped when building with coverage: sccache expects a .gcno file
-# alongside every output but the PCH step does not produce one.
-if(NOT WITH_PROFILING)
-    target_precompile_headers(${lib_target_name} PRIVATE
-        <rfl.hpp>
-        <rfl/json.hpp>
-        <ores.utility/rfl/reflectors.hpp>)
-endif()
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -111,6 +111,10 @@
   '((t (:foreground "#a3be8c" :weight bold)))
   "Group title face for Shell card.")
 
+(defface ores/dashboard-group-nats-face
+  '((t (:foreground "#81a1c1" :weight bold)))
+  "Group title face for NATS card.")
+
 ;; ---------------------------------------------------------------------------
 ;; Button activation
 ;; ---------------------------------------------------------------------------
@@ -128,11 +132,27 @@
     (funcall action nil)))
 
 ;; ---------------------------------------------------------------------------
+;; Item shortcut keys — global unique a-z A-Z assigned during render
+;; ---------------------------------------------------------------------------
+
+(defconst ores/dashboard--key-alphabet
+  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+(defun ores/dashboard--alloc-key ()
+  "Return the next shortcut character for a dashboard item, or nil when exhausted."
+  (let ((idx ores/dashboard--next-key-idx))
+    (when (< idx (length ores/dashboard--key-alphabet))
+      (cl-incf ores/dashboard--next-key-idx)
+      (aref ores/dashboard--key-alphabet idx))))
+
+;; ---------------------------------------------------------------------------
 ;; Buffer-local state
 ;; ---------------------------------------------------------------------------
 
 (defvar-local ores/dashboard--env          nil)
 (defvar-local ores/dashboard--root         nil)
+(defvar-local ores/dashboard--item-keys    nil)
+(defvar-local ores/dashboard--next-key-idx 0)
 ;; ---------------------------------------------------------------------------
 ;; Mode
 ;; ---------------------------------------------------------------------------
@@ -175,7 +195,7 @@
   (let* ((env   (ores/load-dotenv))
          (label (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "unknown"))
          (root  (ores/checkout-root))
-         (buf   (get-buffer-create (format "ORES Dashboard - %s" label))))
+         (buf   (get-buffer-create (format "ORE Studio Dashboard - %s" label))))
     (with-current-buffer buf
       (ores/dashboard-mode)
       (setq ores/dashboard--env  env
@@ -193,7 +213,7 @@
           ores/dashboard--root root)
     (let ((inhibit-read-only t))
       (ores/dashboard--render env root))
-    (message "ORES Dashboard reloaded.")))
+    (message "ORE Studio Dashboard reloaded.")))
 
 ;; ---------------------------------------------------------------------------
 ;; Icon helpers
@@ -276,6 +296,11 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
     (dolist (item items)
       (let* ((label  (car item))
              (action (cdr item))
+             (key-ch (when action (ores/dashboard--alloc-key)))
+             (hint   (if key-ch
+                         (propertize (format " (%c)" key-ch) 'face 'shadow)
+                       ""))
+             (label  (concat label hint))
              (prefix " ")
              (max-l  (- iw (length prefix) 1))
              (lbl    (if (> (string-width label) max-l)
@@ -284,6 +309,11 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
              (pad    (make-string (max 0 (- iw (length prefix) (string-width lbl) 1)) ?\s))
              (off    (+ 1 (length prefix)))
              (len    (string-width lbl)))
+        (when (and action key-ch ores/dashboard--item-keys)
+          (let ((act action))
+            (define-key ores/dashboard--item-keys
+              (kbd (string key-ch))
+              (lambda () (interactive) (funcall act nil)))))
         (push (cons
                (concat (propertize "│" 'face 'ores/dashboard-border-face)
                        prefix lbl pad " "
@@ -353,7 +383,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
 (defun ores/dashboard--insert-image (root)
   "Insert the ORE Studio banner image at its natural size, horizontally centered."
   (when (and (display-graphic-p) (image-type-available-p 'png))
-    (let ((path (expand-file-name "assets/images/splash-screen.png" root)))
+    (let ((path (expand-file-name "assets/images/modern-icon.png" root)))
       (when (file-readable-p path)
         (let* ((img      (create-image path 'png nil))
                (img-w-px (car (image-size img t)))
@@ -362,7 +392,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                (margin   (max 0 (/ (- (window-total-width) img-cols) 2))))
           (insert (make-string margin ?\s))
           (insert (propertize " " 'display img))
-          (insert "\n"))))))
+          (insert "\n\n"))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Quick-links bar — centered, no trailing separator
@@ -478,12 +508,85 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                            (buf-name (format "*ores-%s-db-%s*" lbl svc)))
                       (condition-case err
                           (progn
-                            (save-window-excursion (sql-connect choice buf-name))
+                            (let* ((conn-tail (cdr (assoc choice sql-connection-alist)))
+                                   (conn-pw   (cadr (assq 'sql-password conn-tail)))
+                                   (process-environment
+                                    (if conn-pw
+                                        (cons (format "PGPASSWORD=%s" conn-pw)
+                                              process-environment)
+                                      process-environment)))
+                              ;; sql-get-login always calls read-passwd for postgres
+                              ;; even when sql-password is set. Return it silently.
+                              (cl-letf (((symbol-function 'read-passwd)
+                                         (lambda (_p &optional _c default)
+                                           (or default ""))))
+                                (save-window-excursion (sql-connect choice buf-name))))
                             (when-let ((buf (get-buffer buf-name)))
                               (ores/dashboard--display buf db)))
                         (error
                          (user-error "Cannot connect: %s"
                                      (error-message-string err))))))))))
+           (ores/dashboard--mkitem
+            "Kill connections" 'nerd-icons-faicon "nf-fa-times_circle"
+            (let ((r root) (pw pgpw) (db dash-buf))
+              (lambda (_)
+                (let* ((dbs   (let ((default-directory r)) (ores-db/database-list-discovery)))
+                       (names (mapcar #'car dbs)))
+                  (if (null names)
+                      (user-error "No ORES databases found on localhost")
+                    (let* ((choice (completing-read "Kill connections to DB: " names nil t))
+                           (entry  (cl-find choice dbs :key #'car :test #'string=))
+                           (host   (nth 1 entry))
+                           (script (expand-file-name
+                                    "projects/ores.sql/utility/kill_db_connections.sh" r))
+                           (process-environment
+                            (if pw (cons (format "PGPASSWORD=%s" pw) process-environment)
+                              process-environment))
+                           (buf-name (format "*ores-db-kill-%s*" choice)))
+                      (unless (yes-or-no-p (format "Kill all connections to %s? " choice))
+                        (user-error "Aborted"))
+                      (let ((comp-buf (compilation-start
+                                       (format "%s --host %s %s" script host choice)
+                                       nil (lambda (_) buf-name))))
+                        (ores/dashboard--display comp-buf db))))))))
+           (ores/dashboard--mkitem
+            "Teardown DB" 'nerd-icons-faicon "nf-fa-bomb"
+            (let ((r root) (pw pgpw) (db dash-buf))
+              (lambda (_)
+                (let* ((dbs   (let ((default-directory r)) (ores-db/database-list-discovery)))
+                       (names (mapcar #'car dbs)))
+                  (if (null names)
+                      (user-error "No ORES databases found on localhost")
+                    (let* ((choice (completing-read "Teardown database: " names nil t))
+                           (entry  (cl-find choice dbs :key #'car :test #'string=))
+                           (host   (nth 1 entry))
+                           (script (expand-file-name
+                                    "projects/ores.sql/teardown_database.sh" r))
+                           (process-environment
+                            (if pw (cons (format "PGPASSWORD=%s" pw) process-environment)
+                              process-environment))
+                           (buf-name "*ores-db-teardown*"))
+                      (unless (yes-or-no-p (format "Teardown %s (kill + drop)? " choice))
+                        (user-error "Aborted"))
+                      (let ((comp-buf (compilation-start
+                                       (format "%s -y --host %s %s" script host choice)
+                                       nil (lambda (_) buf-name))))
+                        (ores/dashboard--display comp-buf db))))))))
+           (ores/dashboard--mkitem
+            "Recreate DB" 'nerd-icons-faicon "nf-fa-recycle"
+            (let ((r root) (db dash-buf))
+              (lambda (_)
+                (let* ((dbs   (let ((default-directory r)) (ores-db/database-list-discovery)))
+                       (names (mapcar #'car dbs)))
+                  (if (null names)
+                      (user-error "No ORES databases found on localhost")
+                    (let* ((choice (completing-read "Recreate database: " names nil t)))
+                      (unless (yes-or-no-p (format "DROP and recreate %s? " choice))
+                        (user-error "Aborted"))
+                      (let ((comp-buf (let ((default-directory r))
+                                        (ores-db/--run-recreate-db choice))))
+                        (when comp-buf
+                          (ores/dashboard--display comp-buf db)))))))))
            (ores/dashboard--mkitem
             "Recreate environment" 'nerd-icons-faicon "nf-fa-trash"
             (let ((lbl label) (r root))
@@ -573,12 +676,12 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                  "rebuild-site" r db))))
            (ores/dashboard--mkitem
             "Start site" 'nerd-icons-faicon "nf-fa-play"
-            (let ((r root))
+            (let ((lbl label) (r root) (db dash-buf))
               (lambda (_)
-                (let ((script (expand-file-name "build/scripts/serve-site.sh" r))
-                      (default-directory r))
-                  (start-process "ores-serve-site" "*ores-serve-site*" script)
-                  (message "Site server started.")))))
+                (ores/dashboard--compile
+                 lbl
+                 (expand-file-name "build/scripts/serve-site.sh" r)
+                 "serve-site" r db))))
            (ores/dashboard--mkitem
             "Stop site" 'nerd-icons-faicon "nf-fa-stop"
             (let ((pt port))
@@ -667,6 +770,30 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                     (user-error "ores.shell not found at %s — build first" bin)))))))
           'ores/dashboard-group-shell-face)))
 
+(defun ores/dashboard--nats-group (env root dash-buf)
+  (let ((label (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local")))
+    (list "NATS" 'nerd-icons-faicon "nf-fa-exchange"
+          (list
+           (ores/dashboard--mkitem
+            "Init NATS" 'nerd-icons-faicon "nf-fa-play"
+            (let ((lbl label) (r root) (db dash-buf))
+              (lambda (_)
+                (let* ((script   (expand-file-name "build/scripts/init-nats.sh" r))
+                       (buf-name (format "*ores-%s-nats-init*" lbl))
+                       (comp-buf (compilation-start script nil (lambda (_) buf-name))))
+                  (ores/dashboard--display comp-buf db)))))
+           (ores/dashboard--mkitem
+            "Init NATS + provision" 'nerd-icons-faicon "nf-fa-play_circle"
+            (let ((lbl label) (r root) (db dash-buf))
+              (lambda (_)
+                (let* ((script   (expand-file-name "build/scripts/init-nats.sh" r))
+                       (buf-name (format "*ores-%s-nats-init-provision*" lbl))
+                       (comp-buf (compilation-start
+                                  (format "%s --provision" script)
+                                  nil (lambda (_) buf-name))))
+                  (ores/dashboard--display comp-buf db))))))
+          'ores/dashboard-group-nats-face)))
+
 ;; ---------------------------------------------------------------------------
 ;; Main render
 ;; ---------------------------------------------------------------------------
@@ -674,6 +801,8 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
 (defun ores/dashboard--render (env root)
   "Erase and fully redraw the dashboard using ENV and ROOT."
   (erase-buffer)
+  (setq ores/dashboard--item-keys    (make-sparse-keymap)
+        ores/dashboard--next-key-idx 0)
   (let* ((label    (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "unknown"))
          (preset   (or (cdr (assoc "ORES_PRESET"          env)) "unknown"))
          (cw       (ores/dashboard--col-width))
@@ -684,7 +813,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
 
     (let ((margin "  "))
       (insert margin
-              (propertize (format "ORES Dashboard — %s\n" label)
+              (propertize (format "ORE Studio Dashboard — %s\n" label)
                           'face 'ores/dashboard-title-face))
       (insert margin
               (propertize (format "Preset: %s    (g to reload)\n\n" preset)
@@ -709,8 +838,12 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
      cw)
 
     (ores/dashboard--render-row
-     (list (ores/dashboard--shell-group env root dash-buf))
-     cw)))
+     (list (ores/dashboard--shell-group env root dash-buf)
+           (ores/dashboard--nats-group  env root dash-buf))
+     cw)
+
+    (use-local-map
+     (make-composed-keymap ores/dashboard--item-keys ores/dashboard-mode-map))))
 
 (provide 'ores-dashboard)
 ;;; ores-dashboard.el ends here

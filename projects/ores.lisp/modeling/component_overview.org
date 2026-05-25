@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: EAE593F5-B549-4705-A598-344405196574
+:END:
+#+title: ores.lisp
+#+description: Emacs Lisp developer tooling for ORE Studio — dashboard, database browser, shell integration, and org-roam export.
+#+type: component
+#+version: 2
+#+level: cross
+#+filetags: :lisp:tooling:emacs:component:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+
+* Summary
+
+=ores.lisp= is the Emacs Lisp tooling layer for ORE Studio development. It
+provides a per-checkout interactive console (=ores-dashboard=), database
+management UI (=ores-db=), shell integration (=ores-shell=), environment
+loading (=ores-env=), org-roam export pipeline (=ores-org-roam-export=),
+and process supervision via Prodigy (=ores-prodigy=). None of these modules
+are part of the production system; they exist solely to improve developer
+ergonomics.
+
+* Inputs
+
+- =.env= — checkout-specific environment variables (label, preset, passwords,
+  per-service DB credentials).
+- =sql-connection-alist= — populated at session start via =ores-db/setup-connections=.
+- =build/scripts/= — shell scripts invoked for init, build, site, NATS, and DB
+  operations.
+
+* Outputs
+
+- =ORES Dashboard= Emacs buffer — interactive card-based console with
+  keyboard shortcuts for every action.
+- =*ores-<label>-db-<svc>*= SQL interaction buffers.
+- =*ores-<label>-shell*= ores.shell REPL buffer.
+- Compilation buffers for build, site, services, and DB scripts.
+- Org-roam HTML export artefacts (via =ores-org-roam-export=).
+
+* Entry points
+
+- =ores-dashboard.el= — =M-x ores/dashboard= opens the development console.
+- =ores-db.el= — =M-x ores-db/list-databases= opens the database browser.
+- =ores-shell.el= — =M-x ores-shell= opens an ores.shell REPL.
+- =ores-env.el= — =ores/load-dotenv= and =ores/checkout-root= for .env access.
+- =ores-org-roam-export.el= — org-roam → HTML export pipeline.
+
+* Dependencies
+
+- =sql-mode= (Emacs built-in) — interactive SQL buffers.
+- =nerd-icons= — icon glyphs in the dashboard.
+- =org-roam= — node graph for export pipeline.
+- =prodigy= — service process management.
+- =compilation-mode= (Emacs built-in) — script output buffers.
+
+* See also
+
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — architectural context.
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the REPL that the dashboard launches.
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — database scripts invoked by the dashboard.

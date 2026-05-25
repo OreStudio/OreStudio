@@ -9,7 +9,7 @@
 #+filetags: :ores_studio_emacs_dashboard:sprint_18:v0:
 #+owner: marco
 #+branch: feature/dashboard-env-fix
-#+pr:
+#+pr: 849
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
@@ -32,9 +32,9 @@ prompting the user to choose one via =completing-read=.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] |
-| Now          | Implementing fix in ores-dashboard.el. |
-| Waiting on   | Nothing.                               |
-| Next         | Raise PR, CI green, merge.             |
+| Now          | PR #849 raised; review comments addressed.     |
+| Waiting on   | CI green, merge.                               |
+| Next         | Merge after CI passes.                         |
 | Last touched | 2026-05-25                               |
 
 * Acceptance
@@ -108,14 +108,16 @@ All groups were inspected in =ores-dashboard.el=.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                               |
+|-----+---------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/849][#849]] | [ores.lisp] Fix DB dashboard operations to use .env database name |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                  | File                  | Decision | Notes                                                                                                         |
+|---+--------------------------------------------------+-----------------------+----------+---------------------------------------------------------------------------------------------------------------|
+| 1 | Kill connections hardcodes =--host localhost=    | ores-dashboard.el:546 | Applied  | Added =pg-host= binding reading =PGHOST= from =.env= alist (fallback =localhost=). Fixed in 2832519e0.        |
+| 2 | Teardown DB hardcodes =--host localhost=         | ores-dashboard.el:562 | Applied  | Same fix as #1. Fixed in 2832519e0.                                                                           |
+| 3 | Recreate environment shows =dbn= but ignores it | ores-dashboard.el:580 | Applied  | Reverted confirmation to =ores_dev_<label>=; =ores-db/--run-recreate-env= uses label naming, not =ORES_DATABASE_NAME=. Fixed in 2832519e0. |
 
 * Result

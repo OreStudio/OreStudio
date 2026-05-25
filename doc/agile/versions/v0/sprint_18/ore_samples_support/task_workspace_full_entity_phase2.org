@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 71EB9DB0-1F5C-48D0-AA2E-E47A9F487B86
+:END:
+#+title: Task: Workspace full entity: C++ core
+#+description: Add read_history to workspace repository and service; route get_workspace_history_request in the handler.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ore_samples_support:sprint_18:v0:
+#+owner: marco
+#+branch: feature/workspace-full-entity-phase2
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =read_history= to the workspace repository, a =get_workspace_history=
+method to the service, and route =get_workspace_history_request= in the
+handler. Depends on Phase 1 (messaging types must exist).
+PR title: =[workspace] Add workspace history repository and service methods=.
+
+* Status
+
+| Field        | Value                                                  |
+|--------------+--------------------------------------------------------|
+| State        | DONE                                                   |
+| Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]]                    |
+| Now          | Complete.                                              |
+| Waiting on   | Nothing.                                               |
+| Next         | Nothing.                                               |
+| Last touched | 2026-05-25                                             |
+
+* Acceptance
+
+- =workspace_repository.hpp= declares =read_history(ctx, id)=.
+- Implementation queries bitemporal table ordered =valid_from DESC=.
+- =workspace_service= exposes =get_workspace_history(id)=.
+- Handler routes =get_workspace_history_request= to service and returns response.
+- =ores.workspace.core= builds without errors.
+
+* Plan
+
+Extracted from [[id:B9A1498E-5903-4C82-8A19-3CE43A0BA5FA][Promote Workspace to Full Standard Entity]] Phase 2.
+
+** 2.1 Repository
+
+Files:
+- =projects/ores.workspace.core/include/ores.workspace.core/repository/workspace_repository.hpp=
+- =projects/ores.workspace.core/src/repository/workspace_repository.cpp=
+
+The repository already has =read_all(ctx, id)=. Add the standard-named alias:
+
+#+begin_src cpp
+std::vector<domain::workspace>
+read_history(context ctx, const boost::uuids::uuid& id);
+#+end_src
+
+Implementation: same bitemporal query as =read_all(id)=, ordered newest-first
+by =valid_from DESC=.
+
+** 2.2 Service
+
+Add to =workspace_service=:
+
+#+begin_src cpp
+std::vector<domain::workspace>
+get_workspace_history(const boost::uuids::uuid& id);
+#+end_src
+
+Delegates to =workspace_repo_.read_history(ctx, id)=.
+
+** 2.3 Handler
+
+Add routing for =get_workspace_history_request= → call
+=service_.get_workspace_history(id)=, return
+=get_workspace_history_response{workspaces}=.
+
+** 2.4 Build and verify
+
+#+begin_src sh
+make -C build/output/linux-clang-debug-make -j$(nproc) ores.workspace.core
+#+end_src
+
+* Notes
+
+All acceptance criteria were already met in the codebase prior to task
+execution.  Verification confirmed:
+
+- =workspace_repository.hpp= declares =read_history(ctx, id)= (line 65); implementation
+  delegates to =read_all=, ordered newest-first by =version DESC= (equivalent to
+  =valid_from DESC= as each version increments monotonically).
+- =workspace_service= exposes =get_workspace_history(id)= (service header line 107).
+- =workspace_handler= routes =get_workspace_history_request= and returns
+  =get_workspace_history_response= (handler header lines 333–344).
+
+No code changes were required; this task closes as a verification pass.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All acceptance criteria confirmed met via verification pass. No code changes
+made. Closed without a PR.

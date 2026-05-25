@@ -4,15 +4,14 @@
 #+title: ORE Studio User Manual
 #+author: Marco Craveiro
 #+version: 2
-#+options: date:nil <:nil c:nil todo:nil H:7 ^:{}
+#+options: date:nil <:nil c:nil todo:nil H:7 ^:{} d:nil
 #+description: User manual for ORE Studio, a desktop application for exploring, configuring, and running quantitative finance calculations.
 #+type: manual
 #+level: cross
 #+filetags: :knowledge:
 #+created: 2024-06-23
-#+updated: 2026-06-23
-#+latex_class: book
-#+latex_class_options: [a4paper,11pt,oneside]
+#+updated: 2026-05-25
+#+latex_class: ores-manual
 #+latex_header: \usepackage[margin=1in]{geometry}
 #+latex_header: \usepackage{graphicx}
 #+latex_header: \usepackage{fancyhdr}
@@ -27,6 +26,8 @@
 #+latex_header: \usepackage{booktabs}
 #+latex_header: \usepackage{hyperref}
 #+latex_header: \hypersetup{colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=cyan}
+#+latex_header: \usepackage{titlesec}
+#+latex_header: \titleformat{\chapter}[hang]{\normalfont\Huge\bfseries}{}{0em}{}
 #+latex: \thispagestyle{empty}
 #+latex: \newpage
 
@@ -36,10 +37,7 @@
 
 #+include: "chapters/chapter_00/introduction.org" :minlevel 2
 
-#+caption: The ORE Studio main window on first launch, before connecting to the backend service.
-[[../../../assets/images/ores_qt_non_logged_in_window.png]]
-
-* Chapter 1
+* System Bootstrapping
 
 #+include: "chapters/chapter_01/system_bootstrapping.org" :minlevel 2
 

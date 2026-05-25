@@ -31,6 +31,22 @@
 (setq debug-on-error nil)
 (setq debug-on-quit nil)
 
+;; Custom LaTeX class: * → \chapter, ** → \section (no \part level).
+;; This gives a clean chapter-based book without Part I/II dividers.
+(add-to-list 'org-latex-classes
+             '("ores-manual"
+               "\\documentclass[a4paper,11pt,oneside]{book}"
+               ("\\chapter{%s}" . "\\chapter*{%s}")
+               ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")
+               ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+               ("\\paragraph{%s}" . "\\paragraph*{%s}")))
+
+;; Override title: prevents org from concatenating #+title: from all
+;; #+include:'d chapter files into one long string.
+(setq org-latex-title-command
+      "\\title{ORE Studio User Manual}\\author{Marco Craveiro}\\date{}\\maketitle")
+
 ;; Run LaTeX twice so cross-references and TOC are resolved.
 (setq org-latex-pdf-process
       '("pdflatex -interaction nonstopmode -output-directory %o %f"

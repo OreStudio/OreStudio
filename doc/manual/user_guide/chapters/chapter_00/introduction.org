@@ -8,15 +8,9 @@
 #+level: cross
 #+filetags: :knowledge:chapter:
 #+created: 2024-06-23
-#+updated: 2026-05-24
+#+updated: 2026-05-25
 
-#+begin_quote
-*Early-stage software.* ORE Studio is currently in active development (version
-0.x). Features, workflows, and this documentation are all evolving and may
-change between releases. Numbers produced by the system are for learning and
-exploration only — they must not be used for real trading, risk management, or
-any financial decision-making.
-#+end_quote
+** About ORE Studio
 
 ORE Studio is a desktop application for exploring, configuring, and running
 quantitative finance calculations. It provides a graphical environment built
@@ -26,15 +20,32 @@ for pricing derivatives and measuring financial risk, which is itself built on
 configurations, and presenting the results — while ORE and QuantLib provide
 the mathematics.
 
-*Who this manual is for.* This manual is for analysts, traders, quants,
-middle-office staff, and students who want to use ORE Studio to explore
-financial instruments and risk calculations. No programming experience is
-required. The focus throughout is on what you can do through the application
-itself: entering trades, configuring market data, running analytics, and
-understanding the results.
+** Audience
 
-*What you can do.* ORE Studio is organised around a set of functional areas
-accessible from the main menu:
+This manual is written for several kinds of reader:
+
+- *Analysts, traders, quants, and middle-office staff* who want to explore
+  financial instruments and risk calculations through a graphical interface. No
+  programming experience is required.
+
+- *Students and researchers* learning quantitative finance. ORE Studio makes
+  it possible to experiment with derivative pricing, yield curve construction,
+  and risk measures without writing code.
+
+- *LLM-based agents and coding assistants* that interact with ORE Studio on a
+  user's behalf, help configure workspaces, interpret results, or draft
+  analytical reports. Multimodal models — those capable of processing both text
+  and images — are preferred, as the manual makes extensive use of screenshots
+  to describe the user interface.
+
+The focus throughout is on what you can do through the application itself:
+entering trades, configuring market data, running analytics, and understanding
+the results.
+
+** Functional Areas
+
+ORE Studio is organised around a set of functional areas accessible from the
+main menu:
 
 - /Reference data/ — currencies, business calendars, counterparties, and
   market conventions that form the foundation for everything else.
@@ -51,17 +62,29 @@ accessible from the main menu:
 All data is stored persistently, so trades, curves, and configurations can be
 saved, revisited, and reused across sessions.
 
-*What ORE Studio is not.* ORE Studio is a learning and exploration environment,
-not a production trading or risk system. It is independent of and unaffiliated
-with ORE, QuantLib, or any financial institution. All quantitative mathematics
-are provided by ORE and QuantLib; ORE Studio is the surface through which they
-are configured and their results explored. Users who need production-grade
-performance, real-time market data feeds, or regulatory reporting should look
-to enterprise risk platforms.
+** What ORE Studio Is Not
 
-*How this manual is organised.* The chapters follow the natural order of first
-use. Chapter 1 covers getting started: launching the application, establishing
-a connection to the backend, and orienting yourself in the main window. Later
-chapters cover each functional area in turn. You do not need to read the manual
-cover to cover; each chapter can be read independently once the system is up
-and running.
+ORE Studio is a learning and exploration environment, not a production trading
+or risk system. It is independent of and unaffiliated with ORE, QuantLib, or
+any financial institution. All quantitative mathematics are provided by ORE and
+QuantLib; ORE Studio is the surface through which they are configured and their
+results explored. Users who need production-grade performance, real-time market
+data feeds, or regulatory reporting should look to enterprise risk platforms.
+
+** How This Manual Is Organised
+
+The chapters follow the natural order of first use. Chapter 1 covers system
+bootstrapping: launching the application, establishing a connection to the
+backend, and orienting yourself in the main window. Later chapters cover each
+functional area in turn. You do not need to read the manual cover to cover;
+each chapter can be read independently once the system is up and running.
+
+** Early-Stage Software Notice
+
+#+begin_quote
+*Early-stage software.* ORE Studio is currently in active development (version
+0.x). Features, workflows, and this documentation are all evolving and may
+change between releases. Numbers produced by the system are for learning and
+exploration only — they must not be used for real trading, risk management, or
+any financial decision-making.
+#+end_quote

@@ -15,14 +15,17 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-One command, =compass goto=, that bootstraps a new unit of work. The
-user supplies the details (title, description, optional tags); =goto=
-then: (1) fetches latest =main=; (2) creates a new feature branch off
-it; (3) scaffolds a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] and a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] (task linked to story) via the
-Scaffold =add= machinery (codegen as a library); and (4) prints the
-remaining by-hand steps — wire the story into the sprint =* Stories=
-table, set states, etc. It composes =git= + =compass add= into the
-"start a story" ritual that today is several manual commands.
+One command, =compass goto=, that bootstraps a unit of work. =goto=
+fetches latest =main=, creates a feature branch, scaffolds the task
+(and, for a new story, the story too) via the Scaffold =add= machinery
+(codegen as a library), sets the task =#+branch:=, and prints the
+remaining by-hand steps. It composes =git= + =compass add= into the
+"start a story" ritual that was several manual commands. Two modes:
+
+- /New story/: =--slug --title --description [--tags] [--task]= — branch
+  + new story (current sprint) + linked task.
+- /Existing story/: =--story <id-or-slug> --task-slug --task
+  [--description]= — branch + add a task to an existing story.
 
 (Promoted from a product-backlog capture into this sprint; renamed from
 =go= to =goto=.)
@@ -31,17 +34,19 @@ table, set states, etc. It composes =git= + =compass add= into the
 
 | Field         | Value                              |
 |---------------+------------------------------------|
-| State         | STARTED                            |
+| State         | DONE                               |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                          |
-| Now           | =compass goto= implemented on =feature/compass-goto=. |
+| Now           | Complete — both modes shipped (PRs #834, #838). |
 | Waiting on    | Nothing.                           |
-| Next          | Review.                            |
+| Next          | Done.                              |
 | Last touched  | 2026-05-25                         |
 
 * Acceptance
 
-- =compass goto --title … --description … [--tags …]= fetches =main=,
-  creates a feature branch, and scaffolds a linked story + task.
+- /New-story mode/: =goto --slug --title --description [--tags] [--task]=
+  fetches =main=, branches, and scaffolds a linked story + task.
+- /Existing-story mode/: =goto --story <id-or-slug> --task-slug --task=
+  branches and adds a task to the resolved existing story.
 - The task's =#+branch:= is set to the new branch (so [[id:CB368AF8-3144-4CFF-B782-05CDF87366A6][=fleet=]] picks it
   up immediately).
 - It does /not/ silently mutate the sprint table; instead it prints a
@@ -59,6 +64,8 @@ In execution order:
 * Decisions
 
 - Named =goto= (not =go=).
+- Two modes (new story / existing story), mutually exclusive; =--story=
+  resolves by =:ID:= or folder slug.
 - Pairs with [[id:CB368AF8-3144-4CFF-B782-05CDF87366A6][Fleet]]: =goto= /creates/ a worktree's work; =fleet= /shows/
   it. Builds on the Scaffold pillar (=add=).
 

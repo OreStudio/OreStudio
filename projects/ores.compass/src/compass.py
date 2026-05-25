@@ -881,9 +881,12 @@ def _set_frontmatter_branch(path, branch):
         text = Path(path).read_text(encoding="utf-8")
     except OSError:
         return
-    new = re.sub(r"^#\+branch:.*$", f"#+branch: {branch}", text, count=1,
-                 flags=re.MULTILINE)
-    Path(path).write_text(new, encoding="utf-8")
+    new, count = re.subn(r"^#\+branch:.*$", f"#+branch: {branch}", text, count=1,
+                         flags=re.MULTILINE)
+    if count == 0:                       # field absent — append rather than no-op
+        new = text.rstrip() + f"\n#+branch: {branch}\n"
+    if new != text:                      # avoid a redundant write
+        Path(path).write_text(new, encoding="utf-8")
 
 def cmd_goto(argv):
     """Start a unit of work in one command: fetch main, branch, scaffold a
@@ -931,16 +934,23 @@ def cmd_goto(argv):
         return 1
     print(f"✅ created and switched to {branch} (off {args.base})")
 
-    # 2. scaffold story + task via codegen (as a library)
+    # 2. scaffold story + task via codegen (as a library). Check each call's
+    # result and stop on the first failure so we don't leave a half-made unit
+    # (gen.main returns 0 on success but may sys.exit on error).
     try:
-        gen.main(["--type", "story", "--slug", args.slug, "--parent-dir", sprint_dir,
-                  "--title", args.title, "--description", args.description, "--tags", args.tags])
-        gen.main(["--type", "task", "--slug", task_slug, "--parent-dir", story_dir,
-                  "--title", task_title,
-                  "--description", f"Initial task for: {args.title}"])
+        rc = gen.main(["--type", "story", "--slug", args.slug, "--parent-dir", sprint_dir,
+                       "--title", args.title, "--description", args.description, "--tags", args.tags])
+        if rc:
+            return rc
+        rc = gen.main(["--type", "task", "--slug", task_slug, "--parent-dir", story_dir,
+                       "--title", task_title,
+                       "--description", f"Initial task for: {args.title}"])
+        if rc:
+            return rc
     except SystemExit as exc:
-        print(f"❌ scaffolding failed: {exc.code}", file=sys.stderr)
-        return 1
+        if exc.code:
+            print(f"❌ scaffolding failed: {exc.code}", file=sys.stderr)
+        return exc.code or 0
 
     # 3. record the branch on the task so fleet/where can map this worktree
     _set_frontmatter_branch(task_path, branch)

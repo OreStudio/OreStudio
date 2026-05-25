@@ -439,6 +439,56 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
     (ores/dashboard--display comp-buf dash-buf)))
 
 ;; ---------------------------------------------------------------------------
+;; Service runner — persistent pipe-based process buffer
+;;
+;; start-services.sh runs synchronously for ~2 minutes (waits for NATS and
+;; the controller), then exits — the services continue as background jobs.
+;; compilation-start uses a PTY; when the PTY master closes, the kernel
+;; sends SIGHUP to the foreground process group, killing the services.
+;;
+;; Fix: run the script via make-process with :connection-type 'pipe.  A pipe
+;; never sends SIGHUP, so background children survive the script's exit.
+;; The buffer stays open and the full startup log streams in in real time.
+;; ---------------------------------------------------------------------------
+
+(defun ores/dashboard--service-filter (proc string)
+  "Insert process output into the services buffer, bypassing read-only."
+  (when (buffer-live-p (process-buffer proc))
+    (with-current-buffer (process-buffer proc)
+      (let ((inhibit-read-only t))
+        (save-excursion
+          (goto-char (process-mark proc))
+          (insert string)
+          (set-marker (process-mark proc) (point)))))))
+
+(defun ores/dashboard--run-services (label script root dash-buf)
+  "Run SCRIPT in a persistent buffer via a pipe; show it in the dashboard.
+Background services survive the script's exit because pipes do not deliver
+SIGHUP on close — no setsid needed."
+  (let* ((buf-name (format "*ores:%s:services*" label))
+         (buf      (get-buffer-create buf-name)))
+    (when (get-buffer-process buf)
+      (user-error "Services already running in %s" buf-name))
+    (with-current-buffer buf
+      (let ((inhibit-read-only t)) (erase-buffer))
+      (special-mode)
+      (setq-local default-directory root))
+    (make-process
+     :name            (format "ores-services-%s" label)
+     :buffer          buf
+     :command         (list "/bin/bash" script)
+     :connection-type 'pipe
+     :filter          #'ores/dashboard--service-filter
+     :noquery         t
+     :sentinel        (lambda (proc event)
+                        (when (buffer-live-p (process-buffer proc))
+                          (with-current-buffer (process-buffer proc)
+                            (let ((inhibit-read-only t))
+                              (goto-char (point-max))
+                              (insert (format "\n[%s]\n" (string-trim event))))))))
+    (ores/dashboard--display buf dash-buf)))
+
+;; ---------------------------------------------------------------------------
 ;; Start-client transient
 ;;
 ;; "Start client" uses setsid so ores.qt survives the compilation shell's
@@ -446,6 +496,16 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
 ;; the Qt window appears — the log stays empty because the process dies
 ;; before it can write anything.
 ;; ---------------------------------------------------------------------------
+
+(defun ores/dashboard--detach-prefix ()
+  "Return a shell prefix that detaches child processes from Emacs's process group.
+On Linux `setsid' is required — signals an error if missing.
+On macOS the shell's process management is sufficient; no prefix is used.
+On other systems `setsid' is used when available, otherwise an error is raised."
+  (cond
+   ((executable-find "setsid") "setsid ")
+   ((eq system-type 'darwin)   "")
+   (t (user-error "setsid not found — install util-linux (apt install util-linux)"))))
 
 (defvar ores/dashboard--client-context nil
   "List (root label dash-buf) passed into the start-client transient.")
@@ -461,10 +521,8 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
          (dashbuf (nth 2 ctx))
          (args    (transient-args 'ores/dashboard--start-client-transient))
          (script  (expand-file-name "build/scripts/start-client.sh" root))
-         (cmd     (concat "setsid " script
-                          (if args
-                              (concat " " (mapconcat #'shell-quote-argument args " "))
-                            ""))))
+         (args-str (if args (concat " " (mapconcat #'shell-quote-argument args " ")) ""))
+         (cmd      (concat (ores/dashboard--detach-prefix) script args-str)))
     (ores/dashboard--compile label cmd "start-client" root dashbuf)))
 
 (transient-define-prefix ores/dashboard--start-client-transient ()
@@ -642,7 +700,8 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
             (let ((lbl label)
                   (s   (expand-file-name "build/scripts/start-services.sh" root))
                   (r   root) (db dash-buf))
-              (lambda (_) (ores/dashboard--compile lbl s "start-services" r db))))
+              (lambda (_)
+                (ores/dashboard--run-services lbl s r db))))
            (ores/dashboard--mkitem
             "Start client" 'nerd-icons-faicon "nf-fa-play_circle"
             (let ((lbl label) (r root) (db dash-buf))

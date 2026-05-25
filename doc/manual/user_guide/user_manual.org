@@ -11,28 +11,24 @@
 #+filetags: :knowledge:
 #+created: 2024-06-23
 #+updated: 2026-05-25
-#+latex_class: ores-manual
-#+latex_header: \usepackage[margin=1in]{geometry}
+#+latex_class: ores-tufte
+# tufte-book brings its own geometry, headers, fonts, hyperref and booktabs.
+# Keep graphicx + the \maxwidth figure cap (figures fill up to 0.85 of the
+# narrow text column); add an ORE accent colour for links and headings; and
+# pin the running-head title, since the included chapters' #+title keywords
+# would otherwise concatenate into it.
 #+latex_header: \usepackage{graphicx}
 #+latex_header: \makeatletter
-#+latex_header: \def\maxwidth{\ifdim\Gin@nat@width>0.5\linewidth 0.5\linewidth\else\Gin@nat@width\fi}
+#+latex_header: \def\maxwidth{\ifdim\Gin@nat@width>0.85\linewidth 0.85\linewidth\else\Gin@nat@width\fi}
 #+latex_header: \makeatother
-#+latex_header: \usepackage{fancyhdr}
-#+latex_header: \usepackage{parskip}
-#+latex_header: \setlength{\parindent}{0pt}
-#+latex_header: \pagestyle{fancy}
-#+latex_header: \fancyhf{}
-#+latex_header: \fancyhead[L]{\leftmark}
-#+latex_header: \fancyfoot[C]{\thepage}
-#+latex_header: \usepackage{setspace}
-#+latex_header: \onehalfspacing
-#+latex_header: \usepackage{booktabs}
-#+latex_header: \usepackage{hyperref}
-#+latex_header: \hypersetup{colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=cyan}
-#+latex_header: \usepackage{titlesec}
-#+latex_header: \titleformat{\chapter}[hang]{\normalfont\Huge\bfseries}{\thechapter.}{1em}{}
-#+latex: \thispagestyle{empty}
-#+latex: \newpage
+#+latex_header: \definecolor{oreaccent}{rgb}{0.11,0.43,0.64}
+#+latex_header: \hypersetup{colorlinks=true,allcolors=oreaccent}
+#+latex_header: \AtBeginDocument{\renewcommand{\plaintitle}{ORE Studio User Manual}}
+#+latex_header: \titleformat{\section}[hang]{\normalfont\Large\itshape\color{oreaccent}}{\thesection}{1em}{}[]
+#+latex_header: \titleformat{\subsection}[hang]{\normalfont\large\itshape\color{oreaccent}}{\thesubsection}{1em}{}[]
+#+latex_header: \makeatletter
+#+latex_header: \titleformat{\chapter}[display]{\relax\ifthenelse{\NOT\boolean{@tufte@symmetric}}{\begin{fullwidth}}{}}{\itshape\huge\color{oreaccent}\thechapter}{0pt}{\huge\rmfamily\itshape\color{oreaccent}}[\ifthenelse{\NOT\boolean{@tufte@symmetric}}{\end{fullwidth}}{}]
+#+latex_header: \makeatother
 
 #+html: <script>document.title = "ORE Studio User Manual";</script>
 #+HTML: <p><a href="user_manual.pdf">Download PDF</a></p>

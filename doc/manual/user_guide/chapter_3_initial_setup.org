@@ -34,12 +34,10 @@ client.
 ORE Studio supports four tenant types, each with different operational
 controls:
 
-| Type         | Purpose                                                 | Controls      |
-|--------------+---------------------------------------------------------+---------------|
-| System       | Platform administration; one per deployment             | Platform-managed |
-| Production   | Real customer organisations with live data              | Strict        |
-| Evaluation   | Demos, UAT, training, and exploratory testing           | Relaxed       |
-| Automation   | Programmatic test infrastructure; not for human use     | None          |
+- *System* — platform administration; one per deployment; platform-managed.
+- *Production* — real customer organisations with live data; strict controls.
+- *Evaluation* — demos, UAT, training, and exploratory testing; relaxed controls.
+- *Automation* — programmatic test infrastructure; not for human use; no controls.
 
 The *system tenant* is special — it is created automatically during
 bootstrapping and cannot be deleted. It is the home of the platform

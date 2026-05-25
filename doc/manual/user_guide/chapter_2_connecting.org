@@ -229,13 +229,13 @@ folders, and tags — in a single local SQLite database file named
 stored separately, in the operating system's standard settings store.
 Neither leaves your machine.
 
-#+attr_html: :class hug-leading
-#+attr_latex: :font \footnotesize :align lp{4.8cm}p{7.6cm}
-| Operating system | Settings directory                            | Database location (=connections.db=)                   |
-|------------------+-----------------------------------------------+--------------------------------------------------------|
-| Linux            | =~/.config/OreStudio/=                         | =~/.local/share/ores.qt/connections.db=                |
-| macOS            | =~/Library/Preferences/=                       | =~/Library/Application Support/ores.qt/connections.db= |
-| Windows          | Registry: =HKCU\Software\OreStudio\OreStudio= | =%APPDATA%\ores.qt\connections.db=                     |
+- *Linux* — settings in =~/.config/OreStudio/=; database at
+  =~/.local/share/ores.qt/connections.db=.
+- *macOS* — settings in =~/Library/Preferences/=; database at
+  =~/Library/Application Support/ores.qt/connections.db=.
+- *Windows* — settings in the registry under
+  =HKCU\Software\OreStudio\OreStudio=; database at
+  =%APPDATA%\ores.qt\connections.db=.
 
 If =connections.db= is missing when ORE Studio starts, it creates a new
 empty one — so the Connection Manager simply opens with no entries.
@@ -369,13 +369,13 @@ The status bar is divided into zones from left to right:
 
 The status bar changes appearance to reflect the connection state:
 
-| State | Appearance |
-|-------+------------|
-| Disconnected (no active connection) | Grey; shows "Not connected" |
-| Connecting (handshake in progress) | Animated indicator; shows "Connecting to /name/…" |
-| Connected and logged in | Normal; shows all zones as described above |
-| Connection lost (backend unreachable) | Warning colour (amber/red); shows "Connection lost — /name/" |
-| Reconnecting | Animated indicator; shows "Reconnecting…" |
+- *Disconnected* (no active connection) — grey; shows "Not connected".
+- *Connecting* (handshake in progress) — animated indicator; shows
+  "Connecting to /name/…".
+- *Connected and logged in* — normal; shows all zones as described above.
+- *Connection lost* (backend unreachable) — warning colour (amber/red);
+  shows "Connection lost — /name/".
+- *Reconnecting* — animated indicator; shows "Reconnecting…".
 
 In the disconnected state the strip is reduced to the environment marker
 and the connection label, with the broken-link icon on the right:

@@ -48,6 +48,17 @@
                ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                ("\\paragraph{%s}" . "\\paragraph*{%s}")))
 
+;; Tufte book: elegant wide-margin layout. tufte-book manages its own
+;; geometry, headers, fonts and hyperref, so user_manual.org keeps only a
+;; minimal preamble when this class is selected. Supports chapter/section/
+;; subsection (the manual nests no deeper).
+(add-to-list 'org-latex-classes
+             '("ores-tufte"
+               "\\documentclass[a4paper,justified]{tufte-book}"
+               ("\\chapter{%s}" . "\\chapter*{%s}")
+               ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")))
+
 ;; Read version from CMakeLists.txt so the cover page stays in sync
 ;; with the single source of truth.
 (defun ores/cmake-version ()

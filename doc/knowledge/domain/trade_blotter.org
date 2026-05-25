@@ -24,13 +24,13 @@ Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Users
 
-| Role                 | Primary need                                                                          |
-|----------------------+---------------------------------------------------------------------------------------|
-| Trader               | Monitor live positions; amend and book trades; navigate to risk reports               |
-| Sales                | Book client trades; check premium and settlement details; manage allocations          |
-| Middle Office        | Validate trades awaiting confirmation; process STP messages; manage lifecycle events  |
+| Role                 | Primary need                                                                         |
+|----------------------+--------------------------------------------------------------------------------------|
+| Trader               | Monitor live positions; amend and book trades; navigate to risk reports              |
+| Sales                | Book client trades; check premium and settlement details; manage allocations         |
+| Middle Office        | Validate trades awaiting confirmation; process STP messages; manage lifecycle events |
 | Risk Manager         | Inspect deal population for a book or portfolio; cross-navigate to Greeks and P&L    |
-| Quantitative Analyst | Investigate pricing errors; inspect deal properties for model validation              |
+| Quantitative Analyst | Investigate pricing errors; inspect deal properties for model validation             |
 
 * Panel Layout
 
@@ -39,17 +39,17 @@ resizable; the layout is user-configurable and saved per user session.
 
 #+begin_example
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  TOOLBAR: [ Search ] │ Valuation Date/Time │ NPV │ Actions                 │
+│  TOOLBAR: [ Search ] │ Valuation Date/Time │ NPV │ Actions                  │
 ├──────────────┬──────────────────────────────────────────────────────────────┤
 │              │                                                              │
 │  BOOK TREE   │                  DEAL GRID                                   │
 │              │  (Deals matching book selection + search/filter)             │
-│  [▾] Portfolio│                                                             │
-│   ├─ [▾] A   │                                                              │
-│   └─ [▾] B   │                                                              │
+│ [] Portfolio │                                                              │
+│   ├─ [] A    │                                                              │
+│   └─ [] B    │                                                              │
 │              │                                                              │
 ├──────────────┴──────────────────────────────────────────────────────────────┤
-│  DETAIL PANEL  — Deal Properties  /  Structure Mini-Blotter                │
+│  DETAIL PANEL  — Deal Properties  /  Structure Mini-Blotter                 │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  GREEKS PANEL  — Greeks for Selection  |  Total Greeks for Book             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -101,46 +101,46 @@ full book tree selection. Refreshes on demand or on a user-configurable interval
 
 ** Identity and Booking
 
-| Column          | Description                                                            |
-|-----------------+------------------------------------------------------------------------|
-| Deal ID         | Unique deal identifier across the system                               |
-| Structure ID    | Parent structure identifier; blank for standalone trades               |
-| Version         | Amendment counter; 0 = original booking                               |
-| Trade Date      | Date the deal was booked                                               |
-| Book            | Trading book that owns the deal                                        |
-| Entity / Branch | Legal entity and branch                                                |
-| Trader          | Name of the trader who booked                                          |
-| Sales Person    | Associated sales person (if any)                                       |
-| Counterparty    | Full legal name of the counterparty                                    |
-| Broker          | Broker (populated for brokered trades only)                            |
+| Column          | Description                                                             |
+|-----------------+-------------------------------------------------------------------------|
+| Deal ID         | Unique deal identifier across the system                                |
+| Structure ID    | Parent structure identifier; blank for standalone trades                |
+| Version         | Amendment counter; 0 = original booking                                 |
+| Trade Date      | Date the deal was booked                                                |
+| Book            | Trading book that owns the deal                                         |
+| Entity / Branch | Legal entity and branch                                                 |
+| Trader          | Name of the trader who booked                                           |
+| Sales Person    | Associated sales person (if any)                                        |
+| Counterparty    | Full legal name of the counterparty                                     |
+| Broker          | Broker (populated for brokered trades only)                             |
 | Status          | Live, Expired, Exercised, Cancelled, Matured, Triggered, Fixing Pending |
-| Origin          | How the trade arrived: Manual, STP, ECN, Allocation                   |
+| Origin          | How the trade arrived: Manual, STP, ECN, Allocation                     |
 
 ** Economics
 
-| Column           | Description                                                           |
-|------------------+-----------------------------------------------------------------------|
+| Column           | Description                                                          |
+|------------------+----------------------------------------------------------------------|
 | Product Type     | Vanilla Option, Barrier, Digital, Forward, Depo, IRS, NDF, NDO, etc. |
 | Ccy Pair         | Currency pair in market convention (e.g. EUR/USD)                    |
-| Buy / Sell       | Direction from the bank's perspective                                 |
-| Notional (Base)  | Notional in the base currency                                         |
-| Notional (Quote) | Notional in the quote currency                                        |
-| Spot Rate        | Spot rate at time of booking                                          |
-| Strike           | Strike for options/forwards                                           |
+| Buy / Sell       | Direction from the bank's perspective                                |
+| Notional (Base)  | Notional in the base currency                                        |
+| Notional (Quote) | Notional in the quote currency                                       |
+| Spot Rate        | Spot rate at time of booking                                         |
+| Strike           | Strike for options/forwards                                          |
 | Strategy         | Named structure: RR, Butterfly, Strangle, Spread, DNT, etc.          |
-| Premium          | Premium amount                                                        |
-| Premium Ccy      | Currency in which the premium is denominated                          |
-| Premium Date     | Settlement date for the premium                                       |
+| Premium          | Premium amount                                                       |
+| Premium Ccy      | Currency in which the premium is denominated                         |
+| Premium Date     | Settlement date for the premium                                      |
 
 ** Dates
 
-| Column        | Description                                                       |
-|---------------+-------------------------------------------------------------------|
-| Value Date    | Spot settlement date                                              |
-| Expiry Date   | Option expiry date (date and cut code determine exact expiry time)|
-| Delivery Date | Physical or cash delivery date                                    |
-| Cut Code      | Expiry cut: NY 10:00, Tokyo 15:00, ECB, etc.                     |
-| Fixing Date   | NDF or floating rate fixing date                                  |
+| Column        | Description                                                        |
+|---------------+--------------------------------------------------------------------|
+| Value Date    | Spot settlement date                                               |
+| Expiry Date   | Option expiry date (date and cut code determine exact expiry time) |
+| Delivery Date | Physical or cash delivery date                                     |
+| Cut Code      | Expiry cut: NY 10:00, Tokyo 15:00, ECB, etc.                       |
+| Fixing Date   | NDF or floating rate fixing date                                   |
 
 ** Risk and Status Indicators
 
@@ -258,7 +258,7 @@ is product-aware: the fields shown depend on the product type.
 │  Branch:       [             ]  Broker: [     ]  Trader: [     ] │
 │  AV/CTU:       [             ]  Sales:  [     ]                  │
 ├──────────────────────────────────────────────────────────────────┤
-│  [ Overview ] [ F/O Details ] [ Confos/Settlements ] [ Deal ]   │
+│  [ Overview ] [ F/O Details ] [ Confos/Settlements ] [ Deal ]    │
 ├──────────────────────────────────────────────────────────────────┤
 │  Sub-tabs: [ Forward ] [ Option ]    ← one tab per product leg   │
 │                                                                  │
@@ -292,12 +292,12 @@ Many fields recalculate each other when any one member changes:
 
 Key field groups for options:
 
-| Group              | Members                                                      |
-|--------------------+--------------------------------------------------------------|
-| Option term        | Named tenor, expiry date, delivery date, days to expiry      |
-| Strike / Delta     | Strike, delta (spot or forward), call/put direction          |
-| Premium / Vol      | Premium amount, implied volatility                           |
-| Notional (base/quote) | Notional base ccy, notional quote ccy, spot rate          |
+| Group                 | Members                                                 |
+|-----------------------+---------------------------------------------------------|
+| Option term           | Named tenor, expiry date, delivery date, days to expiry |
+| Strike / Delta        | Strike, delta (spot or forward), call/put direction     |
+| Premium / Vol         | Premium amount, implied volatility                      |
+| Notional (base/quote) | Notional base ccy, notional quote ccy, spot rate        |
 
 ** Strike and Delta Entry
 
@@ -312,14 +312,14 @@ Key field groups for options:
 
 ** Option-Specific Fields
 
-| Field         | Behaviour                                                              |
-|---------------+------------------------------------------------------------------------|
-| Currency Pair | Auto-flipped to market convention if entered inverted                  |
+| Field         | Behaviour                                                                     |
+|---------------+-------------------------------------------------------------------------------|
+| Currency Pair | Auto-flipped to market convention if entered inverted                         |
 | Expiry Date   | Entered as tenor (=1M=) or specific date; holidays and ambiguous dates warned |
-| Delivery Date | Auto-set to expiry spot date; can be overridden for late-delivery options |
-| Cut Code      | Defines the time portion of expiry; system-wide default per currency pair |
-| Premium Ccy   | Defaults to pair convention; third-currency premiums highlighted        |
-| Strategy      | Opens a multi-leg entry template for composite products                 |
+| Delivery Date | Auto-set to expiry spot date; can be overridden for late-delivery options     |
+| Cut Code      | Defines the time portion of expiry; system-wide default per currency pair     |
+| Premium Ccy   | Defaults to pair convention; third-currency premiums highlighted              |
+| Strategy      | Opens a multi-leg entry template for composite products                       |
 
 ** IRS Multi-Leg Form
 
@@ -338,7 +338,7 @@ Detail Panel switches to Structure View.
 ┌──────────────────────────────────────────────────────────────────┐
 │  Structure ID: 127        Sales Person: ADC                      │
 ├──────────────────────────────────────────────────────────────────┤
-│  [ Option ]  [ Forward ]  [ Depo ]  [ … ]   ← tab per leg type  │
+│  [ Option ]  [ Forward ]  [ Depo ]  [ … ]   ← tab per leg type   │
 ├──────────────────────────────────────────────────────────────────┤
 │  Mini Blotter — all legs for this structure                      │
 │  ┌──────────┬──────────┬──────────┬──────────┬────────────────┐  │
@@ -350,7 +350,7 @@ Detail Panel switches to Structure View.
 │  │ 10045    │ Brokerage│ EUR/USD  │          │ 500 USD        │  │
 │  └──────────┴──────────┴──────────┴──────────┴────────────────┘  │
 │                                                                  │
-│  ← Selecting a leg row populates the deal view below →          │
+│  ← Selecting a leg row populates the deal view below →           │
 └──────────────────────────────────────────────────────────────────┘
 #+end_example
 
@@ -366,7 +366,7 @@ brokers, ECNs, voice-capture systems — and queue for booking. The STP panel
 (docked sub-view or separate tab within the blotter) shows pending messages.
 
 #+begin_example
-┌──────────────────────────────────────────────────────────────────────┐
+┌─────────────────────────────────────────────────────────────────────┐
 │  STP QUEUE                              [ Refresh ]  [ Book ]       │
 ├────────┬───────────┬────────────┬─────────┬──────────┬──────────────┤
 │ Msg ID │ Broker    │ Received   │ Waiting │ Status   │ Ccy Pair     │
@@ -401,7 +401,7 @@ tomorrow").
 
 #+begin_example
 ┌────────────────────────────────────────────────────────────────┐
-│  Filter Name: [  All HSBC NDF Fixings Tomorrow  ]             │
+│  Filter Name: [  All HSBC NDF Fixings Tomorrow  ]              │
 ├────────────────────┬───────────────────┬───────────────────────┤
 │  Property          │ Operator          │ Value                 │
 ├────────────────────┼───────────────────┼───────────────────────┤
@@ -435,19 +435,19 @@ fixing), or *Leave* (defer).
 ** Settings and Filters
 
 #+begin_example
-┌─────────────────────────────────────────────────────────────────┐
-│  CUT DETAILS                                                    │
-│  Expiry Date: [ 2026-03-31  ]   Cut: [ NY 10:00 ▾ ]           │
-│  Ccy Pair:    [ EUR/USD ▾ ]  (All pairs / specific pair)       │
-│                                                                 │
-│  STRIKE TOLERANCE  (highlight deals within this distance of spot)│
-│  ( ) Percentage    (•) Pips    [ 5 ]                           │
-│                                                                 │
-│  SPOTS  (load on demand — do not auto-refresh)                 │
-│  ┌──────────┬────────────┐                                     │
-│  │ EUR/USD  │  1.0823    │  ← red border when stale           │
-│  └──────────┴────────────┘                                     │
-└─────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│  CUT DETAILS                                                      │
+│  Expiry Date: [ 2026-03-31  ]   Cut: [ NY 10:00  ]                │
+│  Ccy Pair:    [ EUR/USD  ]  (All pairs / specific pair)           │
+│                                                                   │
+│  STRIKE TOLERANCE  (highlight deals within this distance of spot) │
+│  ( ) Percentage    (•) Pips    [ 5 ]                              │
+│                                                                   │
+│  SPOTS  (load on demand — do not auto-refresh)                    │
+│  ┌──────────┬────────────┐                                        │
+│  │ EUR/USD  │  1.0823    │  ← red border when stale               │
+│  └──────────┴────────────┘                                        │
+└───────────────────────────────────────────────────────────────────┘
 #+end_example
 
 Spots are loaded at session start or on user demand and are deliberately *not*
@@ -469,7 +469,7 @@ A visual timeline shows which cuts have been processed and which are outstanding
 ┌──────────┬──────┬───────────┬─────────┬────────────┬────────┬────────────────┬─────────┐
 │ Ccy Pair │ Book │ Cpty      │ Product │ Buy/Sell   │ Strike │ Expiry Status  │ Action  │
 ├──────────┼──────┼───────────┼─────────┼────────────┼────────┼────────────────┼─────────┤
-│ EUR/USD  │ FX1  │ Barclays  │ VanCall │ Buy 5M EUR │ 1.0900 │ Leave          │ [▾]     │
+│ EUR/USD  │ FX1  │ Barclays  │ VanCall │ Buy 5M EUR │ 1.0900 │ Leave          │ [x]     │
 │ EUR/USD  │ FX1  │ HSBC      │ VanPut  │ Sell 2M EUR│ 1.0750 │                │ Expire  │
 └──────────┴──────┴───────────┴─────────┴────────────┴────────┴────────────────┴─────────┘
      ↑ blue rows are within strike tolerance
@@ -539,17 +539,17 @@ Six operations are supported (all require the published fixing time to have pass
 └──────────────┴─────────┴────────────────┴───────────┴───────────┴───────────┘
 #+end_example
 
-| Column           | Description                                                      |
-|------------------+------------------------------------------------------------------|
-| Fixing Source    | Name of the fixing (ECB EUR, EURIBOR 3M, USD/JPY NDF, etc.)    |
-| NY / Local Fix Date | NY date and local market date/time side by side               |
-| Asset            | Currency (IR fixings) or currency pair (FX fixings)             |
-| Fix Value        | Rate to be authorised; up to 6 decimal places                   |
-| Reuters Rate     | Officially published rate; always recorded even if overridden    |
-| Fixing T-1       | Yesterday's value; quick sanity check                           |
-| Spot/Proj Rate   | Current spot, forward, or projection rate for comparison         |
-| Status           | Official (authorised) or Unofficial (keyed but not authorised)  |
-| Origin           | Published / FO Keyed / Ops Keyed / Default Valuation / etc.    |
+| Column              | Description                                                    |
+|---------------------+----------------------------------------------------------------|
+| Fixing Source       | Name of the fixing (ECB EUR, EURIBOR 3M, USD/JPY NDF, etc.)    |
+| NY / Local Fix Date | NY date and local market date/time side by side                |
+| Asset               | Currency (IR fixings) or currency pair (FX fixings)            |
+| Fix Value           | Rate to be authorised; up to 6 decimal places                  |
+| Reuters Rate        | Officially published rate; always recorded even if overridden  |
+| Fixing T-1          | Yesterday's value; quick sanity check                          |
+| Spot/Proj Rate      | Current spot, forward, or projection rate for comparison       |
+| Status              | Official (authorised) or Unofficial (keyed but not authorised) |
+| Origin              | Published / FO Keyed / Ops Keyed / Default Valuation / etc.    |
 
 ** Control Reports
 
@@ -584,8 +584,8 @@ The screen uses a two-pane master-detail design:
 │ Barrier Level    │ CUT      │ % Away from Spot        │ Deals  │ Select  │
 ├──────────────────┼──────────┼─────────────────────────┼────────┼─────────┤
 │ 1.0750  DnOut    │ NY       │ ████░░░░░░  1.0%        │ 3      │ [x]     │
-│ 1.0900  UpOut    │ NY       │ ░░░░████░░  1.5%        │ 1      │ [ ]     │
-│ 1.0500  DnIn     │ Tokyo    │ ░░░░░░░░██  2.8%        │ 2      │ [ ]     │
+│ 1.0900  UpOut    │ NY       │ ░░░░████░░  1.5%        │ 1      │ [ ]       │
+│ 1.0500  DnIn     │ Tokyo    │ ░░░░░░░░██  2.8%        │ 2      │ [ ]       │
 └──────────────────┴──────────┴─────────────────────────┴────────┴─────────┘
 #+end_example
 
@@ -644,14 +644,14 @@ and space.
 ** Settings
 
 #+begin_example
-┌─────────────────────────────────────────────────────────────────┐
-│  SPOT BUCKETS    Number: [ 10 ▾ ]   Size: [ 0.0131 ]           │
-│  DATE BUCKETS    Days: [ 14 ]  Weeks: [ 5 ]  Months: [ 10 ]  Years: [ 4 ]│
-│  Ccy Pair:       [ EUR/USD ▾ ]    Display Ccy: [ EUR ▾ ]       │
-│  Include Reserves: [x]                                          │
-│  Display Mode:   ( ) Notional   (•) Theoretical Value          │
-│  Population:     ( ) American   ( ) European   (•) Both        │
-└─────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────┐
+│  SPOT BUCKETS    Number: [ 10  ]   Size: [ 0.0131 ]                       │
+│  DATE BUCKETS    Days: [ 14 ]  Weeks: [ 5 ]  Months: [ 10 ]  Years: [ 4 ] │
+│  Ccy Pair:       [ EUR/USD  ]    Display Ccy: [ EUR  ]                    │
+│  Include Reserves: [x]                                                    │
+│  Display Mode:   ( ) Notional   (x) Theoretical Value                     │
+│  Population:     ( ) American   ( ) European   (•) Both                   │
+└───────────────────────────────────────────────────────────────────────────┘
 #+end_example
 
 American and European spikes are displayed separately: American barriers trigger
@@ -663,8 +663,8 @@ at any time; European barriers trigger only at expiry.
 ┌────────┬────────┬─────────────┬──────────────────┬───┬────────────────┬──────────┐
 │ Books  │ Date   │ ≤ 1.0550    │ 1.0550 – 1.0600  │ … │  Spot (1.0823) │ ≥ 1.1200 │
 ├────────┼────────┼─────────────┼──────────────────┼───┼────────────────┼──────────┤
-│ [▾] A  │ Apr-26 │             │  12.5M           │   │                │          │
-│ [▾] A  │ May-26 │  8.0M       │                  │   │                │  4.0M    │
+│ [x] A  │ Apr-26 │             │  12.5M           │   │                │          │
+│ [x] A  │ May-26 │  8.0M       │                  │   │                │  4.0M    │
 └────────┴────────┴─────────────┴──────────────────┴───┴────────────────┴──────────┘
      ↑ yellow/red for warnings (e.g. forward-starting barrier in wrong date bucket)
 #+end_example
@@ -681,18 +681,18 @@ right-click context menu on any deal row. Navigation is context-preserving:
 arriving at the Expiry Manager from a deal row pre-filters to that deal's cut,
 date, and currency pair.
 
-| From                        | Destination                                                     |
-|-----------------------------+-----------------------------------------------------------------|
-| Any deal row                | Deal entry form (Amend or Clone)                                |
-| Option row                  | Expiry Manager (pre-filtered to deal's cut and date)            |
-| Barrier deal row            | Barrier Management (pre-filtered to currency pair and level)    |
-| NDF / floating deal row     | Fixing Manager (pre-filtered to deal's fixing source)           |
-| Any deal row                | Single-deal risk report                                         |
-| Book tree selection         | Headline Position                                               |
-| Headline Position tile      | Full Greek report for that book                                 |
-| Spike Map cell              | Deal blotter filtered to cell's deals                           |
-| Barrier level (top pane)    | Deal list for that level (bottom pane)                          |
-| Fixing Manager → View Deals | Deal blotter filtered to affected deals                         |
+| From                        | Destination                                                  |
+|-----------------------------+--------------------------------------------------------------|
+| Any deal row                | Deal entry form (Amend or Clone)                             |
+| Option row                  | Expiry Manager (pre-filtered to deal's cut and date)         |
+| Barrier deal row            | Barrier Management (pre-filtered to currency pair and level) |
+| NDF / floating deal row     | Fixing Manager (pre-filtered to deal's fixing source)        |
+| Any deal row                | Single-deal risk report                                      |
+| Book tree selection         | Headline Position                                            |
+| Headline Position tile      | Full Greek report for that book                              |
+| Spike Map cell              | Deal blotter filtered to cell's deals                        |
+| Barrier level (top pane)    | Deal list for that level (bottom pane)                       |
+| Fixing Manager → View Deals | Deal blotter filtered to affected deals                      |
 
 * ORE Studio Notes
 

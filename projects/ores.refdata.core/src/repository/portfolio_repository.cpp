@@ -54,7 +54,7 @@ std::vector<domain::portfolio>
 portfolio_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
+    const std::string& wid = ores::utility::uuid::live_workspace_uuid_str;
     const auto query = sqlgen::read<std::vector<portfolio_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("id"_c);
@@ -70,7 +70,7 @@ portfolio_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio. id: " << id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
+    const std::string& wid = ores::utility::uuid::live_workspace_uuid_str;
     const auto query = sqlgen::read<std::vector<portfolio_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
 
@@ -84,7 +84,7 @@ std::vector<domain::portfolio>
 portfolio_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all portfolio versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
+    const std::string& wid = ores::utility::uuid::live_workspace_uuid_str;
     const auto query = sqlgen::read<std::vector<portfolio_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
         order_by("version"_c.desc());

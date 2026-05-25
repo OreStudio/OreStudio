@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 1BFBA7F6-59BF-4814-BECE-C2AB75F78C41
+:END:
+#+title: Task: Fix: portfolios and books not visible in workspace context
+#+description: Investigate and fix the bug where portfolios and books are not shown when a workspace is active.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ore_samples_support:sprint_18:v0:
+#+owner: marco
+#+branch: feature/fix-workspace-portfolio-book-visibility
+#+pr: 850
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Investigate why portfolios and books are not displayed when a workspace
+is active; identify the root cause (query filtering, workspace_id
+propagation, UI data-loading path, or missing join); and apply the fix.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | STARTED                                                            |
+| Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]]                                |
+| Now          | Fix applied to portfolio_repository.cpp and book_repository.cpp.  |
+| Waiting on   | Nothing.                                                           |
+| Next         | PR review; merge.                                                  |
+| Last touched | 2026-05-25                                                         |
+
+* Acceptance
+
+- Root cause identified and documented in =* Notes=.
+- Portfolios and books visible when any workspace is active.
+- No regression: portfolios and books still visible in the Live workspace.
+- Fix covered by a test or a manual smoke-test note.
+
+* Plan
+
+Investigation checklist — work through these in order and stop when root
+cause is found:
+
+1. *Reproduce*: switch to a non-Live workspace; confirm the portfolio tree
+   and book selectors are empty or missing.
+
+2. *Check workspace_id propagation*: verify the active workspace UUID
+   reaches the server via the NATS message header (see
+   [[id:827CB04D-AE39-40BA-A291-CAAE5360CD92][Workspace ID Codegen Propagation]] plan for the propagation path:
+   Qt =ClientManager= → NATS header → =database::context=).
+
+3. *Check repository queries*: locate the portfolio and book read-all
+   queries. Check whether they filter on =workspace_id= when they should
+   not (portfolios and books are Live-only entities — they have no
+   =workspace_id= column and should be returned regardless of the active
+   workspace).
+
+4. *Check context construction*: verify that =database::context= is built
+   correctly when =workspace_id= is non-zero — confirm it does not
+   accidentally restrict queries on tables that have no =workspace_id=
+   column.
+
+5. *Check UI data-loading path*: confirm =ClientWorkspaceModel= (or
+   equivalent) refreshes portfolio/book data when the workspace selection
+   changes; a stale model may show empty data after a workspace switch.
+
+* Notes
+
+** Root Cause
+
+Portfolios and books are =Live=-only entities: every record is stored with
+=workspace_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'= (the Live sentinel,
+=ores::utility::uuid::live_workspace_uuid_str=).
+
+When a non-Live workspace is active the Qt =ClientManager= propagates its UUID
+via the NATS =X-Workspace-Id= header.  =request_context.cpp= reads that header
+and stores it in =database::context::workspace_id_=.  The repository read
+queries then filtered on =workspace_id = <non-live-uuid>=, returning zero rows.
+
+** Fix
+
+In =portfolio_repository.cpp= and =book_repository.cpp=, all three read
+methods (=read_latest()=, =read_latest(id)=, =read_all(id)=) used
+=ctx.workspace_id()= in the WHERE clause.  Changed to always use
+=live_workspace_uuid_str= so reads are never workspace-scoped.  Write and
+delete operations are left unchanged — they correctly use the context
+workspace so mutations are workspace-scoped.
+
+The constant is transitively available via =bitemporal_operations.hpp= →
+=context.hpp= → =tenant_id.hpp=; no new =#include= was required.
+
+* PRs
+
+| PR  | Title                                                        |
+|-----+--------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/850][#850]] | [fix] Portfolios and books not visible when a workspace is active |
+
+* Review
+
+| # | Comment summary                                             | File                        | Decision | Notes                                  |
+|---+-------------------------------------------------------------+-----------------------------+----------+----------------------------------------|
+| 1 | Use =const std::string&= to avoid copying =live_workspace_uuid_str= | book_repository.cpp (×3)    | Fixed    | Changed all 3 sites to bind by ref.    |
+| 2 | Use =const std::string&= to avoid copying =live_workspace_uuid_str= | portfolio_repository.cpp (×3) | Fixed  | Changed all 3 sites to bind by ref.    |
+
+* Result

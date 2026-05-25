@@ -57,6 +57,8 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:F9B796DF-2C06-42EF-AACF-D69E53621FF9][Do not re-export ORES_* env vars in Bash tool calls]].
 - [[id:46F83AC1-F41F-4878-9A1D-2E49742E1BFE][Always use codegen to create new v2 documents]] — never write =.org= files
   directly; use =generate_v2_doc.sh= to scaffold them.
+- [[id:7F176058-4FF7-4731-920B-26FE318E338F][Always use compass to create agile artefacts]] — never write task/story files
+  manually; always scaffold with =compass add=.
 - [[id:387016AD-42CF-4830-B504-F255F6A7D1AB][Check recipes before searching for how to do something]] — =doc/recipes/=
   is the first port of call for any project operation.
 - [[id:C26B61E8-1CA7-4241-B1D9-D4D95B7DDB01][Run deploy_skills cmake target directly]] — it is Emacs-only, not C++

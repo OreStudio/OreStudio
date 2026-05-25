@@ -132,7 +132,6 @@
          (out-win (split-window-below (- (window-total-height) out-h))))
     (with-current-buffer buf
       (setq ores/dashboard--output-window out-win))
-    ;; Leave focus on the dashboard
     (select-window (get-buffer-window buf))))
 
 ;; ---------------------------------------------------------------------------
@@ -169,18 +168,15 @@
 ;; Icon helpers
 ;; ---------------------------------------------------------------------------
 
-(defun ores/dashboard--group-icon (icon-fn icon-arg color)
-  "Return a nerd-icons glyph for a group header in COLOR."
+(defun ores/dashboard--group-icon (icon-fn icon-arg)
+  "Return a nerd-icons glyph string for a group header, or empty string."
   (if (and (display-graphic-p) (fboundp icon-fn))
-      (or (ignore-errors
-            (concat (funcall icon-fn icon-arg
-                             :face `(:foreground ,(or color "#88c0d0") :weight bold))
-                    " "))
-          "")
+      (or (ignore-errors (concat (funcall icon-fn icon-arg) " ")) "")
     ""))
 
 (defun ores/dashboard--mkitem (label icon-fn icon-name action)
-  "Build an item (label . action) with a nerd-icon prefix in label."
+  "Build an item (label . action) with a nerd-icon prefix in label.
+Falls back to two spaces when icons are unavailable, preserving alignment."
   (cons (concat (if (and (display-graphic-p) (fboundp icon-fn))
                     (or (ignore-errors (concat (funcall icon-fn icon-name) " "))
                         "  ")
@@ -205,48 +201,58 @@
 ;; Group → cells
 ;;
 ;; Group spec: (title icon-fn icon-arg items color)
+;;   color  — hex foreground for the title text, e.g. "#a3be8c"
 ;;
-;; Returns exactly TARGET-H cells; blank │ │ rows pad inside the box border so
-;; all boxes in a row share the same bottom border line.
+;; ores/dashboard--group-cells builds exactly TARGET-H cells so all boxes in
+;; a row share the same bottom border line (blank │ │ rows added inside).
 ;;
-;; Cell: (text . btn-specs)   btn-spec: (char-offset char-len action)
+;; Cell: (text . btn-specs)    btn-spec: (char-offset char-len action)
 ;; ---------------------------------------------------------------------------
-
-(defun ores/dashboard--rpad (str width)
-  (let ((w (string-width str)))
-    (cond ((= w width) str)
-          ((> w width) (truncate-string-to-width str width))
-          (t (concat str (make-string (- width w) ?\s))))))
 
 (defun ores/dashboard--border (l m r width)
   (propertize (concat (string l) (make-string (- width 2) m) (string r))
               'face 'ores/dashboard-border-face))
 
 (defun ores/dashboard--group-cells (title icon-fn icon-arg items col-width color target-h)
-  (let* ((iw         (- col-width 2))
-         (icon       (ores/dashboard--group-icon icon-fn icon-arg color))
+  "Build exactly TARGET-H cells for a group box of COL-WIDTH chars."
+  (let* ((iw       (- col-width 2))
+         (icon     (ores/dashboard--group-icon icon-fn icon-arg))
+         (icon-w   (string-width icon))
+         ;; Color applied only to the title text so it is never overridden
+         ;; by pre-existing face properties on the icon glyph.
          (title-face `(:foreground ,(or color "#88c0d0") :weight bold))
-         (extra      (max 0 (- target-h (+ 4 (length items)))))
+         (max-t    (max 0 (- iw 1 icon-w)))
+         (title-d  (if (> (string-width title) max-t)
+                       (truncate-string-to-width title max-t)
+                     title))
+         (title-s  (propertize title-d 'face title-face))
+         (hdr-w    (+ 1 icon-w (string-width title-d)))
+         (hdr-pad  (make-string (max 0 (- iw hdr-w)) ?\s))
+         (extra    (max 0 (- target-h (+ 4 (length items)))))
          cells)
 
+    ;; ┌────────────────────┐
     (push (cons (ores/dashboard--border ?┌ ?─ ?┐ col-width) nil) cells)
 
-    (let* ((hdr   (concat " " icon title))
-           (inner (propertize (ores/dashboard--rpad hdr iw) 'face title-face)))
-      (push (cons (concat (propertize "│" 'face 'ores/dashboard-border-face)
-                          inner
-                          (propertize "│" 'face 'ores/dashboard-border-face))
-                  nil)
-            cells))
+    ;; │ icon Title...      │
+    (push (cons (concat (propertize "│" 'face 'ores/dashboard-border-face)
+                        " " icon title-s hdr-pad
+                        (propertize "│" 'face 'ores/dashboard-border-face))
+                nil)
+          cells)
 
+    ;; ├────────────────────┤
     (push (cons (ores/dashboard--border ?├ ?─ ?┤ col-width) nil) cells)
 
+    ;; │  item              │
     (dolist (item items)
       (let* ((label  (car item))
              (action (cdr item))
              (prefix " ")
              (max-l  (- iw (length prefix) 1))
-             (lbl    (ores/dashboard--rpad label max-l))
+             (lbl    (if (> (string-width label) max-l)
+                         (truncate-string-to-width label max-l)
+                       label))
              (pad    (make-string (max 0 (- iw (length prefix) (string-width lbl) 1)) ?\s))
              (off    (+ 1 (length prefix)))
              (len    (string-width lbl)))
@@ -257,12 +263,13 @@
                (when action (list (list off len action))))
               cells)))
 
+    ;; blank │ │ rows inside box for equal row height
     (let ((blank (concat (propertize "│" 'face 'ores/dashboard-border-face)
                          (make-string iw ?\s)
                          (propertize "│" 'face 'ores/dashboard-border-face))))
-      (dotimes (_ extra)
-        (push (cons blank nil) cells)))
+      (dotimes (_ extra) (push (cons blank nil) cells)))
 
+    ;; └────────────────────┘
     (push (cons (ores/dashboard--border ?└ ?─ ?┘ col-width) nil) cells)
 
     (nreverse cells)))
@@ -272,6 +279,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defun ores/dashboard--render-row (groups col-width)
+  "Insert GROUPS side by side, each box COL-WIDTH chars wide, all equal height."
   (let* ((gap      ores/dashboard--gap)
          (ncols    (length groups))
          (target-h (apply #'max
@@ -305,26 +313,23 @@
                          help-echo   "RET or click to activate")))))
                (when (< gi (1- ncols))
                  (insert (make-string gap ?\s))))
+      ;; strip trailing spaces — avoids whitespace-mode false positives
       (delete-region (save-excursion (skip-chars-backward " ") (point)) (point))
       (insert "\n"))
     (insert "\n")))
 
 ;; ---------------------------------------------------------------------------
-;; Image banner
+;; Image banner — natural file size, no scaling
 ;; ---------------------------------------------------------------------------
 
 (defun ores/dashboard--insert-image (root)
+  "Insert the ORE Studio banner image at its natural size."
   (when (and (display-graphic-p) (image-type-available-p 'png))
     (let ((path (expand-file-name "assets/images/splash-screen.png" root)))
       (when (file-readable-p path)
-        (let* ((avail-px  (- (window-pixel-width) 80))
-               (img       (create-image path 'png nil :width avail-px))
-               (img-h-px  (cdr (image-size img t)))
-               (lines     (max 1 (ceiling img-h-px (frame-char-height))))
-               (margin    (max 0 (/ (- (window-total-width)
-                                       (/ avail-px (frame-char-width)))
-                                    2))))
-          (insert (make-string margin ?\s))
+        (let* ((img      (create-image path 'png nil))
+               (img-h-px (cdr (image-size img t)))
+               (lines    (max 1 (ceiling img-h-px (frame-char-height)))))
           (insert (propertize " " 'display img))
           (insert (make-string (max 0 (- lines 1)) ?\n))
           (insert "\n"))))))
@@ -334,6 +339,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defun ores/dashboard--insert-quicklinks (root dash-buf)
+  "Insert a horizontal bar of quick-access file links below the banner."
   (let ((links '(("Orientation" . "doc/orientation.org")
                  ("Manual"      . "doc/manual/user_guide/user_manual.org")
                  ("Compass"     . "doc/compass.org")
@@ -356,11 +362,11 @@
     (insert "\n\n")))
 
 ;; ---------------------------------------------------------------------------
-;; Compilation helper — output goes to the dashboard's output window
+;; Compilation helper
 ;; ---------------------------------------------------------------------------
 
 (defun ores/dashboard--compile (label cmd buf-suffix root dash-buf)
-  "Run CMD in *ores-LABEL-BUF-SUFFIX*; display result in DASH-BUF's output window."
+  "Run CMD in *ores-LABEL-BUF-SUFFIX*; show result in DASH-BUF's output window."
   (let* ((default-directory (or root default-directory))
          (buf-name (format "*ores-%s-%s*" label buf-suffix))
          (comp-buf (compilation-start cmd nil (lambda (_) buf-name))))
@@ -368,15 +374,17 @@
 
 ;; ---------------------------------------------------------------------------
 ;; Group builders — each returns (title icon-fn icon-arg items color)
+;; All use nerd-icons-faicon (Font Awesome 4) for reliable icon availability.
+;; Colors are Nord palette hues.
 ;; ---------------------------------------------------------------------------
 
 (defun ores/dashboard--env-group (env root dash-buf)
   (let* ((label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
          (preset (or (cdr (assoc "ORES_PRESET"         env)) "linux-clang-debug-ninja")))
-    (list "Environment" 'nerd-icons-codicon "nf-cod-settings_gear"
+    (list "Environment" 'nerd-icons-faicon "nf-fa-cog"
           (list
            (ores/dashboard--mkitem
-            "Init environment" 'nerd-icons-codicon "nf-cod-play"
+            "Init environment" 'nerd-icons-faicon "nf-fa-play"
             (let ((lbl label) (p preset) (r root) (db dash-buf))
               (lambda (_)
                 (ores/dashboard--compile lbl
@@ -384,15 +392,16 @@
                          (expand-file-name "build/scripts/init-environment.sh" r) p)
                  "init-environment" r db))))
            (ores/dashboard--mkitem
-            "Edit environment" 'nerd-icons-codicon "nf-cod-edit"
+            "Edit environment" 'nerd-icons-faicon "nf-fa-edit"
             (let ((r root) (db dash-buf))
               (lambda (_)
-                (ores/dashboard--display (find-file-noselect (expand-file-name ".env" r)) db))))
+                (ores/dashboard--display
+                 (find-file-noselect (expand-file-name ".env" r)) db))))
            (ores/dashboard--mkitem
-            "Reload environment" 'nerd-icons-codicon "nf-cod-refresh"
+            "Reload environment" 'nerd-icons-faicon "nf-fa-refresh"
             (lambda (_) (ores/dashboard-reload)))
            (ores/dashboard--mkitem
-            "Diff .env vs .env.old" 'nerd-icons-codicon "nf-cod-diff"
+            "Diff .env vs .env.old" 'nerd-icons-faicon "nf-fa-exchange"
             (let ((r root) (db dash-buf))
               (lambda (_)
                 (let ((old (expand-file-name ".env.old" r))
@@ -404,21 +413,32 @@
 
 (defun ores/dashboard--db-group (env root dash-buf)
   (let ((label (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local")))
-    (list "Database" 'nerd-icons-codicon "nf-cod-database"
+    (list "Database" 'nerd-icons-faicon "nf-fa-database"
           (list
            (ores/dashboard--mkitem
-            "Recreate environment" 'nerd-icons-codicon "nf-cod-trash"
+            "Open database connection" 'nerd-icons-faicon "nf-fa-plug"
+            (let ((lbl label) (db dash-buf))
+              (lambda (_)
+                ;; setup-connections ensures the connection entry exists in
+                ;; sql-connection-alist, then we open it in the output window.
+                (ores-db/setup-connections)
+                (let ((buf-name (format "*ores-%s-db*" lbl))
+                      (conn     (intern (format "ores_%s" lbl))))
+                  (condition-case err
+                      (progn
+                        (save-window-excursion
+                          (sql-connect conn buf-name))
+                        (when-let ((buf (get-buffer buf-name)))
+                          (ores/dashboard--display buf db)))
+                    (error
+                     (user-error "Cannot connect: %s" (error-message-string err))))))))
+           (ores/dashboard--mkitem
+            "Recreate environment" 'nerd-icons-faicon "nf-fa-trash"
             (let ((lbl label) (r root))
               (lambda (_)
                 (unless (yes-or-no-p (format "DROP and recreate ores_dev_%s? " lbl))
                   (user-error "Aborted"))
-                (ores-db/--run-recreate-env lbl r))))
-           (ores/dashboard--mkitem
-            "Browse databases" 'nerd-icons-codicon "nf-cod-table"
-            (lambda (_) (ores-db/list-databases)))
-           (ores/dashboard--mkitem
-            "Setup SQL connections" 'nerd-icons-codicon "nf-cod-plug"
-            (lambda (_) (ores-db/setup-connections))))
+                (ores-db/--run-recreate-env lbl r)))))
           "#88c0d0")))
 
 (defun ores/dashboard--services-group (env root dash-buf)
@@ -427,7 +447,7 @@
           (mapcar
            (lambda (spec)
              (ores/dashboard--mkitem
-              (nth 0 spec) (nth 3 spec) (nth 4 spec)
+              (nth 0 spec) 'nerd-icons-faicon (nth 3 spec)
               (let ((lbl label)
                     (s   (expand-file-name (nth 1 spec)
                                            (expand-file-name "build/scripts" root)))
@@ -435,65 +455,51 @@
                     (r   root)
                     (db  dash-buf))
                 (lambda (_) (ores/dashboard--compile lbl s sfx r db)))))
-           '(("Start services" "start-services.sh"  "start-services"
-              nerd-icons-codicon "nf-cod-run-above")
-             ("Start client"   "start-client.sh"    "start-client"
-              nerd-icons-codicon "nf-cod-run-below")
-             ("Service status" "status-services.sh" "service-status"
-              nerd-icons-codicon "nf-cod-pulse")
-             ("Stop services"  "stop-services.sh"   "stop-services"
-              nerd-icons-codicon "nf-cod-debug-stop")))
+           '(("Start services" "start-services.sh"  "start-services"  "nf-fa-play")
+             ("Start client"   "start-client.sh"    "start-client"    "nf-fa-play-circle")
+             ("Service status" "status-services.sh" "service-status"  "nf-fa-info-circle")
+             ("Stop services"  "stop-services.sh"   "stop-services"   "nf-fa-stop")))
           "#ebcb8b")))
 
 (defun ores/dashboard--compass-group (env root dash-buf)
   (let* ((label   (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
          (compass (expand-file-name "projects/ores.compass/compass.sh" root)))
     (list "Compass" 'nerd-icons-faicon "nf-fa-compass"
-          (append
-           (mapcar
-            (lambda (spec)
-              (ores/dashboard--mkitem
-               (nth 0 spec) (nth 3 spec) (nth 4 spec)
-               (let ((lbl label)
-                     (cmd (format "%s %s" compass (nth 1 spec)))
-                     (sfx (nth 2 spec))
-                     (r   root)
-                     (db  dash-buf))
-                 (lambda (_) (ores/dashboard--compile lbl cmd sfx r db)))))
-            '(("compass where"  "where"  "compass-where"
-               nerd-icons-codicon "nf-cod-location")
-              ("compass list"   "list"   "compass-list"
-               nerd-icons-codicon "nf-cod-list-tree")
-              ("compass status" "status" "compass-status"
-               nerd-icons-codicon "nf-cod-pulse")))
-           (list
-            (ores/dashboard--mkitem
-             "Open compass.org" 'nerd-icons-codicon "nf-cod-file"
-             (let ((r root) (db dash-buf))
-               (lambda (_)
-                 (ores/dashboard--display
-                  (find-file-noselect (expand-file-name "doc/compass.org" r)) db))))))
+          (mapcar
+           (lambda (spec)
+             (ores/dashboard--mkitem
+              (nth 0 spec) 'nerd-icons-faicon (nth 3 spec)
+              (let ((lbl label)
+                    (cmd (format "%s %s" compass (nth 1 spec)))
+                    (sfx (nth 2 spec))
+                    (r   root)
+                    (db  dash-buf))
+                (lambda (_) (ores/dashboard--compile lbl cmd sfx r db)))))
+           '(("compass where"  "where"  "compass-where"  "nf-fa-map-marker")
+             ("compass list"   "list"   "compass-list"   "nf-fa-list")
+             ("compass status" "status" "compass-status" "nf-fa-info-circle")
+             ("compass fleet"  "fleet"  "compass-fleet"  "nf-fa-sitemap")))
           "#d08770")))
 
 (defun ores/dashboard--build-group (env root dash-buf)
   (let* ((label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
          (preset (or (cdr (assoc "ORES_PRESET"         env)) "linux-clang-debug-ninja")))
-    (list "Build" 'nerd-icons-codicon "nf-cod-tools"
+    (list "Build" 'nerd-icons-faicon "nf-fa-cogs"
           (list
            (ores/dashboard--mkitem
-            "Configure" 'nerd-icons-codicon "nf-cod-gear"
+            "Configure" 'nerd-icons-faicon "nf-fa-wrench"
             (let ((lbl label) (p preset) (r root) (db dash-buf))
               (lambda (_)
                 (ores/dashboard--compile lbl
                  (format "cmake --preset %s" p) "configure" r db))))
            (ores/dashboard--mkitem
-            "Build" 'nerd-icons-codicon "nf-cod-play"
+            "Build" 'nerd-icons-faicon "nf-fa-play"
             (let ((lbl label) (p preset) (r root) (db dash-buf))
               (lambda (_)
                 (ores/dashboard--compile lbl
                  (format "cmake --build --preset %s" p) "build" r db))))
            (ores/dashboard--mkitem
-            "Test" 'nerd-icons-codicon "nf-cod-beaker"
+            "Test" 'nerd-icons-faicon "nf-fa-flask"
             (let ((lbl label) (p preset) (r root) (db dash-buf))
               (lambda (_)
                 (ores/dashboard--compile lbl
@@ -504,17 +510,17 @@
   (let* ((label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
          (preset (or (cdr (assoc "ORES_PRESET"         env)) "linux-clang-debug-ninja"))
          (port   (or (cdr (assoc "ORES_SITE_PORT"      env)) "8000")))
-    (list "Site" 'nerd-icons-codicon "nf-cod-globe"
+    (list "Site" 'nerd-icons-faicon "nf-fa-globe"
           (list
            (ores/dashboard--mkitem
-            "Rebuild site" 'nerd-icons-codicon "nf-cod-refresh"
+            "Rebuild site" 'nerd-icons-faicon "nf-fa-refresh"
             (let ((lbl label) (p preset) (r root) (db dash-buf))
               (lambda (_)
                 (ores/dashboard--compile lbl
                  (format "cmake --build --preset %s --target deploy_site" p)
                  "rebuild-site" r db))))
            (ores/dashboard--mkitem
-            "Start site" 'nerd-icons-codicon "nf-cod-play"
+            "Start site" 'nerd-icons-faicon "nf-fa-play"
             (let ((r root))
               (lambda (_)
                 (let ((script (expand-file-name "build/scripts/serve-site.sh" r))
@@ -522,7 +528,7 @@
                   (start-process "ores-serve-site" "*ores-serve-site*" script)
                   (message "Site server started.")))))
            (ores/dashboard--mkitem
-            "Stop site" 'nerd-icons-codicon "nf-cod-debug-stop"
+            "Stop site" 'nerd-icons-faicon "nf-fa-stop"
             (let ((pt port))
               (lambda (_)
                 (shell-command (format "fuser -k %s/tcp 2>/dev/null; true" pt))
@@ -532,16 +538,16 @@
 (defun ores/dashboard--skills-group (env root dash-buf)
   (let* ((label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
          (preset (or (cdr (assoc "ORES_PRESET"         env)) "linux-clang-debug-ninja")))
-    (list "Skills" 'nerd-icons-codicon "nf-cod-sparkle"
+    (list "Skills" 'nerd-icons-faicon "nf-fa-magic"
           (list
            (ores/dashboard--mkitem
-            "Open skills folder" 'nerd-icons-codicon "nf-cod-folder-opened"
+            "Open skills folder" 'nerd-icons-faicon "nf-fa-folder-open"
             (let ((r root) (db dash-buf))
               (lambda (_)
                 (ores/dashboard--display
                  (dired-noselect (expand-file-name "doc/llm/skills" r)) db))))
            (ores/dashboard--mkitem
-            "Deploy skills" 'nerd-icons-codicon "nf-cod-cloud-upload"
+            "Deploy skills" 'nerd-icons-faicon "nf-fa-upload"
             (let ((lbl label) (p preset) (r root) (db dash-buf))
               (lambda (_)
                 (ores/dashboard--compile lbl
@@ -553,17 +559,17 @@
   (let* ((p       (or (cdr (assoc "ORES_PRESET" env)) ""))
          (log-dir (expand-file-name (format "build/output/%s/publish/log" p) root))
          (bin-dir (expand-file-name (format "build/output/%s/publish/bin" p) root)))
-    (list "Bookmarks" 'nerd-icons-codicon "nf-cod-bookmark"
+    (list "Bookmarks" 'nerd-icons-faicon "nf-fa-bookmark"
           (list
            (ores/dashboard--mkitem
-            "Log directory" 'nerd-icons-codicon "nf-cod-output"
+            "Log directory" 'nerd-icons-faicon "nf-fa-file-text"
             (let ((d log-dir) (db dash-buf))
               (lambda (_)
                 (if (file-directory-p d)
                     (ores/dashboard--display (dired-noselect d) db)
                   (user-error "Log dir not found: %s" d)))))
            (ores/dashboard--mkitem
-            "Bin directory" 'nerd-icons-codicon "nf-cod-folder-opened"
+            "Bin directory" 'nerd-icons-faicon "nf-fa-folder-open"
             (let ((d bin-dir) (db dash-buf))
               (lambda (_)
                 (if (file-directory-p d)
@@ -572,24 +578,24 @@
           "#5e81ac")))
 
 (defun ores/dashboard--links-group (_env root dash-buf)
-  (list "Links" 'nerd-icons-codicon "nf-cod-link"
+  (list "Links" 'nerd-icons-faicon "nf-fa-link"
         (mapcar (lambda (spec)
                   (ores/dashboard--mkitem
-                   (nth 0 spec) 'nerd-icons-codicon (nth 2 spec)
+                   (nth 0 spec) 'nerd-icons-faicon (nth 2 spec)
                    (let ((f  (expand-file-name (nth 1 spec) root))
                          (db dash-buf))
                      (lambda (_)
                        (ores/dashboard--display (find-file-noselect f) db)))))
-                '(("User manual"   "doc/manual/user_guide/user_manual.org" "nf-cod-book")
-                  ("Recipes index" "doc/recipes/recipes.org"               "nf-cod-library")
-                  ("Agile index"   "doc/agile/agile.org"                   "nf-cod-project")))
+                '(("User manual"   "doc/manual/user_guide/user_manual.org" "nf-fa-book")
+                  ("Recipes index" "doc/recipes/recipes.org"               "nf-fa-list-ul")
+                  ("Agile index"   "doc/agile/agile.org"                   "nf-fa-tasks")))
         "#e5e9f0"))
 
 (defun ores/dashboard--shell-group (env root _dash-buf)
-  (list "Shell" 'nerd-icons-codicon "nf-cod-terminal"
+  (list "Shell" 'nerd-icons-faicon "nf-fa-terminal"
         (list
          (ores/dashboard--mkitem
-          "Open ORE Studio shell" 'nerd-icons-codicon "nf-cod-terminal"
+          "Open ORE Studio shell" 'nerd-icons-faicon "nf-fa-terminal"
           (let ((e env) (r root))
             (lambda (_)
               (let* ((p   (or (cdr (assoc "ORES_PRESET" e)) ""))

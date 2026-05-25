@@ -490,7 +490,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                               (ores/dashboard--display buf db)))
                         (error
                          (user-error "Cannot connect: %s"
-                                     (error-message-string err)))))))))
+                                     (error-message-string err))))))))))
            (ores/dashboard--mkitem
             "Recreate environment" 'nerd-icons-faicon "nf-fa-trash"
             (let ((lbl label) (r root))
@@ -498,7 +498,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                 (unless (yes-or-no-p (format "DROP and recreate ores_dev_%s? " lbl))
                   (user-error "Aborted"))
                 (ores-db/--run-recreate-env lbl r)))))
-          'ores/dashboard-group-db-face))))
+          'ores/dashboard-group-db-face)))
 
 (defun ores/dashboard--services-group (env root dash-buf)
   (let ((label (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local")))

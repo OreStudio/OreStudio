@@ -230,6 +230,7 @@ stored separately, in the operating system's standard settings store.
 Neither leaves your machine.
 
 #+attr_html: :class hug-leading
+#+attr_latex: :font \footnotesize :align lp{4.8cm}p{7.6cm}
 | Operating system | Settings directory                            | Database location (=connections.db=)                   |
 |------------------+-----------------------------------------------+--------------------------------------------------------|
 | Linux            | =~/.config/OreStudio/=                         | =~/.local/share/ores.qt/connections.db=                |

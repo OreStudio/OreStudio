@@ -41,6 +41,6 @@
 
 #+include: "chapters/chapter_01/system_bootstrapping.org" :minlevel 2
 
-* System Bootstrapping
+* Initial Setup
 
 #+include: "chapters/chapter_01/system_bootstrapping_concepts.org" :minlevel 2

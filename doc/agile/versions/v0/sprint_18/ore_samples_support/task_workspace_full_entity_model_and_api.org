@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: C10117BF-4054-4B31-AF2F-158EE8ABE88A
+:END:
+#+title: Task: Workspace full entity: model and API
+#+description: Promote workspace to a full standard entity at the model and API layer: history table, generated detail dialog metadata, and API surface.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ore_samples_support:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Promote workspace from a lightweight record to a full standard entity at the
+model and API layer: add history (audit) support, the generated detail-dialog
+metadata, and the API surface the C++ and UI layers build on.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-25                               |
+
+* Acceptance
+
+- Workspace model carries history/audit support.
+- Generated detail-dialog metadata is produced for workspace.
+- API surface for workspace CRUD and history is defined.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+Detail in the source plan =doc/plans/2026-05-21-workspace-full-entity.org=.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

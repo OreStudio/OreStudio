@@ -30,11 +30,11 @@ group layout, and which helpers it will reuse.
 
 | Field        | Value                                                  |
 |--------------+--------------------------------------------------------|
-| State        | STARTED                                                |
+| State        | DONE                                                   |
 | Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                             |
-| Now          | Classification and design written in =* Notes=.        |
-| Waiting on   | User sign-off before implement task starts.            |
-| Next         | Review design, then proceed to [[id:696612A2-A9D5-47FE-BC5A-2F90FDCA4E15][task_implement_dashboard]].  |
+| Now          | Merged on PR #828.                                     |
+| Waiting on   | Nothing.                                               |
+| Next         | Nothing.                                               |
 | Last touched | 2026-05-25                                             |
 
 * Acceptance
@@ -231,9 +231,9 @@ from the user's init if it was only used for ORE Studio services.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                                                 | Title                                                           |
+|------------------------------------------------------------------------------------+-----------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/828][#828]] | [agile] Audit ores.lisp modules and design dashboard architecture |
 
 * Review
 

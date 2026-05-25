@@ -66,10 +66,15 @@ In execution order.
 | [[id:A2B3BFD0-F44C-48F3-BB01-6BAECB851356][Remove unused GitHub Actions workflows]] | DONE | 2026-05-24 | 2026-05-24 | Delete the four dormant Gemini workflows; PR review stays via the gemini-code-assist app. |
 | [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — near and far listing]] | BACKLOG | 2026-05-24 | | =compass backlog= lists near/far captures with counts, mirroring =where= in-flight display. |
 | [[id:8D295781-33E7-4812-AAC6-134BD7CD0DDC][Rebuild org-roam DB independently from CMake]]       | BACKLOG | 2026-05-24 | | Extract org-roam sync into =.build-org-roam.el=; add =rebuild_org_roam_db= cmake target.   |
-| [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                         | STARTED | 2026-05-24 |            | Replace broken per-mode ores.lisp with an env-aware emacs-dashboard console for all dev commands. |
-| [[id:7225526E-DCDB-4DC6-A95D-22C7117E5EAA][Port Tufte visualisation skill into ORE Studio]]     | BACKLOG | 2026-05-25 | | Convert =tufte-viz= SKILL and two Tufte reference docs to org-mode; install and catalogue. |
-| [[id:CB368AF8-3144-4CFF-B782-05CDF87366A6][compass cross-worktree status (global where)]] | STARTED | 2026-05-25 | | Show what every git worktree is doing (branch/story/task/PR) so parallel agents don't collide. |
+| [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                         | DONE    | 2026-05-24 | 2026-05-26 | Replace broken per-mode ores.lisp with an env-aware emacs-dashboard console for all dev commands. |
+| [[id:7225526E-DCDB-4DC6-A95D-22C7117E5EAA][Port Tufte visualisation skill into ORE Studio]]     | DONE    | 2026-05-25 | 2026-05-25 | Convert =tufte-viz= SKILL and two Tufte reference docs to org-mode; install and catalogue. |
+| [[id:CB368AF8-3144-4CFF-B782-05CDF87366A6][compass cross-worktree status (global where)]] | DONE    | 2026-05-25 | 2026-05-25 | Show what every git worktree is doing (branch/story/task/PR) so parallel agents don't collide. |
 | [[id:C0B87858-4EDA-40F3-B4DF-1CDEA5CC712E][compass goto: start a unit of work in one command]] | STARTED | 2026-05-25 | | One command: fetch main, branch, scaffold linked story+task, print next steps. |
+| [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]]           | STARTED | 2026-05-25 | | =sprint-reviewer= skill writes a structured health-check section into =sprint.org=. |
+
+* Health Review
+
+(Run =sprint-reviewer= to generate this section.)
 
 * Retrospective
 

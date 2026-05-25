@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 4B327802-3E59-438F-8726-6984B2BC2BB0
+:END:
+#+title: Task: Implement sprint-reviewer skill
+#+description: Write the sprint-reviewer SKILL.org: reads sprint.org + git log + gh API, computes health metrics, and writes a System 2 review section into sprint.org.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compass:tooling:python:agile:sprint:review:sprint_health_review:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce the =sprint-reviewer= skill file at
+=doc/llm/skills/sprint-reviewer/SKILL.org= and update the sprint
+template so every new sprint has an empty =* Health Review= placeholder.
+
+* Status
+
+| Field        | Value                                        |
+|--------------+----------------------------------------------|
+| State        | STARTED                                      |
+| Parent story | [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]]     |
+| Now          | =doc/llm/skills/sprint-reviewer/SKILL.org= written; sprint template and catalogue updated. |
+| Waiting on   | Nothing.                                     |
+| Next         | Review and merge.                            |
+| Last touched | 2026-05-25                                   |
+
+* Acceptance
+
+- =doc/llm/skills/sprint-reviewer/SKILL.org= exists and is deployed.
+- Skill instructs the LLM to gather data from:
+  - =sprint.org= (mission, goals, stories table, status fields)
+  - All story and task =.org= files in the sprint directory
+  - =git log --oneline --since=<sprint-start>= for commit count and rate
+  - =gh pr list= / =gh pr view= for PR velocity and open WIP
+- Skill produces a =* Health Review= section with the sub-sections
+  defined in the story acceptance: Goal alignment, Sprint load, PR
+  velocity, Story/task balance, Focus signal, Overall verdict.
+- Section is idempotent: re-running overwrites the previous review block.
+- Sprint template (=doc/llm/skills/new-sprint/SKILL.org= or the codegen
+  template) updated to include an empty =* Health Review= placeholder.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

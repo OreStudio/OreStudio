@@ -45,4 +45,10 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         Boost::boost)
 
+
+target_precompile_headers(${lib_target_name} PRIVATE
+    <rfl.hpp>
+    <rfl/json.hpp>
+    <ores.utility/rfl/reflectors.hpp>)
+
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

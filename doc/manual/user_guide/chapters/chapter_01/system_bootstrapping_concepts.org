@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04
 :END:
-#+title: System Bootstrapping Concepts and Provisioning
+#+title: Initial Setup
 #+description: Conceptual overview of the multi-tenant/multi-party model and step-by-step guide to the provisioning wizards.
 #+type: manual
 #+version: 2

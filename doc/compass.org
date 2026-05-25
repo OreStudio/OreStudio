@@ -140,6 +140,13 @@ See [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]]
   memory per file; the catalogue lives at [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]]. Write here
   when the user gives feedback worth keeping across sessions.
 
+** Developer links
+
+[[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]] (=doc/developer.org=) — quick-reference index of
+external developer resources: GitHub, Doxygen, Discord, CDash, and CI
+pipelines. Start here when onboarding or sharing links with a new
+contributor or LLM agent.
+
 ** Secondary folders
 
 - =plans/= ([[id:6E09902A-5D78-4697-9934-F818073FA5D9][Plans]]) — historical design plans, one =YYYY-MM-DD-name.org= per plan.

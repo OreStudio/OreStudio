@@ -130,6 +130,7 @@
     <a href='/OreStudio/doc/recipes/recipes.html'>Recipes</a>
     <a href='/OreStudio/doc/llm/skills/claude_code_skills.html'>Skills</a>
     <a href='/OreStudio/doc/manual/manuals.html'>Manuals</a>
+    <a href='/OreStudio/doc/developer.html'>Developer</a>
     <a href='/OreStudio/doc/agile/versions/versions.html'>Roadmap</a>
     <a href='/OreStudio/graph/index.html'>Knowledge Graph</a>
     <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>
@@ -165,7 +166,14 @@
          :base-extension "css"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
-        ("site:main" :components("site:pages" "site:images" "site:style"))))
+        ("site:pdf"
+         :recursive t
+         :base-directory "./"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui"
+         :base-extension "pdf"
+         :publishing-directory "./build/output/site/OreStudio/"
+         :publishing-function org-publish-attachment)
+        ("site:main" :components("site:pages" "site:images" "site:style" "site:pdf"))))
 
 (defun ores-inject-site-nav (index-file preamble)
   "Inject site CSS and PREAMBLE nav into the org-roam-ui INDEX-FILE."

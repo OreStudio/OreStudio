@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 6EBB206D-167F-4A0F-8F50-04D7EB4B7E33
+:END:
+#+title: Story: Fix PDF site delivery and switch manual to book LaTeX class
+#+description: Add a site:pdf publish component so user_manual.pdf is served by the site; switch user_manual.org from article to book LaTeX class and regenerate.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :site:manual:latex:pdf:sprint_18:v0:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The PDF linked from the Manuals page returns 404 because the site
+publish pipeline has no component that copies =.pdf= files into the
+output. Additionally, =user_manual.org= uses the =article= LaTeX class
+with manual formatting overrides instead of the =book= class. Both
+defects are fixed in a single task.
+
+* Status
+
+| Field         | Value                              |
+|---------------+------------------------------------|
+| State         | STARTED                            |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                          |
+| Now           | Implementing fixes.                |
+| Waiting on    | Nothing.                           |
+| Next          | PR review.                         |
+| Last touched  | 2026-05-25                         |
+
+* Acceptance
+
+- =.build-site.el= has a =site:pdf= publish component that copies =.pdf=
+  files recursively into the site output directory.
+- =https://orestudio.github.io/OreStudio/doc/manual/user_guide/user_manual.pdf=
+  is reachable after the next site deploy.
+- =user_manual.org= uses =#+latex_class: book= with =oneside= option;
+  the =\titleformat{\section}= and =\titleformat{\subsection}= overrides
+  are removed.
+- The committed =user_manual.pdf= is regenerated with the book class.
+
+* Tasks
+
+In execution order:
+
+- [[id:20BDCCE7-2B65-4288-87C9-7CDDC2E77D14][Task: Add site:pdf component and switch manual to book class]]
+
+* Decisions
+
+* Out of scope
+
+- Switching the PDF process from =pdflatex= to =xelatex= or =lualatex=.
+- Automating PDF regeneration in CI.

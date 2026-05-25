@@ -4,32 +4,30 @@
 #+title: ORE Studio User Manual
 #+author: Marco Craveiro
 #+version: 2
-#+options: date:nil <:nil c:nil todo:nil H:7 ^:{}
+#+options: date:nil <:nil c:nil todo:nil H:7 ^:{} d:nil
 #+description: User manual for ORE Studio, a desktop application for exploring, configuring, and running quantitative finance calculations.
 #+type: manual
 #+level: cross
 #+filetags: :knowledge:
 #+created: 2024-06-23
-#+updated: 2026-06-23
-#+latex_class: article
-#+latex_class_options: [a4paper,11pt]
+#+updated: 2026-05-25
+#+latex_class: ores-manual
 #+latex_header: \usepackage[margin=1in]{geometry}
 #+latex_header: \usepackage{graphicx}
 #+latex_header: \usepackage{fancyhdr}
-#+latex_header: \usepackage{titlesec}
 #+latex_header: \usepackage{parskip}
 #+latex_header: \setlength{\parindent}{0pt}
 #+latex_header: \pagestyle{fancy}
 #+latex_header: \fancyhf{}
-#+latex_header: \fancyhead[l]{\leftmark}
-#+latex_header: \fancyfoot[c]{\thepage}
-#+latex_header: \titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
-#+latex_header: \titleformat{\subsection}{\bfseries}{\thesubsection}{1em}{}
+#+latex_header: \fancyhead[L]{\leftmark}
+#+latex_header: \fancyfoot[C]{\thepage}
 #+latex_header: \usepackage{setspace}
 #+latex_header: \onehalfspacing
 #+latex_header: \usepackage{booktabs}
 #+latex_header: \usepackage{hyperref}
 #+latex_header: \hypersetup{colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=cyan}
+#+latex_header: \usepackage{titlesec}
+#+latex_header: \titleformat{\chapter}[hang]{\normalfont\Huge\bfseries}{\thechapter.}{1em}{}
 #+latex: \thispagestyle{empty}
 #+latex: \newpage
 
@@ -39,11 +37,10 @@
 
 #+include: "chapters/chapter_00/introduction.org" :minlevel 2
 
-#+caption: The ORE Studio main window on first launch, before connecting to the backend service.
-[[../../../assets/images/ores_qt_non_logged_in_window.png]]
-
-* Chapter 1
+* Connecting to ORE Studio
 
 #+include: "chapters/chapter_01/system_bootstrapping.org" :minlevel 2
+
+* Initial Setup
 
 #+include: "chapters/chapter_01/system_bootstrapping_concepts.org" :minlevel 2

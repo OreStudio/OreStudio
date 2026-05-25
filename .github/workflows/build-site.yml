@@ -19,6 +19,9 @@ on:  # yamllint disable-line rule:truthy
   push:
     branches: ["main"]
 
+  pull_request:
+    branches: ["main"]
+
   workflow_dispatch:
 
 permissions:
@@ -26,15 +29,35 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
+  # Build the site on every push and pull request. The build fails when the
+  # org export cannot resolve a link — for example a story pointing at a task
+  # that was never created — so this job is the gate that catches such
+  # breakage on the PR, before it can reach main. It does not deploy.
   build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@v8.0
+        with:
+          version: 29.1
+      - name: Build site
+        run: |
+          emacs -Q --script .build-site.el
+
+  # Deploy to GitHub Pages only for pushes to main (and manual runs); never
+  # for pull requests. Runs after the build gate has passed.
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout

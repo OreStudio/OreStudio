@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 508554C1-214F-430C-9AB1-3C99C9F497D5
+:END:
+#+title: Task: Data import: ORE import handler
+#+description: Wire the ORE import handler end-to-end so sample input files are parsed and persisted.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ore_samples_support:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Wire the ORE import handler end-to-end so ORE sample input files are parsed
+and persisted through the import session.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-25                               |
+
+* Acceptance
+
+- ORE sample files are parsed and imported via the handler.
+- Imported entities are persisted and linked to the session.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+Detail in the source plan =doc/plans/2026-02-27-ore-import-wizard-design.org=.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

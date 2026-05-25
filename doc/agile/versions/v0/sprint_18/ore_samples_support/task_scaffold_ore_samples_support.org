@@ -59,9 +59,10 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                       | File              | Decision | Notes                        |
+|---+-----------------------------------------------------------------------+-------------------+----------+------------------------------|
+| 1 | v0.0.9 code name has version prefix and quotes; should be plain name  | doc/downloads.org | Fixed    | Stripped prefix and quotes   |
+| 2 | v0.0.6 Windows column missing em-dash                                 | doc/downloads.org | Fixed    | Added —                      |
 
 * Result
 

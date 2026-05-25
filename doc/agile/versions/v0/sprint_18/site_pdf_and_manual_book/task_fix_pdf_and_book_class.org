@@ -9,7 +9,7 @@
 #+filetags: :site:manual:latex:pdf:site_pdf_and_manual_book:sprint_18:v0:
 #+owner: marco
 #+branch: feature/site-downloads-agile-nav
-#+pr:
+#+pr: 841
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
@@ -36,11 +36,11 @@ Two defects fixed together:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                   |
 | Parent story | [[id:6EBB206D-167F-4A0F-8F50-04D7EB4B7E33][Fix PDF site delivery and switch manual to book LaTeX class]] |
-| Now          | Implementing.                          |
+| Now          | Complete. PR #841 merged.              |
 | Waiting on   | Nothing.                               |
-| Next         | PR review.                             |
+| Next         | —                                      |
 | Last touched | 2026-05-25                             |
 
 * Acceptance
@@ -53,14 +53,15 @@ Two defects fixed together:
 
 * PRs
 
-| PR  | Title |
-|-----+-------|
-|     |       |
+| PR                                                              | Title                                                               |
+|-----------------------------------------------------------------+---------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/841][#841]] | Fix PDF delivery, manual book class, and introduction restructuring |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                          | File             | Decision | Notes                                                    |
+|---+----------------------------------------------------------+------------------+----------+----------------------------------------------------------|
+| 1 | Introduction missing =* Introduction= heading            | user_manual.org  | Closed   | Heading was present; reviewer was looking at older diff. |
+| 2 | Empty chapter label removes numbers; use =\thechapter.= | user_manual.org  | Accepted | Changed to =\thechapter.= with 1em spacing.              |
 
 * Result

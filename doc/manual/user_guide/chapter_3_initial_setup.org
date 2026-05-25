@@ -74,11 +74,9 @@ counterparties, and analytics results — are *operational parties*.
 You create these after the tenant is provisioned, using the Party
 Provisioner.
 
-#+caption: [SCREENSHOT NEEDED] A diagram of a simple party hierarchy: the system party at the top, one root operational party below it (e.g. "Acme Group"), and two child operational parties beneath that (e.g. "Acme London", "Acme New York"). Arrows show the parent-child relationship.
-# Capture: draw or screenshot a simple tree diagram showing the
-# system party and a two-level operational hierarchy. This can be
-# a PlantUML diagram rendered to PNG, or a hand-drawn/tool-drawn
-# illustration.
+# Diagram source: assets/images/party_hierarchy_diagram.puml
+# Regenerate the PNG with: plantuml assets/images/party_hierarchy_diagram.puml
+#+caption: A simple party hierarchy: the system party at the top, the root operational party (Acme Group) below it, and two child operational parties (Acme London, Acme New York). Arrows point from parent to child.
 [[../../../assets/images/party_hierarchy_diagram.png]]
 
 A user logs in to a specific party within a tenant. Their data

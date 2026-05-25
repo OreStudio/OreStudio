@@ -33,17 +33,18 @@ behaviour, even if the user did not explicitly ask for a manual update.
 * How to use this skill
 
 1. *Identify the affected chapter.* The manual lives under
-   =doc/manual/user_guide/=. The root file is =user_manual.org=; chapters
-   are under =chapters/=. Map the changed feature to its chapter:
+   =doc/manual/user_guide/=. The root file is =user_manual.org=; each
+   chapter is a flat =chapter_N_*.org= file in the same directory. Map the
+   changed feature to its chapter:
 
-   | Feature area                       | Chapter file                          |
-   |------------------------------------+---------------------------------------|
-   | Login, connections, status bar, CLI | =chapter_01/system_bootstrapping.org= |
-   | Bootstrapping, tenants, parties    | =chapter_01/system_bootstrapping_concepts.org= |
-   | Reference data (currencies, etc.)  | (future chapter)                      |
-   | Instruments and trades             | (future chapter)                      |
-   | Market data                        | (future chapter)                      |
-   | Analytics                          | (future chapter)                      |
+   | Feature area                       | Chapter file                |
+   |------------------------------------+-----------------------------|
+   | Login, connections, status bar, CLI | =chapter_1_connecting.org=  |
+   | Bootstrapping, tenants, parties    | =chapter_2_initial_setup.org= |
+   | Reference data (currencies, etc.)  | (future chapter)            |
+   | Instruments and trades             | (future chapter)            |
+   | Market data                        | (future chapter)            |
+   | Analytics                          | (future chapter)            |
 
    If the feature does not map to an existing chapter, note it so a new
    chapter can be planned.
@@ -60,7 +61,7 @@ behaviour, even if the user did not explicitly ask for a manual update.
    #+begin_example
    #+caption: [SCREENSHOT NEEDED] <what to show>.
    # Capture: <precise instruction for what to capture and how>.
-   [[../../../../../assets/images/TODO_descriptive_name.png]]
+   [[../../../assets/images/TODO_descriptive_name.png]]
    #+end_example
 
    Name placeholder files with the =TODO_= prefix so they stand out in
@@ -103,7 +104,8 @@ behaviour, even if the user did not explicitly ask for a manual update.
 * Reference
 
 - [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] — the root manual file.
-- =doc/manual/user_guide/chapters/= — all chapter source files.
+- =doc/manual/user_guide/= — the root file plus the flat =chapter_N_*.org=
+  source files.
 - =deploy_manual= CMake target — builds the PDF via =.build-manual.el=.
 
 * Artefacts                                                        :noexport:

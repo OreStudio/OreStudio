@@ -36,12 +36,12 @@
 
 * Introduction
 
-#+include: "chapters/chapter_00/introduction.org" :minlevel 2
+#+include: "chapter_0_introduction.org" :minlevel 2
 
 * Connecting to ORE Studio
 
-#+include: "chapters/chapter_01/system_bootstrapping.org" :minlevel 2
+#+include: "chapter_1_connecting.org" :minlevel 2
 
 * Initial Setup
 
-#+include: "chapters/chapter_01/system_bootstrapping_concepts.org" :minlevel 2
+#+include: "chapter_2_initial_setup.org" :minlevel 2

@@ -21,7 +21,7 @@ configurations, and presenting the results — while ORE and QuantLib provide
 the mathematics.
 
 #+caption: ORE Studio v0.0.17 — the main workspace showing the instrument and trade management views.
-[[../../../../../assets/images/ore_studio-v0.0.17.png]]
+[[../../../assets/images/ore_studio-v0.0.17.png]]
 
 ** Audience
 

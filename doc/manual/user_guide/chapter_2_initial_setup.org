@@ -79,7 +79,7 @@ Provisioner.
 # system party and a two-level operational hierarchy. This can be
 # a PlantUML diagram rendered to PNG, or a hand-drawn/tool-drawn
 # illustration.
-[[../../../../../assets/images/party_hierarchy_diagram.png]]
+[[../../../assets/images/party_hierarchy_diagram.png]]
 
 A user logs in to a specific party within a tenant. Their data
 visibility is determined by their position in the hierarchy: a user
@@ -116,7 +116,7 @@ completed, it cannot be launched again from the same backend.
 # Capture: connect to a freshly installed backend. The System
 # Provisioner should launch automatically. Screenshot the welcome
 # page before clicking Next.
-[[../../../../../assets/images/system_provisioner_welcome.png]]
+[[../../../assets/images/system_provisioner_welcome.png]]
 
 The welcome page confirms that the backend is in bootstrap mode and
 explains that you are about to create the first platform administrator
@@ -131,7 +131,7 @@ Click *Next* to proceed.
 # Capture: on the administrator account step, fill in example
 # credentials (use a placeholder username, hide the password field
 # or use a dummy value). Show the full page with all fields visible.
-[[../../../../../assets/images/system_provisioner_admin_account.png]]
+[[../../../assets/images/system_provisioner_admin_account.png]]
 
 Fill in the fields:
 
@@ -151,7 +151,7 @@ Click *Next*.
 #+caption: [SCREENSHOT NEEDED] The System Provisioner review page. Show the summary of choices made (username shown, password shown as asterisks), with Back and Finish buttons.
 # Capture: after filling in credentials, reach the review page.
 # Screenshot it with the username visible and password masked.
-[[../../../../../assets/images/system_provisioner_review.png]]
+[[../../../assets/images/system_provisioner_review.png]]
 
 The review page shows a summary of what will be created. Verify the
 username. Click *Back* to correct any mistake, or *Finish* to
@@ -162,7 +162,7 @@ complete the bootstrap.
 #+caption: [SCREENSHOT NEEDED] The System Provisioner completion page (or success dialog). Show the confirmation message and the button to close the wizard and proceed to login.
 # Capture: after clicking Finish, the wizard completes and shows a
 # success message. Screenshot this final state before dismissing.
-[[../../../../../assets/images/system_provisioner_complete.png]]
+[[../../../assets/images/system_provisioner_complete.png]]
 
 Once the wizard completes, the backend exits bootstrap mode. The
 System Provisioner closes and the Connection Manager or login dialog
@@ -179,14 +179,14 @@ shown.
 # Capture: while logged in as the platform administrator, open the
 # Administration menu. Show the menu with "Provision Tenant" visible
 # and highlighted (hover or focus it).
-[[../../../../../assets/images/admin_menu_provision_tenant.png]]
+[[../../../assets/images/admin_menu_provision_tenant.png]]
 
 *** Welcome page
 
 #+caption: [SCREENSHOT NEEDED] The Tenant Provisioner welcome page. Show the full dialog with its title, a description of what provisioning will create, and the Next button.
 # Capture: open the Tenant Provisioner. Screenshot the welcome page
 # before interacting with any controls.
-[[../../../../../assets/images/tenant_provisioner_welcome.png]]
+[[../../../assets/images/tenant_provisioner_welcome.png]]
 
 The welcome page explains that provisioning creates a new isolated
 tenant with its own system party and an initial administrator account
@@ -198,7 +198,7 @@ for that tenant.
 # Capture: on the tenant details step, fill in an example tenant name
 # (e.g. "Acme Group"), select a tenant type (e.g. "Production"), and
 # optionally add a description. Show the full page.
-[[../../../../../assets/images/tenant_provisioner_details.png]]
+[[../../../assets/images/tenant_provisioner_details.png]]
 
 Fill in the fields:
 
@@ -220,7 +220,7 @@ Click *Next*.
 #+caption: [SCREENSHOT NEEDED] The Tenant Provisioner administrator account page. Show username, password, and confirm password fields with a partially filled-in example.
 # Capture: on the administrator account step, enter example
 # credentials for the new tenant's admin. Show all fields.
-[[../../../../../assets/images/tenant_provisioner_admin.png]]
+[[../../../assets/images/tenant_provisioner_admin.png]]
 
 Create the initial administrator account for the new tenant:
 
@@ -241,7 +241,7 @@ Click *Next*.
 #+caption: [SCREENSHOT NEEDED] The Tenant Provisioner review page. Show tenant name, type, and administrator username summarised, with Back and Finish buttons.
 # Capture: reach the review page after filling in all details.
 # Show the summary with all provided information visible.
-[[../../../../../assets/images/tenant_provisioner_review.png]]
+[[../../../assets/images/tenant_provisioner_review.png]]
 
 The review page summarises the tenant and administrator that will be
 created. Click *Back* to correct any detail, or *Finish* to provision.
@@ -251,7 +251,7 @@ created. Click *Back* to correct any detail, or *Finish* to provision.
 #+caption: [SCREENSHOT NEEDED] The Tenant Provisioner completion page confirming that the tenant and its administrator were created successfully.
 # Capture: after clicking Finish, screenshot the success confirmation
 # before dismissing the wizard.
-[[../../../../../assets/images/tenant_provisioner_complete.png]]
+[[../../../assets/images/tenant_provisioner_complete.png]]
 
 Provisioning creates the tenant record, the system party, and the
 administrator account. It also copies the standard set of system-wide
@@ -276,7 +276,7 @@ Parties/, or from the tenant welcome screen on first login.
 #+caption: [SCREENSHOT NEEDED] The Party Provisioner welcome page. Show the full dialog with a description of what it will set up and the Next button.
 # Capture: log in as the tenant administrator and open the Party
 # Provisioner. Screenshot the welcome page.
-[[../../../../../assets/images/party_provisioner_welcome.png]]
+[[../../../assets/images/party_provisioner_welcome.png]]
 
 The welcome page explains that you are about to define the
 organisational structure your tenant will use. Unlike the system and
@@ -290,7 +290,7 @@ tenant provisioners, the Party Provisioner can be run multiple times
 # Capture: on the root party step, fill in a realistic example (e.g.
 # name = "Acme Group Holdings", LEI = a 20-character alphanumeric
 # code, description optional). Show the full page.
-[[../../../../../assets/images/party_provisioner_root.png]]
+[[../../../assets/images/party_provisioner_root.png]]
 
 The root party is the top of your operational hierarchy — typically
 your holding company, group entity, or the single legal entity if
@@ -311,7 +311,7 @@ Click *Next*.
 # Capture: on the child parties step, add one or two child parties
 # (e.g. "Acme London", "Acme New York") under the root. Show the
 # party tree with the children visible.
-[[../../../../../assets/images/party_provisioner_children.png]]
+[[../../../assets/images/party_provisioner_children.png]]
 
 The child parties page lets you add operational parties beneath the
 root. This is optional — you can run the provisioner with just a root
@@ -342,7 +342,7 @@ Click *Next* when the hierarchy looks correct.
 # Capture: on the review page, show the full party hierarchy as it
 # will be created. The tree should show parent-child relationships
 # clearly.
-[[../../../../../assets/images/party_provisioner_review.png]]
+[[../../../assets/images/party_provisioner_review.png]]
 
 The review page shows the full hierarchy as it will be created. Each
 party is shown with its name, level in the hierarchy, and LEI if
@@ -354,7 +354,7 @@ provision all parties in one operation.
 #+caption: [SCREENSHOT NEEDED] The Party Provisioner completion page confirming how many parties were created and providing a link or button to navigate to the Parties screen.
 # Capture: after clicking Finish, screenshot the completion message.
 # Show the count of parties created and any navigation options.
-[[../../../../../assets/images/party_provisioner_complete.png]]
+[[../../../assets/images/party_provisioner_complete.png]]
 
 Provisioning creates all parties in the correct parent-child order.
 The system party remains at the top of the hierarchy as the

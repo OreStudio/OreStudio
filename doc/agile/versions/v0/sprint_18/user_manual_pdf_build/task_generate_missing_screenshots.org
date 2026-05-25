@@ -38,8 +38,8 @@ shows its figures instead of =TODO_*.png= placeholders.
 * Acceptance
 
 - Every =[SCREENSHOT NEEDED]= placeholder across the manual chapters is
-  captured (30 today: 14 in =chapter_01/system_bootstrapping.org=, 16 in
-  =chapter_01/system_bootstrapping_concepts.org=).
+  captured (30 today: 14 in =chapter_1_connecting.org=, 16 in
+  =chapter_2_initial_setup.org=).
 - The =TODO_*.png= image links are replaced with real images committed
   under =assets/images/=, and the =[SCREENSHOT NEEDED]= markers removed.
 - The manual builds (=deploy_manual=) with the figures present.
@@ -142,7 +142,7 @@ System / Tenant / Party Provisioner wizard pages
 
 ** Still to capture (bucket C — 22 files, save under =assets/images/=)
 
-Chapter 1 (=system_bootstrapping.org=, 6):
+Chapter 1 (=chapter_1_connecting.org=, 6):
 - =connection_manager_tag_filter.png= — tag-filter bar with =client-acme= typed.
 - =main_window_connect_dropdown.png= — toolbar Connect button + connection dropdown.
 - =connection_lost_banner.png= — disconnected-while-logged-in warning + Reconnect.
@@ -150,7 +150,7 @@ Chapter 1 (=system_bootstrapping.org=, 6):
 - =status_bar_states.png= — 3-state composite (assembled from disconnected/connected/lost).
 - =main_window_instance_colour.png= — two windows with different instance colours/names.
 
-Concepts (=system_bootstrapping_concepts.org=, 15 screenshots + 1 diagram):
+Concepts (=chapter_2_initial_setup.org=, 15 screenshots + 1 diagram):
 - System Provisioner: =system_provisioner_welcome/_admin_account/_review/_complete.png=.
 - =admin_menu_provision_tenant.png=.
 - Tenant Provisioner: =tenant_provisioner_welcome/_details/_admin/_review/_complete.png=.

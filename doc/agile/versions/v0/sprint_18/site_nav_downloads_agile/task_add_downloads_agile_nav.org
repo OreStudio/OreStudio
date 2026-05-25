@@ -99,7 +99,7 @@ Manuals → *Downloads* → *Agile* → Roadmap → Knowledge Graph → GitHub
 
 | PR                                                              | Title                                                               |
 |-----------------------------------------------------------------+---------------------------------------------------------------------|
-| [[https://github.com/OreStudio/OreStudio/pull/841][#841]] | Fix PDF delivery, manual book class, and introduction restructuring |
+| [[https://github.com/OreStudio/OreStudio/pull/843][#843]] | Add Downloads page and Downloads + Agile + Developer nav entries |
 
 * Review
 

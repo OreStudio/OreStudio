@@ -10,6 +10,8 @@ Pillars:
     its inbound/outbound links (show).
   - Scaffold: create agile/doc artefacts (add) by calling ores.codegen as a
     library — generation stays in codegen, not duplicated here.
+  - Fleet: what every git worktree is doing — branch, story, task, PR
+    (fleet), so parallel checkouts/agents don't collide.
 """
 
 import argparse
@@ -17,6 +19,7 @@ import json
 import os
 import re
 import sqlite3
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -671,6 +674,122 @@ def cmd_where(args):
                 if url:
                     print(f"          {url}")
 
+# --- Fleet: what is every worktree doing? ---
+#
+# Coordination view across parallel checkouts: for each git worktree, show its
+# branch, the task/story it maps to (via the task's #+branch field), and the
+# open PR (live state via gh). Each worktree is read in its own tree, so it
+# reports its own truth even on branches not yet merged.
+
+_BRANCH_FIELD_RE = re.compile(r"^#\+branch:\s*(\S+)\s*$", re.MULTILINE)
+_TITLE_FIELD_RE  = re.compile(r"^#\+title:\s*(.+?)\s*$",   re.MULTILINE)
+
+def list_worktrees():
+    """Return [(path, branch_or_None)] from `git worktree list --porcelain`."""
+    try:
+        out = subprocess.run(["git", "worktree", "list", "--porcelain"],
+                             capture_output=True, text=True, cwd=str(PROJECT_ROOT),
+                             timeout=15)
+    except (OSError, subprocess.SubprocessError):
+        return []
+    worktrees, path, branch = [], None, None
+    for line in out.stdout.splitlines():
+        if line.startswith("worktree "):
+            if path is not None:
+                worktrees.append((path, branch))
+            path, branch = line[len("worktree "):], None
+        elif line.startswith("branch "):
+            branch = re.sub(r"^refs/heads/", "", line[len("branch "):])
+    if path is not None:
+        worktrees.append((path, branch))
+    return worktrees
+
+def open_prs_by_branch():
+    """Map head branch -> {number,title,state,url} for open PRs, via gh. {} on failure."""
+    try:
+        out = subprocess.run(
+            ["gh", "pr", "list", "--state", "open", "--limit", "200",
+             "--json", "number,title,state,url,headRefName"],
+            capture_output=True, text=True, cwd=str(PROJECT_ROOT), timeout=20)
+        if out.returncode != 0:
+            return {}
+        prs = json.loads(out.stdout)
+    except (OSError, subprocess.SubprocessError, json.JSONDecodeError):
+        return {}
+    return {pr["headRefName"]: pr for pr in prs if pr.get("headRefName")}
+
+def task_for_branch(worktree_path, branch):
+    """Find a task in this worktree's tree whose #+branch == branch.
+
+    Returns (task_title, story_title) or (None, None). Read per-worktree so a
+    branch's task is found even if the doc only exists on that branch.
+    """
+    base = Path(worktree_path) / "doc" / "agile" / "versions"
+    if not base.exists():
+        return None, None
+    for task_file in sorted(base.glob("*/sprint_*/**/task_*.org")):
+        try:
+            text = task_file.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        m = _BRANCH_FIELD_RE.search(text)
+        if not m or m.group(1) != branch:
+            continue
+        tm = _TITLE_FIELD_RE.search(text)
+        task_title = _strip_type_prefix(tm.group(1)) if tm else task_file.stem
+        story_title = None
+        story_file = task_file.parent / "story.org"
+        if story_file.exists():
+            try:
+                sm = _TITLE_FIELD_RE.search(story_file.read_text(encoding="utf-8"))
+                story_title = _strip_type_prefix(sm.group(1)) if sm else None
+            except (OSError, UnicodeDecodeError):
+                pass
+        return task_title, story_title
+    return None, None
+
+def cmd_fleet(args):
+    worktrees = list_worktrees()
+    if not worktrees:
+        print("❌ Could not enumerate git worktrees.", file=sys.stderr)
+        sys.exit(1)
+    here = str(PROJECT_ROOT)
+    pr_map = open_prs_by_branch()
+
+    rows = []
+    for path, branch in worktrees:
+        task_title = story_title = None
+        if branch:
+            task_title, story_title = task_for_branch(path, branch)
+        pr = pr_map.get(branch) if branch else None
+        rows.append({
+            "worktree": Path(path).name,
+            "path": path,
+            "current": os.path.realpath(path) == os.path.realpath(here),
+            "branch": branch,
+            "story": story_title,
+            "task": task_title,
+            "pr": ({"number": pr["number"], "state": pr["state"], "url": pr["url"]}
+                   if pr else None),
+        })
+
+    if args.format == "json":
+        print(json.dumps(rows, indent=2))
+        return
+
+    print(f"🧭 ores.compass — fleet ({len(rows)} worktrees)\n")
+    for r in rows:
+        mark = "→" if r["current"] else " "
+        branch = r["branch"] or "(detached)"
+        print(f"{mark} {r['worktree']}   {branch}")
+        if r["task"] or r["story"]:
+            print(f"      story: {r['story'] or '—'}")
+            print(f"      task:  {r['task'] or '—'}")
+        elif r["branch"] and r["branch"] != "main":
+            print("      (no task records this branch)")
+        if r["pr"]:
+            print(f"      PR:    #{r['pr']['number']} [{r['pr']['state']}]  {r['pr']['url']}")
+
 # --- Scaffold pillar: create agile/doc artefacts ---
 #
 # Generation belongs to ores.codegen, not compass: `add` calls codegen's
@@ -783,6 +902,11 @@ def main():
     where_parser.add_argument("--prs", action="store_true",
                               help="Also show PRs from all sprint tasks (fetches live status via gh)")
 
+    fleet_parser = subparsers.add_parser("fleet",
+                                         help="Show what every git worktree is doing: branch, story, task, PR")
+    fleet_parser.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty",
+                              help="Output format: pretty (default) or json")
+
     # Registered for discoverability in --help; actually handled by the
     # short-circuit above (which forwards all args to their handlers).
     subparsers.add_parser("list",
@@ -807,6 +931,8 @@ def main():
         cmd_debug(args)
     elif args.command in ("where", "status"):
         cmd_where(args)
+    elif args.command == "fleet":
+        cmd_fleet(args)
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: CB368AF8-3144-4CFF-B782-05CDF87366A6
+:END:
+#+title: Story: compass cross-worktree status (global where)
+#+description: Show what every git worktree is working on (branch, story, task, PR) so parallel agents don't collide.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :compass:worktrees:coordination:python:sprint_18:v0:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A contributor (or agent) can see, in one command, what /every/ git
+worktree of this repo is currently doing — its branch, the story and
+task it maps to, and the open PR (with live state). The point is
+coordination: with several worktrees running in parallel (right now:
+=local1..local4= plus =remote=, four on distinct feature branches),
+this is how you avoid two agents trampling the same story/files.
+
+* Status
+
+| Field         | Value                              |
+|---------------+------------------------------------|
+| State         | STARTED                            |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                          |
+| Now           | =compass fleet= implemented and dogfooded. |
+| Waiting on    | Nothing.                           |
+| Next          | Review; then close.                |
+| Last touched  | 2026-05-25                         |
+
+* Design (brainstorm)
+
+** What it shows
+
+One row per worktree: =worktree= (path/name) · =branch= · =story= ·
+=task= · =PR= · =PR state= (and maybe a dirty/✱ marker for uncommitted
+changes).
+
+** Data sources
+
+- =git worktree list --porcelain= → each worktree's path + checked-out
+  branch. (This is the spatial axis =where= lacks.)
+- The branch → task mapping already exists in the doc graph: task docs
+  carry =#+branch:= (and =#+pr:=). So a worktree's branch resolves to a
+  task (hence its parent story and PR).
+- Live PR state: one =gh pr list --state open --json
+  number,title,state,headRefName= call, matched to branches (cheaper
+  than one =gh= call per worktree). Degrade gracefully when =gh= /
+  network is unavailable — still show branch + task.
+
+** The cross-tree subtlety (important)
+
+Each worktree is on a /different branch/, so the agile docs (and the
+=#+branch:= fields) differ per branch. Compass runs in one worktree and
+sees only /its/ tree. Two ways to resolve another worktree's branch →
+task:
+
+1. /Current-tree match/ — match worktree branches against =#+branch:=
+   fields found in the current worktree's tree (works once the task doc
+   is on =main=/shared; misses a brand-new task living only on the other
+   branch).
+2. /Per-worktree read/ — for each worktree path, read /its/ checked-out
+   docs (=git -C <path> …= or scan =<path>/doc/agile/=) so each worktree
+   reports its own truth. More robust. /Recommended./
+
+** Should it be part of =where=?
+
+=where= answers "where are /we/ in time" (version / sprint / in-flight).
+This is a different axis — "where is /everyone/ across checkouts". Two
+options:
+
+- /Extend where/: =compass where --worktrees= (or =--all=/=--fleet=) —
+  one mental model, discoverable.
+- /New subcommand/: e.g. =compass fleet= / =crew= / =who= — clean
+  separation, room to grow (ahead/behind, last commit, dirty state).
+
+/Decided:/ a dedicated subcommand named *=compass fleet=* (product-owner
+choice). Distinct data sources (git worktrees + =gh=) and output from
+=where=; the concept is "the fleet", not "the clock".
+
+* Acceptance
+
+- =compass fleet= lists every worktree from =git worktree list= with:
+  branch, mapped story + task, PR number + live state.
+- Worktrees with no matching task (e.g. =main=, detached HEAD) are shown
+  plainly; the current worktree is marked.
+- Works offline: omits live PR state but still shows branch + task.
+- Documented in the component overview and a recipe.
+
+* Tasks
+
+In execution order:
+
+- [[id:1B355D5E-F0AF-4807-8551-8301F1F50128][Task: Implement the fleet command]]
+
+* Decisions
+
+- Name is =compass fleet=, a dedicated subcommand (not folded into
+  =where=).
+- Reuse the existing =#+branch:= task field as the mapping key rather
+  than inventing new state; read each worktree's /own/ tree so it works
+  on unmerged branches; PR state via one =gh pr list= matched by branch.
+
+* Out of scope
+
+- File-level collision detection or locking (this just surfaces who is
+  where; humans/agents still coordinate).
+- Worktrees of /other/ repos; only this repo's worktrees.

@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 1B355D5E-F0AF-4807-8551-8301F1F50128
+:END:
+#+title: Task: Implement the fleet command
+#+description: Add a compass fleet subcommand showing each git worktree's branch, story, task and PR.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compass:worktrees:python:worktree_status:sprint_18:v0:
+#+owner: marco
+#+branch: feature/compass-worktree-status
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB368AF8-3144-4CFF-B782-05CDF87366A6][compass cross-worktree status (global where)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a =compass fleet= subcommand that lists every git worktree with its
+branch, mapped story + task (via the task =#+branch:= field), and open
+PR (live state via =gh=), so parallel checkouts/agents don't collide.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:CB368AF8-3144-4CFF-B782-05CDF87366A6][compass cross-worktree status (global where)]] |
+| Now          | Implemented and dogfooded across the live worktrees. |
+| Waiting on   | Nothing.                               |
+| Next         | Review.                                |
+| Last touched | 2026-05-25                             |
+
+* Acceptance
+
+- =compass fleet= lists every worktree from =git worktree list= with
+  branch, mapped story + task, and open PR + live state.
+- The branch → task mapping is read from /each worktree's own/ tree
+  (the task =#+branch:= field), so it works on unmerged branches.
+- The current worktree is marked; worktrees with no matching task (e.g.
+  =main=) are shown plainly.
+- =-f json= emits a structured array; works offline (omits PR state).
+
+* Plan
+
+1. =list_worktrees= (parse =git worktree list --porcelain=).
+2. =task_for_branch= (per-worktree glob of =task_*.org= for =#+branch:=).
+3. =open_prs_by_branch= (one =gh pr list= call, matched by =headRefName=).
+4. =cmd_fleet= + =fleet= subparser; pretty + json output.
+
+* Notes
+
+Dogfooded across the five live worktrees: =local1= mapped to its story,
+task and PR #828; PRs matched live by branch; the current worktree
+flagged with =→=.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Implemented =compass fleet= in =compass.py= (=cmd_fleet= plus
+=list_worktrees= / =task_for_branch= / =open_prs_by_branch= helpers and
+the =fleet= subparser). Verified across the five live worktrees:
+=local1= → "ORE Studio Emacs dashboard" / its audit task / PR #828; this
+worktree self-maps to this very task; the current worktree is marked
+=→=; =-f json= emits the structured array. =where= / =add= unaffected;
+=py_compile= clean.

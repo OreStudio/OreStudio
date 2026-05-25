@@ -29,11 +29,11 @@ the story with goal, acceptance, and task list.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                   |
 | Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]] |
-| Now          | Plans mined; closing plans and creating task stubs. |
+| Now          | Complete.                              |
 | Waiting on   | Nothing.                               |
-| Next         | Create work tasks via compass.         |
+| Next         | Begin Phase 1 task.                    |
 | Last touched | 2026-05-25                             |
 
 * Acceptance
@@ -64,3 +64,11 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+8 work tasks created via compass across 8 feature branches:
+=workspace_full_entity_phase1=, =workspace_full_entity_phase2=,
+=workspace_full_entity_phase3=, =workspace_phase4_ui=,
+=data_import_db_schema=, =data_import_trading_api=,
+=data_import_handler=, =data_import_session_window=.
+Plans =workspace-design=, =workspace-full-entity=, and
+=trade-import-failed-state= marked MINED. Story and plan index updated.

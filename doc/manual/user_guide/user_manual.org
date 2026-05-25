@@ -37,8 +37,10 @@
 
 #+include: "chapters/chapter_00/introduction.org" :minlevel 2
 
-* System Bootstrapping
+* Connecting to ORE Studio
 
 #+include: "chapters/chapter_01/system_bootstrapping.org" :minlevel 2
+
+* System Bootstrapping
 
 #+include: "chapters/chapter_01/system_bootstrapping_concepts.org" :minlevel 2

@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: C1EADB9F-633E-4A22-B86C-AB2E1F633F66
+:END:
+#+title: Task: Add compass remember command
+#+description: Implement compass remember --what X --why Y to scaffold and register a new project memory from the command line.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compass_product_backlog:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — near and far listing]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a =compass remember= subcommand that scaffolds a new project memory
+file and registers it in =doc/llm/memory/memory.org=. Interface:
+
+#+begin_example
+compass remember --what "Rule or fact to remember" --why "Reason / incident"
+#+end_example
+
+The command generates a =.org= memory file (via =generate_v2_doc.sh=
+with =--type memory=), fills in the body from =--what= and =--why=,
+and appends a catalogue entry to =doc/llm/memory/memory.org=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DISCOVERED                             |
+| Parent story | [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — near and far listing]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-25                               |
+
+* Acceptance
+
+- =compass remember --what "X" --why "Y"= creates a new memory file
+  under =doc/llm/memory/= with correct frontmatter and body.
+- Body contains the rule/fact from =--what= followed by a =*Why:*= line
+  from =--why= and a placeholder =*How to apply:*= line.
+- The memory is appended to the =** Feedback= section of
+  =doc/llm/memory/memory.org= with an org-roam link.
+- =--subtype= flag (default: feedback) controls which catalogue section
+  the entry goes into (feedback / user / project / reference).
+- Running the command twice with the same slug errors rather than
+  creating a duplicate.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

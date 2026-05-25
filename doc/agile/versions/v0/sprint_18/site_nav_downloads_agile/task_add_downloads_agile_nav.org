@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: D77474B1-D0CB-4124-86AD-10C873EE6132
+:END:
+#+title: Task: Create downloads.org and wire Downloads + Agile into site nav
+#+description: Write doc/downloads.org with the full release/binary table; add Downloads and Agile href entries to site-html-preamble in .build-site.el.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :site:nav:downloads:agile:site_nav_downloads_agile:sprint_18:v0:
+#+owner: marco
+#+branch: feature/site-downloads-agile-nav
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C3B6F514-559F-4038-A1D7-947BC9F7F398][Add Downloads and Agile nav entries to the site]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create =doc/downloads.org= — a hand-maintained release index listing
+every GitHub release that ships binary assets, with one download link
+per OS column. Then patch =site-html-preamble= in =.build-site.el= to
+add =Downloads= and =Agile= nav entries.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:C3B6F514-559F-4038-A1D7-947BC9F7F398][Add Downloads and Agile nav entries to the site]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Write downloads.org; patch nav.        |
+| Last touched | 2026-05-25                             |
+
+* Acceptance
+
+- =doc/downloads.org= exists with =#+type: knowledge= frontmatter and a
+  table whose columns are:
+  =| Version | Code Name | Linux | macOS | Windows | Comments |=.
+- Each cell in the Linux/macOS/Windows columns is either a hyperlink
+  =[[url][Download]]= or =—= if no asset was published for that platform.
+- The Comments column records notable absences or caveats (e.g. "No
+  Windows build in this release").
+- All releases with assets are included (see Notes for the full list).
+- The latest release row is at the top.
+- The page includes an alpha-software warning before the table,
+  noting that the software is in early development, many problems are
+  expected, and directing readers to the [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][User Manual]] for guidance.
+- =.build-site.el= =site-html-preamble= gains, in order after =Manuals=:
+  #+begin_example
+  <a href='/OreStudio/doc/downloads.html'>Downloads</a>
+  <a href='/OreStudio/doc/agile/agile.html'>Agile</a>
+  #+end_example
+  These sit between the existing =Manuals= and =Roadmap= entries.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+** Release asset inventory (from GitHub releases API, 2026-05-25)
+
+Releases with no assets are omitted from the table.
+
+| Version | Code Name              | Linux    | macOS    | Windows  | Comments                      |
+|---------+------------------------+----------+----------+----------+-------------------------------|
+| [[https://github.com/OreStudio/OreStudio/releases/tag/v0.0.17][v0.0.17]] | Mutumieque             | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.17/linux-gcc-release-ninja-v0.0.17.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.17/macos-clang-release-ninja-v0.0.17.zip][Download]] | —        | No Windows build in this release. |
+| [[https://github.com/OreStudio/OreStudio/releases/tag/v0.0.14][v0.0.14]] | Curoca Norte           | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.14/linux-gcc-release-ninja-v0.0.14.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.14/macos-clang-release-ninja-v0.0.14.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.14/windows-msvc-release-ninja-v0.0.14.zip][Download]] |                               |
+| [[https://github.com/OreStudio/OreStudio/releases/tag/v0.0.12][v0.0.12]] | Gruta do Leão          | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.12/linux-gcc-release-v0.0.12.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.12/macos-clang-release-v0.0.12.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.12/windows-msvc-release-v0.0.12.zip][Download]] |                               |
+| [[https://github.com/OreStudio/OreStudio/releases/tag/v0.0.11][v0.0.11]] | Cambêno                | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.11/linux-gcc-release-v0.0.11.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.11/macos-clang-release-v0.0.11.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.11/windows-msvc-release-v0.0.11.zip][Download]] |                               |
+| [[https://github.com/OreStudio/OreStudio/releases/tag/v0.0.10][v0.0.10]] | Morros do Tchitundulo  | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.10/linux-gcc-release-v0.0.10.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.10/macos-clang-release-v0.0.10.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.10/windows-msvc-release-v0.0.10.zip][Download]] |                               |
+| [[https://github.com/OreStudio/OreStudio/releases/tag/v0.0.8][v0.0.8]]  | Espinheira             | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.8/linux-gcc-release-v0.0.8.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.8/macos-clang-release-v0.0.8.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.8/windows-msvc-release-v0.0.8.zip][Download]] |                               |
+| [[https://github.com/OreStudio/OreStudio/releases/tag/v0.0.7][v0.0.7]]  | Pediba                 | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.7/linux-gcc-release-v0.0.7.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.7/macos-clang-release-v0.0.7.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.7/windows-msvc-release-v0.0.7.zip][Download]] |                               |
+| [[https://github.com/OreStudio/OreStudio/releases/tag/v0.0.5][v0.0.5]]  | Tambor                 | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.5/linux-gcc-release-v0.0.5.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.5/macos-clang-release-v0.0.5.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.5/windows-msvc-release-v0.0.5.zip][Download]] |                               |
+| [[https://github.com/OreStudio/OreStudio/releases/tag/v0.0.4][v0.0.4]]  | Fazenda Camilunga      | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.4/linux-gcc-release-v0.0.4.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.4/macos-clang-release-v0.0.4.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.4/windows-msvc-release-v0.0.4.zip][Download]] |                               |
+| [[https://github.com/OreStudio/OreStudio/releases/tag/v0.0.3][v0.0.3]]  | Venâncio Guimarães     | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.3/linux-gcc-release-v0.0.3.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.3/macos-clang-release-v0.0.3.zip][Download]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.3/windows-msvc-release-v0.0.3.zip][Download]] |                               |
+
+Releases v0.0.9, v0.0.13, v0.0.15, v0.0.16 had no binary assets and
+are omitted from the table.
+
+** Nav patch location
+
+Current =site-html-preamble= order (=.build-site.el= lines 124–135):
+Home → Orientation → Product → Architecture → Recipes → Skills →
+Manuals → Roadmap → Knowledge Graph → GitHub
+
+Target order after this task:
+Home → Orientation → Product → Architecture → Recipes → Skills →
+Manuals → *Downloads* → *Agile* → Roadmap → Knowledge Graph → GitHub
+
+* PRs
+
+| PR  | Title                                              |
+|-----+----------------------------------------------------|
+|     |                                                    |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

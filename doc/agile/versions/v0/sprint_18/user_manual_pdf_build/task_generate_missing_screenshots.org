@@ -46,12 +46,81 @@ shows its figures instead of =TODO_*.png= placeholders.
 
 * Plan
 
-1. List the placeholders: =grep -rn "SCREENSHOT NEEDED" doc/manual/=.
-2. For each, follow the inline =# Capture:= instructions to take the
-   shot (set up the described UI state first).
-3. Save under =assets/images/= with a stable name, replace the
-   =TODO_*.png= link, and drop the =[SCREENSHOT NEEDED]= caption marker.
-4. Rebuild the manual to confirm figures render.
+Reconciliation of the manual's screenshot placeholders ("expected") against
+the screenshots captured so far ("actual" — 20 PNGs committed under
+=chapter_01/=). Tally: 30 placeholders (2 already filled, ~8 matched to a
+captured shot, ~20 still to capture); 20 captured (~8 matched, ~10 document
+functionality the manual omits, 2 duplicates).
+
+** Naming convention
+
+=<area>_<description>.png=, snake_case, all under =assets/images/=. =area=
+is the screen/dialog (=main_window=, =connection_manager=, =login_dialog=,
+=status_bar=, =splash_screen=, =title_bar=, =system_provisioner=,
+=tenant_provisioner=, =party_provisioner=, =admin_menu=); =description= is
+the state/subject (e.g. =connection_manager_empty=,
+=status_bar_disconnected=).
+
+** A. Matched — placeholder ↔ captured shot (rename, move to assets/images/, wire in)
+
+| Expected slot (placeholder)         | Captured (old name, chapter_01/)         | Final name                              |
+|-------------------------------------+------------------------------------------+-----------------------------------------|
+| TODO_connection_manager_empty       | connection_manager_empty.png             | connection_manager_empty.png            |
+| TODO_new_connection_form            | new_connection_form.png                  | connection_manager_new_connection.png   |
+| TODO_edit_connection_form           | edit_connection_form.png + connection_manager_edit_connection.png (dup) | connection_manager_edit_connection.png  |
+| TODO_delete_connection_confirm      | delete_connection_confirm.png            | connection_manager_delete_confirm.png   |
+| TODO_environments_management        | connection_manager_add_new_environment.png | connection_manager_environments.png   |
+| TODO_connection_manager_env_badges  | connection_browser_with_connections.png  | connection_manager_with_connections.png |
+| login_screen (slot already filled)  | login_dialog.png                         | login_dialog.png — decide vs existing login_screen.png |
+| TODO_connect_button_dropdown        | login_dialog_label_quick_connect.png (verify) | connection_select_dropdown.png      |
+| TODO_status_bar_states/_connected   | status_bar_disconnected_environment.png  | status_bar_disconnected.png (disconnected state only) |
+
+** B. Captured but NOT in the manual — functionality the manual omits (add section/figure)
+
+| Captured (old name)                              | Manual gap                       | Action                                          | Final name                                |
+|--------------------------------------------------+----------------------------------+-------------------------------------------------+-------------------------------------------|
+| connection_manager_create_master_password.png    | Master password (0 mentions)     | add "Master password" subsection to Conn. Mgr.  | connection_manager_master_password_create.png |
+| connection_manager_password.png                  | Master-password prompt           | (same subsection)                               | connection_manager_master_password_prompt.png |
+| connection_manager_master_password_supplied.png  | Master password supplied         | (same subsection)                               | connection_manager_master_password_supplied.png |
+| connection_manager_add_folder.png                | Folders (undocumented)           | add "Folders" subsection                        | connection_manager_add_folder.png         |
+| connection_manager_add_environment.png           | Environments add dialog          | extra env shot — fold into Environments or drop | connection_manager_add_environment.png    |
+| splash_screen_0.0.17.png                         | Splash screen (0 mentions)       | add to "Getting started"                        | splash_screen.png                         |
+| splash_screen_version_highlighted.png            | Version on splash                | "Version information" (no figure today)         | splash_screen_version.png                 |
+| title_bar_version.png                            | Version in title bar             | "Version information"                            | title_bar_version.png                     |
+| login_dialog_version_registration_highlighted.png| Version/registration on login    | "Version information" / "First login"           | login_dialog_version_registration.png     |
+| application_system_tray.png                      | System tray (0 mentions)         | add a system-tray mention, or hold              | application_system_tray.png               |
+
+** C. Expected but NOT captured — still to take
+
+/system_bootstrapping.org/: =TODO_connection_manager_tag_filter= (Tags
+filter), =TODO_connection_lost_banner=, =TODO_status_bar_connected=,
+=TODO_status_bar_states= (3-state composite), =TODO_instance_colour= (two
+windows), and =TODO_connect_button_dropdown= if the quick-connect shot in A
+doesn't fit.
+
+/system_bootstrapping_concepts.org/ (none captured — 16): the
+=TODO_party_hierarchy_diagram= (a /diagram/, not a screenshot); the
+System / Tenant / Party Provisioner wizard pages
+(welcome / details / admin / review / complete) and
+=TODO_admin_menu_provision_tenant=.
+
+** D. Already filled (existing real images — no action)
+
+- "main window before login" → =assets/images/ores_qt_non_logged_in_window.png=
+- "the login screen" → =assets/images/login_screen.png= (but a newer
+  =login_dialog.png= was captured — see A; decide whether it supersedes)
+
+** Execution order (deferred — this task)
+
+1. Confirm the A mappings and the B decisions with the product owner.
+2. =git mv= the chapter_01/ PNGs to =assets/images/= under their final names
+   (drop the duplicate edit shot).
+3. Replace each =TODO_*.png= link and remove the =[SCREENSHOT NEEDED]= marker.
+4. For B: add the missing subsections (master password, folders, version,
+   system tray) and wire the figures in.
+5. For C: capture the outstanding shots (provisioner wizards, tag filter,
+   connection-lost, connected/composite status bar, instance colour).
+6. Rebuild the manual (=deploy_manual=) and verify every figure renders.
 
 * Notes
 

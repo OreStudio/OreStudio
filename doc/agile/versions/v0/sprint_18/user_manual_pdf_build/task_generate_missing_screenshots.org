@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 27422EEE-9435-49EC-B706-43BD66B2D7A6
+:END:
+#+title: Task: Generate all missing screenshots for the manual
+#+description: Capture every [SCREENSHOT NEEDED] placeholder image across the user manual chapters and wire them in.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :manual:screenshots:documentation:user_manual_pdf_build:sprint_18:v0:
+#+owner: marco
+#+branch: feature/screenshot_work
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace every =[SCREENSHOT NEEDED]= placeholder in the user manual with
+a real captured screenshot, so the manual (and the PDF built from it)
+shows its figures instead of =TODO_*.png= placeholders.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                                |
+| Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
+| Now          | Capturing screenshots on =feature/screenshot_work=. |
+| Waiting on   | Nothing.                               |
+| Next         | Work through the remaining placeholders. |
+| Last touched | 2026-05-25                             |
+
+* Acceptance
+
+- Every =[SCREENSHOT NEEDED]= placeholder across the manual chapters is
+  captured (30 today: 14 in =chapter_01/system_bootstrapping.org=, 16 in
+  =chapter_01/system_bootstrapping_concepts.org=).
+- The =TODO_*.png= image links are replaced with real images committed
+  under =assets/images/=, and the =[SCREENSHOT NEEDED]= markers removed.
+- The manual builds (=deploy_manual=) with the figures present.
+
+* Plan
+
+1. List the placeholders: =grep -rn "SCREENSHOT NEEDED" doc/manual/=.
+2. For each, follow the inline =# Capture:= instructions to take the
+   shot (set up the described UI state first).
+3. Save under =assets/images/= with a stable name, replace the
+   =TODO_*.png= link, and drop the =[SCREENSHOT NEEDED]= caption marker.
+4. Rebuild the manual to confirm figures render.
+
+* Notes
+
+Each placeholder carries a =# Capture:= comment describing the exact UI
+state to set up. The empty Connection Manager shot uses the DB-rename
+trick (move =connections.db= aside so the manager opens empty — see
+chapter 1, "Backing up and restoring your connections").
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

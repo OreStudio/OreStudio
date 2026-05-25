@@ -19,10 +19,9 @@
 ;;
 ;; Per-checkout development console for ORE Studio.
 ;;
-;; Opens a two-panel layout: dashboard fills the top 2/3 of the frame, a
-;; persistent output window takes the bottom 1/3.  Every action (compilation,
-;; file open, dired, diff) targets the output window — the dashboard stays
-;; visible at all times.
+;; Opens a single-panel layout: dashboard fills the full frame.  The
+;; output window (1/3 of frame height) is created lazily when the first
+;; action is triggered — the dashboard stays visible at all times.
 ;;
 ;; Usage:
 ;;   M-x ores/dashboard   — open (or refresh) the dashboard
@@ -70,6 +69,48 @@
   '((t (:inherit highlight :underline t)))
   "Quick-link label on mouse-over.")
 
+;; Per-group title faces (Nord palette) — named faces are more reliable
+;; than anonymous face specs across themes.
+(defface ores/dashboard-group-env-face
+  '((t (:foreground "#a3be8c" :weight bold)))
+  "Group title face for Environment card.")
+
+(defface ores/dashboard-group-db-face
+  '((t (:foreground "#88c0d0" :weight bold)))
+  "Group title face for Database card.")
+
+(defface ores/dashboard-group-services-face
+  '((t (:foreground "#ebcb8b" :weight bold)))
+  "Group title face for Services card.")
+
+(defface ores/dashboard-group-compass-face
+  '((t (:foreground "#d08770" :weight bold)))
+  "Group title face for Compass card.")
+
+(defface ores/dashboard-group-build-face
+  '((t (:foreground "#bf616a" :weight bold)))
+  "Group title face for Build card.")
+
+(defface ores/dashboard-group-site-face
+  '((t (:foreground "#b48ead" :weight bold)))
+  "Group title face for Site card.")
+
+(defface ores/dashboard-group-skills-face
+  '((t (:foreground "#8fbcbb" :weight bold)))
+  "Group title face for Skills card.")
+
+(defface ores/dashboard-group-bookmarks-face
+  '((t (:foreground "#5e81ac" :weight bold)))
+  "Group title face for Bookmarks card.")
+
+(defface ores/dashboard-group-links-face
+  '((t (:foreground "#e5e9f0" :weight bold)))
+  "Group title face for Links card.")
+
+(defface ores/dashboard-group-shell-face
+  '((t (:foreground "#a3be8c" :weight bold)))
+  "Group title face for Shell card.")
+
 ;; ---------------------------------------------------------------------------
 ;; Button activation
 ;; ---------------------------------------------------------------------------
@@ -109,30 +150,33 @@
   "Major mode for the ORE Studio development console.")
 
 ;; ---------------------------------------------------------------------------
-;; Window helpers
+;; Window helpers — output window is created lazily on first action
 ;; ---------------------------------------------------------------------------
 
-(defun ores/dashboard--output-win (dash-buf)
-  "Return the live output window for DASH-BUF, or nil."
+(defun ores/dashboard--ensure-output-win (dash-buf)
+  "Return the live output window for DASH-BUF, creating it lazily if needed."
   (when (buffer-live-p dash-buf)
     (let ((win (buffer-local-value 'ores/dashboard--output-window dash-buf)))
-      (when (window-live-p win) win))))
+      (if (window-live-p win)
+          win
+        (when-let ((dash-win (get-buffer-window dash-buf)))
+          (with-selected-window dash-win
+            (let* ((out-h   (max 10 (/ (window-total-height) 3)))
+                   (out-win (split-window-below (- (window-total-height) out-h))))
+              (with-current-buffer dash-buf
+                (setq ores/dashboard--output-window out-win))
+              out-win)))))))
 
 (defun ores/dashboard--display (target-buf dash-buf)
   "Show TARGET-BUF in DASH-BUF's output window; fall back to pop-to-buffer."
-  (if-let ((out (ores/dashboard--output-win dash-buf)))
+  (if-let ((out (ores/dashboard--ensure-output-win dash-buf)))
       (set-window-buffer out target-buf)
     (pop-to-buffer target-buf)))
 
 (defun ores/dashboard--setup-layout (buf)
-  "Full-frame two-panel layout: BUF on top (2/3), output window below (1/3)."
+  "Full-frame layout: BUF fills the frame.  Output window is created on demand."
   (switch-to-buffer buf)
-  (delete-other-windows)
-  (let* ((out-h   (max 10 (/ (window-total-height) 3)))
-         (out-win (split-window-below (- (window-total-height) out-h))))
-    (with-current-buffer buf
-      (setq ores/dashboard--output-window out-win))
-    (select-window (get-buffer-window buf))))
+  (delete-other-windows))
 
 ;; ---------------------------------------------------------------------------
 ;; Entry points
@@ -200,8 +244,8 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
 ;; ---------------------------------------------------------------------------
 ;; Group → cells
 ;;
-;; Group spec: (title icon-fn icon-arg items color)
-;;   color  — hex foreground for the title text, e.g. "#a3be8c"
+;; Group spec: (title icon-fn icon-arg items title-face)
+;;   title-face — a named face symbol for the group title text
 ;;
 ;; ores/dashboard--group-cells builds exactly TARGET-H cells so all boxes in
 ;; a row share the same bottom border line (blank │ │ rows added inside).
@@ -213,14 +257,11 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
   (propertize (concat (string l) (make-string (- width 2) m) (string r))
               'face 'ores/dashboard-border-face))
 
-(defun ores/dashboard--group-cells (title icon-fn icon-arg items col-width color target-h)
+(defun ores/dashboard--group-cells (title icon-fn icon-arg items col-width title-face target-h)
   "Build exactly TARGET-H cells for a group box of COL-WIDTH chars."
   (let* ((iw       (- col-width 2))
          (icon     (ores/dashboard--group-icon icon-fn icon-arg))
          (icon-w   (string-width icon))
-         ;; Color applied only to the title text so it is never overridden
-         ;; by pre-existing face properties on the icon glyph.
-         (title-face `(:foreground ,(or color "#88c0d0") :weight bold))
          (max-t    (max 0 (- iw 1 icon-w)))
          (title-d  (if (> (string-width title) max-t)
                        (truncate-string-to-width title max-t)
@@ -319,47 +360,52 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
     (insert "\n")))
 
 ;; ---------------------------------------------------------------------------
-;; Image banner — natural file size, no scaling
+;; Image banner — natural file size, no scaling, centered
 ;; ---------------------------------------------------------------------------
 
 (defun ores/dashboard--insert-image (root)
-  "Insert the ORE Studio banner image at its natural size."
+  "Insert the ORE Studio banner image at its natural size, horizontally centered."
   (when (and (display-graphic-p) (image-type-available-p 'png))
     (let ((path (expand-file-name "assets/images/splash-screen.png" root)))
       (when (file-readable-p path)
         (let* ((img      (create-image path 'png nil))
-               (img-h-px (cdr (image-size img t)))
-               (lines    (max 1 (ceiling img-h-px (frame-char-height)))))
+               (img-w-px (car (image-size img t)))
+               (char-w   (frame-char-width))
+               (img-cols (ceiling img-w-px char-w))
+               (margin   (max 0 (/ (- (window-total-width) img-cols) 2))))
+          (insert (make-string margin ?\s))
           (insert (propertize " " 'display img))
-          (insert (make-string (max 0 (- lines 1)) ?\n))
           (insert "\n"))))))
 
 ;; ---------------------------------------------------------------------------
-;; Quick-links bar
+;; Quick-links bar — centered, no trailing separator
 ;; ---------------------------------------------------------------------------
 
 (defun ores/dashboard--insert-quicklinks (root dash-buf)
-  "Insert a horizontal bar of quick-access file links below the banner."
-  (let ((links '(("Orientation" . "doc/orientation.org")
-                 ("Manual"      . "doc/manual/user_guide/user_manual.org")
-                 ("Compass"     . "doc/compass.org")
-                 ("Agile"       . "doc/agile/agile.org")))
-        (sep "    "))
-    (insert "  ")
-    (dolist (link links)
-      (let ((label (car link))
-            (path  (expand-file-name (cdr link) root)))
-        (insert (propertize (format "[ %s ]" label)
-                            'face       'ores/dashboard-quicklink-face
-                            'mouse-face 'ores/dashboard-quicklink-hover-face
-                            'ores/action (let ((f path) (db dash-buf))
-                                           (lambda (_)
-                                             (ores/dashboard--display
-                                              (find-file-noselect f) db)))
-                            'keymap     ores/dashboard--button-map
-                            'help-echo  (format "Open %s" (cdr link))))
-        (insert sep)))
-    (insert "\n\n")))
+  "Insert a centered horizontal bar of quick-access file links below the banner."
+  (let* ((links '(("Orientation" . "doc/orientation.org")
+                  ("Manual"      . "doc/manual/user_guide/user_manual.org")
+                  ("Compass"     . "doc/compass.org")
+                  ("Agile"       . "doc/agile/agile.org")))
+         (sep "    ")
+         (link-strs
+          (mapcar (lambda (link)
+                    (let ((label (car link))
+                          (path  (expand-file-name (cdr link) root)))
+                      (propertize (format "[ %s ]" label)
+                                  'face       'ores/dashboard-quicklink-face
+                                  'mouse-face 'ores/dashboard-quicklink-hover-face
+                                  'ores/action (let ((f path) (db dash-buf))
+                                                 (lambda (_)
+                                                   (ores/dashboard--display
+                                                    (find-file-noselect f) db)))
+                                  'keymap     ores/dashboard--button-map
+                                  'help-echo  (format "Open %s" (cdr link)))))
+                  links))
+         (bar    (mapconcat #'identity link-strs sep))
+         (bar-w  (string-width bar))
+         (margin (max 0 (/ (- (window-total-width) bar-w) 2))))
+    (insert (make-string margin ?\s) bar "\n\n")))
 
 ;; ---------------------------------------------------------------------------
 ;; Compilation helper
@@ -373,9 +419,9 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
     (ores/dashboard--display comp-buf dash-buf)))
 
 ;; ---------------------------------------------------------------------------
-;; Group builders — each returns (title icon-fn icon-arg items color)
+;; Group builders — each returns (title icon-fn icon-arg items title-face)
 ;; All use nerd-icons-faicon (Font Awesome 4) for reliable icon availability.
-;; Colors are Nord palette hues.
+;; Colors are Nord palette hues via named deffaces above.
 ;; ---------------------------------------------------------------------------
 
 (defun ores/dashboard--env-group (env root dash-buf)
@@ -409,7 +455,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                   (if (file-exists-p old)
                       (ores/dashboard--display (diff-no-select old cur) db)
                     (user-error "No .env.old — run init-environment.sh twice")))))))
-          "#a3be8c")))
+          'ores/dashboard-group-env-face)))
 
 (defun ores/dashboard--db-group (env root dash-buf)
   (let ((label (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local")))
@@ -419,8 +465,6 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
             "Open database connection" 'nerd-icons-faicon "nf-fa-plug"
             (let ((lbl label) (db dash-buf))
               (lambda (_)
-                ;; setup-connections ensures the connection entry exists in
-                ;; sql-connection-alist, then we open it in the output window.
                 (ores-db/setup-connections)
                 (let ((buf-name (format "*ores-%s-db*" lbl))
                       (conn     (intern (format "ores_%s" lbl))))
@@ -439,7 +483,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                 (unless (yes-or-no-p (format "DROP and recreate ores_dev_%s? " lbl))
                   (user-error "Aborted"))
                 (ores-db/--run-recreate-env lbl r)))))
-          "#88c0d0")))
+          'ores/dashboard-group-db-face)))
 
 (defun ores/dashboard--services-group (env root dash-buf)
   (let ((label (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local")))
@@ -459,7 +503,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
              ("Start client"   "start-client.sh"    "start-client"    "nf-fa-play-circle")
              ("Service status" "status-services.sh" "service-status"  "nf-fa-info-circle")
              ("Stop services"  "stop-services.sh"   "stop-services"   "nf-fa-stop")))
-          "#ebcb8b")))
+          'ores/dashboard-group-services-face)))
 
 (defun ores/dashboard--compass-group (env root dash-buf)
   (let* ((label   (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
@@ -479,7 +523,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
              ("compass list"   "list"   "compass-list"   "nf-fa-list")
              ("compass status" "status" "compass-status" "nf-fa-info-circle")
              ("compass fleet"  "fleet"  "compass-fleet"  "nf-fa-sitemap")))
-          "#d08770")))
+          'ores/dashboard-group-compass-face)))
 
 (defun ores/dashboard--build-group (env root dash-buf)
   (let* ((label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
@@ -504,7 +548,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
               (lambda (_)
                 (ores/dashboard--compile lbl
                  (format "cmake --build --preset %s --target test" p) "test" r db)))))
-          "#bf616a")))
+          'ores/dashboard-group-build-face)))
 
 (defun ores/dashboard--site-group (env root dash-buf)
   (let* ((label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
@@ -533,7 +577,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
               (lambda (_)
                 (shell-command (format "fuser -k %s/tcp 2>/dev/null; true" pt))
                 (message "Site server stopped.")))))
-          "#b48ead")))
+          'ores/dashboard-group-site-face)))
 
 (defun ores/dashboard--skills-group (env root dash-buf)
   (let* ((label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
@@ -553,7 +597,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                 (ores/dashboard--compile lbl
                  (format "cmake --build --preset %s --target deploy_skills" p)
                  "deploy-skills" r db)))))
-          "#8fbcbb")))
+          'ores/dashboard-group-skills-face)))
 
 (defun ores/dashboard--bookmarks-group (env root dash-buf)
   (let* ((p       (or (cdr (assoc "ORES_PRESET" env)) ""))
@@ -562,7 +606,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
     (list "Bookmarks" 'nerd-icons-faicon "nf-fa-bookmark"
           (list
            (ores/dashboard--mkitem
-            "Log directory" 'nerd-icons-faicon "nf-fa-file-text"
+            "Log directory" 'nerd-icons-faicon "nf-fa-folder-open"
             (let ((d log-dir) (db dash-buf))
               (lambda (_)
                 (if (file-directory-p d)
@@ -575,7 +619,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                 (if (file-directory-p d)
                     (ores/dashboard--display (dired-noselect d) db)
                   (user-error "Bin dir not found: %s" d))))))
-          "#5e81ac")))
+          'ores/dashboard-group-bookmarks-face)))
 
 (defun ores/dashboard--links-group (_env root dash-buf)
   (list "Links" 'nerd-icons-faicon "nf-fa-link"
@@ -589,22 +633,31 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                 '(("User manual"   "doc/manual/user_guide/user_manual.org" "nf-fa-book")
                   ("Recipes index" "doc/recipes/recipes.org"               "nf-fa-list-ul")
                   ("Agile index"   "doc/agile/agile.org"                   "nf-fa-tasks")))
-        "#e5e9f0"))
+        'ores/dashboard-group-links-face))
 
-(defun ores/dashboard--shell-group (env root _dash-buf)
-  (list "Shell" 'nerd-icons-faicon "nf-fa-terminal"
-        (list
-         (ores/dashboard--mkitem
-          "Open ORE Studio shell" 'nerd-icons-faicon "nf-fa-terminal"
-          (let ((e env) (r root))
-            (lambda (_)
-              (let* ((p   (or (cdr (assoc "ORES_PRESET" e)) ""))
-                     (bin (expand-file-name
-                           (format "build/output/%s/publish/bin/ores.shell" p) r)))
-                (if (file-executable-p bin)
-                    (progn (setq ores-shell-last-program bin) (ores-shell))
-                  (user-error "ores.shell not found at %s — build first" bin)))))))
-        "#a3be8c"))
+(defun ores/dashboard--shell-group (env root dash-buf)
+  (let* ((label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
+         (preset (or (cdr (assoc "ORES_PRESET"         env)) "linux-clang-debug-ninja")))
+    (list "Shell" 'nerd-icons-faicon "nf-fa-terminal"
+          (list
+           (ores/dashboard--mkitem
+            "Open ORE Studio shell" 'nerd-icons-faicon "nf-fa-terminal"
+            (let ((e env) (r root) (lbl label) (db dash-buf))
+              (lambda (_)
+                (let* ((p        (or (cdr (assoc "ORES_PRESET" e)) ""))
+                       (bin      (expand-file-name
+                                  (format "build/output/%s/publish/bin/ores.shell" p) r))
+                       (buf-name (format "*ores-%s-shell*" lbl)))
+                  (if (file-executable-p bin)
+                      (progn
+                        (setq ores-shell-last-program bin)
+                        ;; Bind buffer-name before ores-shell reads it
+                        (let ((ores-shell-buffer-name buf-name))
+                          (ores-shell))
+                        (when-let ((buf (get-buffer buf-name)))
+                          (ores/dashboard--display buf db)))
+                    (user-error "ores.shell not found at %s — build first" bin)))))))
+          'ores/dashboard-group-shell-face)))
 
 ;; ---------------------------------------------------------------------------
 ;; Main render

@@ -9,7 +9,7 @@
 #+filetags: :ores_studio_emacs_dashboard:sprint_18:v0:
 #+owner: marco
 #+branch: feature/fix-dashboard-start-client
-#+pr:
+#+pr: 851
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
@@ -57,14 +57,15 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                              | Title                                                                              |
+|-----------------------------------------------------------------+------------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/851][#851]] | Dashboard: fix start-client and add SQLite connections DB entry |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                        | File                | Decision | Notes                                                              |
+|---+------------------------------------------------------------------------+---------------------+----------+--------------------------------------------------------------------|
+| 1 | Missing (require 'sql): sql-* vars not declared special under lex-bind | ores-dashboard.el   | Fixed    | Added (require 'sql) to requires block                             |
+| 2 | ores/dashboard--start-client-do crashes if context nil (direct M-x)   | ores-dashboard.el   | Fixed    | Added user-error guard before let* binding                         |
 
 * Result

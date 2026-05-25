@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 20BDCCE7-2B65-4288-87C9-7CDDC2E77D14
+:END:
+#+title: Task: Add site:pdf publish component and switch manual to book LaTeX class
+#+description: Wire site:pdf into .build-site.el; change user_manual.org to book class; regenerate user_manual.pdf.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :site:manual:latex:pdf:site_pdf_and_manual_book:sprint_18:v0:
+#+owner: marco
+#+branch: feature/site-downloads-agile-nav
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6EBB206D-167F-4A0F-8F50-04D7EB4B7E33][Fix PDF site delivery and switch manual to book LaTeX class]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two defects fixed together:
+
+1. =.build-site.el= gains a =site:pdf= component (mirrors =site:images=
+   but with =:base-extension "pdf"=) so that =user_manual.pdf= is copied
+   into the published site tree alongside the HTML pages.
+
+2. =user_manual.org= switches from =#+latex_class: article= to
+   =#+latex_class: book= with =oneside= option. The manual
+   =\titleformat{\section}= and =\titleformat{\subsection}= overrides are
+   removed; =\usepackage{titlesec}= is dropped. The regenerated PDF is
+   committed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                                |
+| Parent story | [[id:6EBB206D-167F-4A0F-8F50-04D7EB4B7E33][Fix PDF site delivery and switch manual to book LaTeX class]] |
+| Now          | Implementing.                          |
+| Waiting on   | Nothing.                               |
+| Next         | PR review.                             |
+| Last touched | 2026-05-25                             |
+
+* Acceptance
+
+- =.build-site.el= =site:main= components list includes ="site:pdf"=.
+- =user_manual.org= header: =#+latex_class: book=, options include
+  =oneside=; no =\titleformat= lines; no =\usepackage{titlesec}=.
+- =doc/manual/user_guide/user_manual.pdf= is regenerated with the book
+  class and committed.
+
+* PRs
+
+| PR  | Title |
+|-----+-------|
+|     |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

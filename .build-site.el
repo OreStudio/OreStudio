@@ -165,7 +165,14 @@
          :base-extension "css"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
-        ("site:main" :components("site:pages" "site:images" "site:style"))))
+        ("site:pdf"
+         :recursive t
+         :base-directory "./"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui"
+         :base-extension "pdf"
+         :publishing-directory "./build/output/site/OreStudio/"
+         :publishing-function org-publish-attachment)
+        ("site:main" :components("site:pages" "site:images" "site:style" "site:pdf"))))
 
 (defun ores-inject-site-nav (index-file preamble)
   "Inject site CSS and PREAMBLE nav into the org-roam-ui INDEX-FILE."

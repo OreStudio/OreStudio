@@ -49,7 +49,7 @@
       "\\begin{titlepage}
 \\centering
 \\vspace*{3cm}
-\\includegraphics[width=0.25\\textwidth]{../../../assets/images/modern-icon.png}\\par
+\\includegraphics[width=0.6\\textwidth]{../../../assets/images/login_screen.png}\\par
 \\vspace{2cm}
 {\\Huge\\bfseries ORE Studio User Manual\\par}
 \\vspace{0.5cm}

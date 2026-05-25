@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 2B20D957-A261-4C65-8F80-656897050CBB
+:END:
+#+title: Task: Move health review content from sprint.org into task
+#+description: The Health Review section in sprint.org is too verbose; full review content belongs in the task Result section with only a short link left in sprint.org.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sprint_health_review:sprint_18:v0:
+#+owner: marco
+#+branch: feature/health-review-cleanup
+#+pr: 852
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Keep =sprint.org= concise: the =* Health Review= section should
+contain one short entry per review run (date, verdict, link to the
+task) rather than the full analysis prose. Move each review's full
+content into the corresponding task's =* Result= section.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                     |
+| Parent story | [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]] |
+| Now          | Complete.                                |
+| Waiting on   | Nothing.                                 |
+| Next         | Merge after CI passes.                   |
+| Last touched | 2026-05-25                               |
+
+* Acceptance
+
+- =sprint.org= =* Health Review= section contains only a summary
+  table: one row per review, with date, day-of-sprint, overall
+  verdict, and a link to the task.
+- Full analysis prose (goal alignment, load, PR velocity, story/task
+  balance, focus, velocity, overall verdict) lives in each task's
+  =* Result= section.
+- =task_health_review_1.org= =* Result= contains the complete
+  2026-05-25 review content moved from =sprint.org=.
+- No content is lost — only relocated.
+
+* Plan
+
+1. Move the full =** Review on 2026-05-25= block from =sprint.org=
+   into =task_health_review_1.org= under =* Result=.
+2. Replace that block in =sprint.org= with a summary table row
+   linking to the task.
+3. Wire this task into the story's =* Tasks= list.
+4. Update =task_health_review_1.org= status to DONE.
+
+* Notes
+
+* PRs
+
+| PR  | Title                                                               |
+|-----+---------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/852][#852]] | [agile] Move health review content from sprint.org into task |
+
+* Review
+
+| # | Comment summary                                     | File                                    | Decision | Notes                                          |
+|---+-----------------------------------------------------+-----------------------------------------+----------+------------------------------------------------|
+| 1 | DONE task =Now= field should be =Complete.=         | task_clean_review_content_from_sprint.org | Applied  | Fixed in commit after PR raised.               |
+| 2 | DONE task =Now= field should be =Complete.=         | task_health_review_1.org                | Applied  | Fixed in same commit.                          |
+
+* Result
+
+- =sprint.org= =* Health Review= replaced with a one-row summary table
+  linking to =task_health_review_1.org=.
+- Full review content (goal alignment, load, PR velocity, story/task
+  balance, focus, velocity, overall verdict) moved to
+  =task_health_review_1.org= =* Result=.
+- =task_health_review_1.org= marked DONE.

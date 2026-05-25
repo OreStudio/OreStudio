@@ -28,11 +28,11 @@ Run the first System 2 health review of sprint 18 using the
 
 | Field        | Value                                    |
 |--------------+------------------------------------------|
-| State        | STARTED                                  |
+| State        | DONE                                     |
 | Parent story | [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]] |
-| Now          | Analysis in progress.                    |
+| Now          | Complete.                                          |
 | Waiting on   | Nothing.                                 |
-| Next         | Complete analysis; write review section. |
+| Next         | None.                                    |
 | Last touched | 2026-05-25                               |
 
 * Acceptance
@@ -68,3 +68,179 @@ task closes. Plans do not outlive their task.)
 | 5 | #+category: template has unsupported ; inline comments | document_types.org | Fixed    | Moved field docs to prose below src block      |
 
 * Result
+
+** Review on 2026-05-25 (day 4 of 7)
+
+*** Goal alignment
+
+#+ATTR_HTML: :class hug-leading
+| Goal                              | Coverage | Stories (DONE / STARTED / BACKLOG) | Verdict |
+|-----------------------------------+----------+------------------------------------+---------|
+| ORE imports into workspaces       | WEAK     | 0 / 0 / 5                          | RED     |
+| More ORE types                    | WEAK     | 0 / 1 / 1                          | AMBER   |
+| Compass tool                      | STRONG   | 8 / 1 / 2                          | GREEN   |
+| Backlog refinement tooling        | STRONG   | 1 / 1 / 0                          | GREEN   |
+
+Goal 1 (ORE imports) has zero started stories at day 4 of 7. The five
+stories that serve it — ORE sample data, running samples, ORE Example 1
+types, instrument visibility, instrument creation in TradeDialog — are all
+BACKLOG. With three days left this goal will not be achieved in this sprint.
+
+Goal 2 (more ORE types) has partial coverage: =Work through all types for
+ORE Example 1= is BACKLOG; =Resolve RFL complexity issues= is STARTED but
+is a prerequisite/unblocking task, not the ORE types work itself. Minimal
+progress expected at close.
+
+*Scope creep signal*: 10 of 24 stories have no direct mapping to the four
+stated goals. These include =Inline org-roam export=, =SQLite CLI
+quality-of-life=, =ORE Studio Emacs dashboard=, =Tufte viz skill=, =Add
+investigation support=, and =Remove unused workflows=. These are legitimate
+housekeeping and enabler work, but they absorbed most of the sprint's
+energy in days 1–2.
+
+*Recommendation*: The sprint goals are now unreachable for the ORE imports
+and types tracks. Consider either: (a) accepting this sprint as a compass +
+tooling sprint and updating the goals retroactively to match reality, or (b)
+hard-stopping new housekeeping work and funnelling the remaining 3 days into
+ORE sample data and the imports pipeline.
+
+*** Sprint load
+
+| Metric               | Value  | Target    | Status |
+|----------------------+--------+-----------+--------|
+| Commits so far       | 186    | —         | —      |
+| Elapsed days         | 4 of 7 | ≤ 7 days  | GREEN  |
+| Commits/day          | 46.5   | —         | —      |
+| Projected at close   | ~325   | ≤ 300     | AMBER  |
+
+At 46.5 commits/day the sprint is tracking to ~325 commits at close —
+slightly over the 300 target. Day 3 (2026-05-24) was a burst day (27 PRs
+merged) driven by the compass and dashboard work. If the remaining days
+maintain the day-4 rate (which is likely lower as focused code work
+produces fewer small commits), the sprint may land within target.
+
+*Recommendation*: No action required yet. If day 5–6 continue at 30+
+commits/day, pause and question whether more PRs are needed or whether
+consolidation commits can be batched.
+
+*** PR velocity
+
+| Metric                  | Value       | Notes                                   |
+|-------------------------+-------------+-----------------------------------------|
+| PRs merged              | 47          | Over 4 days                             |
+| PRs/day                 | 11.8        | Exceptionally high; day 2 burst = 27 PRs |
+| Open PRs                | 1           | PR #838 (compass-goto-existing-story)   |
+| PR #838 age             | <1 day      | Raised today; not yet WIP accumulation  |
+| WIP accumulation        | None        | Clean                                   |
+
+PR velocity is exceptional. 47 PRs in 4 days reflects the exploratory
+nature of the sprint — many small, focused PRs rather than large branches.
+PR #838 is the only open PR and was raised today; no WIP concern.
+
+*Recommendation*: Maintain the small-PR discipline. If ORE imports/types
+work starts, expect larger PRs (C++ code changes) — batch them sensibly to
+avoid review fatigue.
+
+*** Story and task balance
+
+| Story                                     | State   | Tasks | Age  | Notes                          |
+|-------------------------------------------+---------+-------+------+--------------------------------|
+| Build and publish user manual PDF         | STARTED |     5 | 3d+  | Long open; active              |
+| Resolve RFL complexity issues             | STARTED |     3 | 3d+  | PCH/coverage work active (local4) |
+| Sprint health review — System 2 analysis | STARTED |     2 | 0d   | This review                    |
+| compass goto                              | STARTED |     1 | 0d   | Core merged; extension active  |
+| ORE sample data                           | BACKLOG |     0 | —    | Not decomposed — expected      |
+| Add support for running ORE samples       | BACKLOG |     0 | —    | Not decomposed — expected      |
+| Work through all types for ORE Example 1 | BACKLOG |     0 | —    | Not decomposed — expected      |
+| Fix instruments not visible in UI        | BACKLOG |     0 | —    | Not decomposed — expected      |
+| Qt: instrument creation in TradeDialog   | BACKLOG |     0 | —    | Not decomposed — expected      |
+
+DONE/total ratio: 13/24 = 54%. Throughput is healthy.
+
+The 5 undecomposed BACKLOG stories are all in the ORE imports/types track —
+they have not been decomposed because they have not been picked up. This is
+normal, but it means there is zero implementation visibility into how
+complex these stories are. If the decision is made to start them in the last
+3 days, task decomposition will be the first step.
+
+=Build and publish user manual PDF= has been STARTED for 3+ days with 5
+tasks. This is the longest-running open story; verify it is genuinely in
+progress and not stalled waiting on prerequisites.
+
+*Recommendation*: The 5 undecomposed ORE stories are not a problem if they
+remain BACKLOG. If any are to be started this sprint, decompose before
+starting so progress is trackable.
+
+*** Focus signal
+
+| Metric                   | Value | Verdict |
+|--------------------------+-------+---------|
+| Simultaneously STARTED   | 4     | GREEN   |
+| Distinct active worktrees | 4    | —       |
+| Theme coherence          | Mixed | AMBER   |
+
+Four STARTED stories across four worktrees: user manual, RFL/build,
+sprint health review, and compass goto. The themes span documentation,
+C++ build, agile tooling, and compass — not tightly coherent but each is in
+a distinct worktree with a dedicated agent. No single contributor is
+context-switching between them.
+
+The compass goto work on =local3= is extending a just-merged feature
+(PR #834); this is normal post-merge polish. =local4= is doing focused
+RFL/PCH build work. Focus is adequate for a parallel-agent workflow.
+
+*Recommendation*: If a fifth worktree picks up an ORE imports story,
+re-check focus. Five simultaneous themes for a 7-day sprint would be at the
+AMBER/RED boundary.
+
+*** Velocity
+
+| Metric                        | Value  | Notes                                        |
+|-------------------------------+--------+----------------------------------------------|
+| Stories completed this sprint | 13     | Over 4 days                                  |
+| Story throughput               | 3.25/day | Unusually high; many were small stories    |
+| Median cycle time (DONE)      | 0 days  | Most stories opened and closed same day     |
+| Max cycle time (DONE)         | 1 day   | ORE Studio Emacs dashboard (2026-05-24–25)  |
+| STARTED stories age           | 3d max  | User manual; RFL                             |
+
+Story throughput is high (3.5/day) but requires context: the majority of
+DONE stories were small-scope (1-task) housekeeping, tooling, or agile
+scaffolding items opened and closed on the same day. This inflates the
+throughput number.
+
+Zero-day cycle time stories (opened and closed 2026-05-24): =SQLite CLI
+setup=, =Lock down UUID invariant=, =Compass locate=, =Compass scaffold=,
+=Track PRs per task=, =Org-roam index links=, =Remove unused workflows=,
+=Product backlog refinement=. These are real delivered value but not
+comparable to multi-day feature stories.
+
+The ORE imports track has produced no velocity whatsoever — all five
+stories are still in their initial BACKLOG state.
+
+*Recommendation*: Track throughput separately for /feature stories/ vs
+/housekeeping stories/ in future reviews. Housekeeping velocity is real but
+masks feature velocity. Consider adding a =#+category:= tag (feature /
+housekeeping / enabler) to stories to support this.
+
+*** Overall verdict
+
+| Dimension           | Verdict |
+|---------------------+---------|
+| Goal alignment      | RED     |
+| Sprint load         | AMBER   |
+| PR velocity         | GREEN   |
+| Story/task balance  | GREEN   |
+| Focus signal        | GREEN   |
+| Velocity            | AMBER   |
+| *Overall*           | *AMBER* |
+
+Sprint 18 is delivering well on compass tooling, developer experience, and
+agile infrastructure — but it is failing on its two primary goals: ORE
+imports into workspaces and more ORE types. At day 4 of 7, those tracks
+have zero velocity; three days remain. The sprint has not failed yet, but
+without an explicit decision to pivot resources to the ORE track, it will
+close with Goals 1 and 2 unachieved. The most important single action is
+to decide now whether to pursue those goals in the remaining time or to
+accept this sprint as a tooling sprint and reset goal expectations.
+Velocity looks high in aggregate but is dominated by same-day housekeeping
+stories; feature-level throughput is lower than the headline number suggests.

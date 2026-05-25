@@ -3,7 +3,7 @@
 :END:
 #+TITLE: Promote Workspace to Full Standard Entity
 #+DATE: 2026-05-21
-#+STATUS: In Progress
+#+STATUS: MINED (2026-05-25: converted to agile tasks in ore_samples_support story)
 #+OPTIONS: toc:t num:nil
 
 * Overview

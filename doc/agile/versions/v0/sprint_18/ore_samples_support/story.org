@@ -8,38 +8,48 @@
 #+level: s2
 #+filetags: :ore:samples:workspace:sprint_18:v0:
 #+created: 2026-05-24
-#+updated: 2026-05-24
+#+updated: 2026-05-25
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Enable end-to-end execution of ORE sample input files from within ORE Studio:
+promote workspace to a full entity, complete the workspace UI, implement the
+data import session backend and UI, and surface ORE results in the UI.
 
 * Status
 
-| Field         | Value                                  |
-|---------------+----------------------------------------|
-| State         | BACKLOG                              |
-| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-05-24                               |
+| Field         | Value                                        |
+|---------------+----------------------------------------------|
+| State         | STARTED                                      |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                    |
+| Now           | Scaffolding tasks from workspace and blotter plans. |
+| Waiting on    | Nothing.                                     |
+| Next          | Create work tasks for each plan phase.       |
+| Last touched  | 2026-05-25                                   |
 
 * Acceptance
 
--
+- Workspace promoted to full standard entity (history, generated detail dialog).
+- Workspace Phase 4 UI completed (report definition list, clone action).
+- Data import session DB schema in place.
+- Trading API pending book implemented.
+- Data import handler wired end-to-end.
+- Workflow UI for import progress and results.
+- UI reorganised to surface workspace and import features.
+- ORE results visible from within the workspace context.
 
 * Tasks
 
 In execution order:
 
--
+- [[id:6998DD74-EE19-46DF-B4DC-F1250744FF23][Task: Scaffold ORE samples support]]
 
 * Decisions
 
 * Out of scope
 
--
+- Production live import (Track 2 from the blotter plan).
+- Implementing any domain concepts not already modelled.

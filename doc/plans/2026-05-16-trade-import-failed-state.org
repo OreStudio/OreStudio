@@ -6,7 +6,7 @@
 #+SUBTITLE: Full ORE data import pipeline; pending trade staging; non-live marker for reference data; structured workflow failure reporting
 #+DATE: 2026-05-16
 #+AUTHOR: ORE Studio Team
-#+STATUS: PROPOSED
+#+STATUS: MINED (2026-05-25: converted to agile tasks in ore_samples_support story)
 #+OPTIONS: toc:t num:nil
 
 * Related Plans

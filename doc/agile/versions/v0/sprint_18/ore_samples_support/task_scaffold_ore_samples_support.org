@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 6998DD74-EE19-46DF-B4DC-F1250744FF23
+:END:
+#+title: Task: Scaffold ORE samples support
+#+description: Review workspace-full-entity, workspace-design Phase 4 remaining, and data-import-session plans; create task stubs for each phase of work needed to support running ORE samples.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ore_samples_support:sprint_18:v0:
+#+owner: marco
+#+branch: feature/scaffold-ore-samples-support
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Review the three plans that define the work needed to run ORE samples
+(workspace full entity, workspace design Phase 4 remaining, and data
+import session), then create task stubs for each work phase and update
+the story with goal, acceptance, and task list.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                                |
+| Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]] |
+| Now          | Plans mined; closing plans and creating task stubs. |
+| Waiting on   | Nothing.                               |
+| Next         | Create work tasks via compass.         |
+| Last touched | 2026-05-25                             |
+
+* Acceptance
+
+- Three source plans read and accounted for.
+- Plans marked as MINED in =doc/plans/plans.org=.
+- Story goal, acceptance, and task list populated.
+- Task stubs created for each work phase via compass.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

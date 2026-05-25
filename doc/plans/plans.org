@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :plans:index:knowledge:
 #+created: 2026-05-21
-#+updated: 2026-05-24
+#+updated: 2026-05-25
 
 These are pre-sprint design documents written during or before implementation.
 They are kept for historical context — to understand why a decision was made
@@ -83,25 +83,26 @@ Active work lives in the [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][agile proces
 | 2026-05-13 | [[id:7BBA5627-F13D-4BFC-9E03-C15B61A11AD5][PostgreSQL Identifier Length Cleanup]]                                             | DONE        |
 | 2026-05-13 | [[id:F2A4C6E8-B1D3-4E5F-A7B9-2C4D6E8F0A1B][Symbol Visibility Migration]]                                                      | DONE        |
 | 2026-05-14 | [[id:05661A18-616C-4C39-8A88-BFBB4C68FD2E][Codegen SQL Debt — Hand-Written Files with Existing Models]]                       | DONE        |
-| 2026-05-14 | [[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern — Architecture and Decision]]                                   | IN PROGRESS |
+| 2026-05-14 | [[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern — Architecture and Decision]]                                   | DONE        |
 | 2026-05-14 | [[id:D9143823-DFCD-4208-96BE-8AD647A78C8D][Workflow Engine Hardening]]                                                        | DONE        |
-| 2026-05-15 | [[id:D7F263C4-7A0C-4ABD-85E7-0BD90C0C4D98][Login Dialog Label Filter]]                                                        |             |
+| 2026-05-15 | [[id:D7F263C4-7A0C-4ABD-85E7-0BD90C0C4D98][Login Dialog Label Filter]]                                                        | DONE        |
 | 2026-05-15 | [[id:E7976556-8EA4-4A54-A414-BE0D11762DEC][ORE Import Error Reporting and Step Warning State]]                                | DONE        |
 | 2026-05-15 | [[id:3125F901-7AC2-421C-8AEF-8C508B0E315B][Qt Plugin Isolation: Cross-Plugin Symbol Dependencies]]                            | DONE        |
 | 2026-05-16 | [[id:45312FEA-BE7D-452E-8432-55E8AD04B3F1][Controller Startup and Shutdown Latency Fix]]                                      | DONE        |
-| 2026-05-16 | [[id:5DAEC346-CB22-4CE1-8293-12A1986AFDB6][Data Import Session and Workflow Partial-Success]]                                 | PROPOSED    |
-| 2026-05-17 | [[id:5319618A-FEB6-46F4-9588-11495CA8E164][MSVC C1202 — Decompose trade into Sub-Structs]]                                    | IN PROGRESS |
-| 2026-05-17 | [[id:1EF768F1-5B86-402F-866A-5CB730F48319][Shared audit_record and Codegen Composite-Type Support]]                           | DRAFT       |
+| 2026-05-16 | [[id:5DAEC346-CB22-4CE1-8293-12A1986AFDB6][Data Import Session and Workflow Partial-Success]]                                 | MINED       |
+| 2026-05-17 | [[id:5319618A-FEB6-46F4-9588-11495CA8E164][MSVC C1202 — Decompose trade into Sub-Structs]]                                    | DONE        |
+| 2026-05-17 | [[id:1EF768F1-5B86-402F-866A-5CB730F48319][Shared audit_record and Codegen Composite-Type Support]]                           | DONE        |
 | 2026-05-17 | [[id:B5EB3B4F-681A-48C9-BAF2-9256FE889A45][Tenant and System Bootstrap Reset]]                                                | DONE        |
-| 2026-05-17 | [[id:AD2D6529-4870-4BD0-9B68-6DF3CCAAFBCA][Virtual Portfolio Design]]                                                         | PROPOSED    |
-| 2026-05-17 | [[id:CEAD2E6A-8C12-489F-B64A-652EE2B81811][Workspace — Isolated Data Context Design]]                                         |             |
-| 2026-05-18 | [[id:847AECEA-D0E6-4D4F-870A-F0E720B49256][Codegen IAM Permissions and Roles Population]]                                     | PROPOSED    |
-| 2026-05-18 | [[id:8F08358F-3909-479A-872D-E1A362F9DF4F][Menu Structure Analysis and Simplification]]                                       | IN PROGRESS |
-| 2026-05-19 | [[id:69FBCA3B-CDFE-43F5-8C4F-4C26B4D19ADD][Qt Trading Codegen Drift Remediation]]                                             | IN PROGRESS |
-| 2026-05-19 | [[id:F806E77A-A8CC-4683-9563-06EE5DE3644F][UML Model Refresh]]                                                                | IN PROGRESS |
+| 2026-05-17 | [[id:AD2D6529-4870-4BD0-9B68-6DF3CCAAFBCA][Virtual Portfolio Design]]                                                         | DONE        |
+| 2026-05-17 | [[id:CEAD2E6A-8C12-489F-B64A-652EE2B81811][Workspace — Isolated Data Context Design]]                                         | MINED       |
+| 2026-05-18 | [[id:847AECEA-D0E6-4D4F-870A-F0E720B49256][Codegen IAM Permissions and Roles Population]]                                     | DONE        |
+| 2026-05-18 | [[id:8F08358F-3909-479A-872D-E1A362F9DF4F][Menu Structure Analysis and Simplification]]                                       | DONE        |
+| 2026-05-19 | [[id:69FBCA3B-CDFE-43F5-8C4F-4C26B4D19ADD][Qt Trading Codegen Drift Remediation]]                                             | DONE        |
+| 2026-05-19 | [[id:F806E77A-A8CC-4683-9563-06EE5DE3644F][UML Model Refresh]]                                                                | DONE        |
 | 2026-05-19 | [[id:827CB04D-AE39-40BA-A291-CAAE5360CD92][Workspace ID Codegen Propagation]]                                                 | DONE        |
-| 2026-05-20 | [[id:8B4C1D2E-93F7-4A68-C5B9-6D0E1F4A2B83][Refdata C++ Codegen: Activate Domain/Generator/Repository]]                        | TODO        |
+| 2026-05-20 | [[id:8B4C1D2E-93F7-4A68-C5B9-6D0E1F4A2B83][Refdata C++ Codegen: Activate Domain/Generator/Repository]]                        | DONE        |
 | 2026-05-20 | [[id:3A7F2B1C-84E6-4D59-B2A8-5C9E0F3D1A72][Refdata Party Domain: tenant_id Strong-Type Migration]]                            | DONE        |
-| 2026-05-21 | [[id:7305A77A-3A41-42CA-BD1D-227E2FB18DF0][Tagged v1/v2 Coexistence — Merge doc/v2/ and Add Version Markers]]                 |             |
-| 2026-05-21 | [[id:A4B5C6D7-E8F9-0A1B-2C3D-4E5F6A7B8C9D][Entity Creator Skills Overhaul]]                                                   | TODO        |
-| 2026-05-21 | [[id:3F7A2C1D-84BE-4E9F-B261-5C0D9A3E7B48][Entity Creator Skills: v1 → v2 Migration]]                                         | TODO        |
+| 2026-05-21 | [[id:7305A77A-3A41-42CA-BD1D-227E2FB18DF0][Tagged v1/v2 Coexistence — Merge doc/v2/ and Add Version Markers]]                 | DONE        |
+| 2026-05-21 | [[id:A4B5C6D7-E8F9-0A1B-2C3D-4E5F6A7B8C9D][Entity Creator Skills Overhaul]]                                                   | DONE        |
+| 2026-05-21 | [[id:3F7A2C1D-84BE-4E9F-B261-5C0D9A3E7B48][Entity Creator Skills: v1 → v2 Migration]]                                         | DONE        |
+| 2026-05-21 | [[id:B9A1498E-5903-4C82-8A19-3CE43A0BA5FA][Promote Workspace to Full Standard Entity]]                                        | MINED       |

@@ -133,9 +133,6 @@
 
 (defvar-local ores/dashboard--env          nil)
 (defvar-local ores/dashboard--root         nil)
-(defvar-local ores/dashboard--output-window nil
-  "The window below the dashboard where all actions display their output.")
-
 ;; ---------------------------------------------------------------------------
 ;; Mode
 ;; ---------------------------------------------------------------------------
@@ -155,28 +152,13 @@
   (setq-local show-trailing-whitespace nil))
 
 ;; ---------------------------------------------------------------------------
-;; Window helpers — output window is created lazily on first action
+;; Window helpers — output buffers are displayed full-frame
 ;; ---------------------------------------------------------------------------
 
-(defun ores/dashboard--ensure-output-win (dash-buf)
-  "Return the live output window for DASH-BUF, creating it lazily if needed."
-  (when (buffer-live-p dash-buf)
-    (let ((win (buffer-local-value 'ores/dashboard--output-window dash-buf)))
-      (if (window-live-p win)
-          win
-        (when-let ((dash-win (get-buffer-window dash-buf)))
-          (with-selected-window dash-win
-            (let* ((out-h   (max 10 (/ (window-total-height) 3)))
-                   (out-win (split-window-below (- (window-total-height) out-h))))
-              (with-current-buffer dash-buf
-                (setq ores/dashboard--output-window out-win))
-              out-win)))))))
-
-(defun ores/dashboard--display (target-buf dash-buf)
-  "Show TARGET-BUF in DASH-BUF's output window; fall back to pop-to-buffer."
-  (if-let ((out (ores/dashboard--ensure-output-win dash-buf)))
-      (set-window-buffer out target-buf)
-    (pop-to-buffer target-buf)))
+(defun ores/dashboard--display (target-buf _dash-buf)
+  "Show TARGET-BUF full-frame (same as dashboard layout)."
+  (switch-to-buffer target-buf)
+  (delete-other-windows))
 
 (defun ores/dashboard--setup-layout (buf)
   "Full-frame layout: BUF fills the frame.  Output window is created on demand."
@@ -463,14 +445,25 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
           'ores/dashboard-group-env-face)))
 
 (defun ores/dashboard--db-group (env root dash-buf)
-  (let ((label (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local")))
+  (let* ((label (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
+         (pgpw  (cdr (assoc "PGPASSWORD" env))))
     (list "Database" 'nerd-icons-faicon "nf-fa-database"
           (list
            (ores/dashboard--mkitem
             "Open database connection" 'nerd-icons-faicon "nf-fa-plug"
-            (let ((lbl label) (db dash-buf))
+            (let ((lbl label) (db dash-buf) (pw pgpw))
               (lambda (_)
                 (ores-db/setup-connections)
+                ;; Ensure a postgres superuser connection exists for this label
+                (let ((pg-name (format "ores-%s-postgres" lbl)))
+                  (unless (assoc pg-name sql-connection-alist)
+                    (push (list pg-name
+                                (list 'sql-product  ''postgres)
+                                (list 'sql-user     "postgres")
+                                (list 'sql-password pw)
+                                (list 'sql-server   "localhost")
+                                (list 'sql-database "postgres"))
+                          sql-connection-alist)))
                 (let* ((prefix (format "ores-%s-" lbl))
                        (conns  (seq-filter (lambda (e) (string-prefix-p prefix (car e)))
                                            sql-connection-alist))
@@ -515,8 +508,8 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                     (db  dash-buf))
                 (lambda (_) (ores/dashboard--compile lbl s sfx r db)))))
            '(("Start services" "start-services.sh"  "start-services"  "nf-fa-play")
-             ("Start client"   "start-client.sh"    "start-client"    "nf-fa-play-circle")
-             ("Service status" "status-services.sh" "service-status"  "nf-fa-info-circle")
+             ("Start client"   "start-client.sh"    "start-client"    "nf-fa-play_circle")
+             ("Service status" "status-services.sh" "service-status"  "nf-fa-info_circle")
              ("Stop services"  "stop-services.sh"   "stop-services"   "nf-fa-stop")))
           'ores/dashboard-group-services-face)))
 
@@ -534,9 +527,9 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                     (r   root)
                     (db  dash-buf))
                 (lambda (_) (ores/dashboard--compile lbl cmd sfx r db)))))
-           '(("compass where"  "where"  "compass-where"  "nf-fa-map-marker")
+           '(("compass where"  "where"  "compass-where"  "nf-fa-map_marker")
              ("compass list"   "list"   "compass-list"   "nf-fa-list")
-             ("compass status" "status" "compass-status" "nf-fa-info-circle")
+             ("compass status" "status" "compass-status" "nf-fa-info_circle")
              ("compass fleet"  "fleet"  "compass-fleet"  "nf-fa-sitemap")))
           'ores/dashboard-group-compass-face)))
 
@@ -600,7 +593,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
     (list "Skills" 'nerd-icons-faicon "nf-fa-magic"
           (list
            (ores/dashboard--mkitem
-            "Open skills folder" 'nerd-icons-faicon "nf-fa-folder-open"
+            "Open skills folder" 'nerd-icons-faicon "nf-fa-folder_open"
             (let ((r root) (db dash-buf))
               (lambda (_)
                 (ores/dashboard--display
@@ -621,14 +614,14 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
     (list "Bookmarks" 'nerd-icons-faicon "nf-fa-bookmark"
           (list
            (ores/dashboard--mkitem
-            "Log directory" 'nerd-icons-faicon "nf-fa-folder-open"
+            "Log directory" 'nerd-icons-faicon "nf-fa-folder_open"
             (let ((d log-dir) (db dash-buf))
               (lambda (_)
                 (if (file-directory-p d)
                     (ores/dashboard--display (dired-noselect d) db)
                   (user-error "Log dir not found: %s" d)))))
            (ores/dashboard--mkitem
-            "Bin directory" 'nerd-icons-faicon "nf-fa-folder-open"
+            "Bin directory" 'nerd-icons-faicon "nf-fa-folder_open"
             (let ((d bin-dir) (db dash-buf))
               (lambda (_)
                 (if (file-directory-p d)
@@ -646,7 +639,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                      (lambda (_)
                        (ores/dashboard--display (find-file-noselect f) db)))))
                 '(("User manual"   "doc/manual/user_guide/user_manual.org" "nf-fa-book")
-                  ("Recipes index" "doc/recipes/recipes.org"               "nf-fa-list-ul")
+                  ("Recipes index" "doc/recipes/recipes.org"               "nf-fa-list_ul")
                   ("Agile index"   "doc/agile/agile.org"                   "nf-fa-tasks")))
         'ores/dashboard-group-links-face))
 

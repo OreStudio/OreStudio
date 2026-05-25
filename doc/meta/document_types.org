@@ -450,10 +450,15 @@ matching =#+successor= pointing back.
 *** Story frontmatter (additions on top of the standard set)
 
 #+begin_src org
-,#+category: <feature|housekeeping|enabler>  ; required; drives velocity tracking
-,#+predecessor: <id-of-prior-story>           ; optional; on continuations
-,#+successor:   <id-of-next-story>            ; optional; on closed stories that continue
+,#+category: <feature|housekeeping|enabler>
+,#+predecessor: <id-of-prior-story>
+,#+successor:   <id-of-next-story>
 #+end_src
+
+- =#+category:= — required; one of =feature=, =housekeeping=, or =enabler=.
+  Drives velocity tracking (see =** Story categories= in =* Tags= above).
+- =#+predecessor:= / =#+successor:= — optional; used on stories that span
+  sprints (see =*** Cross-sprint stories= above for full conventions).
 
 The =#+category:= field classifies the story's intent so velocity
 metrics can be sliced by type (see =** Story categories= in =* Tags=

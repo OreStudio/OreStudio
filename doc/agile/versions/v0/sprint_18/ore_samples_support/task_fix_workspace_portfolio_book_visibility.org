@@ -9,7 +9,7 @@
 #+filetags: :ore_samples_support:sprint_18:v0:
 #+owner: marco
 #+branch: feature/fix-workspace-portfolio-book-visibility
-#+pr:
+#+pr: 850
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
@@ -32,7 +32,7 @@ propagation, UI data-loading path, or missing join); and apply the fix.
 | Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]]                                |
 | Now          | Fix applied to portfolio_repository.cpp and book_repository.cpp.  |
 | Waiting on   | Nothing.                                                           |
-| Next         | Commit, push, open PR.                                             |
+| Next         | PR review; merge.                                                  |
 | Last touched | 2026-05-25                                                         |
 
 * Acceptance
@@ -97,9 +97,9 @@ The constant is transitively available via =bitemporal_operations.hpp= →
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                        |
+|-----+--------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/850][#850]] | [fix] Portfolios and books not visible when a workspace is active |
 
 * Review
 

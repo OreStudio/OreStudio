@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 8F36631E-2CCE-4E2C-8E54-9B93F0DEE454
+:END:
+#+title: Task: Disable RFL precompiled headers when building with coverage
+#+description: Guard target_precompile_headers with NOT WITH_PROFILING to fix sccache failure on coverage builds.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :build:pch:coverage:sccache:rfl_complexity_resolution:sprint_18:v0:
+#+owner: marco
+#+branch: feature/pch-sccache-coverage
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The RFL precompiled headers added in PR #835 break sccache on coverage
+builds. When =WITH_PROFILING=On=, =-fprofile-arcs -ftest-coverage= are
+added globally; sccache then expects a =.gcno= file alongside every
+compiled output, including the PCH. The PCH step does not produce a
+=.gcno= in the expected location, so sccache aborts with:
+
+#+begin_example
+sccache: error: failed to zip up compiler outputs
+sccache: caused by: failed to open file `cmake_pch.hxx.gcno`: No such file or directory
+#+end_example
+
+The fix is to skip =target_precompile_headers= when =WITH_PROFILING= is
+set — coverage builds are slow by design and do not benefit from PCH
+caching.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                                |
+| Parent story | [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] |
+| Now          | Implementing fix.                      |
+| Waiting on   | CI green.                              |
+| Next         | Merge after CI passes.                 |
+| Last touched | 2026-05-25                             |
+
+* Acceptance
+
+- CI coverage build (=linux-clang-debug-ninja= with =code_coverage=1=) passes without sccache errors.
+- Non-coverage builds still use PCH (i.e. the guard is tight).
+- No regression on macOS or Windows builds.
+
+* Plan
+
+Wrap =target_precompile_headers= in all 17 affected =CMakeLists.txt=
+files with =if(NOT WITH_PROFILING)=.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

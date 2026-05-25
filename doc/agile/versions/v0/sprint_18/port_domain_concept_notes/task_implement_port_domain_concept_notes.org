@@ -9,7 +9,7 @@
 #+filetags: :port_domain_concept_notes:sprint_18:v0:
 #+owner: marco
 #+branch: feature/port-domain-concept-notes
-#+pr:
+#+pr: 844
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
@@ -66,9 +66,9 @@ Source files to process (=/home/marco/Development/Notebooks/summaries/=):
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                           |
+|-----+-------------------------------------------------|
+| 844 | Port domain concept notes to knowledge documents |
 
 * Review
 

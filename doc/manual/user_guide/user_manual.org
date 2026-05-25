@@ -13,13 +13,13 @@
 #+updated: 2026-05-25
 #+latex_class: ores-tufte
 # tufte-book brings its own geometry, headers, fonts, hyperref and booktabs.
-# Keep graphicx + the \maxwidth figure cap (figures fill up to 0.85 of the
+# Keep graphicx + the \maxwidth figure cap (figures fill up to 0.7 of the
 # narrow text column); add an ORE accent colour for links and headings; and
 # pin the running-head title, since the included chapters' #+title keywords
 # would otherwise concatenate into it.
 #+latex_header: \usepackage{graphicx}
 #+latex_header: \makeatletter
-#+latex_header: \def\maxwidth{\ifdim\Gin@nat@width>0.85\linewidth 0.85\linewidth\else\Gin@nat@width\fi}
+#+latex_header: \def\maxwidth{\ifdim\Gin@nat@width>0.7\linewidth 0.7\linewidth\else\Gin@nat@width\fi}
 #+latex_header: \makeatother
 #+latex_header: \definecolor{oreaccent}{rgb}{0.11,0.43,0.64}
 #+latex_header: \hypersetup{colorlinks=true,allcolors=oreaccent}

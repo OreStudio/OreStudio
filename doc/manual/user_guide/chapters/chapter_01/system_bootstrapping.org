@@ -26,8 +26,9 @@ This chapter covers:
 - How to manage your saved connections — adding, editing, deleting,
   organising by environment and tag.
 - How to read the status bar and understand what each zone shows.
-- How to launch ORE Studio from the command line with options for colour
-  theme, configuration directory, auto-connect, and diagnostics.
+- How to launch ORE Studio from the command line with options for
+  telling windows apart, configuration directory, auto-connect, and
+  diagnostics.
 
 ** The main window before login
 
@@ -331,33 +332,45 @@ The status bar changes appearance to reflect the connection state:
 ** Starting ORE Studio from the command line
 
 ORE Studio can be launched directly from a terminal, which is useful for
-scripting, for switching colour themes, or for pointing the application
-at a non-default configuration directory. Run =ores --help= to see the
-full list of accepted options for your installed version; the most
-commonly used ones are documented below.
+scripting, for telling several windows apart, or for pointing the
+application at a non-default configuration directory. Run =ores --help=
+to see the full list of accepted options for your installed version; the
+most commonly used ones are documented below.
 
 #+begin_src sh
 ores --help
 #+end_src
 
-*** Colour theme
+*** Telling windows apart (instance colour and name)
 
-ORE Studio ships with light and dark colour themes. By default it
-follows the operating system's current theme preference. To override:
+When you run more than one ORE Studio window at once — for example
+against different backends, or from separate checkouts — you can give
+each window a distinct identity so you can tell them apart at a glance.
+This is /not/ a light/dark theme; it is purely a per-window marker.
+
+- =--instance-color HEX= draws a small coloured circle in the status bar
+  in that colour (a 6-digit RGB hex, e.g. =F44336= for red). Give each
+  window a different colour.
+- =--instance-name NAME= (short form =-n=) labels the window with a
+  name, also shown in the status bar, so you can see which window is
+  which.
 
 #+begin_src sh
-ores --colour light    # force light theme
-ores --colour dark     # force dark theme
-ores --colour system   # follow the OS preference (default)
+ores --instance-name "Local dev" --instance-color 2196F3
 #+end_src
 
-The =--color= spelling (without the 'u') is accepted as an alias.
+The colour and the name are independent: the colour is only a visual
+marker, and the name is what identifies the instance. If you launch via
+=build/scripts/start-client.sh=, its =--colour red|green|blue|<hex>=
+sets the marker colour and =--name= sets the instance name; when you omit
+=--name=, the name comes from =ORES_CHECKOUT_LABEL= in your =.env= — never
+from the colour.
 
-#+caption: [SCREENSHOT NEEDED] The application side-by-side in light and dark themes. Show the same screen (e.g. the main window or Connection Manager) in both modes to illustrate the visual difference.
-# Capture: launch with --colour light and take a screenshot. Relaunch
-# with --colour dark and take the same screenshot. Place them side by
-# side or present as two figures.
-[[../../../../../assets/images/TODO_colour_themes.png]]
+#+caption: [SCREENSHOT NEEDED] Two ORE Studio windows side by side, each with a different instance-colour circle and name in the status bar, showing how to tell them apart.
+# Capture: start two instances with different --instance-color values
+# (and names). Show both status bars so the coloured circle and the
+# instance name differ between the two windows.
+[[../../../../../assets/images/TODO_instance_colour.png]]
 
 *** Configuration directory
 

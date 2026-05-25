@@ -39,6 +39,7 @@ See [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner]] for the deployment
 - [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][PlantUML ER Modeler]] — entity-relationship diagrams for database
   schema.
 - [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint]] — create new sprint backlogs.
+- [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][Sprint Reviewer]] — produce a System 2 health-check for the current sprint: goal alignment, load, PR velocity, story/task balance, focus signal, overall verdict — written into =sprint.org=.
 - [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][Release Notes Generator]] — generate release notes for a sprint.
 - [[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][Recipe Author]] — create new recipe files and recipe-updating
   skills.

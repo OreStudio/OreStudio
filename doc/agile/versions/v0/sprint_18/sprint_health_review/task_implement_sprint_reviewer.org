@@ -28,11 +28,11 @@ template so every new sprint has an empty =* Health Review= placeholder.
 
 | Field        | Value                                        |
 |--------------+----------------------------------------------|
-| State        | BACKLOG                                      |
+| State        | STARTED                                      |
 | Parent story | [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]]     |
-| Now          | Not yet started.                             |
+| Now          | =doc/llm/skills/sprint-reviewer/SKILL.org= written; sprint template and catalogue updated. |
 | Waiting on   | Nothing.                                     |
-| Next         | Begin implementation.                        |
+| Next         | Review and merge.                            |
 | Last touched | 2026-05-25                                   |
 
 * Acceptance

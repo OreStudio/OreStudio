@@ -60,9 +60,9 @@ flagged with =→=.
 
 * PRs
 
-| PR  | Title                                                |
-|-----+------------------------------------------------------|
-| 832 | [ores.compass] Implement compass fleet (worktree status) |
+| PR                                                                                 | Title                                                    |
+|------------------------------------------------------------------------------------+----------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/832][#832]] | [ores.compass] Implement compass fleet (worktree status) |
 
 * Review
 

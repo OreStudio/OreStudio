@@ -1,0 +1,241 @@
+:PROPERTIES:
+:ID: A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728
+:END:
+#+title: Sprint Reviewer
+#+description: Produce a structured System 2 health-check for the current sprint: goal alignment, load, PR velocity, story/task balance, focus signal, and overall verdict — written into sprint.org.
+#+type: skill
+#+version: 2
+#+level: cross
+#+filetags: :skills:claude_code:agile:sprint:review:health:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+
+#+begin_export markdown
+---
+name: sprint-reviewer
+description: |
+  Produce a structured System 2 health-check for the current sprint and write it into sprint.org under a new * Health Review section.
+  Use this skill when asked to review or assess sprint health, mid-sprint or at close.
+  The review is deliberately slow and critical — it challenges whether stories serve goals, whether the sprint is overloaded, and whether the team is focused.
+  Produces six sub-sections: Goal alignment, Sprint load, PR velocity, Story and task balance, Focus signal, Overall verdict.
+  The section is idempotent: re-running replaces the existing * Health Review block.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When asked to review sprint health — mid-sprint to catch drift or
+at close to record a final verdict. The output is a =* Health Review=
+section written /into/ =sprint.org= so it is version-controlled and
+available in future sessions without re-running the analysis.
+
+This skill is intentionally *System 2*: it does not merely summarise
+what is already in the status tables. It challenges assumptions, flags
+gaps, and produces a critical assessment. Resist every instinct to be
+optimistic or reassuring — the value is in the questions it forces.
+
+* How to use this skill
+
+** Step 1 — Activate System 2
+
+Before gathering any data, read the sprint goals slowly and ask:
+
+- Are these goals still the right goals? Could circumstances have
+  shifted them?
+- What would a failing sprint look like from the outside?
+- What am I likely to overlook if I rush this?
+
+Write down any pre-existing concerns before collecting evidence.
+This prevents anchoring on the positive signals first.
+
+** Step 2 — Gather data
+
+*** Sprint document
+
+Read the full =sprint.org=: mission, goals list, =* Status= table
+(sprint start date is the =Start= field of the first STARTED story,
+or infer from =#+created:= on =sprint.org=), and the =* Stories= table.
+
+*** Story and task files
+
+Read every =story.org= and =task_*.org= under the sprint directory.
+For each story note: State, how many tasks it has, how many are DONE
+vs BACKLOG/STARTED, and whether the story title/description maps to a
+sprint goal.
+
+#+begin_src sh :results verbatim
+find doc/agile/versions/v0/sprint_<N> -name "story.org" -o -name "task_*.org" | sort
+#+end_src
+
+*** Git commit load
+
+#+begin_src sh :results verbatim
+git log --oneline --since=<sprint-start-date> | wc -l
+git log --oneline --since=<sprint-start-date> | head -20
+#+end_src
+
+Use the sprint start date from =sprint.org=. Compute commits/day and
+project the total at sprint close (typically 7 days from start).
+
+*** PR velocity
+
+#+begin_src sh :results verbatim
+projects/ores.compass/compass.sh fleet -f json 2>/dev/null
+#+end_src
+
+Also run:
+
+#+begin_src sh :results verbatim
+git log --oneline --all --since=<sprint-start-date> | grep "Merge pull request" | wc -l
+git log --oneline --all --since=<sprint-start-date> | grep "Merge pull request"
+#+end_src
+
+Identify: PRs merged per day, open PRs (from =compass fleet=), any
+branch that has been open more than one day without a merged PR (WIP
+accumulation).
+
+** Step 3 — Analyse (System 2 questions for each dimension)
+
+For each dimension below, answer the mandatory questions before
+writing the verdict. The questions are the analysis — the written
+section is the output.
+
+*** Goal alignment
+
+For each sprint goal:
+- Which stories directly serve this goal? (Match by title/description
+  — do not rely on tags alone.)
+- Are there stories with no clear mapping to any goal? If so, why
+  are they in the sprint?
+- Is any goal uncovered — no story addresses it at all?
+
+Challenge: could any "covered" mapping be wishful? A story that
+tangentially touches a goal is not a substitute for one that directly
+advances it.
+
+*** Sprint load
+
+Targets: ≤ 300 commits, ≤ 7 days.
+- Commits so far, elapsed days, commits/day average.
+- Projected total at close (commits/day × remaining days).
+- Verdict: under 250 = GREEN; 250–350 = AMBER; over 350 = RED.
+  A sprint that is slightly over is amber, not automatically red —
+  these are soft thresholds.
+
+Challenge: is the commit rate sustainable? Are bursts hiding idle
+periods? Is the per-day average masking a sprint that started fast
+and has stalled?
+
+*** PR velocity
+
+- PRs merged per day since sprint start.
+- PRs currently open (from fleet).
+- Any PR open longer than one day without review activity (WIP
+  accumulation signal).
+- Verdict: ≥ 1 PR/day and no long-open WIP = GREEN; slower merge
+  rate or 1 long-open PR = AMBER; stalled PRs or no merges in 2+
+  days = RED.
+
+Challenge: are PRs being merged quickly or piling up? Is WIP
+spreading across too many branches?
+
+*** Story and task balance
+
+- Stories without any tasks (not decomposed — work is opaque).
+- Stories STARTED the longest without closing (calculate days open
+  for each STARTED story).
+- Ratio of DONE to BACKLOG+STARTED across all stories.
+- Verdict: all stories decomposed, ratio ≥ 0.5 = GREEN; some
+  undecomposed or ratio 0.3–0.5 = AMBER; major undecomposed stories
+  or ratio < 0.3 = RED.
+
+Challenge: a STARTED story with no tasks is a black box — progress
+cannot be tracked. Is that acceptable for its size?
+
+*** Focus signal
+
+- Count of simultaneously STARTED stories (stories where State =
+  STARTED and no End date).
+- Are STARTED stories from unrelated themes (cross-cutting concern)?
+  Compare =#+filetags:= across in-flight stories.
+- Verdict: 1–3 STARTED stories with coherent themes = GREEN; 4–5
+  or mixed themes = AMBER; 6+ or wildly divergent themes = RED.
+
+Challenge: focus is sacrificed incrementally. Each "just one more"
+story in flight compounds context-switching cost. Is the current
+count deliberate or accidental?
+
+*** Overall verdict
+
+Write one paragraph (3–5 sentences) that synthesises all five
+dimensions. State the overall RAG (a sprint is RED if any single
+critical dimension is RED; AMBER if two or more are AMBER). Name
+the most important concern and the one thing that, if fixed, would
+most improve sprint health.
+
+** Step 4 — Write the review into sprint.org
+
+Find the =* Health Review= section in =sprint.org=. If it contains
+only the placeholder line, replace the entire section content. If a
+previous review exists (from a prior run of this skill), replace it
+— the section is idempotent.
+
+The section must appear before =* Retrospective=.
+
+Format:
+
+#+begin_example
+,* Health Review
+
+/Reviewed: <date> — <sprint elapsed days> days in./
+
+,** Goal alignment
+
+[narrative + table: Goal | Coverage | Stories | Notes]
+
+,** Sprint load
+
+[narrative + table: Metric | Value | Target | Status]
+
+,** PR velocity
+
+[narrative + table: Metric | Value | Notes]
+
+,** Story and task balance
+
+[narrative + table: Story | State | Tasks | Days open | Notes]
+
+,** Focus signal
+
+[narrative: count, themes, verdict]
+
+,** Overall verdict
+
+[RAG table: Dimension | Verdict]
+
+[one paragraph summary]
+#+end_example
+
+After writing, confirm the section replaced (not appended) and
+report the file path.
+
+** Step 5 — Update the task
+
+Update the =task_implement_sprint_reviewer.org= status to STARTED
+(if running for the first time) or leave it DONE if the skill is
+complete.
+
+* Sprint template note
+
+New sprints scaffolded with =compass add sprint= include an empty
+=* Health Review= placeholder:
+
+#+begin_example
+,* Health Review
+
+(Run =sprint-reviewer= to generate this section.)
+#+end_example
+
+This placeholder is present from day one so the section header
+always exists in the document even before the first review.

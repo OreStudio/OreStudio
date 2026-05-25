@@ -231,9 +231,9 @@ from the user's init if it was only used for ORE Studio services.
 
 * PRs
 
-| PR  | Title                                                      |
-|-----+------------------------------------------------------------|
-| 828 | [agile] Audit ores.lisp modules and design dashboard architecture |
+| PR                                                                                 | Title                                                           |
+|------------------------------------------------------------------------------------+-----------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/828][#828]] | [agile] Audit ores.lisp modules and design dashboard architecture |
 
 * Review
 

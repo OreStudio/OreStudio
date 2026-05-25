@@ -97,9 +97,9 @@ Adapted from the work of [[https://x.com/draparente][Dr. Angelica Parente]].
 
 * PRs
 
-| PR  | Title                                                     |
-|-----+-----------------------------------------------------------|
-| 833 | [skills,doc] Port tufte-viz skill and reference docs into ORE Studio |
+| PR                                                                                 | Title                                                                |
+|------------------------------------------------------------------------------------+----------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/833][#833]] | [skills,doc] Port tufte-viz skill and reference docs into ORE Studio |
 
 * Review
 

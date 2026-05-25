@@ -89,9 +89,9 @@ Key design choices:
 
 * PRs
 
-| PR  | Title                                                            |
-|-----+------------------------------------------------------------------|
-| 831 | [ores.lisp] Implement ores-dashboard.el — ORE Studio dev console |
+| PR                                                                                 | Title                                                            |
+|------------------------------------------------------------------------------------+------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/831][#831]] | [ores.lisp] Implement ores-dashboard.el — ORE Studio dev console |
 
 * Review
 

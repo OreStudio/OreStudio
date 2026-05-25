@@ -9,7 +9,7 @@
 #+filetags: :compass:workflow:python:compass_goto:sprint_18:v0:
 #+owner: marco
 #+branch: feature/compass-goto
-#+pr:
+#+pr: 834
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
@@ -64,9 +64,9 @@ exists), it was verified by =--dry-run= and a throwaway real run
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/834][#834]] | [ores.compass] Add the Goto pillar (compass goto) |
 
 * Review
 

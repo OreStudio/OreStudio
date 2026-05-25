@@ -9,7 +9,7 @@
 #+filetags: :documentation:codegen:audit:uppercase_uuid_invariant:sprint_18:v0:
 #+owner: marco
 #+branch: feature/minor-doc-fixes
-#+pr:
+#+pr: 805
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
@@ -51,6 +51,12 @@ Plan distilled into the parent story's =* Decisions= section on close — see [[
 - The audit that fed this plan was performed on 2026-05-24 on =feature/minor-doc-fixes=. It found zero lowercase IDs in the on-disk org corpus (confirming prior normalisation commits held) and four code-side leak sources (templates, =parent_id= / =predecessor_id= pass-through, release-notes generator, backlog-indexes constants).
 - The newly generated =story.org= and =task.org= for /this/ story themselves shipped with lowercase concept-link UUIDs from the templates — fixed by hand in the same commit that introduced them. They are Exhibit A for why the template fix was needed.
 - A follow-up exhaustive sweep surfaced three pre-existing v1 plan documents whose =:ID:= values were uppercase but /not valid hex/ (=H= and =G= characters). These predate the invariant work; treated as a separate bug and fixed in its own commit ([doc] Fix invalid (non-hex) UUIDs in 3 v1 plan files).
+
+* PRs
+
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/805][#805]] | [doc,codegen] Minor doc fixes and uppercase UUID invariant |
 
 * Result
 

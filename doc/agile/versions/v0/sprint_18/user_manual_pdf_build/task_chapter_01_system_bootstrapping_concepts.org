@@ -55,6 +55,12 @@ task closes. Plans do not outlive their task.)
 
 * Notes
 
+* PRs
+
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/814][#814]] | Add system bootstrapping concepts chapter and manual-updater skill |
+
 * Review
 
 | # | Comment summary                           | File                             | Decision | Notes                                                                 |

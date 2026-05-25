@@ -9,7 +9,7 @@
 #+filetags: :doc:manual:cmake:pdf:latex:user_manual_pdf_build:sprint_18:v0:
 #+owner: marco
 #+branch: feature/user-manual-pdf-build
-#+pr:
+#+pr: 810
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
@@ -52,6 +52,12 @@ distilled into the parent story's =* Decisions= and cleared when the
 task closes. Plans do not outlive their task.)
 
 * Notes
+
+* PRs
+
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/810][#810]] | [doc] Add deploy_manual CMake target to build user manual PDF |
 
 * Review
 

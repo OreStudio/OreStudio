@@ -9,7 +9,7 @@
 #+filetags: :compass:scoping:python:ores_compass_tool:sprint_18:v0:
 #+owner: marco
 #+branch: feature/compass-tool
-#+pr:
+#+pr: 808
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
@@ -89,6 +89,12 @@ add task to story, add sprint, add recipe, etc."
 Related captures that touch the same surface but are tracked
 separately: the Agile "capture-drain skill" and the Emacs "capture
 command that locates the latest capture.org".
+
+* PRs
+
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/808][#808]] | [ores.compass] Promote compass into a project and scope its pillars |
 
 * Result
 

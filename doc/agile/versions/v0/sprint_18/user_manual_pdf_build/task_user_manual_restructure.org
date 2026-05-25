@@ -86,6 +86,12 @@ The plan followed for this task:
   from agile template) and broken heading hierarchy (=** Introduction=
   with =:minlevel 1= created double-nesting). Both fixed before merge.
 
+* PRs
+
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/807][#807]] | [doc] Restructure user manual into chaptered layout |
+
 * Result
 
 PR #807 merged. The manual now has a clean chaptered layout with a

@@ -44,6 +44,7 @@ In execution order:
 
 - [[id:C0A295F9-69B0-45AF-A45C-18A813D649A4][Task: Create backlog-refiner and sprint-planner skills and recipes]]
 - [[id:2F0D0382-2230-470E-A481-7A9D5B7326B4][Task: Set sprint goals and select sprint 18 stories]]
+- [[id:4076E101-814B-4EAF-AD32-06F472C16333][Task: Audit sprint 18 tasks: ensure all PRs have URLs and consistent format]]
 
 * Decisions
 

@@ -9,7 +9,7 @@
 #+filetags: :agile:backlog:skills:recipes:sprint_18:v0:backlog_refinement:
 #+owner: marco
 #+branch: feature/backlog-refinement-skills
-#+pr:
+#+pr: 809
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
@@ -53,5 +53,11 @@ Produce two Claude Code skills (=backlog-refiner=, =sprint-planner=) and two com
 7. Run =deploy_skills= and =deploy_site= to confirm clean build.
 
 * Notes
+
+* PRs
+
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/809][#809]] | [agile,skills] Backlog refinement skills, recipes, and sprint 18 goals |
 
 * Result

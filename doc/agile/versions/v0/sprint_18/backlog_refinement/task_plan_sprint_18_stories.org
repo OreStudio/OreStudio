@@ -9,7 +9,7 @@
 #+filetags: :agile:sprint_18:sprint_planning:v0:backlog_refinement:
 #+owner: marco
 #+branch: feature/sprint-18-planning
-#+pr:
+#+pr: 812
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
@@ -54,6 +54,12 @@ Sprint 18 acquires a clear one-sentence mission and a curated Stories table that
 - Near backlog had 233 items (well above healthy ≤20 heuristic — refinement pass needed separately).
 - 5 captures scored and promoted: ORE sample data, ORE samples support, ORE types Example 1, instrument visibility bug, Qt instrument in TradeDetailDialog.
 - Compass story created fresh (no existing capture); scaffolded directly into sprint.
+
+* PRs
+
+| PR                                                               | Title                                  |
+|------------------------------------------------------------------+----------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/812][#812]] | [agile] Sprint 18 planning: task lifecycle recipe, promote stories, compass story |
 
 * Result
 

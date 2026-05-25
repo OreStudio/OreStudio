@@ -9,7 +9,7 @@
 #+filetags: :compass:tooling:python:backlog:sprint_18:v0:compass_product_backlog:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 824
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24

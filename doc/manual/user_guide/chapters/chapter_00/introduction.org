@@ -88,3 +88,12 @@ change between releases. Numbers produced by the system are for learning and
 exploration only — they must not be used for real trading, risk management, or
 any financial decision-making.
 #+end_quote
+
+** A Note on This Document
+
+This manual was generated entirely by large language models (LLMs) working
+under human supervision. While every effort has been made to ensure accuracy,
+LLM-generated content can contain errors, omissions, or descriptions that do
+not match the actual software behaviour. If you find a discrepancy between this
+manual and the application, trust the application. Please report inaccuracies
+via the project issue tracker so they can be corrected.

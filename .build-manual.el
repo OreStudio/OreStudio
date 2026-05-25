@@ -42,10 +42,20 @@
                ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                ("\\paragraph{%s}" . "\\paragraph*{%s}")))
 
-;; Override title: prevents org from concatenating #+title: from all
-;; #+include:'d chapter files into one long string.
+;; Custom title page with logo.  Image path is relative to the .tex
+;; file location (doc/manual/user_guide/), so three levels up to reach
+;; assets/images/.
 (setq org-latex-title-command
-      "\\title{ORE Studio User Manual}\\author{Marco Craveiro}\\date{}\\maketitle")
+      "\\begin{titlepage}
+\\centering
+\\vspace*{3cm}
+\\includegraphics[width=0.25\\textwidth]{../../../assets/images/modern-icon.png}\\par
+\\vspace{2cm}
+{\\Huge\\bfseries ORE Studio User Manual\\par}
+\\vspace{0.5cm}
+{\\large Marco Craveiro\\par}
+\\vfill
+\\end{titlepage}")
 
 ;; Run LaTeX twice so cross-references and TOC are resolved.
 (setq org-latex-pdf-process

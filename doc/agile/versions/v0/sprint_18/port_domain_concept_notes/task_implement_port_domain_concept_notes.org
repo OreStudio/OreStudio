@@ -28,7 +28,7 @@ Read all nine source notes under =/home/marco/Development/Notebooks/summaries/=,
 |--------------+------------------------------------------------------------|
 | State        | DONE                                                       |
 | Parent story | [[id:4E375DD6-E300-4A0A-BD20-3D06AC8ED7A1][Port domain concept notes to knowledge documents]]           |
-| Now          | All 8 knowledge documents created and committed.           |
+| Now          | Complete.                                                  |
 | Waiting on   | Nothing.                                                   |
 | Next         | Raise PR.                                                  |
 | Last touched | 2026-05-25                                                 |
@@ -72,9 +72,10 @@ Source files to process (=/home/marco/Development/Notebooks/summaries/=):
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                              | File                                    | Decision | Notes                               |
+|---+--------------------------------------------------------------+-----------------------------------------+----------+-------------------------------------|
+| 1 | DONE task: Now field should be "Complete" not prose          | task_implement_port_domain_concept_notes.org | Fixed | Changed to "Complete."          |
+| 2 | Aggregation hierarchy uses "Trade Aggregate"; should be "Structure" | pl_attribution.org             | Fixed | Updated hierarchy line              |
 
 * Result
 

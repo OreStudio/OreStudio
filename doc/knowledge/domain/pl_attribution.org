@@ -303,4 +303,4 @@ Adjustment* (FX Adjustment). Traders are expected to hedge this FX exposure.
 
 The aggregation hierarchy:
 
-: Trade → Trade Aggregate → Book → Sub-Portfolio → Portfolio → Branch → Firm
+: Trade → Structure → Book → Sub-Portfolio → Portfolio → Branch → Firm

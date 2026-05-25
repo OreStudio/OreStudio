@@ -57,6 +57,7 @@ In execution order:
 - [[id:696612A2-A9D5-47FE-BC5A-2F90FDCA4E15][Implement ores-dashboard.el]]
 - [[id:7E86CDB4-3FE6-46AD-BCC8-C0E9AD8857D6][Remove superseded ores.lisp modules]]
 - [[id:3C888F53-0522-4A56-A50A-A7AFEA101468][Write the ORE Studio dashboard user manual section]]
+- [[id:3C569365-B253-4BC6-9385-7CAF7B4FB54D][Make compass output paths clickable in dashboard output pane]]
 
 * Decisions
 

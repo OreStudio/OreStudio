@@ -43,13 +43,33 @@ ergonomics.
 - Compilation buffers for build, site, services, and DB scripts.
 - Org-roam HTML export artefacts (via =ores-org-roam-export=).
 
-* Entry points
+* Source files
 
-- =ores-dashboard.el= — =M-x ores/dashboard= opens the development console.
-- =ores-db.el= — =M-x ores-db/list-databases= opens the database browser.
-- =ores-shell.el= — =M-x ores-shell= opens an ores.shell REPL.
-- =ores-env.el= — =ores/load-dotenv= and =ores/checkout-root= for .env access.
-- =ores-org-roam-export.el= — org-roam → HTML export pipeline.
+- =ores-env.el= — parses the checkout =.env= file into an alist and exposes
+  =ores/load-dotenv= and =ores/checkout-root=. Foundation module; required by
+  all others.
+- =ores-dashboard.el= — per-checkout interactive development console. Renders
+  a card-based layout (Environment, Database, Services, Compass, Build, Site,
+  Skills, Bookmarks, Links, Shell, NATS) with global keyboard shortcuts
+  (=a=–=z=, =A=–=Z=). Entry point: =M-x ores/dashboard=.
+- =ores-db.el= — tabulated database browser and SQL connection manager.
+  Discovers all =ores_*= databases on localhost, supports connect, kill
+  connections, teardown, and recreate operations. Entry point:
+  =M-x ores-db/list-databases=.
+- =ores-shell.el= — launches an =ores.shell= REPL as a comint buffer, pointed
+  at the preset's published binary. Entry point: =M-x ores-shell=.
+- =ores-shell-mode.el= — trivial major mode for the =ores.shell= REPL buffer.
+  Provides font-lock highlighting for shell commands (=connect=, =login=,
+  =accounts=, =create=, =exit=) so they stand out from arguments.
+- =ores-babel.el= — configures Org Babel =#+begin_src sh= blocks in recipe
+  files to run with =default-directory= set to the repo root, so paths like
+  =./projects/ores.compass/compass.sh= resolve consistently regardless of
+  where the =.org= file lives.
+- =ores-prodigy.el= — registers all ORE Studio background services
+  (databases, NATS, HTTP server, domain services) with Prodigy for
+  point-and-click process lifecycle management.
+- =ores-org-roam-export.el= — org-roam → HTML export pipeline; walks the
+  node graph and publishes the documentation site.
 
 * Dependencies
 

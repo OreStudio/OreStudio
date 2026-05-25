@@ -57,4 +57,10 @@ target_link_libraries(${lib_target_name}
         Boost::boost)
 # Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
+
+target_precompile_headers(${lib_target_name} PRIVATE
+    <rfl.hpp>
+    <rfl/json.hpp>
+    "ores.utility/rfl/reflectors.hpp")
+
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

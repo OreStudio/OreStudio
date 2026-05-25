@@ -30,10 +30,10 @@ shows its figures instead of =TODO_*.png= placeholders.
 |--------------+----------------------------------------|
 | State        | STARTED                                |
 | Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
-| Now          | Buckets A/B/D done and wired; party-hierarchy diagram generated from PlantUML. |
-| Waiting on   | 20 screenshot captures from product owner (5 in chapter 2, 15 provisioner/concepts). |
-| Next         | Drop the captured PNGs under their final names in =assets/images/=. |
-| Last touched | 2026-05-25                             |
+| Now          | Provisioner round done: all System/Tenant/Party wizard shots wired and chapter 3 rewritten to the real flows; new functionality documented (connection-error dialogs, Select Party, tenant-admin login, status-bar zones). |
+| Waiting on   | 4 chapter-2 captures from product owner (see below). |
+| Next         | Capture the 4 remaining chapter-2 shots. |
+| Last touched | 2026-05-26                             |
 
 * Acceptance
 
@@ -142,12 +142,21 @@ System / Tenant / Party Provisioner wizard pages
 
 ** Still to capture (bucket C — 20 screenshots, save under =assets/images/=)
 
-Chapter 2 (=chapter_2_connecting.org=, 5):
+Chapter 2 (=chapter_2_connecting.org=, 4 remaining):
 - =connection_manager_tag_filter.png= — tag-filter bar with =client-acme= typed.
 - =main_window_connect_dropdown.png= — toolbar Connect button + connection dropdown.
 - =connection_lost_banner.png= — disconnected-while-logged-in warning + Reconnect.
-- =status_bar_connected.png= — full connected status bar, all zones.
 - =main_window_instance_colour.png= — two windows with different instance colours/names.
+
+Captured in the provisioner round (now wired): =status_bar_connected=; the
+full System Provisioner (welcome, admin account, setup mode, tenant
+details, tenant admin, provisioning, setup complete); Tenant Provisioner
+(welcome, catalogue, data source, party setup, publishing×2, complete);
+Party Provisioner (welcome, counterparty import, report definitions,
+execute, complete); plus newly-documented functionality — the two
+connection-error dialogs, the Select Party dialog (×2), and tenant-admin
+login. =admin_menu_provision_tenant= is obsolete: tenants are onboarded
+from /System → Identity → Tenants/, not an Administration menu item.
 
 The 3-state status-bar composite was dropped: the section now shows each
 state individually (disconnected captured; connected and lost are the two

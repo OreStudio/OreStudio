@@ -102,276 +102,235 @@ following sections walk through each one.
 
 ** The System Provisioner wizard
 
-The System Provisioner runs automatically when you connect to a
-backend that has never been initialised. It is a one-time wizard; once
-completed, it cannot be launched again from the same backend.
+The first time you connect to a backend that has never been initialised,
+ORE Studio detects /bootstrap mode/ and launches the *New System
+Provisioner* automatically. This one-time wizard creates the platform
+administrator account, chooses a single- or multi-tenant layout, and
+provisions the first tenant together with its own administrator.
 
-*** Welcome page
+*** Welcome
 
-#+caption: [SCREENSHOT NEEDED] The System Provisioner welcome page. Show the full dialog with its title, a brief description of what the wizard will do, and the Next button.
-# Capture: connect to a freshly installed backend. The System
-# Provisioner should launch automatically. Screenshot the welcome
-# page before clicking Next.
+#+caption: The System Provisioner welcome page, shown when the backend is in bootstrap mode. It lists the three setup steps.
 [[../../../assets/images/system_provisioner_welcome.png]]
 
-The welcome page confirms that the backend is in bootstrap mode and
-explains that you are about to create the first platform administrator
-account. Read it carefully — this account will have unrestricted
-access to the entire deployment.
+The welcome page confirms the system is in bootstrap mode and outlines
+the steps: create the administrator account, choose the setup mode, and
+create the first tenant. Click *Next*.
 
-Click *Next* to proceed.
+*** Create the administrator account
 
-*** Administrator account
-
-#+caption: [SCREENSHOT NEEDED] The System Provisioner administrator account page. Show the username and password fields, the password confirmation field, and any password-strength indicator.
-# Capture: on the administrator account step, fill in example
-# credentials (use a placeholder username, hide the password field
-# or use a dummy value). Show the full page with all fields visible.
+#+caption: Creating the platform administrator account — the first account, with full administrative privileges over the whole deployment.
 [[../../../assets/images/system_provisioner_admin_account.png]]
 
-Fill in the fields:
+Enter a *username*, *email*, and *password* (with confirmation) for the
+platform administrator. Keep these credentials safe — this account has
+unrestricted access to the entire deployment. Click *Create & Continue*.
 
-- *Username* — the login name for the platform administrator (e.g.
-  =admin=). This is case-sensitive. Choose something memorable; it
-  cannot be changed after creation without database-level access.
-- *Password* — a strong password for the administrator account. ORE
-  Studio enforces a minimum length and complexity; the strength
-  indicator shows the current rating as you type.
-- *Confirm password* — re-enter the password to confirm. The Next
-  button remains disabled until both fields match.
+*** Choose the setup mode
+
+#+caption: The Setup Mode page. /Single-Tenant/ creates a default tenant with pre-configured settings; /Multi-Tenant/ lets you configure the first tenant in detail and onboard more later.
+[[../../../assets/images/system_provisioner_tenant_config.png]]
+
+Choose how the deployment is organised:
+
+- *Single-Tenant* — best for evaluation, development, or a single
+  organisation. Creates a default tenant with sensible defaults; you can
+  add more tenants later.
+- *Multi-Tenant* — for production deployments serving several
+  organisations. You configure the first tenant's details on the next
+  page and onboard additional tenants from the Tenants window.
 
 Click *Next*.
 
-*** Review and confirm
-
-#+caption: [SCREENSHOT NEEDED] The System Provisioner review page. Show the summary of choices made (username shown, password shown as asterisks), with Back and Finish buttons.
-# Capture: after filling in credentials, reach the review page.
-# Screenshot it with the username visible and password masked.
-[[../../../assets/images/system_provisioner_review.png]]
-
-The review page shows a summary of what will be created. Verify the
-username. Click *Back* to correct any mistake, or *Finish* to
-complete the bootstrap.
-
-*** Completion
-
-#+caption: [SCREENSHOT NEEDED] The System Provisioner completion page (or success dialog). Show the confirmation message and the button to close the wizard and proceed to login.
-# Capture: after clicking Finish, the wizard completes and shows a
-# success message. Screenshot this final state before dismissing.
-[[../../../assets/images/system_provisioner_complete.png]]
-
-Once the wizard completes, the backend exits bootstrap mode. The
-System Provisioner closes and the Connection Manager or login dialog
-appears. Log in with the administrator credentials you just created.
-
-** The Tenant Provisioner wizard
-
-After logging in as the platform administrator, you can create one or
-more tenants. Open the Tenant Provisioner from the *Administration*
-menu → /Provision Tenant/, or from the system dashboard if one is
-shown.
-
-#+caption: [SCREENSHOT NEEDED] The Administration menu open, with the "Provision Tenant" item highlighted.
-# Capture: while logged in as the platform administrator, open the
-# Administration menu. Show the menu with "Provision Tenant" visible
-# and highlighted (hover or focus it).
-[[../../../assets/images/admin_menu_provision_tenant.png]]
-
-*** Welcome page
-
-#+caption: [SCREENSHOT NEEDED] The Tenant Provisioner welcome page. Show the full dialog with its title, a description of what provisioning will create, and the Next button.
-# Capture: open the Tenant Provisioner. Screenshot the welcome page
-# before interacting with any controls.
-[[../../../assets/images/tenant_provisioner_welcome.png]]
-
-The welcome page explains that provisioning creates a new isolated
-tenant with its own system party and an initial administrator account
-for that tenant.
-
 *** Tenant details
 
-#+caption: [SCREENSHOT NEEDED] The Tenant Provisioner tenant details page. Show all fields: tenant name, tenant type dropdown (with options visible or selected), and description.
-# Capture: on the tenant details step, fill in an example tenant name
-# (e.g. "Acme Group"), select a tenant type (e.g. "Production"), and
-# optionally add a description. Show the full page.
-[[../../../assets/images/tenant_provisioner_details.png]]
+#+caption: The first tenant's details: a display name, a short code, a tenant type, and a hostname.
+[[../../../assets/images/system_provisioner_tenant_details.png]]
 
-Fill in the fields:
+Configure the first tenant:
 
-- *Tenant name* — a human-readable name for the organisation this
-  tenant represents (e.g. "Acme Group", "Client A"). This appears in
-  the UI wherever the tenant is referenced.
-- *Tenant type* — choose from /Production/, /Evaluation/, or
-  /Automation/. See the table in [[*Tenants][Tenants]] above for the implications
-  of each type. For a first-time setup representing a real
-  organisation, choose /Production/. For a demo or test environment,
-  choose /Evaluation/.
-- *Description* — optional free-text notes about this tenant's
-  purpose.
+- *Name* — the organisation's display name (e.g. "Barclays Plc").
+- *Code* — a short machine code used internally (e.g. =barclays_plc=).
+- *Type* — the tenant type (see [[*Tenants][Tenants]] above): /System/,
+  /Production/, /Evaluation/, or /Automation/.
+- *Hostname* — the host identifier for the tenant.
 
 Click *Next*.
 
 *** Tenant administrator account
 
-#+caption: [SCREENSHOT NEEDED] The Tenant Provisioner administrator account page. Show username, password, and confirm password fields with a partially filled-in example.
-# Capture: on the administrator account step, enter example
-# credentials for the new tenant's admin. Show all fields.
-[[../../../assets/images/tenant_provisioner_admin.png]]
+#+caption: The tenant administrator account. This account administers the new tenant and is independent of the platform administrator.
+[[../../../assets/images/system_provisioner_tenant_admin.png]]
 
-Create the initial administrator account for the new tenant:
+Create the initial administrator for the new tenant — a *username*,
+*email*, and *password*. This account is given the =TenantAdmin= role:
+full control within the tenant, but no cross-tenant access. Click
+*Provision Tenant*.
 
-- *Username* — the login name for this tenant's administrator. This
-  is independent of the platform administrator account; each tenant
-  maintains its own user database.
-- *Password* / *Confirm password* — as with the system bootstrap,
-  subject to the same strength requirements.
+*** Provisioning
 
-This account is associated with the new tenant's system party and is
-given the =TenantAdmin= role, which grants full control within the
-tenant but no cross-tenant access.
+#+caption: The provisioning step. ORE Studio creates the tenant and its administrator, logging progress as it goes.
+[[../../../assets/images/system_provisioner_complete.png]]
+
+ORE Studio provisions the tenant and creates its administrator account,
+logging each step. When it finishes, click *Continue*.
+
+*** Setup complete
+
+#+caption: The System Provisioner summary: the platform admin, the first tenant, and the tenant admin that were created, with next-step guidance.
+[[../../../assets/images/system_provisioner_provisioning_complete.png]]
+
+The final page summarises what was created and tells you the next step:
+log in as the tenant administrator to run the Tenant Provisioner. To
+create further tenants later, use /System → Identity → Tenants/ and click
+*Onboard*. Click *Finish* — the backend leaves bootstrap mode and the
+login dialog appears.
+
+** The Tenant Provisioner wizard
+
+The first time you log in as a tenant administrator, ORE Studio launches
+the *New Tenant Provisioner*. It seeds the tenant with reference data
+and, optionally, an initial party hierarchy. You can skip it with
+*Cancel* and set everything up by hand later from the Data Librarian and
+Parties windows.
+
+*** Welcome
+
+#+caption: The Tenant Provisioner welcome page, listing its three steps: select a reference-data catalogue, choose a party structure, and execute.
+[[../../../assets/images/tenant_provisioner_setup.png]]
+
+The welcome page outlines the steps: select a catalogue, choose how to
+populate the party hierarchy, and execute. Click *Next*.
+
+*** Select a catalogue
+
+#+caption: Selecting a reference-data catalogue — a pre-configured set of currencies, countries, and market standards.
+[[../../../assets/images/tenant_provisioner_select_catalogue.png]]
+
+A /catalogue/ is a ready-made bundle of reference data. The /Base System/
+catalogue provides industry-standard ISO and FpML data — country codes,
+currency codes, and financial-market standards — suitable for production
+use. Choose a catalogue and click *Next*.
+
+*** Choose a data source
+
+#+caption: Choosing how to populate the party hierarchy: search the GLEIF LEI registry, or generate realistic synthetic data.
+[[../../../assets/images/tenant_provisioner_choose_data_source.png]]
+
+Decide how the tenant's party hierarchy is seeded:
+
+- *GLEIF Registry* — search the global LEI registry for your real
+  organisation and import its structure.
+- *Generate Synthetic Data* — create realistic generated parties, useful
+  for evaluation and testing.
 
 Click *Next*.
 
-*** Review and confirm
+*** Party setup (optional)
 
-#+caption: [SCREENSHOT NEEDED] The Tenant Provisioner review page. Show tenant name, type, and administrator username summarised, with Back and Finish buttons.
-# Capture: reach the review page after filling in all details.
-# Show the summary with all provided information visible.
-[[../../../assets/images/tenant_provisioner_review.png]]
+#+caption: The optional Party Setup step. Search the GLEIF LEI registry, pick a root entity (here Barclays PLC), and its child entities are created automatically.
+[[../../../assets/images/tenant_provisioner_party_setup.png]]
 
-The review page summarises the tenant and administrator that will be
-created. Click *Back* to correct any detail, or *Finish* to provision.
+If you chose the GLEIF registry, search it for your organisation: pick an
+*LEI dataset size*, filter by *Country*, and search by entity name. The
+entity you select becomes the root of your party hierarchy, and its child
+entities in the registry are created automatically. This step is optional
+— skip it to set parties up manually later. Click *Next*.
 
-*** Completion
+*** Publishing
 
-#+caption: [SCREENSHOT NEEDED] The Tenant Provisioner completion page confirming that the tenant and its administrator were created successfully.
-# Capture: after clicking Finish, screenshot the success confirmation
-# before dismissing the wizard.
-[[../../../assets/images/tenant_provisioner_complete.png]]
+#+caption: The publishing step. The catalogue and party data are published to the tenant in one operation, with live progress tracking.
+[[../../../assets/images/tenant_provisioner_dataset_publishing.png]]
 
-Provisioning creates the tenant record, the system party, and the
-administrator account. It also copies the standard set of system-wide
-permissions and roles into the new tenant so administrators can
-immediately assign roles to new users.
+ORE Studio publishes the selected catalogue and party data to the tenant,
+tracking progress per dataset.
 
-The new tenant now appears in the tenant list visible to the platform
-administrator. To begin setting up business parties, log out and log
-back in with the new tenant's administrator credentials, then run the
-Party Provisioner.
+#+caption: Publishing complete — all datasets have been published to the tenant.
+[[../../../assets/images/tenant_provisioner_dataset_publishing_complete.png]]
+
+*** Setup complete
+
+#+caption: The Tenant Provisioner summary, confirming the reference data and parties that were set up.
+[[../../../assets/images/tenant_provisioner_setup_complete.png]]
+
+The final page confirms what was created. Click *Finish*. The tenant now
+has its reference data and party hierarchy in place.
 
 ** The Party Provisioner wizard
 
-The Party Provisioner is run by the tenant administrator after initial
-tenant provisioning. It establishes the operational party hierarchy —
-the business units that will own trades, counterparties, and
-analytics. Open it from the *Administration* menu → /Provision
-Parties/, or from the tenant welcome screen on first login.
+Where the Tenant Provisioner establishes the party /hierarchy/, the
+*Party Setup* wizard configures the operational structure /within/ a
+party: it imports counterparties and creates a standard set of
+risk-report definitions. It runs for a party that needs initial setup,
+and can be skipped with *Cancel* (counterparties and reports can be
+configured later from the application menus).
 
-*** Welcome page
+*** Welcome
 
-#+caption: [SCREENSHOT NEEDED] The Party Provisioner welcome page. Show the full dialog with a description of what it will set up and the Next button.
-# Capture: log in as the tenant administrator and open the Party
-# Provisioner. Screenshot the welcome page.
-[[../../../assets/images/party_provisioner_welcome.png]]
+#+caption: The Party Setup welcome page, listing its steps: counterparty import, report definitions, and execute.
+[[../../../assets/images/party_provisioner_setup.png]]
 
-The welcome page explains that you are about to define the
-organisational structure your tenant will use. Unlike the system and
-tenant provisioners, the Party Provisioner can be run multiple times
-— you can always add more parties later via the main Reference Data
-→ Parties screen.
+The welcome page explains that the party hierarchy already exists and
+that this wizard imports counterparties and configures the
+organisational structure. Click *Next*.
 
-*** Root party
+*** Counterparty import
 
-#+caption: [SCREENSHOT NEEDED] The Party Provisioner root party page. Show the name, description, and LEI (Legal Entity Identifier) fields, with an example filled in.
-# Capture: on the root party step, fill in a realistic example (e.g.
-# name = "Acme Group Holdings", LEI = a 20-character alphanumeric
-# code, description optional). Show the full page.
-[[../../../assets/images/party_provisioner_root.png]]
+#+caption: Choosing the GLEIF dataset size for importing counterparties — the external entities your organisation trades with.
+[[../../../assets/images/party_provisioner_counterparty_import.png]]
 
-The root party is the top of your operational hierarchy — typically
-your holding company, group entity, or the single legal entity if
-your organisation has no subsidiaries.
+/Counterparties/ are the external entities your organisation trades with.
+They are imported from the GLEIF LEI registry; choose the *dataset size*
+to control how many are imported. You can add more later from the
+Counterparties window. Click *Next*.
 
-- *Name* — the full legal or trading name of the root entity.
-- *LEI* — the Legal Entity Identifier (a 20-character code issued by
-  the GLEIF). Optional but strongly recommended for production
-  tenants, where KYC workflows use the LEI to verify counterparty
-  identity.
-- *Description* — optional free-text notes.
+*** Report definitions
 
+#+caption: Selecting standard risk-report definitions to create — NPV, sensitivities, exposure, CVA, and more. All are scheduled on weekdays.
+[[../../../assets/images/party_provisioner_report_definitions.png]]
+
+Optionally create a set of standard risk-report definitions — model
+calibration, yield curves, FX spot rates, volatility surfaces, credit
+curves, NPV, cashflows, Delta and Gamma, Vega, bucketed DV01, exposure,
+CVA, DVA, and others. Use *Select All* / *Deselect All*, or tick
+individual reports; they can be edited later from the Reporting menu.
 Click *Next*.
 
-*** Child parties
+*** Execute
 
-#+caption: [SCREENSHOT NEEDED] The Party Provisioner child parties page. Show the list of parties added so far (including the root) and controls to add, edit, or remove child parties. At least one child should be shown.
-# Capture: on the child parties step, add one or two child parties
-# (e.g. "Acme London", "Acme New York") under the root. Show the
-# party tree with the children visible.
-[[../../../assets/images/party_provisioner_children.png]]
+#+caption: The execute step. Counterparties are imported and the organisation structure (business units, portfolios, books) and report definitions are created, with a live progress table and log.
+[[../../../assets/images/party_provisioner_setup_party.png]]
 
-The child parties page lets you add operational parties beneath the
-root. This is optional — you can run the provisioner with just a root
-party and add children later through Reference Data → Parties.
+ORE Studio runs the setup in phases — importing counterparties,
+publishing the organisation structure (business units, portfolios,
+books), creating the report definitions, and activating the party. When
+it completes, click *Commit*.
 
-To add a child party:
+*** Setup complete
 
-1. Select the parent in the tree (initially only the root is shown).
-2. Click *Add child*.
-3. Fill in the same fields as the root party (name, optional LEI,
-   optional description).
-4. Click *OK* to add it to the tree.
+#+caption: The Party Setup summary, confirming the counterparties, structure, and reports that were created.
+[[../../../assets/images/party_provisioner_setup_complete.png]]
 
-Repeat for as many parties as you need. Parties can be nested to any
-depth — branches under divisions under the holding company, for
-example.
+The final page confirms what was set up. The party is now fully
+operational: it has counterparties, an organisational structure, and
+scheduled risk reports.
 
-To remove a party from the tree before provisioning, select it and
-click *Remove*. Note: parties that have already been provisioned to
-the database can only be deleted through the main Parties screen,
-which enforces referential integrity checks.
+** Choosing a party at login
 
-Click *Next* when the hierarchy looks correct.
+Some accounts are associated with more than one party — for example a
+group administrator who can act for several entities. When you log in
+with such an account, ORE Studio asks which party context to use for the
+session.
 
-*** Review and confirm
+#+caption: The Select Party dialog. Choose the System Party or an Operational Party; filter by booking centre or search by name.
+[[../../../assets/images/party_selection_dialog.png]]
 
-#+caption: [SCREENSHOT NEEDED] The Party Provisioner review page showing the full party tree (root + children) in a tree view, with Back and Finish buttons.
-# Capture: on the review page, show the full party hierarchy as it
-# will be created. The tree should show parent-child relationships
-# clearly.
-[[../../../assets/images/party_provisioner_review.png]]
+Choose *System Party* for administrative work, or *Operational Party* to
+work within a specific business entity. Filter the list by booking
+*centre*, or type in the search box to narrow it.
 
-The review page shows the full hierarchy as it will be created. Each
-party is shown with its name, level in the hierarchy, and LEI if
-provided. Click *Back* to modify the structure, or *Finish* to
-provision all parties in one operation.
+#+caption: The Select Party dialog with a recently used party listed under /Recent/ at the top for quick access.
+[[../../../assets/images/party_selector_recent_party.png]]
 
-*** Completion
-
-#+caption: [SCREENSHOT NEEDED] The Party Provisioner completion page confirming how many parties were created and providing a link or button to navigate to the Parties screen.
-# Capture: after clicking Finish, screenshot the completion message.
-# Show the count of parties created and any navigation options.
-[[../../../assets/images/party_provisioner_complete.png]]
-
-Provisioning creates all parties in the correct parent-child order.
-The system party remains at the top of the hierarchy as the
-administrative root; all operational parties appear beneath it as its
-children or descendants.
-
-Once provisioning is complete, users can be created and assigned to
-parties through the main Administration → Accounts screen. Trades,
-counterparties, and other business data are then entered or imported
-within the context of the party they belong to.
-
-** What comes next
-
-With the system bootstrapped, at least one tenant provisioned, and
-the party hierarchy established, ORE Studio is ready for normal use.
-The next chapters cover:
-
-- *Reference data* — currencies, calendars, and market conventions
-  that must be set up before pricing can begin.
-- *Instruments and trades* — defining and entering financial
-  instruments.
-- *Market data* — yield curves, volatility surfaces, and fixing
-  histories.
-- *Analytics* — running calculations and reviewing results.
+Select a party and click *Select*. Your data visibility for the session
+is determined by the party you choose and its position in the hierarchy.

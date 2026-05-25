@@ -42,11 +42,24 @@
                ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                ("\\paragraph{%s}" . "\\paragraph*{%s}")))
 
+;; Read version from CMakeLists.txt so the cover page stays in sync
+;; with the single source of truth.
+(defun ores/cmake-version ()
+  "Return the project VERSION string from CMakeLists.txt, or \"0.0.0\"."
+  (let ((cmake (expand-file-name "CMakeLists.txt"
+                (file-name-directory (or load-file-name buffer-file-name)))))
+    (with-temp-buffer
+      (insert-file-contents cmake)
+      (if (re-search-forward
+           "project(OreStudio VERSION \\([0-9]+\\.[0-9]+\\.[0-9]+\\)" nil t)
+          (match-string 1)
+        "0.0.0"))))
+
 ;; Custom title page with logo.  Image path is relative to the .tex
 ;; file location (doc/manual/user_guide/), so three levels up to reach
 ;; assets/images/.
 (setq org-latex-title-command
-      "\\begin{titlepage}
+      (format "\\begin{titlepage}
 \\centering
 \\vspace*{3cm}
 \\includegraphics[width=0.6\\textwidth]{../../../assets/images/login_screen.png}\\par
@@ -54,8 +67,10 @@
 {\\Huge\\bfseries ORE Studio User Manual\\par}
 \\vspace{0.5cm}
 {\\large Marco Craveiro\\par}
+\\vspace{0.3cm}
+{\\normalsize Version %s\\par}
 \\vfill
-\\end{titlepage}")
+\\end{titlepage}" (ores/cmake-version)))
 
 ;; Run LaTeX twice so cross-references and TOC are resolved.
 (setq org-latex-pdf-process

@@ -476,8 +476,9 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
           'ores/dashboard-group-env-face)))
 
 (defun ores/dashboard--db-group (env root dash-buf)
-  (let* ((label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
-         (pgpw   (cdr (assoc "PGPASSWORD" env)))
+  (let* ((label   (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
+         (pgpw    (cdr (assoc "PGPASSWORD" env)))
+         (pg-host (or (cdr (assoc "PGHOST" env)) "localhost"))
          (db-name (or (cdr (assoc "ORES_DATABASE_NAME" env))
                       (format "ores_dev_%s" label))))
     (list "Database" 'nerd-icons-faicon "nf-fa-database"
@@ -531,7 +532,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                                      (error-message-string err))))))))))
            (ores/dashboard--mkitem
             "Kill connections" 'nerd-icons-faicon "nf-fa-times_circle"
-            (let ((r root) (pw pgpw) (dbn db-name) (db dash-buf))
+            (let ((r root) (pw pgpw) (h pg-host) (dbn db-name) (db dash-buf))
               (lambda (_)
                 (unless (yes-or-no-p (format "Kill all connections to %s? " dbn))
                   (user-error "Aborted"))
@@ -542,12 +543,12 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                           process-environment))
                        (buf-name (format "*ores-db-kill-%s*" dbn))
                        (comp-buf (compilation-start
-                                  (format "%s --host localhost %s" script dbn)
+                                  (format "%s --host %s %s" script h dbn)
                                   nil (lambda (_) buf-name))))
                   (ores/dashboard--display comp-buf db)))))
            (ores/dashboard--mkitem
             "Teardown DB" 'nerd-icons-faicon "nf-fa-bomb"
-            (let ((r root) (pw pgpw) (dbn db-name) (db dash-buf))
+            (let ((r root) (pw pgpw) (h pg-host) (dbn db-name) (db dash-buf))
               (lambda (_)
                 (unless (yes-or-no-p (format "Teardown %s (kill + drop)? " dbn))
                   (user-error "Aborted"))
@@ -558,7 +559,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                           process-environment))
                        (buf-name "*ores-db-teardown*")
                        (comp-buf (compilation-start
-                                  (format "%s -y --host localhost %s" script dbn)
+                                  (format "%s -y --host %s %s" script h dbn)
                                   nil (lambda (_) buf-name))))
                   (ores/dashboard--display comp-buf db)))))
            (ores/dashboard--mkitem
@@ -573,9 +574,9 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                     (ores/dashboard--display comp-buf db))))))
            (ores/dashboard--mkitem
             "Recreate environment" 'nerd-icons-faicon "nf-fa-trash"
-            (let ((lbl label) (dbn db-name) (r root))
+            (let ((lbl label) (r root))
               (lambda (_)
-                (unless (yes-or-no-p (format "DROP and recreate %s? " dbn))
+                (unless (yes-or-no-p (format "DROP and recreate ores_dev_%s? " lbl))
                   (user-error "Aborted"))
                 (ores-db/--run-recreate-env lbl r)))))
           'ores/dashboard-group-db-face)))

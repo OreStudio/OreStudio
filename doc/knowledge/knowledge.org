@@ -76,6 +76,15 @@ How ORE Studio's surfaces look and feel.
 - [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] — the visual-language catalogue (Fluent UI
   System Icons) grouped by semantic category.
 
+* Site
+
+Published site pages that are not documentation chapters.
+
+- [[id:E3C547E9-8F47-4853-BF73-8094CD312295][Downloads]] — release download index listing every ORE Studio
+  release with binary assets, by platform (Linux, macOS, Windows).
+- [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]] — quick-reference index of developer-facing
+  external resources: GitHub, Doxygen, Discord, CDash, and CI.
+
 * Security
 
 Authentication, authorisation, and tenancy.

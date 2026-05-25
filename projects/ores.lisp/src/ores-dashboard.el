@@ -447,6 +447,16 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
 ;; before it can write anything.
 ;; ---------------------------------------------------------------------------
 
+(defun ores/dashboard--detach-prefix ()
+  "Return a shell prefix that detaches child processes from Emacs's process group.
+On Linux `setsid' is required — signals an error if missing.
+On macOS the shell's process management is sufficient; no prefix is used.
+On other systems `setsid' is used when available, otherwise an error is raised."
+  (cond
+   ((executable-find "setsid") "setsid ")
+   ((eq system-type 'darwin)   "")
+   (t (user-error "setsid not found — install util-linux (apt install util-linux)"))))
+
 (defvar ores/dashboard--client-context nil
   "List (root label dash-buf) passed into the start-client transient.")
 
@@ -462,9 +472,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
          (args    (transient-args 'ores/dashboard--start-client-transient))
          (script  (expand-file-name "build/scripts/start-client.sh" root))
          (args-str (if args (concat " " (mapconcat #'shell-quote-argument args " ")) ""))
-         (cmd      (if (executable-find "setsid")
-                       (concat "setsid " script args-str)
-                     (concat script args-str))))
+         (cmd      (concat (ores/dashboard--detach-prefix) script args-str)))
     (ores/dashboard--compile label cmd "start-client" root dashbuf)))
 
 (transient-define-prefix ores/dashboard--start-client-transient ()
@@ -643,8 +651,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
                   (s   (expand-file-name "build/scripts/start-services.sh" root))
                   (r   root) (db dash-buf))
               (lambda (_)
-                (let ((cmd (if (executable-find "setsid") (concat "setsid " s) s)))
-                  (ores/dashboard--compile lbl cmd "start-services" r db)))))
+                (ores/dashboard--compile lbl (concat (ores/dashboard--detach-prefix) s) "start-services" r db))))
            (ores/dashboard--mkitem
             "Start client" 'nerd-icons-faicon "nf-fa-play_circle"
             (let ((lbl label) (r root) (db dash-buf))

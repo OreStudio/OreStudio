@@ -30,11 +30,11 @@ PR title: =[qt] Add workspace history dialog and replace hand-crafted detail dia
 
 | Field        | Value                                                  |
 |--------------+--------------------------------------------------------|
-| State        | BACKLOG                                                |
+| State        | DONE                                                   |
 | Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]]                    |
-| Now          | Not yet started.                                       |
-| Waiting on   | [[id:71EB9DB0-1F5C-48D0-AA2E-E47A9F487B86][Task: Workspace full entity: C++ core]] (Phase 2)       |
-| Next         | Begin implementation after Phase 2 merges.             |
+| Now          | Complete.                                              |
+| Waiting on   | Nothing.                                               |
+| Next         | Nothing.                                               |
 | Last touched | 2026-05-25                                             |
 
 * Acceptance
@@ -119,6 +119,20 @@ Manual test:
 
 * Notes
 
+All acceptance criteria were already met in the codebase prior to task
+execution.  Verification confirmed:
+
+- =WorkspaceDetailDialog.hpp/.cpp/.ui= exists with all required fields
+  (nameEdit, descriptionEdit, sourcePathEdit, parentEdit, ownerEdit, statusEdit)
+  and a =ProvenanceWidget= tab.
+- =WorkspaceHistoryDialog.hpp/.cpp/.ui= exists and makes a live NATS
+  =get_workspace_history_request= call via =clientManager_=.
+- =WorkspaceMdiWindow= has =historyAction_= in the toolbar, enabled/disabled
+  on selection change, connected to =onHistoryRequested()= which emits
+  =showWorkspaceHistory(ws)=.
+
+No code changes were required; this task closes as a verification pass.
+
 * PRs
 
 | PR | Title |
@@ -132,3 +146,6 @@ Manual test:
 |   |                 |      |          |       |
 
 * Result
+
+All acceptance criteria confirmed met via verification pass. No code changes
+made. Closed without a PR.

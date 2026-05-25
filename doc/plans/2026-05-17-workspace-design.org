@@ -6,7 +6,7 @@
 #+SUBTITLE: Self-contained, layered data workspaces within OreStudio; prerequisite for ORE sample import and multi-track data import
 #+DATE: 2026-05-17
 #+AUTHOR: ORE Studio Team
-#+STATUS: IN PROGRESS (2026-05-20: phases 1–2 complete, phase 3 all steps done, phase 4 step 1 done, FK validation done; remaining: phase 4 steps 2+5)
+#+STATUS: MINED (2026-05-25: converted to agile tasks in ore_samples_support story)
 #+OPTIONS: toc:t num:nil
 
 * Related Plans

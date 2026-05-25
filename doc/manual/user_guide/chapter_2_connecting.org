@@ -380,13 +380,13 @@ In the disconnected state the strip is reduced to the environment marker
 and the connection label, with the broken-link icon on the right:
 
 #+caption: The status bar in the disconnected state, showing the environment marker, the connection label (=local1=), and the broken-link indicator.
+#+attr_latex: :width 0.35\linewidth
 [[../../../assets/images/status_bar_disconnected.png]]
 
-#+caption: [SCREENSHOT NEEDED] A composite or side-by-side comparison of the status bar in the three most common states: Disconnected, Connected, and Connection lost. Label each state clearly.
-# Capture: three separate screenshots of the status bar — one with no
-# connection configured, one while logged in, one after stopping the
-# backend. Arrange them vertically or present as three separate figures.
-[[../../../assets/images/status_bar_states.png]]
+The fully connected state is shown at the start of this section; the
+connection-lost state is shown under [[*Connection status and reconnection][Connection status and
+reconnection]] above. Compare the three to recognise at a glance which
+state the application is in.
 
 ** Starting ORE Studio from the command line
 
@@ -514,6 +514,7 @@ its window is minimised or hidden, and shows the instance name so you can
 tell multiple windows apart.
 
 #+caption: The ORE Studio icon in the system tray, labelled with the instance name so you can identify the window it belongs to.
+#+attr_latex: :width 0.25\linewidth
 [[../../../assets/images/application_system_tray.png]]
 
 ** Logging out

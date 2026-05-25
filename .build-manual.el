@@ -31,6 +31,11 @@
 (setq debug-on-error nil)
 (setq debug-on-quit nil)
 
+;; Scale figures to 60% of the text width by default. Screenshots would
+;; otherwise span the full \linewidth and dominate the page. Individual
+;; images can still override this with #+attr_latex: :width ...
+(setq org-latex-image-default-width "0.6\\linewidth")
+
 ;; Custom LaTeX class: * → \chapter, ** → \section (no \part level).
 ;; This gives a clean chapter-based book without Part I/II dividers.
 (add-to-list 'org-latex-classes

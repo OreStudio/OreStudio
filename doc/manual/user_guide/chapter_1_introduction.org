@@ -76,11 +76,13 @@ data feeds, or regulatory reporting should look to enterprise risk platforms.
 
 ** How This Manual Is Organised
 
-The chapters follow the natural order of first use. Chapter 1 covers system
-bootstrapping: launching the application, establishing a connection to the
-backend, and orienting yourself in the main window. Later chapters cover each
-functional area in turn. You do not need to read the manual cover to cover;
-each chapter can be read independently once the system is up and running.
+The chapters follow the natural order of first use. After this
+introduction, /Connecting to ORE Studio/ covers launching the
+application, establishing a connection to the backend, and orienting
+yourself in the main window; /Initial Setup/ then covers provisioning the
+system, tenants, and parties. Later chapters cover each functional area in
+turn. You do not need to read the manual cover to cover; each chapter can
+be read independently once the system is up and running.
 
 ** Early-Stage Software Notice
 

@@ -31,15 +31,15 @@ shows its figures instead of =TODO_*.png= placeholders.
 | State        | STARTED                                |
 | Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
 | Now          | Buckets A/B/D done: 19 captures renamed into =assets/images/= and wired; new sections added (splash, master password, folders, environments, version, system tray, quick connect). |
-| Waiting on   | 22 captures from product owner (6 in chapter 1, 16 provisioner/concepts + 1 diagram). |
-| Next         | Drop the captured PNGs under their final names; assemble the 3-state status-bar composite; generate the party-hierarchy diagram. |
+| Waiting on   | 21 captures from product owner (5 in chapter 2, 15 provisioner/concepts + 1 diagram). |
+| Next         | Drop the captured PNGs under their final names; generate the party-hierarchy diagram. |
 | Last touched | 2026-05-25                             |
 
 * Acceptance
 
 - Every =[SCREENSHOT NEEDED]= placeholder across the manual chapters is
-  captured (30 today: 14 in =chapter_1_connecting.org=, 16 in
-  =chapter_2_initial_setup.org=).
+  captured (30 today: 14 in =chapter_2_connecting.org=, 16 in
+  =chapter_3_initial_setup.org=).
 - The =TODO_*.png= image links are replaced with real images committed
   under =assets/images/=, and the =[SCREENSHOT NEEDED]= markers removed.
 - The manual builds (=deploy_manual=) with the figures present.
@@ -140,17 +140,20 @@ System / Tenant / Party Provisioner wizard pages
 7. [ ] Rebuild the manual (=deploy_manual=) and the site and verify every figure
    renders.
 
-** Still to capture (bucket C — 22 files, save under =assets/images/=)
+** Still to capture (bucket C — 21 files, save under =assets/images/=)
 
-Chapter 1 (=chapter_1_connecting.org=, 6):
+Chapter 2 (=chapter_2_connecting.org=, 5):
 - =connection_manager_tag_filter.png= — tag-filter bar with =client-acme= typed.
 - =main_window_connect_dropdown.png= — toolbar Connect button + connection dropdown.
 - =connection_lost_banner.png= — disconnected-while-logged-in warning + Reconnect.
 - =status_bar_connected.png= — full connected status bar, all zones.
-- =status_bar_states.png= — 3-state composite (assembled from disconnected/connected/lost).
 - =main_window_instance_colour.png= — two windows with different instance colours/names.
 
-Concepts (=chapter_2_initial_setup.org=, 15 screenshots + 1 diagram):
+The 3-state status-bar composite was dropped: the section now shows each
+state individually (disconnected captured; connected and lost are the two
+placeholders above), which reads more clearly than a composite.
+
+Concepts (=chapter_3_initial_setup.org=, 15 screenshots + 1 diagram):
 - System Provisioner: =system_provisioner_welcome/_admin_account/_review/_complete.png=.
 - =admin_menu_provision_tenant.png=.
 - Tenant Provisioner: =tenant_provisioner_welcome/_details/_admin/_review/_complete.png=.

@@ -9,7 +9,7 @@
 #+filetags: :backlog_refinement:sprint_18:v0:
 #+owner: marco
 #+branch: main
-#+pr:
+#+pr: 847
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
@@ -33,7 +33,7 @@ Direct commits without PRs (rare, early sprint) are noted as such.
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]] |
-| Now          | Complete — 21 task files updated.      |
+| Now          | Complete.                              |
 | Waiting on   | Nothing.                               |
 | Next         | —                                      |
 | Last touched | 2026-05-25                             |
@@ -54,14 +54,15 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                              | Title                                                                          |
+|-----------------------------------------------------------------+--------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/847][#847]] | Audit sprint 18 tasks: normalise #+pr: fields and PR tables |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                         | File                            | Decision | Notes                          |
+|---+---------------------------------------------------------+---------------------------------+----------+--------------------------------|
+| 1 | Audit task itself has blank #+pr: and empty PRs table   | task_audit_sprint18_pr_format   | Fixed    | Set #+pr: 847; filled PR table |
+| 2 | Now field should be "Complete." not descriptive prose   | task_audit_sprint18_pr_format   | Fixed    | Normalised to "Complete."      |
 
 * Result

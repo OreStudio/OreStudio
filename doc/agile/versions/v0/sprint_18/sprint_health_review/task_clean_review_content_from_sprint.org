@@ -9,7 +9,7 @@
 #+filetags: :sprint_health_review:sprint_18:v0:
 #+owner: marco
 #+branch: feature/health-review-cleanup
-#+pr:
+#+pr: 852
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
@@ -31,7 +31,7 @@ content into the corresponding task's =* Result= section.
 |--------------+----------------------------------------|
 | State        | DONE                                     |
 | Parent story | [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]] |
-| Now          | Completed. PR pending.                   |
+| Now          | Complete.                                |
 | Waiting on   | Nothing.                                 |
 | Next         | Merge after CI passes.                   |
 | Last touched | 2026-05-25                               |
@@ -61,15 +61,16 @@ content into the corresponding task's =* Result= section.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                               |
+|-----+---------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/852][#852]] | [agile] Move health review content from sprint.org into task |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                     | File                                    | Decision | Notes                                          |
+|---+-----------------------------------------------------+-----------------------------------------+----------+------------------------------------------------|
+| 1 | DONE task =Now= field should be =Complete.=         | task_clean_review_content_from_sprint.org | Applied  | Fixed in commit after PR raised.               |
+| 2 | DONE task =Now= field should be =Complete.=         | task_health_review_1.org                | Applied  | Fixed in same commit.                          |
 
 * Result
 

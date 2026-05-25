@@ -30,7 +30,7 @@ Run the first System 2 health review of sprint 18 using the
 |--------------+------------------------------------------|
 | State        | DONE                                     |
 | Parent story | [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]] |
-| Now          | Completed. Review content moved to Result section. |
+| Now          | Complete.                                          |
 | Waiting on   | Nothing.                                 |
 | Next         | None.                                    |
 | Last touched | 2026-05-25                               |

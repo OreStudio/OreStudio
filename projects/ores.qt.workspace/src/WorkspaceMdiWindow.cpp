@@ -333,24 +333,20 @@ void WorkspaceMdiWindow::deleteSelected() {
         DeleteResult results;
         if (!self) return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
+        BOOST_LOG_SEV(lg(), debug) << "Making delete request for "
                                    << ids.size() << " workspaces";
 
-        workspace::messaging::archive_workspace_request request;
-        request.ids = ids;
-        auto response_result = self->clientManager_->process_authenticated_request(
-            std::move(request));
-
-        if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
-            for (std::size_t i = 0; i < ids.size(); ++i) {
-                results.push_back({ids[i], codes[i], false, "Failed to communicate with server"});
-            }
-            return results;
-        }
-
         for (std::size_t i = 0; i < ids.size(); ++i) {
-            results.push_back({ids[i], codes[i], response_result->success, response_result->message});
+            workspace::messaging::archive_workspace_request request;
+            request.id = boost::uuids::to_string(ids[i]);
+            request.modified_by = self->username_.toStdString();
+            auto response_result = self->clientManager_->process_authenticated_request(
+                std::move(request));
+            if (!response_result) {
+                results.push_back({ids[i], codes[i], false, "Failed to communicate with server"});
+            } else {
+                results.push_back({ids[i], codes[i], response_result->success, response_result->message});
+            }
         }
 
         return results;

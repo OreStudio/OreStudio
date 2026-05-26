@@ -362,9 +362,24 @@ void {{domain_entity.entity_pascal}}MdiWindow::deleteSelected() {
         DeleteResult results;
         if (!self) return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
+        BOOST_LOG_SEV(lg(), debug) << "Making delete request for "
                                    << ids.size() << " {{domain_entity.entity_plural_words}}";
 
+{{#domain_entity.qt.delete_is_single}}
+        for (std::size_t i = 0; i < ids.size(); ++i) {
+            {{domain_entity.qt.delete_request_class}} request;
+            request.{{domain_entity.qt.delete_request_id_field}} = boost::uuids::to_string(ids[i]);
+            request.modified_by = self->username_.toStdString();
+            auto response_result = self->clientManager_->process_authenticated_request(
+                std::move(request));
+            if (!response_result) {
+                results.push_back({ids[i], codes[i], false, "Failed to communicate with server"});
+            } else {
+                results.push_back({ids[i], codes[i], response_result->success, response_result->message});
+            }
+        }
+{{/domain_entity.qt.delete_is_single}}
+{{^domain_entity.qt.delete_is_single}}
         {{domain_entity.qt.delete_request_class}} request;
         request.ids = ids;
         auto response_result = self->clientManager_->process_authenticated_request(
@@ -381,6 +396,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::deleteSelected() {
         for (std::size_t i = 0; i < ids.size(); ++i) {
             results.push_back({ids[i], codes[i], response_result->success, response_result->message});
         }
+{{/domain_entity.qt.delete_is_single}}
 
         return results;
     };

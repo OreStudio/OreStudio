@@ -51,9 +51,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                    |
+|-----+----------------------------------------------------------|
+| 868 | [agile] Add sprint health charts story with task           |
 
 * Review
 

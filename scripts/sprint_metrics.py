@@ -12,6 +12,7 @@ import csv
 import datetime
 import os
 import re
+import shutil
 import subprocess
 import sys
 from collections import defaultdict
@@ -118,6 +119,10 @@ def get_merged_prs(start: datetime.date, end: datetime.date) -> list[dict]:
     Uses gh pr list with --search merged:>=START, then filters by end date in Python.
     gh search prs date-range syntax (merged:START..END) is unreliable.
     """
+    if not shutil.which("gh"):
+        print("Warning: gh CLI not found — skipping PR cycle time data", file=sys.stderr)
+        return []
+    
     prs = []
     try:
         output = run([

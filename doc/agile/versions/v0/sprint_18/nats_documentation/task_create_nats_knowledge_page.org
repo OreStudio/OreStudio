@@ -61,9 +61,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                          | Title                              | State | Round |
+|-------------------------------------------------------------+------------------------------------+-------+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/872][#872]] | [doc] Add NATS external knowledge page | OPEN  |     1 |
 
 * Review
 

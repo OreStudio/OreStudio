@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :cmake:build:architecture:knowledge:
 #+created: 2026-05-18
-#+updated: 2026-05-18
+#+updated: 2026-05-26
 
 ORE Studio uses CMake with CMakePresets to drive its build across
 Linux, macOS, and Windows. Presets fix the compiler, build type, and
@@ -138,5 +138,6 @@ See [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I enable test logging?]] f
 - [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]]
 - [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]]
 - [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]]
+- [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][How do I generate sprint health charts?]]
 - [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner skill]] — the skill that bundles all the recipes for
   Claude Code.

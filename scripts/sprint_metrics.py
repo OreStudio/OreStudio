@@ -37,15 +37,11 @@ def parse_date(s: str) -> datetime.date:
 
 
 def get_sprint_range(sprint: int) -> tuple[datetime.date, datetime.date]:
-    """Derive sprint dates from the Stories table (most accurate)."""
-    stories = _parse_sprint_stories(sprint)
-    starts = [s["start"] for s in stories if s["start"]]
-    ends = [s["end"] for s in stories if s["end"]]
+    """Read sprint start/end from the sprint doc's Status table.
     
-    if starts and ends:
-        return min(starts), max(ends)
-    
-    # Fallback: read from sprint doc Status table
+    The Status table is authoritative for sprint boundaries.
+    Story start/end dates are individual story completion dates, not sprint boundaries.
+    """
     sprint_file = Path(f"doc/agile/versions/v0/sprint_{sprint:02d}/sprint.org")
     if not sprint_file.exists():
         return _estimate_dates(sprint)
@@ -56,7 +52,7 @@ def get_sprint_range(sprint: int) -> tuple[datetime.date, datetime.date]:
         if line.startswith("| Start") and "|" in line:
             m = re.search(r"\d{4}-\d{2}-\d{2}", line)
             if m: start = parse_date(m.group())
-        if "End" in line and "|" in line:
+        if (line.startswith("| End") or "End (expected)" in line) and "|" in line:
             m = re.search(r"\d{4}-\d{2}-\d{2}", line)
             if m: end = parse_date(m.group())
     if start and end:
@@ -117,20 +113,21 @@ def collect_daily_metrics(start: datetime.date, end: datetime.date) -> dict:
 
 
 def get_merged_prs(start: datetime.date, end: datetime.date) -> list[dict]:
-    """Get all PRs merged in the date range using gh CLI."""
-    gh_before = end + datetime.timedelta(days=1)
+    """Get all PRs merged in the date range using gh CLI.
+    
+    Uses gh pr list with --search merged:>=START, then filters by end date in Python.
+    gh search prs date-range syntax (merged:START..END) is unreliable.
+    """
     prs = []
     try:
-        # gh search prs handles date ranges better than gh pr list
         output = run([
-            "gh", "search", "prs",
-            f"repo=OreStudio/OreStudio",
-            f"merged:{start}..{gh_before}",
-            "--json", "number,title,createdAt,closedAt",
+            "gh", "pr", "list", "--state", "merged",
+            "--search", f"merged:>={start}",
+            "--json", "number,title,createdAt,mergedAt",
             "--limit", "200"
         ])
     except subprocess.CalledProcessError as e:
-        print(f"Warning: gh search prs failed: {e}", file=sys.stderr)
+        print(f"Warning: gh pr list failed: {e}", file=sys.stderr)
         return prs
     
     import json
@@ -139,17 +136,22 @@ def get_merged_prs(start: datetime.date, end: datetime.date) -> list[dict]:
     except json.JSONDecodeError:
         return prs
     
+    end_inclusive = end + datetime.timedelta(days=1)
     for pr in data:
+        merged_str = pr.get("mergedAt", "")
+        if not merged_str:
+            continue
+        merged = parse_date(merged_str[:10])
+        if merged > end:
+            continue
+        
         created = parse_date(pr["createdAt"][:10])
-        closed = parse_date(pr["closedAt"][:10])
-        cycle_hours = (closed - created).days * 24
-        commit_count = 0  # not available via gh search prs
+        cycle_hours = max(0, int((merged - created).total_seconds() / 3600))
         prs.append({
             "number": pr["number"],
             "title": pr["title"][:60],
-            "merged_day": closed,
+            "merged_day": merged,
             "cycle_hours": cycle_hours,
-            "commit_count": commit_count,
         })
     return prs
 
@@ -204,25 +206,12 @@ def write_sprint_activity(metrics: dict, prs: list[dict], output_dir: Path):
     path = output_dir / "sprint_activity.csv"
     days = sorted(metrics.keys())
     
-    # Compute commits/PR per day
-    commits_per_pr = {}
-    for pr in prs:
-        d = pr["merged_day"]
-        if d in commits_per_pr:
-            commits_per_pr[d].append(pr["commit_count"])
-        else:
-            commits_per_pr[d] = [pr["commit_count"]]
-    
     with open(path, "w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
-        w.writerow(["day", "merges", "commits", "commits_per_pr", "added", "deleted"])
+        w.writerow(["day", "merges", "commits", "added", "deleted"])
         for d in days:
             m = metrics[d]
-            avg_cpp = ""
-            if d in commits_per_pr:
-                vals = commits_per_pr[d]
-                avg_cpp = f"{sum(vals)/len(vals):.1f}"
-            w.writerow([d.isoformat(), m["merges"], m["commits"], avg_cpp, m["added"], m["deleted"]])
+            w.writerow([d.isoformat(), m["merges"], m["commits"], m["added"], m["deleted"]])
     print(f"Wrote {path}")
 
 
@@ -248,10 +237,10 @@ def write_sprint_progress(cumulative: dict, prs: list[dict], output_dir: Path):
     cycle_path = output_dir / "pr_cycle_times.csv"
     with open(cycle_path, "w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
-        w.writerow(["pr_number", "title", "day", "cycle_hours", "commit_count"])
+        w.writerow(["pr_number", "title", "day", "cycle_hours"])
         for pr in sorted(prs, key=lambda x: x["merged_day"]):
             w.writerow([pr["number"], pr["title"], pr["merged_day"].isoformat(),
-                        pr["cycle_hours"], pr["commit_count"]])
+                        pr["cycle_hours"]])
     print(f"Wrote {cycle_path}")
     print(f"Wrote {cycle_path.parent / 'pr_cycle_times.csv'}")
 

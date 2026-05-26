@@ -77,7 +77,8 @@ dependency order is a chain: utility → platform → logging → telemetry
 | [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] | PostgreSQL schema, migration scripts, role provisioning, and database lifecycle management. Enforces strict service-table isolation. | none |
 | [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]] | Shared cryptographic primitives — scrypt password hashing, AES-256-GCM encryption, JWT parsing/validation, OWASP password and email validators. Used by =ores.iam= and =ores.connections=. | utility |
 | [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] | Code generation utility for domain types and documentation. | utility |
-| Dependency order: utility → platform → logging → telemetry → database. | | |
+
+Dependency order: utility → platform → logging → telemetry → database.
 
 ** Infrastructure Layer
 
@@ -95,6 +96,7 @@ every test in the system fails — that is the correct failure mode.
 | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] | NATS messaging backbone — client connection management, subject naming conventions, queue groups, JetStream configuration and lifecycle. The primary inter-service transport. | platform |
 | ores.comms | Binary protocol over SSL/TLS for client-server messaging. Deprecated in favour of NATS. | utility |
 | [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] | In-process publish/subscribe event bus with PostgreSQL-backed delivery and NATS integration. | nats |
+| [[id:9CFAC175-C28F-4C03-9655-1CDC6E8C3EE0][ores.service]] | Shared NATS domain service runner — =domain_service_runner= template for standard request/reply lifecycle. | nats |
 | [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]] | Catch2 infrastructure — unique database per test process, preconfigured logger, test fixture helpers. | foundation, database |
 | [[id:E75DE282-4FDE-4B18-B23B-692A2F783B61][ores.connections]] | Client-side server connection bookmarks with hierarchical organisation and credential management. | security |
 
@@ -119,6 +121,8 @@ speaks NATS to every other vertical.
 | [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata]] | Market data — series, observations, fixings, import options, yield curves, volatility surfaces. | database, nats, refdata |
 | [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]] | Trade booking and lifecycle — FSM-enforced trade status, portfolios, books, trade blotters. | database, nats, refdata |
 | [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting]] | Report execution and result persistence — runs ORE output through configured report definitions. | database, nats, refdata |
+| [[id:BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5][ores.analytics]] | Risk analytics results and aggregation — NPV, sensitivities, Greeks, scenario analysis. | database, nats, refdata |
+| [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]] | File storage abstractions — local filesystem paths, HTTP-based remote storage, blob management. | database, nats |
 | [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic]] | Synthetic market data and scenario generation for stress testing and demo data. | database, nats |
 | [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets]] | Binary image storage with hierarchical tagging and CRUD management. | database, nats, refdata |
 | ores.compute | Compute engine — distributed computation for valuation and reporting. Run configurations, chunking, environment lifecycle. | nats, marketdata |
@@ -157,6 +161,7 @@ none of the above and proud of it.
 | [[id:FE36240A-7A64-4332-9E82-8D976D458C73][ores.wt.service]] | Wt C++ Web Toolkit frontend — account management, currency and country views, feature flags. Alternative to Qt desktop client. | All layers |
 | [[id:152C4A5E-9947-4EE1-A5D4-893305D235B5][ores.compute.service]] | ORE Engine compute wrapper — receives compute job requests via NATS, spawns ORE child processes, and publishes results. | domain, nats |
 | [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]] | Orchestration controller — assembles compute pipelines, sequences scheduler/compute/reporting stages, and tracks run state. | domain, nats |
+| [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] | POSIX shell and Emacs Lisp developer tooling — database administration, build helpers, and project automation scripts. | all layers |
 | [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] | Emacs Lisp developer tooling — per-checkout dashboard, database browser, shell integration, and org-roam export. Not part of the production system. | none |
 
 * Database Isolation

@@ -43,10 +43,7 @@ plot infile_cycle using 0:4 every ::1 with boxes lc rgb "#E67E22"
 set ylabel "Lines"
 set xlabel "Day"
 set title "Daily Line Churn"
-set style data histograms
-set style histogram rowstacked
-set boxwidth 0.8 relative
-plot infile_act using 5 every ::1 title "Added" lc rgb "#27AE60", \
-     "" using 6 every ::1 title "Deleted" lc rgb "#E74C3C"
+plot infile_act using 5 every ::1 with boxes lc rgb "#27AE60" title "Added", \
+     "" using 6 every ::1 with boxes lc rgb "#E74C3C" title "Deleted"
 
 unset multiplot

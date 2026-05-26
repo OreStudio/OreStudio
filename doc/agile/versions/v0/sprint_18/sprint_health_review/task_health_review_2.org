@@ -9,7 +9,7 @@
 #+filetags: :sprint_health_review:sprint_18:v0:
 #+owner: marco
 #+branch: feature/sprint-health-review-2
-#+pr:
+#+pr: 867
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-26
@@ -58,9 +58,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                                  |
+|-----+------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/867][#867]] | [agile] Sprint 18 health review 2 — backlog audit and shape check |
 
 * Review
 

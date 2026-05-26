@@ -28,7 +28,7 @@ Analyze the root cause of Clang and MSVC compilation failures related to =reflec
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] |
-| Now          | Completed 2026-05-23.                  |
+| Now          | Complete.                              |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                   |
 | Last touched | 2026-05-23                               |

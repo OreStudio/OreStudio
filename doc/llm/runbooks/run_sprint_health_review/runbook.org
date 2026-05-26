@@ -107,7 +107,7 @@ In execution order:
      --include="task_*.org"
    #+end_src
 
-   Apply fixes in the same commit as the review (step 9) or in a
+   Apply fixes in the same commit as the review (step 10) or in a
    follow-up commit on the same branch.
 
 8. /Mark the task DONE./ Set =State: DONE= and =Now: Complete.= in

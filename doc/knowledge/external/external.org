@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :knowledge:external:index:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-05-26
 
 Reference material about systems and concepts ORE Studio /uses but
 does not own/. The rule of thumb: if the doc would exist (in roughly
@@ -35,6 +35,12 @@ though it references [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]].
 
 - [[id:0929B047-1A31-3514-9EDB-EF7B4F012C5D][Standing settlement instructions]] — what SSIs are and how they
   flow through the trading lifecycle.
+
+* Messaging infrastructure
+
+- [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — the open-source messaging system ORE Studio uses for all
+  inter-service communication (subjects, queue groups, JetStream,
+  NKey/JWT security).
 
 * Platform features
 

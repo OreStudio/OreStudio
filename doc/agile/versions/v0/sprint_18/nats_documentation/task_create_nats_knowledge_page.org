@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 6FE6B89C-78C4-4FB7-803C-022C3E8FF237
+:END:
+#+title: Task: Create NATS external knowledge page
+#+description: Scaffold doc/knowledge/external/nats.org describing NATS as a technology: subjects, queue groups, JetStream, security model, and upstream links.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :nats_documentation:sprint_18:v0:
+#+owner: marco
+#+branch: feature/create-nats-knowledge-page
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A388F0C8-0804-420F-A542-2C929CFCEC92][Document NATS: technology overview, system integration, and recipes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create =doc/knowledge/external/nats.org= — an external knowledge page
+describing [[https://nats.io][NATS]] as a technology in its own right, independent of ORE
+Studio. Covers core concepts (subjects, wildcards, queue groups,
+JetStream), security (TLS, NKey/JWT auth), deployment modes, and
+upstream links. This mirrors the pattern of [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine
+(ORE)]] and [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]] pages. Wire the new page into [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]]
+under a new "Messaging infrastructure" section.
+
+* Status
+
+| Field        | Value                                               |
+|--------------+-----------------------------------------------------|
+| State        | STARTED                                             |
+| Parent story | [[id:A388F0C8-0804-420F-A542-2C929CFCEC92][Document NATS: technology overview, system integration, and recipes]] |
+| Now          | Implementing nats.org and wiring into external.org. |
+| Waiting on   | Nothing.                                            |
+| Next         | Scaffold via codegen, fill content, update index.   |
+| Last touched | 2026-05-26                                          |
+
+* Acceptance
+
+- [ ] =doc/knowledge/external/nats.org= exists with =#+version: 2=,
+  =#+type: knowledge=, scaffolded via =generate_v2_doc.sh=.
+- [ ] Covers: what NATS is, subjects and wildcards, queue groups,
+  request/reply, JetStream, security (TLS + NKey/JWT), deployment
+  modes (server, leaf node, cluster).
+- [ ] Links to [[https://nats.io][nats.io]], [[https://github.com/nats-io][github.com/nats-io]], and [[https://docs.nats.io][docs.nats.io]].
+- [ ] Links back to [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for how ORE Studio uses the transport.
+- [ ] =doc/knowledge/external/external.org= has a new "Messaging
+  infrastructure" section with an id-link to =nats.org=.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -24,7 +24,7 @@ Transform the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] from a f
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
-| Now           | Writing layer blurbs and converting component lists to tables in system_model.org. |
+| Now           | Writing layer blurbs and converting component lists to tables in the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]]. |
 | Waiting on    | Nothing.                               |
 | Next          | Convert Foundation layer component list to table. |
 | Last touched  | 2026-05-26                               |
@@ -40,8 +40,6 @@ Transform the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] from a f
 * Tasks
 
 In execution order:
-
--
 
 * PRs
 
@@ -65,7 +63,7 @@ The improvement follows a top-down reading order:
    The blurbs are placed /before/ the component list so the reader has context before scanning the inventory.
 
 3. *Component tables.* Each layer's bullet list converts to a table:
-   - Column 1: Component (id-linked to its =component_overview.org=).
+   - Column 1: Component (id-linked to its [[id:B9D3D469-9E59-465F-8C18-34546B680D13][component_overview.org]]).
    - Column 2: One-line description.
    - Column 3: Depends on (other components or "none").
    The =Depends on= column replaces the "Depends on:" suffixes currently appended to descriptions.
@@ -78,5 +76,5 @@ The improvement follows a top-down reading order:
 
 - Changing the component architecture itself (api/core/service split, dependency graph). This story is purely about documentation readability.
 - Adding new components or removing existing ones from the inventory.
-- Rewriting individual =component_overview.org= files — those are out of scope here.
+- Rewriting individual [[id:B9D3D469-9E59-465F-8C18-34546B680D13][component_overview.org]] files — those are out of scope here.
 - Changes to the PlantUML system diagram (=ores.puml= / =ores.png=).

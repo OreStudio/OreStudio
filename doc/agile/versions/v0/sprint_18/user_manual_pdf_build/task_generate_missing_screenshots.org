@@ -9,7 +9,7 @@
 #+filetags: :manual:screenshots:documentation:user_manual_pdf_build:sprint_18:v0:
 #+owner: marco
 #+branch: feature/finish-missing-screenshots
-#+pr: 853
+#+pr: 853, 866
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
@@ -175,7 +175,7 @@ chapter 1, "Backing up and restoring your connections").
 | PR                                                    | Title                                                          | State  |
 |-------------------------------------------------------+----------------------------------------------------------------+--------|
 | [[https://github.com/OreStudio/OreStudio/pull/853][#853]] | [manual] Reconcile screenshots, restructure chapters, scale figures | merged |
-|                                                       | (follow-up: finish remaining captures)                         | open   |
+| [[https://github.com/OreStudio/OreStudio/pull/866][#866]] | [manual] Finish manual screenshots; tufte polish; reliability stories | open   |
 
 PR #853 bundled the bulk of this task: the screenshot reconciliation
 (buckets A/B/D), flat chapter layout with 1-based numbering, the
@@ -193,5 +193,11 @@ PR #853 review (gemini-code-assist):
 |---+---------------------------------------------------------+-------------------------------+------------+----------------------------------------------------------------------------------------|
 | 1 | Settings locations contradict the storage table (macOS/Windows) | chapter_2_connecting.org      | Applied    | Configuration-directory section now points to the canonical "Where your connections are stored" section instead of duplicating; fixed in 19afe33bd. |
 | 2 | Image path should be =../../../../= (4 levels) not =../../../= | manual-updater/SKILL.org      | Rejected   | False positive: the link is an =#+begin_example= template for chapter files at =user_guide/= (3 levels above =assets/=). Kept =../../../= and added a clarifying note. |
+
+PR #866 review (gemini-code-assist), round 1:
+
+| # | Comment summary                                         | File           | Decision | Notes                                                                                  |
+|---+---------------------------------------------------------+----------------+----------+----------------------------------------------------------------------------------------|
+| 1 | Margin-figure filter: begin/end can mismatch on non-=[htbp]= placement; =load-file-name= nil during export; =string-replace= needs Emacs 28.1; =\includegraphics= options should be optional | .build-manual.el | Applied  | All four addressed in b482643ee: optional placement/options in regexps, repo root captured at load time, portable =replace-regexp-in-string=. Corrected two bugs in the suggested snippet (begin→end, double-escaped literals). |
 
 * Result

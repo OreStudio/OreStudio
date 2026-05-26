@@ -74,6 +74,13 @@ flag or fix anything that would leave the sprint record inconsistent.
 | 9 | =Next= stale in task_fix_workspace_portfolio_book_visibility | task_fix_workspace_portfolio_book_visibility.org:33 | Applied | Set =None.=. Fixed in 23ce965b5.                           |
 | 10 | =#+pr:= field reportedly empty                             | task_health_review_2.org:12                      | Not changed | Already set to =867= when PR was raised.               |
 
+** PR #871 review round 1
+
+| # | Comment summary                                       | File                                         | Decision | Notes                                         |
+|---+-------------------------------------------------------+----------------------------------------------+----------+-----------------------------------------------|
+| 1 | Step reference says "step 9" after renumbering        | run_sprint_health_review/runbook.org:111     | Applied  | Changed to "step 10". Fixed in 64cc63f3a.     |
+| 2 | =Now= field uses prose date instead of =Complete.=   | task_investigate_rfl_complexity.org:31       | Applied  | Set =Now: Complete.=. Fixed in 64cc63f3a.     |
+
 * Result
 
 ** Review on 2026-05-26 (day 5 of 7)

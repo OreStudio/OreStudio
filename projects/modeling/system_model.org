@@ -94,9 +94,9 @@ every test in the system fails — that is the correct failure mode.
 |-----------+-------------+------------|
 | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] | NATS messaging backbone — client connection management, subject naming conventions, queue groups, JetStream configuration and lifecycle. The primary inter-service transport. | platform |
 | ores.comms | Binary protocol over SSL/TLS for client-server messaging. Deprecated in favour of NATS. | utility |
-| ores.eventing | High-level event dispatch over NATS — event type registration, publish/subscribe wrappers, and retry/dead-letter patterns. | nats |
-| ores.testing | Catch2 integration with database isolation (test-local PostgreSQL schemas), preconfigured logger sinks, and test fixture helpers. | foundation, database |
-| ores.connections | Connection management for external systems — SSH tunnels, database proxies, and credential rotation. | security |
+| [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] | In-process publish/subscribe event bus with PostgreSQL-backed delivery and NATS integration. | nats |
+| [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]] | Catch2 infrastructure — unique database per test process, preconfigured logger, test fixture helpers. | foundation, database |
+| [[id:E75DE282-4FDE-4B18-B23B-692A2F783B61][ores.connections]] | Client-side server connection bookmarks with hierarchical organisation and credential management. | security |
 
 ** Domain Layer
 
@@ -112,19 +112,19 @@ speaks NATS to every other vertical.
 
 | Component | Description | Depends On |
 |-----------+-------------+------------|
-| ores.refdata | Reference data management — currencies, countries, calendar conventions, market conventions, and coding schemes. CRUD with temporal versioning. | database, nats |
-| ores.iam | Identity and Access Management — tenants, accounts, roles, permissions, session management, RBAC enforcement. | database, nats, security |
-| ores.ore | ORE domain model — configuration of pricing and risk models, XML/CSV/JSON I/O, temporal versioning, and round-trip validation. | utility, nats |
-| ores.dq | Data quality — audit and governance following the standard DQ-6 dimensions: completeness, uniqueness, timeliness, validity, accuracy, consistency. | database, nats |
-| ores.marketdata | Market data — curves, surfaces, quotes, fixings. Schema, parser, repository, service, and Qt UI. | database, nats, refdata |
-| ores.trading | Trading domain — trades, positions, portfolios, books. Trade lifecycle, FSM for state transitions, trade blotters. | database, nats, refdata |
-| ores.reporting | Reporting and analytics — report definitions, measure sets, Greek configurations, EOD batch sets. | database, nats, refdata |
-| ores.synthetic | Synthetic data generation for testing and demonstration — faker-based entity population, domain-specific seed data. | database, nats |
-| ores.assets | Asset management — financial instrument definitions, asset class taxonomy (risk) and product type (structural routing), instrument families (rates, FX, equity, credit, commodity). | database, nats, refdata |
+| [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]] | Reference data — currencies, countries, coding schemes, FPML taxonomy, and market conventions. | database, nats |
+| [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] | Identity and access management — account lifecycle, login with password/scrypt/SSO, role-based authorisation. | database, nats, security |
+| [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore]] | ORE XML import/export — converts between ORE Engine XML format and ORE Studio domain types. | utility, nats |
+| [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]] | Data quality — provenance, validation metadata, change management, DQ-6 governance. | database, nats |
+| [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata]] | Market data — series, observations, fixings, import options, yield curves, volatility surfaces. | database, nats, refdata |
+| [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]] | Trade booking and lifecycle — FSM-enforced trade status, portfolios, books, trade blotters. | database, nats, refdata |
+| [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting]] | Report execution and result persistence — runs ORE output through configured report definitions. | database, nats, refdata |
+| [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic]] | Synthetic market data and scenario generation for stress testing and demo data. | database, nats |
+| [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets]] | Binary image storage with hierarchical tagging and CRUD management. | database, nats, refdata |
 | ores.compute | Compute engine — distributed computation for valuation and reporting. Run configurations, chunking, environment lifecycle. | nats, marketdata |
-| ores.workflow | Workflow engine — event-driven saga orchestrator for multi-step business processes. Party provisioning, ORE import, report execution as concrete sagas. | database, nats |
-| ores.scheduler | Scheduling library wrapping =pg_cron= with a Quartz.NET-style fluent API for periodic task execution. | database |
-| ores.fpml | FpML integration — XML schema types, parsing, and serialisation for Financial Products Markup Language standards. | utility |
+| [[id:440294D7-385D-41EE-92CB-CAB937E65E81][ores.workflow]] | Workflow management for multi-step compute pipelines — tracks state, retries, and completion. | database, nats |
+| [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler]] | Task scheduling for compute jobs (run ORE scenarios, generate reports) via =pg_cron= wrapper. | database |
+| [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]] | FpML processing infrastructure — parsing, validating, and serialising financial product XML. | utility |
 
 ** Application Layer
 
@@ -151,14 +151,13 @@ none of the above and proud of it.
 | ores.qt.compute | Compute Qt plugin — compute job monitor, results viewer. | ores.qt.api |
 | ores.qt.workflow | Workflow Qt plugin — workflow instance tracker. | ores.qt.api |
 | ores.qt.admin | Administration Qt plugin — user/role management, feature flags. | ores.qt.api |
-| ores.cli | Command-line interface — import/export currencies in multiple formats, ORE sample execution, batch operations. | All layers |
-| ores.http | HTTP services framework — REST route structure, handler skeletons, CRUD conventions. | foundation, domain |
-| ores.http.server | Boost.Asio HTTP server — wires all route handlers (IAM, assets, risk, storage, variability), runs the event loop. | ores.http |
-| ores.wt.service | Wt C++ Web Toolkit frontend — account management, currency and country views, feature flags. Alternative to Qt desktop client. | All layers |
-| ores.compute.service | ORE Engine compute wrapper — receives compute job requests via NATS, spawns ORE child processes, and publishes results. | domain, nats |
-| ores.controller.core | Orchestration controller — assembles compute pipelines, sequences scheduler/compute/reporting stages, and tracks run state. | domain, nats |
-| ores.lisp | Emacs Lisp developer tooling — per-checkout dashboard, database browser, shell integration, and org-roam export. Not part of the production system. | none |
-| Depends on: All layers. | | |
+| [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] | Command-line interface — import/export currencies in multiple formats, ORE sample execution, batch operations. | All layers |
+| [[id:B0C9FDC8-F0B2-48FE-AE37-8FD79E6FD164][ores.http.api]] | HTTP server infrastructure — Boost.Beast/Asio async server, WSGI-style route handler registry. | foundation, domain |
+| ores.http.server | Boost.Asio HTTP server — wires all route handlers (IAM, assets, risk, storage, variability), runs the event loop. | ores.http.api |
+| [[id:FE36240A-7A64-4332-9E82-8D976D458C73][ores.wt.service]] | Wt C++ Web Toolkit frontend — account management, currency and country views, feature flags. Alternative to Qt desktop client. | All layers |
+| [[id:152C4A5E-9947-4EE1-A5D4-893305D235B5][ores.compute.service]] | ORE Engine compute wrapper — receives compute job requests via NATS, spawns ORE child processes, and publishes results. | domain, nats |
+| [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]] | Orchestration controller — assembles compute pipelines, sequences scheduler/compute/reporting stages, and tracks run state. | domain, nats |
+| [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] | Emacs Lisp developer tooling — per-checkout dashboard, database browser, shell integration, and org-roam export. Not part of the production system. | none |
 
 * Database Isolation
 

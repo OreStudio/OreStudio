@@ -360,6 +360,13 @@ add_custom_target(generate_protocol_docs
     COMMAND python3 ${CMAKE_SOURCE_DIR}/scripts/generate_protocol_docs.py
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+add_custom_target(sprint_charts
+    COMMENT "Generating sprint health charts (requires python3 and gnuplot)" VERBATIM
+    COMMAND which gnuplot >/dev/null 2>&1 || echo "Warning: gnuplot not found"
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/scripts/sprint_metrics.py --sprint 18
+    COMMAND cd ${CMAKE_SOURCE_DIR} && gnuplot scripts/plot_sprint_metrics.gnuplot
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 #
 # Java args for PlantUML
 #

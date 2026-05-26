@@ -9,7 +9,7 @@
 #+filetags: :architecture:documentation:system_model:system_model_readability:sprint_18:v0:
 #+owner: CodeWhale
 #+branch: feature/system-model-readability-implement
-#+pr:
+#+pr: 862
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-26
@@ -52,7 +52,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 862 | [doc] Rewrite system model with narrative, layer blurbs, and component tables |
 
 * Review
 

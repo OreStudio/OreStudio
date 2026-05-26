@@ -22,6 +22,15 @@
 -- Utility functions used across the database schema
 --
 
+-- Returns a timestamptz formatted as an ISO 8601 UTC string (e.g.
+-- '2026-05-27T12:34:56Z'). Use this in pg_notify payloads so JSON
+-- deserializers (e.g. rfl::json → std::chrono::system_clock::time_point)
+-- can parse the value.  All notify triggers must use this function.
+create or replace function ores_utility_iso8601_timestamp_fn(p_ts timestamptz)
+returns text language sql immutable as $$
+    select to_char(p_ts at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
+$$;
+
 -- Returns the 'infinity' timestamp used for valid_to in temporal tables.
 -- This centralizes the sentinel value representing records that are currently valid.
 CREATE OR REPLACE FUNCTION ores_utility_infinity_timestamp_fn()

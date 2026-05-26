@@ -120,16 +120,28 @@ Changed =portfolio_entity::description= from =std::string= to
 
 * PRs
 
-| PR  | Title                                                                          |
-|-----+--------------------------------------------------------------------------------|
-| [[https://github.com/OreStudio/OreStudio/pull/850][#850]] | [fix] Portfolios and books not visible when a workspace is active              |
-| TBD | [fix] portfolio_entity description nullable — NULL parse failure               |
+| PR    | Title                                                                                            |
+|-------+--------------------------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/850][#850]]  | [fix] Portfolios and books not visible when a workspace is active                                |
+| [[https://github.com/OreStudio/OreStudio/pull/865][#865]]  | Workspace list and detail dialog improvements                                                    |
 
 * Review
+
+** PR #850 — Round 1
 
 | # | Comment summary                                             | File                        | Decision | Notes                                  |
 |---+-------------------------------------------------------------+-----------------------------+----------+----------------------------------------|
 | 1 | Use =const std::string&= to avoid copying =live_workspace_uuid_str= | book_repository.cpp (×3)    | Fixed    | Changed all 3 sites to bind by ref.    |
 | 2 | Use =const std::string&= to avoid copying =live_workspace_uuid_str= | portfolio_repository.cpp (×3) | Fixed  | Changed all 3 sites to bind by ref.    |
+
+** PR #865 — Round 1
+
+| # | Comment summary                                                    | File                                    | Decision | Notes                                                    |
+|---+--------------------------------------------------------------------+-----------------------------------------+----------+----------------------------------------------------------|
+| 1 | =loadParentWorkspaces()= declared but not implemented (false positive) | WorkspaceDetailDialog.cpp           | Declined | Method fully implemented; reviewer missed the definition |
+| 2 | QPointer data race in =loadParentWorkspaces= background lambda     | WorkspaceDetailDialog.cpp               | Fixed    | 3ab608a72 — capture raw =cm= before lambda              |
+| 3 | QPointer data race in =deleteSelected= background lambda           | WorkspaceMdiWindow.cpp                  | Fixed    | 3ab608a72 — capture raw =cm= and =username= before lambda |
+| 4 | Migration must UPDATE =valid_to= before INSERT                     | workspace_live_fix_modified_by.sql      | Declined | INSERT trigger closes previous version automatically     |
+| 5 | Migration must UPDATE =valid_to= before INSERT                     | workspace_live_fix_owner_id.sql         | Declined | Same trigger mechanism; explicit UPDATE would fight it   |
 
 * Result

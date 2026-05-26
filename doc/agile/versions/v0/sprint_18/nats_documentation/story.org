@@ -83,12 +83,6 @@ In execution order:
 
 * Decisions
 
-* PRs
-
-| PR  | Title                                    | State | Round |
-|-----+------------------------------------------+-------+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/870][#870]] | [agile] Scaffold nats_documentation story | OPEN  |     1 |
-
 * Out of scope
 
 - Protocol-level message schema documentation — already captured in

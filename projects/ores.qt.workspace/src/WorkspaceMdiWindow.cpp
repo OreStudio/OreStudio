@@ -164,7 +164,7 @@ void WorkspaceMdiWindow::setupTable() {
     initializeTableSettings(tableView_, model_,
         "WorkspaceListWindow",
         {ClientWorkspaceModel::Description},
-        {900, 400}, 1);
+        {900, 400}, 2);
 }
 
 void WorkspaceMdiWindow::setupConnections() {

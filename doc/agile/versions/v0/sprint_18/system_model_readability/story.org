@@ -26,7 +26,7 @@ Transform the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] from a f
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
 | Now           | Complete.                                    |
 | Waiting on    | Nothing.                               |
-| Next          | Convert Foundation layer component list to table. |
+| Next          | None.                                             |
 | Last touched  | 2026-05-26                               |
 
 * Acceptance

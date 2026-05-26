@@ -33,8 +33,8 @@ prompting the user to choose one via =completing-read=.
 | State        | DONE                              |
 | Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] |
 | Now          | Complete.                                    |
-| Waiting on   | CI green, merge.                               |
-| Next         | Merge after CI passes.                         |
+| Waiting on   | Nothing.                                       |
+| Next         | None.                                          |
 | Last touched | 2026-05-25                               |
 
 * Acceptance

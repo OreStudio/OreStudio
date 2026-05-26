@@ -50,10 +50,6 @@ flag or fix anything that would leave the sprint record inconsistent.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
 
 * PRs

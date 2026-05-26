@@ -102,7 +102,7 @@ Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
 A high commits-to-PR ratio may indicate scope creep.
 
 #+attr_html: :width 100%
-[[file:../../../../assets/images/sprint_prs_commits_sprint_18.png]]
+[[file:../../../../../assets/images/sprint_prs_commits_sprint_18.png]]
 
 ** Daily Line Churn
 
@@ -111,7 +111,7 @@ mostly additions; refactoring produces a mix. Days with no churn may
 indicate blockers.
 
 #+attr_html: :width 100%
-[[file:../../../../assets/images/sprint_line_churn_sprint_18.png]]
+[[file:../../../../../assets/images/sprint_line_churn_sprint_18.png]]
 
 ** PR Cycle Time
 
@@ -119,7 +119,7 @@ Hours from PR open to merge, one bar per PR. Long bars indicate
 review bottlenecks. Generated only when PR data is available.
 
 #+attr_html: :width 100%
-[[file:../../../../assets/images/sprint_pr_cycle_sprint_18.png]]
+[[file:../../../../../assets/images/sprint_pr_cycle_sprint_18.png]]
 
 ** Cumulative Stories Done
 
@@ -127,7 +127,7 @@ Line chart tracking stories marked DONE during the sprint.
 Steady upward slope is healthy; plateauing signals a stall.
 
 #+attr_html: :width 100%
-[[file:../../../../assets/images/sprint_stories_done_sprint_18.png]]
+[[file:../../../../../assets/images/sprint_stories_done_sprint_18.png]]
 
 * Retrospective
 

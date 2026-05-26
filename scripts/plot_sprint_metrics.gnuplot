@@ -29,15 +29,24 @@ infile_act = sprintf("build/output/sprint_%s/sprint_activity.csv", sprint_str)
 plot infile_act using 2 every ::1 title "PRs" with boxes lc rgb "#4A90D9", \
      "" using 3 every ::1 axes x1y2 title "Commits" with linespoints lc rgb "#E67E22" lw 2 pt 7
 
-# Panel 2: Commits per PR
-set ylabel "Commits"
+# Panel 2: PR Cycle Time (one bar per merged PR)
+set ylabel "Hours"
 set y2tics
 unset y2label
 set format x "%m/%d"
-set title "Commits per PR (one point per merged PR)"
+set title "PR Cycle Time (hours from open to merge)"
 unset key
 infile_cycle = sprintf("build/output/sprint_%s/pr_cycle_times.csv", sprint_str)
-plot infile_cycle using 5 every ::1 with points pt 7 lc rgb "#27AE60"
+stats infile_cycle using 4 every ::1 nooutput
+if (STATS_records > 0) {
+    set format x ""
+    plot infile_cycle using 0:4 every ::1 with boxes lc rgb "#E67E22"
+    set format x "%m/%d"
+} else {
+    set format x ""
+    plot 0 title "No merged PRs this sprint" with lines lc rgb "#999999"
+    set format x "%m/%d"
+}
 
 # Panel 3: Line churn
 set ylabel "Lines"
@@ -72,15 +81,31 @@ set ylabel "Stories"
 set format x ""
 set title "Cumulative Stories Done"
 infile_prog = sprintf("build/output/sprint_%s/sprint_progress.csv", sprint_str)
-plot infile_prog using 2 every ::1 with linespoints lc rgb "#2C3E50" lw 3 pt 9 title "Done"
+stats infile_prog using 2 every ::1 nooutput
+if (STATS_records > 0) {
+    plot infile_prog using 2 every ::1 with linespoints lc rgb "#2C3E50" lw 3 pt 9 title "Done"
+} else {
+    set format x ""
+    plot 0 title "No story transitions" with lines lc rgb "#999999"
+    set format x "%m/%d"
+}
 
 # Panel 2: PR cycle time
 set ylabel "Hours"
 set format x "%m/%d"
-set title "PR Cycle Time (open → merge)"
+set title "PR Cycle Time (open → close)"
 set style data boxes
 set boxwidth 0.7 relative
 set xtics rotate by -45
-plot infile_cycle using 4 every ::1:xtic(1) lc rgb "#E74C3C" title "Cycle Hrs"
+stats infile_cycle every ::1 nooutput
+if (STATS_records > 0) {
+    set format x ""
+    plot infile_cycle using 0:4 every ::1:xtic(2) lc rgb "#E74C3C" title "Cycle Hrs"
+    set format x "%m/%d"
+} else {
+    set format x ""
+    plot 0 title "No merged PRs" with lines lc rgb "#999999"
+    set format x "%m/%d"
+}
 
 unset multiplot

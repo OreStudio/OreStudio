@@ -132,7 +132,7 @@ def get_merged_prs(start: datetime.date, end: datetime.date) -> list[dict]:
             "gh", "search", "prs",
             f"repo=OreStudio/OreStudio",
             f"merged:{start}..{gh_before}",
-            "--json", "number,title,createdAt,closedAt,commits",
+            "--json", "number,title,createdAt,closedAt",
             "--limit", "200"
         ])
     except subprocess.CalledProcessError as e:
@@ -149,11 +149,11 @@ def get_merged_prs(start: datetime.date, end: datetime.date) -> list[dict]:
         created = parse_date(pr["createdAt"][:10])
         closed = parse_date(pr["closedAt"][:10])
         cycle_hours = (closed - created).days * 24
-        commit_count = len(pr.get("commits", []))
+        commit_count = 0  # not available via gh search prs
         prs.append({
             "number": pr["number"],
             "title": pr["title"][:60],
-            "merged_day": merged,
+            "merged_day": closed,
             "cycle_hours": cycle_hours,
             "commit_count": commit_count,
         })

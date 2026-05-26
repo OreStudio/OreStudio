@@ -20,8 +20,20 @@
 DO $$
 DECLARE
     v_live_id uuid := ores_utility_live_workspace_id_fn();
-    v_system_owner uuid := ores_utility_system_tenant_id_fn();
+    v_owner_id uuid;
 BEGIN
+    -- Resolve the account UUID for the current service role (ddl user)
+    select id into v_owner_id
+    from ores_iam_accounts_tbl
+    where username = current_user
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    limit 1;
+
+    if v_owner_id is null then
+        raise exception 'Cannot seed Live workspace: no account found for current_user=%',
+            current_user;
+    end if;
+
     if not exists (
         select 1 from ores_workspaces_tbl
         where id = v_live_id
@@ -36,7 +48,7 @@ BEGIN
         values
             (v_live_id, 0, 'Live', 'Live production data space', '',
              null, null,
-             v_system_owner, 'active',
+             v_owner_id, 'active',
              current_user, current_user, 'system.initial_load', 'System initialisation',
              now(), 'infinity');
 

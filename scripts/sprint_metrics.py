@@ -127,14 +127,16 @@ def get_merged_prs(start: datetime.date, end: datetime.date) -> list[dict]:
     gh_before = end + datetime.timedelta(days=1)
     prs = []
     try:
+        # gh search prs handles date ranges better than gh pr list
         output = run([
-            "gh", "pr", "list", "--state", "merged",
-            f"--search=merged:{start}..{gh_before}",
-            "--json", "number,title,createdAt,mergedAt,commits",
+            "gh", "search", "prs",
+            f"repo=OreStudio/OreStudio",
+            f"merged:{start}..{gh_before}",
+            "--json", "number,title,createdAt,closedAt,commits",
             "--limit", "200"
         ])
     except subprocess.CalledProcessError as e:
-        print(f"Warning: gh pr list failed: {e}", file=sys.stderr)
+        print(f"Warning: gh search prs failed: {e}", file=sys.stderr)
         return prs
     
     import json
@@ -145,8 +147,8 @@ def get_merged_prs(start: datetime.date, end: datetime.date) -> list[dict]:
     
     for pr in data:
         created = parse_date(pr["createdAt"][:10])
-        merged = parse_date(pr["mergedAt"][:10])
-        cycle_hours = (merged - created).days * 24
+        closed = parse_date(pr["closedAt"][:10])
+        cycle_hours = (closed - created).days * 24
         commit_count = len(pr.get("commits", []))
         prs.append({
             "number": pr["number"],
@@ -162,7 +164,7 @@ def collect_story_progress(start: datetime.date, end: datetime.date) -> list[dic
     """Track STARTED→DONE transitions in story docs."""
     log = run([
         "git", "log", f"--after={start}", f"--before={end + datetime.timedelta(days=1)}",
-        "-p", "--diff-filter=M", "--",
+        "-p", "--diff-filter=M", "--date=short", "--",
         "doc/agile/versions/v0/sprint_*/**/story.org"
     ])
     
@@ -172,6 +174,7 @@ def collect_story_progress(start: datetime.date, end: datetime.date) -> list[dic
     for line in log.splitlines():
         if line.startswith("Date:"):
             d_str = line.split(":", 1)[1].strip()
+            # Parse ISO date (YYYY-MM-DD) after using --date=short
             current_date = parse_date(d_str.split()[0])
         elif "STARTED" in line and "DONE" in line and current_date:
             transitions.append({"date": current_date, "story": "unknown"})

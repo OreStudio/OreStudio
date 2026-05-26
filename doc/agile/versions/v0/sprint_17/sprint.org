@@ -31,6 +31,8 @@ history to the v2 cybernetic information architecture.
 | State          | DONE                      |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                 |
 | Previous       | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]]                 |
+| Start          | 2026-05-14                             |
+| End (expected) | 2026-05-21                             |
 | Now            | Sprint closed 2026-05-23. |
 | Waiting on     | Nothing.                  |
 | Next           | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                 |

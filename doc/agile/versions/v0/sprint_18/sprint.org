@@ -34,6 +34,8 @@ Enable end-to-end [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] imports into 
 | State          | STARTED                                |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                              |
 | Previous       | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]                              |
+| Start          | 2026-05-17                             |
+| End (expected) | 2026-05-24                             |
 | Start          | 2026-05-22                             |
 | End (expected) | 2026-05-28                             |
 | Now            | Sprint in flight.                      |

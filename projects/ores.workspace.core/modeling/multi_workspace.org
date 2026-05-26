@@ -160,11 +160,12 @@ The correct split is:
 
 ** Workspace Visibility
 
-All authenticated users within a tenant hold =workspace::workspaces:read= by
-default. Workspaces are not private ACL objects; any user within the tenant
-can see any workspace. Data restriction within a workspace is handled by the
-=scope_portfolio_id= on the workspace itself (portfolio tree scoping), not by
-per-workspace read grants. This keeps the permission model simple.
+All authenticated users within a party hold =workspace::workspaces:read= by
+default. Workspaces are not private ACL objects; any user within the party can
+see any workspace owned by that party. Data restriction within a workspace is
+handled by the =scope_portfolio_id= on the workspace itself (portfolio tree
+scoping), not by per-workspace read grants. This keeps the permission model
+simple.
 
 * Data Model
 
@@ -180,8 +181,12 @@ alter table <table_name>
 create index on <table_name> (workspace_id);
 #+end_src
 
-Tables that are genuinely global — users, IAM, parties, DQ FSM definitions,
-workflow definitions, the workspace table itself — do *not* get =workspace_id=.
+Tables that are genuinely global — users, IAM, DQ FSM definitions, workflow
+definitions — do *not* get =workspace_id=.  Neither does the workspace table
+itself, but for a different and independent reason: a workspace cannot belong
+to a workspace (self-referential membership is undefined).  That exception
+*does not* extend to =tenant_id= or =party_id=: the workspace entity is
+party-scoped like any other business entity and carries both columns.
 
 Affected categories:
 
@@ -500,13 +505,13 @@ is designed as a foundation for this extension.
 
 Three tiers of workspace permission are enforced in =workspace_handler.hpp=:
 
-| Permission                          | Default holders                |
-|-------------------------------------+--------------------------------|
-| =workspace::workspaces:read=        | All authenticated users        |
-| =workspace::workspaces:write=       | All authenticated users        |
-| =workspace::workspaces:archive=     | All authenticated users (own)  |
-| =workspace::workspaces:archive_any= | TenantAdmin                    |
-| =workspace::live_workspace:archive= | SuperAdmin only                |
+| Permission                          | Default holders                      |
+|-------------------------------------+--------------------------------------|
+| =workspace::workspaces:read=        | All authenticated users (own party)  |
+| =workspace::workspaces:write=       | All authenticated users (own party)  |
+| =workspace::workspaces:archive=     | All authenticated users (own ws)     |
+| =workspace::workspaces:archive_any= | TenantAdmin                          |
+| =workspace::live_workspace:archive= | SuperAdmin only                      |
 
 Archive is ownership-aware: a user may archive their own workspace with
 =workspaces:archive=; archiving another user's workspace requires

@@ -54,6 +54,9 @@ std::string workspace_service::create_workspace(const domain::workspace& ws) {
             + "'. Must be 'active' or 'archived'.");
     }
 
+    if (!ctx_.party_id().has_value())
+        throw std::invalid_argument("Cannot create workspace: no party context in request.");
+
     domain::workspace to_create = ws;
     if (to_create.id.is_nil()) {
         boost::uuids::random_generator gen;
@@ -61,6 +64,8 @@ std::string workspace_service::create_workspace(const domain::workspace& ws) {
     }
     if (to_create.status_code.empty())
         to_create.status_code = "active";
+    to_create.tenant_id = ctx_.tenant_id();
+    to_create.party_id = *ctx_.party_id();
     to_create.modified_by = ctx_.actor();
 
     BOOST_LOG_SEV(lg(), debug) << "Creating workspace: " << to_create.name;

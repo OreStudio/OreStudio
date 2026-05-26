@@ -22,6 +22,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workspace.api/domain/workspace_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::workspace::repository {
@@ -34,6 +35,8 @@ workspace_mapper::map(const workspace_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::workspace r;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.version = v.version;
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.name = v.name;
@@ -61,6 +64,8 @@ workspace_mapper::map(const domain::workspace& v) {
 
     workspace_entity r;
     r.id = boost::uuids::to_string(v.id);
+    r.tenant_id = v.tenant_id.to_string();
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.version = v.version;
     r.name = v.name;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);

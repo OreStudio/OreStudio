@@ -19,6 +19,8 @@
 
 create table if not exists ores_workspaces_tbl (
     id                  uuid         not null,
+    tenant_id           uuid         not null,
+    party_id            uuid         not null,
     version             integer      not null,
     name                text         not null,
     description         text         not null default '',
@@ -53,10 +55,20 @@ create unique index if not exists workspaces_version_uniq_idx
 on ores_workspaces_tbl (id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+-- Name uniqueness is scoped to the party: two different parties may each have
+-- a workspace named "prod" without conflict.
 create unique index if not exists workspaces_name_uniq_idx
-on ores_workspaces_tbl (name)
+on ores_workspaces_tbl (tenant_id, party_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and status_code = 'active';
+
+create index if not exists workspaces_tenant_idx
+on ores_workspaces_tbl (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists workspaces_party_idx
+on ores_workspaces_tbl (party_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists workspaces_status_idx
 on ores_workspaces_tbl (status_code)
@@ -106,6 +118,20 @@ begin
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+
+    -- Validate tenant
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate party_id (soft FK to ores_refdata_parties_tbl)
+    if not exists (
+        select 1 from ores_refdata_parties_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.party_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid party_id: %. No active party found with this id.', NEW.party_id
+            using errcode = '23503';
+    end if;
 
     -- Validate owner_id references a real account
     if not exists (

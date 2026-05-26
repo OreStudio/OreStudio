@@ -32,6 +32,8 @@ Wizard that uses them.
 |----------------+-------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                          |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                     |
+| Start          | 2026-01-20                             |
+| End (expected) | 2026-01-27                             |
 | Now            | Sprint closed 2026-01-27. Two stories carry forward: the FPML export/import implementation and the BOINC compute-grid design. |
 | Waiting on     | None — carried items scheduled forward.                                                                                       |
 | Next           | Sprint 11 picks up from the dataset-bundles + provisioning work; the party domain layer also has its prerequisites now.       |

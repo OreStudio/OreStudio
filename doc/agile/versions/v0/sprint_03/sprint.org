@@ -31,6 +31,8 @@ code/ + /finish login related functionality/.)
 |----------------+------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                             |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                        |
+| Start          | 2025-11-01                             |
+| End (expected) | 2025-12-31                             |
 | Now            | Sprint closed 2025-12-31. UI now uses the new socket layer end-to-end; accounts and sessions ship as part of v0. |
 | Waiting on     | None.                                                                                                            |
 | Next           | None.                                                                                                            |

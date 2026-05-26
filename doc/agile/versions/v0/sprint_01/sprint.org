@@ -24,6 +24,8 @@ the stack.
 |----------------+-----------------------------------------------|
 | State          | DONE                                          |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                     |
+| Start          | 2024-06-15                             |
+| End (expected) | 2024-07-28                             |
 | Now            | Sprint closed 2024-07-28. All stories merged. |
 | Waiting on     | None.                                         |
 | Next           | None.                                         |

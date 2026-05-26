@@ -28,6 +28,8 @@ telemetry as first-class components, and tidy the build platform.
 |----------------+---------------------------------------------------------------------|
 | State          | DONE                                                                |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                           |
+| Start          | 2025-12-23                             |
+| End (expected) | 2025-12-30                             |
 | Now            | Sprint closed 2025-12-30.                                           |
 | Waiting on     | None.                                                               |
 | Next           | Sprint 08 picks up the threads opened by Wt/HTTP and observability. |

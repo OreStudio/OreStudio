@@ -28,6 +28,8 @@ skills layer.
 |----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                                                 |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                                                            |
+| Start          | 2025-11-16                             |
+| End (expected) | 2025-12-01                             |
 | Now            | Sprint closed 2025-12-01. Bootstrap workflow live; CLI/REPL reshape landed; currency messaging collapsed to =save_currency=; skills layer grew to cover sprint-opening and release-notes generation. |
 | Waiting on     | None.                                                                                                                                                                                                |
 | Next           | None.                                                                                                                                                                                                |

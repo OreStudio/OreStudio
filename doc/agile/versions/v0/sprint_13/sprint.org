@@ -33,6 +33,8 @@ portfolios / trades.
 |----------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                           |
+| Start          | 2026-02-21                             |
+| End (expected) | 2026-02-28                             |
 | Now            | Sprint closed 2026-02-28. Two items carry forward: the trade-import mapping dialog (6h work-in-progress) and the party-level refdata restrictions (framework only). |
 | Waiting on     | None.                                                                                                                                                               |
 | Next           | Sprint 14 picks up the trade-import dialog and continues the party- level RLS work into refdata.                                                                    |

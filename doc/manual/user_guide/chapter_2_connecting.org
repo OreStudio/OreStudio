@@ -225,13 +225,15 @@ folders, and tags — in a single local SQLite database file named
 stored separately, in the operating system's standard settings store.
 Neither leaves your machine.
 
-- *Linux* — settings in =~/.config/OreStudio/=; database at
-  =~/.local/share/ores.qt/connections.db=.
-- *macOS* — settings in =~/Library/Preferences/=; database at
-  =~/Library/Application Support/ores.qt/connections.db=.
-- *Windows* — settings in the registry under
-  =HKCU\Software\OreStudio\OreStudio=; database at
-  =%APPDATA%\ores.qt\connections.db=.
+- *Linux*:
+  - settings in =~/.config/OreStudio/=;
+  - database at =~/.local/share/ores.qt/connections.db=.
+- *macOS*:
+   - settings in =~/Library/Preferences/=;
+   - database at =~/Library/Application Support/ores.qt/connections.db=.
+- *Windows*:
+   - settings in registry: =HKCU\Software\OreStudio\OreStudio=;
+   - database at =%APPDATA%\ores.qt\connections.db=.
 
 If =connections.db= is missing when ORE Studio starts, it creates a new
 empty one — so the Connection Manager simply opens with no entries.
@@ -266,15 +268,9 @@ becomes the target for the *Connect* button in the main toolbar. The
 status bar at the bottom of the main window shows the name of the active
 connection.
 
-Alternatively, the *Connect* toolbar button opens a quick-select dropdown
-if no connection is active, letting you pick one without opening the
-full Connection Manager.
-
-#+caption: [SCREENSHOT NEEDED] The main toolbar with the Connect button highlighted and a dropdown showing the list of available connections. The cursor is hovering over one entry.
-# Capture: click the Connect button dropdown (or the equivalent
-# quick-select). Show the list of saved connections in the dropdown
-# before selecting one.
-[[../../../assets/images/main_window_connect_dropdown.png]]
+You do not have to choose in advance, though: clicking *Connect* opens
+the login dialog directly, and its /Quick Connect/ selector lets you pick
+the connection there (see [[*Filtering Quick Connect with labels][Filtering Quick Connect with labels]] below).
 
 *** The login screen
 
@@ -309,6 +305,39 @@ opens account registration. If authentication fails, an error message is
 shown below the password field. Check that you are using the correct
 credentials for this backend; each backend maintains its own user
 database independently.
+
+*** Filtering Quick Connect with labels
+
+With only a handful of connections, /Quick Connect/ is easy to scan. But a
+real deployment soon accumulates many — several environments, each with
+its own system, tenant and per-party logins. Left unfiltered (the /Label/
+set to /All/), the selector lists every one:
+
+#+caption: Quick Connect with the /Label/ set to /All/ — every saved connection across all environments and tenants. Hard to pick the right one at a glance.
+[[../../../assets/images/connection_all_label.png]]
+
+Each connection carries a /label/ — its environment tag, such as =dev=,
+=local1= or =local2=. The /Label/ selector lists those labels; choosing
+one filters Quick Connect to just the connections that carry it:
+
+#+caption: The /Label/ selector lists the labels found on your connections. Pick one to narrow Quick Connect to that environment.
+[[../../../assets/images/quick_model_labels.png]]
+
+With =local1= selected, Quick Connect shows only the =local1= entries — the
+environment's own database, its system and tenant logins, and its
+per-party connections — so you reach the right backend without scrolling
+past unrelated ones:
+
+#+caption: Quick Connect filtered to the =local1= label: only that environment's connections remain.
+[[../../../assets/images/quick_connect_filtered.png]]
+
+You normally run one client /per environment/: a client built for =local1=
+should connect to =local1=, not to staging or production. Rather than pick
+the label by hand each time, set it when you launch the client — the
+=--instance-name= command-line option (see [[*Telling windows apart (instance colour and name)][Telling windows apart]]) opens
+the client with the /Label/ already set, so Quick Connect is pre-filtered
+to that environment. The =build/scripts/start-client.sh= helper does this
+for you, taking the label from =ORES_CHECKOUT_LABEL= in your =.env=.
 
 *** When the connection fails
 
@@ -449,10 +478,7 @@ sets the marker colour and =--name= sets the instance name; when you omit
 =--name=, the name comes from =ORES_CHECKOUT_LABEL= in your =.env= — never
 from the colour.
 
-#+caption: [SCREENSHOT NEEDED] Two ORE Studio windows side by side, each with a different instance-colour circle and name in the status bar, showing how to tell them apart.
-# Capture: start two instances with different --instance-color values
-# (and names). Show both status bars so the coloured circle and the
-# instance name differ between the two windows.
+#+caption: The status bars of three windows running the same =local1= instance, each given a different =--instance-color= (green, red, blue) so you can tell them apart at a glance.
 [[../../../assets/images/main_window_instance_colour.png]]
 
 *** Configuration directory
@@ -548,3 +574,10 @@ configurations are preserved; you can log back in at any time.
 Logging out does not stop the backend service — it only terminates your
 client session. Other users connected to the same backend are
 unaffected.
+
+To close the application entirely, quit the window (or choose /File →
+Exit/). ORE Studio asks you to confirm so you do not lose an active
+session by accident:
+
+#+caption: The exit confirmation. Click /Yes/ to close ORE Studio, or /No/ to keep working.
+[[../../../assets/images/exit_confirmation_dialog.png]]

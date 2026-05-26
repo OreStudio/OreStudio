@@ -140,12 +140,19 @@ System / Tenant / Party Provisioner wizard pages
 7. [ ] Rebuild the manual (=deploy_manual=) and the site and verify every figure
    renders.
 
-** Still to capture (3 remaining, save under =assets/images/=)
+** Still to capture (1 remaining, save under =assets/images/=)
 
-All in chapter 2 (=chapter_2_connecting.org=):
-- =main_window_connect_dropdown.png= — toolbar Connect button + connection dropdown.
-- =connection_lost_banner.png= — disconnected-while-logged-in warning + Reconnect.
-- =main_window_instance_colour.png= — two windows with different instance colours/names.
+- =connection_lost_banner.png= — the disconnected-while-logged-in warning
+  banner / status indicator with the Reconnect affordance.
+
+Captured and wired since: =connection_manager_tag_filter= (the Tags field,
+renamed =connection_manager_tags=); the Quick Connect label-filtering
+workflow (=connection_all_label=, =quick_model_labels=,
+=quick_connect_filtered=); =main_window_instance_colour= (three coloured
+windows); and =exit_confirmation_dialog= (new — documented in Logging
+out). The "toolbar Connect dropdown" placeholder was wrong: clicking
+Connect opens the login dialog, whose Quick Connect selector is the real
+connection picker.
 
 Everything else is captured and wired: chapter 1 figures; the Connection
 Manager dialogs; =connection_manager_tag_filter=; =status_bar_connected= /

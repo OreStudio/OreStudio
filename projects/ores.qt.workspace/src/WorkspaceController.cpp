@@ -77,7 +77,7 @@ void WorkspaceController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Workspaces");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Layers, IconUtils::DefaultIconColor));
+        Icon::Database, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -162,7 +162,7 @@ void WorkspaceController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Workspace");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Layers, IconUtils::DefaultIconColor));
+        Icon::Database, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -211,7 +211,7 @@ void WorkspaceController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Workspace: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Layers, IconUtils::DefaultIconColor));
+        Icon::Database, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);

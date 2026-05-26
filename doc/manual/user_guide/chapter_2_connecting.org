@@ -457,9 +457,11 @@ The status bar changes appearance to reflect the connection state:
   "Connecting to /name/…".
 - *Connected and logged in* — normal; shows all zones as described above.
 
-(A distinct /connection lost/ state for a backend that drops mid-session
-is planned but not yet implemented — see [[*Connection status and reconnection][Connection status and
-reconnection]] above.)
+#+begin_note
+A distinct /connection lost/ state for a backend that drops mid-session is
+planned but not yet implemented — see [[*Connection status and reconnection][Connection status and
+reconnection]] above.
+#+end_note
 
 In the disconnected state the strip is reduced to the environment marker
 and the connection label, with the broken-link icon on the right:

@@ -239,6 +239,16 @@ protected:
     virtual void onWindowWorkspaceChanged(const WorkspaceContext& ctx);
 
     /**
+     * @brief Return true if this window supports per-window workspace switching.
+     *
+     * When false, the workspace selector created by createBottomBar() is
+     * disabled so the user cannot change the workspace for this window.
+     * Override and return false for Live-only entities (books, portfolios)
+     * that are always stored under the Live workspace sentinel.
+     */
+    virtual bool isWorkspaceScoped() const { return true; }
+
+    /**
      * @brief Get the normal (non-stale) tooltip text for the refresh action.
      *
      * Override this to customize the tooltip text.

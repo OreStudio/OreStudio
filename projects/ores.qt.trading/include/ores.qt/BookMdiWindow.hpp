@@ -90,6 +90,8 @@ private slots:
     void onDoubleClicked(const QModelIndex& index);
 
 protected:
+    bool isWorkspaceScoped() const override { return false; }
+
     QString normalRefreshTooltip() const override {
         return tr("Refresh books");
     }

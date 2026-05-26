@@ -254,6 +254,8 @@ WorkspaceSelector* EntityListMdiWindow::createWorkspaceSelector(ClientManager* c
     windowWorkspaceContext_ = cm->workspaceContext();
     auto* selector = new WorkspaceSelector(cm, this);
     selector->setCurrentContext(windowWorkspaceContext_);
+    if (!isWorkspaceScoped())
+        selector->setEnabled(false);
     connect(selector, &WorkspaceSelector::workspaceChanged,
             this, &EntityListMdiWindow::onWindowWorkspaceChanged);
     return selector;

@@ -83,6 +83,9 @@ In execution order:
 
 * Decisions
 
+- PR #870 (scaffolding) review round 1: accepted "three → four tiers"
+  fix from gemini-code-assist; thread resolved in commit =8e6e951ce=.
+
 * Out of scope
 
 - Protocol-level message schema documentation — already captured in

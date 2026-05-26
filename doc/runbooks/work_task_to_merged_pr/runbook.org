@@ -69,3 +69,4 @@ In execution order:
 - [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] — the CI waiting loop.
 - [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]] — close it out.
 - [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] — the preceding runbook for the story-scaffold phase.
+- [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][Runbook glossary entry]] — what a runbook is and how to create one.

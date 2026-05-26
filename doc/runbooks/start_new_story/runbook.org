@@ -56,3 +56,4 @@ In execution order:
 - [[id:84C9177E-C737-428A-BDF9-E55CA6C9680C][compass goto]] — the one-command shortcut that combines steps 1–2.
 - [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] — what comes after the PR is open.
 - [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]] — commit format reference.
+- [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] — the next runbook: from task pickup to merge.

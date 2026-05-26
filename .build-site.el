@@ -127,8 +127,7 @@
     <a href='/OreStudio/doc/orientation.html'>Orientation</a>
     <a href='/OreStudio/doc/identity/product_identity.html'>Product</a>
     <a href='/OreStudio/projects/modeling/system_model.html'>Architecture</a>
-    <a href='/OreStudio/doc/recipes/recipes.html'>Recipes</a>
-    <a href='/OreStudio/doc/llm/skills/claude_code_skills.html'>Skills</a>
+    <a href='/OreStudio/doc/llm/llm.html'>LLMs</a>
     <a href='/OreStudio/doc/manual/manuals.html'>Manuals</a>
     <a href='/OreStudio/doc/downloads.html'>Downloads</a>
     <a href='/OreStudio/doc/agile/agile.html'>Agile</a>

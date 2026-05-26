@@ -201,7 +201,7 @@ path from service SQL functions; ordinary DML handlers must not query
 
 * Useful Pages
 
-- To understand the NATS messaging protocol, see the [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]] and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]].
+- To understand the NATS messaging layer, see [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] (the technology), [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] (the transport library), and the [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Messaging Reference]] (subject namespace index).
 - To understand how we generate PlantUML diagrams see the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Modeler]]
   skill.
 - To understand how to add new domain types, see the [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]] skill.

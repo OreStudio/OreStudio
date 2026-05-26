@@ -50,12 +50,51 @@ under a new "Messaging infrastructure" section.
 - [ ] Links back to [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for how ORE Studio uses the transport.
 - [ ] =doc/knowledge/external/external.org= has a new "Messaging
   infrastructure" section with an id-link to =nats.org=.
+- [ ] =projects/modeling/protocol.org= renamed to =messaging.org=,
+  ported to v2, title "ORE Studio Messaging Reference", =:ID:= preserved.
+- [ ] =messaging.org= links to =nats.org=.
+- [ ] =ores.nats= component overview =* See also= links to =nats.org=
+  and =messaging.org=.
+- [ ] =system_model.org= "Useful Pages" display text reads "Messaging
+  Reference" (not "Protocol Reference").
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Four documents form the messaging documentation landscape; their
+responsibilities must be non-overlapping and their cross-links
+complete.
+
+| Document | Responsibility |
+|----------+----------------|
+| =nats.org= (external knowledge) | What NATS is as a technology — concepts, security, upstream links. |
+| =ores.nats= component overview | How ORE Studio uses NATS — C++ transport library, patterns, entry points. |
+| =messaging.org= (renamed from =protocol.org=) | Which service owns which subject namespace — the cross-service index. |
+| =ores.*.protocol.org= (11 files) | Complete subject inventory for one service. |
+
+Navigation chain a developer follows: =nats.org= → =ores.nats= →
+=messaging.org= → =ores.iam.protocol.org=.
+
+*Step 1* — Rename =projects/modeling/protocol.org= to =messaging.org=.
+The name "protocol" was accurate when =ores.comms= (binary protocol)
+existed alongside NATS. =ores.comms= is gone; calling this a
+"protocol reference" now implies a wire-format spec. The per-service
+files are already titled "ores.iam Messaging Reference" — the
+top-level should match. Keep the =:ID:= unchanged so all existing
+id-links survive. Port to v2 format. Add link to =nats.org=.
+
+*Step 2* — Fix =ores.nats= component overview =* See also=, currently
+empty. Add links to =nats.org= (technology) and =messaging.org=
+(namespace index).
+
+*Step 3* — Update =system_model.org= "Useful Pages" entry, which
+refers to "Protocol Reference" by name. The id-link already resolves
+correctly (UUID preserved), but the display text should say "Messaging
+Reference".
+
+*Step 4* (deferred to per-component NATS task) — Port all 11
+=ores.*.protocol.org= files to v2 and add =nats.org= to their See
+also. Touch-it-to-port-it applies; they are covered by the component
+NATS sections task.
 
 * Notes
 

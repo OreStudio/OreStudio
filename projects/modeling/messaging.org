@@ -1,23 +1,27 @@
 :PROPERTIES:
 :ID: A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D
 :END:
-#+title: ORE Studio Messaging Protocol Reference
-#+version: 1
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
-#+startup: overview
+#+title: ORE Studio Messaging Reference
+#+description: Index of NATS subject namespaces owned by each domain service, with links to per-service messaging references.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :nats:messaging:index:knowledge:
+#+created: 2026-05-26
+#+updated: 2026-05-26
 
 All inter-service and client-server communication in [[id:D773166D-0C91-8CB4-3323-42166BC07687][ORE Studio]] uses
-[[https://nats.io][NATS]] with JSON payloads. See [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for transport details (request/reply
-pattern, subject naming convention, queue groups, JetStream).
+[[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] with JSON payloads. The transport library is [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]
+(request/reply pattern, subject naming convention, queue groups,
+JetStream). This page is the cross-service namespace index; each row
+links to the full subject inventory for that service.
 
 * Services
 
-Each domain service owns a subject namespace. Click a protocol reference
-for the full list of subjects and message types.
+Each domain service owns a subject namespace.
 
-| Service | Subject Namespace | Protocol Reference |
-|---------+-------------------+--------------------|
+| Service | Subject Namespace | Messaging Reference |
+|---------+-------------------+---------------------|
 | [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] | =iam.v1.>= | [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][ores.iam Messaging Reference]] |
 | [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]] | =refdata.v1.>= | [[id:C2B3D4E5-F6A7-8901-BCDE-F12345678901][ores.refdata Messaging Reference]] |
 | [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]] | =variability.v1.>= | [[id:E4D5F6A7-B8C9-0123-DEFA-234567890123][ores.variability Messaging Reference]] |
@@ -29,7 +33,9 @@ for the full list of subjects and message types.
 | [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic]] | =synthetic.v1.>= | [[id:7AF2DCAB-BC62-43A9-885A-E557FCD4254F][ores.synthetic Messaging Reference]] |
 | [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting]] | =reporting.v1.>= | [[id:B1A5C952-B709-444B-8A63-5FD834D87D52][ores.reporting Messaging Reference]] |
 
-* Useful Pages
+* See also
 
-- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — transport layer: request/reply, subject naming, configuration
-- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — overall system architecture
+- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — transport library: request/reply, subject naming, queue
+  groups, JetStream.
+- [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — the upstream messaging technology this is built on.
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — overall system architecture.

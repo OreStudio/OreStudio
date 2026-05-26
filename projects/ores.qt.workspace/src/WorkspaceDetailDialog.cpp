@@ -402,15 +402,15 @@ void WorkspaceDetailDialog::loadAccounts() {
         return;
 
     QPointer<WorkspaceDetailDialog> self = this;
+    auto* cm = clientManager_;
     QFuture<AccountListResult> future =
-        QtConcurrent::run([self]() -> AccountListResult {
-            if (!self || !self->clientManager_)
-                return {false, {}, "Dialog closed"};
+        QtConcurrent::run([self, cm]() -> AccountListResult {
+            if (!cm)
+                return {false, {}, "No client manager"};
 
             iam::messaging::get_accounts_request_typed request;
             request.limit = 500;
-            auto result = self->clientManager_->process_authenticated_request(
-                std::move(request));
+            auto result = cm->process_authenticated_request(std::move(request));
 
             if (!result)
                 return {false, {}, QString::fromStdString(result.error())};

@@ -328,11 +328,13 @@ void WorkspaceMdiWindow::deleteSelected() {
     }
 
     QPointer<WorkspaceMdiWindow> self = this;
+    auto* cm = clientManager_;
+    const std::string username = username_.toStdString();
     using DeleteResult = std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
 
-    auto task = [self, ids, codes]() -> DeleteResult {
+    auto task = [self, cm, username, ids, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self) return {};
+        if (!cm) return {};
 
         BOOST_LOG_SEV(lg(), debug) << "Making delete request for "
                                    << ids.size() << " workspaces";
@@ -340,8 +342,8 @@ void WorkspaceMdiWindow::deleteSelected() {
         for (std::size_t i = 0; i < ids.size(); ++i) {
             workspace::messaging::archive_workspace_request request;
             request.id = boost::uuids::to_string(ids[i]);
-            request.modified_by = self->username_.toStdString();
-            auto response_result = self->clientManager_->process_authenticated_request(
+            request.modified_by = username;
+            auto response_result = cm->process_authenticated_request(
                 std::move(request));
             if (!response_result) {
                 results.push_back({ids[i], codes[i], false, "Failed to communicate with server"});

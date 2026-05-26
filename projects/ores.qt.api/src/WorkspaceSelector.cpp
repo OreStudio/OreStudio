@@ -38,38 +38,33 @@ WorkspaceSelector::WorkspaceSelector(ClientManager* clientManager, QWidget* pare
       resolve_watcher_(new QFutureWatcher<ResolveResult>(this)) {
 
     auto* layout = new QHBoxLayout(this);
-    layout->setContentsMargins(4, 0, 4, 0);
+    layout->setContentsMargins(4, 2, 4, 2);
     layout->setSpacing(4);
 
     label_ = new QLabel(tr("Workspace:"), this);
-    label_->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    label_->setAlignment(Qt::AlignRight | Qt::AlignTop);
+    label_->setContentsMargins(0, 4, 0, 0);
     layout->addWidget(label_);
 
-    combo_ = new QComboBox(this);
-    combo_->setEditable(true);
-    combo_->setInsertPolicy(QComboBox::NoInsert);
-    combo_->setMinimumWidth(140);
-    combo_->setMaximumWidth(220);
-    combo_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-    combo_->setToolTip(tr("Select the workspace for this window"));
-
-    auto* completer = new QCompleter(combo_->model(), this);
-    completer->setFilterMode(Qt::MatchContains);
-    completer->setCaseSensitivity(Qt::CaseInsensitive);
-    combo_->setCompleter(completer);
-
-    layout->addWidget(combo_);
+    list_ = new QListWidget(this);
+    list_->setSelectionMode(QAbstractItemView::SingleSelection);
+    list_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    list_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    list_->setMaximumHeight(72);
+    list_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    list_->setToolTip(tr("Select the workspace for this window"));
+    layout->addWidget(list_);
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &WorkspaceSelector::onWorkspacesLoaded);
     connect(resolve_watcher_, &QFutureWatcher<ResolveResult>::finished,
             this, &WorkspaceSelector::onResolutionLoaded);
-    connect(combo_, QOverload<int>::of(&QComboBox::activated),
-            this, &WorkspaceSelector::onComboActivated);
+    connect(list_, &QListWidget::currentRowChanged,
+            this, &WorkspaceSelector::onListCurrentRowChanged);
 
     // Seed with Live only; async fetch replaces this on first show
-    entries_.push_back({WorkspaceContext::live_workspace_id, QStringLiteral("Live")});
-    populateCombo();
+    entries_.push_back({WorkspaceContext::live_workspace_id, QStringLiteral("Live"), {}});
+    populateList();
 
     refreshWorkspaces();
 }
@@ -80,17 +75,14 @@ WorkspaceContext WorkspaceSelector::currentContext() const {
 
 void WorkspaceSelector::setCurrentContext(const WorkspaceContext& ctx) {
     currentCtx_ = ctx;
-    // Find the entry that matches and update the combo without triggering activated
-    for (int i = 0; i < combo_->count(); ++i) {
-        if (combo_->itemData(i).toString() == ctx.id) {
-            const QSignalBlocker blocker(combo_);
-            combo_->setCurrentIndex(i);
+    const QSignalBlocker blocker(list_);
+    for (int i = 0; i < list_->count(); ++i) {
+        if (list_->item(i)->data(Qt::UserRole).toString() == ctx.id) {
+            list_->setCurrentRow(i);
             return;
         }
     }
-    // Not found yet (list still loading) — set the display text directly
-    const QSignalBlocker blocker(combo_);
-    combo_->setCurrentText(ctx.name);
+    // Entry not yet in list (still loading) — will be selected in populateList()
 }
 
 void WorkspaceSelector::refreshWorkspaces() {
@@ -100,25 +92,37 @@ void WorkspaceSelector::refreshWorkspaces() {
 
     QPointer<WorkspaceSelector> self = this;
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        if (!self || !self->clientManager_) {
+        if (!self || !self->clientManager_)
             return {false, {}, "Widget destroyed"};
-        }
+
         workspace::messaging::list_workspaces_request req;
         req.limit = 500;
         auto result = self->clientManager_->process_authenticated_request(std::move(req));
-        if (!result) {
+        if (!result)
             return {false, {}, QString::fromStdString(result.error())};
+
+        // Build id→name map (all workspaces, not only active) for parent lookup
+        QHash<QString, QString> id_to_name;
+        id_to_name.insert(WorkspaceContext::live_workspace_id, QStringLiteral("Live"));
+        for (const auto& ws : result->workspaces) {
+            id_to_name.insert(
+                QString::fromStdString(boost::uuids::to_string(ws.id)),
+                QString::fromStdString(ws.name));
         }
 
         FetchResult fr{true, {}, {}};
-        // Live sentinel always first
         fr.entries.push_back(
-            {WorkspaceContext::live_workspace_id, QStringLiteral("Live")});
+            {WorkspaceContext::live_workspace_id, QStringLiteral("Live"), {}});
         for (const auto& ws : result->workspaces) {
             if (ws.status_code != "active") continue;
             WorkspaceEntry e;
             e.id   = QString::fromStdString(boost::uuids::to_string(ws.id));
             e.name = QString::fromStdString(ws.name);
+            if (ws.parent_workspace_id.has_value()) {
+                const auto pid = QString::fromStdString(
+                    boost::uuids::to_string(*ws.parent_workspace_id));
+                e.parent_name = id_to_name.value(pid);
+            }
             if (e.id != WorkspaceContext::live_workspace_id)
                 fr.entries.push_back(std::move(e));
         }
@@ -136,15 +140,16 @@ void WorkspaceSelector::onWorkspacesLoaded() {
         return;
     }
     entries_ = std::move(result.entries);
-    populateCombo();
-    // Restore the current selection after repopulating
+    populateList();
     setCurrentContext(currentCtx_);
 }
 
-void WorkspaceSelector::onComboActivated(int index) {
-    if (index < 0 || index >= static_cast<int>(entries_.size()))
+void WorkspaceSelector::onListCurrentRowChanged(int row) {
+    if (row < 0 || row >= static_cast<int>(entries_.size()))
         return;
-    const auto& e = entries_[static_cast<std::size_t>(index)];
+    const auto& e = entries_[static_cast<std::size_t>(row)];
+    if (e.id == currentCtx_.id)
+        return; // no change
     if (e.id == WorkspaceContext::live_workspace_id) {
         currentCtx_ = entryToContext(e);
         emit workspaceChanged(currentCtx_);
@@ -191,11 +196,16 @@ void WorkspaceSelector::onResolutionLoaded() {
     emit workspaceChanged(currentCtx_);
 }
 
-void WorkspaceSelector::populateCombo() {
-    const QSignalBlocker blocker(combo_);
-    combo_->clear();
+void WorkspaceSelector::populateList() {
+    const QSignalBlocker blocker(list_);
+    list_->clear();
     for (const auto& e : entries_) {
-        combo_->addItem(e.name, e.id);
+        QString text = e.name;
+        if (!e.parent_name.isEmpty())
+            text += QStringLiteral("  ·  ") + e.parent_name;
+        auto* item = new QListWidgetItem(text);
+        item->setData(Qt::UserRole, e.id);
+        list_->addItem(item);
     }
 }
 

@@ -399,11 +399,13 @@ permit new users to register themselves. Where it is disabled, accounts
 are created for you by an administrator instead (see [[*First login and the default account][First login and the
 default account]]).
 
-*Note:* account registration currently fails with =Account creation
-failed: NATS connect failed: SSL Error= — the registration path's
-NATS/TLS connection does not succeed. Until this is fixed, ask an
-administrator to create your account. The fix is tracked in the story
-/Fix account registration NATS SSL error/.
+#+begin_note
+Account registration currently fails with =Account creation failed: NATS
+connect failed: SSL Error= — the registration path's NATS/TLS connection
+does not succeed. Until this is fixed, ask an administrator to create your
+account. The fix is tracked in the story /Fix account registration NATS
+SSL error/.
+#+end_note
 
 ** Connection status and reconnection
 

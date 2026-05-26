@@ -31,6 +31,12 @@
 #+latex_header: \makeatother
 #+latex_header: \definecolor{oreaccent}{rgb}{0.11,0.43,0.64}
 #+latex_header: \hypersetup{colorlinks=true,allcolors=oreaccent}
+# Understated, tufte-friendly note box for #+begin_note ... #+end_note:
+# thin accent rules top and bottom (echoing the booktabs table look), no
+# side borders or fill, with an italic "Note." lead-in. Smaller text, like
+# a tufte aside.
+#+latex_header: \usepackage[most]{tcolorbox}
+#+latex_header: \newtcolorbox{note}{enhanced, breakable, colback=white, colframe=oreaccent, boxrule=0pt, toprule=0.6pt, bottomrule=0.6pt, leftrule=0pt, rightrule=0pt, sharp corners, left=0pt, right=0pt, top=1.4mm, bottom=1.4mm, fontupper=\small, before upper={{\itshape\color{oreaccent}Note.\ }}}
 #+latex_header: \AtBeginDocument{\renewcommand{\plaintitle}{ORE Studio User Manual}}
 # Include subsections (level *** in the chapters) in the table of contents.
 #+latex_header: \setcounter{tocdepth}{2}

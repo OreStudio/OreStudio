@@ -643,7 +643,7 @@ below, which is /task-shaped/.
   =story.org=, =task_*.org=).
 - Not stateful — runbooks are durable reference. No TODO.
 - How to create :: =compass add runbook= or
-  =generate_v2_doc.sh --type runbook=.
+  =projects/ores.codegen/generate_v2_doc.sh --type runbook=.
 - Required sections ::
   - =* Goal= — what this runbook achieves, in one sentence.
   - =* Preconditions= — what must be true before starting (branch state,

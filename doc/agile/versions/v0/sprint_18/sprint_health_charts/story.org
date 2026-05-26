@@ -97,7 +97,7 @@ Each chart gets an entry in the sprint's =* Health Review= section or a dedicate
 * Decisions
 
 - Commits are bucketed by author date (not committer date) to match when work actually happened.
-- PR cycle time = mergesAt − createdAt. Weekends are not excluded — a PR open over a weekend correctly shows longer cycle time.
+- PR cycle time = mergedAt − createdAt. Weekends are not excluded — a PR open over a weekend correctly shows longer cycle time.
 - Story state transitions are detected by grepping =git log -p= for changes to the =State= row in =* Status= tables. This is noisy but works without a structured database.
 - CSV files use tab separators (gnuplot's default) for simplicity.
 

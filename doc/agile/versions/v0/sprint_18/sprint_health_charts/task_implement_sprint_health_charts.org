@@ -35,7 +35,7 @@ Build the end-to-end sprint metrics pipeline: Python data extractor, gnuplot ren
 
 * Acceptance
 
-- =scripts/sprint_metrics.py --sprint 18= outputs CSVs under =build/output/sprint_18/.
+- =scripts/sprint_metrics.py --sprint 18= outputs CSVs under =build/output/sprint_18/=.
 - =scripts/plot_sprint_metrics.gnuplot= reads those CSVs and produces PNGs under =assets/images/sprint_18/=.
 - A =sprint_charts= CMake target exists and runs the full pipeline.
 - =sprint.org= includes at least one rendered PNG in the =* Health Review= section.

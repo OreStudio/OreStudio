@@ -1,11 +1,9 @@
 #!/bin/bash
 
-# Script to manage Compass: NLP/FTS search for Org-Roam notes
-#
-# This script:
-# 1. Bootstraps a Python virtual environment if it doesn't exist
-# 2. Indexes/updates notes from org-roam.db into a local SQLite FTS5 database
-# 3. Searches notes using fast full-text search
+# Wrapper for Compass, the ORE Studio orientation tool. It bootstraps a
+# Python virtual environment, then hands every argument to src/compass.py.
+# Run './compass.sh --help' for the full, always-current command set
+# (index, search, where/status, fleet, list, show, add, goto, ...).
 
 set -e
 
@@ -41,44 +39,8 @@ source "$VENV_PATH/bin/activate"
 REPO_ROOT=$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR")
 cd "$REPO_ROOT"
 
-# --- Parse command line arguments ---
-PYTHON_ARGS=()
-SHOW_HELP=false
-
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        --help|-h)
-            SHOW_HELP=true
-            shift
-            ;;
-        *)
-            PYTHON_ARGS+=("$1")
-            shift
-            ;;
-    esac
-done
-
-if [ "$SHOW_HELP" = true ]; then
-    echo "Usage: $0 <command> [options]"
-    echo ""
-    echo "Commands:"
-    echo "  index                 Index or update notes from org-roam.db"
-    echo "  search <query>        Search your notes using FTS5"
-    echo ""
-    echo "Options:"
-    echo "  -l, --limit <N>       Max results for search (default 10)"
-    echo "  --help, -h            Show this help"
-    echo ""
-    echo "Examples:"
-    echo "  $0 index                       # Index/update all changed notes"
-    echo "  $0 search \"deployment\"         # Search for 'deployment'"
-    exit 0
-fi
-
-if [ ${#PYTHON_ARGS[@]} -eq 0 ]; then
-    echo "Error: No command provided. Run '$0 --help' for usage information."
-    exit 1
-fi
-
-# --- Execute the Python script ---
-python3 "$SCRIPT_DIR/src/compass.py" "${PYTHON_ARGS[@]}"
+# --- Execute the Python CLI ---
+# Pass every argument straight through to compass.py, including --help/-h,
+# so the help shown is compass.py's own (complete, always-current) command
+# set rather than a hand-maintained copy that drifts out of date.
+python3 "$SCRIPT_DIR/src/compass.py" "$@"

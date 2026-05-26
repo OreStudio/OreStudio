@@ -20,7 +20,7 @@ for pricing derivatives and measuring financial risk, which is itself built on
 configurations, and presenting the results — while ORE and QuantLib provide
 the mathematics.
 
-#+caption: ORE Studio v0.0.17 — the main workspace showing the instrument and trade management views.
+#+caption[ORE Studio v0.0.17]: ORE Studio v0.0.17 — the main workspace showing the instrument and trade management views.
 [[../../../assets/images/ore_studio-v0.0.17.png]]
 
 ** Audience

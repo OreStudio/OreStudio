@@ -37,6 +37,60 @@
 ;; dialog screenshots shrink to 60%; small crops keep their natural size.
 (setq org-latex-image-default-width "\\maxwidth")
 
+;; Small figures go in tufte's wide margin. Org has no `marginfigure'
+;; float, so after LaTeX export we promote any figure whose image is small
+;; — width <= `ores/margin-max-w' AND height <= `ores/margin-max-h' pixels
+;; — to a `marginfigure'. Larger screenshots stay in the text column. This
+;; is a LaTeX-export-only transform; the HTML site is unaffected.
+;;
+;; The repo root is captured at load time: during org export `load-file-name'
+;; is nil and `buffer-file-name' may be too, so computing it inside the filter
+;; would crash. Float-placement options (`[htbp]' etc.) and `\includegraphics'
+;; options are optional in the regexps, so begin/end can never mismatch and
+;; option-less images are still matched.
+(defvar ores/repo-root
+  (file-name-directory (or load-file-name buffer-file-name default-directory))
+  "Repository root, captured when this script is loaded.")
+(defvar ores/margin-max-w 510)
+(defvar ores/margin-max-h 320)
+(defun ores/png-dimensions (file)
+  "Return (WIDTH . HEIGHT) in pixels from PNG FILE's IHDR, or nil."
+  (when (file-readable-p file)
+    (with-temp-buffer
+      (set-buffer-multibyte nil)
+      (insert-file-contents-literally file nil 0 24)
+      (when (>= (buffer-size) 24)
+        (let ((b (buffer-string)))
+          (cons (logior (ash (aref b 16) 24) (ash (aref b 17) 16)
+                        (ash (aref b 18) 8) (aref b 19))
+                (logior (ash (aref b 20) 24) (ash (aref b 21) 16)
+                        (ash (aref b 22) 8) (aref b 23))))))))
+(defun ores/figures-to-margin (text backend _info)
+  "Promote small figures to marginfigure in LaTeX output."
+  (if (not (org-export-derived-backend-p backend 'latex))
+      text
+    (replace-regexp-in-string
+     "\\\\begin{figure}\\(?:\\[[^]]*\\]\\)?\\(?:.\\|\n\\)*?\\\\end{figure}"
+     (lambda (blk)
+       ;; Inner regex ops clobber the outer matcher's state; isolate.
+       (save-match-data
+         (if (and (string-match "\\\\includegraphics\\(?:\\[[^]]*\\]\\)?{\\([^}]*\\.png\\)}" blk)
+                  (let* ((name (file-name-nondirectory (match-string 1 blk)))
+                         (dim (ores/png-dimensions
+                               (expand-file-name
+                                name (expand-file-name "assets/images" ores/repo-root)))))
+                    (and dim (<= (car dim) ores/margin-max-w)
+                         (<= (cdr dim) ores/margin-max-h))))
+             (replace-regexp-in-string
+              "\\\\end{figure}" "\\end{marginfigure}"
+              (replace-regexp-in-string
+               "\\\\begin{figure}\\(?:\\[[^]]*\\]\\)?" "\\begin{marginfigure}"
+               blk nil t)
+              nil t)
+           blk)))
+     text nil t)))
+(add-to-list 'org-export-filter-final-output-functions 'ores/figures-to-margin)
+
 ;; Custom LaTeX class: * → \chapter, ** → \section (no \part level).
 ;; This gives a clean chapter-based book without Part I/II dividers.
 (add-to-list 'org-latex-classes
@@ -79,13 +133,13 @@
       (format "\\begin{titlepage}
 \\centering
 \\vspace*{3cm}
-\\includegraphics[width=0.6\\textwidth]{../../../assets/images/login_screen.png}\\par
-\\vspace{2cm}
 {\\Huge\\bfseries ORE Studio User Manual\\par}
 \\vspace{0.5cm}
 {\\large Marco Craveiro\\par}
 \\vspace{0.3cm}
 {\\normalsize Version %s\\par}
+\\vspace{2cm}
+\\includegraphics[width=0.6\\textwidth]{../../../assets/images/login_screen.png}\\par
 \\vfill
 \\end{titlepage}" (ores/cmake-version)))
 

@@ -21,9 +21,26 @@
 #+latex_header: \makeatletter
 #+latex_header: \def\maxwidth{\ifdim\Gin@nat@width>0.7\linewidth 0.7\linewidth\else\Gin@nat@width\fi}
 #+latex_header: \makeatother
+# Round the corners of every figure uniformly at build time (via a tikz
+# clip), so screenshots look consistent regardless of whether the PNG
+# itself was given rounded/transparent corners.
+#+latex_header: \usepackage{tikz}
+#+latex_header: \makeatletter
+#+latex_header: \let\ores@oldincludegraphics\includegraphics
+#+latex_header: \renewcommand{\includegraphics}[2][]{\tikz\node[inner sep=0pt,clip,rounded corners=3pt]{\ores@oldincludegraphics[#1]{#2}};}
+#+latex_header: \makeatother
 #+latex_header: \definecolor{oreaccent}{rgb}{0.11,0.43,0.64}
+#+latex_header: \definecolor{orenote}{rgb}{0.60,0.30,0.24}
 #+latex_header: \hypersetup{colorlinks=true,allcolors=oreaccent}
+# Understated, tufte-friendly note box for #+begin_note ... #+end_note:
+# thin rules top and bottom (echoing the booktabs table look), no side
+# borders or fill, text and rules in a muted brick colour distinct from
+# the blue headings. Smaller text, like a tufte aside.
+#+latex_header: \usepackage[most]{tcolorbox}
+#+latex_header: \newtcolorbox{note}{enhanced, breakable, colback=white, colframe=orenote, coltext=orenote, boxrule=0pt, toprule=0.6pt, bottomrule=0.6pt, leftrule=0pt, rightrule=0pt, sharp corners, left=0pt, right=0pt, top=1.4mm, bottom=1.4mm, fontupper=\small}
 #+latex_header: \AtBeginDocument{\renewcommand{\plaintitle}{ORE Studio User Manual}}
+# Include subsections (level *** in the chapters) in the table of contents.
+#+latex_header: \setcounter{tocdepth}{2}
 #+latex_header: \titleformat{\section}[hang]{\normalfont\Large\itshape\color{oreaccent}}{\thesection}{1em}{}[]
 #+latex_header: \titleformat{\subsection}[hang]{\normalfont\large\itshape\color{oreaccent}}{\thesubsection}{1em}{}[]
 #+latex_header: \makeatletter
@@ -32,6 +49,10 @@
 
 #+html: <script>document.title = "ORE Studio User Manual";</script>
 #+HTML: <p><a href="user_manual.pdf">Download PDF</a></p>
+
+# List of figures (PDF only) — the LaTeX primitive, placed after the TOC.
+#+latex: \clearpage
+#+latex: \listoffigures
 
 * Introduction
 

@@ -37,6 +37,48 @@
 ;; dialog screenshots shrink to 60%; small crops keep their natural size.
 (setq org-latex-image-default-width "\\maxwidth")
 
+;; Small figures go in tufte's wide margin. Org has no `marginfigure'
+;; float, so after LaTeX export we promote any figure whose image is small
+;; — width <= `ores/margin-max-w' AND height <= `ores/margin-max-h' pixels
+;; — to a `marginfigure'. Larger screenshots stay in the text column. This
+;; is a LaTeX-export-only transform; the HTML site is unaffected.
+(defvar ores/margin-max-w 420)
+(defvar ores/margin-max-h 320)
+(defun ores/png-dimensions (file)
+  "Return (WIDTH . HEIGHT) in pixels from PNG FILE's IHDR, or nil."
+  (when (file-readable-p file)
+    (with-temp-buffer
+      (set-buffer-multibyte nil)
+      (insert-file-contents-literally file nil 0 24)
+      (when (>= (buffer-size) 24)
+        (let ((b (buffer-string)))
+          (cons (logior (ash (aref b 16) 24) (ash (aref b 17) 16)
+                        (ash (aref b 18) 8) (aref b 19))
+                (logior (ash (aref b 20) 24) (ash (aref b 21) 16)
+                        (ash (aref b 22) 8) (aref b 23))))))))
+(defun ores/figures-to-margin (text backend _info)
+  "Promote small figures to marginfigure in LaTeX output."
+  (if (not (org-export-derived-backend-p backend 'latex))
+      text
+    (let ((root (file-name-directory (or load-file-name buffer-file-name))))
+      (replace-regexp-in-string
+       "\\\\begin{figure}\\[[^]]*\\]\\(?:.\\|\n\\)*?\\\\end{figure}"
+       (lambda (blk)
+         ;; Inner regex ops would clobber the outer matcher's state; isolate.
+         (save-match-data
+           (if (and (string-match "\\\\includegraphics\\[[^]]*\\]{\\([^}]*\\.png\\)}" blk)
+                    (let* ((name (file-name-nondirectory (match-string 1 blk)))
+                           (dim (ores/png-dimensions
+                                 (expand-file-name name (expand-file-name "assets/images" root)))))
+                      (and dim (<= (car dim) ores/margin-max-w)
+                           (<= (cdr dim) ores/margin-max-h))))
+               (thread-last blk
+                 (string-replace "\\begin{figure}[htbp]" "\\begin{marginfigure}")
+                 (string-replace "\\end{figure}" "\\end{marginfigure}"))
+             blk)))
+       text nil t))))
+(add-to-list 'org-export-filter-final-output-functions 'ores/figures-to-margin)
+
 ;; Custom LaTeX class: * → \chapter, ** → \section (no \part level).
 ;; This gives a clean chapter-based book without Part I/II dividers.
 (add-to-list 'org-latex-classes

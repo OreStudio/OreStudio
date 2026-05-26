@@ -11,6 +11,17 @@
 #+updated: 2026-05-24
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
 
+This page lists all of the available documentation ORE Studio provides.
+
+#+begin_note
+All documentation is generated entirely by large language models (LLMs) working
+under human supervision. While every effort has been made to ensure accuracy,
+LLM-generated content can contain errors, omissions, or descriptions that do not
+match the actual software behaviour. If you find a discrepancy between these
+documents and the application, trust the application. Please report inaccuracies
+via the project issue tracker so they can be corrected.
+#+end_note
+
 * User Manual
 
 The [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] documents the application from the end-user

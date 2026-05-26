@@ -10,13 +10,11 @@
 #+created: 2026-05-25
 #+updated: 2026-05-25
 
-* Summary
-
-ORE Studio is in early active development (version 0.x). Releases are
-published on [[https://github.com/OreStudio/OreStudio/releases][GitHub]] and are provided for evaluation and learning
-purposes only. Many problems are expected — do not use these builds for
-production, real trading, or any financial decision-making. See the
-[[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][User Manual]] for guidance on getting started.
+ORE Studio is in early active development (version 0.x). Releases are published
+on [[https://github.com/OreStudio/OreStudio/releases][GitHub]] and are provided for evaluation and learning purposes only. Many
+problems are expected — do not use these builds for production, real trading, or
+any financial decision-making. See the [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][User Manual]] for guidance on getting
+started.
 
 * Releases
 

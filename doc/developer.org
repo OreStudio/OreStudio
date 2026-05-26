@@ -10,13 +10,10 @@
 #+created: 2026-05-25
 #+updated: 2026-05-25
 
-* Summary
-
-Quick-reference index of the external services and dashboards used in
-the ORE Studio developer workflow. Covers source hosting, API
-documentation, community chat, build dashboards, and CI pipelines. Use
-this page to orient yourself or to share onboarding links with a new
-contributor or LLM agent.
+Quick-reference index of the external services and dashboards used in the ORE
+Studio developer workflow. Covers source hosting, API documentation, community
+chat, build dashboards, and CI pipelines. Use this page to orient yourself or to
+share onboarding links with a new contributor or LLM agent.
 
 * Detail
 

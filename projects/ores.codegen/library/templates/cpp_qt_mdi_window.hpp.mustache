@@ -15,6 +15,10 @@
 
 namespace ores::qt {
 
+{{#domain_entity.qt.has_badge_columns}}
+class BadgeCache;
+{{/domain_entity.qt.has_badge_columns}}
+
 /**
  * @brief MDI window for displaying and managing {{domain_entity.entity_plural_words}}.
  *
@@ -38,6 +42,9 @@ public:
     explicit {{domain_entity.entity_pascal}}MdiWindow(
         ClientManager* clientManager,
         const QString& username,
+{{#domain_entity.qt.has_badge_columns}}
+        BadgeCache* badgeCache,
+{{/domain_entity.qt.has_badge_columns}}
         QWidget* parent = nullptr);
     ~{{domain_entity.entity_pascal}}MdiWindow() override = default;
 
@@ -78,6 +85,9 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
+{{#domain_entity.qt.has_badge_columns}}
+    BadgeCache* badgeCache_;
+{{/domain_entity.qt.has_badge_columns}}
 
     QToolBar* toolbar_;
     QTableView* tableView_;

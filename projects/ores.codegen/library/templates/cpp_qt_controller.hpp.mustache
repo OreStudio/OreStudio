@@ -15,6 +15,9 @@ namespace ores::qt {
 
 class {{domain_entity.entity_pascal}}MdiWindow;
 class DetachableMdiSubWindow;
+{{#domain_entity.qt.has_badge_columns}}
+class BadgeCache;
+{{/domain_entity.qt.has_badge_columns}}
 
 /**
  * @brief Controller for managing {{domain_entity.entity_singular_words}} windows and operations.
@@ -41,6 +44,9 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
+{{#domain_entity.qt.has_badge_columns}}
+        BadgeCache* badgeCache,
+{{/domain_entity.qt.has_badge_columns}}
         QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -74,6 +80,9 @@ private:
 
     {{domain_entity.entity_pascal}}MdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
+{{#domain_entity.qt.has_badge_columns}}
+    BadgeCache* badgeCache_;
+{{/domain_entity.qt.has_badge_columns}}
 };
 
 }

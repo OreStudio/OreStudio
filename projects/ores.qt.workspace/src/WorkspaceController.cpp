@@ -37,9 +37,11 @@ WorkspaceController::WorkspaceController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
+    BadgeCache* badgeCache,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      badgeCache_(badgeCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -56,7 +58,7 @@ void WorkspaceController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new WorkspaceMdiWindow(clientManager_, username_);
+    listWindow_ = new WorkspaceMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_, &WorkspaceMdiWindow::statusChanged,

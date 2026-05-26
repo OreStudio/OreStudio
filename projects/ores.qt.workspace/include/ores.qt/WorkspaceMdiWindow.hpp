@@ -32,6 +32,8 @@
 
 namespace ores::qt {
 
+class BadgeCache;
+
 /**
  * @brief MDI window for displaying and managing workspaces.
  *
@@ -55,6 +57,7 @@ public:
     explicit WorkspaceMdiWindow(
         ClientManager* clientManager,
         const QString& username,
+        BadgeCache* badgeCache,
         QWidget* parent = nullptr);
     ~WorkspaceMdiWindow() override = default;
 
@@ -95,6 +98,7 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
+    BadgeCache* badgeCache_;
 
     QToolBar* toolbar_;
     QTableView* tableView_;

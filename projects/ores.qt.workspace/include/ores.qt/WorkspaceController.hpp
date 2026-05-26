@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class WorkspaceMdiWindow;
 class DetachableMdiSubWindow;
+class BadgeCache;
 
 /**
  * @brief Controller for managing workspace windows and operations.
@@ -58,6 +59,7 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
+        BadgeCache* badgeCache,
         QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -86,6 +88,7 @@ private:
 
     WorkspaceMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
+    BadgeCache* badgeCache_;
 };
 
 }

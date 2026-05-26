@@ -143,11 +143,11 @@
       ],
 
       "columns": [
-        {"enum_name": "Name",        "field": "name",        "header": "Name",        "is_string": true, "width": 200},
-        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 340},
-        {"enum_name": "StatusCode",  "field": "status_code", "header": "Status",      "is_string": true, "width": 90},
-        {"enum_name": "Version",     "field": "version",     "header": "Version",     "is_int":    true, "width": 70},
-        {"enum_name": "ModifiedBy",  "field": "modified_by", "header": "Modified By", "is_string": true, "width": 130}
+        {"enum_name": "Name",        "field": "name",        "header": "Name",        "is_string": true, "width": 200, "column_style": "cs::text_left"},
+        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 340, "column_style": "cs::text_left"},
+        {"enum_name": "StatusCode",  "field": "status_code", "header": "Status",      "is_string": true, "width": 90,  "column_style": "cs::badge_centered", "is_badge": true, "badge_key": "workspace_status"},
+        {"enum_name": "Version",     "field": "version",     "header": "Version",     "is_int":    true, "width": 70,  "column_style": "cs::mono_center"},
+        {"enum_name": "ModifiedBy",  "field": "modified_by", "header": "Modified By", "is_string": true, "width": 130, "column_style": "cs::text_left"}
       ],
 
       "settings_group": "WorkspaceListWindow",

@@ -16,7 +16,7 @@ When you launch ORE Studio a splash screen appears briefly while the
 application initialises, showing the ORE Studio logo and the build version
 in its lower-right corner.
 
-#+caption: The ORE Studio splash screen shown during start-up. The build version appears in the lower-right corner.
+#+caption[The ORE Studio splash screen shown during start-up]: The ORE Studio splash screen shown during start-up. The build version appears in the lower-right corner.
 [[../../../assets/images/splash_screen.png]]
 
 Once initialisation completes you are greeted by the main window in its
@@ -39,7 +39,7 @@ This chapter covers:
 
 ** The main window before login
 
-#+caption: The ORE Studio main window immediately after launch, in the disconnected state. The toolbar shows the Connect and Connections buttons; the workspace area is empty until you log in.
+#+caption[The ORE Studio main window immediately after launch]: The ORE Studio main window immediately after launch, in the disconnected state. The toolbar shows the Connect and Connections buttons; the workspace area is empty until you log in.
 [[../../../assets/images/ores_qt_non_logged_in_window.png]]
 
 In the disconnected state most of the application is inactive. The menu
@@ -63,7 +63,7 @@ delete, and organise those entries before you attempt a login.
 Open it at any time from the toolbar *Connections* button or from the
 /File/ menu.
 
-#+caption: The Connection Browser open with no connections configured. The toolbar exposes Add, Edit, Copy, Delete, Connect, Refresh, Change and Purge; the unusable actions are greyed out until something is selected.
+#+caption[The Connection Browser open with no connections configured]: The Connection Browser open with no connections configured. The toolbar exposes Add, Edit, Copy, Delete, Connect, Refresh, Change and Purge; the unusable actions are greyed out until something is selected.
 [[../../../assets/images/connection_manager_empty.png]]
 
 *** Adding a new connection
@@ -86,7 +86,7 @@ in the fields:
 - *Tags* — zero or more free-text labels (see [[*Tags][Tags]] below). Useful for
   filtering and searching when you have many connections.
 
-#+caption: The New Connection form with example values filled in. /Type/ is set to =Connection=; the /Environment/ may be left as /manual entry/ or linked to a defined environment.
+#+caption[The New Connection form with example values filled in]: The New Connection form with example values filled in. /Type/ is set to =Connection=; the /Environment/ may be left as /manual entry/ or linked to a defined environment.
 [[../../../assets/images/connection_manager_new_connection.png]]
 
 Click *Save* (or *OK*) to add the connection to the list. The new entry
@@ -100,7 +100,7 @@ double-click the row) to open the same form pre-populated with the
 saved values. Change any field and click *Save*. The connection list
 updates immediately.
 
-#+caption: Editing a saved connection. The dialog title shows /Edit Connection/, the fields are pre-populated, and the password field reads /Enter new password to change/ — the stored password is preserved unless you type a replacement.
+#+caption[Editing a saved connection]: Editing a saved connection. The dialog title shows /Edit Connection/, the fields are pre-populated, and the password field reads /Enter new password to change/ — the stored password is preserved unless you type a replacement.
 [[../../../assets/images/connection_manager_edit_connection.png]]
 
 *** Deleting a connection
@@ -108,7 +108,7 @@ updates immediately.
 Select one or more connections in the list and click *Delete* (or press
 the Delete key). A confirmation dialog asks you to confirm the removal.
 
-#+caption: The delete confirmation dialog. ORE Studio names the connection being removed and waits for you to confirm with /Yes/ or cancel with /No/.
+#+caption[The delete confirmation dialog]: The delete confirmation dialog. ORE Studio names the connection being removed and waits for you to confirm with /Yes/ or cancel with /No/.
 [[../../../assets/images/connection_manager_delete_confirm.png]]
 
 Deleting a connection removes only the saved configuration; it has no
@@ -126,7 +126,7 @@ an optional description, and choose a parent folder (or /No Folder/ to
 place it at the top level). Connections are then assigned to a folder
 through their /Folder/ field, or by dragging them in the tree.
 
-#+caption: Creating a folder. With /Type/ set to =Folder=, a folder needs only a name and an optional description; it can be nested inside another folder.
+#+caption[Creating a folder]: Creating a folder. With /Type/ set to =Folder=, a folder needs only a name and an optional description; it can be nested inside another folder.
 [[../../../assets/images/connection_manager_add_folder.png]]
 
 *** Protecting your credentials with a master password
@@ -135,20 +135,20 @@ The passwords you save with a connection are encrypted at rest using a
 /master password/ that you choose. The first time you save a credential,
 ORE Studio offers to create one.
 
-#+caption: Creating the master password. It encrypts every saved server password; there is no recovery if you forget it, so you may also leave it blank to store passwords unencrypted.
+#+caption[Creating the master password]: Creating the master password. It encrypts every saved server password; there is no recovery if you forget it, so you may also leave it blank to store passwords unencrypted.
 [[../../../assets/images/connection_manager_master_password_create.png]]
 
 Type the same value into /New Password/ and /Confirm Password/; the
 fields turn green when they match. /Show password/ reveals what you typed.
 
-#+caption: The master password confirmed — both fields match and are outlined in green, ready to accept with /OK/.
+#+caption[The master password confirmed]: The master password confirmed — both fields match and are outlined in green, ready to accept with /OK/.
 [[../../../assets/images/connection_manager_master_password_supplied.png]]
 
 When you next launch ORE Studio and open the Connection Browser, it
 prompts you to unlock your saved connections by entering the master
 password. Until you do, the encrypted passwords stay sealed.
 
-#+caption: The unlock prompt shown on a later launch. Enter the master password to decrypt your saved connection credentials.
+#+caption[The unlock prompt shown on a later launch]: The unlock prompt shown on a later launch. Enter the master password to decrypt your saved connection credentials.
 [[../../../assets/images/connection_manager_master_password_prompt.png]]
 
 If you leave the master password blank, your connections still work but
@@ -169,7 +169,7 @@ to connect to. This is a safety feature: it is easy to accidentally
 connect to production when you meant staging; a clearly labelled
 environment badge prevents that.
 
-#+caption: A populated Connection Browser. Connections are grouped under folders (here =Development → Dev → Local1…Local4=) and each carries coloured chips — the environment and tags — making the tier and purpose of every entry obvious at a glance.
+#+caption[A populated Connection Browser]: A populated Connection Browser. Connections are grouped under folders (here =Development → Dev → Local1…Local4=) and each carries coloured chips — the environment and tags — making the tier and purpose of every entry obvious at a glance.
 [[../../../assets/images/connection_manager_with_connections.png]]
 
 To manage the available environment names, open the /Environments/
@@ -187,7 +187,7 @@ and set /Type/ to =Environment=. An environment carries its own host,
 port, HTTP port, namespace and tags — these become the connection details
 that any connection linked to it inherits.
 
-#+caption: Creating an environment. With /Type/ set to =Environment=, you give it a name, folder, host, ports, namespace, and tags (here a =dev= tag).
+#+caption[Creating an environment]: Creating an environment. With /Type/ set to =Environment=, you give it a name, folder, host, ports, namespace, and tags (here a =dev= tag).
 [[../../../assets/images/connection_manager_environment_add.png]]
 
 Once an environment exists, a connection can link to it by selecting it
@@ -195,7 +195,7 @@ in the connection's /Environment/ field instead of /manual entry/. The
 connection then inherits the environment's host, port, and namespace, so
 you maintain those details in one place.
 
-#+caption: A connection linked to an environment. Selecting =ores.dev.local1= in the /Environment/ field populates the host, port and namespace from that environment.
+#+caption[A connection linked to an environment]: A connection linked to an environment. Selecting =ores.dev.local1= in the /Environment/ field populates the host, port and namespace from that environment.
 [[../../../assets/images/connection_manager_environment_linked.png]]
 
 *** Tags
@@ -214,7 +214,7 @@ To add or remove tags, open the Edit form for the entry and use the
 click the × on an existing tag chip to remove it. Tags are created on
 first use — there is no separate tag management screen.
 
-#+caption: Tags shown as coloured chips in an entry's Edit form (here the =ores_dev_local1= environment, tagged =local1=, =local= and =dev=). Add tags in the /Tags/ field, remove one with the × on its chip, or click =+= to add another.
+#+caption[Tags as coloured chips on an entry]: Tags shown as coloured chips in an entry's Edit form (here the =ores_dev_local1= environment, tagged =local1=, =local= and =dev=). Add tags in the /Tags/ field, remove one with the × on its chip, or click =+= to add another.
 [[../../../assets/images/connection_manager_tags.png]]
 
 *** Where your connections are stored
@@ -278,7 +278,7 @@ With an active connection selected, click *Connect*. ORE Studio
 attempts to reach the backend. If the backend is reachable, the /Login/
 dialog appears.
 
-#+caption: The login dialog. Below the credentials it shows the connection /Label/, a /Quick Connect/ selector, and the /Server/, /Port/ and /Namespace/ the login will target; the footer carries the /Register/ link and the build version.
+#+caption[The login dialog]: The login dialog. Below the credentials it shows the connection /Label/, a /Quick Connect/ selector, and the /Server/, /Port/ and /Namespace/ the login will target; the footer carries the /Register/ link and the build version.
 [[../../../assets/images/login_dialog.png]]
 
 Enter your *username* and *password* and click *Login*. Tick /Remember
@@ -303,7 +303,7 @@ the environment — it defaults from the connection (or from the
 connections for that label, and picking one fills in /Server/, /Port/ and
 /Namespace/ so you do not have to type them.
 
-#+caption: The /Label/ and /Quick Connect/ fields. The Label selects the environment; Quick Connect offers that environment's connections and fills in the server details.
+#+caption[The /Label/ and /Quick Connect/ fields]: The /Label/ and /Quick Connect/ fields. The Label selects the environment; Quick Connect offers that environment's connections and fills in the server details.
 [[../../../assets/images/label_and_quick_connect.png]]
 
 If you do not yet have an account, the *Register* link in the footer
@@ -319,14 +319,14 @@ real deployment soon accumulates many — several environments, each with
 its own system, tenant and per-party logins. Left unfiltered (the /Label/
 set to /All/), the selector lists every one:
 
-#+caption: Quick Connect with the /Label/ set to /All/ — every saved connection across all environments and tenants. Hard to pick the right one at a glance.
+#+caption[Quick Connect with the /Label/ set to /All/]: Quick Connect with the /Label/ set to /All/ — every saved connection across all environments and tenants. Hard to pick the right one at a glance.
 [[../../../assets/images/connection_all_label.png]]
 
 Each connection carries a /label/ — its environment tag, such as =dev=,
 =local1= or =local2=. The /Label/ selector lists those labels; choosing
 one filters Quick Connect to just the connections that carry it:
 
-#+caption: The /Label/ selector lists the labels found on your connections. Pick one to narrow Quick Connect to that environment.
+#+caption[The Label selector]: The /Label/ selector lists the labels found on your connections. Pick one to narrow Quick Connect to that environment.
 [[../../../assets/images/quick_model_labels.png]]
 
 With =local1= selected, Quick Connect shows only the =local1= entries — the
@@ -334,7 +334,7 @@ environment's own database, its system and tenant logins, and its
 per-party connections — so you reach the right backend without scrolling
 past unrelated ones:
 
-#+caption: Quick Connect filtered to the =local1= label: only that environment's connections remain.
+#+caption[Quick Connect filtered to the =local1= label]: Quick Connect filtered to the =local1= label: only that environment's connections remain.
 [[../../../assets/images/quick_connect_filtered.png]]
 
 You normally run one client /per environment/: a client built for =local1=
@@ -355,14 +355,14 @@ than just reporting "login failed".
 If the messaging server itself is unreachable, ORE Studio reports that it
 cannot connect, along with the host and port it tried:
 
-#+caption: A login failure caused by an unreachable messaging server. The host and port ORE Studio tried are shown; the server is likely not running, or the host/port is wrong.
+#+caption[A login failure: server unreachable]: A login failure caused by an unreachable messaging server. The host and port ORE Studio tried are shown; the server is likely not running, or the host/port is wrong.
 [[../../../assets/images/login_dialog_no_nats.png]]
 
 If the messaging server is running but the application services behind it
 have not started, ORE Studio says so explicitly — the fix is to start the
 backend services, not to change your connection:
 
-#+caption: A login failure where the messaging server is up but no application services are responding. Ensure the backend services have been started.
+#+caption[A login failure: services not responding]: A login failure where the messaging server is up but no application services are responding. Ensure the backend services have been started.
 [[../../../assets/images/login_dialog_nats_no_services.png]]
 
 In both cases your saved connection is fine; correct the backend (start
@@ -380,7 +380,7 @@ Once a tenant has been provisioned (covered in the next chapter,
 the username takes the form =user@tenant_code=. Picking the connection
 from /Quick Connect/ fills in the server, port and namespace for you:
 
-#+caption: Logging in as a tenant administrator (=tenant_admin@barclays_plc=), with the connection chosen from /Quick Connect/.
+#+caption[Logging in as a tenant administrator (=tenant_admin@barclays_plc=)]: Logging in as a tenant administrator (=tenant_admin@barclays_plc=), with the connection chosen from /Quick Connect/.
 [[../../../assets/images/login_dialog_tenant_admin_login.png]]
 
 *** Registering a new account
@@ -391,7 +391,7 @@ password (with confirmation), check the /Server/ and /Port/ point at your
 backend, and click *Create Account*. The /Log in/ link returns to the
 login dialog.
 
-#+caption: The Create Account form, opened from the /Register/ link in the login dialog footer.
+#+caption[The Create Account form]: The Create Account form, opened from the /Register/ link in the login dialog footer.
 [[../../../assets/images/create_an_account.png]]
 
 Self-registration is not always available: the backend must be set up to
@@ -428,7 +428,7 @@ The status bar runs along the bottom of the main window and provides a
 continuous read on the application's connection state. It is always
 visible regardless of what is open in the workspace.
 
-#+caption: The status bar in the fully connected, logged-in state: from left to right, the environment marker (=local1=), the username (=super_admin=), the server (=localhost:42221=), the active party (Root / System Party), and the green connected indicator.
+#+caption[The connected status bar]: The status bar in the fully connected, logged-in state: from left to right, the environment marker (=local1=), the username (=super_admin=), the server (=localhost:42221=), the active party (Root / System Party), and the green connected indicator.
 [[../../../assets/images/status_bar_connected.png]]
 
 The status bar is divided into zones from left to right:
@@ -466,7 +466,7 @@ reconnection]] above.
 In the disconnected state the strip is reduced to the environment marker
 and the connection label, with the broken-link icon on the right:
 
-#+caption: The status bar in the disconnected state, showing the environment marker, the connection label (=local1=), and the broken-link indicator.
+#+caption[The status bar in the disconnected state]: The status bar in the disconnected state, showing the environment marker, the connection label (=local1=), and the broken-link indicator.
 [[../../../assets/images/status_bar_disconnected.png]]
 
 The connected state is shown at the start of this section. Compare it with
@@ -510,7 +510,7 @@ sets the marker colour and =--name= sets the instance name; when you omit
 =--name=, the name comes from =ORES_CHECKOUT_LABEL= in your =.env= — never
 from the colour.
 
-#+caption: The status bars of three windows running the same =local1= instance, each given a different =--instance-color= (green, red, blue) so you can tell them apart at a glance.
+#+caption[The status bars of three windows running the same =local1= instance]: The status bars of three windows running the same =local1= instance, each given a different =--instance-color= (green, red, blue) so you can tell them apart at a glance.
 [[../../../assets/images/main_window_instance_colour.png]]
 
 *** Configuration directory
@@ -564,18 +564,18 @@ version in several places.
 The title bar of the main window always shows the version next to the
 application name:
 
-#+caption: The version in the main window title bar, alongside the full menu bar and toolbar of the connected application.
+#+caption[The version in the main window title bar]: The version in the main window title bar, alongside the full menu bar and toolbar of the connected application.
 [[../../../assets/images/title_bar_version.png]]
 
 It also appears in the lower-right corner of the splash screen at
 start-up:
 
-#+caption: The build version in the lower-right corner of the splash screen.
+#+caption[The build version in the lower-right corner of the splash screen]: The build version in the lower-right corner of the splash screen.
 [[../../../assets/images/splash_screen_version.png]]
 
 …and in the footer of the login dialog, below the /Register/ link:
 
-#+caption: The version string in the login dialog footer, beneath the /Register/ link.
+#+caption[The version string in the login dialog footer]: The version string in the login dialog footer, beneath the /Register/ link.
 [[../../../assets/images/login_dialog_version_registration.png]]
 
 From the command line, =ores --version= prints the client version string
@@ -593,7 +593,7 @@ tray (notification area). The icon keeps the application reachable when
 its window is minimised or hidden, and shows the instance name so you can
 tell multiple windows apart.
 
-#+caption: The ORE Studio icon in the system tray, labelled with the instance name so you can identify the window it belongs to.
+#+caption[The ORE Studio icon in the system tray]: The ORE Studio icon in the system tray, labelled with the instance name so you can identify the window it belongs to.
 [[../../../assets/images/application_system_tray.png]]
 
 ** Logging out
@@ -611,5 +611,5 @@ To close the application entirely, quit the window (or choose /File →
 Exit/). ORE Studio asks you to confirm so you do not lose an active
 session by accident:
 
-#+caption: The exit confirmation. Click /Yes/ to close ORE Studio, or /No/ to keep working.
+#+caption[The exit confirmation]: The exit confirmation. Click /Yes/ to close ORE Studio, or /No/ to keep working.
 [[../../../assets/images/exit_confirmation_dialog.png]]

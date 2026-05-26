@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 4F01E2FF-69AB-4839-88D1-4D8C21D99D3C
+:END:
+#+title: Start work on a new story
+#+description: Complete procedure from story scaffold to PR creation.
+#+type: runbook
+#+version: 2
+#+level: cross
+#+filetags: :agile:story:git:pr:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+
+This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe by id-link.
+
+* Goal
+
+Take a story from idea to open PR — scaffold, fill in, branch, mark STARTED, wire into the sprint, commit, push, and open a pull request.
+
+* Preconditions
+
+- You have a story idea with a slug, title, description, and tags.
+- Current sprint exists (=doc/agile/versions/v0/sprint_NN/=).
+- =compass= and =gh= CLI are installed and authenticated.
+- =SSH_AUTH_SOCK= is exported (see [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][SSH memory]]).
+
+* Steps
+
+In execution order:
+
+1. /Scaffold the story./ Use [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][compass add story]] to create =story.org= in the current sprint. =--parent-dir= is defaulted; you need =--slug=, =--title=, =--description=, =--tags=.
+
+   *Shortcut:* [[id:84C9177E-C737-428A-BDF9-E55CA6C9680C][compass goto]] does steps 1–2 in one command (creates story + task + branch). Prefer it for new work.
+
+2. /Fill in the story content./ Open =story.org= and complete the =* Goal=, =* Acceptance=, =* Plan=, and =* Out of scope= sections. Use [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] as the entry-point skill. Every internal-doc reference uses an =[[id:UUID]]= link, never a relative path.
+
+3. /Create the feature branch./ Fetch =main= and branch from =origin/main= per [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]]. Branch name: =feature/<kebab-slug>=.
+
+4. /Mark the story STARTED./ Update the =* Status= table: state → =STARTED=, fill =Now= and =Next=, set =#+owner:=, refresh =#+updated:=. Follow [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] step 3.
+
+5. /Wire into the sprint./ Add a row to the parent sprint's =* Stories= table. Each row: =| [[id:UUID][Title]] | STARTED | date | | Theme |=.
+
+6. /Commit the status change./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]]: =[agile] Mark <story> STARTED= with a =Co-Authored-By:= trailer.
+
+7. /Push and open a PR./ Push with =git push -u origin <branch>=, then [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][create a PR]] with a structured body (Summary, Changes, Story/Task UUIDs, Story/Task page links). Record the PR number in the story's =* PRs= table.
+
+* Postconditions
+
+- Feature branch exists on =origin=.
+- Story is =STARTED= in the current sprint.
+- Story is wired into the sprint's =* Stories= table.
+- PR is open with the story UUID and page link in the body.
+- PR number is recorded in =story.org= under =* PRs=.
+
+* See also
+
+- [[id:84C9177E-C737-428A-BDF9-E55CA6C9680C][compass goto]] — the one-command shortcut that combines steps 1–2.
+- [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] — what comes after the PR is open.
+- [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]] — commit format reference.

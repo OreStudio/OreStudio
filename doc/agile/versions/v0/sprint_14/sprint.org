@@ -60,6 +60,31 @@ ORE Import Wizard, CMake preset suffixes.
 | [[id:23D1F2BB-D2D3-423A-8167-657098E30542][NATS migration]]                               | DONE    |            | 2026-03-18 | the pivot. Binary protocol replaced with NATS request/reply + JetStream; 10 services migrated. |
 | [[id:05CFEF69-F80B-437F-AEEE-3881E4FE96F1][Trade import mapping dialog (second attempt)]] | BACKLOG |            |            | BACKLOG; postponed again. Continues from sprint 13 trade_import_dialog.                        |
 
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][sprint_charts cmake target]].
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+[[file:line_churn.png]]
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+[[file:stories_done.png]]
+
 * Retrospective
 
 ** What went well

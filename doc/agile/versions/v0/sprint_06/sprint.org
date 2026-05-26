@@ -54,6 +54,31 @@ later sprints with the codegen-driven approach.)
 | [[id:06C56CA2-9846-4DC9-B2F3-271BF4F084CE][CLI entity syntax follow-up]]         | DONE  |            | 2025-12-13 | successor of sprint 05's CLI/REPL reshape; mops up snags and adds top-level shell login/logout.            |
 | [[id:DBB7EEAB-C8E3-4AF9-B04F-E54FABD34A8F][Infrastructure features]]             | DONE  |            | 2025-12-15 | event bus, system tray, past-timepoint faker.                                                              |
 
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][sprint_charts cmake target]].
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+[[file:line_churn.png]]
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+[[file:stories_done.png]]
+
 * Retrospective
 
 - /What worked/ :: Boost.Asio session cancellation — initially planned

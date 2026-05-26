@@ -65,6 +65,31 @@ out the largest v0 sprint to date.
 | [[id:C8C45097-7420-438D-9026-6BEC0285CD66][Caching analysis]]                                    | BACKLOG |            |            | POSTPONED.                                                                                                                 |
 | [[id:BD4110C2-FDF7-47B0-A726-F4CD83DED8E5][FSM and trade support]]                               | DONE    |            | 2026-02-20 | generic Postgres FSM + trade envelope; ores.trade → ores.trading rename.                                                   |
 
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][sprint_charts cmake target]].
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+[[file:line_churn.png]]
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+[[file:stories_done.png]]
+
 * Retrospective
 
 ** What went well

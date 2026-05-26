@@ -56,6 +56,31 @@ metadata, eventing).
 | [[id:976A2745-6728-435E-970E-D1205D46DC7A][Per-request tenant context]]                   | DONE  |            | 2026-02-06 | security fix; tenant_id wrapper; system tenant nil → max UUID.      |
 | [[id:52BBEA16-0344-4299-88BA-EC6A341FBD21][Validate tenancy across surfaces]]             | DONE  |            | 2026-02-06 | shell, librarian, DQ metadata, eventing.                            |
 
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][sprint_charts cmake target]].
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+[[file:line_churn.png]]
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+[[file:stories_done.png]]
+
 * Retrospective
 
 ** What went well

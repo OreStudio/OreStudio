@@ -50,6 +50,31 @@ telemetry as first-class components, and tidy the build platform.
 | [[id:8C4C8429-9328-46DD-88EF-27689FB556F2][Observability and telemetry]] | DONE  |            | 2025-12-28 | new components, MaxMind replacement.                                                 |
 | [[id:DB625C07-811A-4A61-8DE8-910B29913744][Wt and HTTP introduction]]    | DONE  |            | 2025-12-30 | Wt scaffolding, HTTP entry point.                                                    |
 
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][sprint_charts cmake target]].
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+[[file:line_churn.png]]
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+[[file:stories_done.png]]
+
 * Retrospective
 
 ** What went well

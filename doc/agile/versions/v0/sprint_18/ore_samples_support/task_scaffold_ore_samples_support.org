@@ -9,7 +9,7 @@
 #+filetags: :ore_samples_support:sprint_18:v0:
 #+owner: marco
 #+branch: feature/scaffold-ore-samples-support
-#+pr:
+#+pr: 848
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
@@ -53,9 +53,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title |
+|-----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/848][#848]] | Scaffold ore_samples_support story and close mined plans |
 
 * Review
 

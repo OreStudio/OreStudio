@@ -83,33 +83,62 @@ In execution order:
    | <number> | <date> | day <N> | <OVERALL> | [[id:<task-uuid>][Health review <number> — sprint <N> analysis]] |
    #+end_example
 
-7. /Mark the task DONE./ Set =State: DONE= and =Now: Complete.= in
-   the task's =* Status= table.
+7. /Perform shape completeness fixes./ For every DONE task in the
+   sprint, verify the three required shape fields and fill any that
+   are missing:
 
-8. /Update the story if all tasks are DONE./ If every task in
-   =sprint_health_review/story.org= is DONE, set the story to DONE.
+   - =#+branch:= — look up the branch via =gh pr view <PR#> --json headRefName=
+     or git log. If the task was written directly onto main with no
+     dedicated PR, note =none (committed directly)= rather than leaving
+     it blank.
+   - =#+pr:= — set to the PR number that merged this task's work. If
+     there was no PR, note =none= with a reason.
+   - =* PRs= table — ensure it contains a =[[url][#NNN]]= row matching
+     the =#+pr:= value. Empty rows in DONE tasks are always wrong.
+   - =Waiting on= / =Next= — set to =Nothing.= / =None.= for DONE tasks;
+     stale prose here is a common artefact of status fields updated
+     mid-task but not cleared on close.
 
-9. /Commit./
+   Use:
 
    #+begin_src sh :results verbatim
-   git add doc/agile/versions/v0/sprint_<N>/
-   git commit -m "[agile] Sprint <N> health review <number> — <overall-verdict>"
+   # Find all DONE tasks missing #+branch: or #+pr:
+   grep -rn '#+branch:$\|#+pr:$' doc/agile/versions/v0/sprint_<N>/ \
+     --include="task_*.org"
    #+end_src
 
-10. /Push and raise a PR/ targeting =main=.
+   Apply fixes in the same commit as the review (step 9) or in a
+   follow-up commit on the same branch.
+
+8. /Mark the task DONE./ Set =State: DONE= and =Now: Complete.= in
+   the task's =* Status= table.
+
+9. /Update the story if all tasks are DONE./ If every task in
+   =sprint_health_review/story.org= is DONE, set the story to DONE.
+
+10. /Commit./
+
+    #+begin_src sh :results verbatim
+    git add doc/agile/versions/v0/sprint_<N>/
+    git commit -m "[agile] Sprint <N> health review <number> — <overall-verdict>"
+    #+end_src
+
+11. /Push and raise a PR/ targeting =main=.
 
     #+begin_src sh :results verbatim
     git push -u origin feature/sprint-<N>-health-review-<number>
     gh pr create --title "[agile] Sprint <N> health review <number>" --body "..."
     #+end_src
 
-11. /Handle review comments/ per the [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]] runbook.
+12. /Handle review comments/ per the [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]] runbook.
 
 * Postconditions
 
 - A new =task_health_review_<number>.org= exists under the sprint's
   =sprint_health_review/= directory with the full analysis in =* Result=.
 - =sprint.org= =* Health Review= table has one new summary row.
+- Every DONE task in the sprint has =#+branch:=, =#+pr:=, and a
+  populated =* PRs= table; =Waiting on= and =Next= are cleared.
 - The task is DONE; the story is DONE if all tasks complete.
 - A merged PR carries the review on =main=.
 

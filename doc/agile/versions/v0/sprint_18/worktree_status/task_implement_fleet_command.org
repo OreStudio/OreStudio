@@ -9,7 +9,7 @@
 #+filetags: :compass:worktrees:python:worktree_status:sprint_18:v0:
 #+owner: marco
 #+branch: feature/compass-worktree-status
-#+pr:
+#+pr: 832
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25

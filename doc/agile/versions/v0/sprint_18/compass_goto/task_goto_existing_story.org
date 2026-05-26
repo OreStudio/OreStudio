@@ -9,7 +9,7 @@
 #+filetags: :compass:workflow:python:compass_goto:sprint_18:v0:
 #+owner: marco
 #+branch: feature/compass-goto-existing-story
-#+pr:
+#+pr: 838
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
@@ -80,9 +80,9 @@ new-story =goto= and by =add=.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title |
+|-----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/838][#838]] | [ores.compass] goto: add existing-story mode (--story) |
 
 * Review
 

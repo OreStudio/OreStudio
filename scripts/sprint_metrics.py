@@ -141,12 +141,15 @@ def get_merged_prs(start: datetime.date, end: datetime.date) -> list[dict]:
         merged_str = pr.get("mergedAt", "")
         if not merged_str:
             continue
-        merged = parse_date(merged_str[:10])
+        merged_dt = datetime.datetime.fromisoformat(merged_str.replace("Z", "+00:00"))
+        merged = merged_dt.date()
         if merged > end:
             continue
         
-        created = parse_date(pr["createdAt"][:10])
-        cycle_hours = max(0, int((merged - created).total_seconds() / 3600))
+        created_dt = datetime.datetime.fromisoformat(pr["createdAt"].replace("Z", "+00:00"))
+        created = created_dt.date()
+        diff = merged_dt - created_dt
+        cycle_hours = round(diff.total_seconds() / 3600, 1)
         prs.append({
             "number": pr["number"],
             "title": pr["title"][:60],
@@ -233,12 +236,18 @@ def write_sprint_progress(cumulative: dict, prs: list[dict], output_dir: Path):
         else:
             w.writerow(["2000-01-01", 0])
     
-    # PR cycle times (separate section in same CSV, or separate file)
+    # PR cycle times — only include PRs that took > 0 hours so the chart
+    # shows meaningful bottleneck data, not an invisible sea of same-day merges.
+    # Limit to top 20 by cycle time; anything faster is noise on this chart.
     cycle_path = output_dir / "pr_cycle_times.csv"
+    meaningful = sorted(
+        [pr for pr in prs if pr["cycle_hours"] > 0],
+        key=lambda x: x["cycle_hours"], reverse=True
+    )[:20]
     with open(cycle_path, "w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
         w.writerow(["pr_number", "title", "day", "cycle_hours"])
-        for pr in sorted(prs, key=lambda x: x["merged_day"]):
+        for pr in sorted(meaningful, key=lambda x: x["merged_day"]):
             w.writerow([pr["number"], pr["title"], pr["merged_day"].isoformat(),
                         pr["cycle_hours"]])
     print(f"Wrote {cycle_path}")

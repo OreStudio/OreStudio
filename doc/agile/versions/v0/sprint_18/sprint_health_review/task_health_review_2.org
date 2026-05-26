@@ -57,6 +57,7 @@ flag or fix anything that would leave the sprint record inconsistent.
 | PR  | Title                                                                  |
 |-----+------------------------------------------------------------------------|
 | [[https://github.com/OreStudio/OreStudio/pull/867][#867]] | [agile] Sprint 18 health review 2 — backlog audit and shape check |
+| [[https://github.com/OreStudio/OreStudio/pull/871][#871]] | [agile] Sprint 18 shape completeness pass — fill missing branch/pr fields |
 
 * Review
 

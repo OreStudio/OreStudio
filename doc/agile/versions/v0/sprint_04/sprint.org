@@ -28,7 +28,7 @@ UI; introduce the Claude Code skills layer.
 | State          | DONE                                                                                                                                                                       |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                                  |
 | Start          | 2025-11-07                             |
-| End (expected) | 2025-11-30                             |
+| End (expected) | 2025-11-16                             |
 | Now            | Sprint closed 2025-11-30. LLM-driven review pass complete across the first three components; currencies UI feature-complete; the Claude Code skills layer is in the build. |
 | Waiting on     | None.                                                                                                                                                                      |
 | Next           | None.                                                                                                                                                                      |

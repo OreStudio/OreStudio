@@ -32,7 +32,7 @@ metadata, eventing).
 |----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                 |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                            |
-| Start          | 2026-01-30                             |
+| Start          | 2026-01-28                             |
 | End (expected) | 2026-02-06                             |
 | Now            | Sprint closed 2026-02-06. One task carries forward: the sqlgen bound-parameters work, BLOCKED on upstream =getml/sqlgen#119=.                                        |
 | Waiting on     | Upstream sqlgen bound-parameter support.                                                                                                                             |

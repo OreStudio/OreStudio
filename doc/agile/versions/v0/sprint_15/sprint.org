@@ -33,7 +33,7 @@ FX, bond, credit).
 |----------------+----------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                 |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                            |
-| Start          | 2026-03-23                             |
+| Start          | 2026-03-19                             |
 | End (expected) | 2026-03-30                             |
 | Now            | Sprint closed 2026-03-30. No BACKLOG carry-overs this sprint.                                                        |
 | Waiting on     | None.                                                                                                                |

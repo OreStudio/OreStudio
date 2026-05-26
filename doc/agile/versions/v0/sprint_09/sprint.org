@@ -33,7 +33,7 @@ coverage of the entities that landed in earlier sprints.
 |----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                       |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                  |
-| Start          | 2026-01-13                             |
+| Start          | 2026-01-11                             |
 | End (expected) | 2026-01-20                             |
 | Now            | Sprint closed 2026-01-20. Two items carry forward: the per-entity documentation refactor (already mostly absorbed into v2) and the party-table groundwork. |
 | Waiting on     | None.                                                                                                                                                      |

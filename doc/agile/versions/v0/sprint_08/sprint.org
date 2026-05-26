@@ -30,7 +30,7 @@ skills to make the next entity cheaper.
 |----------------+----------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                     |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                |
-| Start          | 2026-01-04                             |
+| Start          | 2025-12-30                             |
 | End (expected) | 2026-01-11                             |
 | Now            | Sprint closed 2026-01-11. Three observability-review items and the accounts-dialog polish carry forward. |
 | Waiting on     | None — carried-forward items are scheduled for sprint 09+.                                               |

@@ -50,6 +50,11 @@ In execution order:
 - All tests pass.
 - RLS policies (tenant isolation; party isolation if =party_id= present) are in
   place and registered in =rls/rls_create.sql=.
+- Detail dialog calls =promptChangeReason()= before save (Create/Amend) and
+  before delete; =change_reason_code= and =change_commentary= are set on the
+  domain entity before the request is sent.
+- Notify trigger uses =ores_utility_iso8601_timestamp_fn(change_timestamp)= for
+  the timestamp field in =pg_notify= payloads.
 - PR is open with the entity changes.
 
 * See also

@@ -29,6 +29,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ui_WorkspaceDetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MdiUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -266,6 +267,15 @@ void WorkspaceDetailDialog::onSaveClicked() {
         return;
     }
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    workspace_.change_reason_code = crSel->reason_code;
+    workspace_.change_commentary  = crSel->commentary;
+
     updateWorkspaceFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving workspace: "
@@ -338,6 +348,10 @@ void WorkspaceDetailDialog::onDeleteClicked() {
         return;
     }
 
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel) return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting workspace: "
         << workspace_.name;
 
@@ -348,13 +362,17 @@ void WorkspaceDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, id_str = boost::uuids::to_string(workspace_.id)]() -> DeleteResult {
+    auto task = [self, id_str = boost::uuids::to_string(workspace_.id),
+                 reason_code = crSel->reason_code,
+                 commentary = crSel->commentary]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         workspace::messaging::archive_workspace_request request;
         request.id = id_str;
+        request.change_reason_code = reason_code;
+        request.change_commentary = commentary;
         auto response_result = self->clientManager_->
             process_authenticated_request(std::move(request));
 

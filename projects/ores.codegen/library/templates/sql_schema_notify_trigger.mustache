@@ -26,7 +26,7 @@ begin
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
-        'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
+        'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
         'entity_ids', jsonb_build_array(changed_{{primary_key.column}}),
         'tenant_id', changed_tenant_id
     );

@@ -47,7 +47,8 @@ correctly-formatted title and a structured body?
    Story: [[id:STORY-UUID]]
    Task:  [[id:TASK-UUID]]
 
-   Story page: https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_NN/SLUG/story.html
+   Story page: https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_NN/STORY_SLUG/story.html
+   Task page:  https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_NN/STORY_SLUG/task_TASK_SLUG.html
    EOF
    )"
    #+end_src
@@ -74,9 +75,10 @@ correctly-formatted title and a structured body?
   Summary and Changes are the load-bearing pair.
 - /Story/Task UUIDs in the body/ are forward-only: they make PRs
   discoverable from the task but are not back-filled on old PRs.
-- /Story page link/ follows the pattern
-  =https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_<NN>/<slug>/story.html=.
-  Construct it from the story's parent sprint folder and slug.
+- /Story and task page links/ follow the patterns:
+  - Story: =https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_<NN>/<STORY_SLUG>/story.html=
+  - Task:  =https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_<NN>/<STORY_SLUG>/task_<TASK_SLUG>.html=
+  Construct them from the sprint number, story slug, and task slug.
 
 * Script
 

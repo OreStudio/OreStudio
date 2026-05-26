@@ -26,6 +26,7 @@
 
 \ir ../iam/iam_rls_policies_create.sql
 \ir ../dq/dq_rls_policies_create.sql
+\ir ../workspace/workspace_rls_policies_create.sql
 \ir ../trading/trading_rls_policies_create.sql
 \ir ../refdata/refdata_rls_policies_create.sql
 \ir ../assets/assets_rls_policies_create.sql

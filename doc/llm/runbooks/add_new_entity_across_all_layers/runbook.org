@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :runbook:entity:domain:sql:qt:cli:http:
 #+created: 2026-05-26
-#+updated: 2026-05-26
+#+updated: 2026-05-27
 
 This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
 
@@ -48,6 +48,8 @@ In execution order:
 
 - Entity is functional across all layers.
 - All tests pass.
+- RLS policies (tenant isolation; party isolation if =party_id= present) are in
+  place and registered in =rls/rls_create.sql=.
 - PR is open with the entity changes.
 
 * See also

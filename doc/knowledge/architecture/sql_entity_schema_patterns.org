@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :knowledge:architecture:sql:entity:schema:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-05-27
 
 Every ORE Studio SQL entity lives in the =public= schema with the
 =ores_{component}_= prefix, ends with a type suffix (=_tbl=, =_idx=,
@@ -78,6 +78,60 @@ grep-ability. The table =ores_dq_catalogs_tbl= has upsert function
 | Populate file | =ores_{component}_{entity}_populate.sql= |
 | RLS create file | ={component}_rls_policies_create.sql= |
 | RLS drop file | ={component}_rls_policies_drop.sql= |
+
+* Row-Level Security
+
+Every entity table with a =tenant_id= column *must* have a tenant isolation
+policy.  Entities that also carry a =party_id= column *must* additionally have
+a party isolation policy.  Missing RLS is a silent gap — the service layer's
+=WHERE tenant_id = ...= clause provides equivalent filtering today, but RLS is
+the defence-in-depth layer that prevents cross-tenant leaks if a query is ever
+written without that clause.
+
+** Tenant isolation (permissive, FOR ALL)
+
+#+begin_src sql
+alter table ores_{component}_{entities}_tbl enable row level security;
+
+create policy ores_{component}_{entities}_tenant_isolation_policy
+on ores_{component}_{entities}_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+#+end_src
+
+** Party isolation (restrictive, FOR SELECT)
+
+Added when the entity also has a =party_id= column — enforces that reads are
+scoped to parties visible in the current session.  =AS RESTRICTIVE= means this
+policy intersects with the tenant policy rather than extending it.  Applied to
+=SELECT= only: write-path party validation is the responsibility of the insert
+trigger.
+
+#+begin_src sql
+create policy ores_{component}_{entities}_party_isolation_policy
+on ores_{component}_{entities}_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+#+end_src
+
+If the entity has a sentinel value that must be readable by all parties in
+the tenant (analogous to the Live workspace), add an explicit exemption to
+the =USING= clause rather than widening the policy unconditionally.
+
+** File placement and registration
+
+Place policies in
+=projects/ores.sql/create/{component}/{component}_rls_policies_create.sql=.
+If the component already has an RLS file, append to it.  If not, create it
+and add a =\ir= line to =projects/ores.sql/create/rls/rls_create.sql=.
+
+See [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] for background on the PostgreSQL feature.
 
 * Idempotency patterns
 

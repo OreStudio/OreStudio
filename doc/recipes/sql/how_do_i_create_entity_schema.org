@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :recipe:sql:entity:schema:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-05-27
 
 Naming conventions and idempotency rules are in
 [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]]. The [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][sql-schema-creator]] skill drives this
@@ -31,16 +31,25 @@ cd projects/ores.codegen
 ./run_generator.sh models/{component}/{entity}_domain_entity.json --profile sql
 #+end_src
 
-3. Register the new file in the orchestration script for the component
+3. Register the new schema file in the orchestration script for the component
    (typically =projects/ores.sql/scripts/{component}_schema.sh=).
 
-4. Run schema validation:
+4. Add RLS policies for the new entity.  Every entity table with =tenant_id=
+   needs a tenant isolation policy; tables that also have =party_id= need a
+   party isolation policy on top.  Add them to
+   =projects/ores.sql/create/{component}/{component}_rls_policies_create.sql=
+   (create the file if the component has none) and register it in
+   =projects/ores.sql/create/rls/rls_create.sql=.  See
+   [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]] §Row-Level Security for the exact policy
+   templates.
+
+5. Run schema validation:
 
 #+begin_src sh
 ./projects/ores.sql/utility/validate_schemas.sh
 #+end_src
 
-5. Raise a PR with title =[sql] Add {entity} schema=.
+6. Raise a PR with title =[sql] Add {entity} schema=.
 
 * Tested by
 

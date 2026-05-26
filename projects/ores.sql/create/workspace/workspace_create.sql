@@ -35,8 +35,9 @@ create table if not exists ores_workspaces_tbl (
     change_commentary   text         not null,
     valid_from          timestamptz  not null,
     valid_to            timestamptz  not null,
-    primary key (id, valid_from, valid_to),
+    primary key (tenant_id, id, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -47,12 +48,14 @@ create table if not exists ores_workspaces_tbl (
     check (id <> parent_workspace_id)
 );
 
+-- Uniqueness is scoped to (tenant_id, id): the Live sentinel UUID appears once
+-- per tenant, so a global UNIQUE (id) index would prevent per-tenant seeding.
 create unique index if not exists workspaces_id_uniq_idx
-on ores_workspaces_tbl (id)
+on ores_workspaces_tbl (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists workspaces_version_uniq_idx
-on ores_workspaces_tbl (id, version)
+on ores_workspaces_tbl (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Name uniqueness is scoped to the party: two different parties may each have
@@ -90,10 +93,12 @@ begin
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(null, NEW.change_reason_code);
 
-    -- Version management
+    -- Version management: scoped to (tenant_id, id) so that inserting a Live
+    -- workspace for tenant B does not close tenant A's Live row.
     select version into current_version
     from ores_workspaces_tbl
     where id = NEW.id
+      and tenant_id = NEW.tenant_id
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -108,6 +113,7 @@ begin
         update ores_workspaces_tbl
         set valid_to = current_timestamp
         where id = NEW.id
+          and tenant_id = NEW.tenant_id
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
@@ -158,6 +164,7 @@ on delete to ores_workspaces_tbl do instead
     update ores_workspaces_tbl
     set valid_to = current_timestamp
     where id = OLD.id
+      and tenant_id = OLD.tenant_id
       and valid_to = ores_utility_infinity_timestamp_fn();
 
 -- =============================================================================
@@ -186,6 +193,7 @@ begin
         select parent_workspace_id into v_ancestor_id
         from ores_workspaces_tbl
         where id = v_ancestor_id
+          and tenant_id = NEW.tenant_id
           and valid_to = ores_utility_infinity_timestamp_fn();
     end loop;
     return NEW;
@@ -202,18 +210,22 @@ for each row execute function ores_workspaces_prevent_cycle_fn();
 -- p_workspace_id up to the Live root workspace.
 -- =============================================================================
 
-create or replace function ores_workspace_resolution_order_fn(p_workspace_id uuid)
-returns uuid[] language sql stable as $$
+create or replace function ores_workspace_resolution_order_fn(
+    p_workspace_id uuid,
+    p_tenant_id    uuid
+) returns uuid[] language sql stable as $$
     with recursive chain(id, depth) as (
         select id, 0
         from ores_workspaces_tbl
         where id = p_workspace_id
+          and tenant_id = p_tenant_id
           and valid_to = ores_utility_infinity_timestamp_fn()
         union all
         select w.parent_workspace_id, c.depth + 1
         from ores_workspaces_tbl w
         join chain c on c.id = w.id
-        where w.parent_workspace_id is not null
+        where w.tenant_id = p_tenant_id
+          and w.parent_workspace_id is not null
           and w.valid_to = ores_utility_infinity_timestamp_fn()
     )
     select array_agg(id order by depth) from chain
@@ -233,7 +245,8 @@ create table if not exists ores_workspace_trade_scope_tbl (
 -- Workspace FK validation function. Called from BEFORE INSERT triggers on any
 -- table that carries a workspace_id column. Defined SECURITY DEFINER because
 -- service users hold no SELECT on ores_workspaces_tbl (service table isolation).
--- The Live sentinel UUID is accepted unconditionally — it has no ordinary row.
+-- The Live sentinel UUID is accepted unconditionally — one row exists per tenant
+-- but workspace-aware triggers call this without tenant context.
 -- =============================================================================
 
 create or replace function ores_workspace_validate_fn(p_workspace_id uuid)
@@ -244,7 +257,8 @@ security definer
 set search_path = public, pg_temp
 as $$
 begin
-    -- Live sentinel is always valid; it has no row in ores_workspaces_tbl
+    -- Live sentinel is always valid; each tenant has one Live row but triggers
+    -- call this without tenant context, so we short-circuit unconditionally.
     if p_workspace_id = ores_utility_live_workspace_id_fn() then
         return p_workspace_id;
     end if;

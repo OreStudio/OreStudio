@@ -68,6 +68,7 @@ declare
     v_tenant_id        uuid;
     v_copied_count     integer;
     v_actor            text;
+    v_owner_id         uuid;
 begin
     -- Resolve actor: use explicit parameter if provided, otherwise fall back to
     -- session GUC (ores_iam_current_actor_fn), then current_user.
@@ -392,6 +393,44 @@ begin
     );
 
     raise notice 'Seeded bootstrap mode system setting for tenant: %', p_code;
+
+    -- =========================================================================
+    -- Seed Live workspace for this tenant
+    -- =========================================================================
+    -- Every tenant gets its own Live workspace row with the well-known sentinel
+    -- UUID (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa). The per-tenant row is needed
+    -- so that list_active can return it and the resolution CTE can find it with
+    -- its tenant filter. The row belongs to the system party for this tenant.
+
+    select id into v_owner_id
+    from ores_iam_accounts_tbl
+    where username = current_user
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    limit 1;
+
+    if v_owner_id is null then
+        raise exception
+            'Cannot seed Live workspace for tenant %: no account found for current_user=%',
+            p_code, current_user;
+    end if;
+
+    insert into ores_workspaces_tbl
+        (id, tenant_id, party_id,
+         version, name, description, source_path,
+         parent_workspace_id, scope_portfolio_id,
+         owner_id, status_code,
+         modified_by, performed_by, change_reason_code, change_commentary,
+         valid_from, valid_to)
+    values
+        (ores_utility_live_workspace_id_fn(), v_tenant_id, system_party_id,
+         0, 'Live', 'Live production data space', '',
+         null, null,
+         v_owner_id, 'active',
+         v_actor, v_actor, 'system.new_record',
+         'Live workspace seeded during tenant provisioning',
+         current_timestamp, ores_utility_infinity_timestamp_fn());
+
+    raise notice 'Seeded Live workspace for tenant: % (id: %)', p_code, v_tenant_id;
 
     -- =========================================================================
     -- Provisioning complete

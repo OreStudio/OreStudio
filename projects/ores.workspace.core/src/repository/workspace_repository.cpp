@@ -158,10 +158,11 @@ workspace_repository::resolution_order(context ctx,
     const std::string& workspace_id) {
 
     BOOST_LOG_SEV(lg(), debug) << "Resolving workspace chain for: " << workspace_id;
+    const auto tid = ctx.tenant_id().to_string();
     const std::string sql =
-        "SELECT unnest(ores_workspace_resolution_order_fn($1::uuid))::text";
+        "SELECT unnest(ores_workspace_resolution_order_fn($1::uuid, $2::uuid))::text";
     return execute_parameterized_string_query(
-        ctx, sql, {workspace_id},
+        ctx, sql, {workspace_id, tid},
         lg(), "Resolving workspace resolution order");
 }
 

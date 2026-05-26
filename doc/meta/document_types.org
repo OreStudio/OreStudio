@@ -637,7 +637,7 @@ below, which is /task-shaped/.
 
 ** runbook
 
-- Folder :: =doc/runbooks/=
+- Folder :: =doc/llm/runbooks/=
 - Level :: =cross=
 - Filename :: =runbook.org= inside a =<slug>/= folder (same pattern as
   =story.org=, =task_*.org=).

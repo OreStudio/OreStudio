@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 9E427AF2-7CFB-4C12-9827-C8DF55681BBD
+:END:
+#+title: Create a new component
+#+description: Scaffold a new ORE Studio component with api/core/service split, CMake wiring, component overview, and stub tests.
+#+type: runbook
+#+version: 2
+#+level: cross
+#+filetags: :runbook:component:codegen:cmake:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+
+This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
+
+* Goal
+
+Scaffold a new ORE Studio component following the [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][component architecture]]: api/core/service layers, CMake wiring, component overview doc, and stub tests.
+
+* Preconditions
+
+- Component name, purpose, and dependencies are defined.
+- Build environment is configured.
+
+* Steps
+
+In execution order:
+
+1. /Scaffold the component./ Use [[id:96B3A07D-74E3-4F50-8933-2879DD0CFA47][Component Creator]] skill to generate the api/core/service directory structure, headers, and CMake files.
+
+2. /Wire CMake./ Add the component to the top-level =projects/CMakeLists.txt= and configure dependencies per [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
+
+3. /Write the component overview./ Follow [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] to document the component's purpose, inputs, outputs, and dependencies.
+
+4. /Add stub tests./ Follow [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] to add a Catch2 test skeleton.
+
+5. /Build and verify./ Run =cmake --build --preset <preset>= and =ctest= to confirm the scaffold compiles and passes stub tests.
+
+6. /Commit and PR./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]] and [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][create a PR]].
+
+* Postconditions
+
+- Component compiles and links.
+- Stub tests pass.
+- Component overview doc exists.
+- PR is open.
+
+* See also
+
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — api/core/service split.
+- [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] — all runbooks.

@@ -44,15 +44,12 @@ A [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] chains recipes and skills
 procedure with preconditions and postconditions. Where a recipe
 answers "how do I do X?", a runbook answers "begin work on X" — it
 captures the /sequence/ so the LLM doesn't have to infer it each
-time. Runbooks live under =doc/runbooks/= and are S2
+time. Runbooks live under =doc/llm/runbooks/= and are S2
 (Orchestrator)-owned.
 
-Current runbooks:
-- [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] — scaffold → branch → mark STARTED → PR.
-- [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] — pickup → implement → PR → review → merge.
-
-List with =compass list --type runbook=; scaffold with
-=compass add runbook=.
+Full catalogue: [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] — every runbook with a
+one-line description. List with =compass list --type runbook=;
+scaffold with =compass add runbook=.
 
 ** Recipes — single operations
 

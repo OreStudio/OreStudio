@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 1EE6EF7C-53E1-41D1-B6AF-6E21D7ACFB25
+:END:
+#+title: Create a new recipe
+#+description: Scaffold a v2 recipe, fill in the Question/Answer/Script/Tested-by sections, and wire it into the recipes inventory.
+#+type: runbook
+#+version: 2
+#+level: cross
+#+filetags: :runbook:recipe:documentation:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+
+This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
+
+* Goal
+
+Create a new v2 recipe: scaffold, fill in the required sections, test the shell commands, and wire it into the recipes inventory.
+
+* Preconditions
+
+- The question the recipe answers is clear.
+- The topic folder exists or will be created under =doc/recipes/<topic>/=.
+
+* Steps
+
+In execution order:
+
+1. /Scaffold./ Use [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]]: =compass add recipe= or =generate_v2_doc.sh --type recipe=. Slug convention: =how_do_i_<thing>=.
+
+2. /Fill in the Question./ Write the NLP question as the =* Question= heading — this is the load-bearing field for discovery.
+
+3. /Write the Answer./ Follow the recipe pattern: ordered steps with shell commands in =#+begin_src sh :results verbatim= blocks so they are executable in emacs (=C-c C-c=).
+
+4. /Add Script and Tested-by./ Point to the wrapper script if applicable; link to the CI check that exercises the recipe.
+
+5. /Test the commands./ Run every =#+begin_src sh= block to verify it produces the expected output. Update =#+RESULTS:= snapshots.
+
+6. /Wire into the inventory./ Add an id-link to the recipe in the topic's index file (e.g. =doc/recipes/<topic>/<topic>.org=).
+
+7. /Commit and PR./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]] and [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][create a PR]].
+
+* Postconditions
+
+- Recipe is scaffolded with all required sections.
+- Shell commands are tested and produce correct output.
+- Recipe is linked from its topic's inventory page.
+- PR is open.
+
+* See also
+
+- [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]] — the detailed recipe.
+- [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes index]] — all recipes.
+- [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] — all runbooks.

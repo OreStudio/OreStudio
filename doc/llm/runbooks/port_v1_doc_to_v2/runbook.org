@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 7BAF8188-A760-4F62-9B49-F9DA6E84FC17
+:END:
+#+title: Port a v1 document to v2
+#+description: Audit a legacy v1 doc, rewrite frontmatter to v2 contract, fill required sections, and validate.
+#+type: runbook
+#+version: 2
+#+level: cross
+#+filetags: :runbook:v1:v2:migration:documentation:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+
+This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
+
+* Goal
+
+Port a legacy v1 (=#+version: 1=) document to the v2 information architecture contract: audit the content, regenerate with codegen, fill in required sections, and validate.
+
+* Preconditions
+
+- A v1 document exists (identified by =compass list --version 1= or =doc_version_audit.py=).
+- The document's type and target parent directory are known.
+
+* Steps
+
+In execution order:
+
+1. /Audit the v1 content./ Read the v1 doc. Identify its type (task, story, knowledge, etc.), its parent (if stateful), and which content is still accurate vs. stale.
+
+2. /Scaffold a new v2 doc./ Use [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] with the same type and parent directory. Never hand-edit frontmatter — let codegen mint the UUID and dates.
+
+3. /Port the content./ Copy accurate content from the v1 doc into the v2 skeleton. Follow the [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] contract for required sections. Replace any =[[file:...]]= links with =[[id:UUID]]= links.
+
+4. /Tag correctly./ Add the appropriate =#+filetags:= including ancestor slugs if stateful. See [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]].
+
+5. /Validate./ Run =doc_version_audit.py --check= and =compass show <uuid>= to verify the new doc resolves cleanly.
+
+6. /Delete or mark the v1 doc./ Either remove the v1 file (if fully ported) or add a =:stale:= tag with a note pointing to the v2 successor.
+
+7. /Commit and PR./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]] and [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][create a PR]].
+
+* Postconditions
+
+- V2 doc passes =doc_version_audit.py=.
+- All links resolve correctly.
+- V1 doc is removed or marked stale.
+- PR is open.
+
+* See also
+
+- [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]] — the audit tooling.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — the v2 contract.
+- [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] — all runbooks.

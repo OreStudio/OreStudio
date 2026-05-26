@@ -200,7 +200,7 @@ where applicable. Tested by CI.
 
 A named, repeatable composition of [[id:117A95F9-B03D-490B-BB74-DA9FE74537E2][recipes]] and [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] into a complete
 multi-step procedure. Owned by [[id:227958A5-0F78-4CC6-A116-B83988592B68][System 2 (Orchestrator)]] — it coordinates S1
-operations into higher-level runbooks. Lives under =doc/runbooks/=.
+operations into higher-level runbooks. Lives under =doc/llm/runbooks/=.
 
 #+ATTR_HTML: :class hug-leading
 | Field           | Value                                 |
@@ -208,7 +208,7 @@ operations into higher-level runbooks. Lives under =doc/runbooks/=.
 | Owner           | [[id:227958A5-0F78-4CC6-A116-B83988592B68][System 2 (Orchestrator)]]               |
 | How to generate | =compass add runbook=               |
 | Example         | [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]]            |
-| Inventory       | =doc/runbooks/=                       |
+| Inventory       | [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]]                  |
 
 * Knowledge document
 :PROPERTIES:

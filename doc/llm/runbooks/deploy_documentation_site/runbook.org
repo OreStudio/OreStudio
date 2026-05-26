@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 7C95AEF7-B26B-4807-92F1-97877FDF639B
+:END:
+#+title: Deploy the documentation site
+#+description: Build the product site, deploy settings, skills, diagrams, and verify the output.
+#+type: runbook
+#+version: 2
+#+level: cross
+#+filetags: :runbook:site:deploy:documentation:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+
+This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
+
+* Goal
+
+Build and deploy all ORE Studio documentation artefacts: product site, Claude Code settings, skills, PlantUML diagrams, and manual PDF.
+
+* Preconditions
+
+- Emacs is on PATH.
+- Build directory is configured per [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][CMake configuration]].
+
+* Steps
+
+In execution order:
+
+1. /Deploy org-mode artefacts./ Run =dorg= (=cmake --build ... --target deploy_org=) to rebuild the site, settings, skills, and diagrams in one shot. See [[id:5ACADE16-BCC4-46E5-950E-34015B87C4EC][How do I deploy all org-mode artefacts?]].
+
+2. /Deploy settings./ If changing only Claude Code permissions, run =cmake --build ... --target deploy_settings= per [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]].
+
+3. /Deploy skills./ If changing only skills, run =cmake --build ... --target deploy_skills= per [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]].
+
+4. /Build the manual PDF./ Run =cmake --build ... --target deploy_manual= per the =user_manual_pdf_build= story.
+
+5. /Verify./ Run =./build/scripts/serve-site.sh= and open localhost to preview. Check that =llm.html=, =runbooks.html=, and the LLMs nav entry render correctly.
+
+* Postconditions
+
+- Site builds cleanly with no errors.
+- All LLM artefacts (settings, skills, diagrams) are deployed.
+- Manual PDF is generated.
+- Local preview renders correctly.
+
+* See also
+
+- [[id:5ACADE16-BCC4-46E5-950E-34015B87C4EC][How do I deploy all org-mode artefacts?]] — the =dorg= target.
+- [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] — all runbooks.

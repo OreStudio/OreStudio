@@ -28,17 +28,17 @@ In execution order:
 
 1. /Create the domain type./ Use [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]] skill to generate the C++ domain model, serialisation, and JSON I/O.
 
-2. /Create the SQL schema./ Use [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]] and [[id:87C2AD34-BDF3-4F12-9DEC-4CC3F3AB5D39][How do I create entity schema?]] to add the table, CRUD functions, and grants.
+2. /Create the SQL schema./ Use [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]] and [[id:479F858E-AA31-4DB4-ABE9-A0ED7CEBF098][How do I create entity schema?]] to add the table, CRUD functions, and grants.
 
 3. /Create the repository./ Follow [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] to scaffold the C++ repository class.
 
 4. /Wire the service layer./ Add NATS handlers and service methods following the protocol conventions in [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]].
 
-5. /Create the Qt UI./ Follow [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]]: ClientModel → list window → detail dialog → history dialog. Use [[id:D6E2A3F7-8C4B-4A1D-9E5F-2B3C7D8A4E6F][How do I create entity UI?]].
+5. /Create the Qt UI./ Follow [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]]: ClientModel → list window → detail dialog → history dialog. Use [[id:25167ED8-6CCC-43AC-9978-026E6AD581FC][How do I create entity UI?]].
 
-6. /Add CLI commands./ Follow [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] and [[id:68302B7A-C13E-4EB2-8AF3-D100E1CE3A09][How do I create entity commands?]] (CLI).
+6. /Add CLI commands./ Follow [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] and [[id:662881DC-1371-4DAD-A868-72D8BAE0E919][How do I create entity commands?]] (CLI).
 
-7. /Add HTTP endpoints./ Follow [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] and [[id:2A4E591A-B298-4DE3-89A7-888A4F282B06][How do I create entity endpoints?]].
+7. /Add HTTP endpoints./ Follow [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] and [[id:C9EEAAD1-1E78-4775-A05F-19573E669BD9][How do I create entity endpoints?]].
 
 8. /Write unit tests./ Follow [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] and [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][Unit Test Writer]] skill.
 

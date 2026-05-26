@@ -47,4 +47,4 @@ without polling.
 
 * See also
 
--
+- [[id:4A7B2C8E-F391-4D5A-B6E0-1C9D3F7A5B2E][Eventing Pipeline]] — end-to-end walkthrough from pg_notify to Qt markAsStale

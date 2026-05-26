@@ -19,18 +19,28 @@
  */
 #include "ores.qt/WorkspaceController.hpp"
 
+#include <QDateTime>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QStringList>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include "ores.qt/WorkspaceMdiWindow.hpp"
 #include "ores.qt/WorkspaceDetailDialog.hpp"
 #include "ores.qt/WorkspaceHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.workspace.api/eventing/workspace_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    constexpr std::string_view workspace_event_name =
+        eventing::domain::event_traits<workspace::eventing::workspace_changed_event>::name;
+}
 
 WorkspaceController::WorkspaceController(
     QMainWindow* mainWindow,
@@ -46,6 +56,39 @@ WorkspaceController::WorkspaceController(
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "WorkspaceController created";
+
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &WorkspaceController::onNotificationReceived);
+
+        connect(clientManager_, &ClientManager::loggedIn,
+                this, [self = QPointer<WorkspaceController>(this)]() {
+            if (!self) return;
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to workspace change events";
+            self->clientManager_->subscribeToEvent(std::string{workspace_event_name});
+        });
+
+        connect(clientManager_, &ClientManager::reconnected,
+                this, [self = QPointer<WorkspaceController>(this)]() {
+            if (!self) return;
+            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to workspace change events after reconnect";
+            self->clientManager_->subscribeToEvent(std::string{workspace_event_name});
+        });
+
+        if (clientManager_->isConnected()) {
+            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to workspace change events";
+            clientManager_->subscribeToEvent(std::string{workspace_event_name});
+        }
+    }
+}
+
+WorkspaceController::~WorkspaceController() {
+    BOOST_LOG_SEV(lg(), debug) << "WorkspaceController destroyed";
+
+    if (clientManager_) {
+        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from workspace change events";
+        clientManager_->unsubscribeFromEvent(std::string{workspace_event_name});
+    }
 }
 
 void WorkspaceController::showListWindow() {
@@ -87,6 +130,8 @@ void WorkspaceController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<WorkspaceController>(this), key]() {
@@ -218,6 +263,8 @@ void WorkspaceController::showDetailWindow(
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, detailWindow);
 
     QPointer<WorkspaceController> self = this;
     connect(detailWindow, &QObject::destroyed, this,
@@ -280,6 +327,8 @@ void WorkspaceController::showHistoryWindow(
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
+    UiPersistence::restoreMdiGeometry(windowKey, historyWindow);
 
     QPointer<WorkspaceController> self = this;
     connect(historyWindow, &QObject::destroyed, this,
@@ -389,6 +438,35 @@ void WorkspaceController::onRevertVersion(
 
 EntityListMdiWindow* WorkspaceController::listWindow() const {
     return listWindow_;
+}
+
+void WorkspaceController::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds, const QString& /*tenantId*/) {
+    if (eventType != QString::fromStdString(std::string{workspace_event_name}))
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Received workspace change notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " workspace IDs";
+
+    if (listWindow_)
+        listWindow_->markAsStale();
+
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        const QString& key = it.key();
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (key.startsWith("details:")) {
+            if (auto* dialog = qobject_cast<WorkspaceDetailDialog*>(window->widget()))
+                dialog->markAsStale();
+        } else if (key.startsWith("history:")) {
+            if (auto* dialog = qobject_cast<WorkspaceHistoryDialog*>(window->widget()))
+                dialog->markAsStale();
+        }
+    }
 }
 
 }

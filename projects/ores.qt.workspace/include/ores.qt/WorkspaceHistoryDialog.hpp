@@ -20,11 +20,11 @@
 #ifndef ORES_QT_WORKSPACE_HISTORY_DIALOG_HPP
 #define ORES_QT_WORKSPACE_HISTORY_DIALOG_HPP
 
-#include <QWidget>
 #include <QToolBar>
 #include <QTableWidget>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.workspace.api/domain/workspace.hpp"
 
@@ -40,7 +40,7 @@ namespace ores::qt {
  * Shows all historical versions of a workspace with ability
  * to view details or revert to a previous version.
  */
-class WorkspaceHistoryDialog final : public QWidget {
+class WorkspaceHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -62,10 +62,10 @@ public:
     ~WorkspaceHistoryDialog() override;
 
     void loadHistory();
+    void markAsStale() override;
+    [[nodiscard]] QString code() const override;
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
     void openVersionRequested(const workspace::domain::workspace& workspace,
                               int versionNumber);
     void revertVersionRequested(const workspace::domain::workspace& workspace);

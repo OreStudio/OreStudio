@@ -20,8 +20,10 @@
 #ifndef ORES_QT_WORKSPACE_CONTROLLER_HPP
 #define ORES_QT_WORKSPACE_CONTROLLER_HPP
 
+#include <QDateTime>
 #include <QMdiArea>
 #include <QMainWindow>
+#include <QStringList>
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -61,6 +63,7 @@ public:
         const QString& username,
         BadgeCache* badgeCache,
         QObject* parent = nullptr);
+    ~WorkspaceController() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -80,6 +83,10 @@ private slots:
     void onRevertVersion(const workspace::domain::workspace& workspace);
     void onOpenVersion(const workspace::domain::workspace& workspace,
                        int versionNumber);
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds,
+                                const QString& tenantId);
 
 private:
     void showAddWindow();

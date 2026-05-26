@@ -66,6 +66,7 @@ public:
     void setWorkspace(const workspace::domain::workspace& workspace);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
+    void markAsStale() override;
 
 
 signals:
@@ -119,6 +120,7 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
+    bool isStale_{false};
     QFutureWatcher<WorkspaceListResult>* parentWatcher_;
     QFutureWatcher<AccountListResult>* accountWatcher_;
 

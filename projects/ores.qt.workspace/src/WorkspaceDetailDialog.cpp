@@ -30,6 +30,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ui_WorkspaceDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MdiUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.workspace.api/messaging/workspace_protocol.hpp"
@@ -57,6 +58,20 @@ WorkspaceDetailDialog::WorkspaceDetailDialog(QWidget* parent)
 
 WorkspaceDetailDialog::~WorkspaceDetailDialog() {
     delete ui_;
+}
+
+void WorkspaceDetailDialog::markAsStale() {
+    if (isStale_)
+        return;
+
+    isStale_ = true;
+    BOOST_LOG_SEV(lg(), info) << "Workspace detail data marked as stale for: "
+                              << workspace_.name;
+
+    MdiUtils::markParentWindowAsStale(this);
+
+    emit statusMessage(QString("Workspace '%1' has been modified on the server")
+        .arg(QString::fromStdString(workspace_.name)));
 }
 
 QTabWidget* WorkspaceDetailDialog::tabWidget() const {
@@ -419,6 +434,29 @@ void WorkspaceDetailDialog::loadAccounts() {
         });
 
     accountWatcher_->setFuture(future);
+}
+
+void WorkspaceDetailDialog::loadParentWorkspaces() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<WorkspaceDetailDialog> self = this;
+    auto* cm = clientManager_;
+    QFuture<WorkspaceListResult> future =
+        QtConcurrent::run([self, cm]() -> WorkspaceListResult {
+            if (!cm)
+                return {false, {}, "No client manager"};
+
+            workspace::messaging::list_workspaces_request request;
+            auto result = cm->process_authenticated_request(std::move(request));
+
+            if (!result)
+                return {false, {}, QString::fromStdString(result.error())};
+
+            return {true, std::move(result->workspaces), {}};
+        });
+
+    parentWatcher_->setFuture(future);
 }
 
 void WorkspaceDetailDialog::onParentWorkspacesLoaded() {

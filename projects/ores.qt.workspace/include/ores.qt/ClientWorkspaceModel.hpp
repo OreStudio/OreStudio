@@ -21,6 +21,7 @@
 #define ORES_QT_CLIENT_WORKSPACE_MODEL_HPP
 
 #include <vector>
+#include <unordered_map>
 #include <QFutureWatcher>
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
@@ -58,6 +59,7 @@ public:
         Name,
         Description,
         StatusCode,
+        ParentName,
         Version,
         ModifiedBy,
         ColumnCount
@@ -127,6 +129,7 @@ private:
 
     ClientManager* clientManager_;
     std::vector<workspace::domain::workspace> workspaces_;
+    std::unordered_map<std::string, std::string> parent_id_to_name_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};

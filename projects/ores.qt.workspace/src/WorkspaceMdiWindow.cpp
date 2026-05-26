@@ -147,6 +147,7 @@ void WorkspaceMdiWindow::setupTable() {
         cs::text_left,
         cs::text_left,
         cs::badge_centered,
+        cs::text_left,
         cs::mono_center,
         cs::text_left,
     }, tableView_);

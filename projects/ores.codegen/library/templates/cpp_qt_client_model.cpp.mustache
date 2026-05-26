@@ -64,6 +64,7 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
 {{#domain_entity.qt.columns}}
+{{^is_computed}}
         case {{enum_name}}:
 {{#is_string}}
             return QString::fromStdString({{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
@@ -85,6 +86,7 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
 {{#is_timestamp}}
             return relative_time_helper::format({{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
 {{/is_timestamp}}
+{{/is_computed}}
 {{/domain_entity.qt.columns}}
         default:
             return {};

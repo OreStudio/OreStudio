@@ -43,6 +43,12 @@ In execution order:
 
 -
 
+* PRs
+
+| PR  | Title                                                                          |
+|-----+--------------------------------------------------------------------------------|
+| 859 | [agile,doc] Add system-model-readability story and register DeepSeek as LLM co-author |
+
 * Plan
 
 The current [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] at =projects/modeling/system_model.org= is a flat bullet list of components under four layer headings. It is accurate as a reference but does not /explain/ the architecture — there is no narrative and no layer rationale.

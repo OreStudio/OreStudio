@@ -174,70 +174,107 @@ critical dimension is RED; AMBER if two or more are AMBER). Name
 the most important concern and the one thing that, if fixed, would
 most improve sprint health.
 
-** Step 4 — Write the review into sprint.org
+** Step 4 — Create a health review task and write the full review into it
 
-Find the =* Health Review= section in =sprint.org=. If it contains
-only the placeholder line, replace the entire section content. If a
-previous review exists (from a prior run of this skill), replace it
-— the section is idempotent.
+The full review content lives in a dedicated task, not in =sprint.org=
+directly. =sprint.org= holds only a compact summary table — one row
+per review run.
 
-The section must appear before =* Retrospective=.
+*** 4a — Scaffold the task
 
-Format:
+Determine the review number (count existing =task_health_review_*.org=
+files in the sprint directory and increment). Then run:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh add task \
+  --parent-dir doc/agile/versions/v0/sprint_<N>/sprint_health_review \
+  --slug health_review_<number> \
+  --title "Health review <number> — sprint <N> <mid-sprint|close> analysis" \
+  --description "System 2 health review <number> of sprint <N>."
+#+end_src
+
+Set =#+branch:= to the current working branch and wire the new task
+into the story's =* Tasks= list.
+
+*** 4b — Write the full review into the task's =* Result=
+
+Write the complete analysis under =* Result= in the new task file,
+using this structure:
 
 #+begin_example
-,* Health Review
+,* Result
 
-/Reviewed: <date> — <sprint elapsed days> days in./
+,** Review on <date> (day <N> of 7)
 
-,** Goal alignment
+,*** Goal alignment
 
-[narrative + table: Goal | Coverage | Stories | Notes]
+[narrative + table: Goal | Coverage | Stories (DONE/STARTED/BACKLOG) | Verdict]
 
-,** Sprint load
+,*** Sprint load
 
 [narrative + table: Metric | Value | Target | Status]
 
-,** PR velocity
+,*** PR velocity
 
 [narrative + table: Metric | Value | Notes]
 
-,** Story and task balance
+,*** Story and task balance
 
-[narrative + table: Story | State | Tasks | Days open | Notes]
+[narrative + table: Story | State | Tasks | Age | Notes]
 
-,** Focus signal
+,*** Focus signal
 
-[narrative: count, themes, verdict]
+[narrative + table: Metric | Value | Verdict]
 
-,** Overall verdict
+,*** Velocity
+
+[narrative + table: Metric | Value | Notes]
+
+,*** Overall verdict
 
 [RAG table: Dimension | Verdict]
 
 [one paragraph summary]
 #+end_example
 
-After writing, confirm the section replaced (not appended) and
-report the file path.
+Mark the task =State: DONE= and =Now: Complete.= once written.
 
-** Step 5 — Update agile paperwork
+*** 4c — Add a summary row to =sprint.org=
 
-If the sprint has a sprint-health-review story and task in its
-directory, update their =State= and =Now= fields to reflect the
-review having been run. This step is optional and context-dependent —
-skip it if the review is being run informally or the story does not
-exist.
-
-* Sprint template note
-
-New sprints scaffolded with =compass add sprint= include an empty
-=* Health Review= placeholder:
+Find the =* Health Review= section in =sprint.org=. It contains a
+summary table. Add one row for this review:
 
 #+begin_example
 ,* Health Review
 
-(Run =sprint-reviewer= to generate this section.)
+| # | Date       | Day   | Overall | Task                          |
+|---+------------+-------+---------+-------------------------------|
+| 1 | 2026-05-25 | day 4 | AMBER   | [[id:UUID][Health review 1 — sprint N analysis]] |
+| 2 | <date>     | day N | <RAG>   | [[id:UUID][Health review 2 — sprint N analysis]] |
 #+end_example
 
-This placeholder is present from day one so the section header
-always exists in the document even before the first review.
+Use the task's =:ID:= property for the org-roam link. Do not replace
+the existing rows — append only.
+
+** Step 5 — Update agile paperwork
+
+Update the sprint-health-review story's =State= and =Now= fields if
+all tasks are now DONE. Wire the new task into the story's =* Tasks=
+list if not already done in Step 4a.
+
+* Sprint template note
+
+New sprints scaffolded with =compass add sprint= include an empty
+=* Health Review= placeholder with the summary table header:
+
+#+begin_example
+,* Health Review
+
+| # | Date | Day | Overall | Task |
+|---+------+-----+---------+------|
+
+(Run =sprint-reviewer= to populate this table.)
+#+end_example
+
+This placeholder is present from day one. Each run of this skill
+adds one row; the full analysis lives in the task linked from that row.

@@ -57,9 +57,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                              |
+|-----+--------------------------------------------------------------------|
+| 861 | [runbook] Add runbook document type with codegen, glossary, and concrete example |
 
 * Review
 

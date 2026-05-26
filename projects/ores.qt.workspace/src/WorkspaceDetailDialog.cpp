@@ -20,10 +20,12 @@
 #include "ores.qt/WorkspaceDetailDialog.hpp"
 
 #include <QMessageBox>
+#include <QComboBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QPlainTextEdit>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ui_WorkspaceDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
@@ -37,11 +39,15 @@ using namespace ores::logging;
 WorkspaceDetailDialog::WorkspaceDetailDialog(QWidget* parent)
     : DetailDialogBase(parent),
       ui_(new Ui::WorkspaceDetailDialog),
-      clientManager_(nullptr) {
+      clientManager_(nullptr),
+      parentWatcher_(new QFutureWatcher<WorkspaceListResult>(this)) {
 
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+
+    connect(parentWatcher_, &QFutureWatcher<WorkspaceListResult>::finished,
+            this, &WorkspaceDetailDialog::onParentWorkspacesLoaded);
 }
 
 WorkspaceDetailDialog::~WorkspaceDetailDialog() {
@@ -86,8 +92,8 @@ void WorkspaceDetailDialog::setupConnections() {
             &WorkspaceDetailDialog::onFieldChanged);
     connect(ui_->sourcePathEdit, &QLineEdit::textChanged, this,
             &WorkspaceDetailDialog::onFieldChanged);
-    connect(ui_->parentEdit, &QLineEdit::textChanged, this,
-            &WorkspaceDetailDialog::onFieldChanged);
+    connect(ui_->parentCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &WorkspaceDetailDialog::onFieldChanged);
     connect(ui_->ownerEdit, &QLineEdit::textChanged, this,
             &WorkspaceDetailDialog::onFieldChanged);
     connect(ui_->statusEdit, &QLineEdit::textChanged, this,
@@ -96,6 +102,8 @@ void WorkspaceDetailDialog::setupConnections() {
 
 void WorkspaceDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    if (clientManager_ && clientManager_->isConnected())
+        loadParentWorkspaces();
 }
 
 void WorkspaceDetailDialog::setUsername(const std::string& username) {
@@ -125,7 +133,7 @@ void WorkspaceDetailDialog::setReadOnly(bool readOnly) {
     ui_->nameEdit->setReadOnly(true);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->sourcePathEdit->setReadOnly(readOnly);
-    ui_->parentEdit->setReadOnly(readOnly);
+    ui_->parentCombo->setEnabled(!readOnly);
     ui_->ownerEdit->setReadOnly(readOnly);
     ui_->statusEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
@@ -136,12 +144,7 @@ void WorkspaceDetailDialog::updateUiFromWorkspace() {
     ui_->nameEdit->setText(QString::fromStdString(workspace_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(workspace_.description));
     ui_->sourcePathEdit->setText(QString::fromStdString(workspace_.source_path));
-    {
-        const auto& _opt = workspace_.parent_workspace_id;
-        ui_->parentEdit->setText(_opt
-            ? QString::fromStdString(boost::uuids::to_string(*_opt))
-            : QString{});
-    }
+    selectCurrentParent();
     ui_->ownerEdit->setText(QString::fromStdString(
         boost::uuids::to_string(workspace_.owner_id)));
     ui_->statusEdit->setText(QString::fromStdString(workspace_.status_code));
@@ -165,6 +168,18 @@ void WorkspaceDetailDialog::updateWorkspaceFromUi() {
     workspace_.source_path = ui_->sourcePathEdit->text().trimmed().toStdString();
     workspace_.status_code = ui_->statusEdit->text().trimmed().toStdString();
     workspace_.modified_by = username_;
+
+    const QString parentUuid = ui_->parentCombo->currentData().toString();
+    if (parentUuid.isEmpty()) {
+        workspace_.parent_workspace_id = std::nullopt;
+    } else {
+        try {
+            boost::uuids::string_generator gen;
+            workspace_.parent_workspace_id = gen(parentUuid.toStdString());
+        } catch (...) {
+            workspace_.parent_workspace_id = std::nullopt;
+        }
+    }
 }
 
 void WorkspaceDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -324,6 +339,73 @@ void WorkspaceDetailDialog::onDeleteClicked() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
+}
+
+void WorkspaceDetailDialog::loadParentWorkspaces() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<WorkspaceDetailDialog> self = this;
+    QFuture<WorkspaceListResult> future =
+        QtConcurrent::run([self]() -> WorkspaceListResult {
+            if (!self || !self->clientManager_)
+                return {false, {}, "Dialog closed"};
+
+            workspace::messaging::list_workspaces_request request;
+            auto result = self->clientManager_->process_authenticated_request(
+                std::move(request));
+
+            if (!result)
+                return {false, {}, QString::fromStdString(result.error())};
+
+            return {true, std::move(result->workspaces), {}};
+        });
+
+    parentWatcher_->setFuture(future);
+}
+
+void WorkspaceDetailDialog::onParentWorkspacesLoaded() {
+    const auto result = parentWatcher_->result();
+    if (!result.success)
+        return;
+
+    const QString selfUuid = QString::fromStdString(
+        boost::uuids::to_string(workspace_.id));
+
+    const bool hadSignals = ui_->parentCombo->blockSignals(true);
+    ui_->parentCombo->clear();
+    ui_->parentCombo->addItem(tr("(none)"), QString{});
+
+    for (const auto& ws : result.workspaces) {
+        const QString uuid = QString::fromStdString(boost::uuids::to_string(ws.id));
+        if (uuid == selfUuid)
+            continue;
+        const QString label = QString("%1 [%2]")
+            .arg(QString::fromStdString(ws.name))
+            .arg(uuid);
+        ui_->parentCombo->addItem(label, uuid);
+    }
+
+    selectCurrentParent();
+    ui_->parentCombo->blockSignals(hadSignals);
+}
+
+void WorkspaceDetailDialog::selectCurrentParent() {
+    if (!workspace_.parent_workspace_id.has_value()) {
+        ui_->parentCombo->setCurrentIndex(0);
+        return;
+    }
+
+    const QString targetUuid = QString::fromStdString(
+        boost::uuids::to_string(*workspace_.parent_workspace_id));
+
+    for (int i = 0; i < ui_->parentCombo->count(); ++i) {
+        if (ui_->parentCombo->itemData(i).toString() == targetUuid) {
+            ui_->parentCombo->setCurrentIndex(i);
+            return;
+        }
+    }
+    ui_->parentCombo->setCurrentIndex(0);
 }
 
 }

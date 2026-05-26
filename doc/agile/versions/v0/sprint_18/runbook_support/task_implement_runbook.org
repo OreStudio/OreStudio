@@ -63,8 +63,10 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                             | File             | Decision | Notes                                          |
+|---+---------------------------------------------+------------------+----------+------------------------------------------------|
+| 1 | Script name: use full path to generate script | document_types   | Applied  | Added projects/ores.codegen/ prefix             |
+| 2 | Clarify recipe-or-skill in template blurb     | template          | Applied  | "recipe" → "recipe or skill"                    |
+| 3 | Clarify recipe-or-skill in runbook blurb      | runbook           | Applied  | "recipe" → "recipe or skill" (both runbooks)     |
 
 * Result

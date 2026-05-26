@@ -521,7 +521,17 @@ On other systems `setsid' is used when available, otherwise an error is raised."
          (dashbuf (nth 2 ctx))
          (args    (transient-args 'ores/dashboard--start-client-transient))
          (script  (expand-file-name "build/scripts/start-client.sh" root))
-         (args-str (if args (concat " " (mapconcat #'shell-quote-argument args " ")) ""))
+         (args-str (if args
+                       (concat " "
+                               (mapconcat #'identity
+                                          (cl-mapcan (lambda (a)
+                                            (if (string-match "\\`\\(--[^=]+\\)=\\(.*\\)\\'" a)
+                                                (list (match-string 1 a)
+                                                      (shell-quote-argument (match-string 2 a)))
+                                              (list (shell-quote-argument a))))
+                                            args)
+                                          " "))
+                     ""))
          (cmd      (concat (ores/dashboard--detach-prefix) script args-str)))
     (ores/dashboard--compile label cmd "start-client" root dashbuf)))
 

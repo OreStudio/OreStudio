@@ -45,25 +45,28 @@ In execution order:
 
 * Plan
 
-** Metrics
+** Charts
 
-These are the charts, their data sources, and why they matter:
+Two multi-panel charts combine all metrics into fewer images — one for activity, one for progress.
 
-1. *PRs & Commits per Day.* Bar chart — dual axis (PRs left, commits right).
-   Source: =git log --merges= for PRs, =git shortlog -sn= for commits.
-   Why: PR velocity is the primary signal. Commits/PR ratio reveals whether PRs are small (good) or bloated (bad).
+*** Chart A: Sprint Activity (3-panel)
 
-2. *Cumulative Stories Done.* Line chart — days on X, cumulative count on Y.
-   Source: =git log= over =doc/agile/versions/v0/sprint_N/=, grep for changes from STARTED→DONE in story state.
-   Why: Burndown equivalent. Shows whether the sprint is on track, ahead, or behind.
+Combines PR volume, commit granularity, and line churn in a single vertical stack:
 
-3. *PR Cycle Time.* Bar chart — one bar per PR, height = hours from open to merge.
-   Source: =gh pr view --json createdAt,mergedAt= for each PR merged during the sprint.
-   Why: Long cycle times indicate review bottlenecks. Spikes deserve investigation.
+| Panel | Metric | Format | Source | Signal |
+|-------+--------+--------+--------+--------|
+| Top | PRs & Commits per Day | Dual-axis bar (PRs left, commits right) | =git log --merges=, =git shortlog -sn= | PR velocity; commits/PR ratio reveals bloated PRs |
+| Middle | Commits per PR | Scatter plot — one point per PR | =gh pr view --json commits= for each merged PR | Too many commits per PR = messy history, scope creep |
+| Bottom | Daily Line Churn | Stacked bar (added green, deleted red) | =git diff --stat= bucketed by commit date | Build vs refactor signal; zero days = blocker |
 
-4. *Daily Line Churn.* Stacked bar chart — added (green) vs deleted (red) per day.
-   Source: =git diff --stat origin/main@{sprint.start}..HEAD --per-day= (approximated by commit-date bucketing).
-   Why: Churn direction tells you whether the team is building (more adds) or refactoring (balanced adds/deletes). Zero days signal blockers.
+*** Chart B: Sprint Progress (2-panel)
+
+Combines story burndown and PR cycle time:
+
+| Panel | Metric | Format | Source | Signal |
+|-------+--------+--------+--------+--------|
+| Top | Cumulative Stories Done | Line chart — days on X, cumulative count on Y | =git log -p= over =doc/agile/versions/v0/sprint_N/=, grep STARTED→DONE transitions | Burndown: is the sprint on track? |
+| Bottom | PR Cycle Time | Bar chart — one bar per PR, height = hours from open to merge | =gh pr view --json createdAt,mergedAt= per merged PR | Review bottlenecks: long bars = problem |
 
 ** Data Pipeline
 
@@ -76,7 +79,7 @@ The Python script:
 - Queries git log for commit/merge data between those dates.
 - Queries doc state files for story/task transitions.
 - Calls =gh pr view= for cycle time of each PR merged in the range.
-- Writes one CSV per chart (=prs_per_day.csv=, =cumulative_stories.csv=, =pr_cycle_time.csv=, =line_churn.csv=).
+- Writes one CSV per chart (=sprint_activity.csv=, =sprint_progress.csv=).
 
 The gnuplot script:
 - Reads each CSV and produces a PNG under =assets/images/sprint_<N>/=.
@@ -91,7 +94,12 @@ Each chart gets an entry in the sprint's =* Health Review= section or a dedicate
 
 #+begin_src org
 #+attr_html: :width 100%
-[[file:assets/images/sprint_18/prs_per_day.png]]
+[[file:assets/images/sprint_18/sprint_activity.png]]
+#+end_src
+
+#+begin_src org
+#+attr_html: :width 100%
+[[file:assets/images/sprint_18/sprint_progress.png]]
 #+end_src
 
 * Decisions

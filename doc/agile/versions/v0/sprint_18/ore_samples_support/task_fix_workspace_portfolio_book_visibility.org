@@ -8,12 +8,12 @@
 #+level: s1
 #+filetags: :ore_samples_support:sprint_18:v0:
 #+owner: marco
-#+branch: feature/fix-workspace-portfolio-book-visibility
+#+branch: feature/fix-portfolio-workspace-visibility
 #+pr: 850
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
-#+updated: 2026-05-25
+#+updated: 2026-05-26
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,14 +26,14 @@ propagation, UI data-loading path, or missing join); and apply the fix.
 
 * Status
 
-| Field        | Value                                                              |
-|--------------+--------------------------------------------------------------------|
-| State        | STARTED                                                            |
-| Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]]                                |
-| Now          | Fix applied to portfolio_repository.cpp and book_repository.cpp.  |
-| Waiting on   | Nothing.                                                           |
-| Next         | PR review; merge.                                                  |
-| Last touched | 2026-05-25                                                         |
+| Field        | Value                                                                                 |
+|--------------+---------------------------------------------------------------------------------------|
+| State        | STARTED                                                                               |
+| Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]]                                                   |
+| Now          | Second root cause found; fix applied to portfolio_entity.hpp and portfolio_mapper.cpp |
+| Waiting on   | Nothing.                                                                              |
+| Next         | PR review; merge.                                                                     |
+| Last touched | 2026-05-26                                                                            |
 
 * Acceptance
 
@@ -95,11 +95,35 @@ workspace so mutations are workspace-scoped.
 The constant is transitively available via =bitemporal_operations.hpp= →
 =context.hpp= → =tenant_id.hpp=; no new =#include= was required.
 
+** Second Root Cause (2026-05-26)
+
+After PR #850 merged, books became visible but portfolios still failed.
+The refdata service log showed:
+
+#+begin_example
+[ERROR] [ores.refdata.repository.portfolio_repository]
+Failed to parse field 'description': NULL value encounted: String value cannot be NULL.
+#+end_example
+
+=portfolio_entity::description= was declared as =std::string= but the
+database column is nullable; the imported portfolio data contained NULL
+for that field.  Books were unaffected because their =description= column
+is always stored as an empty string =""=.
+
+** Second Fix
+
+Changed =portfolio_entity::description= from =std::string= to
+=std::optional<std::string>= in =portfolio_entity.hpp=.  Updated
+=portfolio_mapper.cpp= to follow the existing =aggregation_ccy= pattern:
+- DB → domain: =v.description.value_or("")=
+- domain → DB: =v.description.empty() ? std::nullopt : std::optional(v.description)=
+
 * PRs
 
-| PR  | Title                                                        |
-|-----+--------------------------------------------------------------|
-| [[https://github.com/OreStudio/OreStudio/pull/850][#850]] | [fix] Portfolios and books not visible when a workspace is active |
+| PR  | Title                                                                          |
+|-----+--------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/850][#850]] | [fix] Portfolios and books not visible when a workspace is active              |
+| TBD | [fix] portfolio_entity description nullable — NULL parse failure               |
 
 * Review
 

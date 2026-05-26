@@ -68,7 +68,7 @@ workspace_mapper::map(const domain::workspace& v) {
     r.party_id = boost::uuids::to_string(v.party_id);
     r.version = v.version;
     r.name = v.name;
-    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.description = v.description;
     r.source_path = v.source_path.empty() ? std::nullopt : std::optional(v.source_path);
     r.parent_workspace_id = v.parent_workspace_id.has_value() ? std::optional(boost::uuids::to_string(*v.parent_workspace_id)) : std::nullopt;
     r.scope_portfolio_id = v.scope_portfolio_id.has_value() ? std::optional(boost::uuids::to_string(*v.scope_portfolio_id)) : std::nullopt;

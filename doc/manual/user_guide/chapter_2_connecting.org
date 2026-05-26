@@ -209,17 +209,13 @@ Tags are displayed inline with the connection name in the list. The
 Connection Manager provides a tag filter bar at the top of the list: type
 or select a tag to show only the connections that carry it.
 
-#+caption: [SCREENSHOT NEEDED] The Connection Manager list with the tag filter bar visible at the top. Several connections are shown with their tags as small chips/badges. The filter bar has "client-acme" typed, and only matching connections are shown.
-# Capture: assign tags to several connections. Open the Connection
-# Manager and type a tag name into the filter bar. Show the filtered
-# result with the unmatched connections hidden.
-[[../../../assets/images/connection_manager_tag_filter.png]]
+To add or remove tags, open the Edit form for the entry and use the
+/Tags/ field. Type a new tag name and press Enter (or comma) to add it;
+click the × on an existing tag chip to remove it. Tags are created on
+first use — there is no separate tag management screen.
 
-To add or remove tags on a connection, open the Edit form for that
-connection and use the tag input field. Type a new tag name and press
-Enter (or comma) to add it; click the × on an existing tag chip to
-remove it. Tags are created on first use — there is no separate tag
-management screen.
+#+caption: Tags shown as coloured chips in an entry's Edit form (here the =ores_dev_local1= environment, tagged =local1=, =local= and =dev=). Add tags in the /Tags/ field, remove one with the × on its chip, or click =+= to add another.
+[[../../../assets/images/connection_manager_tags.png]]
 
 *** Where your connections are stored
 

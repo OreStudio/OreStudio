@@ -40,14 +40,14 @@ def get_sprint_range(sprint: int) -> tuple[datetime.date, datetime.date]:
     """Read sprint start/end from the sprint doc's Status table."""
     sprint_file = Path(f"doc/agile/versions/v0/sprint_{sprint:02d}/sprint.org")
     if not sprint_file.exists():
-        # Fallback: estimate from git log
         print(f"Warning: {sprint_file} not found, estimating dates from git", file=sys.stderr)
         return _estimate_dates(sprint)
     
     text = sprint_file.read_text()
     start = end = None
+    
     for line in text.splitlines():
-        if "Start" in line and "|" in line:
+        if line.startswith("| Start") and "|" in line:
             m = re.search(r"\d{4}-\d{2}-\d{2}", line)
             if m:
                 start = parse_date(m.group())
@@ -55,19 +55,27 @@ def get_sprint_range(sprint: int) -> tuple[datetime.date, datetime.date]:
             m = re.search(r"\d{4}-\d{2}-\d{2}", line)
             if m:
                 end = parse_date(m.group())
+    
     if start and end:
         return start, end
-    print(f"Warning: could not parse sprint dates from {sprint_file}", file=sys.stderr)
-    return _estimate_dates(sprint)
+    
+    # Fallback: use Last touched date
+    for line in text.splitlines():
+        if "Last touched" in line and "|" in line:
+            m = re.search(r"\d{4}-\d{2}-\d{2}", line)
+            if m:
+                end = parse_date(m.group())
+    if not end:
+        print(f"Warning: could not parse sprint dates from {sprint_file}", file=sys.stderr)
+        return _estimate_dates(sprint)
+    
+    m = re.search(r"#\+created:\s*(\d{4}-\d{2}-\d{2})", text)
+    start = parse_date(m.group(1)) if m else (end - datetime.timedelta(days=7))
+    return start, end
 
 
 def _estimate_dates(sprint: int) -> tuple[datetime.date, datetime.date]:
-    """Rough estimate: sprint duration is ~7 days ending now-ish."""
-    # Simple heuristic: look at merge commits to find sprint boundaries
-    log = run([
-        "git", "log", "--merges", "--format=%ct", "-n", "1",
-        f"origin/main"
-    ])
+    """Fallback date estimation when sprint doc is unavailable."""
     now = datetime.datetime.now().date()
     return now - datetime.timedelta(days=14), now
 
@@ -76,41 +84,40 @@ def collect_daily_metrics(start: datetime.date, end: datetime.date) -> dict:
     """Get commits and merges per day between start and end."""
     metrics = defaultdict(lambda: {"commits": 0, "merges": 0, "added": 0, "deleted": 0})
     
-    # Commits per day by author date
-    log = run([
-        "git", "log", f"--after={start}", f"--before={end + datetime.timedelta(days=1)}",
-        "--format=%ai", "--reverse", "origin/main"
-    ])
-    for line in log.splitlines():
-        d = parse_date(line.split()[0])
-        metrics[d]["commits"] += 1
+    end_inc = end + datetime.timedelta(days=1)
     
-    # Merges per day (PR merges)
+    # Single pass: get commit date and numstat together so we don't re-query per file
     log = run([
-        "git", "log", "--merges", f"--after={start}",
-        f"--before={end + datetime.timedelta(days=1)}",
+        "git", "log", f"--after={start}", f"--before={end_inc}",
+        "--format=COMMIT %ai", "--numstat", "--reverse", "origin/main"
+    ])
+    
+    current_date = None
+    for line in log.splitlines():
+        if line.startswith("COMMIT "):
+            d_str = line.split()[1]
+            current_date = parse_date(d_str)
+            if current_date:
+                metrics[current_date]["commits"] += 1
+                # Count merge commits (those with "Merge" in message)
+                # We detect merges by grep in the raw output
+        elif current_date and "\t" in line and not line.startswith("COMMIT"):
+            parts = line.split("\t")
+            if len(parts) == 3 and parts[0] != "-" and parts[0] != "":
+                try:
+                    metrics[current_date]["added"] += int(parts[0])
+                    metrics[current_date]["deleted"] += int(parts[1])
+                except (ValueError, KeyError):
+                    pass
+    
+    # Merges per day (separate pass — simpler)
+    log = run([
+        "git", "log", "--merges", f"--after={start}", f"--before={end_inc}",
         "--format=%ai", "--reverse", "origin/main"
     ])
     for line in log.splitlines():
         d = parse_date(line.split()[0])
         metrics[d]["merges"] += 1
-    
-    # Line churn per day
-    log = run([
-        "git", "log", f"--after={start}", f"--before={end + datetime.timedelta(days=1)}",
-        "--numstat", "--reverse", "origin/main"
-    ])
-    for line in log.splitlines():
-        parts = line.split("\t")
-        if len(parts) == 3 and parts[0] != "-":
-            d_str = run(["git", "log", "-1", "--format=%ai", parts[2].strip()])
-            if d_str:
-                d = parse_date(d_str.split()[0])
-                try:
-                    metrics[d]["added"] += int(parts[0])
-                    metrics[d]["deleted"] += int(parts[1])
-                except ValueError:
-                    pass
     
     return metrics
 

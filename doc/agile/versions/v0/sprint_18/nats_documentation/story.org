@@ -20,7 +20,7 @@ NATS is the message bus underpinning every ORE Studio service, yet it
 is nowhere described in the knowledge base. A developer reading
 component code sees NATS subjects and JetStream streams but has to
 trace code to understand what they do. This story fixes that gap by
-adding three tiers of documentation:
+adding four tiers of documentation:
 
 1. A general [[https://nats.io][NATS]] technology page in [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]] — what NATS
    is, its key concepts (subjects, queue groups, JetStream), and links

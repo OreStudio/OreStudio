@@ -28,7 +28,9 @@ correctly-formatted title and a structured body?
 
 2. /Create the PR/ with =gh pr create=. Embed the story and task
    =:ID:= UUIDs in the body so =compass where --prs= can surface them
-   later. Use a HEREDOC for the body so newlines are preserved:
+   later, and a clickable HTML link to the published story page so
+   reviewers can open it directly. Use a HEREDOC for the body so
+   newlines are preserved:
 
    #+begin_src sh :results verbatim
    gh pr create --title "[component] One-line description" \
@@ -44,6 +46,8 @@ correctly-formatted title and a structured body?
 
    Story: [[id:STORY-UUID]]
    Task:  [[id:TASK-UUID]]
+
+   Story page: https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_NN/SLUG/story.html
    EOF
    )"
    #+end_src
@@ -70,6 +74,9 @@ correctly-formatted title and a structured body?
   Summary and Changes are the load-bearing pair.
 - /Story/Task UUIDs in the body/ are forward-only: they make PRs
   discoverable from the task but are not back-filled on old PRs.
+- /Story page link/ follows the pattern
+  =https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_<NN>/<slug>/story.html=.
+  Construct it from the story's parent sprint folder and slug.
 
 * Script
 

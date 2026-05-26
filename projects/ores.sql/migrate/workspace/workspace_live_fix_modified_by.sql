@@ -59,7 +59,7 @@ BEGIN
         (v_row.id, 0, v_row.name, v_row.description, v_row.source_path,
          v_row.parent_workspace_id, v_row.scope_portfolio_id,
          v_row.owner_id, v_row.status_code,
-         current_user, current_user, 'system.data_fix', 'Fix bootstrap modified_by from system to service role',
+         current_user, current_user, 'common.rectification', 'Fix bootstrap modified_by from system to service role',
          now(), 'infinity');
 
     raise notice 'Live workspace modified_by updated: id=%', v_live_id;

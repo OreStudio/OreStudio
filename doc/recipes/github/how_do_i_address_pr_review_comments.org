@@ -76,10 +76,25 @@ requested fixes, and close the review threads?
      reasoning.
 
    #+begin_src sh :results verbatim
-   gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
-     -X POST -f body="Fixed in commit <sha> — <brief description>."
+   gh api repos/{owner}/{repo}/pulls/{pr_number}/comments --method POST \
+     -F "body=Fixed in commit <sha> — <brief description>." \
+     -F "commit_id=<sha>" \
+     -F "path=<file-path>" \
+     -F "line=<original_line>" \
+     -F "side=RIGHT" \
+     -F "in_reply_to=<comment_id>"
    # or, for a declined comment:
-   # -f body="Not changed. <reason>."
+   # -F "body=Not changed. <reason>."
+   #+end_src
+
+   Use =-F= (not =-f=) for all fields — =-f= sends everything as
+   strings and GitHub rejects integer fields like =line= and
+   =in_reply_to= with a 422 error. Get the =original_line=,
+   =commit_id=, and =path= for each comment from:
+
+   #+begin_src sh :results verbatim
+   gh api repos/{owner}/{repo}/pulls/{pr_number}/comments \
+     --jq '.[] | {id, original_line, path}'
    #+end_src
 
 6. /Resolve each review thread/ via GraphQL. First get the thread
@@ -112,7 +127,7 @@ requested fixes, and close the review threads?
    }"
    #+end_src
 
-7. /Record the review round in the task doc/. Add or update the
+7. /Record the review round in the story or task doc/. Add or update the
    =* Review= section of the task's =.org= file with a summary table:
 
    #+begin_example
@@ -123,8 +138,10 @@ requested fixes, and close the review threads?
    | 3 | Relative PDF link       | user_manual.org   | Applied  | Changed to user_manual.pdf     |
    #+end_example
 
-   Commit the updated task doc in the same push (or as a follow-up
-   commit on the feature branch).
+   For stories without tasks, record in =story.org=. The PR URL is
+   tracked in the =* PRs= table there (see [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]]
+   step 4). Commit the updated doc in the same push or as a
+   follow-up commit on the feature branch.
 
 * Conventions
 

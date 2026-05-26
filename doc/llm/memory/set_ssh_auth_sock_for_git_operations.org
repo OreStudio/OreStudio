@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: F7E4C41F-AF34-43E5-ADC3-1D837126B3DE
+:END:
+#+title: Set SSH_AUTH_SOCK for git operations
+#+description: The sandboxed shell does not inherit the user SSH agent. Export SSH_AUTH_SOCK before git push/fetch/pull.
+#+type: memory
+#+memory_subtype: feedback
+#+version: 2
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+
+The sandboxed shell environment does not inherit the user's SSH agent
+socket. Any =git push=, =git fetch=, or =git pull= will hang waiting
+for credentials unless =SSH_AUTH_SOCK= is explicitly exported first.
+
+*Why:* The user's terminal has an SSH agent running with the key
+unlocked, but the sandbox starts with an empty =SSH_AUTH_SOCK=. The
+git remote uses SSH (=git@github.com:=), and without the agent the
+connection hangs on a passphrase prompt that the sandbox can't
+display.
+
+*How to apply:* Before any =git push=, =git fetch=, or =git pull=,
+prefix the command with:
+
+#+begin_src sh
+export SSH_AUTH_SOCK=/home/marco/.ssh/agent/s.qEp3u81YnU.agent.P4RgmsqyMr
+#+end_src
+
+If the =SSH_AUTH_SOCK= value changes (the agent restarts), ask the
+user to run =echo $SSH_AUTH_SOCK= in their terminal and use the
+fresh value.

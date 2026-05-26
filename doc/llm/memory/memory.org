@@ -68,6 +68,8 @@ of these exclusions, push back: the right home is somewhere else.
   toolchain and vcpkg detection are blocked inside the sandbox.
 - [[id:5BDDD435-9F2A-4ABC-BA71-5BB3B980C785][run_sql.sh can run outside the sandbox]] — use =dangerouslyDisableSandbox: true=
   for =run_sql.sh= and =recreate_database.sh=; sandbox blocks =localhost:5432=.
+- [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Set SSH_AUTH_SOCK for git operations]] — the sandbox has no SSH agent;
+  export =SSH_AUTH_SOCK= before =git push= / =fetch= / =pull=.
 
 ** User
 

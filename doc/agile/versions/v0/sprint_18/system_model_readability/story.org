@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 9AE5466D-E627-4587-BBEB-6D89E732ACE2
+:END:
+#+title: Story: System model readability
+#+description: Improve the system model document with layer blurbs and table-based component inventory — text only, no diagram changes.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :architecture:documentation:system_model:sprint_18:v0:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+#+owner: CodeWhale
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Transform the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] from a flat component inventory into a readable architecture document that a newcomer can understand top-to-bottom. Add a narrative introduction and layer blurbs explaining the role and rationale of each architectural layer, and convert component listings into scannable tables.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
+| Now           | Writing layer blurbs and converting component lists to tables in the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]]. |
+| Waiting on    | Nothing.                               |
+| Next          | Convert Foundation layer component list to table. |
+| Last touched  | 2026-05-26                               |
+
+* Acceptance
+
+- A newcomer reading the system model from top to bottom can explain what each layer does and why the system is organised this way.
+- Each layer heading is preceded by a 1–2 paragraph blurb describing the layer's role, the kind of components it contains, and its dependency rules.
+- Component inventories use tables (Component | Description | Dependencies) instead of bare bullet lists.
+- The Database Isolation section is preserved and remains accurate.
+- All id-links are valid; frontmatter =#+updated= is refreshed.
+
+* Tasks
+
+In execution order:
+
+* PRs
+
+| PR  | Title                                                                          |
+|-----+--------------------------------------------------------------------------------|
+| 859 | [agile,doc] Add system-model-readability story and register DeepSeek as LLM co-author |
+
+* Plan
+
+The current [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] at =projects/modeling/system_model.org= is a flat bullet list of components under four layer headings. It is accurate as a reference but does not /explain/ the architecture — there is no narrative and no layer rationale.
+
+The improvement follows a top-down reading order:
+
+1. *Narrative introduction.* A new opening paragraph under =* System Architecture= (before the diagram) explains the four-layer design: Foundation provides base infrastructure with no ORE dependencies, Infrastructure adds communication and testing, Domain encodes business logic, and Application delivers user-facing surfaces. The dependency rule (layers only depend downward) is stated explicitly.
+
+2. *Layer blurbs.* Each layer heading (=** Foundation Layer=, etc.) gains a short blurb:
+   - What the layer is responsible for.
+   - Why it exists as a separate layer.
+   - What kinds of components live here.
+   - What it depends on and what depends on it.
+   The blurbs are placed /before/ the component list so the reader has context before scanning the inventory.
+
+3. *Component tables.* Each layer's bullet list converts to a table:
+   - Column 1: Component (id-linked to its [[id:B9D3D469-9E59-465F-8C18-34546B680D13][component_overview.org]]).
+   - Column 2: One-line description.
+   - Column 3: Depends on (other components or "none").
+   The =Depends on= column replaces the "Depends on:" suffixes currently appended to descriptions.
+
+4. *Preserve Database Isolation.* The =* Database Isolation= section is well-written and is kept as-is. No structural changes.
+
+* Decisions
+
+* Out of scope
+
+- Changing the component architecture itself (api/core/service split, dependency graph). This story is purely about documentation readability.
+- Adding new components or removing existing ones from the inventory.
+- Rewriting individual [[id:B9D3D469-9E59-465F-8C18-34546B680D13][component_overview.org]] files — those are out of scope here.
+- Changes to the PlantUML system diagram (=ores.puml= / =ores.png=).
+
+* Review
+
+Review round 1 (gemini-code-assist, 2026-05-26).
+
+| # | Comment summary                        | File        | Decision | Notes                                    |
+|---+----------------------------------------+-------------+----------+------------------------------------------|
+| 1 | Use ID link for system_model.org       | story.org   | Applied  | Replaced with id:D773166D...             |
+| 2 | Remove empty Tasks bullet              | story.org   | Applied  | Removed trailing =-=                      |
+| 3 | Use ID link for component_overview.org | story.org   | Applied  | Replaced with id:B9D3D469... (×2)        |
+| 4 | Use ID link for component_overview.org | story.org   | Applied  | Second occurrence in Plan step 3         |

@@ -63,6 +63,7 @@ Examples:
 - **Gemini**: =Co-Authored-By: Gemini 2.0 Flash <noreply@google.com>=
 - **Claude**: =Co-Authored-By: Claude 3.7 Sonnet <noreply@anthropic.com>=
 - **GPT**: =Co-Authored-By: GPT-4o <noreply@openai.com>=
+- **DeepSeek**: =Co-Authored-By: DeepSeek V4 Pro <noreply@deepseek.com>=
 
 Example commit message:
 

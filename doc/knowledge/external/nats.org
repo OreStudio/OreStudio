@@ -94,8 +94,8 @@ NATS supports three security layers that can be combined:
 | Mode        | Description                                                                 |
 |-------------+-----------------------------------------------------------------------------|
 | Single server | One =nats-server= process. Simplest; no redundancy.                       |
-| Cluster     | 3+ servers using RAFT consensus for message and JetStream replication.      |
-| Super-cluster | Multiple clusters linked by gateway connections for geo-distribution.    |
+| Cluster     | 3+ servers using Raft consensus for message and JetStream replication.      |
+| Supercluster | Multiple clusters linked by gateway connections for geo-distribution.    |
 | Leaf node   | A lightweight =nats-server= that extends a hub cluster with local subjects. |
 
 ORE Studio development runs a single server; production targets a

@@ -32,30 +32,30 @@ under a new "Messaging infrastructure" section.
 
 | Field        | Value                                               |
 |--------------+-----------------------------------------------------|
-| State        | STARTED                                             |
+| State        | DONE                                                |
 | Parent story | [[id:A388F0C8-0804-420F-A542-2C929CFCEC92][Document NATS: technology overview, system integration, and recipes]] |
-| Now          | Implementing nats.org and wiring into external.org. |
+| Now          | Complete.                                           |
 | Waiting on   | Nothing.                                            |
-| Next         | Scaffold via codegen, fill content, update index.   |
+| Next         | None.                                               |
 | Last touched | 2026-05-26                                          |
 
 * Acceptance
 
-- [ ] =doc/knowledge/external/nats.org= exists with =#+version: 2=,
+- [X] =doc/knowledge/external/nats.org= exists with =#+version: 2=,
   =#+type: knowledge=, scaffolded via =generate_v2_doc.sh=.
-- [ ] Covers: what NATS is, subjects and wildcards, queue groups,
+- [X] Covers: what NATS is, subjects and wildcards, queue groups,
   request/reply, JetStream, security (TLS + NKey/JWT), deployment
   modes (server, leaf node, cluster).
-- [ ] Links to [[https://nats.io][nats.io]], [[https://github.com/nats-io][github.com/nats-io]], and [[https://docs.nats.io][docs.nats.io]].
-- [ ] Links back to [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for how ORE Studio uses the transport.
-- [ ] =doc/knowledge/external/external.org= has a new "Messaging
+- [X] Links to [[https://nats.io][nats.io]], [[https://github.com/nats-io][github.com/nats-io]], and [[https://docs.nats.io][docs.nats.io]].
+- [X] Links back to [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for how ORE Studio uses the transport.
+- [X] =doc/knowledge/external/external.org= has a new "Messaging
   infrastructure" section with an id-link to =nats.org=.
-- [ ] =projects/modeling/protocol.org= renamed to =messaging.org=,
+- [X] =projects/modeling/protocol.org= renamed to =messaging.org=,
   ported to v2, title "ORE Studio Messaging Reference", =:ID:= preserved.
-- [ ] =messaging.org= links to =nats.org=.
-- [ ] =ores.nats= component overview =* See also= links to =nats.org=
+- [X] =messaging.org= links to =nats.org=.
+- [X] =ores.nats= component overview =* See also= links to =nats.org=
   and =messaging.org=.
-- [ ] =system_model.org= "Useful Pages" display text reads "Messaging
+- [X] =system_model.org= "Useful Pages" display text reads "Messaging
   Reference" (not "Protocol Reference").
 
 * Plan

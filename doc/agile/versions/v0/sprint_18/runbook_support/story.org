@@ -42,7 +42,11 @@ Introduce a =runbook= as a new document type in the v2 information architecture.
 
 In execution order:
 
--
+* PRs
+
+| PR  | Title                                          |
+|-----+------------------------------------------------|
+| 860 | [agile] Add runbook-support story to sprint 18 |
 
 * Plan
 

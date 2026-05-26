@@ -79,13 +79,13 @@
       (format "\\begin{titlepage}
 \\centering
 \\vspace*{3cm}
-\\includegraphics[width=0.6\\textwidth]{../../../assets/images/login_screen.png}\\par
-\\vspace{2cm}
 {\\Huge\\bfseries ORE Studio User Manual\\par}
 \\vspace{0.5cm}
 {\\large Marco Craveiro\\par}
 \\vspace{0.3cm}
 {\\normalsize Version %s\\par}
+\\vspace{2cm}
+\\includegraphics[width=0.6\\textwidth]{../../../assets/images/login_screen.png}\\par
 \\vfill
 \\end{titlepage}" (ores/cmake-version)))
 

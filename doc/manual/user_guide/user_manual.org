@@ -27,11 +27,13 @@
 #+latex_header: \usepackage{tikz}
 #+latex_header: \makeatletter
 #+latex_header: \let\ores@oldincludegraphics\includegraphics
-#+latex_header: \renewcommand{\includegraphics}[2][]{\tikz\node[inner sep=0pt,clip,rounded corners=5pt]{\ores@oldincludegraphics[#1]{#2}};}
+#+latex_header: \renewcommand{\includegraphics}[2][]{\tikz\node[inner sep=0pt,clip,rounded corners=3pt]{\ores@oldincludegraphics[#1]{#2}};}
 #+latex_header: \makeatother
 #+latex_header: \definecolor{oreaccent}{rgb}{0.11,0.43,0.64}
 #+latex_header: \hypersetup{colorlinks=true,allcolors=oreaccent}
 #+latex_header: \AtBeginDocument{\renewcommand{\plaintitle}{ORE Studio User Manual}}
+# Include subsections (level *** in the chapters) in the table of contents.
+#+latex_header: \setcounter{tocdepth}{2}
 #+latex_header: \titleformat{\section}[hang]{\normalfont\Large\itshape\color{oreaccent}}{\thesection}{1em}{}[]
 #+latex_header: \titleformat{\subsection}[hang]{\normalfont\large\itshape\color{oreaccent}}{\thesubsection}{1em}{}[]
 #+latex_header: \makeatletter

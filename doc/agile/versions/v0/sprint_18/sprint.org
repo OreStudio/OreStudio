@@ -94,6 +94,19 @@ In execution order.
 | 2 | 2026-05-26 | day 5 | AMBER   | [[id:669DF15D-AD78-4F9A-8A53-49DF0EEC9455][Health review 2 — sprint 18 backlog audit and shape check]] |
 
 
+* Charts
+
+Charts generated from git history and gh API data via =cmake --build ... --target sprint_charts -DSPRINT=18=.
+
+#+attr_html: :width 100%
+[[file:assets/images/sprint_18/sprint_activity.png]]
+
+#+attr_html: :width 100%
+[[file:assets/images/sprint_18/sprint_progress.png]]
+
+- Sprint Activity — PRs & Commits per day (top), PR cycle time (middle), daily line churn (bottom).
+- Sprint Progress — cumulative stories done (top), PR cycle time per PR (bottom).
+
 * Retrospective
 
 (Filled at sprint close.)

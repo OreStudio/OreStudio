@@ -251,7 +251,7 @@ def main():
     
     print(f"Sprint {sprint}: {start} → {end}")
     
-    output_dir = Path(args.output_dir) if args.output_dir else Path(f"build/output/sprint_{sprint}")
+    output_dir = Path(args.output_dir) if args.output_dir else Path(f"build/output/sprint_{sprint:02d}")
     output_dir.mkdir(parents=True, exist_ok=True)
     
     daily = collect_daily_metrics(start, end)

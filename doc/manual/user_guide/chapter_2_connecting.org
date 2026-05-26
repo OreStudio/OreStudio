@@ -383,6 +383,28 @@ from /Quick Connect/ fills in the server, port and namespace for you:
 #+caption: Logging in as a tenant administrator (=tenant_admin@barclays_plc=), with the connection chosen from /Quick Connect/.
 [[../../../assets/images/login_dialog_tenant_admin_login.png]]
 
+*** Registering a new account
+
+If your deployment allows it, the *Register* link in the login dialog
+footer opens the /Create Account/ form. Fill in a username, email, and
+password (with confirmation), check the /Server/ and /Port/ point at your
+backend, and click *Create Account*. The /Log in/ link returns to the
+login dialog.
+
+#+caption: The Create Account form, opened from the /Register/ link in the login dialog footer.
+[[../../../assets/images/create_an_account.png]]
+
+Self-registration is not always available: the backend must be set up to
+permit new users to register themselves. Where it is disabled, accounts
+are created for you by an administrator instead (see [[*First login and the default account][First login and the
+default account]]).
+
+*Note:* account registration currently fails with =Account creation
+failed: NATS connect failed: SSL Error= — the registration path's
+NATS/TLS connection does not succeed. Until this is fixed, ask an
+administrator to create your account. The fix is tracked in the story
+/Fix account registration NATS SSL error/.
+
 ** Connection status and reconnection
 
 The status bar always shows whether you are connected. After a deliberate
@@ -390,12 +412,13 @@ log-out — or once a stopped backend is running again — use the *Connect*
 button to re-establish the session: your saved connection is retained, so
 you only re-enter your password.
 
-*Note:* ORE Studio does not yet reliably detect a backend that drops
-/while you are logged in/. If the messaging server (NATS) or the services
-behind it are stopped mid-session, the client may keep looking connected
-until your next action fails or hangs. Detecting the drop and showing a
-clear connection-lost state is planned work, tracked in the story
-/Detect and report NATS disconnection/.
+#+begin_note
+ORE Studio does not yet reliably detect a backend that drops /while you are
+logged in/. If the messaging server (NATS) or the services behind it are stopped
+mid-session, the client may keep looking connected until your next action fails
+or hangs. Detecting the drop and showing a clear connection-lost state is
+planned work, tracked in the story /Detect and report NATS disconnection/.
+#+end_note
 
 ** The status bar
 

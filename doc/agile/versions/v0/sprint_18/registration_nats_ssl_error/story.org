@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 5B7C4B18-3CF2-4546-A73E-95F46228DBD2
+:END:
+#+title: Story: Fix account registration NATS SSL error
+#+description: Registering a new account fails with 'Account creation failed: NATS connect failed: SSL Error'. The client cannot complete registration against the backend; investigate and fix the NATS/TLS configuration on the registration path.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :client:nats:registration:tls:bug:sprint_18:v0:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A user can register a new account from the login dialog's /Register/ link
+when the deployment permits self-registration. Today this fails: clicking
+*Create Account* returns =Account creation failed: NATS connect failed:
+SSL Error=, so registration cannot complete. The registration path's
+NATS/TLS configuration needs investigating and fixing so account creation
+succeeds (or fails with a clear, actionable message when registration is
+disabled).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-05-26                               |
+
+* Acceptance
+
+- The root cause of =NATS connect failed: SSL Error= on the registration
+  path is identified (client TLS settings, NATS endpoint, or cert trust).
+- With self-registration enabled, submitting the Create Account form
+  succeeds: the account is created and the user can then log in.
+- When self-registration is disabled, the client reports that clearly
+  rather than surfacing a raw NATS/SSL error.
+- The user manual's registration note is updated to match the fixed
+  behaviour.
+
+* Tasks
+
+In execution order:
+
+-
+
+* Decisions
+
+* Out of scope
+
+- The administrative toggle that enables/disables self-registration
+  (assumed to exist server-side; only its client-facing behaviour is in
+  scope here).

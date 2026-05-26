@@ -56,10 +56,10 @@ public:
      */
     enum Column {
         Name,
-        Status,
+        Description,
+        StatusCode,
         Version,
         ModifiedBy,
-        RecordedAt,
         ColumnCount
     };
 
@@ -78,15 +78,6 @@ public:
      * @brief Refresh workspace data from server asynchronously.
      */
     void refresh();
-
-    /**
-     * @brief Get all loaded workspaces.
-     *
-     * @return All workspaces currently loaded in the model.
-     */
-    const std::vector<workspace::domain::workspace>& workspaces() const {
-        return workspaces_;
-    }
 
     /**
      * @brief Get workspace at the specified row.
@@ -142,10 +133,7 @@ private:
     bool is_fetching_{false};
 
     using WorkspaceKeyExtractor = std::string(*)(const workspace::domain::workspace&);
-    using WorkspaceTimestampExtractor =
-        std::chrono::system_clock::time_point(*)(const workspace::domain::workspace&);
-    RecencyTracker<workspace::domain::workspace,
-        WorkspaceKeyExtractor, WorkspaceTimestampExtractor> recencyTracker_;
+    RecencyTracker<workspace::domain::workspace, WorkspaceKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };
 

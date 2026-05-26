@@ -19,7 +19,6 @@
  */
 #include "ores.qt/ClientWorkspaceModel.hpp"
 
-#include <chrono>
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.workspace.api/messaging/workspace_protocol.hpp"
@@ -33,11 +32,7 @@ using namespace ores::logging;
 
 namespace {
     std::string workspace_key_extractor(const workspace::domain::workspace& e) {
-        return boost::uuids::to_string(e.id);
-    }
-    std::chrono::system_clock::time_point workspace_timestamp_extractor(
-        const workspace::domain::workspace& e) {
-        return e.recorded_at;
+        return e.name;
     }
 }
 
@@ -46,7 +41,7 @@ ClientWorkspaceModel::ClientWorkspaceModel(
     : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(workspace_key_extractor, workspace_timestamp_extractor),
+      recencyTracker_(workspace_key_extractor),
       pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
@@ -85,21 +80,21 @@ QVariant ClientWorkspaceModel::data(
         switch (index.column()) {
         case Name:
             return QString::fromStdString(workspace.name);
-        case Status:
+        case Description:
+            return QString::fromStdString(workspace.description);
+        case StatusCode:
             return QString::fromStdString(workspace.status_code);
         case Version:
-            return workspace.version;
+            return static_cast<qlonglong>(workspace.version);
         case ModifiedBy:
             return QString::fromStdString(workspace.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(workspace.recorded_at);
         default:
             return {};
         }
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(boost::uuids::to_string(workspace.id));
+        return recency_foreground_color(workspace.name);
     }
 
     return {};
@@ -113,14 +108,14 @@ QVariant ClientWorkspaceModel::headerData(
     switch (section) {
     case Name:
         return tr("Name");
-    case Status:
+    case Description:
+        return tr("Description");
+    case StatusCode:
         return tr("Status");
     case Version:
         return tr("Version");
     case ModifiedBy:
         return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
     default:
         return {};
     }

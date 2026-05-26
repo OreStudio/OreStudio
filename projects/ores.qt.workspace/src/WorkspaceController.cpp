@@ -143,6 +143,7 @@ void WorkspaceController::showAddWindow() {
 
     auto* detailDialog = new WorkspaceDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
@@ -185,6 +186,7 @@ void WorkspaceController::showDetailWindow(
 
     auto* detailDialog = new WorkspaceDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setWorkspace(workspace);
@@ -307,6 +309,7 @@ void WorkspaceController::onOpenVersion(
 
     auto* detailDialog = new WorkspaceDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setWorkspace(workspace);
     detailDialog->setReadOnly(true);
@@ -353,6 +356,7 @@ void WorkspaceController::onRevertVersion(
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new WorkspaceDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setWorkspace(workspace);
     detailDialog->setCreateMode(false);

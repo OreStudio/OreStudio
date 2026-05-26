@@ -107,6 +107,17 @@ begin
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
+    -- Validate owner_id references a real account
+    if not exists (
+        select 1 from ores_iam_accounts_tbl
+        where id = NEW.owner_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid owner_id: %. Must reference a valid account.',
+            NEW.owner_id
+            using errcode = 'P0001';
+    end if;
+
     return NEW;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;

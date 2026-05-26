@@ -97,6 +97,14 @@ public:
         const std::string& code_domain_code,
         const std::string& entity_code) const;
 
+    /**
+     * @brief List all (entity_code, badge_definition*) pairs for a domain.
+     *
+     * Returns empty if the cache is not yet loaded or the domain has no mappings.
+     */
+    std::vector<std::pair<std::string, const dq::domain::badge_definition*>>
+        list_by_domain(const std::string& code_domain_code) const;
+
 signals:
     /**
      * @brief Emitted when both definitions and mappings are loaded.

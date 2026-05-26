@@ -57,8 +57,9 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                   | File        | Decision | Notes                          |
+|---+-----------------------------------+-------------+----------+--------------------------------|
+| 1 | mergesAt → mergedAt               | story.org   | Applied  | Fixed in ebe58f8               |
+| 2 | Missing closing = in code path    | task.org    | Applied  | Fixed in ebe58f8               |
 
 * Result

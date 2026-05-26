@@ -42,7 +42,7 @@
 ;; — width <= `ores/margin-max-w' AND height <= `ores/margin-max-h' pixels
 ;; — to a `marginfigure'. Larger screenshots stay in the text column. This
 ;; is a LaTeX-export-only transform; the HTML site is unaffected.
-(defvar ores/margin-max-w 420)
+(defvar ores/margin-max-w 510)
 (defvar ores/margin-max-h 320)
 (defun ores/png-dimensions (file)
   "Return (WIDTH . HEIGHT) in pixels from PNG FILE's IHDR, or nil."

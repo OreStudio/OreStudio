@@ -37,40 +37,34 @@ def parse_date(s: str) -> datetime.date:
 
 
 def get_sprint_range(sprint: int) -> tuple[datetime.date, datetime.date]:
-    """Read sprint start/end from the sprint doc's Status table."""
+    """Derive sprint dates from the Stories table (most accurate)."""
+    stories = _parse_sprint_stories(sprint)
+    starts = [s["start"] for s in stories if s["start"]]
+    ends = [s["end"] for s in stories if s["end"]]
+    
+    if starts and ends:
+        return min(starts), max(ends)
+    
+    # Fallback: read from sprint doc Status table
     sprint_file = Path(f"doc/agile/versions/v0/sprint_{sprint:02d}/sprint.org")
     if not sprint_file.exists():
-        print(f"Warning: {sprint_file} not found, estimating dates from git", file=sys.stderr)
         return _estimate_dates(sprint)
     
     text = sprint_file.read_text()
     start = end = None
-    
     for line in text.splitlines():
         if line.startswith("| Start") and "|" in line:
             m = re.search(r"\d{4}-\d{2}-\d{2}", line)
-            if m:
-                start = parse_date(m.group())
+            if m: start = parse_date(m.group())
         if "End" in line and "|" in line:
             m = re.search(r"\d{4}-\d{2}-\d{2}", line)
-            if m:
-                end = parse_date(m.group())
-    
+            if m: end = parse_date(m.group())
     if start and end:
         return start, end
     
-    # Fallback: use Last touched date
-    for line in text.splitlines():
-        if "Last touched" in line and "|" in line:
-            m = re.search(r"\d{4}-\d{2}-\d{2}", line)
-            if m:
-                end = parse_date(m.group())
-    if not end:
-        print(f"Warning: could not parse sprint dates from {sprint_file}", file=sys.stderr)
-        return _estimate_dates(sprint)
-    
     m = re.search(r"#\+created:\s*(\d{4}-\d{2}-\d{2})", text)
-    start = parse_date(m.group(1)) if m else (end - datetime.timedelta(days=7))
+    start = parse_date(m.group(1)) if m else (end or datetime.date.today() - datetime.timedelta(days=7))
+    end = end or (start + datetime.timedelta(days=7))
     return start, end
 
 
@@ -183,15 +177,16 @@ def _parse_sprint_stories(sprint: int) -> list[dict]:
                 state = parts[2]
                 start_str = parts[3]
                 end_str = parts[4]
-                if state and start_str:
+                if state:
                     try:
-                        start_d = parse_date(start_str) if re2.search(r"\d{4}-\d{2}-\d{2}", start_str) else None
-                        end_d = parse_date(end_str) if re2.search(r"\d{4}-\d{2}-\d{2}", end_str) else None
-                        stories.append({
-                            "state": state,
-                            "start": start_d,
-                            "end": end_d,
-                        })
+                        start_d = parse_date(start_str) if start_str and re2.search(r"\d{4}-\d{2}-\d{2}", start_str) else None
+                        end_d = parse_date(end_str) if end_str and re2.search(r"\d{4}-\d{2}-\d{2}", end_str) else None
+                        if end_d:
+                            stories.append({
+                                "state": state,
+                                "start": start_d,
+                                "end": end_d,
+                            })
                     except Exception:
                         pass
     return stories

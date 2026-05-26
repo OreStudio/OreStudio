@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: A388F0C8-0804-420F-A542-2C929CFCEC92
+:END:
+#+title: Story: Document NATS: technology overview, system integration, and recipes
+#+description: Create a NATS technology knowledge page, document its role in the system model, add per-component NATS sections with queue tables, and write NATS recipes.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :nats:messaging:documentation:knowledge:sprint_18:v0:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+#+owner: Marco Craveiro
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+NATS is the message bus underpinning every ORE Studio service, yet it
+is nowhere described in the knowledge base. A developer reading
+component code sees NATS subjects and JetStream streams but has to
+trace code to understand what they do. This story fixes that gap by
+adding four tiers of documentation:
+
+1. A general [[https://nats.io][NATS]] technology page in [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]] — what NATS
+   is, its key concepts (subjects, queue groups, JetStream), and links
+   to upstream resources. This mirrors what we do for [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] and
+   [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]].
+2. A NATS section in the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System model]] describing how ORE Studio uses
+   NATS: deployment topology, subject-naming convention, security model
+   (TLS + JWT), and the relationship between the transport library and
+   service runners.
+3. A =* NATS= section in the component overview of every component
+   that publishes or consumes NATS subjects, with a table of subjects
+   (name, direction, pattern, description) org-roam-linked back to the
+   central NATS page and the system model.
+4. A =nats/= recipe topic in [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] covering operational how-tos:
+   inspecting live subjects, monitoring JetStream streams, tracing
+   request/reply flows, and checking connectivity.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                                |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                              |
+| Now           | Story scaffolded; tasks to be created. |
+| Waiting on    | Nothing.                               |
+| Next          | Create tasks; scaffold NATS knowledge doc. |
+| Last touched  | 2026-05-26                             |
+
+* Acceptance
+
+- [ ] =doc/knowledge/external/nats.org= exists, describes NATS as a
+  technology (subjects, queue groups, JetStream, security), and links
+  to [[https://nats.io][nats.io]] and [[https://github.com/nats-io][github.com/nats-io]].
+- [ ] =doc/knowledge/external/external.org= has a new "Messaging
+  infrastructure" section linking to the NATS page.
+- [ ] [[id:D773166D-0C91-8CB4-3323-42166BC07687][System model]] has a =* NATS= section describing deployment
+  topology, subject-naming convention, TLS/JWT security, and the
+  transport/service-runner relationship.
+- [ ] Every service component whose overview lacks a =* NATS= section
+  gets one, with a table of subjects (name, direction, pattern,
+  description) org-roam-linked to the NATS page and system model.
+- [ ] =doc/recipes/nats/nats.org= (topic index) exists and is linked
+  from =recipes.org=.
+- [ ] At least four NATS how-to recipes exist covering: listing live
+  subjects, monitoring a JetStream stream, tracing a request/reply
+  exchange, and checking NATS connectivity.
+- [ ] All new =.org= files carry =#+version: 2= and were created via
+  =generate_v2_doc.sh= / =compass add=.
+- [ ] All cross-references use =[[id:UUID]]= links, never relative paths.
+
+* Tasks
+
+In execution order:
+
+- [ ] Create NATS external knowledge page.
+- [ ] Update external knowledge index with NATS entry.
+- [ ] Add NATS section to system model.
+- [ ] Add =* NATS= sections to service component overviews.
+- [ ] Create NATS recipe topic index and how-to recipes.
+
+* Decisions
+
+- PR #870 (scaffolding) review round 1: accepted "three → four tiers"
+  fix from gemini-code-assist; thread resolved in commit =8e6e951ce=.
+
+* Out of scope
+
+- Protocol-level message schema documentation — already captured in
+  [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Protocol Reference]].
+- NATS server administration (installation, clustering, account
+  configuration) — use upstream [[https://docs.nats.io][docs.nats.io]].
+- Code changes to ores.nats or any service.

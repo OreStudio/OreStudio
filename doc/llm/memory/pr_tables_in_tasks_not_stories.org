@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 1636E66B-03C7-4182-A46D-A02888336CEE
+:END:
+#+title: PR tables belong in task docs, not story docs
+#+description: Story docs do not carry a PRs table; PRs are recorded in the task that implements them.
+#+type: memory
+#+memory_subtype: feedback
+#+version: 2
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+
+A =* PRs= table must only appear in task =.org= files, never in story
+=.org= files. Stories track goals and acceptance criteria; tasks track
+execution, including the PRs that implement them.
+
+*Why:* Stories and tasks serve different purposes in the doc hierarchy.
+A story may span multiple tasks and multiple PRs; the task is the
+right granule to associate with a concrete PR.
+
+*How to apply:* After =gh pr create=, open or create the relevant task
+doc (under the story's folder) and record the PR number there. Do not
+add a =* PRs= section to the story doc.

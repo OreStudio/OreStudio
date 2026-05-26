@@ -70,6 +70,8 @@ of these exclusions, push back: the right home is somewhere else.
   for =run_sql.sh= and =recreate_database.sh=; sandbox blocks =localhost:5432=.
 - [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Set SSH_AUTH_SOCK for git operations]] — the sandbox has no SSH agent;
   export =SSH_AUTH_SOCK= before =git push= / =fetch= / =pull=.
+- [[id:1636E66B-03C7-4182-A46D-A02888336CEE][PR tables belong in task docs, not story docs]] — =* PRs= sections go
+  in task =.org= files; story docs do not carry them.
 
 ** User
 

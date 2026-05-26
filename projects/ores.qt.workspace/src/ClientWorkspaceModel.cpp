@@ -84,6 +84,14 @@ QVariant ClientWorkspaceModel::data(
             return QString::fromStdString(workspace.description);
         case StatusCode:
             return QString::fromStdString(workspace.status_code);
+        case ParentName: {
+            if (!workspace.parent_workspace_id.has_value())
+                return {};
+            const auto pid = boost::uuids::to_string(*workspace.parent_workspace_id);
+            auto it = parent_id_to_name_.find(pid);
+            return it != parent_id_to_name_.end()
+                ? QString::fromStdString(it->second) : QString{};
+        }
         case Version:
             return static_cast<qlonglong>(workspace.version);
         case ModifiedBy:
@@ -112,6 +120,8 @@ QVariant ClientWorkspaceModel::headerData(
         return tr("Description");
     case StatusCode:
         return tr("Status");
+    case ParentName:
+        return tr("Parent");
     case Version:
         return tr("Version");
     case ModifiedBy:
@@ -235,6 +245,9 @@ void ClientWorkspaceModel::onWorkspacesLoaded() {
     if (new_count > 0) {
         beginResetModel();
         workspaces_ = std::move(result.workspaces);
+        parent_id_to_name_.clear();
+        for (const auto& ws : workspaces_)
+            parent_id_to_name_[boost::uuids::to_string(ws.id)] = ws.name;
         endResetModel();
 
         const bool has_recent = recencyTracker_.update(workspaces_);

@@ -8,8 +8,8 @@
 #+level: s1
 #+filetags: :sprint:health:charts:gnuplot:metrics:sprint_health_charts:sprint_18:v0:
 #+owner: CodeWhale
-#+branch: feature/sprint-health-charts
-#+pr:
+#+branch: feature/implement-sprint-charts
+#+pr: 869
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-26
@@ -51,9 +51,10 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR  | Title                                                    |
-|-----+----------------------------------------------------------|
-| 868 | [agile] Add sprint health charts story with task           |
+| PR  | Title                                                          |
+|-----+----------------------------------------------------------------|
+| 868 | [agile] Add sprint health charts story with task               |
+| 869 | [sprint] Add sprint health charts: Python extractor, gnuplot script, CMake target |
 
 * Review
 

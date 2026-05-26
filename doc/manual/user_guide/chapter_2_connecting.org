@@ -297,8 +297,14 @@ in to:
   type them yourself.
 - *Server*, *Port*, *Namespace* — the backend address the login targets.
 
-#+caption: The /Quick Connect/ selector. Choosing a saved entry fills in the server, port and namespace so you do not have to type them.
-[[../../../assets/images/login_dialog_quick_connect.png]]
+The /Label/ and /Quick Connect/ fields work together. The /Label/ names
+the environment — it defaults from the connection (or from the
+=--instance-name= you launched with); /Quick Connect/ then offers the
+connections for that label, and picking one fills in /Server/, /Port/ and
+/Namespace/ so you do not have to type them.
+
+#+caption: The /Label/ and /Quick Connect/ fields. The Label selects the environment; Quick Connect offers that environment's connections and fills in the server details.
+[[../../../assets/images/label_and_quick_connect.png]]
 
 If you do not yet have an account, the *Register* link in the footer
 opens account registration. If authentication fails, an error message is
@@ -379,18 +385,17 @@ from /Quick Connect/ fills in the server, port and namespace for you:
 
 ** Connection status and reconnection
 
-Once connected, the status bar permanently shows the connection state.
-If the backend becomes unreachable (network interruption, service
-restart) ORE Studio displays a /disconnected/ banner and disables
-workspace interactions. Use the *Connect* button to reconnect; your
-saved connection configuration is retained, so no re-entry of the host
-or port is needed — only your password.
+The status bar always shows whether you are connected. After a deliberate
+log-out — or once a stopped backend is running again — use the *Connect*
+button to re-establish the session: your saved connection is retained, so
+you only re-enter your password.
 
-#+caption: [SCREENSHOT NEEDED] The main window in the disconnected-while-logged-in state: a warning banner or status-bar indicator showing the connection was lost, with a Reconnect button or prompt.
-# Capture: while logged in, stop or restart the backend service.
-# Screenshot the moment ORE Studio detects the disconnection and shows
-# the warning indicator. The Reconnect affordance should be visible.
-[[../../../assets/images/connection_lost_banner.png]]
+*Note:* ORE Studio does not yet reliably detect a backend that drops
+/while you are logged in/. If the messaging server (NATS) or the services
+behind it are stopped mid-session, the client may keep looking connected
+until your next action fails or hangs. Detecting the drop and showing a
+clear connection-lost state is planned work, tracked in the story
+/Detect and report NATS disconnection/.
 
 ** The status bar
 
@@ -426,9 +431,10 @@ The status bar changes appearance to reflect the connection state:
 - *Connecting* (handshake in progress) — animated indicator; shows
   "Connecting to /name/…".
 - *Connected and logged in* — normal; shows all zones as described above.
-- *Connection lost* (backend unreachable) — warning colour (amber/red);
-  shows "Connection lost — /name/".
-- *Reconnecting* — animated indicator; shows "Reconnecting…".
+
+(A distinct /connection lost/ state for a backend that drops mid-session
+is planned but not yet implemented — see [[*Connection status and reconnection][Connection status and
+reconnection]] above.)
 
 In the disconnected state the strip is reduced to the environment marker
 and the connection label, with the broken-link icon on the right:
@@ -436,9 +442,8 @@ and the connection label, with the broken-link icon on the right:
 #+caption: The status bar in the disconnected state, showing the environment marker, the connection label (=local1=), and the broken-link indicator.
 [[../../../assets/images/status_bar_disconnected.png]]
 
-The fully connected state is shown at the start of this section; the
-connection-lost state is shown under [[*Connection status and reconnection][Connection status and
-reconnection]] above. Compare the three to recognise at a glance which
+The connected state is shown at the start of this section. Compare it with
+the disconnected strip above to recognise at a glance which
 state the application is in.
 
 ** Starting ORE Studio from the command line

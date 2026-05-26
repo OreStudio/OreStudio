@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: CC7CEDA1-A3F1-4E4E-BDE9-5DAF0D5BCD23
+:END:
+#+title: Story: Detect and report NATS disconnection
+#+description: Detect when the NATS connection or the backend services drop during an active session and surface a clear disconnected state with a way to reconnect.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :client:nats:connection:reliability:sprint_18:v0:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+When a logged-in session loses its backend link, ORE Studio should notice
+promptly and tell the user, with a way to reconnect. Today it does not:
+if the NATS server is stopped, or the application services behind it are
+killed, the client carries on as though still connected — the status bar
+stays in its connected state and the user only discovers the problem when
+an action silently fails or hangs. This story makes the client detect the
+loss and surface a clear /connection lost/ state.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-05-26                               |
+
+* Acceptance
+
+- During an active session, the client detects loss of the NATS
+  connection within a few seconds of it dropping (server stopped,
+  network gone).
+- It also detects the case where NATS is up but the application services
+  stop responding — via heartbeat or request timeout — not only a raw
+  socket drop.
+- On detection the status bar moves to a clear /connection lost/ state,
+  visually distinct from the connected state, optionally with a banner.
+- The user can reconnect without restarting the client; the saved
+  connection details are reused (only re-authentication if required).
+- When the backend returns, reconnecting restores the connected state and
+  re-enables the workspace.
+- The user manual's "Connection status and reconnection" section is
+  updated to match the implemented behaviour (and the
+  =connection_lost_banner= screenshot is captured).
+
+* Tasks
+
+In execution order:
+
+-
+
+* Decisions
+
+* Out of scope
+
+- Automatic, silent background reconnection with no user action (possible
+  follow-up).
+- Queueing or replaying operations attempted while disconnected.

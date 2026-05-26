@@ -77,6 +77,7 @@ In execution order.
 | [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]]                         | STARTED | 2026-05-26 |            | Add layer blurbs and table-based component inventory to the system model. |
 | [[id:3D1935DC-562C-4AA3-A352-AC1BC037DFDD][Runbook support]]                                  | STARTED | 2026-05-26 |            | Add runbook document type: named composition of recipes for repeatable multi-step operations. |
 | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Compass PR review management]]                      | BACKLOG | 2026-05-26 |            | Add compass review list/reply/resolve subcommands wrapping gh API. |
+| [[id:CC7CEDA1-A3F1-4E4E-BDE9-5DAF0D5BCD23][Detect and report NATS disconnection]] | BACKLOG | 2026-05-26 | | Client should detect when NATS or backend services drop mid-session and show a connection-lost state with reconnect. |
 
 * Health Review
 

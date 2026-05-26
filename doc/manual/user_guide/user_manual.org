@@ -21,6 +21,14 @@
 #+latex_header: \makeatletter
 #+latex_header: \def\maxwidth{\ifdim\Gin@nat@width>0.7\linewidth 0.7\linewidth\else\Gin@nat@width\fi}
 #+latex_header: \makeatother
+# Round the corners of every figure uniformly at build time (via a tikz
+# clip), so screenshots look consistent regardless of whether the PNG
+# itself was given rounded/transparent corners.
+#+latex_header: \usepackage{tikz}
+#+latex_header: \makeatletter
+#+latex_header: \let\ores@oldincludegraphics\includegraphics
+#+latex_header: \renewcommand{\includegraphics}[2][]{\tikz\node[inner sep=0pt,clip,rounded corners=5pt]{\ores@oldincludegraphics[#1]{#2}};}
+#+latex_header: \makeatother
 #+latex_header: \definecolor{oreaccent}{rgb}{0.11,0.43,0.64}
 #+latex_header: \hypersetup{colorlinks=true,allcolors=oreaccent}
 #+latex_header: \AtBeginDocument{\renewcommand{\plaintitle}{ORE Studio User Manual}}

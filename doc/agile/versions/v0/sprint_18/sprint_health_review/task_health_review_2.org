@@ -60,9 +60,18 @@ flag or fix anything that would leave the sprint record inconsistent.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                              | File                                             | Decision | Notes                                                        |
+|---+--------------------------------------------------------------+--------------------------------------------------+----------+--------------------------------------------------------------|
+| 1 | =* Plan= placeholder not cleared in DONE task               | task_health_review_2.org:55                      | Applied  | Removed placeholder text. Fixed in 23ce965b5.               |
+| 2 | =#+branch:= empty on task_implement_sprint_reviewer         | task_implement_sprint_reviewer.org:12            | Applied  | Set =feature/sprint-health-review=. Fixed in 23ce965b5.     |
+| 3 | =Waiting on= / =Next= stale in task_fix_db_operations       | task_fix_db_operations_use_env.org:35            | Applied  | Set =Nothing.= / =None.=. Fixed in 23ce965b5.               |
+| 4 | =Next= stale in task_implement_runbook_doc_type             | task_implement_runbook_doc_type.org:31           | Applied  | Set =None.=. Fixed in 23ce965b5.                            |
+| 5 | =Next= stale in system_model_readability story              | system_model_readability/story.org:27            | Applied  | Set =None.=. Fixed in 23ce965b5.                            |
+| 6 | =Waiting on= / =Next= stale in task_rewrite_system_model    | task_rewrite_system_model.org:31                 | Applied  | Set =Nothing.= / =None.=. Fixed in 23ce965b5.               |
+| 7 | =Next= stale in site_pdf_and_manual_book story              | site_pdf_and_manual_book/story.org:30            | Applied  | Set =None.=. Fixed in 23ce965b5.                            |
+| 8 | =Next= stale in task_implement_product_backlog_listing      | task_implement_product_backlog_listing.org:35    | Applied  | Set =None.= and =#+branch: feature/compass-product-backlog=. Fixed in 23ce965b5. |
+| 9 | =Next= stale in task_fix_workspace_portfolio_book_visibility | task_fix_workspace_portfolio_book_visibility.org:33 | Applied | Set =None.=. Fixed in 23ce965b5.                           |
+| 10 | =#+pr:= field reportedly empty                             | task_health_review_2.org:12                      | Not changed | Already set to =867= when PR was raised.               |
 
 * Result
 

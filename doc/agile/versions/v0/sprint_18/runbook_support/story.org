@@ -91,6 +91,14 @@ Runbooks are owned by [[id:227958A5-0F78-4CC6-A116-B83988592B68][System 2 (Orche
 - Location: =doc/runbooks/=, not =doc/agile/runbooks/= — runbooks may span beyond agile operations (build, release, audit).
 - Steps reference recipes by id-link, never inline — the recipe is the single source of truth for how-to.
 
+* Review
+
+Review round 1 (gemini-code-assist, 2026-05-26).
+
+| # | Comment summary                | File        | Decision | Notes                                          |
+|---+--------------------------------+-------------+----------+------------------------------------------------|
+| 1 | Empty Tasks bullet (line 45)   | story.org   | Applied  | Already fixed in ea79db188: replaced by * PRs   |
+
 * Out of scope
 
 - Automatic execution of runbooks (a =compass run= command). The runbook is a documented sequence for LLM consumption, not an execution engine.

@@ -89,12 +89,31 @@ requested fixes, and close the review threads?
 
    Use =-F= (not =-f=) for all fields — =-f= sends everything as
    strings and GitHub rejects integer fields like =line= and
-   =in_reply_to= with a 422 error. Get the =original_line=,
-   =commit_id=, and =path= for each comment from:
+   =in_reply_to= with a 422 error. The =commit_id= /must/ be the
+   full 40-character SHA (not the abbreviated 7–8 char form); use
+   =git log --format=%H -1= to obtain it.
+
+   Get the =original_line=, =commit_id=, and =path= for each
+   comment from:
 
    #+begin_src sh :results verbatim
    gh api repos/{owner}/{repo}/pulls/{pr_number}/comments \
-     --jq '.[] | {id, original_line, path}'
+     --jq '.[] | {id, original_line, path, commit_id}'
+   #+end_src
+
+   *Worked example.* Replying to comment #3303523758 on PR #859 in
+   the =OreStudio/OreStudio= repo, with commit
+   =feffaceb1416b5998e042c83123e0100ee3201d5=:
+
+   #+begin_src sh :results verbatim
+   gh api repos/OreStudio/OreStudio/pulls/859/comments \
+     --method POST \
+     -F "body=Fixed in 7fbf2f523: replaced relative path with ID link." \
+     -F "commit_id=feffaceb1416b5998e042c83123e0100ee3201d5" \
+     -F "path=doc/agile/versions/v0/sprint_18/story.org" \
+     -F "line=27" \
+     -F "side=RIGHT" \
+     -F "in_reply_to=3303523758"
    #+end_src
 
 6. /Resolve each review thread/ via GraphQL. First get the thread

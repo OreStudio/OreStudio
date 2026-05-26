@@ -145,7 +145,7 @@ none of the above and proud of it.
 
 | Component | Description | Depends On |
 |-----------+-------------+------------|
-| ores.qt | Qt6 desktop GUI framework — MDI interface, plugin architecture (7 domain plugins via =ores.qt.api=), menu/toolbar construction, entity forms. | All layers |
+| [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] | Qt6 desktop GUI framework — MDI interface, plugin architecture (7 domain plugins via =ores.qt.api=), menu/toolbar construction, entity forms. | All layers |
 | ores.qt.api | Qt plugin API contract — =IPlugin= lifecycle interface, two-phase menu-building sequence. | ores.qt |
 | ores.qt.party | Party management Qt plugin — counterparty list/detail, identifiers, contacts. | ores.qt.api |
 | ores.qt.trading | Trading Qt plugin — trade blotter, deal entry forms, instrument tables per family. | ores.qt.api |
@@ -157,7 +157,7 @@ none of the above and proud of it.
 | ores.qt.admin | Administration Qt plugin — user/role management, feature flags. | ores.qt.api |
 | [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] | Command-line interface — import/export currencies in multiple formats, ORE sample execution, batch operations. | All layers |
 | [[id:B0C9FDC8-F0B2-48FE-AE37-8FD79E6FD164][ores.http.api]] | HTTP server infrastructure — Boost.Beast/Asio async server, WSGI-style route handler registry. | foundation, domain |
-| ores.http.server | Boost.Asio HTTP server — wires all route handlers (IAM, assets, risk, storage, variability), runs the event loop. | ores.http.api |
+| [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]] | Boost.Asio HTTP server — wires all route handlers (IAM, assets, risk, storage, variability), runs the event loop. | ores.http.api |
 | [[id:FE36240A-7A64-4332-9E82-8D976D458C73][ores.wt.service]] | Wt C++ Web Toolkit frontend — account management, currency and country views, feature flags. Alternative to Qt desktop client. | All layers |
 | [[id:152C4A5E-9947-4EE1-A5D4-893305D235B5][ores.compute.service]] | ORE Engine compute wrapper — receives compute job requests via NATS, spawns ORE child processes, and publishes results. | domain, nats |
 | [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]] | Orchestration controller — assembles compute pipelines, sequences scheduler/compute/reporting stages, and tracks run state. | domain, nats |

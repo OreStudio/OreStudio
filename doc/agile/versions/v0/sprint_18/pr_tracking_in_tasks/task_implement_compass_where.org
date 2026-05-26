@@ -9,7 +9,7 @@
 #+filetags: :compass:python:pr_tracking_in_tasks:sprint_18:v0:
 #+owner: marco
 #+branch: feature/pr-tracking-compass
-#+pr:
+#+pr: 816
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24

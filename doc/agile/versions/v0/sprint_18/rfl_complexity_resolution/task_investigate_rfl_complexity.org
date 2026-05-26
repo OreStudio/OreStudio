@@ -8,8 +8,8 @@
 #+level: s1
 #+filetags: :investigation:reflect_cpp:rfl_complexity_resolution:sprint_18:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/minor-doc-fixes
+#+pr: 805
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-23
@@ -28,9 +28,9 @@ Analyze the root cause of Clang and MSVC compilation failures related to =reflec
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] |
-| Now          | Completed 2026-05-23.                  |
+| Now          | Complete.                              |
 | Waiting on   | Nothing.                               |
-| Next         | Implement the proposed strategy.        |
+| Next         | None.                                   |
 | Last touched | 2026-05-23                               |
 
 * Acceptance
@@ -47,6 +47,12 @@ Analyze the root cause of Clang and MSVC compilation failures related to =reflec
 - Map the domain types (=trade=, =trade_instrument=) to the failure points.
 - Research history of previous workarounds in the codebase.
 - Synthesize findings into a formal report.
+
+* PRs
+
+| PR  | Title                                               |
+|-----+-----------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/805][#805]] | [doc,codegen] Minor doc fixes and uppercase UUID invariant |
 
 * Notes
 

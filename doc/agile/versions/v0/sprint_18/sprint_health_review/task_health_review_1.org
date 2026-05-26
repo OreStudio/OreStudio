@@ -8,8 +8,8 @@
 #+level: s1
 #+filetags: :sprint_health_review:sprint_18:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/sprint-18-health-review-1
+#+pr: 840
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
@@ -53,9 +53,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title |
+|-----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/840][#840]] | [agile,doc] Sprint 18 health review 1 + story category taxonomy |
 
 * Review
 

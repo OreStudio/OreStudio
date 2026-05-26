@@ -9,7 +9,7 @@
 #+filetags: :ore_samples_support:sprint_18:v0:
 #+owner: marco
 #+branch: feature/workspace-full-entity-phase3
-#+pr:
+#+pr: 858
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
@@ -135,9 +135,9 @@ No code changes were required; this task closes as a verification pass.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title |
+|-----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/858][#858]] | [agile] Close task: workspace full entity Qt UI (verification pass) |
 
 * Review
 

@@ -8,8 +8,8 @@
 #+level: s1
 #+filetags: :skills:design:visualisation:tufte:tufte_skill_port:sprint_18:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/tufte-viz-skill
+#+pr: 833
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25

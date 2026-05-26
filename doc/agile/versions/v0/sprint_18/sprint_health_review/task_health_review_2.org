@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 669DF15D-AD78-4F9A-8A53-49DF0EEC9455
+:END:
+#+title: Task: Health review 2 — sprint 18 backlog audit and shape check
+#+description: Audit all sprint 18 stories and tasks: close items with incorrect status, verify story/task shapes follow the document contract, and flag anything that needs cleanup.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sprint_health_review:sprint_18:v0:
+#+owner: marco
+#+branch: feature/sprint-health-review-2
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Perform a second System 2 health review of sprint 18 at or near
+sprint close. The focus is correctness of the backlog record rather
+than load metrics: find stories and tasks with wrong state (e.g. code
+merged but still STARTED), verify every artefact follows the
+story/task document contract (required fields, section shapes), and
+flag or fix anything that would leave the sprint record inconsistent.
+
+* Status
+
+| Field        | Value                                        |
+|--------------+----------------------------------------------|
+| State        | STARTED                                      |
+| Parent story | [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]]     |
+| Now          | In progress.                                 |
+| Waiting on   | Nothing.                                     |
+| Next         | Audit stories and tasks; commit fixes.       |
+| Last touched | 2026-05-26                                   |
+
+* Acceptance
+
+- Every sprint 18 story has the correct State (DONE if all tasks are
+  merged and closed, STARTED only if active work remains).
+- Every sprint 18 task has: =#+branch:= set, =#+pr:= set (if DONE),
+  a =* PRs= table with =[[url][#NNN]]= link (if DONE), and =Now:
+  Complete.= (if DONE).
+- No story or task has a placeholder Goal, empty Acceptance, or
+  un-cleared Plan section.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

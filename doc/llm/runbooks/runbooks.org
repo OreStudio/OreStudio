@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD
+:END:
+#+title: Runbooks catalogue
+#+description: Index of all runbooks: what a runbook is, how to create one, and the full catalogue with descriptions.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :runbook:index:llm:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+
+This page catalogues every [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — named, repeatable compositions
+of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] into complete multi-step
+procedures. For the conceptual overview of how runbooks fit with
+instructions, recipes, skills, functions, settings, and memory, see
+[[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]].
+
+To create a new runbook: =compass add runbook= or
+=projects/ores.codegen/generate_v2_doc.sh --type runbook=. List
+all runbooks with =compass list --type runbook=.
+
+* Catalogue
+
+| Runbook                                                    | Description                                                                |
+|------------------------------------------------------------+----------------------------------------------------------------------------|
+| [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]]                                    | Scaffold a story → create branch → mark STARTED → wire sprint → PR         |
+| [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]]                             | Pick up BACKLOG task → implement → commit → PR → review → merge            |
+| [[id:690BBD16-0C36-4D2C-9E2D-BC92AA93E5B2][Add a new entity across all layers]]                          | Domain type → SQL → repository → service → Qt UI → CLI → HTTP → tests      |
+| [[id:47032D2E-4922-4A43-B594-AD76F0213E10][Open a new sprint]]                                          | Close sprint → release notes → scaffold new sprint → bump version          |
+| [[id:9E427AF2-7CFB-4C12-9827-C8DF55681BBD][Create a new component]]                                     | Scaffold api/core/service → CMake → overview → stub tests → verify         |
+| [[id:39A95EBE-232C-4E79-86DD-33B57E1842AE][Bootstrap a developer environment]]                           | Clone → install deps → CMake configure → build → test → verify             |
+| [[id:7C95AEF7-B26B-4807-92F1-97877FDF639B][Deploy the documentation site]]                              | Build site → deploy settings → deploy skills → deploy diagrams → verify     |
+| [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]]                                    | Sync main → read comments → decide → fix → push → reply → resolve → record|
+| [[id:1EE6EF7C-53E1-41D1-B6AF-6E21D7ACFB25][Create a new recipe]]                                        | Scaffold → fill Question/Answer → test commands → wire inventory → PR       |
+| [[id:F91B7D13-8A16-4466-B444-36D7B8AC3EBE][Add a new knowledge document]]                               | Scaffold → fill Summary/Detail → tag → wire knowledge index → PR            |
+| [[id:7BAF8188-A760-4F62-9B49-F9DA6E84FC17][Port a v1 document to v2]]                                    | Audit → scaffold v2 → port content → tag → validate → delete v1 → PR       |
+
+* See also
+
+- [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]] — how runbooks fit with the other LLM components.
+- [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][Runbook glossary entry]] — definition and contract.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]]§runbook — the frontmatter contract.

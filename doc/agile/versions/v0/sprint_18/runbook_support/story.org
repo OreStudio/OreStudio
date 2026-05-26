@@ -43,6 +43,7 @@ Introduce a =runbook= as a new document type in the v2 information architecture.
 In execution order:
 
 - [[id:4D2107C8-9253-4F5A-957D-CC909E440279][Implement runbook document type]]
+- [[id:A1F16312-4CFE-4D2D-B968-90C05AE15B88][Implement runbook support]]
 
 * PRs
 

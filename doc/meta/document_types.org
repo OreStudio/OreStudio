@@ -635,6 +635,26 @@ below, which is /task-shaped/.
     where applicable.
   - =* Tested by= — link to the CI check that exercises the recipe.
 
+** runbook
+
+- Folder :: =doc/llm/runbooks/=
+- Level :: =cross=
+- Filename :: =runbook.org= inside a =<slug>/= folder (same pattern as
+  =story.org=, =task_*.org=).
+- Not stateful — runbooks are durable reference. No TODO.
+- How to create :: =compass add runbook= or
+  =projects/ores.codegen/generate_v2_doc.sh --type runbook=.
+- Required sections ::
+  - =* Goal= — what this runbook achieves, in one sentence.
+  - =* Preconditions= — what must be true before starting (branch state,
+    sprint state, tooling, etc.).
+  - =* Steps= — ordered list. Each step references a [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipe]] or
+    [[id:6054CC20-5F41-482F-A587-759512577B1D][skill]] by id-link, with a one-line description. Steps may branch
+    ("if declined, go to step N").
+  - =* Postconditions= — what is true after completing.
+  - =* See also= — id-links to related runbooks, recipes, or knowledge
+    documents.
+
 ** component
 
 - Folder :: =projects/<comp>/modeling/<comp>.org= — always co-located

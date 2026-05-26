@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 5373A4E5-172B-44FD-BAE0-07E25BBD3292
+:END:
+#+title: Handle a PR review round
+#+description: Sync with main, read review comments, decide per comment, apply fixes, push, reply, resolve threads, and record.
+#+type: runbook
+#+version: 2
+#+level: cross
+#+filetags: :runbook:pr:review:github:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+
+This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
+
+* Goal
+
+Handle one complete review round: sync with main, read all review comments, decide accept/decline per comment, apply fixes, push, reply to every comment, resolve threads, and record the round in the task.
+
+* Preconditions
+
+- PR is open with review comments.
+- You are on the feature branch.
+- =SSH_AUTH_SOCK= is exported (see [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][SSH memory]]).
+
+* Steps
+
+In execution order:
+
+1. /Sync with main./ Fetch and rebase: =git fetch origin main && git rebase origin/main=. Never address review comments on a stale branch.
+
+2. /Read the comments./ Follow [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] step 1: =gh pr view <N> --comments= and =gh api .../comments=.
+
+3. /Decide per comment./ For each comment, make an explicit accept/decline decision. Never silently ignore a comment.
+
+4. /Apply fixes./ One commit per logical fix. Never amend commits on a branch under review. Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]].
+
+5. /Push./ =git push=.
+
+6. /Reply to every comment./ Accepted: "Fixed in commit <sha> — <description>." Declined: "Not changed. <reason>." Use =gh api ... --method POST -F ...= per the recipe.
+
+7. /Resolve threads./ Use =gh api graphql= with =resolveReviewThread= mutation.
+
+8. /Record the round./ Add or update the =* Review= table in the task doc per step 7 of the review recipe.
+
+* Postconditions
+
+- All review comments have replies.
+- All threads are resolved.
+- Review round is recorded in the task's =* Review= table.
+- Branch is pushed and PR is updated.
+
+* See also
+
+- [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] — the detailed recipe.
+- [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] — the full task lifecycle including review.
+- [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] — all runbooks.

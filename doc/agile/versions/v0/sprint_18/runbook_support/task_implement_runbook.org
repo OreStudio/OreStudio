@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: A1F16312-4CFE-4D2D-B968-90C05AE15B88
+:END:
+#+title: Task: Implement runbook support
+#+description: Add runbook document type to codegen, compass, glossary, and document types; write concrete runbook.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :runbook:codegen:compass:glossary:runbook_support:sprint_18:v0:
+#+owner: marco
+#+branch: feature/implement-runbook
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D1935DC-562C-4AA3-A352-AC1BC037DFDD][Runbook support]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =runbook= as a recognised v2 document type with full tooling support and a concrete example.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:3D1935DC-562C-4AA3-A352-AC1BC037DFDD][Runbook support]] |
+| Now          | Implemented: template, codegen, doc types, glossary, concrete runbook. |
+| Waiting on   | Nothing.                               |
+| Next         | Commit, push, open PR.                 |
+| Last touched | 2026-05-26                               |
+
+* Acceptance
+
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] accepts =--type runbook= and produces a valid skeleton with Goal, Preconditions, Steps, Postconditions, See also.
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][Compass]] supports =compass add runbook= (delegates to codegen).
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] defines the runbook frontmatter contract and required sections.
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] defines =runbook= with a stable id-link pointing to the concrete example.
+- A concrete runbook at =doc/runbooks/start_new_story/runbook.org= chains: compass add story → fill content → branch → mark STARTED → wire sprint → commit → push → PR.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+- Template at =projects/ores.codegen/library/templates/v2_doc_runbook.org.mustache=.
+- Codegen updated: =TYPE_TO_TEMPLATE=, =DEFAULT_INITIAL_STATE=, =PARENTLESS_TYPES=.
+- Compass requires no changes (delegates to codegen via =v2_doc_generate.main()=).
+- Glossary UUID: =B555D2A6-10CA-4A93-973E-F2AF4E1D7E55=.
+- Concrete runbook UUID: =4F01E2FF-69AB-4839-88D1-4D8C21D99D3C=.
+
+* PRs
+
+| PR  | Title                                                              |
+|-----+--------------------------------------------------------------------|
+| 861 | [runbook] Add runbook document type with codegen, glossary, and concrete example |
+
+* Review
+
+| # | Comment summary                             | File             | Decision | Notes                                          |
+|---+---------------------------------------------+------------------+----------+------------------------------------------------|
+| 1 | Script name: use full path to generate script | document_types   | Applied  | Added projects/ores.codegen/ prefix             |
+| 2 | Clarify recipe-or-skill in template blurb     | template          | Applied  | "recipe" → "recipe or skill"                    |
+| 3 | Clarify recipe-or-skill in runbook blurb      | runbook           | Applied  | "recipe" → "recipe or skill" (both runbooks)     |
+
+* Result

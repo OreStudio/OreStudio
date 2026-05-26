@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 2EA7FF1B-CC23-4275-9ADA-8C43103E3103
+:END:
+#+title: Work a task through to merged PR
+#+description: Complete lifecycle from picking up an existing task to merging the PR.
+#+type: runbook
+#+version: 2
+#+level: cross
+#+filetags: :agile:task:pr:review:merge:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+
+This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
+
+* Goal
+
+Take an existing task from =BACKLOG= through implementation, PR creation, review rounds, and merge — the full development lifecycle.
+
+* Preconditions
+
+- A task exists in the current sprint with =#+type: task=, =State: BACKLOG=.
+- The task's story is =STARTED= in the sprint.
+- You are on =main= or can create a fresh feature branch.
+- =gh= CLI is authenticated; =SSH_AUTH_SOCK= is exported (see [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][SSH memory]]).
+
+* Steps
+
+In execution order:
+
+1. /Pick up the task./ Read =task_<slug>.org=: understand the =* Goal=, =* Acceptance= criteria, and =* Notes=. Mark the task =STARTED= and set =#+branch:=, =#+pr:= (if known), and =#+owner:=.
+
+2. /Sync with main./ Fetch and rebase onto =origin/main=:
+   #+begin_src sh
+   git fetch origin main && git rebase origin/main
+   #+end_src
+   If you are on =main=, create a feature branch first: see [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]].
+
+3. /Implement./ Do the actual work: write code, documents, or configuration. Follow the conventions in [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] for code style, documentation, and testing.
+
+4. /Commit./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]]: =[component] Imperative summary= with a =Co-Authored-By:= trailer. One logical change per commit. Never amend commits on a branch under review.
+
+5. /Push and open a PR./ Push with =git push=, then [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][create a PR]] with Summary, Changes, Story/Task UUIDs, and page links. Record the PR number in the task's =* PRs= table.
+
+6. /Monitor CI./ Wait for checks to pass. If a check fails, follow [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]].
+
+7. /Handle review./ When review comments arrive, follow [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]]:
+   - Sync with =main= first (rebase).
+   - Decide accept/decline per comment.
+   - Apply fixes (one commit per logical fix).
+   - Push, reply to every comment, resolve threads.
+   - Record the review round in the task's =* Review= table.
+
+   Repeat step 7 for each review round until the PR is approved.
+
+8. /Merge./ When the PR is approved and CI is green, merge via the GitHub UI or =gh pr merge=. The PR Manager recipe [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]] covers the final steps.
+
+   After merge, update the task: state → =DONE=, fill =* Result=, distill any =* Plan= into the parent story's =* Decisions=.
+
+* Postconditions
+
+- Task is =DONE= with =* Result= filled.
+- PR is merged into =main=.
+- Review rounds are recorded in the task's =* Review= table.
+- Parent story reflects any decisions from the task's =* Plan=.
+
+* See also
+
+- [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] — branch creation and STARTED transition.
+- [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] — the CI waiting loop.
+- [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]] — close it out.
+- [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] — the preceding runbook for the story-scaffold phase.
+- [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][Runbook glossary entry]] — what a runbook is and how to create one.

@@ -2,62 +2,104 @@
 :ID: 94F9949A-1580-4D47-9331-AA0597543C99
 :END:
 #+title: LLM Configuration and Artefacts
-#+description: Index of LLM-related content under doc/llm/: instructions, settings, skills, and project memories.
+#+description: Comprehensive overview of all LLM support components: instructions, runbooks, recipes, skills, functions, settings, and memories.
 #+type: knowledge
 #+version: 2
 #+level: cross
 #+filetags: :llm:index:knowledge:
 #+created: 2026-05-22
-#+updated: 2026-05-22
+#+updated: 2026-05-26
 
-Everything an LLM session needs to operate on ORE Studio lives under
-=doc/llm/=: the session entry point, Claude Code permissions, skills,
-and project-scope memories. Return to [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] for the full =doc/= map.
+ORE Studio's LLM support is layered: each component builds on the one
+below it, from single operations up to role-shaped session priming.
+This page is the entry point — it explains what each component is,
+when to use it, and where to find it.
 
-* Detail
+* Component overview
 
-** Entry point
+| Component    | Grain              | Shape                       | Example                                                   |
+|--------------+--------------------+-----------------------------+-----------------------------------------------------------|
+| [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][Instructions]] | Entry point         | Session-level rules and links | Mandatory first read for every LLM session                |
+| [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][Runbooks]]     | Multi-step procedure | Composition of recipes       | "Start work on a new story" (7 steps, story → PR)         |
+| [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][Recipes]]      | Single operation    | How-to with executable shell | "How do I create a PR?"                                   |
+| [[id:6054CC20-5F41-482F-A587-759512577B1D][Skills]]       | Unit of work        | Playbook an LLM loads        | "System Architect" — read model, understand layers        |
+| [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][Functions]]    | Role                | Priming context for a session| "S2 Orchestrator" — coordinates across S1 agents           |
+| [[id:2D83251F-0E24-4B97-B736-08F710316634][Settings]]     | Permissions         | Sandbox and tool allow-list  | =.claude/settings.json= — what the LLM can execute         |
+| [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Memory]]       | Durable fact        | One fact per file            | "Set SSH_AUTH_SOCK before git push"                       |
 
-[[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] (=llm_instructions.org=) is the mandatory first read
-for every session. It lists the non-negotiable rules, links to the
-build, code style, architecture, database isolation, testing, git/PR
-conventions, and project memory documents.
+* How they fit together
 
-** Claude Code permissions
+** Instructions — the session entry point
 
-[[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] (=claude_code_settings.org=) is the literate
-source for =.claude/settings.json=. It contains the minimal set of
-Bash globs and sandbox overrides needed to operate in this repository.
-Never edit =.claude/settings.json= directly; regenerate it with the
-[[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][deploy_settings]] CMake target.
+[[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] (=doc/llm/llm_instructions.org=) is the mandatory
+first read for every session. It lists non-negotiable rules (UNIX
+line endings, codegen-only doc creation, check recipes first) and
+links to build, architecture, code style, database isolation,
+testing, and git/PR convention documents. Every LLM session loads
+this before acting.
 
-** Skills
+** Runbooks — composed procedures
 
-The =skills/= subtree holds all Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]]. Each skill lives
-at =doc/llm/skills/<slug>/SKILL.org= and is task-shaped: it describes
-/when/ to invoke it and /how/ to execute it end-to-end. The full
-catalogue is at [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]].
+A [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] chains recipes and skills into a repeatable multi-step
+procedure with preconditions and postconditions. Where a recipe
+answers "how do I do X?", a runbook answers "begin work on X" — it
+captures the /sequence/ so the LLM doesn't have to infer it each
+time. Runbooks live under =doc/llm/runbooks/= and are S2
+(Orchestrator)-owned.
 
-Skills are deployed to =.claude/skills/= with the
-=deploy_skills= CMake target (see [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]]).
-To create a new skill, see [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New
-Claude Code skill".
+Full catalogue: [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] — every runbook with a
+one-line description. List with =compass list --type runbook=;
+scaffold with =compass add runbook=.
 
-** Project memories
+** Recipes — single operations
 
-The =memory/= subtree holds persistent project-scope memories for LLM
-sessions — feedback the user gave, facts about the work in flight, and
-pointers to external systems. Each memory is a single short file
-(=<slug>.org=, =#+type: memory=). The catalogue and inclusion rules
-are at [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]].
+[[id:0C57932D-D13A-480F-B426-49525AA8BA3D][Recipes]] (=doc/recipes/=) are short, tested how-tos grouped by
+topic. Each answers one NLP question with executable shell commands
+in =#+begin_src sh= blocks. Recipes are the fundamental building
+blocks — runbooks compose them, skills index them.
 
-To write a new memory, use the [[id:7357C672-A49F-4974-9399-A166F761D222][ores-memory skill]] or follow
-[[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]].
+Inventory: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes index]].
+
+** Skills — unit-of-work playbooks
+
+[[id:6054CC20-5F41-482F-A587-759512577B1D][Skills]] (=doc/llm/skills/=) are task-shaped playbooks an LLM
+session loads to perform a specific unit of work end-to-end. Each
+skill describes /when/ to invoke it and /how/ to execute it.
+Unlike recipes (single operations), skills cover a complete unit
+like "review a component" or "create a domain type."
+
+Inventory: [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]].
+
+** Functions — role-shaped priming
+
+[[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][Functions]] (=doc/functions/=) are role-shaped documents, one per
+[[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic level]] (S1 Agent, S2 Orchestrator, S3 Sprint Planner,
+S3* Auditor, S4 Version Planner, S5 Identity Steward). A function
+doc is the priming context an LLM loads when taking on that role
+for a session. Functions are coarser than skills — they define
+/boundaries/ and /authority/, not task steps.
+
+Inventory: [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Functions index]].
+
+** Settings — tool access
+
+[[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] (=doc/llm/claude_code_settings.org=) is the
+literate source for =.claude/settings.json=. It defines the
+permission allow-list and sandbox overrides that control what an
+LLM can execute. Never edit the JSON directly; regenerate with
+=deploy_settings=.
+
+** Memory — durable facts across sessions
+
+[[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]] (=doc/llm/memory/=) stores persistent session
+feedback and project facts. Four subtypes: =feedback= (user
+corrections), =user=, =project=, =reference=. One memory per file;
+each carries =*Why:*= and =*How to apply:*= so future sessions
+can judge edge cases. Loaded at session start; appended to over
+time.
 
 * See also
 
 - [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] — entry point; read before acting.
-- [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — literate source for =.claude/settings.json=.
-- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]] — full skill catalogue.
-- [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]] — memory catalogue and inclusion/exclusion rules.
 - [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level map of =doc/=.
+- [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] — navigation by reader intent.

@@ -45,6 +45,7 @@ TYPE_TO_TEMPLATE = {
     "memory": "v2_doc_memory.org.mustache",
     "release_notes": "v2_doc_release_notes.org.mustache",
     "investigation": "v2_doc_investigation.org.mustache",
+    "runbook": "v2_doc_runbook.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {
@@ -61,6 +62,7 @@ DEFAULT_INITIAL_STATE = {
     "release_notes": "",
     "memory": "",
     "investigation": "",
+    "runbook": "",
 }
 
 # Composition: each type's direct parent type.
@@ -75,7 +77,7 @@ PARENT_OF_TYPE = {
 # Types that don't take a parent (and aren't stateful).
 PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "skill", "product_identity",
-    "capture", "memory", "release_notes", "investigation",
+    "capture", "memory", "release_notes", "investigation", "runbook",
 }
 
 

@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: F91B7D13-8A16-4466-B444-36D7B8AC3EBE
+:END:
+#+title: Add a new knowledge document
+#+description: Scaffold a v2 knowledge doc, fill in the content, and wire it into the knowledge index.
+#+type: runbook
+#+version: 2
+#+level: cross
+#+filetags: :runbook:knowledge:documentation:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+
+This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
+
+* Goal
+
+Create a new knowledge document: scaffold, fill in the durable factual content, and wire it into the knowledge index under the appropriate topic.
+
+* Preconditions
+
+- The topic is clear (domain concept, architecture decision, convention, etc.).
+- The target topic folder exists under =doc/knowledge/<topic>/=.
+
+* Steps
+
+In execution order:
+
+1. /Scaffold./ Use [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]]§"New knowledge document": =generate_v2_doc.sh --type knowledge=.
+
+2. /Fill in the Summary./ Write the three-to-five sentence summary — the load-bearing field that every grep and index reads.
+
+3. /Write the Detail./ Fill in the content. Use subheadings for navigability. Every reference to another doc uses =[[id:UUID]]= links.
+
+4. /Tag correctly./ Add topic tags (=:domain:fx:=, =:architecture:cmake:=, etc.) so the doc is discoverable by =compass list=.
+
+5. /Wire into the inventory./ Add an id-link under the appropriate topic heading in [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+6. /Commit and PR./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]] and [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][create a PR]].
+
+* Postconditions
+
+- Knowledge doc has all required frontmatter and sections.
+- Doc is linked from the knowledge index.
+- PR is open.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge index]] — all knowledge documents.
+- [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] — all runbooks.

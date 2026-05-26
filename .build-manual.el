@@ -42,6 +42,15 @@
 ;; — width <= `ores/margin-max-w' AND height <= `ores/margin-max-h' pixels
 ;; — to a `marginfigure'. Larger screenshots stay in the text column. This
 ;; is a LaTeX-export-only transform; the HTML site is unaffected.
+;;
+;; The repo root is captured at load time: during org export `load-file-name'
+;; is nil and `buffer-file-name' may be too, so computing it inside the filter
+;; would crash. Float-placement options (`[htbp]' etc.) and `\includegraphics'
+;; options are optional in the regexps, so begin/end can never mismatch and
+;; option-less images are still matched.
+(defvar ores/repo-root
+  (file-name-directory (or load-file-name buffer-file-name default-directory))
+  "Repository root, captured when this script is loaded.")
 (defvar ores/margin-max-w 510)
 (defvar ores/margin-max-h 320)
 (defun ores/png-dimensions (file)
@@ -60,23 +69,26 @@
   "Promote small figures to marginfigure in LaTeX output."
   (if (not (org-export-derived-backend-p backend 'latex))
       text
-    (let ((root (file-name-directory (or load-file-name buffer-file-name))))
-      (replace-regexp-in-string
-       "\\\\begin{figure}\\[[^]]*\\]\\(?:.\\|\n\\)*?\\\\end{figure}"
-       (lambda (blk)
-         ;; Inner regex ops would clobber the outer matcher's state; isolate.
-         (save-match-data
-           (if (and (string-match "\\\\includegraphics\\[[^]]*\\]{\\([^}]*\\.png\\)}" blk)
-                    (let* ((name (file-name-nondirectory (match-string 1 blk)))
-                           (dim (ores/png-dimensions
-                                 (expand-file-name name (expand-file-name "assets/images" root)))))
-                      (and dim (<= (car dim) ores/margin-max-w)
-                           (<= (cdr dim) ores/margin-max-h))))
-               (thread-last blk
-                 (string-replace "\\begin{figure}[htbp]" "\\begin{marginfigure}")
-                 (string-replace "\\end{figure}" "\\end{marginfigure}"))
-             blk)))
-       text nil t))))
+    (replace-regexp-in-string
+     "\\\\begin{figure}\\(?:\\[[^]]*\\]\\)?\\(?:.\\|\n\\)*?\\\\end{figure}"
+     (lambda (blk)
+       ;; Inner regex ops clobber the outer matcher's state; isolate.
+       (save-match-data
+         (if (and (string-match "\\\\includegraphics\\(?:\\[[^]]*\\]\\)?{\\([^}]*\\.png\\)}" blk)
+                  (let* ((name (file-name-nondirectory (match-string 1 blk)))
+                         (dim (ores/png-dimensions
+                               (expand-file-name
+                                name (expand-file-name "assets/images" ores/repo-root)))))
+                    (and dim (<= (car dim) ores/margin-max-w)
+                         (<= (cdr dim) ores/margin-max-h))))
+             (replace-regexp-in-string
+              "\\\\end{figure}" "\\end{marginfigure}"
+              (replace-regexp-in-string
+               "\\\\begin{figure}\\(?:\\[[^]]*\\]\\)?" "\\begin{marginfigure}"
+               blk nil t)
+              nil t)
+           blk)))
+     text nil t)))
 (add-to-list 'org-export-filter-final-output-functions 'ores/figures-to-margin)
 
 ;; Custom LaTeX class: * → \chapter, ** → \section (no \part level).

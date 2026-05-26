@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 3D1935DC-562C-4AA3-A352-AC1BC037DFDD
+:END:
+#+title: Story: Runbook support
+#+description: Add runbook entity to the information architecture: a named composition of recipes and skills for repeatable multi-step operations.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :architecture:runbook:workflow:recipes:sprint_18:v0:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+#+owner: CodeWhale
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Introduce a =runbook= as a new document type in the v2 information architecture. A runbook is a named, repeatable composition of recipes and skills — it captures the /sequence/ that currently exists only in the LLM's inference. Where a [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipe]] is a single operation and a [[id:6054CC20-5F41-482F-A587-759512577B1D][skill]] is a unit-of-work playbook, a runbook chains them into a complete procedure with preconditions and postconditions. The user can say "begin work on X" and the LLM loads the corresponding runbook.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
+| Now           | Designing runbook document type contract and scaffolding story. |
+| Waiting on    | Nothing.                               |
+| Next          | Define the runbook document type contract in [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]. |
+| Last touched  | 2026-05-26                               |
+
+* Acceptance
+
+- A =runbook= is a recognised v2 document type with a defined frontmatter contract, required sections, and TODO state machine.
+- The [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] scaffolds runbooks (=--type runbook=) with pre-filled preconditions, steps, and postconditions skeleton.
+- The [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]] supports =compass add runbook= and =compass list --type runbook=.
+- The [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] defines the term =runbook=.
+- At least one concrete runbook exists: "Start work on a new story" — the sequence from story scaffold through to PR creation.
+- The runbook references all steps by [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipe]] id-link, never inline.
+
+* Tasks
+
+In execution order:
+
+-
+
+* Plan
+
+The current information architecture has fine-grained [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] (single operations) and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] (unit-of-work playbooks). But nothing captures the /sequence/ that chains them. An LLM must discover the order by inference — which is fragile, slow, and unrepeatable. The user should be able to say "begin work on X" and have the system load a composed procedure.
+
+A runbook fills this gap. It is to recipes what a meal is to individual cooking steps: a named DAG of steps, each referencing a recipe by id-link.
+
+** Runbook structure
+
+A runbook carries =#+type: runbook= and lives under =doc/runbooks/=. Required sections:
+
+- =* Goal= — what this runbook achieves, in one sentence.
+- =* Preconditions= — what must be true before starting (e.g. "you are on =main=", "current sprint exists").
+- =* Steps= — an ordered list. Each step references a recipe or skill by id-link, with a one-line description of what happens at that step.
+- =* Postconditions= — what is true after completing (e.g. "feature branch exists", "story is STARTED", "PR is open").
+- =* See also= — external links.
+
+A step may optionally name a skill to load before the recipe. Steps are ordered but may include branching ("if declined, go to step N").
+
+** Taxonomy placement
+
+Runbooks are owned by [[id:227958A5-0F78-4CC6-A116-B83988592B68][System 2 (Orchestrator)]] — they coordinate S1 operations (recipes) into higher-level procedures. They sit between functions (role-shaped priming) and recipes (single operations).
+
+** Deliverables
+
+1. /Document type contract./ Update [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] with the runbook contract: frontmatter fields, required sections, TODO states, filename conventions.
+2. /Codegen support./ Add =--type runbook= to [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][generate_v2_doc.sh]] with a mustache template that pre-fills Goal, Preconditions, Steps, Postconditions, and See also sections.
+3. /Compass support./ Add =compass add runbook= (scaffolds into =doc/runbooks/=) and =compass list --type runbook= (filters the doctype taxonomy).
+4. /Glossary entry./ Define =runbook= in [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] with a stable id-link.
+5. /Concrete runbook./ Write =doc/runbooks/start_new_story.org= — the end-to-end procedure for "begin work on X" that chains: compass add story → feature branch → fill content → mark STARTED → wire into sprint → commit → push → PR.
+
+** Dependencies
+
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — add =runbook= to the type enum, template, and tag injection.
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass]] — wire =runbook= into the Scaffold and Locate pillars.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — the contract source.
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — the vocabulary source.
+
+* Decisions
+
+- Naming: =runbook= chosen over =workflow= (the latter already has a specific meaning in the ORE Studio codebase for saga orchestration).
+- Location: =doc/runbooks/=, not =doc/agile/runbooks/= — runbooks may span beyond agile operations (build, release, audit).
+- Steps reference recipes by id-link, never inline — the recipe is the single source of truth for how-to.
+
+* Out of scope
+
+- Automatic execution of runbooks (a =compass run= command). The runbook is a documented sequence for LLM consumption, not an execution engine.
+- Runbook versioning or branching — initial delivery is linear sequences only.
+- Migration of existing documentation into runbooks beyond the single concrete example.

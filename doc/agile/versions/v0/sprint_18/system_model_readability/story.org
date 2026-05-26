@@ -22,11 +22,11 @@ Transform the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] from a f
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
-| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
-| Now           | Complete.                                    |
-| Waiting on    | Nothing.                               |
-| Next          | None.                                             |
+| State         | STARTED                                      |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                    |
+| Now           | Second task: add component links and arch cross-references. |
+| Waiting on    | Nothing.                                     |
+| Next          | Complete task_add_component_links_and_arch_docs; raise PR. |
 | Last touched  | 2026-05-26                               |
 
 * Acceptance
@@ -42,6 +42,7 @@ Transform the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] from a f
 In execution order:
 
 - [[id:C059C403-D888-4DB6-86B2-2FAD556DC55C][Rewrite system model with layer blurbs and component tables]]
+- [[id:101A4A39-B452-4738-8BAD-2F8BF99686BF][Add component id-links and architectural cross-references to system model]]
 
 * PRs
 

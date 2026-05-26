@@ -30,9 +30,9 @@ prompting the user to choose one via =completing-read=.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]] |
-| Now          | PR #849 raised; review comments addressed.     |
+| Now          | Complete.                                    |
 | Waiting on   | CI green, merge.                               |
 | Next         | Merge after CI passes.                         |
 | Last touched | 2026-05-25                               |

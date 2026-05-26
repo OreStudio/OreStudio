@@ -26,9 +26,9 @@ Add =runbook= as a recognised v2 document type: update the [[id:8B29A8D8-E004-4E
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D1935DC-562C-4AA3-A352-AC1BC037DFDD][Runbook support]] |
-| Now          | Scaffolding task and updating PR.       |
+| Now          | Complete.                                    |
 | Waiting on   | Nothing.                               |
 | Next         | Update document types contract with runbook spec. |
 | Last touched | 2026-05-26                               |

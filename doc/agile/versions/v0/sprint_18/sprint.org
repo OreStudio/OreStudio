@@ -84,7 +84,8 @@ In execution order.
 
 | # | Date       | Day   | Overall | Task                                                                    |
 |---+------------+-------+---------+-------------------------------------------------------------------------|
-| 1 | 2026-05-25 | day 4 | AMBER   | [[id:FA5A76DC-913B-481C-8D65-13F58032D950][Health review 1 — sprint 18 mid-sprint analysis]] |
+| 1 | 2026-05-25 | day 4 | AMBER   | [[id:FA5A76DC-913B-481C-8D65-13F58032D950][Health review 1 — sprint 18 mid-sprint analysis]]          |
+| 2 | 2026-05-26 | day 5 | AMBER   | [[id:669DF15D-AD78-4F9A-8A53-49DF0EEC9455][Health review 2 — sprint 18 backlog audit and shape check]] |
 
 
 * Retrospective

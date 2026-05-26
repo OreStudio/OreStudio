@@ -488,13 +488,34 @@ SIGHUP on close — no setsid needed."
                               (insert (format "\n[%s]\n" (string-trim event))))))))
     (ores/dashboard--display buf dash-buf)))
 
+(defun ores/dashboard--run-client (label cmd-list root dash-buf)
+  "Run CMD-LIST in a persistent buffer via a pipe; show it in the dashboard.
+Uses make-process so the Qt window survives without needing setsid."
+  (let* ((buf-name (format "*ores:%s:client*" label))
+         (buf      (get-buffer-create buf-name)))
+    (when (get-buffer-process buf)
+      (user-error "Client already running in %s — kill it first" buf-name))
+    (with-current-buffer buf
+      (let ((inhibit-read-only t)) (erase-buffer))
+      (special-mode)
+      (setq-local default-directory root))
+    (make-process
+     :name            (format "ores-client-%s" label)
+     :buffer          buf
+     :command         cmd-list
+     :connection-type 'pipe
+     :filter          #'ores/dashboard--service-filter
+     :noquery         t
+     :sentinel        (lambda (proc event)
+                        (when (buffer-live-p (process-buffer proc))
+                          (with-current-buffer (process-buffer proc)
+                            (let ((inhibit-read-only t))
+                              (goto-char (point-max))
+                              (insert (format "\n[%s]\n" (string-trim event))))))))
+    (ores/dashboard--display buf dash-buf)))
+
 ;; ---------------------------------------------------------------------------
 ;; Start-client transient
-;;
-;; "Start client" uses setsid so ores.qt survives the compilation shell's
-;; exit.  Without it, Emacs's process-group cleanup kills the child before
-;; the Qt window appears — the log stays empty because the process dies
-;; before it can write anything.
 ;; ---------------------------------------------------------------------------
 
 (defun ores/dashboard--detach-prefix ()
@@ -515,25 +536,19 @@ On other systems `setsid' is used when available, otherwise an error is raised."
   (interactive)
   (unless ores/dashboard--client-context
     (user-error "No client context — invoke Start client from the dashboard"))
-  (let* ((ctx     ores/dashboard--client-context)
-         (root    (nth 0 ctx))
-         (label   (nth 1 ctx))
-         (dashbuf (nth 2 ctx))
-         (args    (transient-args 'ores/dashboard--start-client-transient))
-         (script  (expand-file-name "build/scripts/start-client.sh" root))
-         (args-str (if args
-                       (concat " "
-                               (mapconcat #'identity
-                                          (cl-mapcan (lambda (a)
-                                            (if (string-match "\\`\\(--[^=]+\\)=\\(.*\\)\\'" a)
-                                                (list (match-string 1 a)
-                                                      (shell-quote-argument (match-string 2 a)))
-                                              (list (shell-quote-argument a))))
-                                            args)
-                                          " "))
-                     ""))
-         (cmd      (concat (ores/dashboard--detach-prefix) script args-str)))
-    (ores/dashboard--compile label cmd "start-client" root dashbuf)))
+  (let* ((ctx      ores/dashboard--client-context)
+         (root     (nth 0 ctx))
+         (label    (nth 1 ctx))
+         (dashbuf  (nth 2 ctx))
+         (args     (transient-args 'ores/dashboard--start-client-transient))
+         (script   (expand-file-name "build/scripts/start-client.sh" root))
+         (arg-list (cl-mapcan (lambda (a)
+                     (if (string-match "\\`\\(--[^=]+\\)=\\(.*\\)\\'" a)
+                         (list (match-string 1 a) (match-string 2 a))
+                       (list a)))
+                   (or args '())))
+         (cmd-list (append (list "/bin/bash" script) arg-list)))
+    (ores/dashboard--run-client label cmd-list root dashbuf)))
 
 (transient-define-prefix ores/dashboard--start-client-transient ()
   "Start the ORE Studio Qt client."

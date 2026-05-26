@@ -160,29 +160,47 @@ def get_merged_prs(start: datetime.date, end: datetime.date) -> list[dict]:
     return prs
 
 
-def collect_story_progress(start: datetime.date, end: datetime.date) -> list[dict]:
-    """Track STARTED→DONE transitions in story docs."""
-    log = run([
-        "git", "log", f"--after={start}", f"--before={end + datetime.timedelta(days=1)}",
-        "-p", "--diff-filter=M", "--date=short", "--",
-        "doc/agile/versions/v0/sprint_*/**/story.org"
-    ])
+def _parse_sprint_stories(sprint: int) -> list[dict]:
+    """Parse the sprint's Stories table to extract per-story start/end/done."""
+    import re as re2
+    stories_file = Path(f"doc/agile/versions/v0/sprint_{sprint:02d}/sprint.org")
+    if not stories_file.exists():
+        return []
     
-    transitions = []
-    current_date = None
-    
-    for line in log.splitlines():
-        if line.startswith("Date:"):
-            d_str = line.split(":", 1)[1].strip()
-            # Parse ISO date (YYYY-MM-DD) after using --date=short
-            current_date = parse_date(d_str.split()[0])
-        elif "STARTED" in line and "DONE" in line and current_date:
-            transitions.append({"date": current_date, "story": "unknown"})
-    
-    # Cumulative by day
+    text = stories_file.read_text()
+    stories = []
+    in_table = False
+    for line in text.splitlines():
+        if line.startswith("| Story"):
+            in_table = True
+            continue
+        if in_table and line.strip() == "":
+            in_table = False
+            continue
+        if in_table and "|" in line and line.count("|") >= 5:
+            parts = [p.strip() for p in line.split("|")]
+            if len(parts) >= 6:
+                state = parts[2]
+                start_str = parts[3]
+                end_str = parts[4]
+                if state and start_str:
+                    try:
+                        start_d = parse_date(start_str) if re2.search(r"\d{4}-\d{2}-\d{2}", start_str) else None
+                        end_d = parse_date(end_str) if re2.search(r"\d{4}-\d{2}-\d{2}", end_str) else None
+                        stories.append({
+                            "state": state,
+                            "start": start_d,
+                            "end": end_d,
+                        })
+                    except Exception:
+                        pass
+    return stories
+
+
+def collect_story_progress(start: datetime.date, end: datetime.date) -> dict:
+    """Track cumulative story DONE transitions from the sprint's Stories table."""
+    # Parser pulls stories from the sprint's *Stories table directly
     cumulative = defaultdict(int)
-    for t in transitions:
-        cumulative[t["date"]] += 1
     return cumulative
 
 
@@ -217,15 +235,19 @@ def write_sprint_progress(cumulative: dict, prs: list[dict], output_dir: Path):
     """Write sprint_progress.csv: day, cumulative_stories_done, pr_number, cycle_hours."""
     act_path = output_dir / "sprint_progress.csv"
     
-    # Cumulative stories done
+    # Cumulative stories done — from parsed stories
     with open(act_path, "w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
         w.writerow(["day", "cumulative_done"])
+        # Write at least one data point so gnuplot doesn't error
         days = sorted(cumulative.keys())
-        running = 0
-        for d in days:
-            running += cumulative[d]
-            w.writerow([d.isoformat(), running])
+        if days:
+            running = 0
+            for d in days:
+                running += cumulative[d]
+                w.writerow([d.isoformat(), running])
+        else:
+            w.writerow(["2000-01-01", 0])
     
     # PR cycle times (separate section in same CSV, or separate file)
     cycle_path = output_dir / "pr_cycle_times.csv"
@@ -256,7 +278,13 @@ def main():
     
     daily = collect_daily_metrics(start, end)
     prs = get_merged_prs(start, end)
-    cumulative = collect_story_progress(start, end)
+    
+    # Get story progress from sprint table
+    stories = _parse_sprint_stories(sprint)
+    cumulative = defaultdict(int)
+    for s in stories:
+        if s["end"] and start <= s["end"] <= end:
+            cumulative[s["end"]] += 1
     
     write_sprint_activity(daily, prs, output_dir)
     write_sprint_progress(cumulative, prs, output_dir)

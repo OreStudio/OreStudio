@@ -23,7 +23,7 @@ set ylabel "PRs"
 set y2label "Commits"
 set ytics nomirror
 set y2tics
-set format x ""
+set xlabel "Day"
 set title "PRs & Commits per Day"
 infile_act = sprintf("build/output/sprint_%s/sprint_activity.csv", sprint_str)
 plot infile_act using 2 every ::1 title "PRs" with boxes lc rgb "#4A90D9", \
@@ -33,7 +33,7 @@ plot infile_act using 2 every ::1 title "PRs" with boxes lc rgb "#4A90D9", \
 set ylabel "Hours"
 set y2tics
 unset y2label
-set format x "%m/%d"
+set xlabel "PR"
 set title "PR Cycle Time (hours from open to merge)"
 unset key
 infile_cycle = sprintf("build/output/sprint_%s/pr_cycle_times.csv", sprint_str)
@@ -41,7 +41,7 @@ plot infile_cycle using 0:4 every ::1 with boxes lc rgb "#E67E22"
 
 # Panel 3: Line churn
 set ylabel "Lines"
-set format x "%m/%d"
+set xlabel "Day"
 set title "Daily Line Churn"
 set style data histograms
 set style histogram rowstacked

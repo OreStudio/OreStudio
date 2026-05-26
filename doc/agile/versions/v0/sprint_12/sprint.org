@@ -31,12 +31,14 @@ out the largest v0 sprint to date.
 | Field          | Value                                                                                                                                                                                           |
 |----------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                                            |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                                                       |
-| Start          | 2026-02-06                             |
-| End (expected) | 2026-02-20                             |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                          |
+| Previous       | [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]]                                                                                                                                          |
+| Start          | 2026-02-06                                                                                                                                                                                      |
+| End (expected) | 2026-02-20                                                                                                                                                                                      |
 | Now            | Sprint closed 2026-02-20. Three items carry forward: sqlgen follow-up (BLOCKED on vcpkg release of merged upstream features) and the caching analysis (POSTPONED for design / scoping reasons). |
 | Waiting on     | vcpkg release of sqlgen with the merged features.                                                                                                                                               |
-| Next           | Sprint 13 picks up trade lifecycles on top of the FSM framework + trade envelope landed here.                                                                                                   |
+| Next           | [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]]                                                                                                                                          |
+| Release Notes  | —                                                                                                                                                                                               |
 | Last touched   | 2026-02-20                                                                                                                                                                                      |
 
 * Stories

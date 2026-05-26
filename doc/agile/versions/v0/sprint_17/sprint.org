@@ -26,19 +26,19 @@ history to the v2 cybernetic information architecture.
 
 * Status
 
-| Field          | Value                     |
-|----------------+---------------------------|
-| State          | DONE                      |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                 |
-| Previous       | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]]                 |
-| Start          | 2026-04-18                             |
-| End (expected) | 2026-05-22                             |
-| Now            | Sprint closed 2026-05-23. |
-| Waiting on     | Nothing.                  |
-| Next           | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                 |
-| Release Notes  | [[file:release_notes.org][release_notes.org]]         |
-| Capture        | [[id:14606A1B-2742-DE34-F813-B4E3B736AEF1][capture.org]]               |
-| Last touched   | 2026-05-21                |
+| Field          | Value                                                      |
+|----------------+------------------------------------------------------------|
+| State          | DONE                                                       |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]     |
+| Previous       | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]]     |
+| Start          | 2026-04-18                                                 |
+| End (expected) | 2026-05-22                                                 |
+| Now            | Sprint closed 2026-05-23.                                  |
+| Waiting on     | Nothing.                                                   |
+| Next           | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]     |
+| Release Notes  | [[id:785A3817-4577-4502-9607-6A128B57F088][Release notes]] |
+| Capture        | [[id:14606A1B-2742-DE34-F813-B4E3B736AEF1][capture.org]]   |
+| Last touched   | 2026-05-21                                                 |
 
 * Stories
 

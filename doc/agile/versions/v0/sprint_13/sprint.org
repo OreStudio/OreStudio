@@ -32,12 +32,14 @@ portfolios / trades.
 | Field          | Value                                                                                                                                                               |
 |----------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                           |
-| Start          | 2026-02-20                             |
-| End (expected) | 2026-02-28                             |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                              |
+| Previous       | [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]                                                                                                              |
+| Start          | 2026-02-20                                                                                                                                                          |
+| End (expected) | 2026-02-28                                                                                                                                                          |
 | Now            | Sprint closed 2026-02-28. Two items carry forward: the trade-import mapping dialog (6h work-in-progress) and the party-level refdata restrictions (framework only). |
-| Waiting on     | None.                                                                                                                                                               |
-| Next           | Sprint 14 picks up the trade-import dialog and continues the party- level RLS work into refdata.                                                                    |
+| Waiting on     | Nothing.                                                                                                                                                            |
+| Next           | [[id:A63C60DC-C3A6-4F4F-8977-012A7BF1D566][Sprint 14]]                                                                                                              |
+| Release Notes  | —                                                                                                                                                                   |
 | Last touched   | 2026-02-28                                                                                                                                                          |
 
 * Stories

@@ -50,11 +50,18 @@ folder, set its mission, and link it from the version manifest?
      --tags "v0"
    #+end_src
 
-4. /Write the sprint mission/. Open the generated
+4. /Set the =Previous= field./ In the scaffolded =sprint.org= =* Status=
+   table, set =Previous= to the id-link of the sprint that is closing:
+
+   #+begin_src org
+   | Previous | [[id:<closing-sprint-uuid>][Sprint N]] |
+   #+end_src
+
+5. /Write the sprint mission/. Open the generated
    =doc/agile/versions/v0/sprint_17/sprint.org= and fill in
    =* Mission= (one sentence — see [[id:198DA730-D9FB-4BDE-B1C0-B930CD019917][sprint mission]] in the glossary).
 
-5. /Wire into the version manifest/. Open
+6. /Wire into the version manifest/. Open
    =doc/agile/versions/v0/version.org= and add the new sprint to
    its =* Sprints= list as an id-link:
 
@@ -62,7 +69,7 @@ folder, set its mission, and link it from the version manifest?
    - [[id:<sprint-uuid>][Sprint 17]] — TBD.
    #+end_src
 
-6. /Update the agile index/. Open =doc/agile/agile.org= and update
+7. /Update the agile index/. Open =doc/agile/agile.org= and update
    the =* At a glance= table — =Current Sprint= to an id-link for
    the new sprint, =Next sprint= to plain text (the next sprint
    doesn't exist yet). Update =#+updated:= to today:
@@ -72,18 +79,18 @@ folder, set its mission, and link it from the version manifest?
    | Next sprint    | Sprint N+1                         |
    #+end_src
 
-7. /Promote captures into stories/, if applicable. See [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile
+8. /Promote captures into stories/, if applicable. See [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile
    Product Owner]] for the promotion flow (capture → story, ID
    preserved).
 
-8. /Bump the project version/ as separate housekeeping — see
+9. /Bump the project version/ as separate housekeeping — see
    [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]]. The version-number bump
    is decoupled from sprint opening; do not couple them in one PR.
 
-9. /Update the =vcpkg= submodule to latest/ — see [[id:2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5][How do I update
-   submodules to latest?]]. Land it as a separate commit on the
-   same new-sprint PR so the build-side housekeeping ships with
-   the sprint open.
+10. /Update the =vcpkg= submodule to latest/ — see [[id:2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5][How do I update
+    submodules to latest?]]. Land it as a separate commit on the
+    same new-sprint PR so the build-side housekeeping ships with
+    the sprint open.
 
 * Script
 

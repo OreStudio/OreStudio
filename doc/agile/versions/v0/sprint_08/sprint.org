@@ -29,12 +29,14 @@ skills to make the next entity cheaper.
 | Field          | Value                                                                                                    |
 |----------------+----------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                     |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                |
-| Start          | 2025-12-30                             |
-| End (expected) | 2026-01-11                             |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                   |
+| Previous       | [[id:A79D42AF-1B38-43EE-9607-848A4A84C09A][Sprint 07]]                                                   |
+| Start          | 2025-12-30                                                                                               |
+| End (expected) | 2026-01-11                                                                                               |
 | Now            | Sprint closed 2026-01-11. Three observability-review items and the accounts-dialog polish carry forward. |
 | Waiting on     | None — carried-forward items are scheduled for sprint 09+.                                               |
-| Next           | Sprint 09 picks up the deferred items and continues the reference-data work (countries → next entity).   |
+| Next           | [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]]                                                   |
+| Release Notes  | —                                                                                                        |
 | Last touched   | 2026-01-11                                                                                               |
 
 * Stories

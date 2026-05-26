@@ -33,12 +33,14 @@ ORE Import Wizard, CMake preset suffixes.
 | Field          | Value                                                                                                                                                                                        |
 |----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                                         |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                                                    |
-| Start          | 2026-02-28                             |
-| End (expected) | 2026-03-19                             |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                       |
+| Previous       | [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]]                                                                                                                                       |
+| Start          | 2026-02-28                                                                                                                                                                                   |
+| End (expected) | 2026-03-19                                                                                                                                                                                   |
 | Now            | Sprint closed 2026-03-19. One BACKLOG item carries forward: the trade- import dialog (second attempt, postponed again). The ORE Import Wizard landed in this sprint covers part of its goal. |
-| Waiting on     | None.                                                                                                                                                                                        |
-| Next           | Sprint 15 picks up the carry-over + likely continues NATS / reporting polish.                                                                                                                |
+| Waiting on     | Nothing.                                                                                                                                                                                     |
+| Next           | [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]]                                                                                                                                       |
+| Release Notes  | —                                                                                                                                                                                            |
 | Last touched   | 2026-03-19                                                                                                                                                                                   |
 
 * Stories

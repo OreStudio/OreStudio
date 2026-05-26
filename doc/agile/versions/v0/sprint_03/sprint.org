@@ -30,12 +30,14 @@ code/ + /finish login related functionality/.)
 | Field          | Value                                                                                                            |
 |----------------+------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                             |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                        |
-| Start          | 2025-10-23                             |
-| End (expected) | 2025-11-07                             |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                           |
+| Previous       | [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]]                                                           |
+| Start          | 2025-10-23                                                                                                       |
+| End (expected) | 2025-11-07                                                                                                       |
 | Now            | Sprint closed 2025-12-31. UI now uses the new socket layer end-to-end; accounts and sessions ship as part of v0. |
-| Waiting on     | None.                                                                                                            |
-| Next           | None.                                                                                                            |
+| Waiting on     | Nothing.                                                                                                         |
+| Next           | [[id:38DAA167-E791-48FB-AFEB-1813615037DE][Sprint 04]]                                                           |
+| Release Notes  | —                                                                                                                |
 | Last touched   | 2025-12-31                                                                                                       |
 
 * Stories

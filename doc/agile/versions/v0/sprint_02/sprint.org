@@ -28,12 +28,14 @@ explicitly.)
 | Field          | Value                                                                                                                      |
 |----------------+----------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                       |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                  |
-| Start          | 2025-02-02                             |
-| End (expected) | 2025-10-23                             |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                     |
+| Previous       | [[id:2CF90D10-890D-4CB0-A71B-5E8C3261BC54][Sprint 01]]                                                                     |
+| Start          | 2025-02-02                                                                                                                 |
+| End (expected) | 2025-10-23                                                                                                                 |
 | Now            | Sprint closed 2025-10-23. Client/server foundations in place; serialisation and storage modernised; risk module extracted. |
-| Waiting on     | None.                                                                                                                      |
-| Next           | None.                                                                                                                      |
+| Waiting on     | Nothing.                                                                                                                   |
+| Next           | [[id:3BC3B9ED-60C8-4A86-A6F1-925E58C74B6E][Sprint 03]]                                                                     |
+| Release Notes  | —                                                                                                                          |
 | Last touched   | 2025-10-23                                                                                                                 |
 
 * Stories

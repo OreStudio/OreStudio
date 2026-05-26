@@ -13,6 +13,10 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+{{#domain_entity.qt.has_badge_columns}}
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/BadgeCache.hpp"
+{{/domain_entity.qt.has_badge_columns}}
 #include "{{domain_entity.qt.protocol_include}}"
 
 namespace ores::qt {
@@ -22,10 +26,16 @@ using namespace ores::logging;
 {{domain_entity.entity_pascal}}MdiWindow::{{domain_entity.entity_pascal}}MdiWindow(
     ClientManager* clientManager,
     const QString& username,
+{{#domain_entity.qt.has_badge_columns}}
+    BadgeCache* badgeCache,
+{{/domain_entity.qt.has_badge_columns}}
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
       username_(username),
+{{#domain_entity.qt.has_badge_columns}}
+      badgeCache_(badgeCache),
+{{/domain_entity.qt.has_badge_columns}}
       toolbar_(nullptr),
       tableView_(nullptr),
       model_(nullptr),
@@ -122,6 +132,28 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
+
+{{#domain_entity.qt.has_badge_columns}}
+    using cs = column_style;
+    auto* delegate = new EntityItemDelegate({
+{{#domain_entity.qt.columns}}
+        {{column_style}},
+{{/domain_entity.qt.columns}}
+    }, tableView_);
+{{#domain_entity.qt.columns}}
+{{#is_badge}}
+    delegate->set_badge_color_resolver({{column_index}}, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+        static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+        if (!cache) return default_gray;
+        auto* def = cache->resolve("{{badge_key}}", value.toStdString());
+        if (!def) return default_gray;
+        return {QColor(QString::fromStdString(def->background_colour)),
+                QColor(QString::fromStdString(def->text_colour))};
+    });
+{{/is_badge}}
+{{/domain_entity.qt.columns}}
+    tableView_->setItemDelegate(delegate);
+{{/domain_entity.qt.has_badge_columns}}
 
     initializeTableSettings(tableView_, model_,
         "{{domain_entity.qt.settings_group}}",

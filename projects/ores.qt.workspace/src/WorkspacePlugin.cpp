@@ -48,7 +48,7 @@ void WorkspacePlugin::on_login(const plugin_context& ctx) {
 
     workspaceController_ = std::make_unique<WorkspaceController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,
-        this);
+        ctx_.badge_cache, this);
 
     connect(workspaceController_.get(), &WorkspaceController::statusMessage,
             this, &WorkspacePlugin::statusMessage);

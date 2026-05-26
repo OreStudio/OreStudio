@@ -63,4 +63,17 @@ task closes. Plans do not outlive their task.)
 | 1 | mergesAt → mergedAt               | story.org   | Applied  | Fixed in ebe58f8               |
 | 2 | Missing closing = in code path    | task.org    | Applied  | Fixed in ebe58f8               |
 
+Review round 2 (gemini-code-assist, 2026-05-26).
+
+| # | Comment summary                                   | File                       | Decision | Notes                                                    |
+|---+---------------------------------------------------+----------------------------+----------+----------------------------------------------------------|
+| 1 | Per-file git log -1 in loop for line churn        | sprint_metrics.py:113      | Applied  | Already fixed in f16827407: single --numstat pass        |
+| 2 | Date-only PR cycle time calculation               | sprint_metrics.py:150      | Applied  | Already fixed in 028d9b0c5: fromisoformat() precision    |
+| 3 | STARTED+DONE double-counting in git diffs         | sprint_metrics.py:169      | Applied  | Already fixed in eadf7d656: Stories table parser         |
+| 4 | UnicodeDecodeError from sprint file read          | sprint_metrics.py:47       | Declined | All sprint.org files are UTF-8; no failure observed      |
+| 5 | gh CLI not installed — unhandled exception        | sprint_metrics.py:131      | Applied  | Fixed in 0d13f8999: shutil.which('gh') guard             |
+| 6 | Redundant print statement                         | sprint_metrics.py:229      | Applied  | Already fixed in 1725837fc: duplicate print removed      |
+| 7 | Hardcoded sprint 18 in CMakeLists.txt             | CMakeLists.txt:368         | Applied  | Already fixed in a2d1e1a61: ${SPRINT} parameter          |
+| 8 | Hardcoded sprint_18 in gnuplot script paths       | plot_sprint_metrics.gnuplot:7 | Applied | Already fixed in 41fbb8efd: 4 per-metric parameterized scripts |
+
 * Result

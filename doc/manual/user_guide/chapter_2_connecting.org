@@ -1,0 +1,554 @@
+:PROPERTIES:
+:ID: DF779317-BDEB-49E4-E9AB-48C46615D0CF
+:END:
+#+title: Connecting to ORE Studio
+#+description: How to start ORE Studio, connect to a backend service, manage connections, read the status bar, log in and log out.
+#+type: manual
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:chapter:
+#+created: 2024-06-23
+#+updated: 2026-05-24
+
+** Getting started
+
+When you launch ORE Studio a splash screen appears briefly while the
+application initialises, showing the ORE Studio logo and the build version
+in its lower-right corner.
+
+#+caption: The ORE Studio splash screen shown during start-up. The build version appears in the lower-right corner.
+[[../../../assets/images/splash_screen.png]]
+
+Once initialisation completes you are greeted by the main window in its
+/disconnected/ state. The application is running but has not yet
+established a connection to the backend service that performs
+calculations. Before you can work with trades, market data, or analytics,
+you need to connect to a running ORE Studio backend.
+
+This chapter covers:
+
+- What the main window looks like before a connection is established.
+- How to open the Connection Manager and configure one or more backends.
+- How to log in once a connection is active.
+- How to manage your saved connections — adding, editing, deleting,
+  organising by environment and tag.
+- How to read the status bar and understand what each zone shows.
+- How to launch ORE Studio from the command line with options for
+  telling windows apart, configuration directory, auto-connect, and
+  diagnostics.
+
+** The main window before login
+
+#+caption: The ORE Studio main window immediately after launch, in the disconnected state. The toolbar shows the Connect and Connections buttons; the workspace area is empty until you log in.
+[[../../../assets/images/ores_qt_non_logged_in_window.png]]
+
+In the disconnected state most of the application is inactive. The menu
+bar and toolbar are present but workspace panels, trade lists, and
+analytics views are all unavailable until a successful login. Two
+toolbar buttons are always accessible:
+
+- *Connect* — opens the login dialog for the currently selected
+  connection.
+- *Connections* — opens the Connection Manager, where you configure
+  the list of backends ORE Studio knows about.
+
+** The Connection Manager
+
+The Connection Manager is the central place where you maintain the list
+of ORE Studio backends the application can connect to. You might have a
+local development backend, a shared team backend, and a staging backend
+— each appears as a separate entry here. The manager lets you add, edit,
+delete, and organise those entries before you attempt a login.
+
+Open it at any time from the toolbar *Connections* button or from the
+/File/ menu.
+
+#+caption: The Connection Browser open with no connections configured. The toolbar exposes Add, Edit, Copy, Delete, Connect, Refresh, Change and Purge; the unusable actions are greyed out until something is selected.
+[[../../../assets/images/connection_manager_empty.png]]
+
+*** Adding a new connection
+
+Click *Add* (or the "+" button) to open the /New Connection/ form. Fill
+in the fields:
+
+- *Name* — a free-text label you choose, used throughout the UI to
+  identify this backend (e.g. "Local dev", "Team staging"). Must be
+  unique among your saved connections.
+- *Host* — the hostname or IP address of the machine running the ORE
+  Studio backend (e.g. =localhost=, =192.168.1.10=,
+  =ores-staging.example.com=).
+- *Port* — the TCP port the backend is listening on. The default is
+  =35900=; change it only if the backend was started on a different
+  port.
+- *Environment* — an optional grouping label (see [[*Environments][Environments]] below).
+  Helps you distinguish development, staging, and production backends
+  at a glance.
+- *Tags* — zero or more free-text labels (see [[*Tags][Tags]] below). Useful for
+  filtering and searching when you have many connections.
+
+#+caption: The New Connection form with example values filled in. /Type/ is set to =Connection=; the /Environment/ may be left as /manual entry/ or linked to a defined environment.
+[[../../../assets/images/connection_manager_new_connection.png]]
+
+Click *Save* (or *OK*) to add the connection to the list. The new entry
+appears immediately in the Connection Manager list. No network contact
+is made at this point — ORE Studio simply stores the configuration.
+
+*** Editing a connection
+
+Select an existing connection in the list and click *Edit* (or
+double-click the row) to open the same form pre-populated with the
+saved values. Change any field and click *Save*. The connection list
+updates immediately.
+
+#+caption: Editing a saved connection. The dialog title shows /Edit Connection/, the fields are pre-populated, and the password field reads /Enter new password to change/ — the stored password is preserved unless you type a replacement.
+[[../../../assets/images/connection_manager_edit_connection.png]]
+
+*** Deleting a connection
+
+Select one or more connections in the list and click *Delete* (or press
+the Delete key). A confirmation dialog asks you to confirm the removal.
+
+#+caption: The delete confirmation dialog. ORE Studio names the connection being removed and waits for you to confirm with /Yes/ or cancel with /No/.
+[[../../../assets/images/connection_manager_delete_confirm.png]]
+
+Deleting a connection removes only the saved configuration; it has no
+effect on the running backend or any data stored there.
+
+*** Organising connections into folders
+
+When the list grows, /folders/ keep it manageable. A folder is a named
+container you can nest, grouping related connections — by team, by
+client, or by environment tier. In the populated browser above, the
+connections sit under a =Development → Dev → Local1…Local4= folder tree.
+
+To create one, click *Add* and set /Type/ to =Folder=. Give it a name and
+an optional description, and choose a parent folder (or /No Folder/ to
+place it at the top level). Connections are then assigned to a folder
+through their /Folder/ field, or by dragging them in the tree.
+
+#+caption: Creating a folder. With /Type/ set to =Folder=, a folder needs only a name and an optional description; it can be nested inside another folder.
+[[../../../assets/images/connection_manager_add_folder.png]]
+
+*** Protecting your credentials with a master password
+
+The passwords you save with a connection are encrypted at rest using a
+/master password/ that you choose. The first time you save a credential,
+ORE Studio offers to create one.
+
+#+caption: Creating the master password. It encrypts every saved server password; there is no recovery if you forget it, so you may also leave it blank to store passwords unencrypted.
+[[../../../assets/images/connection_manager_master_password_create.png]]
+
+Type the same value into /New Password/ and /Confirm Password/; the
+fields turn green when they match. /Show password/ reveals what you typed.
+
+#+caption: The master password confirmed — both fields match and are outlined in green, ready to accept with /OK/.
+[[../../../assets/images/connection_manager_master_password_supplied.png]]
+
+When you next launch ORE Studio and open the Connection Browser, it
+prompts you to unlock your saved connections by entering the master
+password. Until you do, the encrypted passwords stay sealed.
+
+#+caption: The unlock prompt shown on a later launch. Enter the master password to decrypt your saved connection credentials.
+[[../../../assets/images/connection_manager_master_password_prompt.png]]
+
+If you leave the master password blank, your connections still work but
+their passwords are stored unencrypted — acceptable on a personal machine,
+but not recommended on shared or portable systems.
+
+*** Environments
+
+An /environment/ is a named grouping that you assign to a connection to
+indicate which tier of your infrastructure it belongs to. Typical
+values are =Development=, =Staging=, and =Production=, but the list is
+fully customisable — you can define any environment names that make
+sense for your setup.
+
+Environments appear as a coloured badge or label next to the connection
+name in the list, making it immediately obvious which tier you are about
+to connect to. This is a safety feature: it is easy to accidentally
+connect to production when you meant staging; a clearly labelled
+environment badge prevents that.
+
+#+caption: A populated Connection Browser. Connections are grouped under folders (here =Development → Dev → Local1…Local4=) and each carries coloured chips — the environment and tags — making the tier and purpose of every entry obvious at a glance.
+[[../../../assets/images/connection_manager_with_connections.png]]
+
+To manage the available environment names, open the /Environments/
+section within the Connection Manager settings (or the dedicated menu
+item). From there you can:
+
+- *Add* a new environment name and choose its display colour.
+- *Rename* an existing environment (all connections using it update
+  automatically).
+- *Delete* an environment (connections that used it revert to
+  /Unassigned/).
+
+An environment is itself created from the Connection Browser: click *Add*
+and set /Type/ to =Environment=. An environment carries its own host,
+port, HTTP port, namespace and tags — these become the connection details
+that any connection linked to it inherits.
+
+#+caption: Creating an environment. With /Type/ set to =Environment=, you give it a name, folder, host, ports, namespace, and tags (here a =dev= tag).
+[[../../../assets/images/connection_manager_environment_add.png]]
+
+Once an environment exists, a connection can link to it by selecting it
+in the connection's /Environment/ field instead of /manual entry/. The
+connection then inherits the environment's host, port, and namespace, so
+you maintain those details in one place.
+
+#+caption: A connection linked to an environment. Selecting =ores.dev.local1= in the /Environment/ field populates the host, port and namespace from that environment.
+[[../../../assets/images/connection_manager_environment_linked.png]]
+
+*** Tags
+
+/Tags/ are free-text labels you attach to a connection to enable
+flexible filtering and search. Unlike environments (which represent a
+single tier), a connection can carry any number of tags. Examples:
+=personal=, =client-acme=, =read-only=, =high-memory=.
+
+Tags are displayed inline with the connection name in the list. The
+Connection Manager provides a tag filter bar at the top of the list: type
+or select a tag to show only the connections that carry it.
+
+#+caption: [SCREENSHOT NEEDED] The Connection Manager list with the tag filter bar visible at the top. Several connections are shown with their tags as small chips/badges. The filter bar has "client-acme" typed, and only matching connections are shown.
+# Capture: assign tags to several connections. Open the Connection
+# Manager and type a tag name into the filter bar. Show the filtered
+# result with the unmatched connections hidden.
+[[../../../assets/images/connection_manager_tag_filter.png]]
+
+To add or remove tags on a connection, open the Edit form for that
+connection and use the tag input field. Type a new tag name and press
+Enter (or comma) to add it; click the × on an existing tag chip to
+remove it. Tags are created on first use — there is no separate tag
+management screen.
+
+*** Where your connections are stored
+
+ORE Studio keeps your connections — together with their environments,
+folders, and tags — in a single local SQLite database file named
+=connections.db=. Your UI settings (preferences and window layout) are
+stored separately, in the operating system's standard settings store.
+Neither leaves your machine.
+
+- *Linux* — settings in =~/.config/OreStudio/=; database at
+  =~/.local/share/ores.qt/connections.db=.
+- *macOS* — settings in =~/Library/Preferences/=; database at
+  =~/Library/Application Support/ores.qt/connections.db=.
+- *Windows* — settings in the registry under
+  =HKCU\Software\OreStudio\OreStudio=; database at
+  =%APPDATA%\ores.qt\connections.db=.
+
+If =connections.db= is missing when ORE Studio starts, it creates a new
+empty one — so the Connection Manager simply opens with no entries.
+
+*** Backing up and restoring your connections
+
+Because everything you configure here lives in that one =connections.db=
+file, backing it up is a file copy:
+
+1. Quit ORE Studio, so the database is fully written and not locked.
+2. Copy =connections.db= from the location above to a safe place — on
+   Linux, for example:
+
+   #+begin_src sh
+   cp ~/.local/share/ores.qt/connections.db ~/connections-backup.db
+   #+end_src
+
+To restore, quit ORE Studio and copy the backup back over
+=connections.db=. To move your connections to another machine, copy the
+file to the same location there. The file is self-contained, so a single
+copy preserves all your connections, environments, folders, and tags.
+
+** Connecting and logging in
+
+Once you have at least one connection configured, you can log in.
+
+*** Selecting the active connection
+
+In the Connection Manager, select the connection you want to use and
+click *Set as active* (or double-click it). The selected connection
+becomes the target for the *Connect* button in the main toolbar. The
+status bar at the bottom of the main window shows the name of the active
+connection.
+
+Alternatively, the *Connect* toolbar button opens a quick-select dropdown
+if no connection is active, letting you pick one without opening the
+full Connection Manager.
+
+#+caption: [SCREENSHOT NEEDED] The main toolbar with the Connect button highlighted and a dropdown showing the list of available connections. The cursor is hovering over one entry.
+# Capture: click the Connect button dropdown (or the equivalent
+# quick-select). Show the list of saved connections in the dropdown
+# before selecting one.
+[[../../../assets/images/main_window_connect_dropdown.png]]
+
+*** The login screen
+
+With an active connection selected, click *Connect*. ORE Studio
+attempts to reach the backend. If the backend is reachable, the /Login/
+dialog appears.
+
+#+caption: The login dialog. Below the credentials it shows the connection /Label/, a /Quick Connect/ selector, and the /Server/, /Port/ and /Namespace/ the login will target; the footer carries the /Register/ link and the build version.
+[[../../../assets/images/login_dialog.png]]
+
+Enter your *username* and *password* and click *Login*. Tick /Remember
+me/ to have ORE Studio recall the username next time. ORE Studio
+authenticates against the backend's user database. On success the dialog
+closes and the main window transitions to the /connected/ state: the
+workspace panels become active, the menu bar is fully enabled, and the
+status bar shows your username and the connected backend name.
+
+The fields below the credentials describe /which/ backend you are logging
+in to:
+
+- *Label* — the saved connection's name (e.g. =local1=).
+- *Quick Connect* — pick a saved connection to fill /Server/, /Port/ and
+  /Namespace/ in one step, or leave it on /Enter details manually/ to
+  type them yourself.
+- *Server*, *Port*, *Namespace* — the backend address the login targets.
+
+#+caption: The /Quick Connect/ selector. Choosing a saved entry fills in the server, port and namespace so you do not have to type them.
+[[../../../assets/images/login_dialog_quick_connect.png]]
+
+If you do not yet have an account, the *Register* link in the footer
+opens account registration. If authentication fails, an error message is
+shown below the password field. Check that you are using the correct
+credentials for this backend; each backend maintains its own user
+database independently.
+
+*** When the connection fails
+
+Not every login failure is a wrong password. ORE Studio talks to the
+backend over a messaging server (NATS), and if it cannot reach that
+server — or the services behind it — it tells you which is wrong rather
+than just reporting "login failed".
+
+If the messaging server itself is unreachable, ORE Studio reports that it
+cannot connect, along with the host and port it tried:
+
+#+caption: A login failure caused by an unreachable messaging server. The host and port ORE Studio tried are shown; the server is likely not running, or the host/port is wrong.
+[[../../../assets/images/login_dialog_no_nats.png]]
+
+If the messaging server is running but the application services behind it
+have not started, ORE Studio says so explicitly — the fix is to start the
+backend services, not to change your connection:
+
+#+caption: A login failure where the messaging server is up but no application services are responding. Ensure the backend services have been started.
+[[../../../assets/images/login_dialog_nats_no_services.png]]
+
+In both cases your saved connection is fine; correct the backend (start
+the server or its services) and click *Connect* again.
+
+*** First login and the default account
+
+On a freshly initialised backend the only account that exists is the
+default administrator account. Your system administrator will have
+provided the initial credentials. After first login it is strongly
+recommended to change the password immediately via /Settings → Account/.
+
+Once a tenant has been provisioned (covered in the next chapter,
+/Initial Setup/), you log in with that tenant's administrator account —
+the username takes the form =user@tenant_code=. Picking the connection
+from /Quick Connect/ fills in the server, port and namespace for you:
+
+#+caption: Logging in as a tenant administrator (=tenant_admin@barclays_plc=), with the connection chosen from /Quick Connect/.
+[[../../../assets/images/login_dialog_tenant_admin_login.png]]
+
+** Connection status and reconnection
+
+Once connected, the status bar permanently shows the connection state.
+If the backend becomes unreachable (network interruption, service
+restart) ORE Studio displays a /disconnected/ banner and disables
+workspace interactions. Use the *Connect* button to reconnect; your
+saved connection configuration is retained, so no re-entry of the host
+or port is needed — only your password.
+
+#+caption: [SCREENSHOT NEEDED] The main window in the disconnected-while-logged-in state: a warning banner or status-bar indicator showing the connection was lost, with a Reconnect button or prompt.
+# Capture: while logged in, stop or restart the backend service.
+# Screenshot the moment ORE Studio detects the disconnection and shows
+# the warning indicator. The Reconnect affordance should be visible.
+[[../../../assets/images/connection_lost_banner.png]]
+
+** The status bar
+
+The status bar runs along the bottom of the main window and provides a
+continuous read on the application's connection state. It is always
+visible regardless of what is open in the workspace.
+
+#+caption: The status bar in the fully connected, logged-in state: from left to right, the environment marker (=local1=), the username (=super_admin=), the server (=localhost:42221=), the active party (Root / System Party), and the green connected indicator.
+[[../../../assets/images/status_bar_connected.png]]
+
+The status bar is divided into zones from left to right:
+
+- *Connection name* — the name of the active connection as entered in
+  the Connection Manager (e.g. "Local dev"). Clicking this zone opens
+  the Connection Manager directly.
+- *Environment badge* — the coloured environment label (e.g.
+  =Production= in red) if one is assigned to the active connection.
+  Absent when no environment is set. This is the most prominent safety
+  indicator: always glance at the environment badge before performing
+  any write operation.
+- *Username* — the account name of the currently logged-in user. Absent
+  in the disconnected state.
+- *Server* — the backend address (host and port) the session is
+  connected to, e.g. =localhost:42221=.
+- *Active party* — the party context for the session (e.g. =Root= /
+  =System Party=), set at login when your account spans multiple parties.
+- *Connection indicator* — a coloured icon at the right showing the live
+  link state (green when connected).
+
+The status bar changes appearance to reflect the connection state:
+
+- *Disconnected* (no active connection) — grey; shows "Not connected".
+- *Connecting* (handshake in progress) — animated indicator; shows
+  "Connecting to /name/…".
+- *Connected and logged in* — normal; shows all zones as described above.
+- *Connection lost* (backend unreachable) — warning colour (amber/red);
+  shows "Connection lost — /name/".
+- *Reconnecting* — animated indicator; shows "Reconnecting…".
+
+In the disconnected state the strip is reduced to the environment marker
+and the connection label, with the broken-link icon on the right:
+
+#+caption: The status bar in the disconnected state, showing the environment marker, the connection label (=local1=), and the broken-link indicator.
+[[../../../assets/images/status_bar_disconnected.png]]
+
+The fully connected state is shown at the start of this section; the
+connection-lost state is shown under [[*Connection status and reconnection][Connection status and
+reconnection]] above. Compare the three to recognise at a glance which
+state the application is in.
+
+** Starting ORE Studio from the command line
+
+ORE Studio can be launched directly from a terminal, which is useful for
+scripting, for telling several windows apart, or for pointing the
+application at a non-default configuration directory. Run =ores --help=
+to see the full list of accepted options for your installed version; the
+most commonly used ones are documented below.
+
+#+begin_src sh
+ores --help
+#+end_src
+
+*** Telling windows apart (instance colour and name)
+
+When you run more than one ORE Studio window at once — for example
+against different backends, or from separate checkouts — you can give
+each window a distinct identity so you can tell them apart at a glance.
+This is /not/ a light/dark theme; it is purely a per-window marker.
+
+- =--instance-color HEX= draws a small coloured circle in the status bar
+  in that colour (a 6-digit RGB hex, e.g. =F44336= for red). Give each
+  window a different colour.
+- =--instance-name NAME= (short form =-n=) labels the window with a
+  name, also shown in the status bar, so you can see which window is
+  which.
+
+#+begin_src sh
+ores --instance-name "Local dev" --instance-color 2196F3
+#+end_src
+
+The colour and the name are independent: the colour is only a visual
+marker, and the name is what identifies the instance. If you launch via
+=build/scripts/start-client.sh=, its =--colour red|green|blue|<hex>=
+sets the marker colour and =--name= sets the instance name; when you omit
+=--name=, the name comes from =ORES_CHECKOUT_LABEL= in your =.env= — never
+from the colour.
+
+#+caption: [SCREENSHOT NEEDED] Two ORE Studio windows side by side, each with a different instance-colour circle and name in the status bar, showing how to tell them apart.
+# Capture: start two instances with different --instance-color values
+# (and names). Show both status bars so the coloured circle and the
+# instance name differ between the two windows.
+[[../../../assets/images/main_window_instance_colour.png]]
+
+*** Configuration directory
+
+By default ORE Studio stores its UI settings — preferences and window
+layout — in the operating system's standard settings store. The exact
+per-OS locations are listed under [[*Where your connections are stored][Where your connections are stored]];
+your saved connections live separately in =connections.db=. To use a
+different directory:
+
+#+begin_src sh
+ores --config-dir /path/to/config
+#+end_src
+
+This is useful when running multiple isolated instances, or when keeping
+configuration under version control for team-shared settings.
+
+*** Selecting a connection at startup
+
+To bypass the Connection Manager and connect immediately to a named
+connection:
+
+#+begin_src sh
+ores --connection "Local dev"
+#+end_src
+
+ORE Studio will start, set the named connection as active, and open the
+login dialog automatically. The connection name must match exactly
+(case-sensitive) a saved entry in the Connection Manager.
+
+*** Logging and diagnostics
+
+For troubleshooting, verbosity can be increased:
+
+#+begin_src sh
+ores --log-level debug    # verbose output to stdout
+ores --log-file /tmp/ores.log  # write log to a file instead
+#+end_src
+
+Log output includes connection lifecycle events, authentication
+attempts, and backend protocol messages. The =debug= level is intended
+for issue reporting and development; it produces high-volume output and
+should not be left enabled during normal use.
+
+** Finding the application version
+
+Knowing exactly which build you are running matters when reporting an
+issue or checking client/backend compatibility. ORE Studio shows its
+version in several places.
+
+The title bar of the main window always shows the version next to the
+application name:
+
+#+caption: The version in the main window title bar, alongside the full menu bar and toolbar of the connected application.
+[[../../../assets/images/title_bar_version.png]]
+
+It also appears in the lower-right corner of the splash screen at
+start-up:
+
+#+caption: The build version in the lower-right corner of the splash screen.
+[[../../../assets/images/splash_screen_version.png]]
+
+…and in the footer of the login dialog, below the /Register/ link:
+
+#+caption: The version string in the login dialog footer, beneath the /Register/ link.
+[[../../../assets/images/login_dialog_version_registration.png]]
+
+From the command line, =ores --version= prints the client version string
+(e.g. =ORE Studio 0.0.19=) and exits — handy in scripts or when filing a
+bug report.
+
+#+begin_src sh
+ores --version
+#+end_src
+
+** Running in the background and the system tray
+
+While ORE Studio is running it places an icon in your desktop's system
+tray (notification area). The icon keeps the application reachable when
+its window is minimised or hidden, and shows the instance name so you can
+tell multiple windows apart.
+
+#+caption: The ORE Studio icon in the system tray, labelled with the instance name so you can identify the window it belongs to.
+[[../../../assets/images/application_system_tray.png]]
+
+** Logging out
+
+To end your session, choose /File → Log Out/ or click the *Disconnect*
+toolbar button. ORE Studio closes the connection to the backend and
+returns to the disconnected main window. Your saved connection
+configurations are preserved; you can log back in at any time.
+
+Logging out does not stop the backend service — it only terminates your
+client session. Other users connected to the same backend are
+unaffected.

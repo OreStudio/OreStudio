@@ -1,0 +1,22 @@
+' Party hierarchy diagram for the user manual (chapter 3, Initial Setup).
+' Source of truth for party_hierarchy_diagram.png.
+' Regenerate after editing:  plantuml assets/images/party_hierarchy_diagram.puml
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #555555
+  RoundCorner 8
+}
+
+rectangle "System party" as sys
+rectangle "Acme Group\n<i>root operational party</i>" as root
+rectangle "Acme London" as lon
+rectangle "Acme New York" as nyc
+
+sys --> root
+root --> lon
+root --> nyc
+@enduml

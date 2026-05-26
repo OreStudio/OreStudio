@@ -1,0 +1,194 @@
+:PROPERTIES:
+:ID: 27422EEE-9435-49EC-B706-43BD66B2D7A6
+:END:
+#+title: Task: Generate all missing screenshots for the manual
+#+description: Capture every [SCREENSHOT NEEDED] placeholder image across the user manual chapters and wire them in.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :manual:screenshots:documentation:user_manual_pdf_build:sprint_18:v0:
+#+owner: marco
+#+branch: feature/screenshot_work
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-25
+#+updated: 2026-05-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace every =[SCREENSHOT NEEDED]= placeholder in the user manual with
+a real captured screenshot, so the manual (and the PDF built from it)
+shows its figures instead of =TODO_*.png= placeholders.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                                |
+| Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
+| Now          | Provisioner round done: all System/Tenant/Party wizard shots wired and chapter 3 rewritten to the real flows; new functionality documented (connection-error dialogs, Select Party, tenant-admin login, status-bar zones). |
+| Waiting on   | 4 chapter-2 captures from product owner (see below). |
+| Next         | Capture the 4 remaining chapter-2 shots. |
+| Last touched | 2026-05-26                             |
+
+* Acceptance
+
+- Every =[SCREENSHOT NEEDED]= placeholder across the manual chapters is
+  captured (30 today: 14 in =chapter_2_connecting.org=, 16 in
+  =chapter_3_initial_setup.org=).
+- The =TODO_*.png= image links are replaced with real images committed
+  under =assets/images/=, and the =[SCREENSHOT NEEDED]= markers removed.
+- The manual builds (=deploy_manual=) with the figures present.
+
+* Plan
+
+Reconciliation of the manual's screenshot placeholders ("expected") against
+the screenshots captured so far ("actual" — 20 PNGs committed under
+=chapter_01/=). Tally: 30 placeholders (2 already filled, ~8 matched to a
+captured shot, ~20 still to capture); 20 captured (~8 matched, ~10 document
+functionality the manual omits, 2 duplicates).
+
+** Naming convention
+
+=<area>_<description>.png=, snake_case, all under =assets/images/=. =area=
+is the screen/dialog (=main_window=, =connection_manager=, =login_dialog=,
+=status_bar=, =splash_screen=, =title_bar=, =system_provisioner=,
+=tenant_provisioner=, =party_provisioner=, =admin_menu=); =description= is
+the state/subject (e.g. =connection_manager_empty=,
+=status_bar_disconnected=).
+
+** A. Matched — placeholder ↔ captured shot (rename, move to assets/images/, wire in)
+
+| Expected slot (placeholder)         | Captured (old name, chapter_01/)         | Final name                              |
+|-------------------------------------+------------------------------------------+-----------------------------------------|
+| TODO_connection_manager_empty       | connection_manager_empty.png             | connection_manager_empty.png            |
+| TODO_new_connection_form            | new_connection_form.png                  | connection_manager_new_connection.png   |
+| TODO_edit_connection_form           | edit_connection_form.png + connection_manager_edit_connection.png (dup) | connection_manager_edit_connection.png  |
+| TODO_delete_connection_confirm      | delete_connection_confirm.png            | connection_manager_delete_confirm.png   |
+| TODO_environments_management        | connection_manager_add_new_environment.png | connection_manager_environments.png   |
+| TODO_connection_manager_env_badges  | connection_browser_with_connections.png  | connection_manager_with_connections.png |
+| login_screen (slot already filled)  | login_dialog.png                         | login_dialog.png — decide vs existing login_screen.png |
+| TODO_connect_button_dropdown        | login_dialog_label_quick_connect.png (verify) | connection_select_dropdown.png      |
+| TODO_status_bar_states/_connected   | status_bar_disconnected_environment.png  | status_bar_disconnected.png (disconnected state only) |
+
+** B. Captured but NOT in the manual — functionality the manual omits (add section/figure)
+
+| Captured (old name)                              | Manual gap                       | Action                                          | Final name                                |
+|--------------------------------------------------+----------------------------------+-------------------------------------------------+-------------------------------------------|
+| connection_manager_create_master_password.png    | Master password (0 mentions)     | add "Master password" subsection to Conn. Mgr.  | connection_manager_master_password_create.png |
+| connection_manager_password.png                  | Master-password prompt           | (same subsection)                               | connection_manager_master_password_prompt.png |
+| connection_manager_master_password_supplied.png  | Master password supplied         | (same subsection)                               | connection_manager_master_password_supplied.png |
+| connection_manager_add_folder.png                | Folders (undocumented)           | add "Folders" subsection                        | connection_manager_add_folder.png         |
+| connection_manager_add_environment.png           | Environments add dialog          | extra env shot — fold into Environments or drop | connection_manager_add_environment.png    |
+| splash_screen_0.0.17.png                         | Splash screen (0 mentions)       | add to "Getting started"                        | splash_screen.png                         |
+| splash_screen_version_highlighted.png            | Version on splash                | "Version information" (no figure today)         | splash_screen_version.png                 |
+| title_bar_version.png                            | Version in title bar             | "Version information"                            | title_bar_version.png                     |
+| login_dialog_version_registration_highlighted.png| Version/registration on login    | "Version information" / "First login"           | login_dialog_version_registration.png     |
+| application_system_tray.png                      | System tray (0 mentions)         | add a system-tray mention, or hold              | application_system_tray.png               |
+
+** C. Expected but NOT captured — still to take
+
+/system_bootstrapping.org/: =TODO_connection_manager_tag_filter= (Tags
+filter), =TODO_connection_lost_banner=, =TODO_status_bar_connected=,
+=TODO_status_bar_states= (3-state composite), =TODO_instance_colour= (two
+windows), and =TODO_connect_button_dropdown= if the quick-connect shot in A
+doesn't fit.
+
+/system_bootstrapping_concepts.org/ (none captured — 16): the
+=TODO_party_hierarchy_diagram= (a /diagram/, not a screenshot); the
+System / Tenant / Party Provisioner wizard pages
+(welcome / details / admin / review / complete) and
+=TODO_admin_menu_provision_tenant=.
+
+** D. Already filled (existing real images — no action)
+
+- "main window before login" → =assets/images/ores_qt_non_logged_in_window.png=
+- "the login screen" → =assets/images/login_screen.png= (but a newer
+  =login_dialog.png= was captured — see A; decide whether it supersedes)
+
+** Decisions applied
+
+- /login_dialog/: the newer =login_dialog.png= supersedes =login_screen.png=
+  for the login figure (product owner).
+- /add environment/: =connection_manager_add_environment.png= turned out to be
+  an /Edit Connection with a linked environment/, not an add dialog; folded
+  into the Environments section as =connection_manager_environment_linked.png=.
+- /new connection/: the two "Add Item" shots were blank vs filled; the filled
+  one (=edit_connection_form.png=) became =connection_manager_new_connection.png=
+  and the blank =new_connection_form.png= was dropped (recoverable from history).
+- The dialog is titled "Connection /Browser/" in the UI; captions reflect that.
+
+** Execution order
+
+1. [X] Confirm the A mappings and the B decisions with the product owner.
+2. [X] =git mv= the chapter_01/ PNGs to =assets/images/= under their final names
+   (dropped the redundant blank Add form).
+3. [X] Replace each =TODO_*.png= link; removed =[SCREENSHOT NEEDED]= from the
+   satisfied figures (kept it on the 6 still-to-capture chapter-1 figures and
+   the 16 concepts figures).
+4. [X] For B: added the new subsections (splash, master password, folders,
+   environments add/link, version, system tray, quick connect) and wired the
+   figures in.
+5. [ ] For C: capture the outstanding shots (see "Still to capture" below).
+6. [ ] Assemble the 3-state status-bar composite (=status_bar_states.png=) from
+   the disconnected + connected + lost crops; generate the party-hierarchy
+   diagram (=party_hierarchy_diagram.png=, PlantUML/Graphviz, not a screenshot).
+7. [ ] Rebuild the manual (=deploy_manual=) and the site and verify every figure
+   renders.
+
+** Still to capture (bucket C — 20 screenshots, save under =assets/images/=)
+
+Chapter 2 (=chapter_2_connecting.org=, 4 remaining):
+- =connection_manager_tag_filter.png= — tag-filter bar with =client-acme= typed.
+- =main_window_connect_dropdown.png= — toolbar Connect button + connection dropdown.
+- =connection_lost_banner.png= — disconnected-while-logged-in warning + Reconnect.
+- =main_window_instance_colour.png= — two windows with different instance colours/names.
+
+Captured in the provisioner round (now wired): =status_bar_connected=; the
+full System Provisioner (welcome, admin account, setup mode, tenant
+details, tenant admin, provisioning, setup complete); Tenant Provisioner
+(welcome, catalogue, data source, party setup, publishing×2, complete);
+Party Provisioner (welcome, counterparty import, report definitions,
+execute, complete); plus newly-documented functionality — the two
+connection-error dialogs, the Select Party dialog (×2), and tenant-admin
+login. =admin_menu_provision_tenant= is obsolete: tenants are onboarded
+from /System → Identity → Tenants/, not an Administration menu item.
+
+The 3-state status-bar composite was dropped: the section now shows each
+state individually (disconnected captured; connected and lost are the two
+placeholders above), which reads more clearly than a composite.
+
+Concepts (=chapter_3_initial_setup.org=, 15 screenshots + 1 diagram):
+- System Provisioner: =system_provisioner_welcome/_admin_account/_review/_complete.png=.
+- =admin_menu_provision_tenant.png=.
+- Tenant Provisioner: =tenant_provisioner_welcome/_details/_admin/_review/_complete.png=.
+- Party Provisioner: =party_provisioner_welcome/_root/_children/_review/_complete.png=.
+
+The party-hierarchy diagram is done: generated by =plantuml= from
+=assets/images/party_hierarchy_diagram.puml= (regenerate with
+=plantuml assets/images/party_hierarchy_diagram.puml=).
+
+* Notes
+
+Each placeholder carries a =# Capture:= comment describing the exact UI
+state to set up. The empty Connection Manager shot uses the DB-rename
+trick (move =connections.db= aside so the manager opens empty — see
+chapter 1, "Backing up and restoring your connections").
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

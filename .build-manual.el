@@ -31,6 +31,12 @@
 (setq debug-on-error nil)
 (setq debug-on-quit nil)
 
+;; Cap figures at 60% of the text width but never upscale: \maxwidth
+;; (defined in user_manual.org) yields the image's natural width when it
+;; is smaller than 0.6\linewidth, and 0.6\linewidth otherwise. Large
+;; dialog screenshots shrink to 60%; small crops keep their natural size.
+(setq org-latex-image-default-width "\\maxwidth")
+
 ;; Custom LaTeX class: * → \chapter, ** → \section (no \part level).
 ;; This gives a clean chapter-based book without Part I/II dividers.
 (add-to-list 'org-latex-classes
@@ -41,6 +47,17 @@
                ("\\subsection{%s}" . "\\subsection*{%s}")
                ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                ("\\paragraph{%s}" . "\\paragraph*{%s}")))
+
+;; Tufte book: elegant wide-margin layout. tufte-book manages its own
+;; geometry, headers, fonts and hyperref, so user_manual.org keeps only a
+;; minimal preamble when this class is selected. Supports chapter/section/
+;; subsection (the manual nests no deeper).
+(add-to-list 'org-latex-classes
+             '("ores-tufte"
+               "\\documentclass[a4paper,justified]{tufte-book}"
+               ("\\chapter{%s}" . "\\chapter*{%s}")
+               ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")))
 
 ;; Read version from CMakeLists.txt so the cover page stays in sync
 ;; with the single source of truth.

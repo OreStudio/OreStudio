@@ -1,0 +1,336 @@
+:PROPERTIES:
+:ID: A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04
+:END:
+#+title: Initial Setup
+#+description: Conceptual overview of the multi-tenant/multi-party model and step-by-step guide to the provisioning wizards.
+#+type: manual
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:chapter:
+#+created: 2026-05-24
+#+updated: 2026-05-24
+
+** Understanding the multi-tenant, multi-party model
+
+Before you can use ORE Studio for the first time, the system must be
+bootstrapped — meaning the initial administrative structure must be
+established. Understanding why this step exists requires a brief
+introduction to how ORE Studio organises data.
+
+*** Tenants
+
+A /tenant/ is a fully isolated organisational space within an ORE
+Studio deployment. Each tenant has its own users, its own reference
+data (currencies, counterparties, books), and its own analytics
+results. Data belonging to one tenant is completely invisible to
+another tenant; there is no cross-tenant data leakage by design.
+
+A typical deployment has one tenant per organisation. If you are
+running ORE Studio for your own firm, you will create one tenant
+representing your organisation. A managed-service provider running ORE
+Studio on behalf of multiple clients might create one tenant per
+client.
+
+ORE Studio supports four tenant types, each with different operational
+controls:
+
+- *System* — platform administration; one per deployment; platform-managed.
+- *Production* — real customer organisations with live data; strict controls.
+- *Evaluation* — demos, UAT, training, and exploratory testing; relaxed controls.
+- *Automation* — programmatic test infrastructure; not for human use; no controls.
+
+The *system tenant* is special — it is created automatically during
+bootstrapping and cannot be deleted. It is the home of the platform
+administrator accounts. There is exactly one system tenant per
+deployment. All other tenants are created by platform administrators
+working from the system tenant.
+
+*Production tenants* are for live operations. They enforce strict
+controls including four-eyes authorisation for sensitive operations and
+KYC-gated counterparty onboarding.
+
+*Evaluation tenants* provide a realistic but relaxed environment for
+demonstrations, user acceptance testing, and training. Bulk data
+import from external sources (such as the GLEIF/LEI registry) is
+available in evaluation tenants but not in production tenants.
+
+*** Parties
+
+Within a tenant, a /party/ is a business unit — a legal entity, a
+branch, a trading desk, or any other organisational subdivision.
+Parties form a hierarchy: a parent party can see all data belonging to
+its children and grandchildren; a child party sees only its own data
+and that of its own descendants.
+
+Every tenant has exactly one *system party*, created automatically
+when the tenant is provisioned. The system party is the administrative
+home for tenant administrator accounts. It is not a business entity
+and should not be used for trading activity.
+
+Business parties — the entities that actually own trades,
+counterparties, and analytics results — are *operational parties*.
+You create these after the tenant is provisioned, using the Party
+Provisioner.
+
+# Diagram source: assets/images/party_hierarchy_diagram.puml
+# Regenerate the PNG with: plantuml assets/images/party_hierarchy_diagram.puml
+#+caption: A simple party hierarchy: the system party at the top, the root operational party (Acme Group) below it, and two child operational parties (Acme London, Acme New York). Arrows point from parent to child.
+[[../../../assets/images/party_hierarchy_diagram.png]]
+
+A user logs in to a specific party within a tenant. Their data
+visibility is determined by their position in the hierarchy: a user
+logged in at "Acme Group" sees data from both "Acme London" and
+"Acme New York"; a user logged in at "Acme London" sees only their
+own data.
+
+*** The bootstrapping sequence
+
+A freshly installed ORE Studio backend goes through a fixed sequence
+before it is ready for normal use:
+
+1. *System bootstrap* — the first platform administrator account is
+   created and the system tenant is initialised. Until this step
+   completes, the backend runs in /bootstrap mode/ and accepts no
+   normal user logins.
+2. *Tenant provisioning* — one or more tenants are created by the
+   platform administrator.
+3. *Party provisioning* — within each tenant, the operational party
+   hierarchy is established by the tenant administrator.
+
+Each step has a corresponding wizard in the ORE Studio UI. The
+following sections walk through each one.
+
+** The System Provisioner wizard
+
+The first time you connect to a backend that has never been initialised,
+ORE Studio detects /bootstrap mode/ and launches the *New System
+Provisioner* automatically. This one-time wizard creates the platform
+administrator account, chooses a single- or multi-tenant layout, and
+provisions the first tenant together with its own administrator.
+
+*** Welcome
+
+#+caption: The System Provisioner welcome page, shown when the backend is in bootstrap mode. It lists the three setup steps.
+[[../../../assets/images/system_provisioner_welcome.png]]
+
+The welcome page confirms the system is in bootstrap mode and outlines
+the steps: create the administrator account, choose the setup mode, and
+create the first tenant. Click *Next*.
+
+*** Create the administrator account
+
+#+caption: Creating the platform administrator account — the first account, with full administrative privileges over the whole deployment.
+[[../../../assets/images/system_provisioner_admin_account.png]]
+
+Enter a *username*, *email*, and *password* (with confirmation) for the
+platform administrator. Keep these credentials safe — this account has
+unrestricted access to the entire deployment. Click *Create & Continue*.
+
+*** Choose the setup mode
+
+#+caption: The Setup Mode page. /Single-Tenant/ creates a default tenant with pre-configured settings; /Multi-Tenant/ lets you configure the first tenant in detail and onboard more later.
+[[../../../assets/images/system_provisioner_tenant_config.png]]
+
+Choose how the deployment is organised:
+
+- *Single-Tenant* — best for evaluation, development, or a single
+  organisation. Creates a default tenant with sensible defaults; you can
+  add more tenants later.
+- *Multi-Tenant* — for production deployments serving several
+  organisations. You configure the first tenant's details on the next
+  page and onboard additional tenants from the Tenants window.
+
+Click *Next*.
+
+*** Tenant details
+
+#+caption: The first tenant's details: a display name, a short code, a tenant type, and a hostname.
+[[../../../assets/images/system_provisioner_tenant_details.png]]
+
+Configure the first tenant:
+
+- *Name* — the organisation's display name (e.g. "Barclays Plc").
+- *Code* — a short machine code used internally (e.g. =barclays_plc=).
+- *Type* — the tenant type (see [[*Tenants][Tenants]] above): /System/,
+  /Production/, /Evaluation/, or /Automation/.
+- *Hostname* — the host identifier for the tenant.
+
+Click *Next*.
+
+*** Tenant administrator account
+
+#+caption: The tenant administrator account. This account administers the new tenant and is independent of the platform administrator.
+[[../../../assets/images/system_provisioner_tenant_admin.png]]
+
+Create the initial administrator for the new tenant — a *username*,
+*email*, and *password*. This account is given the =TenantAdmin= role:
+full control within the tenant, but no cross-tenant access. Click
+*Provision Tenant*.
+
+*** Provisioning
+
+#+caption: The provisioning step. ORE Studio creates the tenant and its administrator, logging progress as it goes.
+[[../../../assets/images/system_provisioner_complete.png]]
+
+ORE Studio provisions the tenant and creates its administrator account,
+logging each step. When it finishes, click *Continue*.
+
+*** Setup complete
+
+#+caption: The System Provisioner summary: the platform admin, the first tenant, and the tenant admin that were created, with next-step guidance.
+[[../../../assets/images/system_provisioner_provisioning_complete.png]]
+
+The final page summarises what was created and tells you the next step:
+log in as the tenant administrator to run the Tenant Provisioner. To
+create further tenants later, use /System → Identity → Tenants/ and click
+*Onboard*. Click *Finish* — the backend leaves bootstrap mode and the
+login dialog appears.
+
+** The Tenant Provisioner wizard
+
+The first time you log in as a tenant administrator, ORE Studio launches
+the *New Tenant Provisioner*. It seeds the tenant with reference data
+and, optionally, an initial party hierarchy. You can skip it with
+*Cancel* and set everything up by hand later from the Data Librarian and
+Parties windows.
+
+*** Welcome
+
+#+caption: The Tenant Provisioner welcome page, listing its three steps: select a reference-data catalogue, choose a party structure, and execute.
+[[../../../assets/images/tenant_provisioner_setup.png]]
+
+The welcome page outlines the steps: select a catalogue, choose how to
+populate the party hierarchy, and execute. Click *Next*.
+
+*** Select a catalogue
+
+#+caption: Selecting a reference-data catalogue — a pre-configured set of currencies, countries, and market standards.
+[[../../../assets/images/tenant_provisioner_select_catalogue.png]]
+
+A /catalogue/ is a ready-made bundle of reference data. The /Base System/
+catalogue provides industry-standard ISO and FpML data — country codes,
+currency codes, and financial-market standards — suitable for production
+use. Choose a catalogue and click *Next*.
+
+*** Choose a data source
+
+#+caption: Choosing how to populate the party hierarchy: search the GLEIF LEI registry, or generate realistic synthetic data.
+[[../../../assets/images/tenant_provisioner_choose_data_source.png]]
+
+Decide how the tenant's party hierarchy is seeded:
+
+- *GLEIF Registry* — search the global LEI registry for your real
+  organisation and import its structure.
+- *Generate Synthetic Data* — create realistic generated parties, useful
+  for evaluation and testing.
+
+Click *Next*.
+
+*** Party setup (optional)
+
+#+caption: The optional Party Setup step. Search the GLEIF LEI registry, pick a root entity (here Barclays PLC), and its child entities are created automatically.
+[[../../../assets/images/tenant_provisioner_party_setup.png]]
+
+If you chose the GLEIF registry, search it for your organisation: pick an
+*LEI dataset size*, filter by *Country*, and search by entity name. The
+entity you select becomes the root of your party hierarchy, and its child
+entities in the registry are created automatically. This step is optional
+— skip it to set parties up manually later. Click *Next*.
+
+*** Publishing
+
+#+caption: The publishing step. The catalogue and party data are published to the tenant in one operation, with live progress tracking.
+[[../../../assets/images/tenant_provisioner_dataset_publishing.png]]
+
+ORE Studio publishes the selected catalogue and party data to the tenant,
+tracking progress per dataset.
+
+#+caption: Publishing complete — all datasets have been published to the tenant.
+[[../../../assets/images/tenant_provisioner_dataset_publishing_complete.png]]
+
+*** Setup complete
+
+#+caption: The Tenant Provisioner summary, confirming the reference data and parties that were set up.
+[[../../../assets/images/tenant_provisioner_setup_complete.png]]
+
+The final page confirms what was created. Click *Finish*. The tenant now
+has its reference data and party hierarchy in place.
+
+** The Party Provisioner wizard
+
+Where the Tenant Provisioner establishes the party /hierarchy/, the
+*Party Setup* wizard configures the operational structure /within/ a
+party: it imports counterparties and creates a standard set of
+risk-report definitions. It runs for a party that needs initial setup,
+and can be skipped with *Cancel* (counterparties and reports can be
+configured later from the application menus).
+
+*** Welcome
+
+#+caption: The Party Setup welcome page, listing its steps: counterparty import, report definitions, and execute.
+[[../../../assets/images/party_provisioner_setup.png]]
+
+The welcome page explains that the party hierarchy already exists and
+that this wizard imports counterparties and configures the
+organisational structure. Click *Next*.
+
+*** Counterparty import
+
+#+caption: Choosing the GLEIF dataset size for importing counterparties — the external entities your organisation trades with.
+[[../../../assets/images/party_provisioner_counterparty_import.png]]
+
+/Counterparties/ are the external entities your organisation trades with.
+They are imported from the GLEIF LEI registry; choose the *dataset size*
+to control how many are imported. You can add more later from the
+Counterparties window. Click *Next*.
+
+*** Report definitions
+
+#+caption: Selecting standard risk-report definitions to create — NPV, sensitivities, exposure, CVA, and more. All are scheduled on weekdays.
+[[../../../assets/images/party_provisioner_report_definitions.png]]
+
+Optionally create a set of standard risk-report definitions — model
+calibration, yield curves, FX spot rates, volatility surfaces, credit
+curves, NPV, cashflows, Delta and Gamma, Vega, bucketed DV01, exposure,
+CVA, DVA, and others. Use *Select All* / *Deselect All*, or tick
+individual reports; they can be edited later from the Reporting menu.
+Click *Next*.
+
+*** Execute
+
+#+caption: The execute step. Counterparties are imported and the organisation structure (business units, portfolios, books) and report definitions are created, with a live progress table and log.
+[[../../../assets/images/party_provisioner_setup_party.png]]
+
+ORE Studio runs the setup in phases — importing counterparties,
+publishing the organisation structure (business units, portfolios,
+books), creating the report definitions, and activating the party. When
+it completes, click *Commit*.
+
+*** Setup complete
+
+#+caption: The Party Setup summary, confirming the counterparties, structure, and reports that were created.
+[[../../../assets/images/party_provisioner_setup_complete.png]]
+
+The final page confirms what was set up. The party is now fully
+operational: it has counterparties, an organisational structure, and
+scheduled risk reports.
+
+** Choosing a party at login
+
+Some accounts are associated with more than one party — for example a
+group administrator who can act for several entities. When you log in
+with such an account, ORE Studio asks which party context to use for the
+session.
+
+#+caption: The Select Party dialog. Choose the System Party or an Operational Party; filter by booking centre or search by name.
+[[../../../assets/images/party_selection_dialog.png]]
+
+Choose *System Party* for administrative work, or *Operational Party* to
+work within a specific business entity. Filter the list by booking
+*centre*, or type in the search box to narrow it.
+
+#+caption: The Select Party dialog with a recently used party listed under /Recent/ at the top for quick access.
+[[../../../assets/images/party_selector_recent_party.png]]
+
+Select a party and click *Select*. Your data visibility for the session
+is determined by the party you choose and its position in the hierarchy.

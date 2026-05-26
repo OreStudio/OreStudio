@@ -20,11 +20,9 @@
 #ifndef ORES_QT_WORKSPACE_MDI_WINDOW_HPP
 #define ORES_QT_WORKSPACE_MDI_WINDOW_HPP
 
-#include <vector>
 #include <QToolBar>
-#include <QTreeWidget>
-#include <QTreeWidgetItem>
-#include "ores.qt/BadgeCache.hpp"
+#include <QTableView>
+#include <QSortFilterProxyModel>
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientWorkspaceModel.hpp"
@@ -37,8 +35,8 @@ namespace ores::qt {
 /**
  * @brief MDI window for displaying and managing workspaces.
  *
- * Provides a tree view of workspaces with toolbar actions
- * for reload, add, open, edit, archive, and delete.
+ * Provides a table view of workspaces with toolbar actions
+ * for reload, add, edit, delete, and viewing history.
  */
 class WorkspaceMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
@@ -57,7 +55,6 @@ public:
     explicit WorkspaceMdiWindow(
         ClientManager* clientManager,
         const QString& username,
-        BadgeCache* badgeCache = nullptr,
         QWidget* parent = nullptr);
     ~WorkspaceMdiWindow() override = default;
 
@@ -65,17 +62,15 @@ signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void showWorkspaceDetails(const workspace::domain::workspace& workspace);
-    void showWorkspaceHistory(const workspace::domain::workspace& workspace);
     void addNewRequested();
     void workspaceDeleted(const QString& code);
-    void workspaceActivated(const workspace::domain::workspace& workspace);
+    void showWorkspaceHistory(const workspace::domain::workspace& workspace);
 
 public slots:
     void addNew();
     void editSelected();
-    void archiveSelected();
     void deleteSelected();
-    void openSelected();
+    void viewHistorySelected();
 
 protected:
     void doReload() override;
@@ -84,8 +79,7 @@ private slots:
     void onDataLoaded();
     void onLoadError(const QString& error_message, const QString& details = {});
     void onSelectionChanged();
-    void onItemDoubleClicked(QTreeWidgetItem* item, int column);
-    void onHistoryRequested();
+    void onDoubleClicked(const QModelIndex& index);
 
 protected:
     QString normalRefreshTooltip() const override {
@@ -95,28 +89,25 @@ protected:
 private:
     void setupUi();
     void setupToolbar();
-    void setupTree();
+    void setupTable();
     void setupConnections();
     void updateActionStates();
-    void buildTree();
 
     ClientManager* clientManager_;
     QString username_;
-    BadgeCache* badgeCache_;
 
     QToolBar* toolbar_;
-    QTreeWidget* treeWidget_;
+    QTableView* tableView_;
     ClientWorkspaceModel* model_;
+    QSortFilterProxyModel* proxyModel_;
     PaginationWidget* paginationWidget_;
 
     // Toolbar actions
     QAction* reloadAction_;
     QAction* addAction_;
-    QAction* openAction_;
     QAction* editAction_;
-    QAction* historyAction_;
-    QAction* archiveAction_;
     QAction* deleteAction_;
+    QAction* historyAction_;
 };
 
 }

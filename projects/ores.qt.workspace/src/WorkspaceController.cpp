@@ -22,20 +22,11 @@
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include <QVariant>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/UiPersistence.hpp"
-#include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/WorkspaceMdiWindow.hpp"
 #include "ores.qt/WorkspaceDetailDialog.hpp"
 #include "ores.qt/WorkspaceHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.workspace.api/messaging/workspace_protocol.hpp"
 
 namespace ores::qt {
 
@@ -46,11 +37,9 @@ WorkspaceController::WorkspaceController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
-    BadgeCache* badgeCache,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
-      badgeCache_(badgeCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -67,7 +56,7 @@ void WorkspaceController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new WorkspaceMdiWindow(clientManager_, username_, badgeCache_);
+    listWindow_ = new WorkspaceMdiWindow(clientManager_, username_);
 
     // Connect signals
     connect(listWindow_, &WorkspaceMdiWindow::statusChanged,
@@ -80,20 +69,17 @@ void WorkspaceController::showListWindow() {
             this, &WorkspaceController::onAddNewRequested);
     connect(listWindow_, &WorkspaceMdiWindow::showWorkspaceHistory,
             this, &WorkspaceController::onShowHistory);
-    connect(listWindow_, &WorkspaceMdiWindow::workspaceActivated,
-            this, &WorkspaceController::onWorkspaceActivated);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Workspaces");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+        Icon::Layers, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
-    listMdiSubWindow_->setGeometryKey("WorkspaceListWindow");
+    listMdiSubWindow_->resize(listWindow_->sizeHint());
+
     mdiArea_->addSubWindow(listMdiSubWindow_);
-    if (!UiPersistence::restoreMdiGeometry("WorkspaceListWindow", listMdiSubWindow_))
-        listMdiSubWindow_->resize(900, 400);
     listMdiSubWindow_->show();
 
     // Track window
@@ -144,72 +130,6 @@ void WorkspaceController::onAddNewRequested() {
     showAddWindow();
 }
 
-void WorkspaceController::onWorkspaceActivated(
-    const workspace::domain::workspace& ws) {
-
-    const std::string ws_id = boost::uuids::to_string(ws.id);
-    BOOST_LOG_SEV(lg(), debug) << "Workspace activation requested: " << ws_id;
-
-    constexpr std::string_view live_id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
-    if (ws_id == live_id) {
-        WorkspaceContext ctx;
-        mdiArea_->setProperty("ores_workspace_context",
-            QVariant::fromValue(ctx));
-        emit statusMessage(tr("Active workspace: Live"));
-        return;
-    }
-
-    QPointer<WorkspaceController> self = this;
-    const std::string ws_name = ws.name;
-
-    struct ResolveResult {
-        bool success;
-        std::vector<std::string> resolution_order;
-        std::string error;
-    };
-
-    auto task = [self, ws_id]() -> ResolveResult {
-        if (!self) return {false, {}, "Controller destroyed"};
-        workspace::messaging::resolve_workspace_request request;
-        request.workspace_id = ws_id;
-        auto result = self->clientManager_->process_authenticated_request(
-            std::move(request));
-        if (!result) return {false, {}, "Failed to communicate with server"};
-        return {true, result->resolution_order, {}};
-    };
-
-    auto* watcher = new QFutureWatcher<ResolveResult>(self);
-    connect(watcher, &QFutureWatcher<ResolveResult>::finished,
-            self, [self, watcher, ws_id, ws_name]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-
-        if (!self) return;
-
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Resolve failed for workspace "
-                                       << ws_id << ": " << result.error;
-            emit self->errorMessage(QString::fromStdString(result.error));
-            return;
-        }
-
-        WorkspaceContext ctx;
-        ctx.id = QString::fromStdString(ws_id);
-        ctx.name = QString::fromStdString(ws_name);
-        ctx.resolution_order.clear();
-        for (const auto& uuid_str : result.resolution_order)
-            ctx.resolution_order.push_back(QString::fromStdString(uuid_str));
-
-        self->mdiArea_->setProperty("ores_workspace_context",
-            QVariant::fromValue(ctx));
-        emit self->statusMessage(
-            tr("Active workspace: %1").arg(QString::fromStdString(ws_name)));
-    });
-
-    QFuture<ResolveResult> future = QtConcurrent::run(task);
-    watcher->setFuture(future);
-}
-
 void WorkspaceController::onShowHistory(
     const workspace::domain::workspace& workspace) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << workspace.name;
@@ -240,14 +160,11 @@ void WorkspaceController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Workspace");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+        Icon::Layers, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
     connect_dialog_close(detailDialog, detailWindow);
-    detailWindow->setGeometryKey("WorkspaceDetailDialog");
-    if (!UiPersistence::restoreMdiGeometry("WorkspaceDetailDialog", detailWindow))
-        detailWindow->resize(600, 450);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
@@ -292,7 +209,7 @@ void WorkspaceController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Workspace: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+        Icon::Layers, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
@@ -307,9 +224,6 @@ void WorkspaceController::showDetailWindow(
     });
 
     connect_dialog_close(detailDialog, detailWindow);
-    detailWindow->setGeometryKey("WorkspaceDetailDialog");
-    if (!UiPersistence::restoreMdiGeometry("WorkspaceDetailDialog", detailWindow))
-        detailWindow->resize(600, 450);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
@@ -371,9 +285,6 @@ void WorkspaceController::showHistoryWindow(
         }
     });
 
-    historyWindow->setGeometryKey("WorkspaceHistoryDialog");
-    if (!UiPersistence::restoreMdiGeometry("WorkspaceHistoryDialog", historyWindow))
-        historyWindow->resize(750, 500);
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
@@ -467,9 +378,6 @@ void WorkspaceController::onRevertVersion(
     register_detachable_window(detailWindow);
 
     connect_dialog_close(detailDialog, detailWindow);
-    detailWindow->setGeometryKey("WorkspaceDetailDialog");
-    if (!UiPersistence::restoreMdiGeometry("WorkspaceDetailDialog", detailWindow))
-        detailWindow->resize(600, 450);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 

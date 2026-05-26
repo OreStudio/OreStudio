@@ -8,7 +8,7 @@
 #+level: s1
 #+filetags: :compass:tooling:python:backlog:sprint_18:v0:compass_product_backlog:
 #+owner: marco
-#+branch:
+#+branch: feature/compass-product-backlog
 #+pr: 824
 #+blocked_on: none
 #+blocked_since:
@@ -30,11 +30,11 @@ the repo root.
 
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
-| State        | BACKLOG                                                            |
+| State        | DONE                                                            |
 | Parent story | [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — near and far listing]] |
-| Now          | Not yet started.                                                   |
+| Now          | Complete.                                    |
 | Waiting on   | Nothing.                                                           |
-| Next         | Fix CWD bug in compass.sh; implement cmd_backlog in compass.py.    |
+| Next         | None.                                                              |
 | Last touched | 2026-05-24                                                         |
 
 * Acceptance

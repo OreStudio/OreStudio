@@ -26,11 +26,11 @@ Transform `projects/modeling/system_model.org` from a flat component inventory i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]] |
-| Now          | Rewrote system model with blurbs, tables, and narrative introduction. |
-| Waiting on   | Build verification — check for broken id-links. |
-| Next         | Fix any broken id-links and verify site build. |
+| Now          | Complete.                                    |
+| Waiting on   | Nothing.                                        |
+| Next         | None.                                           |
 | Last touched | 2026-05-26                               |
 
 * Acceptance

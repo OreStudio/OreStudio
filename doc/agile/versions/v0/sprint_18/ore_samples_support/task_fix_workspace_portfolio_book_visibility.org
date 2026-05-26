@@ -28,11 +28,11 @@ propagation, UI data-loading path, or missing join); and apply the fix.
 
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
-| State        | STARTED                                                            |
+| State        | DONE                                                            |
 | Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]]                                |
-| Now          | Fix applied to portfolio_repository.cpp and book_repository.cpp.  |
+| Now          | Complete.                                    |
 | Waiting on   | Nothing.                                                           |
-| Next         | PR review; merge.                                                  |
+| Next         | None.                                                              |
 | Last touched | 2026-05-25                                                         |
 
 * Acceptance

@@ -1,0 +1,218 @@
+:PROPERTIES:
+:ID: 669DF15D-AD78-4F9A-8A53-49DF0EEC9455
+:END:
+#+title: Task: Health review 2 — sprint 18 backlog audit and shape check
+#+description: Audit all sprint 18 stories and tasks: close items with incorrect status, verify story/task shapes follow the document contract, and flag anything that needs cleanup.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sprint_health_review:sprint_18:v0:
+#+owner: marco
+#+branch: feature/sprint-health-review-2
+#+pr: 867
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Perform a second System 2 health review of sprint 18 at or near
+sprint close. The focus is correctness of the backlog record rather
+than load metrics: find stories and tasks with wrong state (e.g. code
+merged but still STARTED), verify every artefact follows the
+story/task document contract (required fields, section shapes), and
+flag or fix anything that would leave the sprint record inconsistent.
+
+* Status
+
+| Field        | Value                                        |
+|--------------+----------------------------------------------|
+| State        | DONE                                         |
+| Parent story | [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]]     |
+| Now          | Complete.                                    |
+| Waiting on   | Nothing.                                     |
+| Next         | None.                                        |
+| Last touched | 2026-05-26                                   |
+
+* Acceptance
+
+- Every sprint 18 story has the correct State (DONE if all tasks are
+  merged and closed, STARTED only if active work remains).
+- Every sprint 18 task has: =#+branch:= set, =#+pr:= set (if DONE),
+  a =* PRs= table with =[[url][#NNN]]= link (if DONE), and =Now:
+  Complete.= (if DONE).
+- No story or task has a placeholder Goal, empty Acceptance, or
+  un-cleared Plan section.
+
+* Plan
+
+* Notes
+
+* PRs
+
+| PR  | Title                                                                  |
+|-----+------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/867][#867]] | [agile] Sprint 18 health review 2 — backlog audit and shape check |
+
+* Review
+
+| # | Comment summary                                              | File                                             | Decision | Notes                                                        |
+|---+--------------------------------------------------------------+--------------------------------------------------+----------+--------------------------------------------------------------|
+| 1 | =* Plan= placeholder not cleared in DONE task               | task_health_review_2.org:55                      | Applied  | Removed placeholder text. Fixed in 23ce965b5.               |
+| 2 | =#+branch:= empty on task_implement_sprint_reviewer         | task_implement_sprint_reviewer.org:12            | Applied  | Set =feature/sprint-health-review=. Fixed in 23ce965b5.     |
+| 3 | =Waiting on= / =Next= stale in task_fix_db_operations       | task_fix_db_operations_use_env.org:35            | Applied  | Set =Nothing.= / =None.=. Fixed in 23ce965b5.               |
+| 4 | =Next= stale in task_implement_runbook_doc_type             | task_implement_runbook_doc_type.org:31           | Applied  | Set =None.=. Fixed in 23ce965b5.                            |
+| 5 | =Next= stale in system_model_readability story              | system_model_readability/story.org:27            | Applied  | Set =None.=. Fixed in 23ce965b5.                            |
+| 6 | =Waiting on= / =Next= stale in task_rewrite_system_model    | task_rewrite_system_model.org:31                 | Applied  | Set =Nothing.= / =None.=. Fixed in 23ce965b5.               |
+| 7 | =Next= stale in site_pdf_and_manual_book story              | site_pdf_and_manual_book/story.org:30            | Applied  | Set =None.=. Fixed in 23ce965b5.                            |
+| 8 | =Next= stale in task_implement_product_backlog_listing      | task_implement_product_backlog_listing.org:35    | Applied  | Set =None.= and =#+branch: feature/compass-product-backlog=. Fixed in 23ce965b5. |
+| 9 | =Next= stale in task_fix_workspace_portfolio_book_visibility | task_fix_workspace_portfolio_book_visibility.org:33 | Applied | Set =None.=. Fixed in 23ce965b5.                           |
+| 10 | =#+pr:= field reportedly empty                             | task_health_review_2.org:12                      | Not changed | Already set to =867= when PR was raised.               |
+
+* Result
+
+** Review on 2026-05-26 (day 5 of 7)
+
+*** Goal alignment
+
+| Goal                         | Coverage | Stories (DONE / STARTED / BACKLOG) | Verdict |
+|------------------------------+----------+------------------------------------+---------|
+| ORE imports into workspaces  | WEAK     | 1 / 1 / 3                          | AMBER   |
+| More ORE types               | WEAK     | 0 / 0 / 1                          | RED     |
+| Compass tool                 | STRONG   | 9 / 0 / 2                          | GREEN   |
+| Backlog refinement tooling   | STRONG   | 2 / 0 / 0                          | GREEN   |
+
+Goal 1 (ORE imports) has improved marginally since review 1: one story
+(=ore_samples_support=) is now STARTED and one task (portfolio/book
+visibility fix, PR #850) has merged. Three stories remain BACKLOG.
+With two days left only incremental progress is realistic.
+
+Goal 2 (more ORE types) is fully unstarted — =ore_types_example_1= is
+still BACKLOG with no tasks. This goal will not be achieved this sprint.
+
+Goal 3 (compass) is GREEN: nine stories DONE, two still BACKLOG
+(=compass_product_backlog= and =compass_pr_review=) but the core tool
+is shipped and functional.
+
+Goal 4 (backlog refinement tooling) is complete.
+
+*Scope not serving goals*: =runbook_support=, =site_pdf_and_manual_book=,
+=sprint_health_review=, =system_model_readability=, =user_manual_pdf_build=,
+=ores_studio_emacs_dashboard=, =tufte_skill_port=, =port_domain_concept_notes=
+are enabler/housekeeping stories with no direct mapping to the four goals.
+These are legitimate; they should not close the sprint if the primary goals
+remain unachieved.
+
+*** Sprint load
+
+| Metric              | Value   | Target   | Status |
+|---------------------+---------+----------+--------|
+| Commits so far      | 306     | —        | —      |
+| Elapsed days        | 5 of 7  | ≤ 7 days | GREEN  |
+| Commits/day         | 61.2    | —        | —      |
+| Projected at close  | ~428    | ≤ 300    | RED    |
+
+At 306 commits over 5 days the sprint has already exceeded the 300-commit
+target. Projected close is ~428, well into the RED band. This is a
+characteristic pattern of an enabling sprint: many small PRs for tooling,
+docs, and agile scaffolding rather than large feature branches.
+
+*Recommendation*: Accept the overrun — the nature of this sprint (compass,
+runbooks, dashboard, site, agile tooling) inherently produces many small
+commits. Revisit the 300-commit threshold; it may be too tight for sprints
+with a heavy tooling/doc component.
+
+*** PR velocity
+
+| Metric               | Value      | Notes                              |
+|----------------------+------------+------------------------------------|
+| PRs merged           | 71         | Over 5 days                        |
+| PRs/day              | 14.2       | High; tooling sprint pattern       |
+| Open PRs             | 2          | #865, #866                         |
+| Longest open PR      | <1 day     | Both raised today                  |
+| WIP accumulation     | None       | Clean                              |
+
+PR #865 (workspace list and detail improvements) and PR #866 (manual
+screenshots + tufte polish) were both raised today and are not WIP
+accumulation. Merge cadence is healthy.
+
+*Recommendation*: No action required.
+
+*** Story and task balance — shape audit
+
+This review's primary focus. The following items have incorrect state
+or missing required fields.
+
+*Tasks with merged PR but wrong state:*
+
+| Task                                  | Story                        | Current state | Correct state | PR    |
+|---------------------------------------+------------------------------+---------------+---------------+-------|
+| task_fix_workspace_portfolio_book_visibility | ore_samples_support   | STARTED       | DONE          | #850  |
+| task_fix_db_operations_use_env        | ores_studio_emacs_dashboard  | STARTED       | DONE          | #849  |
+| task_implement_runbook_doc_type       | runbook_support              | STARTED       | DONE          | #860  |
+| task_rewrite_system_model             | system_model_readability     | STARTED       | DONE          | #862  |
+| task_implement_product_backlog_listing | compass_product_backlog     | BACKLOG       | DONE          | #824  |
+
+*Stories with stale state (all tasks done, story still open):*
+
+| Story                    | Current state | Correct state | Reason                              |
+|--------------------------+---------------+---------------+-------------------------------------|
+| site_pdf_and_manual_book | STARTED       | DONE          | Only task =task_fix_pdf_and_book_class= is DONE |
+| system_model_readability | STARTED       | DONE          | Only task PR #862 is merged         |
+
+*Tasks with empty =#+pr:= despite a known PR:*
+
+| Task                            | Story                  | Known PR |
+|---------------------------------+------------------------+----------|
+| task_health_review_1            | sprint_health_review   | None (written directly; no dedicated PR) |
+| task_implement_sprint_reviewer  | sprint_health_review   | =#839= — field empty; PRs table has the link |
+
+*compass_product_backlog story* is BACKLOG but =task_implement_product_backlog_listing=
+has PR #824 (merged). The story should be at least DONE for that task.
+=task_compass_remember_command= is DISCOVERED — either start it or park it.
+
+*DONE/total ratio*: 17/31 = 55% (sprint.org table); with above fixes
+applied → 19/31 = 61%. Two days remaining.
+
+*** Focus signal
+
+| Metric                    | Value | Verdict |
+|---------------------------+-------+---------|
+| Simultaneously STARTED    | 7     | AMBER   |
+| Distinct active worktrees | 4     | —       |
+| Theme coherence           | Mixed | AMBER   |
+
+Seven stories are nominally STARTED but four of them will be DONE
+once the shape fixes above are applied (site_pdf_and_manual_book,
+system_model_readability, ores_studio_emacs_dashboard tasks, runbook_support).
+Real in-flight count is 3: =ore_samples_support=, =user_manual_pdf_build=,
+=sprint_health_review=. That is GREEN.
+
+*** Overall verdict
+
+| Dimension          | Verdict |
+|--------------------+---------|
+| Goal alignment     | AMBER   |
+| Sprint load        | RED     |
+| PR velocity        | GREEN   |
+| Story/task balance | AMBER   |
+| Focus signal       | AMBER   |
+| *Overall*          | *AMBER* |
+
+Sprint 18 is on day 5 of 7. The two primary goals (ORE imports, ORE
+types) remain substantially unachieved; the sprint will close with
+them BACKLOG or minimally started. The sprint has instead delivered
+strong compass, tooling, and agile infrastructure output. The record
+is in reasonable shape but has a cluster of tasks and stories with
+stale STARTED or BACKLOG states where the code has in fact shipped —
+these should be corrected before sprint close so the retrospective
+reads accurately. Sprint load is RED at 306 commits but this is a
+structural feature of tooling sprints rather than a signal of
+dysfunction. The most important action before close: fix the five
+stale tasks and two stale stories flagged above, and make a binary
+decision on whether to start =ore_types_example_1= in the remaining
+two days or formally defer it.

@@ -106,8 +106,11 @@ NATS sections task.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                              | File          | Decision | Notes                          |
+|---+----------------------------------------------+---------------+----------+--------------------------------|
+| 1 | Mark task DONE, Now → Complete.              | task doc      | Accept   | Fixed in =1d675a477=           |
+| 1 | Tick all acceptance criteria [X]             | task doc      | Accept   | Fixed in =1d675a477=           |
+| 1 | RAFT → Raft (name, not acronym)              | nats.org      | Accept   | Fixed in =1d675a477=           |
+| 1 | Super-cluster → Supercluster (official term) | nats.org      | Accept   | Fixed in =1d675a477=           |
 
 * Result

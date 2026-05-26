@@ -56,8 +56,12 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                           | File                  | Decision  | Notes                                          |
+|---+-------------------------------------------+-----------------------+-----------+------------------------------------------------|
+| 1 | Missing ores.service                      | system_model.org      | Applied   | Added with UUID 9CFAC175 (Infrastructure)       |
+| 2 | Missing ores.analytics, ores.storage      | system_model.org      | Applied   | Added with original UUIDs (Domain)              |
+| 3 | Missing ores.shell                        | system_model.org      | Applied   | Added with UUID D0876A24 (Application)          |
+| 4 | Dependency order row in Foundation table  | system_model.org      | Applied   | Moved outside table as standalone paragraph     |
+| 5 | ores.http.server lost ID link             | system_model.org      | Declined  | New entry — no UUID exists in original          |
 
 * Result

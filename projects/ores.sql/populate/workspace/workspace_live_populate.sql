@@ -13,8 +13,8 @@
  * ores_utility_live_workspace_id_fn(). This workspace is the root of all
  * workspace inheritance chains and can never be archived.
  *
- * The insert trigger validates modified_by; the bootstrap bypass (no non-service
- * user accounts yet) allows 'system' at database creation time.
+ * Run as the ddl service role: current_user resolves to 'ddl', which passes
+ * the modified_by validator. Use: run_sql.sh --user ddl -f <this_file>
  */
 
 DO $$
@@ -37,7 +37,7 @@ BEGIN
             (v_live_id, 0, 'Live', 'Live production data space', '',
              null, null,
              v_system_owner, 'active',
-             'system', 'system', 'system.initial_load', 'System initialisation',
+             current_user, current_user, 'system.initial_load', 'System initialisation',
              now(), 'infinity');
 
         raise notice 'Live workspace seeded: id=%', v_live_id;

@@ -99,10 +99,10 @@ In execution order.
 Charts generated from git history and gh API data via =cmake --build ... --target sprint_charts -DSPRINT=18=.
 
 #+attr_html: :width 100%
-[[file:assets/images/sprint_18/sprint_activity.png]]
+[[file:assets/images/sprint_activity_sprint_18.png]]
 
 #+attr_html: :width 100%
-[[file:assets/images/sprint_18/sprint_progress.png]]
+[[file:assets/images/sprint_progress_sprint_18.png]]
 
 - Sprint Activity — PRs & Commits per day (top), PR cycle time (middle), daily line churn (bottom).
 - Sprint Progress — cumulative stories done (top), PR cycle time per PR (bottom).

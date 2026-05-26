@@ -5,7 +5,7 @@
 sprint_str = sprintf("%02d", sprint)
 
 set terminal pngcairo size 1200, 900 font "sans,10"
-set output sprintf("assets/images/sprint_%s/sprint_progress.png", sprint_str)
+set output sprintf("assets/images/sprint_progress_sprint_%s.png", sprint_str)
 set datafile separator "\t"
 set style fill solid 0.7
 set grid ytics lc rgb "#cccccc" lw 1

@@ -363,9 +363,9 @@ add_custom_target(generate_protocol_docs
 add_custom_target(sprint_charts
     COMMENT "Generating sprint health charts (requires python3 and gnuplot)" VERBATIM
     COMMAND which gnuplot >/dev/null 2>&1 || echo "Warning: gnuplot not found"
-    COMMAND mkdir -p ${CMAKE_SOURCE_DIR}/assets/images/sprint_${SPRINT}
     COMMAND python3 ${CMAKE_SOURCE_DIR}/scripts/sprint_metrics.py --sprint ${SPRINT}
     COMMAND cd ${CMAKE_SOURCE_DIR} && gnuplot -e "sprint=${SPRINT}" scripts/plot_sprint_metrics.gnuplot
+    COMMAND cd ${CMAKE_SOURCE_DIR} && gnuplot -e "sprint=${SPRINT}" scripts/plot_sprint_metrics2.gnuplot
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 set(SPRINT 18 CACHE STRING "Sprint number for sprint_charts target")
 

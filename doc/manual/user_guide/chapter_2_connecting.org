@@ -462,12 +462,10 @@ from the colour.
 *** Configuration directory
 
 By default ORE Studio stores its UI settings — preferences and window
-layout — in the platform's standard user configuration directory
-(=~/.config/OreStudio/= on Linux,
-=~/Library/Application Support/OreStudio/= on macOS,
-=%APPDATA%\OreStudio\= on Windows). Your saved connections live
-separately, in =connections.db= (see [[*Where your connections are stored][Where your connections are
-stored]]). To use a different directory:
+layout — in the operating system's standard settings store. The exact
+per-OS locations are listed under [[*Where your connections are stored][Where your connections are stored]];
+your saved connections live separately in =connections.db=. To use a
+different directory:
 
 #+begin_src sh
 ores --config-dir /path/to/config

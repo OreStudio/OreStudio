@@ -64,6 +64,10 @@ behaviour, even if the user did not explicitly ask for a manual update.
    [[../../../assets/images/TODO_descriptive_name.png]]
    #+end_example
 
+   The link path is relative to the chapter file, which lives in
+   =doc/manual/user_guide/= — three levels above the repo-root =assets/=,
+   hence =../../../=.
+
    Name placeholder files with the =TODO_= prefix so they stand out in
    the file list and are easy to search for.
 

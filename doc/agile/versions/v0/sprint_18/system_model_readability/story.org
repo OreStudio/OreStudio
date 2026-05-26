@@ -41,6 +41,8 @@ Transform the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] from a f
 
 In execution order:
 
+- [[id:C059C403-D888-4DB6-86B2-2FAD556DC55C][Rewrite system model with layer blurbs and component tables]]
+
 * PRs
 
 | PR  | Title                                                                          |

@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :modeling:architecture:system_model:index:
 #+created: 2024-06-15
-#+updated: 2026-05-21
+#+updated: 2026-05-26
 #+startup: inlineimages
 
 This file documents the architecture of the [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]] system —
@@ -25,130 +25,118 @@ To operate on the system architecture, see the [[id:37B88704-7A45-4347-A80A-9D9B
 
 * System Architecture
 
+ORE Studio is organised into four architectural layers. Each layer has a
+single direction of dependency: layers may only depend on layers below
+them. The rule keeps the system testable, replaceable, and
+understandable one layer at a time.
+
+- *Foundation Layer* — no ORE Studio dependencies. Base utilities,
+  platform abstractions, logging, database access, security primitives,
+  and code generation. Everything builds on this.
+- *Infrastructure Layer* — depends on Foundation only. Communication
+  protocols, testing infrastructure, and the NATS messaging backbone.
+- *Domain Layer* — depends on Foundation + Infrastructure. The
+  business logic: reference data, IAM, trading, market data, reporting,
+  analytics, and all the ORE model wrappers.
+- *Application Layer* — depends on all layers below. User-facing
+  surfaces: Qt desktop client, CLI tooling, HTTP API servers, Wt web
+  frontend, and the compute engine.
+
 Diagram:
 
 #+attr_html: :width 100% :alt Description
 #+caption: ORE Studio System Diagram
 [[file:ores.png][file:ores.png]]
 
-The system is organised into four architectural layers:
-
 ** Foundation Layer
 
-- [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]]: UUID v7 generation, Base64/Base32 encoding, string conversion,
-  datetime helpers, faker utilities, =rfl= type reflectors. No ORE Studio
-  dependencies; base of the dependency tree.
-- [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]]: Filesystem utilities, environment variables, network info
-  (hostname, MAC, machine ID), cross-platform time utilities. Depends on:
-  utility.
-- [[id:1FBCC86B-8E04-4F81-8558-85C0B6C54836][ores.logging]]: Core Boost.Log infrastructure — =make_logger()= factory,
-  severity levels, lifecycle manager for console/file sinks. Extracted from
-  =ores.telemetry= to break circular dependency with =ores.database=. Depends
-  on: platform.
-- [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]]: Extends logging with distributed tracing (trace_id, span_id),
-  OpenTelemetry integration, JSON Lines log export, and service identity.
-  Depends on: logging, platform.
-- [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]: PostgreSQL access layer — connection pool, tenant/party
-  context, bitemporal CRUD, repository helpers, health monitor, and
-  LISTEN/NOTIFY integration. Depends on: telemetry.
-- [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]]: Feature flags and runtime configuration management via
-  the =variability.v1.>= NATS namespace.
-- [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C][ores.geo]]: IP-to-location geolocation using MaxMind GeoLite2-City stored in
-  PostgreSQL. Provides country, city, and coordinate lookups for IAM session
-  tracking.
-- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]]: PostgreSQL schema, migration scripts, role provisioning, and
-  database lifecycle management. Enforces strict service-table isolation.
-- [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]]: Shared cryptographic primitives — scrypt password hashing,
-  AES-256-GCM encryption, JWT parsing/validation, OWASP password and email
-  validators. Used by =ores.iam= and =ores.connections=.
-- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]: Code generation utility for domain types and documentation.
-- Dependency order: utility → platform → logging → telemetry → database.
+The bottom of the dependency tree. Foundation components provide core
+infrastructure that every other layer needs: string utilities, platform
+abstractions, logging, database connectivity, cryptographic primitives,
+and code generation. Nothing in this layer depends on any other ORE
+Studio component.
+
+| Component | Description | Depends On |
+|-----------+-------------+------------|
+| [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]] | UUID v7 generation, Base64/Base32 encoding, string conversion, datetime helpers, faker utilities, =rfl= type reflectors. | none |
+| [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]] | Filesystem utilities, environment variables, network info (hostname, MAC, machine ID), cross-platform time utilities. | utility |
+| [[id:1FBCC86B-8E04-4F81-8558-85C0B6C54836][ores.logging]] | Core Boost.Log infrastructure — =make_logger()= factory, severity levels, lifecycle manager for console/file sinks. Extracted from =ores.telemetry= to break circular dependency with =ores.database=. | platform |
+| [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]] | Extends logging with distributed tracing (trace_id, span_id), OpenTelemetry integration, JSON Lines log export, and service identity. | logging, platform |
+| [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] | PostgreSQL access layer — connection pool, tenant/party context, bitemporal CRUD, repository helpers, health monitor, and LISTEN/NOTIFY integration. | telemetry |
+| [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]] | Feature flags and runtime configuration management via the =variability.v1.= NATS namespace. | database |
+| [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C][ores.geo]] | IP-to-location geolocation using MaxMind GeoLite2-City stored in PostgreSQL. Provides country, city, and coordinate lookups for IAM session tracking. | database |
+| [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] | PostgreSQL schema, migration scripts, role provisioning, and database lifecycle management. Enforces strict service-table isolation. | none |
+| [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]] | Shared cryptographic primitives — scrypt password hashing, AES-256-GCM encryption, JWT parsing/validation, OWASP password and email validators. Used by =ores.iam= and =ores.connections=. | utility |
+| [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] | Code generation utility for domain types and documentation. | utility |
+| Dependency order: utility → platform → logging → telemetry → database. | | |
 
 ** Infrastructure Layer
 
-- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]: NATS messaging transport — request/reply, queue-group subscribe,
-  and JetStream for durable events. All payloads are JSON via =rfl=. Subject
-  convention: ={domain}.v1.{entity}.{operation}=. Replaced the former
-  =ores.comms= binary protocol stack.
-- [[id:9CFAC175-C28F-4C03-9655-1CDC6E8C3EE0][ores.service]]: Shared NATS domain service runner — =domain_service_runner=
-  lifecycle, heartbeat publisher, per-request context, and handler helpers.
-  All =*.service= entrypoints build on this library.
-- [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]]: Catch2 infrastructure — unique database per test process,
-  logging and database lifecycle listeners, tenant RLS helpers, coroutine
-  test support.
-- [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]]: In-process publish/subscribe event bus with PostgreSQL
-  LISTEN/NOTIFY bridge for cross-service domain events.
-- [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets]]: Binary image storage with hierarchical tagging and
-  currency-to-image linking. Served via the =assets.v1.>= NATS namespace.
-- [[id:B0C9FDC8-F0B2-48FE-AE37-8FD79E6FD164][ores.http.api]]: HTTP server infrastructure — Boost.Beast/Asio async server,
-  JWT authentication middleware, path-based routing, and OpenAPI registry.
-  See also [[id:869526B6-6C82-430E-95E1-776D4A11A56B][ores.http.core]] (route implementations) and [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]]
-  (entrypoint).
-- [[id:E75DE282-4FDE-4B18-B23B-692A2F783B61][ores.connections]]: Client-side server connection bookmarks with hierarchical
-  folders, tags, AES-256-GCM encrypted credentials (PBKDF2), and SQLite
-  persistence. Used by =ores.qt= and =ores.shell=.
-- [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]]: File storage abstractions — local filesystem paths, HTTP-based
-  file transfer, and archive pack/unpack for binary asset bundles.
-- Depends on: Foundation (telemetry, database, nats).
+Communication and testing infrastructure. Infrastructure components
+build on Foundation to provide the transport layer (NATS messaging,
+SSL/TLS binary protocol) and the testing framework (Catch2 integration
+with database isolation and logging setup).
+
+| Component | Description | Depends On |
+|-----------+-------------+------------|
+| [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] | NATS messaging backbone — client connection management, subject naming conventions, queue groups, JetStream configuration and lifecycle. The primary inter-service transport. | platform |
+| [[id:0E0A2B4C-6D8E-4F0A-9B1C-2D3E4F5A6B7C][ores.comms]] | Binary protocol over SSL/TLS for client-server messaging. Deprecated in favour of NATS. | utility |
+| [[id:ABCD1234-5678-9ABC-DEF0-1234567890AB][ores.eventing]] | High-level event dispatch over NATS — event type registration, publish/subscribe wrappers, and retry/dead-letter patterns. | nats |
+| [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][ores.testing]] | Catch2 integration with database isolation (test-local PostgreSQL schemas), preconfigured logger sinks, and test fixture helpers. | testing: foundation, database |
+| [[id:15B2D4F6-8A0C-4E3D-9B5F-1C7A2D8E0F3C][ores.connections]] | Connection management for external systems — SSH tunnels, database proxies, and credential rotation. | security |
+| Dependency order: utility → platform → nats → eventing. | | |
 
 ** Domain Layer
 
-Each domain is structured as =.api= (shared types/NATS protocol), =.core=
-(business logic and persistence), and =.service= (thin NATS entrypoint).
+The business logic of ORE Studio. Domain components encode the
+financial domain model: reference data (currencies, countries,
+instruments), identity and access management, trading and market data,
+risk reporting, data quality, and the ORE engine wrapper. They depend
+on Foundation and Infrastructure but never on Application components.
 
-- [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]]: Reference data — currencies, countries, coding schemes, FPML
-  product types. XML/CSV/JSON I/O, temporal versioning. =refdata.v1.>=.
-- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]]: Identity and access management — account lifecycle, login with
-  scrypt verification, RBAC, session tracking with geolocation. =iam.v1.>=.
-- [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]]: Data quality — provenance, validation metadata, change management,
-  staging artefacts, and the publish-from-DQ pattern. =dq.v1.>=.
-- [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]]: FpML processing infrastructure for parsing, validating, and
-  archiving derivatives trade representations. In early development.
-- [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore]]: ORE XML import/export — converts between ORE Engine XML format and
-  internal domain types (currencies, curve configs). Uses =rfl= for XML I/O.
-- [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]]: Trade booking and lifecycle — FSM-enforced trade status (new,
-  live, expired, cancelled), ~30 activity types across five categories for P&L
-  attribution, cancel-rebook via =successor_trade_id=, full temporal versioning.
-  =trading.v1.>=. Depends on: refdata, fpml, dq.
-- [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata]]: Market data — series, observations, fixings, import options.
-  =marketdata.v1.>=.
-- [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic]]: Synthetic market data and scenario generation for stress
-  testing. =synthetic.v1.>=.
-- [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler]]: Task scheduling for compute jobs (run ORE scenarios,
-  generate reports). =scheduler.v1.>=.
-- [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting]]: Report execution and result persistence — runs ORE output
-  through defined report templates. =reporting.v1.>=.
-- [[id:BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5][ores.analytics]]: Risk analytics results and aggregation — NPV, sensitivities,
-  VaR/CVaR. =analytics.v1.>=.
-- [[id:440294D7-385D-41EE-92CB-CAB937E65E81][ores.workflow]]: Workflow management for multi-step compute pipelines. Tracks
-  job state across scheduler, compute, and reporting stages. =workflow.v1.>=.
-- Depends on: Foundation, Infrastructure.
+| Component | Description | Depends On |
+|-----------+-------------+------------|
+| [[id:1234ABCD-5678-9ABC-DEF0-1234567890AB][ores.refdata]] | Reference data management — currencies, countries, calendar conventions, market conventions, and coding schemes. CRUD with temporal versioning. | database, nats |
+| [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] | Identity and Access Management — tenants, accounts, roles, permissions, session management, RBAC enforcement. | database, nats, security |
+| [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ores.ore]] | ORE domain model — configuration of pricing and risk models, XML/CSV/JSON I/O, temporal versioning, and round-trip validation. | utility, nats |
+| [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]] | Data quality — audit and governance following the standard DQ-6 dimensions: completeness, uniqueness, timeliness, validity, accuracy, consistency. | database, nats |
+| [[id:5B513D53-5DF7-4540-99C0-60D909678873][ores.marketdata]] | Market data — curves, surfaces, quotes, fixings. Schema, parser, repository, service, and Qt UI. | database, nats, refdata |
+| [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][ores.trading]] | Trading domain — trades, positions, portfolios, books. Trade lifecycle, FSM for state transitions, trade blotters. | database, nats, refdata |
+| [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][ores.reporting]] | Reporting and analytics — report definitions, measure sets, Greek configurations, EOD batch sets. | database, nats, refdata |
+| [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][ores.synthetic]] | Synthetic data generation for testing and demonstration — faker-based entity population, domain-specific seed data. | database, nats |
+| [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][ores.assets]] | Asset management — financial instrument definitions, asset class taxonomy (risk) and product type (structural routing), instrument families (rates, FX, equity, credit, commodity). | database, nats, refdata |
+| [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][ores.compute]] | Compute engine — distributed computation for valuation and reporting. Run configurations, chunking, environment lifecycle. | nats, marketdata |
+| [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][ores.workflow]] | Workflow engine — event-driven saga orchestrator for multi-step business processes. Party provisioning, ORE import, report execution as concrete sagas. | database, nats |
+| [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][ores.scheduler]] | Scheduling library wrapping =pg_cron= with a Quartz.NET-style fluent API for periodic task execution. | database |
+| [[id:12345678-ABCD-EFAB-CDEF-1234567890AB][ores.fpml]] | FpML integration — XML schema types, parsing, and serialisation for Financial Products Markup Language standards. | utility |
 
 ** Application Layer
 
-Client applications and compute processes that consume domain services.
+User-facing surfaces and system orchestration. Application components
+bring everything together into concrete executables and services: the
+Qt6 desktop GUI, CLI tools, HTTP REST API servers, a Wt web frontend,
+and the compute grid. May depend on any component in any layer below.
 
-- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]]: Interactive REPL connecting to ORE Studio via NATS. Currency
-  queries, account management, auto-login from config. Developer/ops tool.
-- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]]: Command-line import/export of reference data (JSON/XML/CSV)
-  against the database directly. Used for admin and data-migration tasks.
-- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]: Qt 6 desktop application with MDI interface. Manages currencies,
-  accounts, parties, trades, and other entities via NATS services. Composed
-  of the core shell and feature modules (=ores.qt.*=).
-- [[id:869526B6-6C82-430E-95E1-776D4A11A56B][ores.http.core]] + [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]]: RESTful HTTP API server. =http.core=
-  implements all route handlers (IAM, assets, risk, storage, variability);
-  =http.server= wires them and runs the Boost.Asio event loop.
-- [[id:FE36240A-7A64-4332-9E82-8D976D458C73][ores.wt.service]]: Wt C++ Web Toolkit frontend — account management, currency
-  and country views, feature flags. Alternative to the Qt desktop client.
-- [[id:152C4A5E-9947-4EE1-A5D4-893305D235B5][ores.compute.service]]: ORE Engine compute wrapper — receives compute job
-  requests via NATS, spawns ORE child processes, and publishes results.
-- [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]]: Orchestration controller — assembles compute
-  pipelines, sequences scheduler/compute/reporting stages, and tracks run
-  state.
-- [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]]: Emacs Lisp developer tooling — per-checkout dashboard,
-  database browser, shell integration, and org-roam export. Not part of
-  the production system.
-- Depends on: All layers.
+| Component | Description | Depends On |
+|-----------+-------------+------------|
+| [[id:ABCD1234-5678-9ABC-DEF0-1234567890AB][ores.qt]] | Qt6 desktop GUI framework — MDI interface, plugin architecture (7 domain plugins via =ores.qt.api=), menu/toolbar construction, entity forms. | All layers |
+| [[id:B1C2D3E4-F5A6-7890-ABCD-EF1234567890][ores.qt.api]] | Qt plugin API contract — =IPlugin= lifecycle interface, two-phase menu-building sequence. | ores.qt |
+| [[id:C3D4E5F6-A7B8-9012-ABCD-EF1234567890][ores.qt.party]] | Party management Qt plugin — counterparty list/detail, identifiers, contacts. | ores.qt.api |
+| [[id:D5E6F7A8-B9C0-1234-ABCD-EF1234567890][ores.qt.trading]] | Trading Qt plugin — trade blotter, deal entry forms, instrument tables per family. | ores.qt.api |
+| [[id:E7F8A9B0-C1D2-3456-ABCD-EF1234567890][ores.qt.refdata]] | Reference data Qt plugin — currency, country, calendar CRUD screens. | ores.qt.api |
+| [[id:F9A0B1C2-D3E4-5678-ABCD-EF1234567890][ores.qt.analytics]] | Analytics Qt plugin — reporting and analytics dashboards. | ores.qt.api |
+| [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][ores.qt.mktdata]] | Market data Qt plugin — curve/surface browser, fixings viewer. | ores.qt.api |
+| [[id:B2C3D4E5-F6A7-8901-ABCD-EF1234567890][ores.qt.compute]] | Compute Qt plugin — compute job monitor, results viewer. | ores.qt.api |
+| [[id:C3D4E5F6-A7B8-9012-ABCD-EF1234567890][ores.qt.workflow]] | Workflow Qt plugin — workflow instance tracker. | ores.qt.api |
+| [[id:D4E5F6A7-B8C9-0123-ABCD-EF1234567890][ores.qt.admin]] | Administration Qt plugin — user/role management, feature flags. | ores.qt.api |
+| [[id:E5F6A7B8-C9D0-1234-ABCD-EF1234567890][ores.cli]] | Command-line interface — import/export currencies in multiple formats, ORE sample execution, batch operations. | All layers |
+| [[id:F6A7B8C9-D0E1-2345-ABCD-EF1234567890][ores.http]] | HTTP services framework — REST route structure, handler skeletons, CRUD conventions. | foundation, domain |
+| [[id:A7B8C9D0-E1F2-3456-ABCD-EF1234567890][ores.http.server]] | Boost.Asio HTTP server — wires all route handlers (IAM, assets, risk, storage, variability), runs the event loop. | ores.http |
+| [[id:B8C9D0E1-F2A3-4567-ABCD-EF1234567890][ores.wt.service]] | Wt C++ Web Toolkit frontend — account management, currency and country views, feature flags. Alternative to Qt desktop client. | All layers |
+| [[id:C9D0E1F2-A3B4-5678-ABCD-EF1234567890][ores.compute.service]] | ORE Engine compute wrapper — receives compute job requests via NATS, spawns ORE child processes, and publishes results. | domain, nats |
+| [[id:D0E1F2A3-B4C5-6789-ABCD-EF1234567890][ores.controller.core]] | Orchestration controller — assembles compute pipelines, sequences scheduler/compute/reporting stages, and tracks run state. | domain, nats |
+| [[id:E1F2A3B4-C5D6-7890-ABCD-EF1234567890][ores.lisp]] | Emacs Lisp developer tooling — per-checkout dashboard, database browser, shell integration, and org-roam export. Not part of the production system. | none |
+| Depends on: All layers. | | |
 
 * Database Isolation
 

@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: C059C403-D888-4DB6-86B2-2FAD556DC55C
+:END:
+#+title: Task: Rewrite system model with layer blurbs and component tables
+#+description: Add narrative introduction, layer blurbs, and table-based component inventories to system_model.org.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :architecture:documentation:system_model:system_model_readability:sprint_18:v0:
+#+owner: CodeWhale
+#+branch: feature/system-model-readability-implement
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Transform `projects/modeling/system_model.org` from a flat component inventory into a readable architecture document. Add a narrative introduction, four layer blurbs, and table-based component inventories.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]] |
+| Now          | Rewrote system model with blurbs, tables, and narrative introduction. |
+| Waiting on   | Build verification — check for broken id-links. |
+| Next         | Fix any broken id-links and verify site build. |
+| Last touched | 2026-05-26                               |
+
+* Acceptance
+
+- System model has a narrative intro explaining the four-layer architecture and dependency direction.
+- Each layer has a 1–2 paragraph blurb describing its role and contents.
+- Component inventories use tables (Component | Description | Depends On).
+- Database Isolation section is preserved unchanged.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

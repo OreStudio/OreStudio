@@ -91,7 +91,7 @@ begin
 
     -- Sessions: end active sessions (uses end_time, not valid_to)
     update ores_iam_sessions_tbl
-    set end_time = to_char(current_timestamp, 'YYYY-MM-DD HH24:MI:SS.US')
+    set end_time = ores_utility_iso8601_timestamp_fn(current_timestamp)
     where tenant_id = p_tenant_id
     and end_time = '';
 

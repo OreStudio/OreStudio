@@ -94,7 +94,7 @@ begin
     -- Step 2: End active sessions for the system tenant
     -- =========================================================================
     update ores_iam_sessions_tbl
-    set end_time = to_char(current_timestamp, 'YYYY-MM-DD HH24:MI:SS.US')
+    set end_time = ores_utility_iso8601_timestamp_fn(current_timestamp)
     where tenant_id = v_system_tenant_id
       and end_time = '';
 

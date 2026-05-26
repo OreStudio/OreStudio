@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 8A5F2C71-7924-4520-8548-25C8EE5E4E9A
+:END:
+#+title: Task: Implement sprint health charts
+#+description: Write Python data extractor, gnuplot scripts, CMake target, and wire PNGs into sprint page.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sprint:health:charts:gnuplot:metrics:sprint_health_charts:sprint_18:v0:
+#+owner: CodeWhale
+#+branch: feature/sprint-health-charts
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8BD3D28A-C5A1-4F8D-A685-1BC6EBF5C812][Sprint health charts]] story.
+
+* Goal
+
+Build the end-to-end sprint metrics pipeline: Python data extractor, gnuplot rendering scripts, CMake integration, and sprint page wiring.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8BD3D28A-C5A1-4F8D-A685-1BC6EBF5C812][Sprint health charts]] |
+| Now          | Story design complete; implementation pending. |
+| Waiting on   | Nothing.                               |
+| Next         | Write sprint_metrics.py skeleton.      |
+| Last touched | 2026-05-26                               |
+
+* Acceptance
+
+- =scripts/sprint_metrics.py --sprint 18= outputs CSVs under =build/output/sprint_18/=.
+- =scripts/plot_sprint_metrics.gnuplot= reads those CSVs and produces PNGs under =assets/images/sprint_18/=.
+- A =sprint_charts= CMake target exists and runs the full pipeline.
+- =sprint.org= includes at least one rendered PNG in the =* Health Review= section.
+- Running the pipeline on sprint 18 produces valid charts (non-empty PNGs).
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR  | Title                                                    |
+|-----+----------------------------------------------------------|
+| 868 | [agile] Add sprint health charts story with task           |
+
+* Review
+
+| # | Comment summary                   | File        | Decision | Notes                          |
+|---+-----------------------------------+-------------+----------+--------------------------------|
+| 1 | mergesAt → mergedAt               | story.org   | Applied  | Fixed in ebe58f8               |
+| 2 | Missing closing = in code path    | task.org    | Applied  | Fixed in ebe58f8               |
+
+* Result

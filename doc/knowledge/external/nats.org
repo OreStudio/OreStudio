@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: D9B0988E-D783-43D6-BCCD-CE2F70022B9C
+:END:
+#+title: NATS
+#+description: The open-source messaging system ORE Studio uses for all inter-service communication.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :nats:messaging:external:knowledge:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+
+[[https://nats.io][NATS]] is an open-source, cloud-native messaging system written in Go
+and maintained by [[https://synadia.com][Synadia]]. It provides publish/subscribe,
+request/reply, and durable streaming (JetStream) over a lightweight
+binary protocol. ORE Studio uses NATS as the /sole/ inter-service
+message bus — every domain service publishes and subscribes over NATS.
+The ORE Studio transport library is [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]. Return to
+[[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Detail
+
+** Subjects and wildcards
+
+A NATS /subject/ is a dot-separated UTF-8 string, e.g.
+=iam.v1.account.find=. Wildcards allow pattern subscriptions:
+
+- =*= matches exactly one subject token (e.g. =iam.v1.*.find= matches
+  =iam.v1.account.find= but not =iam.v1.role.find.all=).
+- =>= matches one or more trailing tokens and must appear last
+  (e.g. =iam.v1.>= matches everything under =iam.v1=).
+
+** Core messaging patterns
+
+*** Publish/subscribe
+
+A publisher sends a message to a subject; all current subscribers
+receive it. Fire-and-forget with no delivery guarantee unless
+JetStream is used.
+
+*** Request/reply
+
+The client sends to a subject with a private reply-to inbox
+(=_INBOX.<nonce>=); the server or service replies to that inbox. NATS
+manages the inbox lifecycle. This is the primary pattern for
+synchronous RPC across ORE Studio services.
+
+*** Queue groups
+
+Multiple subscribers sharing the same queue-group name receive
+messages in a round-robin fashion — exactly one subscriber per
+message. This provides load balancing and horizontal scale-out without
+coordination. ORE Studio uses queue groups on every domain-service
+handler so multiple service instances share load transparently.
+
+** JetStream
+
+JetStream is NATS's built-in persistence layer, available when the
+server starts with =-js=. Key concepts:
+
+- /Stream/ — an append-only, subject-filtered log, retained by age,
+  size, or message count.
+- /Consumer/ — a named cursor into a stream; can be push-based
+  (server delivers) or pull-based (client polls). Supports
+  acknowledgements, redelivery on timeout, and durable state across
+  reconnects.
+- /Key-Value store/ — a JetStream abstraction for versioned key-value
+  data with watch semantics.
+- /Object store/ — chunked, large-object storage layered on JetStream.
+
+ORE Studio uses JetStream for domain events that must survive service
+restarts (e.g. workspace-state changes, audit trails).
+
+** Security
+
+NATS supports three security layers that can be combined:
+
+- /TLS/ — mutual TLS for transport encryption and peer
+  authentication. ORE Studio runs all connections over TLS with
+  server-side and client certificates (see =build/scripts/generate_nats_certs.sh=).
+- /NKeys/ — Ed25519 keypairs used to sign and verify identity tokens.
+  The public key is a human-readable encoded string beginning with a
+  letter that encodes the key type (=O= operator, =A= account, =U=
+  user).
+- /JWT-based operator/account/user model/ — a decentralised
+  multi-tenancy hierarchy. An /operator/ signs /account/ JWTs; each
+  account is an isolated messaging namespace. An account signs /user/
+  JWTs that carry permissions (publish/subscribe allow-lists and
+  limits). ORE Studio uses this model for per-tenant isolation: each
+  registered ORE Studio account receives its own NATS user JWT.
+
+** Deployment modes
+
+| Mode        | Description                                                                 |
+|-------------+-----------------------------------------------------------------------------|
+| Single server | One =nats-server= process. Simplest; no redundancy.                       |
+| Cluster     | 3+ servers using Raft consensus for message and JetStream replication.      |
+| Supercluster | Multiple clusters linked by gateway connections for geo-distribution.    |
+| Leaf node   | A lightweight =nats-server= that extends a hub cluster with local subjects. |
+
+ORE Studio development runs a single server; production targets a
+three-node cluster.
+
+** Client libraries
+
+The canonical client is [[https://github.com/nats-io/nats.c][nats.c]] (C), which ORE Studio wraps in
+[[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]. Other official clients exist for Go, Rust, Python, Java,
+and JavaScript — see [[https://github.com/nats-io][github.com/nats-io]].
+
+* See also
+
+- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — the ORE Studio C++ transport library wrapping =nats.c=.
+- [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Protocol Reference]] — the subject namespace and
+  message types for every domain service.
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System model]] — how NATS fits into ORE Studio's four-layer architecture.
+- [[https://nats.io][nats.io]] — project home page.
+- [[https://docs.nats.io][docs.nats.io]] — official documentation.
+- [[https://github.com/nats-io][github.com/nats-io]] — all NATS client and server repositories.

@@ -54,4 +54,7 @@ stack (=ores.comms=) and is a direct dependency of every domain service.
 
 * See also
 
--
+- [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — the upstream messaging technology: subjects, wildcards, queue
+  groups, JetStream, NKey/JWT security.
+- [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] — index of every service's subject
+  namespace and links to per-service messaging references.

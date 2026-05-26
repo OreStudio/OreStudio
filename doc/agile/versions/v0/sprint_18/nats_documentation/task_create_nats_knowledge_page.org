@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 6FE6B89C-78C4-4FB7-803C-022C3E8FF237
+:END:
+#+title: Task: Create NATS external knowledge page
+#+description: Scaffold doc/knowledge/external/nats.org describing NATS as a technology: subjects, queue groups, JetStream, security model, and upstream links.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :nats_documentation:sprint_18:v0:
+#+owner: marco
+#+branch: feature/create-nats-knowledge-page
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A388F0C8-0804-420F-A542-2C929CFCEC92][Document NATS: technology overview, system integration, and recipes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create =doc/knowledge/external/nats.org= — an external knowledge page
+describing [[https://nats.io][NATS]] as a technology in its own right, independent of ORE
+Studio. Covers core concepts (subjects, wildcards, queue groups,
+JetStream), security (TLS, NKey/JWT auth), deployment modes, and
+upstream links. This mirrors the pattern of [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine
+(ORE)]] and [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]] pages. Wire the new page into [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]]
+under a new "Messaging infrastructure" section.
+
+* Status
+
+| Field        | Value                                               |
+|--------------+-----------------------------------------------------|
+| State        | DONE                                                |
+| Parent story | [[id:A388F0C8-0804-420F-A542-2C929CFCEC92][Document NATS: technology overview, system integration, and recipes]] |
+| Now          | Complete.                                           |
+| Waiting on   | Nothing.                                            |
+| Next         | None.                                               |
+| Last touched | 2026-05-26                                          |
+
+* Acceptance
+
+- [X] =doc/knowledge/external/nats.org= exists with =#+version: 2=,
+  =#+type: knowledge=, scaffolded via =generate_v2_doc.sh=.
+- [X] Covers: what NATS is, subjects and wildcards, queue groups,
+  request/reply, JetStream, security (TLS + NKey/JWT), deployment
+  modes (server, leaf node, cluster).
+- [X] Links to [[https://nats.io][nats.io]], [[https://github.com/nats-io][github.com/nats-io]], and [[https://docs.nats.io][docs.nats.io]].
+- [X] Links back to [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for how ORE Studio uses the transport.
+- [X] =doc/knowledge/external/external.org= has a new "Messaging
+  infrastructure" section with an id-link to =nats.org=.
+- [X] =projects/modeling/protocol.org= renamed to =messaging.org=,
+  ported to v2, title "ORE Studio Messaging Reference", =:ID:= preserved.
+- [X] =messaging.org= links to =nats.org=.
+- [X] =ores.nats= component overview =* See also= links to =nats.org=
+  and =messaging.org=.
+- [X] =system_model.org= "Useful Pages" display text reads "Messaging
+  Reference" (not "Protocol Reference").
+
+* Plan
+
+Four documents form the messaging documentation landscape; their
+responsibilities must be non-overlapping and their cross-links
+complete.
+
+| Document | Responsibility |
+|----------+----------------|
+| =nats.org= (external knowledge) | What NATS is as a technology — concepts, security, upstream links. |
+| =ores.nats= component overview | How ORE Studio uses NATS — C++ transport library, patterns, entry points. |
+| =messaging.org= (renamed from =protocol.org=) | Which service owns which subject namespace — the cross-service index. |
+| =ores.*.protocol.org= (11 files) | Complete subject inventory for one service. |
+
+Navigation chain a developer follows: =nats.org= → =ores.nats= →
+=messaging.org= → =ores.iam.protocol.org=.
+
+*Step 1* — Rename =projects/modeling/protocol.org= to =messaging.org=.
+The name "protocol" was accurate when =ores.comms= (binary protocol)
+existed alongside NATS. =ores.comms= is gone; calling this a
+"protocol reference" now implies a wire-format spec. The per-service
+files are already titled "ores.iam Messaging Reference" — the
+top-level should match. Keep the =:ID:= unchanged so all existing
+id-links survive. Port to v2 format. Add link to =nats.org=.
+
+*Step 2* — Fix =ores.nats= component overview =* See also=, currently
+empty. Add links to =nats.org= (technology) and =messaging.org=
+(namespace index).
+
+*Step 3* — Update =system_model.org= "Useful Pages" entry, which
+refers to "Protocol Reference" by name. The id-link already resolves
+correctly (UUID preserved), but the display text should say "Messaging
+Reference".
+
+*Step 4* (deferred to per-component NATS task) — Port all 11
+=ores.*.protocol.org= files to v2 and add =nats.org= to their See
+also. Touch-it-to-port-it applies; they are covered by the component
+NATS sections task.
+
+* Notes
+
+* PRs
+
+| PR                                                          | Title                              | State | Round |
+|-------------------------------------------------------------+------------------------------------+-------+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/872][#872]] | [doc] Add NATS external knowledge page | OPEN  |     1 |
+
+* Review
+
+| # | Comment summary                              | File          | Decision | Notes                          |
+|---+----------------------------------------------+---------------+----------+--------------------------------|
+| 1 | Mark task DONE, Now → Complete.              | task doc      | Accept   | Fixed in =1d675a477=           |
+| 1 | Tick all acceptance criteria [X]             | task doc      | Accept   | Fixed in =1d675a477=           |
+| 1 | RAFT → Raft (name, not acronym)              | nats.org      | Accept   | Fixed in =1d675a477=           |
+| 1 | Super-cluster → Supercluster (official term) | nats.org      | Accept   | Fixed in =1d675a477=           |
+
+* Result

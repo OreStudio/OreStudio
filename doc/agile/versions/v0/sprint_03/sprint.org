@@ -31,6 +31,8 @@ code/ + /finish login related functionality/.)
 |----------------+------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                             |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                        |
+| Start          | 2025-10-23                             |
+| End (expected) | 2025-11-07                             |
 | Now            | Sprint closed 2025-12-31. UI now uses the new socket layer end-to-end; accounts and sessions ship as part of v0. |
 | Waiting on     | None.                                                                                                            |
 | Next           | None.                                                                                                            |
@@ -48,6 +50,31 @@ code/ + /finish login related functionality/.)
 | [[id:B09E0D06-0314-4424-AD57-2DA31A335D99][Login and sessions]]                   | DONE  |            | 2025-12-20 | account and session domain types end-to-end.                                             |
 | [[id:3F819EE3-0834-4522-8B01-DF4A7D09E77F][Postgres-backed currency persistence]] | DONE  |            | 2025-11-25 | currency repository write path, service command-line DB args.                            |
 | [[id:1A411B50-2C3A-4248-9AE7-59A835EF6774][Logging and observability]]            | DONE  |            | 2025-12-30 | proper Boost.Log usage, Valgrind/leak investigations, code-coverage uplift.              |
+
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][sprint_charts cmake target]].
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+[[file:line_churn.png]]
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+[[file:stories_done.png]]
 
 * Retrospective
 

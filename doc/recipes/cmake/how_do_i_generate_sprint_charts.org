@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B
+:END:
+#+title: How do I generate sprint health charts?
+#+description: Run the sprint_metrics.py extractor and gnuplot scripts to produce per-metric PNGs for a sprint.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :sprint:charts:cmake:gnuplot:recipe:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+
+* Question
+
+How do I generate the sprint health charts (PRs & Commits, Line Churn, PR Cycle Time, Cumulative Stories Done) for a given sprint?
+
+* Answer
+
+1. /Generate charts for a single sprint/:
+
+   #+begin_src sh :results verbatim
+   cmake --build --preset linux-clang-debug-ninja --target sprint_charts -DSPRINT=18
+   #+end_src
+
+   This runs =scripts/sprint_metrics.py= to extract git and gh API data
+   into CSV files under =build/output/sprint_NN/=, then runs four
+   separate gnuplot scripts to produce per-metric PNGs under
+   =assets/images/=.
+
+2. /Generate charts for all sprints/:
+
+   #+begin_src sh :results verbatim
+   for s in $(seq -w 1 18); do
+     cmake --build --preset linux-clang-debug-ninja --target sprint_charts -DSPRINT=$(echo $s | sed 's/^0//')
+   done
+   #+end_src
+
+3. /Outputs/:
+
+   | File | Contents |
+   |------+----------|
+   | =sprint_prs_commits_sprint_NN.png= | Dual-axis bar: PRs and commits per day |
+   | =sprint_line_churn_sprint_NN.png= | Bars: lines added (green) and deleted (red) per day |
+   | =sprint_pr_cycle_sprint_NN.png= | Hours from PR open to merge (only when PR data available) |
+   | =sprint_stories_done_sprint_NN.png= | Cumulative stories DONE per day (only when story data available) |
+
+4. /Wire into the sprint page/. Add a =* Charts= section with
+   subheadings and =file:= links to each PNG (see [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] for the
+   reference layout).
+
+* Script
+
+=scripts/sprint_metrics.py= (extracts git log + gh API → CSV),
+=scripts/sprint_prs_commits.gnuplot=, =scripts/sprint_line_churn.gnuplot=,
+=scripts/sprint_pr_cycle.gnuplot=, =scripts/sprint_stories_done.gnuplot=,
+CMake =sprint_charts= target in top-level =CMakeLists.txt=.
+
+* Tested by
+
+Manual: run the target for sprint 18 and verify all four PNGs are
+generated.
+
+* See also
+
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — presets reference.
+- [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] — charts section example.

@@ -480,8 +480,8 @@ above). It is required on every story created from sprint 18 onward.
     ORE Studio. ... see [[id:<parent_version_id>][<parent_version_title>]].=
   - =* Mission= — one or two paragraphs / bullets: what this sprint
     exists to achieve.
-  - =* Status= — table; rows =State / Parent version / Now / Waiting on
-    / Next / Last touched=.
+  - =* Status= — table; rows =State / Parent version / Start / End (expected)
+    / Now / Waiting on / Next / Last touched=.
   - =* Stories= — table with class =hug-leading=; columns =Story /
     State / Start / End / Theme=. Story column carries the
     id-link to each child story.

@@ -29,6 +29,8 @@ explicitly.)
 |----------------+----------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                       |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                  |
+| Start          | 2025-02-02                             |
+| End (expected) | 2025-10-23                             |
 | Now            | Sprint closed 2025-10-23. Client/server foundations in place; serialisation and storage modernised; risk module extracted. |
 | Waiting on     | None.                                                                                                                      |
 | Next           | None.                                                                                                                      |
@@ -46,6 +48,31 @@ explicitly.)
 | [[id:ED5BC735-FB54-4CE0-9A08-6DAB88C242D0][Currencies temporal and export]]      | DONE  |            | 2025-09-30 | temporal support for currencies, CLI dump command, a containing structure for ORE example data.                                              |
 | [[id:6C63D2B2-7065-4AFC-AE54-86220C427B20][Risk module extraction]]              | DONE  |            | 2025-10-05 | rename =core= to =risk= and refactor the contents accordingly.                                                                               |
 | [[id:CF13FFB1-4D84-4965-AD65-C38B1D4849AB][CLI refactor and test]]               | DONE  |            | 2025-10-10 | restructure the CLI to follow the new project layout and add tests to the CLI parser.                                                        |
+
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][sprint_charts cmake target]].
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+[[file:line_churn.png]]
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+[[file:stories_done.png]]
 
 * Retrospective
 

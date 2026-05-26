@@ -24,6 +24,8 @@ the stack.
 |----------------+-----------------------------------------------|
 | State          | DONE                                          |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                     |
+| Start          | 2024-06-15                             |
+| End (expected) | 2025-02-02                             |
 | Now            | Sprint closed 2024-07-28. All stories merged. |
 | Waiting on     | None.                                         |
 | Next           | None.                                         |
@@ -40,6 +42,31 @@ the stack.
 | [[id:1D334356-F123-43B5-A98E-317EBAD2848A][Build quality]]                | DONE  |            | 2024-07-28 | nightly memcheck, Valgrind stabilisation, C++ standard bump, vcpkg warning hygiene.                          |
 | [[id:AF70CDF6-071F-43A9-91BB-7EB9A59A550F][Currencies end-to-end]]        | DONE  |            | 2024-07-28 | tight story: bring currency data through XML, JSON, the database, and the Qt UI as the pathfinder data type. |
 | [[id:BCA419E2-DFF2-474B-969E-CFBD19E7C832][Sprint 01 housekeeping]]       | DONE  |            | 2024-07-28 | sprint-level work that doesn't fit a product story: sprint instrumentation, dev setup, community channels.   |
+
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][sprint_charts cmake target]].
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+[[file:line_churn.png]]
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+[[file:stories_done.png]]
 
 * Retrospective
 

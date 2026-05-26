@@ -30,6 +30,8 @@ skills to make the next entity cheaper.
 |----------------+----------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                     |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                |
+| Start          | 2025-12-30                             |
+| End (expected) | 2026-01-11                             |
 | Now            | Sprint closed 2026-01-11. Three observability-review items and the accounts-dialog polish carry forward. |
 | Waiting on     | None — carried-forward items are scheduled for sprint 09+.                                               |
 | Next           | Sprint 09 picks up the deferred items and continues the reference-data work (countries → next entity).   |
@@ -51,6 +53,31 @@ skills to make the next entity cheaper.
 | [[id:B302B2B6-13F8-49CC-A6AF-88418668BE31][Entity-creator skills suite]]          | DONE    |            | 2026-01-11 | Qt, shell, HTTP (incl. recipes), Wt, CLI.                                                  |
 | [[id:77211166-9316-40C0-88D6-C92F983A00B5][Books domain modelling analysis]]      | DONE    |            | 2026-01-11 | strategic next-modelling effort.                                                           |
 | [[id:CD9E9D04-44D2-4D0D-95CE-719D55C40DA4][Observability follow-up]]              | BACKLOG |            |            | review pass only; three implementation tasks carry forward.                                |
+
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][sprint_charts cmake target]].
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+[[file:line_churn.png]]
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+[[file:stories_done.png]]
 
 * Retrospective
 

@@ -32,6 +32,8 @@ Wizard that uses them.
 |----------------+-------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                          |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                     |
+| Start          | 2026-01-20                             |
+| End (expected) | 2026-01-28                             |
 | Now            | Sprint closed 2026-01-27. Two stories carry forward: the FPML export/import implementation and the BOINC compute-grid design. |
 | Waiting on     | None — carried items scheduled forward.                                                                                       |
 | Next           | Sprint 11 picks up from the dataset-bundles + provisioning work; the party domain layer also has its prerequisites now.       |
@@ -54,6 +56,31 @@ Wizard that uses them.
 | [[id:75442A55-DBBB-4BC1-875E-981679E05621][Librarian polish]]                      | DONE    |            | 2026-01-27 | sprint-09 PR-review fix-up.                                                                                         |
 | [[id:4C7782D0-1382-4FED-A9F3-C209A45CAF7E][FPML export and import groundwork]]     | BACKLOG |            |            | =ores.fpml= scaffolded; export/import postponed.                                                                    |
 | [[id:85F8DC6C-1ACD-4610-A877-B0FDBA871254][Compute grid analysis (BOINC-based)]]   | BACKLOG |            |            | design pass; implementation deferred.                                                                               |
+
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][sprint_charts cmake target]].
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+[[file:line_churn.png]]
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+[[file:stories_done.png]]
 
 * Retrospective
 

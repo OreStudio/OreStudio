@@ -42,6 +42,8 @@ The largest v0 sprint to date (157h, 89 tasks across 22 stories).
 |----------------+---------------------------|
 | State          | DONE                      |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                 |
+| Start          | 2026-03-30                             |
+| End (expected) | 2026-04-18                             |
 | Now            | Sprint closed 2026-04-17. |
 | Waiting on     | None.                     |
 | Next           | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]                 |
@@ -74,6 +76,37 @@ The largest v0 sprint to date (157h, 89 tasks across 22 stories).
 | [[id:1997CCEF-3E2F-44C9-AB1C-9435A646BD61][UTC-everywhere timestamp policy]]          | DONE  |            | 2026-04-08 | canonical UTC API.                                                                                                    |
 | [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]]                | DONE  |            | 2026-04-11 | ~20 fixes surfaced by Windows builds.                                                                                 |
 | [[id:2C3A9E28-68DC-4BF1-8EB7-5C4379E5C248][Engineering hygiene]]                      | DONE  |            | 2026-04-07 | clock_cast, nodiscard, codegen profiles, menu repositioning.                                                          |
+
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][sprint_charts cmake target]].
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+[[file:line_churn.png]]
+** PR Cycle Time
+
+Hours from PR open to merge, one bar per PR. Long bars indicate
+review bottlenecks. Generated only when PR data is available.
+
+[[file:pr_cycle.png]]
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+[[file:stories_done.png]]
 
 * Retrospective
 

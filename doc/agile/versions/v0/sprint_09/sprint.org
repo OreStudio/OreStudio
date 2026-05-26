@@ -33,6 +33,8 @@ coverage of the entities that landed in earlier sprints.
 |----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                       |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                  |
+| Start          | 2026-01-11                             |
+| End (expected) | 2026-01-20                             |
 | Now            | Sprint closed 2026-01-20. Two items carry forward: the per-entity documentation refactor (already mostly absorbed into v2) and the party-table groundwork. |
 | Waiting on     | None.                                                                                                                                                      |
 | Next           | Sprint 10 takes the next refdata entity and starts the party domain layer on top of the table-structure groundwork from this sprint.                       |
@@ -52,6 +54,31 @@ coverage of the entities that landed in earlier sprints.
 | [[id:3579AB5E-D5D8-45AE-8CB5-00AD1C58644F][Data Quality subsystem and Data Librarian]] | DONE    |            | 2026-01-20 | the flagship of the sprint.                                                             |
 | [[id:ABD80EC4-E7E4-4BB2-B5AE-4FC7F8C46FD3][Qt visual refresh]]                         | DONE    |            | 2026-01-20 | icon-enum + theme refactor.                                                             |
 | [[id:EF555D10-3FD3-4928-8E43-E63284D7706F][Party database groundwork]]                 | BACKLOG |            |            | table structure only; postponed.                                                        |
+
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][sprint_charts cmake target]].
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+[[file:line_churn.png]]
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+[[file:stories_done.png]]
 
 * Retrospective
 

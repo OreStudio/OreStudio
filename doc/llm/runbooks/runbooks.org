@@ -35,7 +35,7 @@ all runbooks with =compass list --type runbook=.
 | [[id:1EE6EF7C-53E1-41D1-B6AF-6E21D7ACFB25][Create a new recipe]]                                        | Scaffold → fill Question/Answer → test commands → wire inventory → PR       |
 | [[id:F91B7D13-8A16-4466-B444-36D7B8AC3EBE][Add a new knowledge document]]                               | Scaffold → fill Summary/Detail → tag → wire knowledge index → PR            |
 | [[id:7BAF8188-A760-4F62-9B49-F9DA6E84FC17][Port a v1 document to v2]]                                    | Audit → scaffold v2 → port content → tag → validate → delete v1 → PR       |
-| [[id:30FE3C0F-ECCB-46AD-AC1F-75C6CE05F0E7][Run a sprint health review]]                                  | Scaffold task → System 2 analysis → write findings → update sprint.org → PR |
+| [[id:124E48B7-1B4F-4663-95B8-6A25F8F5EFC0][Run a sprint health review]]                                  | Regenerate charts → System 2 analysis → write findings into sprint.org → commit → PR |
 
 * See also
 

@@ -28,6 +28,8 @@ skills layer.
 |----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                                                 |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                                                            |
+| Start          | 2025-11-16                             |
+| End (expected) | 2025-12-01                             |
 | Now            | Sprint closed 2025-12-01. Bootstrap workflow live; CLI/REPL reshape landed; currency messaging collapsed to =save_currency=; skills layer grew to cover sprint-opening and release-notes generation. |
 | Waiting on     | None.                                                                                                                                                                                                |
 | Next           | None.                                                                                                                                                                                                |
@@ -46,6 +48,31 @@ skills layer.
 | [[id:7BE09D1C-E25A-4783-A911-C37DEC55CC43][CLI / REPL reshape]]                 | DONE  |            | 2025-11-25 | entity-first command syntax across CLI and REPL; synchronous REPL sockets.                              |
 | [[id:9836E113-DEA9-4605-AE1B-9B0C955B6B73][Currencies UI polish]]               | DONE  |            | 2025-11-28 | JSON parsing, merged save_currency message, XML-import dialog.                                          |
 | [[id:3A763AFB-22F3-4E9A-B121-A71997221C3F][Documentation and diagrams]]         | DONE  |            | 2025-12-01 | UML refresh after the reshape; per-component diagram links.                                             |
+
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][sprint_charts cmake target]].
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+[[file:line_churn.png]]
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+[[file:stories_done.png]]
 
 * Retrospective
 

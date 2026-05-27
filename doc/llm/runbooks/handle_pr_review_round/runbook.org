@@ -4,7 +4,7 @@
 #+title: Handle a PR review round
 #+description: Sync with main, read review comments, decide per comment, apply fixes, push, reply, resolve threads, and record.
 #+type: runbook
-#+version: 3
+#+version: 4
 #+level: cross
 #+filetags: :runbook:pr:review:github:
 #+created: 2026-05-26
@@ -28,27 +28,29 @@ In execution order:
 
 1. /Sync with main./ Fetch and rebase: =git fetch origin main && git rebase origin/main=. Never address review comments on a stale branch.
 
-2. /Read the comments./ Follow [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] step 1: =gh pr view <N> --comments= and =gh api .../comments=.
-
-3. /Decide per comment./ For each comment, make an explicit accept/decline decision. Never silently ignore a comment.
-
-4. /Apply fixes./ One commit per logical fix. Never amend commits on a branch under review. Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]].
-
-5. /Push./ =git push=.
-
-6. /Verify CI passes./ Check that all required CI checks turn green after the push:
+2. /Check CI status./ Before reading comments, inspect the current CI state:
 
    #+begin_src sh :results verbatim
    gh pr checks <N>
    #+end_src
 
-   Wait for pending checks to complete (re-run until no =PENDING= rows). If any check fails, fix the root cause, commit, push again, and repeat this step before moving on. Do not reply to review comments while CI is red.
+   If any check is failing, identify and fix the root cause first — as a separate commit — before looking at review comments. A CI failure may explain or supersede some review comments. If CI is green or only pending, proceed; pending checks will be re-verified after the push.
 
-7. /Reply to every comment./ Accepted: "Fixed in commit <sha> — <description>." Declined: "Not changed. <reason>." Use =gh api ... --method POST -F ...= per the recipe.
+3. /Read the comments./ Follow [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] step 1: =gh pr view <N> --comments= and =gh api .../comments=.
 
-8. /Resolve threads./ Use =gh api graphql= with =resolveReviewThread= mutation.
+4. /Decide per comment./ For each comment, make an explicit accept/decline decision. Never silently ignore a comment.
 
-9. /Record the round./ Add or update the =* Review= table in the task doc per step 7 of the review recipe.
+5. /Apply fixes./ One commit per logical fix. Never amend commits on a branch under review. Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]].
+
+6. /Push./ =git push=.
+
+7. /Verify CI is green./ Re-run =gh pr checks <N>= and wait until no checks are pending. If any check fails, fix, commit, push, and repeat this step. Do not reply to review comments while CI is red.
+
+8. /Reply to every comment./ Accepted: "Fixed in commit <sha> — <description>." Declined: "Not changed. <reason>." Use =gh api ... --method POST -F ...= per the recipe.
+
+9. /Resolve threads./ Use =gh api graphql= with =resolveReviewThread= mutation.
+
+10. /Record the round./ Add or update the =* Review= table in the task doc per step 7 of the review recipe.
 
 * Postconditions
 

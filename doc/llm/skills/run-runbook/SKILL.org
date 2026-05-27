@@ -38,7 +38,7 @@ the current session.
 
 3. /Locate the runbook file./ Runbooks live at
    =doc/llm/runbooks/<slug>/runbook.org= where =<slug>= is the
-   kebab-case folder name derived from the runbook title.  Confirm the
+   snake_case folder name derived from the runbook title.  Confirm the
    file exists before proceeding.
 
 4. /Read the runbook./ Load =runbook.org= and identify the =* Steps=

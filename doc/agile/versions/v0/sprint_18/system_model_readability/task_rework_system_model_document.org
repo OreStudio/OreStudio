@@ -1,0 +1,163 @@
+:PROPERTIES:
+:ID: 83422891-0E35-4B93-8927-6D8890CA8A02
+:END:
+#+title: Task: Rework system_model.org: per-component headings, sub-component tables, and key-doc links
+#+description: Restructure system_model.org so each component gets its own heading with a description, a sub-component table (component/sub-component with org-roam links), and a key-documents list; remove comms/legacy references; move DB isolation content to ores.sql; replace General information section with a link to developer.org.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :system_model_readability:sprint_18:v0:
+#+owner: marco
+#+branch: feature/task-rework-system-model-document
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-27
+#+updated: 2026-05-27
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Rework =projects/modeling/system_model.org= from a flat bullet-list
+index into a navigable architectural reference. Each component becomes
+its own org headline; under it sits a description paragraph, a
+sub-component table (with org-roam links and a Dependencies column),
+and an inline list of key architecture documents with one-line
+descriptions. Legacy content is removed or relocated.
+
+* Status
+
+| Field        | Value                                        |
+|--------------+----------------------------------------------|
+| State        | STARTED                                      |
+| Parent story | [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]]                     |
+| Now          | In progress — plan written, implementation pending. |
+| Waiting on   | Nothing.                                     |
+| Next         | Implement restructure.                       |
+| Last touched | 2026-05-27                                   |
+
+* Acceptance
+
+- Every component in the four layers has its own =**= heading.
+- Each heading contains:
+  1. A short prose description of the component's purpose and
+     boundaries (1–3 sentences).
+  2. A sub-component table with columns
+     =| Sub-component | Role | Dependencies |= where each name cell
+     is an org-roam =[[id:...][name]]= link and each Dependencies
+     cell contains org-roam links (or =—= if none).
+  3. An inline bullet list of key architecture documents, each with
+     an org-roam link and a one-line description of what the document
+     covers. Components without architecture docs omit this list.
+- All references to =ores.comms= and the legacy binary protocol are
+  removed.
+- The =* Database Isolation= section is removed from this file;
+  its content moves to the =ores.sql= component overview (or is
+  already there — verify and remove the duplicate).
+- The =* General information= section is removed; its developer-facing
+  links (GitHub, Doxygen, website) are replaced with a single
+  inline sentence linking to [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]].
+- The =* Useful Pages= and =* See also= sections are dissolved: each
+  link is moved inline to the layer intro or component it belongs to
+  (e.g. PlantUML skill → Architecture Layer intro; Domain Type Creator
+  → Domain Layer intro; symbol visibility → Foundation Layer intro).
+- All dependency references in the existing bullet list that name
+  other components are converted to org-roam links in the Dependencies
+  column of the sub-component table.
+- The document builds clean as part of the site (=deploy_site= target).
+
+* Plan
+
+** Document audit (before touching anything)
+
+1. Read the current =system_model.org= in full.
+2. Catalogue every component and confirm its =:ID:= UUID is correct
+   by checking the corresponding =component_overview.org=.
+3. List which components have sub-components (=.api= / =.core= /
+   =.service= split) and which are monolithic.
+4. Identify architecture documents to link per component by searching
+   for knowledge docs that reference that component's ID.
+5. Verify the =* Database Isolation= content — is it already in
+   =ores.sql='s component overview? If not, note it needs to move there
+   first (separate PR/task) before we delete it here.
+
+** New document structure
+
+#+begin_example
+* System Architecture          ← keep diagram + four-layer description
+* Foundation Layer             ← layer intro + PlantUML skill link inline
+** ores.utility
+** ores.platform
+...
+* Infrastructure Layer
+** ores.nats
+...
+* Domain Layer                 ← intro + Domain Type Creator skill link inline
+** ores.iam
+** ores.refdata
+...
+* Application Layer
+** ores.qt
+...
+#+end_example
+
+Each =**= component section follows this template:
+
+#+begin_example
+** ores.iam
+   <1–3 sentence description of purpose and boundaries.>
+
+   | Sub-component          | Role                          | Dependencies                         |
+   |------------------------+-------------------------------+--------------------------------------|
+   | [[id:...][ores.iam.api]]  | Shared types + NATS protocol | —                                    |
+   | [[id:...][ores.iam.core]] | Account lifecycle, RBAC, sessions | [[id:...][ores.database]], [[id:...][ores.security]] |
+   | [[id:...][ores.iam.service]] | Thin NATS entrypoint       | [[id:...][ores.iam.core]]                |
+
+   - [[id:...][Multi-party model]] — how parties relate to tenants and accounts.
+   - [[id:...][Multi-tenancy]] — tenant isolation model and provisioning.
+   - [[id:...][Identity and Access Management]] — IAM concepts as applied in ores.iam.core.
+   - [[id:...][Role-Based Access Control]] — RBAC graph and permission assignment.
+#+end_example
+
+Monolithic components (no =.api=/.core=/.service= split) have a
+single-row table with =[[id:...][ores.X]]= in the Sub-component column.
+
+** Removals
+
+- Delete =* Database Isolation= section (content already in ores.sql
+  overview or moved there first).
+- Delete =* General information= section; add one inline sentence at
+  end of document: "For GitHub, Doxygen, Discord, and CDash see
+  [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]]."
+- Delete =* Useful Pages= and =* See also= sections; place each link
+  inline at its correct layer or component heading.
+- Remove all =ores.comms= bullet points and any "Replaced the former
+  =ores.comms= binary protocol stack" notes (keep in ores.nats
+  component overview where it belongs).
+
+** Implementation order
+
+1. Foundation Layer (smallest, fewest arch docs — good to establish template).
+2. Infrastructure Layer.
+3. Domain Layer (most components, most arch docs — do last).
+4. Application Layer.
+5. Remove deprecated sections.
+6. Site build check.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

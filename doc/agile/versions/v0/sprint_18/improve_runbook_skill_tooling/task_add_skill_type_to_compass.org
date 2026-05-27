@@ -28,7 +28,7 @@ Add =skill= to the list of types supported by =compass add=. Currently the comma
 |--------------+-----------------------------------------------------------------------|
 | State        | DONE                                                                  |
 | Parent story | [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]                                |
-| Now          | Complete. =compass add skill= works with default =doc/llm/skills=.   |
+| Now          | Complete.                                                             |
 | Waiting on   | Nothing.                                                              |
 | Next         | Unblocks tasks 487021A2 and 8DC89ACF.                                 |
 | Last touched | 2026-05-28                                                            |

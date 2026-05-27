@@ -63,9 +63,11 @@ The implementation went through several iterations to arrive at the final design
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                          | File            | Decision | Notes                  |
+|---+----------------------------------------------------------+-----------------+----------+------------------------|
+| 1 | Validate slug non-empty before constructing filename     | ores-capture.el | Accept   | Fixed in c62ed75cf     |
+| 2 | Check file-exists-p on snippet before insert-file-contents | ores-capture.el | Accept   | Fixed in c62ed75cf     |
+| 3 | Check file-executable-p on compass.sh before invoking    | ores-capture.el | Accept   | Fixed in c62ed75cf     |
 
 * Result
 

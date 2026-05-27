@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 9FEBF736-19F2-4007-BF3A-ACCA6DB5C537
+:END:
+#+title: Sprint 01 Release Notes
+#+description: Sprint 01 release notes (July 2024).
+#+type: release_notes
+#+version: 2
+#+level: cross
+#+filetags: :release_notes:sprint_01:v0:
+#+created: 2025-02-02
+#+updated: 2025-02-02
+
+/July 2024/
+
+This sprint focused on *establishing the foundational project infrastructure*, *setting up CI/CD and development tooling*, and *implementing end-to-end currency handling* from XML/JSON parsing to Qt UI display.
+
+-----
+
+* ✅ Highlights
+
+- *Project infrastructure bootstrapped* with GitHub repo, Discord channel, CI/CD via GitHub Actions, and automated packaging.
+- *Development environment standardized* using CMake presets, vcpkg, and modern C++20.
+- *Currency domain fully implemented* — XML and JSON parsing, database persistence (PostgreSQL), and Qt-based UI display.
+- *Documentation and onboarding improved* with Doxygen, org-mode recipes, and a live project website.
+
+
+* 🛠️ Key Improvements
+
+** Project Setup & Infrastructure
+- Created GitHub organization and repository: [[https://github.com/OreStudio/OreStudio][github.com/OreStudio/OreStudio]]
+- Set up Discord channel for team communication and Emacs integration.
+- Implemented CI/CD pipelines with GitHub Actions for Linux, Windows, and macOS.
+- Enabled nightly builds with Valgrind memcheck (DWARF4 workaround applied).
+- Automated package generation (DEB, MSI, DMG) and deployment.
+
+** Development Environment
+- Standardized build system using *CMake presets* and *vcpkg* for dependency management.
+- Upgraded to *C++20* and modernized toolchain configuration.
+- Set up laptop development environment with R, Org-mode, and latest vcpkg.
+- Fixed Valgrind compatibility issues by upgrading CI OS to Ubuntu 22.04.
+
+** Currency Domain Implementation
+- Added full *XML parsing support* for ORE currency data using hand-rolled parsers.
+- Implemented *JSON serialization/deserialization* for currency objects.
+- Integrated *PostgreSQL support* for storing and retrieving currencies.
+- Built a *Qt-based UI* to display currencies in a table view with:
+  - Proper column headers
+  - Responsive layout
+  - Logging integration
+  - Menu-driven navigation
+
+** Documentation & Tooling
+- Launched project website: [[https://orestudio.github.io/OreStudio][orestudio.github.io/OreStudio]]
+- Merged =README= and =index= into a single org-mode landing page.
+- Added project objectives, domain concepts, and bibliography.
+- Generated and published *Doxygen documentation*.
+- Created *org-babel recipes* for CLI command examples.
+- Added *PlantUML modeling* support for future architecture diagrams.
+
+** Agile & Reporting
+- Transitioned from pie charts to *bar charts* for sprint resourcing (improved readability).
+- Introduced *story classification tags* (=code=, =infra=, =doc=, =agile=) for better time tracking.
+- Implemented sprint backlog refinement with visual reporting.
+
+
+* ⚠️ Known Issues & Postponed
+
+- *Windows installer fails under Wine* — likely missing system DLLs; needs real Windows testing.
+- *macOS DMG not uploading* — filename mismatch in CPack configuration.
+- *Code quality actions not working* — CodeQL build fails due to missing vcpkg submodules.
+- *Data container structure postponed* — workspace/environment model deferred to future sprint.
+- *PlantUML in org-babel postponed* — will revisit after LLM integration.
+
+* 📊 Time Summary
+
+- *Total effort*: not tracked
+- *PRs merged*: not tracked
+- *Sprint duration*: 2024-06-15 → 2025-02-02
+
+-----
+
+/Next sprint: [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]]./

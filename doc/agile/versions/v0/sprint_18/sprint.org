@@ -29,18 +29,18 @@ Enable end-to-end [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] imports into 
 
 * Status
 
-| Field          | Value                                  |
-|----------------+----------------------------------------|
-| State          | STARTED                                |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                              |
-| Previous       | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]                              |
-| Start          | 2026-05-22                             |
-| End (expected) | 2026-05-28                             |
-| Now            | Sprint in flight.                      |
-| Waiting on     | Nothing.                               |
+| Field          | Value                                                     |
+|----------------+-----------------------------------------------------------|
+| State          | STARTED                                                   |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]    |
+| Previous       | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]    |
+| Start          | 2026-05-22                                                |
+| End (expected) | 2026-05-28                                                |
+| Now            | Sprint in flight.                                         |
+| Waiting on     | Nothing.                                                  |
 | Next           | ORE imports and types; finish user manual; RFL isolation. |
-| Release Notes  | Added at end of sprint.                |
-| Last touched   | 2026-05-24                             |
+| Release Notes  | Added at end of sprint.                                   |
+| Last touched   | 2026-05-24                                                |
 
 * Stories
 

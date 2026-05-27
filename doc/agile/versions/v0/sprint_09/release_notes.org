@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: B366C8FE-240E-493D-8D18-747BE840870A
+:END:
+#+title: Sprint 09 Release Notes
+#+description: Sprint 09 release notes (January 2026).
+#+type: release_notes
+#+version: 2
+#+level: cross
+#+filetags: :release_notes:sprint_09:v0:
+#+created: 2026-01-20
+#+updated: 2026-01-20
+
+/January 2026/
+
+This sprint focused on establishing a robust data management infrastructure, including secure connection handling, database schema standardization, and a comprehensive data quality framework.
+
+-----
+
+* ✅ *Highlights*
+
+- *New Connection Management System*: Introduced ~ores.connections~ to manage server environments with AES-256-GCM encrypted credential storage.
+- *Database Schema Standardisation*: Implemented a strict component-prefixed naming convention across the entire SQL schema for improved maintainability.
+- *Data Quality & Provenance Framework*: Established a metadata-driven approach to track data lineage, classification (Synthetic vs. Real), and temporal context.
+- *Security Centralization*: Created a dedicated ~ores.security~ module to house shared cryptographic primitives and RAII-based OpenSSL wrappers.
+
+* 🛠️ *Key Improvements*
+
+** *Architecture & Security*
+
+- *Security Module*: Extracted security logic from IAM and Connections into ~ores.security~. Applied RAII patterns to OpenSSL cipher contexts (~std::unique_ptr~) to eliminate memory leaks.
+- *Component Renaming*: Renamed ~ores.risk~ to ~ores.refdata~ to better align the component name with its actual responsibility of reference data management.
+- *PR Management*: Consolidated the PR lifecycle into a new ~pr-manager~ skill, automating summaries, draft creation, and CI monitoring.
+
+** *Database & Data Management*
+
+- *Namespace Prefixes*: Prefixed all database entities with component names (e.g., ~iam_~, ~refdata_~, ~assets_~) and standardized suffixes (e.g., ~_tbl~, ~_fn~).
+- *Data Quality Integration*: Implemented "Data Passports" to track the /Who, What, Where, When, and Why/ of datasets, supporting bi-temporal reasoning and lineage DAGs.
+- *CLI Expansion*: Added administrative CLI commands for managing roles, permissions, and geographic data with standardized JSON/Table output formats.
+
+** *UI & UX (Qt)*
+
+- *Connection Browser*: Added a new MDI window for hierarchical management of server connections and folders.
+- *Secure Login*: Integrated master password support and auto-fill capabilities for saved environments.
+- *Prodigy Multi-environment Support*: Updated Prodigy to allow running services across multiple environments (e.g., different LLM instances) within a single buffer.
+
+* ⚠️ *Known Issues & Postponed*
+
+- * Implement party related entities at database level*: Analysis done but actual implementation to start next sprint.
+- *Refactor documentation*: Started to improve skills and domain documentation, more work to follow as we get into domain concepts.
+
+* 📊 *Time Summary*
+
+- *Total effort*: 79h 41m
+- *Effort distribution*: *Code*: 73.1% | *Infra*: 23.2% | *Agile*: 3.7%
+- *Top tasks*:  UI support for data sets (19h 18m), OCR scan notebooks (11h 31m), Implement data quality (9h 42m).
+
+
+/Next sprint: Focus will shift to moving over to core ref data entities/
+
+* 📊 Time Summary
+
+- *Total effort*: not tracked
+- *PRs merged*: not tracked
+- *Sprint duration*: 2026-01-11 → 2026-01-20
+
+-----
+
+/Next sprint: [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]]./

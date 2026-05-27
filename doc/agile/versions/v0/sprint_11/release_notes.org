@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: B0269759-8AB2-4856-8EAD-B1E57C0AB7FB
+:END:
+#+title: Sprint 11 Release Notes
+#+description: Sprint 11 release notes (February 2026).
+#+type: release_notes
+#+version: 2
+#+level: cross
+#+filetags: :release_notes:sprint_11:v0:
+#+created: 2026-02-06
+#+updated: 2026-02-06
+
+/February 2026/
+
+This sprint achieved a significant architectural milestone by implementing a comprehensive multi-tenancy framework and a granular Role-Based Access Control (RBAC) system. These changes eliminate technical debt associated with schema management and security while providing a robust foundation for isolated client environments and automated testing.
+
+-----
+
+* ✅ Highlights
+
+- *Multi-Tenancy Framework*: Established core infrastructure including tenant life-cycle management (=provision=, =terminate=, =deprovision=, =purge=) and logical data isolation across ~70 entity tables.
+- *Security & RBAC*: Replaced the "god" admin account with a tiered role hierarchy (=ores_owner=, =ores_rw=, =ores_ro=) and separated application service users (=cli=, =http=, etc.) for improved auditability.
+- *Schema Unification*: Consolidated the database into the =public= schema using a strict =ores_= namespacing convention, increasing development velocity by simplifying joins and migrations.
+- *Database Telemetry Sink*: Introduced a new =Boost.Log= sink backend that allows direct logging of telemetry data to the database, significantly enhancing unit test analysis.
+
+* 🛠️ Key Improvements
+
+** Architecture & Multi-Tenancy
+
+- *Tenant Context Service*: Implemented a centralized C++ service in =ores.database= to manage tenant UUIDs and session contexts across the application.
+- *Automated Validation*: Integrated =ores_iam_validate_tenant_fn= into database triggers to prevent cross-tenant data leakage.
+- *C++ Protocol Update*: Incremented =PROTOCOL_VERSION= to 26.1 to support tenant-aware entity models and bitemporal properties.
+
+** 🛡️ Security & Multi-Tenant Isolation
+
+The core focus of the second half of Sprint 11 was ensuring that the new tenancy walls are impenetrable, specifically addressing the "Message Handler" vulnerability.
+
+- *Per-Request Tenant Context*: Refactored the =tenant_aware_handler= base class. Message handlers now dynamically create database contexts using the session's =tenant_id= for every request. This prevents a user in Tenant A from accidentally viewing or modifying data in Tenant B due to cached service contexts.
+- *Strongly Typed =tenant_id=*: Replaced generic UUIDs with a =utility::uuid::tenant_id= wrapper. This prevents the use of "Nil" UUIDs and enforces the use of the *RFC 9562 Max UUID* (=ffffffff-...=) for the System Tenant, removing ambiguity during initialization.
+- *Auditability*: Added a =performed_by= field to all 42 domain tables. This distinguishes between the *database user* (the technical role) and the *application account* (the specific service or person) responsible for the change.
+
+
+** 📊 Data Governance (DQ) & Reference Data
+
+Analysis revealed that unique constraints on metadata were too restrictive for multi-tenancy.
+
+| Table Group | Refactor Detail | Result |
+| --- | --- | --- |
+| *DQ Metadata* | Added =tenant_id= to unique version indexes for =catalogs=, =datasets=, and =methodologies=. | Tenants can now have overlapping catalog names/IDs without collision. |
+| *Image Resolution* | Updated publishing logic to resolve =image_id= via keys rather than UUIDs. | Assets are correctly mapped even if UUIDs differ across tenant environments. |
+| *Reference Data* | Migrated =countries= and =currencies= to tenant-aware models. | Shared reference data is managed via the "System" tenant but accessible to all. |
+
+
+** ⚙️ Infrastructure & CI/CD
+
+Significant effort was spent fixing "silent" failures in the build pipeline to reclaim developer time.
+
+- *VCPKG Caching Fix*: Identified that the =x-gha= backend was removed from =vcpkg=. Re-implemented caching using =actions/cache@v4=. This reduced the =vcpkg install= step from *21 minutes to seconds*.
+- *Nightly Build Robustness*: Added exponential backoff (5 retries) to =apt-get= operations in CI scripts to mitigate transient network failures. Added a =--with-valgrind= flag for automated memory leak detection in nightly runs.
+
+
+** Testing & Quality
+
+- *Logging Sink*: Created =ores.telemetry.database=, a dedicated library that allows C++ unit tests to log directly to PostgreSQL. This includes a =skip_telemetry_guard= to prevent recursive logging deadlocks when the logging system itself triggers a log entry. Enabled via the =ORES_TEST_LOG_DATABASE= flag, allowing test telemetry to be persisted and compared across runs.
+- *Multi-Tenant Test Isolation*: Each test run now provisions a unique, isolated tenant with necessary reference data, ensuring a clean slate without the overhead of destroying databases.
+- *pgTAP Integration*: Adopted the *pgTAP* framework for database unit testing, including dedicated validation tests for currencies and tenant statuses.
+
+
+** 🖥️ Client & Shell Enhancements
+
+- *Authentication Helpers*: Introduced =ores.iam::client= namespace with high-level =login()= and =logout()= functions, drastically reducing boilerplate code in the Shell and Qt clients.
+- *Permission Suggestion*: A new shell command =permissions suggest= was added. It generates a batch of =assign-role= commands to quickly provision a new user with all necessary permissions for their tenant.
+- *Qt UI Refinement*: The connection browser now sorts folders alphabetically and preserves the tree expansion state after edits, fixing a major usability friction point.
+
+
+* ⚠️ Known Issues & Postponed
+
+- *BLOCKED*: Support for bound parameters in =sqlgen= is pending to fully eliminate raw =libpq= usage for SQL injection prevention (Issue [[https://github.com/getml/sqlgen/issues/119][#119 - Support for bound parameters]]).
+
+* 📊 Time Summary
+
+- *Total effort*: not tracked
+- *PRs merged*: not tracked
+- *Sprint duration*: 2026-01-28 → 2026-02-06
+
+-----
+
+/Next sprint: [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]./

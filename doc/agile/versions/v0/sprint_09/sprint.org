@@ -32,12 +32,14 @@ coverage of the entities that landed in earlier sprints.
 | Field          | Value                                                                                                                                                      |
 |----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                       |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                  |
-| Start          | 2026-01-11                             |
-| End (expected) | 2026-01-20                             |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                     |
+| Previous       | [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]]                                                                                                     |
+| Start          | 2026-01-11                                                                                                                                                 |
+| End (expected) | 2026-01-20                                                                                                                                                 |
 | Now            | Sprint closed 2026-01-20. Two items carry forward: the per-entity documentation refactor (already mostly absorbed into v2) and the party-table groundwork. |
-| Waiting on     | None.                                                                                                                                                      |
-| Next           | Sprint 10 takes the next refdata entity and starts the party domain layer on top of the table-structure groundwork from this sprint.                       |
+| Waiting on     | Nothing.                                                                                                                                                   |
+| Next           | [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]]                                                                                                     |
+| Release Notes  | [[id:B366C8FE-240E-493D-8D18-747BE840870A][Release notes]]                                                                                                                                                          |
 | Last touched   | 2026-01-20                                                                                                                                                 |
 
 * Stories

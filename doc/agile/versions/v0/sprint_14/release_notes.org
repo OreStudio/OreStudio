@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 0875ADA0-D41A-4A2E-94A3-9E51CB78FD96
+:END:
+#+title: Sprint 14 Release Notes
+#+description: Sprint 14 release notes (March 2026).
+#+type: release_notes
+#+version: 2
+#+level: cross
+#+filetags: :release_notes:sprint_14:v0:
+#+created: 2026-03-19
+#+updated: 2026-03-19
+
+/March 2026/
+
+Sprint 14 focused on messaging infrastructure, delivering full NATS integration, experimentation with an NNG broker which was ultimately removed, and a complete reporting pipeline from SQL schema through UI.
+
+-----
+
+* ✅ Highlights
+
+- *NATS messaging fully shipped* — end-to-end integration including protocol, telemetry sampling, and follow-up hardening (25h+ combined effort).
+- *NNG message broker experimentation* — internal async messaging backbone decoupling services from direct NATS calls. This was ultimately deemed not to be the right choice.
+- *Reporting pipeline delivered* — SQL schema, domain types, NATS messaging, and Qt UI with cron scheduling and party codename support.
+- *Custom scheduler replaces pgmq + pg_cron* — simpler, self-contained scheduling tables with a TOCTOU race fix and sequence-based unique codename suffixes.
+- *JWT migrated to RS256* — moved signing to a dedicated =ores.security= component with proper asymmetric key support.
+
+
+* 🛠️ Key Improvements
+
+** Messaging Infrastructure
+
+- Implemented NNG message broker as the internal async backbone (8h 55m)
+- Full NATS support: protocol layer, connection management, e2e tests (11h 55m)
+- NATS telemetry sampling integrated into observability pipeline (2h 30m)
+- Remaining NATS changes: hardening, CI fixes, =init-environment.sh= unification (13h 32m)
+- Renamed =ores.comms.shell= → =ores.shell= for naming consistency (3h 25m)
+
+** Reporting
+
+- Design document, SQL schema, and domain types with NATS messaging (4h 40m)
+- Qt UI: cron scheduling widget, party codename planning and UI (15h 38m combined)
+
+** Scheduler & Codenames
+
+- Replaced =pgmq= + =pg_cron= with custom scheduler tables (2h 54m)
+- Fixed TOCTOU race in party codename generation trigger (1h 10m)
+- Sequence-based unique suffix for deterministic codenames (0h 45m)
+
+** Security & Auth
+
+- Migrated JWT signing to =ores.security= with RS256 / RSA-2048 keys
+
+** CLI & UI
+
+- Added domain sub-menu layer to CLI command syntax (1h 35m)
+- Added pgmq queue management UI (0h 34m)
+- ORE Import Wizard initial implementation (3h)
+
+** Infrastructure
+
+- Added build-tool suffix to all CMake presets (2h 10m)
+
+
+* ⚠️ Known Issues & Postponed
+
+- *CANCELLED*: *Hook up broker and comms service* — integration path not validated as expected; approach to be revisited.
+- *POSTPONED*: *Add trade import mapping dialog to Qt UI* (4h 39m logged) — requires a mapping dialog for portfolio XML imports; deferred to next sprint.
+
+* 📊 Time Summary
+
+- *Total effort*: not tracked
+- *PRs merged*: not tracked
+- *Sprint duration*: 2026-02-28 → 2026-03-19
+
+-----
+
+/Next sprint: [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]]./

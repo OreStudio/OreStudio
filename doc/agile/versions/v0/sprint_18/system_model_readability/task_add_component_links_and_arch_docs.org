@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 101A4A39-B452-4738-8BAD-2F8BF99686BF
+:END:
+#+title: Task: Add component id-links and architectural cross-references to system model
+#+description: Wire all unlinked Qt plugin component rows to their component_overview.org via id-links; add cross-references to key architectural docs (workspaces, multi-tenancy, multi-party); consolidate DQ isolation content.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :system_model_readability:sprint_18:v0:
+#+owner: marco
+#+branch: feature/system-model-links
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-26
+#+updated: 2026-05-26
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Complete the cross-linking and architectural context pass on
+[[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]]:
+
+1. Wire all nine unlinked Qt plugin component rows to their
+   =component_overview.org= via =[[id:UUID][name]]= links.
+2. Add a note for =ores.comms= and =ores.compute= (no
+   =component_overview.org= exists; mark as such).
+3. Move the =** DQ publish-from-DQ pattern= subsection out of
+   =* Database Isolation= and into the =ores.dq= component row
+   description, or link to it from there, so DQ-specific content
+   lives beside the DQ component.
+4. Add cross-references in =* Useful Pages= / =* See also= to the
+   three key architectural design docs: workspaces, NATS
+   multi-tenancy/multi-party, and librarian party publication.
+
+* Status
+
+| Field        | Value                                        |
+|--------------+----------------------------------------------|
+| State        | DONE                                         |
+| Parent story | [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]]                     |
+| Now          | Complete.                                    |
+| Waiting on   | Nothing.                                     |
+| Next         | None.                                        |
+| Last touched | 2026-05-26                                   |
+
+* Acceptance
+
+- Every component row in the Application Layer table that has a
+  =component_overview.org= is linked via =[[id:UUID][ores.qt.*]]=.
+- =ores.comms= and =ores.compute= rows carry a note explaining that no
+  =component_overview.org= exists yet.
+- The DQ publish-from-DQ content is either moved to the =ores.dq=
+  component description or cross-linked from there; it no longer
+  sits as an orphan in the Database Isolation section.
+- =* Useful Pages= contains id-links to:
+  - [[id:CEAD2E6A-8C12-489F-B64A-652EE2B81811][Workspace — Isolated Data Context Design]]
+  - [[id:4E762126-2152-11F1-B1D1-40B0768014EB][NATS Multi-Tenancy and Multi-Party Design]]
+  - [[id:7A3D1E52-B8F4-4C91-A9E7-6F2C3D841B05][Librarian Party & Counterparty Publication Design]]
+- All existing id-links remain valid; =#+updated= refreshed.
+
+* Plan
+
+1. Add id-links to the nine Qt plugin rows using the IDs discovered:
+   - =ores.qt.api= → =30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21=
+   - =ores.qt.party= → =6DE9A7B8-F7BA-4E93-BB93-2FB10C53F9CA=
+   - =ores.qt.trading= → =3FA355D1-38FD-4E35-9E05-2185882B8AC1=
+   - =ores.qt.refdata= → =621194C4-D438-4215-AE40-21FBE8FF0D85=
+   - =ores.qt.analytics= → =970667D1-8BA8-4B49-B047-0D6D4C4CE498=
+   - =ores.qt.mktdata= → =2E83F9B5-67F4-4A1F-95BC-FE1E7AB7D4C0=
+   - =ores.qt.compute= → =03EAE018-5E61-4005-AC9A-EFF827A46178=
+   - =ores.qt.workflow= → =B7269E9C-83B6-4D6C-80DE-D796AB89B1BD=
+   - =ores.qt.admin= → =DB5A4924-8F0A-440C-873E-D823F430043E=
+
+2. Add a note to =ores.comms= and =ores.compute= rows: both are
+   listed without a link because no =component_overview.org= exists;
+   this is intentional — deprecated (comms) and not yet documented
+   (compute).
+
+3. For DQ isolation content: the =** DQ publish-from-DQ pattern=
+   subsection explains an integration pattern specific to =ores.dq=.
+   Move it to a =* Cross-Cutting Patterns= section, or reference it
+   from the =ores.dq= row description with a link, and remove the
+   subsection from =* Database Isolation= (which should remain
+   focused on isolation rules, not service-specific protocols).
+
+4. Add to =* Useful Pages=:
+   #+begin_example
+   - [[id:CEAD2E6A-8C12-489F-B64A-652EE2B81811][Workspace design]] — isolated data context for ORE runs.
+   - [[id:4E762126-2152-11F1-B1D1-40B0768014EB][NATS multi-tenancy and multi-party design]] — how tenants and
+     parties are isolated at the messaging layer.
+   - [[id:7A3D1E52-B8F4-4C91-A9E7-6F2C3D841B05][Librarian party & counterparty publication design]] — how
+     reference data is propagated across party boundaries.
+   #+end_example
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

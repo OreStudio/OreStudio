@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 8E209DC9-E432-4E2A-89AC-81A91E11A43D
+:END:
+#+title: Sprint 06 Release Notes
+#+description: Sprint 06 release notes (December 2025).
+#+type: release_notes
+#+version: 2
+#+level: cross
+#+filetags: :release_notes:sprint_06:v0:
+#+created: 2025-12-13
+#+updated: 2025-12-13
+
+/December 2025/
+
+This sprint delivered critical stability and architectural upgrades for the comms  layer, successfully implementing graceful server shutdown and establishing foundational services for feature flagging and event-driven architecture, alongside initial progress on domain entity definition.
+
+-----
+
+* ✅ Highlights
+
+- *Server Stability:* Implemented graceful session cancellation and shutdown, resolving a critical issue where the server would hang on shutdown by shifting from a flawed hierarchical cancellation model to explicit session management.
+- *Comms Reliability:* Added a *client heartbeat mechanism* to proactively detect and report server disconnections, significantly improving client-side user experience and error handling.
+- *Architectural Refactoring:* Created the new *Variability Service* for feature flags and successfully moved its messaging infrastructure from =ores.accounts=, ensuring clear domain ownership.
+- *Event Infrastructure:* Integrated *Listen/Notify support* and implemented a generic *Event Bus* to enable decoupled, asynchronous communication across services.
+
+* 🛠️ Key Improvements
+
+** Architecture & Core Services
+
+- *Variability Domain:* Created the =ores.variability= service interface for feature flags and moved related messaging (types =0x200D=/=0x200E= moved to =0x3000=/=0x3001=).
+- *Context Simplification:* Removed =bootstrap mode= logic from the application context.
+- *Comms Handshake:* Encapsulated connection logic into a dedicated *Handshake Service* for consistency.
+- *Protocol Refactoring:* Split the monolithic =protocol.hpp= into smaller, component-based files.
+- *Database:* Added a *Postgres listener* and implemented logic for the server to check database connectivity on startup.
+
+** Entity Management & Generation
+
+- Added a *version attribute to all domain entities* for future migration and validation logic.
+- Completed an initial *Experiment with simple code generation* to inform the upcoming entity templatisation mission.
+- Addressed minor *Entity syntax refactor snags*.
+
+** Technical Debt & Polish
+
+- Refactored logging to use =std::string_view= to improve performance and fixed resulting issues (including *Fix issues with logging after string_view change* and Valgrind leaks).
+- Improved testing by adding coverage visualization to diagrams.
+
+* ⚠️ Known Issues & Postponed
+
+None.
+
+* 📊 Time Summary
+
+- *Total effort*: not tracked
+- *PRs merged*: not tracked
+- *Sprint duration*: 2025-12-01 → 2025-12-13
+
+-----
+
+/Next sprint: [[id:A79D42AF-1B38-43EE-9607-848A4A84C09A][Sprint 07]]./

@@ -24,16 +24,18 @@ telemetry as first-class components, and tidy the build platform.
 
 * Status
 
-| Field          | Value                                                               |
-|----------------+---------------------------------------------------------------------|
-| State          | DONE                                                                |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                           |
-| Start          | 2025-12-13                             |
-| End (expected) | 2025-12-30                             |
-| Now            | Sprint closed 2025-12-30.                                           |
-| Waiting on     | None.                                                               |
-| Next           | Sprint 08 picks up the threads opened by Wt/HTTP and observability. |
-| Last touched   | 2025-12-30                                                          |
+| Field          | Value                                                  |
+|----------------+--------------------------------------------------------|
+| State          | DONE                                                   |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
+| Previous       | [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]] |
+| Start          | 2025-12-13                                             |
+| End (expected) | 2025-12-30                                             |
+| Now            | Sprint closed 2025-12-30.                              |
+| Waiting on     | Nothing.                                               |
+| Next           | [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]] |
+| Release Notes  | [[id:596C2583-C27B-4570-885B-808C227D6911][Release notes]]                                                      |
+| Last touched   | 2025-12-30                                             |
 
 * Stories
 

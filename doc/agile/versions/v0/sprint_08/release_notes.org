@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 67E62E6F-F85E-48E1-8099-4E6AE3E0872B
+:END:
+#+title: Sprint 08 Release Notes
+#+description: Sprint 08 release notes (January 2026).
+#+type: release_notes
+#+version: 2
+#+level: cross
+#+filetags: :release_notes:sprint_08:v0:
+#+created: 2026-01-11
+#+updated: 2026-01-11
+
+/January 2026/
+
+This sprint focused on hardening the SQL infrastructure with TimescaleDB integration, refactoring core CLI/Shell components, and implementing critical data management features including ISO country support and regulatory-compliant amendment tracking.
+
+-----
+
+* ✅ Highlights
+
+- *ISO 3166-1 Country Support*: Established a full bitemporal system for managing all 249 ISO countries, including repository layers and flag image linkage.
+- *Amendment & Delete Infrastructure*: Introduced a new schema for tracking reasons for data modifications, aligned with financial regulations like *BCBS 239* and *MiFID II*.
+- *TimescaleDB Integration*: Implemented runtime license detection and per-database extension installation to support both Apache and Enterprise tiers.
+- *CLI Architecture Overhaul*: Standardized command-line configuration and flags across the entire ecosystem via a new modular utility system.
+
+* 🛠️ Key Improvements
+
+** Data Management & Compliance
+
+- *Bitemporal Country Tracking*: New =countries= and =country_images= tables in =ores.risk= and =ores.assets= support historical auditing and visual asset association.
+- *Regulatory Taxonomy*: Implemented 17 specific amendment reasons categorized by 'system', 'common', and 'trade' to meet auditability standards.
+- *Soft Deletes & Versioning*: Deletion in amendment tables is now handled via =INSTEAD OF DELETE= rules and temporal =valid_to= columns.
+
+** Database & Infrastructure
+
+- *SQL Population Scripts*: Centralized initial data setup (RBAC, flags, countries) into native SQL, replacing legacy C++ seeders.
+- *SQLGen 0.6.0 Upgrade*: Leveraged native =offset()= and =limit()= for robust pagination across all entity repositories.
+- *TimescaleDB Optimization*: Explicitly added =public.= schema prefixes to TimescaleDB function calls to prevent =search_path= conflicts.
+
+** User Interface (Qt & Wt)
+
+- *Country Management UI*: Developed =country_list_widget= and =country_dialog= in the Wt interface for full CRUD operations.
+- *Feature Flag UX*: Added real-time event subscriptions and pulsing highlights to the Qt client for immediate visual feedback on flag changes.
+- *Log Shipping*: Integrated telemetry support to ship and browse client/server logs directly from the UI.
+
+* ⚠️ Known Issues & Postponed
+
+- *AI Generated Summary*: =POSTPONED= - Automated sprint summary generation deferred to next sprint.
+- *Sprint Demo*: =CANCELLED= - Presentation of ORE Studio v0.0.4 "Fazenda Camilunga" not performed.
+
+* 📊 Time Summary
+
+- *Total effort*: not tracked
+- *PRs merged*: not tracked
+- *Sprint duration*: 2025-12-30 → 2026-01-11
+
+-----
+
+/Next sprint: [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]]./

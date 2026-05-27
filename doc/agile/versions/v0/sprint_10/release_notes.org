@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: ECB9453A-BBAB-4EA0-993F-862E7899DFC7
+:END:
+#+title: Sprint 10 Release Notes
+#+description: Sprint 10 release notes (January 2026).
+#+type: release_notes
+#+version: 2
+#+level: cross
+#+filetags: :release_notes:sprint_10:v0:
+#+created: 2026-01-28
+#+updated: 2026-01-28
+
+/January 2026/
+
+The Sprint 10 release of OreStudio represents a significant leap in architectural maturity and developer productivity. By automating the generation of ER diagrams and C++ domain types from source schemas, the project has reduced documentation lag and manual coding overhead. The shift to a multi-schema database architecture (=metadata= vs. =production=) provides a clean separation between system configuration and operational data, finally enabling the "System Provisioner Wizard" for a simplified user onboarding experience. Despite the postponement of FPML export/import, the foundational work in component restructuring and dataset bundling has prepared the platform for more complex financial integrations in the coming sprints.
+
+-----
+
+* ✅ Highlights
+
+- *Automated ER Diagram Generation*: Implemented a system to generate PlantUML ER diagrams directly from SQL schema, including a robust convention validation engine.
+- *Multi-Schema Database Architecture*: Refactored the database into separate =metadata= and =production= schemas to resolve bootstrapping paradoxes and improve data governance.
+- *Dataset Bundles*: Introduced "Dataset Bundles" for logical grouping and coordinated publication of related reference data.
+- *XSD-to-C++ Code Generation*: Integrated [[https://github.com/craflin/xsdcpp][=xsdcpp=]] for automated C++ type generation from XML schemas, specifically for ORE configurations.
+- *System Provisioner Wizard*: Developed a guided interactive wizard in Qt to streamline first-time system initialization and administrator account creation.
+
+* 🛠️ Key Improvements
+
+** Architecture & SQL Management
+- Reorganized SQL projects into component-based subdirectories (=iam/=, =dq/=, =refdata/=, etc.) with master orchestration scripts.
+- Standardized database object naming conventions using =admin_= prefixes and =_fn=/=_view= suffixes.
+- Consolidated external data storage under the =external/= directory, introducing =manifest.json= files for better source tracking.
+- Refactored FPML and ISO coding scheme management to utilize the Data Quality (DQ) artefact pipeline.
+
+** Developer Tools & Infrastructure
+- Developed a Python-based SQL parser capable of extracting schema information for automated documentation.
+- Integrated =bigobj= MSVC compiler support to resolve Windows CI breaks caused by complex template expansions.
+- Optimized =ImageCache= with incremental loading support using =modified_since= logic.
+- Created code generators for flags, crypto, and solvaris metadata SQL to automate database population.
+
+** UI & User Experience
+- Added a guided =SystemProvisionerWizard= to the Qt client for seamless environment setup.
+- Enhanced toolbar usability by adding text labels to key export/import icons (CSV, ORE, FPML).
+- Improved the Librarian UI with better row highlighting, dimension-based tree filtering, and fixed country flag mappings.
+
+* ⚠️ Known Issues & Postponed
+
+- *FPML Export and Import*: Implementation of full FPML import/export functionality was postponed to further validate domain modeling.
+- *BOINC-based Compute*: The transition to a BOINC-inspired distributed compute approach remains in the analysis phase.
+
+* 📊 Time Summary
+
+- *Total effort*: not tracked
+- *PRs merged*: not tracked
+- *Sprint duration*: 2026-01-20 → 2026-01-28
+
+-----
+
+/Next sprint: [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]]./

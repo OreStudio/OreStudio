@@ -31,12 +31,14 @@ Wizard that uses them.
 | Field          | Value                                                                                                                         |
 |----------------+-------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                          |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                     |
-| Start          | 2026-01-20                             |
-| End (expected) | 2026-01-28                             |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                        |
+| Previous       | [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]]                                                                        |
+| Start          | 2026-01-20                                                                                                                    |
+| End (expected) | 2026-01-28                                                                                                                    |
 | Now            | Sprint closed 2026-01-27. Two stories carry forward: the FPML export/import implementation and the BOINC compute-grid design. |
 | Waiting on     | None — carried items scheduled forward.                                                                                       |
-| Next           | Sprint 11 picks up from the dataset-bundles + provisioning work; the party domain layer also has its prerequisites now.       |
+| Next           | [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]]                                                                        |
+| Release Notes  | [[id:ECB9453A-BBAB-4EA0-993F-862E7899DFC7][Release notes]]                                                                                                                             |
 | Last touched   | 2026-01-27                                                                                                                    |
 
 * Stories

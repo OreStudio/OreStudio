@@ -20,16 +20,18 @@ the stack.
 
 * Status
 
-| Field          | Value                                         |
-|----------------+-----------------------------------------------|
-| State          | DONE                                          |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                     |
-| Start          | 2024-06-15                             |
-| End (expected) | 2025-02-02                             |
-| Now            | Sprint closed 2024-07-28. All stories merged. |
-| Waiting on     | None.                                         |
-| Next           | None.                                         |
-| Last touched   | 2024-07-28                                    |
+| Field          | Value                                                  |
+|----------------+--------------------------------------------------------|
+| State          | DONE                                                   |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
+| Previous       | —                                                      |
+| Start          | 2024-06-15                                             |
+| End (expected) | 2025-02-02                                             |
+| Now            | Sprint closed 2024-07-28. All stories merged.          |
+| Waiting on     | Nothing.                                               |
+| Next           | [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]] |
+| Release Notes  | [[id:9FEBF736-19F2-4007-BF3A-ACCA6DB5C537][Release notes]]                                                      |
+| Last touched   | 2024-07-28                                             |
 
 * Stories
 

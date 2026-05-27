@@ -83,9 +83,7 @@ Dependency order: utility → platform → logging → telemetry → database.
 ** Infrastructure Layer
 
 Infrastructure owns the transport and testing contracts. Everything
-above this layer speaks NATS or nothing at all — the deprecated binary
-protocol (=ores.comms=) exists only for legacy clients and will not be
-extended. Testing infrastructure (=ores.testing=) is here rather than
+above this layer speaks NATS. Testing infrastructure (=ores.testing=) is here rather than
 in Foundation because it composes Foundation services: it creates
 isolated PostgreSQL schemas for every Catch2 test case, wires up
 loggers, and tears down cleanly. If a component in this layer breaks,
@@ -94,7 +92,6 @@ every test in the system fails — that is the correct failure mode.
 | Component | Description | Depends On |
 |-----------+-------------+------------|
 | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] | NATS messaging backbone — client connection management, subject naming conventions, queue groups, JetStream configuration and lifecycle. The primary inter-service transport. | platform |
-| ores.comms | Binary protocol over SSL/TLS for client-server messaging. Deprecated in favour of NATS. | utility |
 | [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] | In-process publish/subscribe event bus with PostgreSQL-backed delivery and NATS integration. | nats |
 | [[id:9CFAC175-C28F-4C03-9655-1CDC6E8C3EE0][ores.service]] | Shared NATS domain service runner — =domain_service_runner= template for standard request/reply lifecycle. | nats |
 | [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]] | Catch2 infrastructure — unique database per test process, preconfigured logger, test fixture helpers. | foundation, database |
@@ -117,7 +114,7 @@ speaks NATS to every other vertical.
 | [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]] | Reference data — currencies, countries, coding schemes, FPML taxonomy, and market conventions. | database, nats |
 | [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] | Identity and access management — account lifecycle, login with password/scrypt/SSO, role-based authorisation. | database, nats, security |
 | [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore]] | ORE XML import/export — converts between ORE Engine XML format and ORE Studio domain types. | utility, nats |
-| [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]] | Data quality — provenance, validation metadata, change management, DQ-6 governance. | database, nats |
+| [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]] | Data quality — provenance, validation metadata, change management, DQ-6 governance. Owns the =publish-from-dq= cross-service write pattern (see Database Isolation). | database, nats |
 | [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata]] | Market data — series, observations, fixings, import options, yield curves, volatility surfaces. | database, nats, refdata |
 | [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]] | Trade booking and lifecycle — FSM-enforced trade status, portfolios, books, trade blotters. | database, nats, refdata |
 | [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting]] | Report execution and result persistence — runs ORE output through configured report definitions. | database, nats, refdata |
@@ -125,7 +122,7 @@ speaks NATS to every other vertical.
 | [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]] | File storage abstractions — local filesystem paths, HTTP-based remote storage, blob management. | database, nats |
 | [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic]] | Synthetic market data and scenario generation for stress testing and demo data. | database, nats |
 | [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets]] | Binary image storage with hierarchical tagging and CRUD management. | database, nats, refdata |
-| ores.compute | Compute engine — distributed computation for valuation and reporting. Run configurations, chunking, environment lifecycle. | nats, marketdata |
+| ores.compute | Compute engine — distributed computation for valuation and reporting. Run configurations, chunking, environment lifecycle. No =component_overview.org= yet. | nats, marketdata |
 | [[id:440294D7-385D-41EE-92CB-CAB937E65E81][ores.workflow]] | Workflow management for multi-step compute pipelines — tracks state, retries, and completion. | database, nats |
 | [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler]] | Task scheduling for compute jobs (run ORE scenarios, generate reports) via =pg_cron= wrapper. | database |
 | [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]] | FpML processing infrastructure — parsing, validating, and serialising financial product XML. | utility |
@@ -146,15 +143,15 @@ none of the above and proud of it.
 | Component | Description | Depends On |
 |-----------+-------------+------------|
 | [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] | Qt6 desktop GUI framework — MDI interface, plugin architecture (7 domain plugins via =ores.qt.api=), menu/toolbar construction, entity forms. | All layers |
-| ores.qt.api | Qt plugin API contract — =IPlugin= lifecycle interface, two-phase menu-building sequence. | ores.qt |
-| ores.qt.party | Party management Qt plugin — counterparty list/detail, identifiers, contacts. | ores.qt.api |
-| ores.qt.trading | Trading Qt plugin — trade blotter, deal entry forms, instrument tables per family. | ores.qt.api |
-| ores.qt.refdata | Reference data Qt plugin — currency, country, calendar CRUD screens. | ores.qt.api |
-| ores.qt.analytics | Analytics Qt plugin — reporting and analytics dashboards. | ores.qt.api |
-| ores.qt.mktdata | Market data Qt plugin — curve/surface browser, fixings viewer. | ores.qt.api |
-| ores.qt.compute | Compute Qt plugin — compute job monitor, results viewer. | ores.qt.api |
-| ores.qt.workflow | Workflow Qt plugin — workflow instance tracker. | ores.qt.api |
-| ores.qt.admin | Administration Qt plugin — user/role management, feature flags. | ores.qt.api |
+| [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] | Qt plugin API contract — =IPlugin= lifecycle interface, two-phase menu-building sequence. | ores.qt |
+| [[id:6DE9A7B8-F7BA-4E93-BB93-2FB10C53F9CA][ores.qt.party]] | Party management Qt plugin — counterparty list/detail, identifiers, contacts. | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] |
+| [[id:3FA355D1-38FD-4E35-9E05-2185882B8AC1][ores.qt.trading]] | Trading Qt plugin — trade blotter, deal entry forms, instrument tables per family. | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] |
+| [[id:621194C4-D438-4215-AE40-21FBE8FF0D85][ores.qt.refdata]] | Reference data Qt plugin — currency, country, calendar CRUD screens. | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] |
+| [[id:970667D1-8BA8-4B49-B047-0D6D4C4CE498][ores.qt.analytics]] | Analytics Qt plugin — reporting and analytics dashboards. | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] |
+| [[id:2E83F9B5-67F4-4A1F-95BC-FE1E7AB7D4C0][ores.qt.mktdata]] | Market data Qt plugin — curve/surface browser, fixings viewer. | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] |
+| [[id:03EAE018-5E61-4005-AC9A-EFF827A46178][ores.qt.compute]] | Compute Qt plugin — compute job monitor, results viewer. | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] |
+| [[id:B7269E9C-83B6-4D6C-80DE-D796AB89B1BD][ores.qt.workflow]] | Workflow Qt plugin — workflow instance tracker. | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] |
+| [[id:DB5A4924-8F0A-440C-873E-D823F430043E][ores.qt.admin]] | Administration Qt plugin — user/role management, feature flags. | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] |
 | [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] | Command-line interface — import/export currencies in multiple formats, ORE sample execution, batch operations. | All layers |
 | [[id:B0C9FDC8-F0B2-48FE-AE37-8FD79E6FD164][ores.http.api]] | HTTP server infrastructure — Boost.Beast/Asio async server, WSGI-style route handler registry. | foundation, domain |
 | [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]] | Boost.Asio HTTP server — wires all route handlers (IAM, assets, risk, storage, variability), runs the event loop. | ores.http.api |
@@ -186,18 +183,12 @@ under "Service Table Isolation".
 
 ** DQ publish-from-DQ pattern
 
-Target services (refdata, assets, reporting, trading) expose
-~<service>.v1.<entity>.publish-from-dq~ NATS subjects. Each handler reads DQ
-artefact tables via a ~SECURITY DEFINER~ SQL function (owned by the DQ schema)
-and writes only to the target service's own tables. This satisfies the isolation
-invariant while allowing DQ-sourced seed data to be materialised into service
-tables.
-
-Publish exception: the ~SECURITY DEFINER~ function runs as the DQ schema owner,
-so it may read ~ores_dq_*~ tables. The calling service user never receives a
-SELECT grant on DQ tables. This pattern is the only permitted cross-service read
-path from service SQL functions; ordinary DML handlers must not query
-~ores_<other_service>_*~ tables directly.
+This pattern is specific to [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]]. Target services expose
+~<service>.v1.<entity>.publish-from-dq~ NATS subjects; each handler reads DQ
+artefact tables via a ~SECURITY DEFINER~ SQL function and writes only to the
+target service's own tables — the only permitted cross-service read path from
+SQL functions. See the [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]] component overview for the full pattern
+description and examples.
 
 * Useful Pages
 
@@ -207,6 +198,9 @@ path from service SQL functions; ordinary DML handlers must not query
 - To understand how to add new domain types, see the [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]] skill.
 - To understand unit testing, see the [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][Unit Test Writer]] skill.
 - To understand symbol visibility rules for shared libraries, see [[id:A1C3E5F7-92B4-4D6A-B8C2-3F1D7E9A0B5C][Shared Library Symbol Visibility]].
+- To understand workspaces (isolated data contexts for ORE runs), see [[id:CEAD2E6A-8C12-489F-B64A-652EE2B81811][Workspace design]].
+- To understand how tenants and parties are isolated at the messaging layer, see [[id:4E762126-2152-11F1-B1D1-40B0768014EB][NATS multi-tenancy and multi-party design]].
+- To understand how reference data is propagated across party boundaries, see [[id:7A3D1E52-B8F4-4C91-A9E7-6F2C3D841B05][Librarian party & counterparty publication design]].
 
 * General information
 

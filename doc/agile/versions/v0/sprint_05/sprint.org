@@ -27,12 +27,14 @@ skills layer.
 | Field          | Value                                                                                                                                                                                                |
 |----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                                                 |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                                                                            |
-| Start          | 2025-11-16                             |
-| End (expected) | 2025-12-01                             |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                               |
+| Previous       | [[id:38DAA167-E791-48FB-AFEB-1813615037DE][Sprint 04]]                                                                                                                                               |
+| Start          | 2025-11-16                                                                                                                                                                                           |
+| End (expected) | 2025-12-01                                                                                                                                                                                           |
 | Now            | Sprint closed 2025-12-01. Bootstrap workflow live; CLI/REPL reshape landed; currency messaging collapsed to =save_currency=; skills layer grew to cover sprint-opening and release-notes generation. |
-| Waiting on     | None.                                                                                                                                                                                                |
-| Next           | None.                                                                                                                                                                                                |
+| Waiting on     | Nothing.                                                                                                                                                                                             |
+| Next           | [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]]                                                                                                                                               |
+| Release Notes  | [[id:D642B102-262B-44EF-9C4C-29326D3B2AF6][Release notes]]                                                                                                                                                                                                    |
 | Last touched   | 2025-12-01                                                                                                                                                                                           |
 
 * Stories

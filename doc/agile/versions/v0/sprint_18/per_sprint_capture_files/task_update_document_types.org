@@ -8,8 +8,8 @@
 #+level: s1
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/capture-workflow-doc-tasks
+#+pr: 875
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-27
@@ -20,36 +20,34 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Fully document the four-bucket capture structure in [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document_types.org]]: describe inbox/next/deferred/discarded, explain the lifecycle, and document how =compass capture= interacts with the type.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-27                               |
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | STARTED                                                                  |
+| Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]]     |
+| Now          | Implementing.                                                            |
+| Waiting on   | Nothing.                                                                 |
+| Next         | PR.                                                                      |
+| Last touched | 2026-05-27                                                               |
 
 * Acceptance
 
--
+- The capture entry in [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document_types.org]] describes all four buckets (inbox, next, deferred, discarded) with their purpose.
+- The lifecycle section explains how =compass capture --note= creates in inbox, =file= moves between buckets, =promote= converts to story.
+- The frontmatter contract table is updated to reflect current capture shape.
 
 * Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
 
 * Notes
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                                                              |
+|------+--------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/875][#875]] | Update capture doc-type entry for four-bucket structure |
 
 * Review
 

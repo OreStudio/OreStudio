@@ -70,9 +70,12 @@ ergonomics.
   point-and-click process lifecycle management.
 - =ores-capture.el= — product-backlog capture integration. Provides
   =ores/capture= (interactive command that delegates to =compass.sh
-  capture --note=) and =ores/setup-capture-templates= (registers key
-  ="c"= in =org-roam-capture-templates= targeting =inbox/= of the
-  current checkout).
+  capture --note=), =ores/setup-capture-templates= (registers key ="c"=
+  in both =org-capture-templates= and =org-roam-capture-templates=
+  targeting =inbox/= of the current checkout), and
+  =ores/setup-capture-snippets= (loads the =v2-capture= yasnippet,
+  trigger ="cap"=, for expanding v2 capture frontmatter in any org
+  buffer).
 - =ores-org-roam-export.el= — org-roam → HTML export pipeline; walks the
   node graph and publishes the documentation site.
 

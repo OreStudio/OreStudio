@@ -41,6 +41,11 @@
 ;;
 ;;   `ores/capture'                  - create a capture via compass.sh
 ;;   `ores/setup-capture-templates'  - register in org-capture and org-roam-capture
+;;   `ores/setup-capture-snippets'   - load the yasnippet v2-capture snippet
+;;
+;; Yasnippet usage: open (or create) a .org file in inbox/, type "cap" and
+;; press TAB.  Tab stops: $1 title, $2 description, $3 What, $4 Why, $5
+;; References, $0 See also.  UUID and dates are filled automatically.
 
 ;;; Code:
 
@@ -169,6 +174,24 @@ Opens the created file for further editing."
           (message "Capture created: %s" file)
           (find-file file))
       (user-error "compass capture failed:\n%s" output))))
+
+;; ---------------------------------------------------------------------------
+;; Yasnippet integration
+;; ---------------------------------------------------------------------------
+
+(defun ores/setup-capture-snippets ()
+  "Register the ores.lisp snippet directory with yasnippet and reload.
+Adds projects/ores.lisp/snippets/ to `yas-snippet-dirs' so the
+v2-capture snippet (trigger: \"cap\") is available in org-mode buffers."
+  (interactive)
+  (let ((snippet-dir (expand-file-name "projects/ores.lisp/snippets"
+                                       (ores/checkout-root))))
+    (if (not (fboundp 'yas-load-directory))
+        (user-error "yasnippet is not loaded; load yas-global-mode before calling this")
+      (unless (member snippet-dir yas-snippet-dirs)
+        (add-to-list 'yas-snippet-dirs snippet-dir))
+      (yas-load-directory snippet-dir)
+      (message "ores-capture: loaded snippets from %s" snippet-dir))))
 
 (provide 'ores-capture)
 ;;; ores-capture.el ends here

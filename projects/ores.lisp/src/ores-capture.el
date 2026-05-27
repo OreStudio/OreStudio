@@ -48,28 +48,19 @@
 (require 'ores-env)
 
 ;; ---------------------------------------------------------------------------
-;; Inbox path
+;; State variables
 ;; ---------------------------------------------------------------------------
 
-(defun ores/capture--inbox-dir ()
-  "Return the absolute path to product_backlog/inbox/ for the current checkout."
-  (expand-file-name "doc/agile/product_backlog/inbox" (ores/checkout-root)))
+(defvar ores/capture--pending-file nil
+  "Inbox path for the capture in progress; deleted on abort if already written.")
+
+(defvar ores/capture--snippet-body nil
+  "Pre-built snippet body with the title substituted; set in target setup,
+consumed by the :hook so no project-root lookup is needed at hook time.")
 
 ;; ---------------------------------------------------------------------------
-;; org-capture target: prompt for title, create slug-named file in inbox/
+;; org-capture target: prompt for title, build snippet, return inbox path
 ;; ---------------------------------------------------------------------------
-
-(defvar ores/capture--pending-title nil
-  "Title entered during target setup; used to pre-fill the yasnippet $1 field.")
-
-(defvar ores/capture--checkout-root nil
-  "Checkout root saved during target setup; used by the :hook to locate the snippet.")
-
-(defvar ores/capture--temp-file nil
-  "Path of the temporary capture file; moved to inbox/ on finalize, deleted on abort.")
-
-(defvar ores/capture--real-file nil
-  "Final inbox path the temp file should be moved to on successful finalization.")
 
 (defun ores/capture--title-to-slug (title)
   "Convert TITLE to a lowercase underscore slug."
@@ -81,68 +72,63 @@
     s))
 
 (defun ores/capture--inbox-file ()
-  "Prompt for a title and return a TEMP file path for the capture buffer.
-The real inbox file is only created on successful finalization (C-c C-c)
-via `ores/capture--finalize'.  On abort (C-c C-k) the temp file is
-deleted, so nothing lands in inbox/ unless the user confirms.
-The checkout root is cached here while we are in the correct project
-context, so the :hook can use it from the temp-file buffer."
+  "Prompt for title, pre-build the yasnippet body, return the inbox file path.
+Everything that needs the project root happens here, while we are still in
+the correct project context.  The :hook only needs to call yas-expand-snippet."
   (let* ((root  (ores/checkout-root))
          (title (read-string "Capture title: "))
          (slug  (ores/capture--title-to-slug title))
-         (real  (expand-file-name (concat slug ".org") (ores/capture--inbox-dir)))
-         (tmp   (make-temp-file "ores-capture-" nil ".org")))
-    (setq ores/capture--checkout-root root
-          ores/capture--pending-title title
-          ores/capture--real-file     real
-          ores/capture--temp-file     tmp)
-    tmp))
-
-(defun ores/capture--finalize ()
-  "Move temp capture file to inbox/ on finalize; delete it on abort."
-  (let ((tmp  ores/capture--temp-file)
-        (real ores/capture--real-file))
-    (when tmp
-      (if org-note-abort
-          (progn
-            (when-let ((buf (get-file-buffer tmp)))
-              (with-current-buffer buf (set-buffer-modified-p nil))
-              (kill-buffer buf))
-            (when (file-exists-p tmp) (delete-file tmp)))
-        (when (file-exists-p tmp) (rename-file tmp real :ok-if-already-exists)))))
-  (setq ores/capture--temp-file    nil
-        ores/capture--real-file    nil
-        ores/capture--checkout-root nil
-        ores/capture--pending-title nil))
-
-(add-hook 'org-capture-after-finalize-hook #'ores/capture--finalize)
+         (file  (expand-file-name
+                 (concat slug ".org")
+                 (expand-file-name "doc/agile/product_backlog/inbox" root)))
+         (snip  (expand-file-name
+                 "projects/ores.lisp/snippets/org-mode/v2-capture" root))
+         (raw   (with-temp-buffer
+                  (insert-file-contents snip)
+                  (goto-char (point-min))
+                  (when (re-search-forward "^# --\n" nil t)
+                    (buffer-substring-no-properties (point) (point-max)))))
+         (body  (when raw
+                  (replace-regexp-in-string
+                   (regexp-quote "${1:Title}")
+                   (format "${1:%s}" title)
+                   raw))))
+    (setq ores/capture--pending-file file
+          ores/capture--snippet-body body)
+    file))
 
 ;; ---------------------------------------------------------------------------
-;; org-capture hook: expand the v2-capture yasnippet into the buffer
+;; Finalization hooks
+;; ---------------------------------------------------------------------------
+
+(defun ores/capture--prepare-finalize ()
+  "On abort, mark buffer unmodified so Emacs does not prompt to save."
+  (when (and org-note-abort ores/capture--pending-file)
+    (set-buffer-modified-p nil)))
+
+(defun ores/capture--finalize ()
+  "On abort, delete the inbox file if an auto-save already wrote it."
+  (when (and org-note-abort ores/capture--pending-file)
+    (when (file-exists-p ores/capture--pending-file)
+      (delete-file ores/capture--pending-file)))
+  (setq ores/capture--pending-file  nil
+        ores/capture--snippet-body  nil))
+
+(add-hook 'org-capture-prepare-finalize-hook #'ores/capture--prepare-finalize)
+(add-hook 'org-capture-after-finalize-hook   #'ores/capture--finalize)
+
+;; ---------------------------------------------------------------------------
+;; org-capture :hook — expand the pre-built snippet body
 ;; ---------------------------------------------------------------------------
 
 (defun ores/capture--yas-expand ()
-  "Expand the v2-capture snippet in the current org-capture buffer.
-Pre-fills the $1 tab stop with the title from `ores/capture--pending-title'
-so the user sees it ready to confirm or edit.  Reads the snippet body from
-the canonical snippet file so org-capture and \"cap\" TAB share one template."
+  "Expand the pre-built v2-capture snippet body in the org-capture buffer.
+The body (with title already substituted) was built in `ores/capture--inbox-file'
+so no project-root lookup is needed here."
   (unless (fboundp 'yas-expand-snippet)
     (user-error "yasnippet is not loaded; load yas-global-mode before using this capture template"))
-  (let* ((snippet-file (expand-file-name
-                        "projects/ores.lisp/snippets/org-mode/v2-capture"
-                        ores/capture--checkout-root))
-         (raw (with-temp-buffer
-                (insert-file-contents snippet-file)
-                (goto-char (point-min))
-                (when (re-search-forward "^# --\n" nil t)
-                  (buffer-substring-no-properties (point) (point-max)))))
-         (title (or ores/capture--pending-title "Title"))
-         (body  (replace-regexp-in-string
-                 (regexp-quote "${1:Title}")
-                 (format "${1:%s}" title)
-                 raw)))
-    (when body
-      (yas-expand-snippet body))))
+  (when ores/capture--snippet-body
+    (yas-expand-snippet ores/capture--snippet-body)))
 
 ;; ---------------------------------------------------------------------------
 ;; Template registration
@@ -150,9 +136,9 @@ the canonical snippet file so org-capture and \"cap\" TAB share one template."
 
 (defun ores/setup-capture-templates ()
   "Register key \"c\" (Capture inbox) in `org-capture-templates'.
-Uses a temp file as the capture buffer so nothing lands in inbox/ unless
-the user finalises with C-c C-c.  The v2-capture yasnippet is expanded
-via :hook for interactive filling.
+The v2-capture snippet body is built in the target function while still in
+project context, then expanded by the :hook.  On abort, the inbox file is
+cleaned up by `ores/capture--finalize'.
 Call once after `org' is loaded."
   (interactive)
   (add-to-list 'org-capture-templates

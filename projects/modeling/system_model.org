@@ -132,7 +132,7 @@ system-wide without a restart.
 |--------------------------+---------------------------------------+-----------------------------------------------|
 | [[id:26218AD6-C63E-44E8-9B92-7FB51C366566][ores.variability.api]]     | Shared flag types and NATS protocol   | —                                             |
 | [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability.core]]    | Flag evaluation and caching           | [[id:26218AD6-C63E-44E8-9B92-7FB51C366566][ores.variability.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]         |
-| [[id:95D9E246-27ED-440F-B14A-481A546B7C4F][ores.variability.service]] | NATS flag publisher                   | [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability.core]]                         |
+| [[id:95D9E246-27ED-440F-B14A-481A546B7C4F][ores.variability.service]] | NATS flag publisher                   | [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]           |
 
 ** ores.geo
 

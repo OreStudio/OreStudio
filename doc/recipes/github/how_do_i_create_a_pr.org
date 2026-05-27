@@ -69,6 +69,9 @@ EOF
 
 * Conventions
 
+- /PR body is Markdown, not org-mode./ GitHub renders the body as
+  Markdown; use =**bold**=, =`code`=, =[text](url)= etc. — never
+  =[[id:...]]= links, =#+begin_src= blocks, or other org syntax.
 - /No "Test plan" section/ in the body.
 - /Title format/ is =[COMPONENT] Description=. Multi-component PRs
   use =[a,b,c]=.

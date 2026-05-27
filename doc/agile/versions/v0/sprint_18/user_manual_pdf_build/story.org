@@ -49,6 +49,7 @@ In execution order:
 - [[id:29379454-1B29-4BB5-905D-F129E0AC41FD][Task: Create documentation update skill]] (DONE — PR #814)
 - [[id:27422EEE-9435-49EC-B706-43BD66B2D7A6][Task: Generate all missing screenshots for the manual]] (STARTED)
 - Manuals index page and site nav link (PR #818)
+- [[id:8763DD18-EBDD-4921-A5DF-FA667C838379][Task: Add user_manual_site.org and update manuals.org]] (STARTED)
 
 * Decisions
 

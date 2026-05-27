@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 2E4F8B1C-9A3D-4C7E-B6F2-1D5E8A0C3F7B
+:END:
+#+title: ORE Studio User Manual
+#+description: Site entry point for the ORE Studio User Manual — chapter index with descriptions.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:manual:user_guide:index:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+
+The ORE Studio User Manual covers the application from an end-user
+perspective: how to connect to a backend, manage connections, bootstrap
+the system, provision tenants and parties, enter trades, and run
+analytics. A [[file:user_manual.pdf][PDF version]] is available for offline reading.
+
+#+begin_note
+All documentation is generated entirely by large language models (LLMs) working
+under human supervision. While every effort has been made to ensure accuracy,
+LLM-generated content can contain errors, omissions, or descriptions that do not
+match the actual software behaviour. If you find a discrepancy between these
+documents and the application, trust the application. Please report inaccuracies
+via the project issue tracker so they can be corrected.
+#+end_note
+
+* Chapters
+
+| Chapter                                                             | Description                                                                                              |
+|---------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------|
+| [[id:37EA004E-340C-5FE4-14AB-D9678749733B][1. Introduction]]                                                     | Overview of ORE Studio's purpose, architecture, and what this manual covers.                             |
+| [[id:DF779317-BDEB-49E4-E9AB-48C46615D0CF][2. Connecting to ORE Studio]]                                         | How to start ORE Studio, connect to a backend service, manage connections, read the status bar, log in and log out. |
+| [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][3. Initial Setup]]                                                    | Conceptual overview of the multi-tenant/multi-party model and step-by-step guide to the provisioning wizards. |

@@ -22,20 +22,12 @@ documents and the application, trust the application. Please report inaccuracies
 via the project issue tracker so they can be corrected.
 #+end_note
 
-* User Manual
+* Manuals
 
-The [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] documents the application from the end-user
-perspective: how to connect to a backend, manage connections, bootstrap
-the system, provision tenants and parties, enter trades, and run
-analytics.
-
-- [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][Read online]] | [[file:user_guide/user_manual.pdf][Download PDF]]
-
-* Developer Guide
-
-Coming soon. Will cover the development environment setup, build
-system, coding conventions, testing strategy, and contribution
-workflow.
+| Manual                                          | Description                                                                                          | PDF                                 |
+|-------------------------------------------------+------------------------------------------------------------------------------------------------------+-------------------------------------|
+| [[id:2E4F8B1C-9A3D-4C7E-B6F2-1D5E8A0C3F7B][ORE Studio User Manual]]                          | End-user guide: connecting, bootstrapping, provisioning, trading, and analytics.                     | [[file:user_guide/user_manual.pdf][Download PDF]]                        |
+| Developer Guide                                 | Coming soon — development environment, build system, conventions, testing, and contribution workflow. | —                                   |
 
 * See also
 

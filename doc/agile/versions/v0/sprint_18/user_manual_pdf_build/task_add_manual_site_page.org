@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 8763DD18-EBDD-4921-A5DF-FA667C838379
+:END:
+#+title: Task: Add user_manual_site.org and update manuals.org
+#+description: Create a site-friendly HTML entry point for the user manual with a chapter table, and update manuals.org to use a structured manuals table.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :user_manual_pdf_build:sprint_18:v0:
+#+owner: marco
+#+branch: feature/add-manual-site-page
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The existing =user_manual.org= is a single large org-mode file suitable
+for LaTeX/PDF export but produces one very long HTML page on the site.
+This task adds a parallel =user_manual_site.org= — a lightweight HTML
+entry point that gives readers a short overview and a chapter-by-chapter
+table with org-roam links to each chapter file. It also restructures
+=manuals.org= from prose sections into a clean table, linking to the new
+site page (not the monolithic file), and updates the chapter 1
+description to be more informative.
+
+* Status
+
+| Field        | Value                                                    |
+|--------------+----------------------------------------------------------|
+| State        | STARTED                                                  |
+| Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]]              |
+| Now          | In progress.                                             |
+| Waiting on   | Nothing.                                                 |
+| Next         | Implement and raise PR; close the story.                 |
+| Last touched | 2026-05-28                                               |
+
+* Acceptance
+
+- =doc/manual/user_guide/user_manual_site.org= exists with its own
+  org-roam ID, a short blurb about the manual, and a table with one row
+  per chapter: org-roam link to the chapter file | chapter description.
+- =doc/manual/manuals.org= has a structured table of manuals (User
+  Manual → link to =user_manual_site.org= ID; Developer Guide →
+  "Coming soon"); the previous prose-only sections are removed.
+- =chapter_1_introduction.org= has an updated =#+description:=
+  describing the chapter's actual content.
+- =user_manual.org= is unchanged (still used for LaTeX/PDF).
+- Site builds clean.
+
+* Plan
+
+1. Update =#+description:= in =chapter_1_introduction.org=.
+2. Create =doc/manual/user_guide/user_manual_site.org= with a fresh
+   UUID, blurb, and chapter table (auto-discovered from the directory).
+3. Rewrite =doc/manual/manuals.org= to use a table for manuals,
+   pointing at =user_manual_site.org= for the HTML entry point and
+   retaining the Developer Guide "Coming soon" entry.
+4. Build site and verify.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

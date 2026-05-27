@@ -64,7 +64,21 @@ The body is separated from the title by a blank line. It should explain the
 - Wrap text at 72 characters.
 - Use bullet points for multiple distinct changes within a single commit.
 
-** 3. Co-Author Attribution
+** 3. Story and Task Trailers
+
+Every commit that implements agile work (story or task) must include
+=Story-ID:= and =Task-ID:= trailers with the *full* UUID from the
+=:ID:= property of the respective =.org= files:
+
+#+begin_example
+Story-ID: E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F
+Task-ID: 477F1A3A-7090-4519-937B-2A79176CBAF6
+#+end_example
+
+These trailers make commits discoverable by story/task without parsing
+file paths. Place them after the body, before =Co-Authored-By:=.
+
+** 4. Co-Author Attribution
 
 When a commit is produced by an LLM (directly or via an agent), it must include
 a =Co-Authored-By:= trailer at the end of the commit message.
@@ -88,6 +102,8 @@ Example commit message:
 - ws-shim: intercept node/{id} and return HTML content.
 - .build-site.el: reset body flex/padding.
 
+Story-ID: E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F
+Task-ID: 477F1A3A-7090-4519-937B-2A79176CBAF6
 Co-Authored-By: Gemini 2.0 Flash <noreply@google.com>
 #+end_src
 
@@ -95,7 +111,11 @@ Co-Authored-By: Gemini 2.0 Flash <noreply@google.com>
 
 #+begin_src sh :results verbatim
 # Typical commit command
-git commit -m "[comp] Title" -m "Detail body." -m "Co-Authored-By: Your Identity <your@email.com>"
+git commit -m "[comp] Title" \
+  -m "Detail body." \
+  -m "Story-ID: STORY-FULL-UUID
+Task-ID: TASK-FULL-UUID
+Co-Authored-By: Your Identity <your@email.com>"
 #+end_src
 
 * Tested by

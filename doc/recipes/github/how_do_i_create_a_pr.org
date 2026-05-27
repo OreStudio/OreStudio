@@ -26,11 +26,10 @@ correctly-formatted title and a structured body?
    git push -u origin "$(git branch --show-current)"
    #+end_src
 
-2. /Create the PR/ with =gh pr create=. Embed the story and task
-   =:ID:= UUIDs in the body so =compass where --prs= can surface them
-   later, and a clickable HTML link to the published story page so
-   reviewers can open it directly. Use a HEREDOC for the body so
-   newlines are preserved:
+2. /Create the PR/ with =gh pr create=. Include a =## Traceability=
+   section at the end of the body with markdown hyperlinks to the
+   published HTML pages and the full UUIDs. Use a HEREDOC for the body
+   so newlines are preserved:
 
    #+begin_src sh :results verbatim
    gh pr create --title "[component] One-line description" \
@@ -44,11 +43,13 @@ correctly-formatted title and a structured body?
    - First change
    - Second change
 
-   Story: [[id:STORY-UUID]]
-   Task:  [[id:TASK-UUID]]
+   ## Traceability
 
-   Story page: https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_NN/STORY_SLUG/story.html
-   Task page:  https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_NN/STORY_SLUG/task_TASK_SLUG.html
+   [Story: Story title here](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_NN/STORY_SLUG/story.html)
+   [Task: Task title here](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_NN/STORY_SLUG/task_TASK_SLUG.html)
+
+   - Story ID: STORY-FULL-UUID
+   - Task ID: TASK-FULL-UUID
    EOF
    )"
    #+end_src
@@ -73,12 +74,21 @@ correctly-formatted title and a structured body?
   use =[a,b,c]=.
 - Body sections may be expanded (Notes, Decisions, Follow-ups), but
   Summary and Changes are the load-bearing pair.
-- /Story/Task UUIDs in the body/ are forward-only: they make PRs
-  discoverable from the task but are not back-filled on old PRs.
-- /Story and task page links/ follow the patterns:
-  - Story: =https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_<NN>/<STORY_SLUG>/story.html=
-  - Task:  =https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_<NN>/<STORY_SLUG>/task_<TASK_SLUG>.html=
-  Construct them from the sprint number, story slug, and task slug.
+- /Traceability section/ goes at the end of the body, always. It
+  contains:
+  1. A markdown link per artefact with the link text
+     =Story: <title>= or =Task: <title>= and the URL pointing to the
+     published HTML page.
+  2. =- Story ID:= and =- Task ID:= bullet lines with the *full*
+     UUID as read from the =:ID:= property of the =.org= file.
+     Never abbreviate the UUID to just the first segment.
+- /Story and task page URLs/ follow the pattern:
+  =https://orestudio.github.io/OreStudio/<path-without-extension>.html=
+  where =<path>= is the file path relative to the repo root:
+  - Story: =doc/agile/versions/v0/sprint_<NN>/<STORY_SLUG>/story=
+  - Task:  =doc/agile/versions/v0/sprint_<NN>/<STORY_SLUG>/task_<TASK_SLUG>=
+- /Traceability is forward-only/: add it to new PRs; do not back-fill
+  old ones.
 
 * Script
 

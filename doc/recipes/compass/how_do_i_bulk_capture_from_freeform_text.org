@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 7072D39C-9607-48F9-8EE6-50E8647DB8ED
+:END:
+#+title: How do I capture ideas from freeform text?
+#+description: Write a paragraph of unstructured notes and ask the LLM to decompose it into well-structured captures filed in inbox/.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :compass:capture:llm:recipe:
+#+created: 2026-05-27
+#+updated: 2026-05-27
+
+For the capture type contract and bucket lifecycle, see [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]].
+For moving captures between buckets after they land in =inbox/=, see
+[[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Product backlog]].
+
+* Question
+
+I have a block of unstructured notes — meeting notes, a brain-dump, a
+rough idea paragraph — and I want to turn it into one or more
+well-structured captures in =inbox/= without manually editing each
+file. How?
+
+* Answer
+
+Paste or type the freeform text directly into a message to the LLM
+(Claude Code) with the instruction:
+
+#+begin_example
+Capture the following notes: <paste text here>
+#+end_example
+
+The LLM will:
+
+1. Parse the text for distinct ideas and themes.
+2. For each idea, distil a concise title (5–10 words, imperative or
+   noun phrase) and a one-sentence description.
+3. Call =compass capture --note "..."= for each idea, landing the
+   file in =doc/agile/product_backlog/inbox/=.
+4. Report the slug(s) created so you can find them immediately.
+
+You do not need to structure the text first.  The LLM handles
+splitting, de-duplication, and canonicalisation.
+
+** Example
+
+#+begin_example
+Capture the following notes:
+
+We should look at adding dark-mode support to the Qt UI — there have
+been a few user requests.  Also the CSV export in the reporting view
+is slow when there are more than 10k rows; worth investigating whether
+streaming the write helps.  And someone mentioned wanting an audit log
+for configuration changes so we can see who changed what and when.
+#+end_example
+
+The LLM would call =compass capture= three times — one per distinct idea —
+and report back three slugs such as:
+
+#+begin_example
+Created: doc/agile/product_backlog/inbox/dark_mode_support_qt_ui.org
+Created: doc/agile/product_backlog/inbox/csv_export_performance_reporting.org
+Created: doc/agile/product_backlog/inbox/audit_log_configuration_changes.org
+#+end_example
+
+** After capturing
+
+Each file lands in =inbox/= (untriaged).  At your next triage session:
+
+- Promote to =next/= if it is an imminent candidate:
+  =compass capture file <slug> next=
+- Park in =deferred/= for long-horizon ideas:
+  =compass capture file <slug> deferred=
+- Discard if not aligned:
+  =compass capture file <slug> discarded=
+
+* Script
+
+=projects/ores.compass/compass.sh capture --note "..."= — creates one
+capture file in =inbox/= per call.  The LLM drives it; no manual
+invocation is required for the bulk workflow.
+
+* Tested by
+
+Manual: paste a paragraph of notes into Claude Code and verify the
+created files in =inbox/=.
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Product backlog]] — bucket structure and triage lifecycle.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — capture frontmatter contract.
+- [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — after captures are promoted to stories/tasks.

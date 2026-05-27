@@ -9,7 +9,7 @@
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco
 #+branch: feature/capture-workflow-doc-tasks
-#+pr:
+#+pr: 875
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-27
@@ -45,9 +45,9 @@ Fully document the four-bucket capture structure in [[id:8B29A8D8-E004-4E87-B81D
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                                                              |
+|------+--------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/875][#875]] | Update capture doc-type entry for four-bucket structure |
 
 * Review
 

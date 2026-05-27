@@ -50,7 +50,7 @@ correctly-formatted title and a structured body?
 
    - Story ID: STORY-FULL-UUID
    - Task ID: TASK-FULL-UUID
-   EOF
+EOF
    )"
    #+end_src
 

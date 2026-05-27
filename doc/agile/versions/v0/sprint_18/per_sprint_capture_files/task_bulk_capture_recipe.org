@@ -8,7 +8,7 @@
 #+level: s1
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/bulk-capture-recipe
 #+pr:
 #+blocked_on: none
 #+blocked_since:
@@ -20,41 +20,42 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Write a recipe that lets a user paste a paragraph of freeform notes into Claude Code and have the LLM decompose them into one or more well-structured captures filed directly in =inbox/=, with no manual file editing required.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-27                               |
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | STARTED                                                                  |
+| Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]]    |
+| Now          | Implementing recipe and updating PR/commit convention docs.              |
+| Waiting on   | Nothing.                                                                 |
+| Next         | PR.                                                                      |
+| Last touched | 2026-05-27                                                               |
 
 * Acceptance
 
--
+- Recipe =how_do_i_bulk_capture_from_freeform_text.org= exists in =doc/recipes/compass/=.
+- Recipe explains the workflow: paste freeform text, LLM decomposes into titles/descriptions, runs =compass capture --note= per idea.
+- Recipe includes a concrete example showing input text and the resulting slugs.
+- Recipe explains what to do after captures land in =inbox/= (file, defer, discard).
+- =how_do_i_create_a_pr.org= updated: Story/Task section uses markdown hyperlinks to the HTML page and =- Story ID:= / =- Task ID:= bullet lines.
+- =how_do_i_commit_to_git_using_ore_studio_conventions.org= updated: commit message template adds =Story-ID:= and =Task-ID:= trailers before =Co-Authored-By:=.
 
 * Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
 
 * Notes
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                                                                              |
+|------+------------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/876][#876]] | Bulk capture from freeform text; update PR/commit conventions |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                        | File                        | Decision | Notes          |
+|---+--------------------------------------------------------+-----------------------------+----------+----------------|
+| 1 | EOF delimiter indented — shell syntax error on copy-paste | how_do_i_create_a_pr.org:53 | Accept   | Fixed in 2d2158c |
 
 * Result

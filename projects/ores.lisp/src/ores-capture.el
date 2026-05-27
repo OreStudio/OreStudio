@@ -56,16 +56,30 @@
   (expand-file-name "doc/agile/product_backlog/inbox" (ores/checkout-root)))
 
 ;; ---------------------------------------------------------------------------
-;; org-capture target: create a fresh timestamped file in inbox/
+;; org-capture target: prompt for title, create slug-named file in inbox/
 ;; ---------------------------------------------------------------------------
 
+(defvar-local ores/capture--pending-title nil
+  "Title entered during target setup; used to pre-fill the yasnippet $1 field.")
+
+(defun ores/capture--title-to-slug (title)
+  "Convert TITLE to a lowercase underscore slug."
+  (let* ((s (downcase title))
+         (s (replace-regexp-in-string "[[:space:]]+" "_" s))
+         (s (replace-regexp-in-string "[^a-z0-9_]" "" s))
+         (s (replace-regexp-in-string "_+" "_" s))
+         (s (replace-regexp-in-string "^_+\\|_+$" "" s)))
+    s))
+
 (defun ores/capture--setup-inbox-file ()
-  "Create a timestamped org file in inbox/ and position point at start.
-Used as the (function ...) target in `org-capture-templates'."
-  (let ((file (expand-file-name
-               (format-time-string "capture_%Y%m%d_%H%M%S.org")
-               (ores/capture--inbox-dir))))
+  "Prompt for a title, create a slug-named org file in inbox/, and position point.
+Stores the title buffer-locally so `ores/capture--yas-expand' can pre-fill $1."
+  (let* ((title (read-string "Capture title: "))
+         (slug  (ores/capture--title-to-slug title))
+         (file  (expand-file-name (concat slug ".org")
+                                  (ores/capture--inbox-dir))))
     (find-file file)
+    (setq-local ores/capture--pending-title title)
     (goto-char (point-min))))
 
 ;; ---------------------------------------------------------------------------
@@ -74,19 +88,25 @@ Used as the (function ...) target in `org-capture-templates'."
 
 (defun ores/capture--yas-expand ()
   "Expand the v2-capture snippet in the current org-capture buffer.
-Reads the snippet body from the canonical snippet file so that the
-yasnippet (used for \"cap\" TAB) and org-capture share one template."
+Pre-fills the $1 tab stop with the title from `ores/capture--pending-title'
+so the user sees it ready to confirm or edit.  Reads the snippet body from
+the canonical snippet file so org-capture and \"cap\" TAB share one template."
   (unless (fboundp 'yas-expand-snippet)
     (user-error "yasnippet is not loaded; load yas-global-mode before using this capture template"))
   (let* ((snippet-file (expand-file-name
                         "projects/ores.lisp/snippets/org-mode/v2-capture"
                         (ores/checkout-root)))
-         (body (with-temp-buffer
-                 (insert-file-contents snippet-file)
-                 (goto-char (point-min))
-                 ;; Skip yasnippet header lines; body starts after "# --"
-                 (when (re-search-forward "^# --\n" nil t)
-                   (buffer-substring-no-properties (point) (point-max))))))
+         (raw (with-temp-buffer
+                (insert-file-contents snippet-file)
+                (goto-char (point-min))
+                (when (re-search-forward "^# --\n" nil t)
+                  (buffer-substring-no-properties (point) (point-max)))))
+         (title (or ores/capture--pending-title "Title"))
+         ;; Substitute the captured title as the editable default for $1.
+         (body  (replace-regexp-in-string
+                 (regexp-quote "${1:Title}")
+                 (format "${1:%s}" title)
+                 raw)))
     (when body
       (yas-expand-snippet body))))
 

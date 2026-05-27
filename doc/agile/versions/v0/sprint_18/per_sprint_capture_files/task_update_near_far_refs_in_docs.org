@@ -28,7 +28,7 @@ Sweep all =.org= files for residual =near= / =far= bucket terminology and replac
 |--------------+--------------------------------------------------------------------------|
 | State        | DONE                                                                     |
 | Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]]     |
-| Now          | Done — swept in PR #874 and its review round 1 fix commit.              |
+| Now          | Complete.                                                                |
 | Waiting on   | Nothing.                                                                 |
 | Next         | —                                                                        |
 | Last touched | 2026-05-27                                                               |
@@ -51,6 +51,10 @@ Work was folded into PR #874 (main rename commit) and the review-round-1 fix com
 | [[https://github.com/OreStudio/OreStudio/pull/874][#874]] | Per-sprint capture workflow: inbox/next/deferred/discarded buckets |
 
 * Review
+
+| # | Comment summary                                    | File                                       | Decision | Notes          |
+|---+----------------------------------------------------+--------------------------------------------+----------+----------------|
+| 1 | DONE task: Now field should be "Complete." not prose | task_update_near_far_refs_in_docs.org:31 | Accept   | Fixed          |
 
 * Result
 

@@ -25,7 +25,7 @@ A single turn of the loop:
    candidates change shape, and let new ideas land in [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]].
 2. /Plan/ a new sprint — define the [[id:198DA730-D9FB-4BDE-B1C0-B930CD019917][sprint mission]] first (it
    orientates which stories to pull), then choose a small set of
-   [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][captures]] from near that fit the mission and promote each into a
+   [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][captures]] from next that fit the mission and promote each into a
    [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]]. Break stories into one-PR-sized tasks.
 3. /Execute/ — agents pick up =BACKLOG= tasks, transition to =STARTED=,
    open a PR, land it, mark =DONE=. The heartbeat rule keeps Status
@@ -44,9 +44,9 @@ the version's [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Definition of done]] is
 
 ** Backlog refinement
 
-*Owned by* [[id:8F13BA75-EDAA-46CC-9BE2-E356D60BF4F4][System 3]] (sprint coherence drives whether near is honest).
+*Owned by* [[id:8F13BA75-EDAA-46CC-9BE2-E356D60BF4F4][System 3]] (sprint coherence drives whether next is honest).
 Captures are filed by [[id:BF4F183F-BB33-44F2-A53F-D9BD602E9BE8][System 2]] when discovered during execution.
-Identity-fit calls are referred to [[id:6DF00A64-7CC3-40A7-950B-55D2B05A31C7][System 5]]; near↔far moves for the
+Identity-fit calls are referred to [[id:6DF00A64-7CC3-40A7-950B-55D2B05A31C7][System 5]]; next↔deferred moves for the
 next version are driven by [[id:6CA8B181-BD81-4EF4-AF27-64F5491D62F0][System 4]].
 
 Refinement is the cheap, ongoing work that keeps the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] bucket
@@ -58,8 +58,8 @@ capture is touched:
 - A capture's body may be tightened (description, tags) as a sprint
   approaches and it becomes a serious candidate.
 - A capture moves =git mv= between buckets when its horizon changes
-  (e.g. a "far" idea becomes "near" because its blocking dependency
-  landed; a "near" idea drops to "far" because the next version's
+  (e.g. a "deferred" idea becomes "next" because its blocking dependency
+  landed; a "next" idea drops to "deferred" because the next version's
   focus shifted).
 - Captures that are no longer interesting are *deleted*, not
   archived. The product backlog is not an artefact museum.
@@ -234,7 +234,7 @@ A document is /done/ when:
 
 - [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]] — the generic TODO state machine on each document.
 - [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — per-type frontmatter and section contract.
-- [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — what the backlog is and how near/deferred buckets work.
+- [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — what the backlog is and how next/deferred buckets work.
 - [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — definitions of every term used here.
 - [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — the recipe used at every promotion
   step above.

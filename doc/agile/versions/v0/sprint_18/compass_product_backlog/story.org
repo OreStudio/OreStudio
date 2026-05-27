@@ -6,7 +6,7 @@
 #+type: story
 #+version: 2
 #+level: s2
-#+filetags: :compass:tooling:python:backlog:near:far:sprint_18:v0:
+#+filetags: :compass:tooling:python:backlog:next:deferred:sprint_18:v0:
 #+created: 2026-05-24
 #+updated: 2026-05-24
 #+todo: BACKLOG STARTED | DONE ABANDONED
@@ -34,9 +34,9 @@ is on the longer-term wishlist without opening any files.
 
 * Acceptance
 
-- =compass.sh backlog= (or =compass.sh backlog --near= / =--far=) prints
+- =compass.sh backlog= (or =compass.sh backlog --next= / =--deferred=) prints
   next and deferred captures, one per line, with title and path.
-- Output includes a count summary line per bucket (e.g. =Near: 12  Far: 7=).
+- Output includes a count summary line per bucket (e.g. =Next: 12  Deferred: 7=).
 - =--json= flag emits machine-readable output with the same structure as
   the =where= command's in-flight list.
 - The command works correctly from any working directory (the CWD bug

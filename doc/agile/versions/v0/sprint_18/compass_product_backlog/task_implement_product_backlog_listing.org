@@ -42,13 +42,13 @@ the repo root.
 - =compass.sh= changes to =cd "$REPO_ROOT"= (nearest ancestor with =.git=)
   instead of =cd "$SCRIPT_DIR"=, so relative =--parent-dir= arguments
   resolve against the repo root.
-- =compass.sh backlog= prints near captures then far captures, each group
-  headed by a count line (e.g. =Near (12):=).
+- =compass.sh backlog= prints next captures then deferred captures, each group
+  headed by a count line (e.g. =Next (12):=).
 - Each capture prints as one line: title and relative path.
-- =compass.sh backlog --near= prints only the next bucket; =--far= only far.
-- =compass.sh backlog --json= emits ={"near": [...], "far": [...]}= with
+- =compass.sh backlog --next= prints only the next bucket; =--deferred= only deferred.
+- =compass.sh backlog --json= emits ={"next": [...], "deferred": [...]}= with
   the same fields as the =where --json= in-flight entries.
-- =compass.sh backlog --count= prints only the counts (=next=12 far=7=),
+- =compass.sh backlog --count= prints only the counts (=next=12 deferred=7=),
   useful for scripting.
 - Existing =where=, =list=, =search=, and =add= commands are unaffected.
 

@@ -10,7 +10,7 @@
 #+created: 2026-05-27
 #+updated: 2026-05-27
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][sprint note]] — a quick in-flight annotation filed during the sprint. It can be promoted to a story, added as a task, or moved to the product backlog via =compass capture=.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story. It can be promoted to a story, added as a task, or moved to another bucket via =compass capture=.
 
 * Note
 

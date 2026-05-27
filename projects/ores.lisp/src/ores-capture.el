@@ -17,35 +17,31 @@
 
 ;;; Commentary:
 ;;
-;; Provides two entry points for creating v2 capture docs in
+;; Two entry points for creating v2 capture docs in
 ;; doc/agile/product_backlog/inbox/ of the current checkout:
 ;;
-;;   `ores/capture'                - interactive command; calls compass.sh.
-;;                                   Good for LLM-driven and CLI-style use.
-;;   `ores/setup-capture-templates' - registers a capture template under key
-;;                                   "c" in BOTH `org-capture-templates' (for
-;;                                   M-x org-capture / C-c c) and
-;;                                   `org-roam-capture-templates' (for M-x
-;;                                   org-roam-capture / C-c n c).
+;;   `ores/setup-capture-templates' - registers key "c" in
+;;     `org-capture-templates'.  Selecting it creates a fresh
+;;     timestamped file in inbox/ and immediately expands the
+;;     v2-capture yasnippet so you fill in title, description, What,
+;;     Why etc. via TAB.  Requires yasnippet to be active.
 ;;
-;; Call `ores/setup-capture-templates' once at startup, e.g.:
+;;   `ores/capture' - interactive command that calls compass.sh.
+;;     Useful for LLM-driven and CLI-style captures.
+;;
+;; Setup (call once at startup):
 ;;
 ;;   (with-eval-after-load 'org
 ;;     (ores/setup-capture-templates))
 ;;
-;; Suggested key binding for `ores/capture':
+;; Suggested direct key binding:
 ;;
 ;;   (global-set-key (kbd "C-c o c") #'ores/capture)
 ;;
 ;; Public API:
 ;;
+;;   `ores/setup-capture-templates'  - register in org-capture
 ;;   `ores/capture'                  - create a capture via compass.sh
-;;   `ores/setup-capture-templates'  - register in org-capture and org-roam-capture
-;;   `ores/setup-capture-snippets'   - load the yasnippet v2-capture snippet
-;;
-;; Yasnippet usage: open (or create) a .org file in inbox/, type "cap" and
-;; press TAB.  Tab stops: $1 title, $2 description, $3 What, $4 Why, $5
-;; References, $0 See also.  UUID and dates are filled automatically.
 
 ;;; Code:
 
@@ -60,99 +56,58 @@
   (expand-file-name "doc/agile/product_backlog/inbox" (ores/checkout-root)))
 
 ;; ---------------------------------------------------------------------------
-;; org-roam capture template
+;; org-capture target: create a fresh timestamped file in inbox/
 ;; ---------------------------------------------------------------------------
 
-(defconst ores/capture--head-template
-  (concat ":PROPERTIES:\n"
-          ":ID: %(upcase (org-id-new))\n"
-          ":END:\n"
-          "#+title: ${title}\n"
-          "#+description: \n"
-          "#+type: capture\n"
-          "#+version: 2\n"
-          "#+level: cross\n"
-          "#+filetags: :inbox:capture:\n"
-          "#+created: %(format-time-string \"%Y-%m-%d\")\n"
-          "#+updated: %(format-time-string \"%Y-%m-%d\")\n"
-          "\n"
-          "This page is a "
-          "[[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] "
-          "in the *inbox* bucket of the product backlog "
-          "— a pre-sprint idea, not yet pulled into a sprint as a story.\n\n")
-  "Frontmatter inserted at the top of every new inbox capture file.")
-
-(defconst ores/capture--body-template
-  "* What\n\n%?\n\n* Why\n\n\n\n* References\n\n-\n\n* See also\n\n-\n"
-  "Body template for a new inbox capture; %? marks the initial cursor position.")
-
-;; ---------------------------------------------------------------------------
-;; org-capture target function (used when org-roam is not available)
-;; ---------------------------------------------------------------------------
-
-(defun ores/capture--title-to-slug (title)
-  "Convert TITLE to a lowercase underscore-separated slug."
-  (string-trim
-   (replace-regexp-in-string "[^a-z0-9]+" "_" (downcase title))
-   "_" "_"))
-
-(defun ores/capture--org-capture-target ()
-  "Set up a new v2 inbox capture file as the `org-capture' target.
-Prompts for a title, writes the frontmatter, and positions point at
-the end of the buffer so org-capture appends the body template."
-  (let* ((title (read-string "Capture title: "))
-         (slug  (ores/capture--title-to-slug title))
-         (date  (format-time-string "%Y-%m-%d"))
-         (id    (upcase (org-id-new)))
-         (file  (expand-file-name (concat slug ".org")
-                                  (ores/capture--inbox-dir))))
+(defun ores/capture--setup-inbox-file ()
+  "Create a timestamped org file in inbox/ and position point at start.
+Used as the (function ...) target in `org-capture-templates'."
+  (let ((file (expand-file-name
+               (format-time-string "capture_%Y%m%d_%H%M%S.org")
+               (ores/capture--inbox-dir))))
     (find-file file)
-    (when (= (buffer-size) 0)
-      (insert ":PROPERTIES:\n"
-              ":ID: " id "\n"
-              ":END:\n"
-              "#+title: " title "\n"
-              "#+description: \n"
-              "#+type: capture\n"
-              "#+version: 2\n"
-              "#+level: cross\n"
-              "#+filetags: :inbox:capture:\n"
-              "#+created: " date "\n"
-              "#+updated: " date "\n"
-              "\n"
-              "This page is a "
-              "[[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] "
-              "in the *inbox* bucket of the product backlog "
-              "— a pre-sprint idea, not yet pulled into a sprint as a story.\n\n"))
-    (goto-char (point-max))))
+    (goto-char (point-min))))
+
+;; ---------------------------------------------------------------------------
+;; org-capture hook: expand the v2-capture yasnippet into the buffer
+;; ---------------------------------------------------------------------------
+
+(defun ores/capture--yas-expand ()
+  "Expand the v2-capture snippet in the current org-capture buffer.
+Reads the snippet body from the canonical snippet file so that the
+yasnippet (used for \"cap\" TAB) and org-capture share one template."
+  (unless (fboundp 'yas-expand-snippet)
+    (user-error "yasnippet is not loaded; load yas-global-mode before using this capture template"))
+  (let* ((snippet-file (expand-file-name
+                        "projects/ores.lisp/snippets/org-mode/v2-capture"
+                        (ores/checkout-root)))
+         (body (with-temp-buffer
+                 (insert-file-contents snippet-file)
+                 (goto-char (point-min))
+                 ;; Skip yasnippet header lines; body starts after "# --"
+                 (when (re-search-forward "^# --\n" nil t)
+                   (buffer-substring-no-properties (point) (point-max))))))
+    (when body
+      (yas-expand-snippet body))))
 
 ;; ---------------------------------------------------------------------------
 ;; Template registration
 ;; ---------------------------------------------------------------------------
 
 (defun ores/setup-capture-templates ()
-  "Register key \"c\" (Capture inbox) in org-capture and org-roam-capture.
-Call once at startup, after `org' is loaded.  org-roam registration is
-skipped silently if org-roam is not present."
+  "Register key \"c\" (Capture inbox) in `org-capture-templates'.
+Creates a fresh timestamped file in inbox/ and expands the v2-capture
+yasnippet for interactive filling.  Call once after `org' is loaded."
   (interactive)
-  ;; Standard org-capture (M-x org-capture / C-c c)
   (add-to-list 'org-capture-templates
-    `("c" "Capture (inbox)" plain
-      (function ores/capture--org-capture-target)
-      ,ores/capture--body-template
-      :unnarrowed t))
-  ;; org-roam-capture (M-x org-roam-capture / C-c n c) — optional
-  (when (boundp 'org-roam-capture-templates)
-    (add-to-list 'org-roam-capture-templates
-      `("c" "Capture (inbox)" plain
-        ,ores/capture--body-template
-        :target (file+head
-                 "%(expand-file-name \"${slug}.org\" (ores/capture--inbox-dir))"
-                 ,ores/capture--head-template)
-        :unnarrowed t))))
+    '("c" "Capture (inbox)" plain
+      (function ores/capture--setup-inbox-file)
+      ""
+      :hook ores/capture--yas-expand
+      :unnarrowed t)))
 
 ;; ---------------------------------------------------------------------------
-;; Direct command (compass-backed, suitable for interactive and LLM use)
+;; Direct command (compass-backed, suitable for LLM and CLI use)
 ;; ---------------------------------------------------------------------------
 
 (defun ores/capture (note)
@@ -174,24 +129,6 @@ Opens the created file for further editing."
           (message "Capture created: %s" file)
           (find-file file))
       (user-error "compass capture failed:\n%s" output))))
-
-;; ---------------------------------------------------------------------------
-;; Yasnippet integration
-;; ---------------------------------------------------------------------------
-
-(defun ores/setup-capture-snippets ()
-  "Register the ores.lisp snippet directory with yasnippet and reload.
-Adds projects/ores.lisp/snippets/ to `yas-snippet-dirs' so the
-v2-capture snippet (trigger: \"cap\") is available in org-mode buffers."
-  (interactive)
-  (let ((snippet-dir (expand-file-name "projects/ores.lisp/snippets"
-                                       (ores/checkout-root))))
-    (if (not (fboundp 'yas-load-directory))
-        (user-error "yasnippet is not loaded; load yas-global-mode before calling this")
-      (unless (member snippet-dir yas-snippet-dirs)
-        (add-to-list 'yas-snippet-dirs snippet-dir))
-      (yas-load-directory snippet-dir)
-      (message "ores-capture: loaded snippets from %s" snippet-dir))))
 
 (provide 'ores-capture)
 ;;; ores-capture.el ends here

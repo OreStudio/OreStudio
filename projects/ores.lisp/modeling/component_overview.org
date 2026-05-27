@@ -69,13 +69,13 @@ ergonomics.
   (databases, NATS, HTTP server, domain services) with Prodigy for
   point-and-click process lifecycle management.
 - =ores-capture.el= — product-backlog capture integration. Provides
-  =ores/capture= (interactive command that delegates to =compass.sh
-  capture --note=), =ores/setup-capture-templates= (registers key ="c"=
-  in both =org-capture-templates= and =org-roam-capture-templates=
-  targeting =inbox/= of the current checkout), and
-  =ores/setup-capture-snippets= (loads the =v2-capture= yasnippet,
-  trigger ="cap"=, for expanding v2 capture frontmatter in any org
-  buffer).
+  =ores/setup-capture-templates= (registers key ="c"= in
+  =org-capture-templates=; creates a timestamped file in =inbox/= and
+  expands the =v2-capture= yasnippet for interactive filling via TAB)
+  and =ores/capture= (interactive command that delegates to =compass.sh
+  capture --note=; for LLM-driven and CLI-style use). The yasnippet
+  at =snippets/org-mode/v2-capture= (trigger ="cap"=) is the single
+  template source shared by both entry points.
 - =ores-org-roam-export.el= — org-roam → HTML export pipeline; walks the
   node graph and publishes the documentation site.
 

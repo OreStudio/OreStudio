@@ -37,14 +37,17 @@ postgres_event_source::postgres_event_source(
                   if (result) {
                       on_entity_change(*result);
                   } else {
+                      const auto n = ++parse_failure_count_;
                       BOOST_LOG_SEV(lg(), error)
-                          << "Failed to deserialize notification payload: "
-                          << payload;
+                          << "Failed to deserialize notification payload"
+                          << " (total failures: " << n << "): " << payload;
                   }
               } catch (const std::exception& e) {
+                  const auto n = ++parse_failure_count_;
                   BOOST_LOG_SEV(lg(), error)
-                      << "Failed to parse notification payload '"
-                      << payload << "': " << e.what();
+                      << "Exception parsing notification payload"
+                      << " (total failures: " << n << "): "
+                      << payload << " — " << e.what();
               }
           }) {
     BOOST_LOG_SEV(lg(), debug) << "Postgres event source created.";

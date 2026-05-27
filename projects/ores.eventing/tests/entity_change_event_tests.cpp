@@ -23,6 +23,8 @@
 #include "ores.eventing/generators/entity_change_event_generator.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <sstream>
 
 namespace {
@@ -48,20 +50,48 @@ TEST_CASE("entity_change_event_table_serialization", tags) {
     ss << notifications;
     REQUIRE_FALSE(ss.str().empty());
     REQUIRE(ss.str().find("Entity") != std::string::npos);
-    // REQUIRE(ss.str().find("Timestamp") != std::string::npos); // FIXME
+    REQUIRE(ss.str().find("Timestamp") != std::string::npos);
 }
 
 TEST_CASE("entity_change_event_generator", tags) {
     auto n = entity_change_event_generator::generate();
     REQUIRE_FALSE(n.entity.empty());
     REQUIRE_FALSE(n.tenant_id.empty());
-    // REQUIRE(n.timestamp.time_since_epoch().count() != 0);  // FIXME
+    REQUIRE(n.timestamp.time_since_epoch().count() != 0);
 
     auto events = entity_change_event_generator::generate_set(5);
     REQUIRE(events.size() == 5);
     for (const auto& e : events) {
         REQUIRE_FALSE(e.entity.empty());
         REQUIRE_FALSE(e.tenant_id.empty());
-        // REQUIRE(e.timestamp.time_since_epoch().count() != 0); // FIXME
+        REQUIRE(e.timestamp.time_since_epoch().count() != 0);
     }
+}
+
+// Parses a literal payload in the exact format emitted by the DB notify trigger
+// (ISO 8601 UTC, T separator, Z suffix). If this test fails after a SQL change,
+// the trigger timestamp format has regressed.
+TEST_CASE("entity_change_event_db_payload_roundtrip", tags) {
+    const std::string payload =
+        R"({"entity":"ores.refdata.currency","timestamp":"2026-05-27T12:34:56Z",)"
+        R"("entity_ids":["USD"],"tenant_id":"ffffffff-ffff-ffff-ffff-ffffffffffff"})";
+
+    auto result = rfl::json::read<entity_change_event>(payload);
+    REQUIRE(result.has_value());
+    CHECK(result->entity == "ores.refdata.currency");
+    CHECK(result->timestamp.time_since_epoch().count() != 0);
+    CHECK(result->entity_ids.size() == 1);
+    CHECK(result->entity_ids[0] == "USD");
+    CHECK(result->tenant_id == "ffffffff-ffff-ffff-ffff-ffffffffffff");
+}
+
+// The broken format (space separator, no UTC designator) must NOT parse cleanly.
+// This is a regression guard: if rfl ever accepts it silently we need to know.
+TEST_CASE("entity_change_event_broken_timestamp_rejected", tags) {
+    const std::string payload =
+        R"({"entity":"ores.refdata.currency","timestamp":"2026-05-27 12:34:56",)"
+        R"("entity_ids":["USD"],"tenant_id":"ffffffff-ffff-ffff-ffff-ffffffffffff"})";
+
+    auto result = rfl::json::read<entity_change_event>(payload);
+    CHECK_FALSE(result.has_value());
 }

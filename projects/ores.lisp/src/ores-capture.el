@@ -78,16 +78,20 @@ the correct project context.  The :hook only needs to call yas-expand-snippet."
   (let* ((root  (ores/checkout-root))
          (title (read-string "Capture title: "))
          (slug  (ores/capture--title-to-slug title))
+         (_     (when (string= "" slug)
+                  (user-error "Capture title must contain alphanumeric characters to form a valid filename")))
          (file  (expand-file-name
                  (concat slug ".org")
                  (expand-file-name "doc/agile/product_backlog/inbox" root)))
          (snip  (expand-file-name
                  "projects/ores.lisp/snippets/org-mode/v2-capture" root))
-         (raw   (with-temp-buffer
-                  (insert-file-contents snip)
-                  (goto-char (point-min))
-                  (when (re-search-forward "^# --\n" nil t)
-                    (buffer-substring-no-properties (point) (point-max)))))
+         (raw   (if (file-exists-p snip)
+                    (with-temp-buffer
+                      (insert-file-contents snip)
+                      (goto-char (point-min))
+                      (when (re-search-forward "^# --\n" nil t)
+                        (buffer-substring-no-properties (point) (point-max))))
+                  (user-error "Capture snippet template not found: %s" snip)))
          (body  (when raw
                   (replace-regexp-in-string
                    (regexp-quote "${1:Title}")
@@ -158,19 +162,21 @@ NOTE is the freeform text passed to `compass capture --note'.
 Opens the created file for further editing."
   (interactive "sCapture note: ")
   (let* ((root   (ores/checkout-root))
-         (script (expand-file-name "projects/ores.compass/compass.sh" root))
-         (cmd    (format "cd %s && %s capture --note %s"
+         (script (expand-file-name "projects/ores.compass/compass.sh" root)))
+    (unless (file-executable-p script)
+      (user-error "Compass script not found or not executable: %s" script))
+    (let* ((cmd    (format "cd %s && %s capture --note %s"
                          (shell-quote-argument root)
                          (shell-quote-argument script)
                          (shell-quote-argument note)))
-         (output (shell-command-to-string cmd))
-         (file   (when (string-match "Created: \\(.+\\.org\\)$" output)
-                   (expand-file-name (match-string 1 output) root))))
-    (if file
-        (progn
-          (message "Capture created: %s" file)
-          (find-file file))
-      (user-error "compass capture failed:\n%s" output))))
+           (output (shell-command-to-string cmd))
+           (file   (when (string-match "Created: \\(.+\\.org\\)$" output)
+                     (expand-file-name (match-string 1 output) root))))
+      (if file
+          (progn
+            (message "Capture created: %s" file)
+            (find-file file))
+        (user-error "compass capture failed:\n%s" output)))))
 
 (provide 'ores-capture)
 ;;; ores-capture.el ends here

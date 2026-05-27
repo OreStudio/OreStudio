@@ -33,6 +33,12 @@ How to use =compass=, the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][repository 
 - [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — fetch main, branch,
   scaffold a linked story+task (=goto=).
 
+* Captures
+
+- [[id:7072D39C-9607-48F9-8EE6-50E8647DB8ED][How do I capture ideas from freeform text?]] — paste unstructured
+  notes; LLM decomposes into well-structured captures in =inbox/=
+  (=compass capture --note=).
+
 * Navigating the doc graph
 
 These commands moved into compass from =ores.codegen= (the tool now owns

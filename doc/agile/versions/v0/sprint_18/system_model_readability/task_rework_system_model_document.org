@@ -156,8 +156,11 @@ single-row table with =[[id:...][ores.X]]= in the Sub-component column.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+** PR #879 review round 1
+
+| # | Comment summary                                          | File                                  | Decision | Notes                                                          |
+|---+----------------------------------------------------------+---------------------------------------+----------+----------------------------------------------------------------|
+| 1 | Task status should be DONE with =Now: Complete.=         | task_rework_system_model_document.org | N/A      | Already set before PR was raised (commit a2be1f659).           |
+| 2 | =ores.variability.service= missing =ores.nats= dependency | projects/modeling/system_model.org    | Applied  | Added =ores.nats= to Dependencies column. Fixed in d7750f99b. |
 
 * Result

@@ -192,6 +192,22 @@ void BadgeCache::buildIndex() {
     BOOST_LOG_SEV(lg(), debug) << "Built badge index with " << index_.size() << " entries";
 }
 
+std::vector<std::pair<std::string, const dq::domain::badge_definition*>>
+BadgeCache::list_by_domain(const std::string& code_domain_code) const {
+    if (!is_loaded_)
+        return {};
+
+    std::vector<std::pair<std::string, const dq::domain::badge_definition*>> result;
+    for (const auto& m : mappings_) {
+        if (m.code_domain_code != code_domain_code)
+            continue;
+        auto it = definition_index_.find(m.badge_code);
+        if (it != definition_index_.end())
+            result.emplace_back(m.entity_code, &definitions_[it->second]);
+    }
+    return result;
+}
+
 const dq::domain::badge_definition* BadgeCache::resolve(
     const std::string& code_domain_code,
     const std::string& entity_code) const {

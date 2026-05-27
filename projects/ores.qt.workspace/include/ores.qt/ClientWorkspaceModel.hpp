@@ -21,6 +21,7 @@
 #define ORES_QT_CLIENT_WORKSPACE_MODEL_HPP
 
 #include <vector>
+#include <unordered_map>
 #include <QFutureWatcher>
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
@@ -56,10 +57,11 @@ public:
      */
     enum Column {
         Name,
-        Status,
+        Description,
+        StatusCode,
+        ParentName,
         Version,
         ModifiedBy,
-        RecordedAt,
         ColumnCount
     };
 
@@ -78,15 +80,6 @@ public:
      * @brief Refresh workspace data from server asynchronously.
      */
     void refresh();
-
-    /**
-     * @brief Get all loaded workspaces.
-     *
-     * @return All workspaces currently loaded in the model.
-     */
-    const std::vector<workspace::domain::workspace>& workspaces() const {
-        return workspaces_;
-    }
 
     /**
      * @brief Get workspace at the specified row.
@@ -136,16 +129,14 @@ private:
 
     ClientManager* clientManager_;
     std::vector<workspace::domain::workspace> workspaces_;
+    std::unordered_map<std::string, std::string> parent_id_to_name_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
     using WorkspaceKeyExtractor = std::string(*)(const workspace::domain::workspace&);
-    using WorkspaceTimestampExtractor =
-        std::chrono::system_clock::time_point(*)(const workspace::domain::workspace&);
-    RecencyTracker<workspace::domain::workspace,
-        WorkspaceKeyExtractor, WorkspaceTimestampExtractor> recencyTracker_;
+    RecencyTracker<workspace::domain::workspace, WorkspaceKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };
 

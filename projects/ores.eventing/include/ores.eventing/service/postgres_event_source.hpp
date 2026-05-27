@@ -20,7 +20,9 @@
 #ifndef ORES_EVENTING_SERVICE_POSTGRES_EVENT_SOURCE_HPP
 #define ORES_EVENTING_SERVICE_POSTGRES_EVENT_SOURCE_HPP
 
+#include <atomic>
 #include <memory>
+#include <cstdint>
 #include <functional>
 #include <unordered_map>
 #include "ores.logging/make_logger.hpp"
@@ -158,6 +160,7 @@ private:
     ores::database::service::postgres_listener_service listener_;
     std::unordered_map<std::string, entity_mapping> entity_mappings_;
     std::string registered_entities_;
+    std::atomic<std::uint64_t> parse_failure_count_{0};
 };
 
 }

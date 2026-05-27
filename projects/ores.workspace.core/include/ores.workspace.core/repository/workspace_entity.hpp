@@ -36,6 +36,8 @@ struct workspace_entity {
     constexpr static const char* tablename = "ores_workspaces_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
+    std::string tenant_id;
+    std::string party_id;
     int version = 0;
     std::string name;
     std::optional<std::string> description;

@@ -5,9 +5,9 @@
     "component": "workspace",
     "component_include": "workspace.api",
     "component_core": "workspace.core",
-    "has_tenant_id": false,
+    "has_tenant_id": true,
+    "has_party_id": true,
     "has_workspace_id": false,
-    "deviation_rationale_tenant_id": "Workspace is system-wide; cross-tenant isolation is handled via IAM, not per-tenant row scoping.",
     "deviation_rationale_workspace_id": "A workspace cannot belong to a workspace; self-referential membership is undefined.",
     "entity_singular": "workspace",
     "entity_plural": "workspaces",
@@ -129,6 +129,7 @@
       "delete_response_class": "workspace::messaging::archive_workspace_response",
       "delete_message_type": "archive_workspace_request",
       "delete_request_id_field": "id",
+      "delete_is_single": true,
       "history_request_class":  "workspace::messaging::get_workspace_history_request",
       "history_response_class": "workspace::messaging::get_workspace_history_response",
       "history_message_type":   "get_workspace_history_request",
@@ -143,16 +144,17 @@
       ],
 
       "columns": [
-        {"enum_name": "Name",        "field": "name",        "header": "Name",        "is_string": true, "width": 200},
-        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 340},
-        {"enum_name": "StatusCode",  "field": "status_code", "header": "Status",      "is_string": true, "width": 90},
-        {"enum_name": "Version",     "field": "version",     "header": "Version",     "is_int":    true, "width": 70},
-        {"enum_name": "ModifiedBy",  "field": "modified_by", "header": "Modified By", "is_string": true, "width": 130}
+        {"enum_name": "Name",        "field": "name",        "header": "Name",        "is_string": true, "width": 200, "column_style": "cs::text_left"},
+        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 340, "column_style": "cs::text_left"},
+        {"enum_name": "StatusCode",  "field": "status_code", "header": "Status",      "is_string": true, "width": 90,  "column_style": "cs::badge_centered", "is_badge": true, "badge_key": "workspace_status"},
+        {"enum_name": "ParentName",  "field": "parent_name", "header": "Parent",      "is_string": true, "width": 160, "column_style": "cs::text_left", "is_computed": true},
+        {"enum_name": "Version",     "field": "version",     "header": "Version",     "is_int":    true, "width": 70,  "column_style": "cs::mono_center"},
+        {"enum_name": "ModifiedBy",  "field": "modified_by", "header": "Modified By", "is_string": true, "width": 130, "column_style": "cs::text_left"}
       ],
 
       "settings_group": "WorkspaceListWindow",
       "window_title": "Workspaces",
-      "icon": "Layers"
+      "icon": "Database"
     }
   }
 }

@@ -82,6 +82,42 @@ to silently resolve to the Live data space. The sentinel =aaaaaaaa-...= has
 version nibble =a= (decimal 10), which falls outside the valid UUID version
 range 1–8; no UUID generator will ever emit it.
 
+*** Live workspace ownership — per-tenant, system party
+
+Every tenant has exactly one Live workspace row in =ores_workspaces_tbl=.  All
+of these rows share the well-known sentinel UUID
+(=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa=) but each belongs to its own tenant and
+to that tenant's system party.  This design allows the workspace entity to
+behave as a standard party-scoped entity (tenant_id + party_id always present,
+=list_active= returns the Live row) while preserving the sentinel UUID contract
+for workspace-aware FK validation and resolution chains.
+
+Seeding:
+
+- The *system tenant* Live row is seeded once at DB initialisation by
+  =workspace_live_populate.sql=, which resolves the system tenant ID via
+  =ores_utility_system_tenant_id_fn()= and the system party ID via
+  =ores_iam_account_parties_system_party_id_fn()=.
+- Every *operational tenant* Live row is seeded inside
+  =ores_iam_provision_tenant_fn= immediately after the system party for that
+  tenant is created.
+
+Consequences for the database layer:
+
+- The primary key is =(tenant_id, id, valid_from, valid_to)= and the gist
+  exclusion constraint is scoped to =(tenant_id, id)= so that two tenants can
+  each hold a Live row with the same UUID without conflicting.
+- The uniqueness indexes =workspaces_id_uniq_idx= and
+  =workspaces_version_uniq_idx= are similarly scoped to =(tenant_id, id)=.
+- =ores_workspace_resolution_order_fn= takes a second parameter =p_tenant_id=
+  and filters all CTE rows by =tenant_id=, so the chain for tenant A never
+  crosses into tenant B's Live row.
+- =ores_workspace_validate_fn= (used by workspace-aware data table triggers to
+  validate a =workspace_id= FK) short-circuits unconditionally for the Live
+  sentinel UUID; it receives no tenant context from triggers.
+- =list_active= for any tenant returns that tenant's Live row (the sentinel UUID
+  is in the result set), so the Qt workspace dialog displays it normally.
+
 ** Workspace Hierarchy
 
 Workspaces form a tree via =parent_workspace_id=. The Live workspace is always
@@ -160,11 +196,18 @@ The correct split is:
 
 ** Workspace Visibility
 
-All authenticated users within a tenant hold =workspace::workspaces:read= by
-default. Workspaces are not private ACL objects; any user within the tenant
-can see any workspace. Data restriction within a workspace is handled by the
-=scope_portfolio_id= on the workspace itself (portfolio tree scoping), not by
-per-workspace read grants. This keeps the permission model simple.
+Workspaces are private to the party that owns them.  A user in party A cannot
+see or use workspaces belonging to party B, even when both parties are within
+the same tenant.  This is enforced at the data layer: =ores_workspaces_tbl=
+carries =tenant_id= and =party_id= columns and all service-layer queries filter
+by both.
+
+Within a party, all authenticated users hold =workspace::workspaces:read= by
+default.  Workspaces are not further restricted by per-user ACLs; any user in
+the party can see any workspace owned by that party.  Data restriction /within/
+a workspace is handled by the =scope_portfolio_id= on the workspace itself
+(portfolio tree scoping), not by per-workspace read grants.  This keeps the
+permission model simple.
 
 * Data Model
 
@@ -180,8 +223,12 @@ alter table <table_name>
 create index on <table_name> (workspace_id);
 #+end_src
 
-Tables that are genuinely global — users, IAM, parties, DQ FSM definitions,
-workflow definitions, the workspace table itself — do *not* get =workspace_id=.
+Tables that are genuinely global — users, IAM, DQ FSM definitions, workflow
+definitions — do *not* get =workspace_id=.  Neither does the workspace table
+itself, but for a different and independent reason: a workspace cannot belong
+to a workspace (self-referential membership is undefined).  That exception
+*does not* extend to =tenant_id= or =party_id=: the workspace entity is
+party-scoped like any other business entity and carries both columns.
 
 Affected categories:
 
@@ -195,6 +242,32 @@ Affected categories:
 | Today's market  | today's market definitions                               |
 | Reporting       | report definitions                                       |
 
+** ores_workspaces_tbl
+
+The workspace entity table carries =tenant_id= and =party_id= like every other
+business entity.  Key columns:
+
+| Column               | Type        | Notes                                                    |
+|----------------------+-------------+----------------------------------------------------------|
+| =id=                 | =uuid=      | UUID PK; globally unique                                 |
+| =tenant_id=          | =uuid=      | Owning tenant; validated via =ores_iam_validate_tenant_fn= |
+| =party_id=           | =uuid=      | Owning party; validated against =ores_refdata_parties_tbl= |
+| =name=               | =text=      | Unique within =(tenant_id, party_id)= for active records |
+| =parent_workspace_id=| =uuid null= | Parent for inheritance chain; cycle-prevention trigger   |
+| =scope_portfolio_id= | =uuid null= | Optional portfolio filter for trade scoping              |
+| =owner_id=           | =uuid=      | IAM account that created the workspace                   |
+| =status_code=        | =text=      | =active= or =archived=                                   |
+
+The name uniqueness index is scoped to =(tenant_id, party_id, name)= so two
+different parties may each have a workspace called "prod" without conflict.
+
+The workspace entity never carries a =workspace_id= column — a workspace cannot
+belong to a workspace.  That exception applies /only/ to =workspace_id=; it does
+not extend to =tenant_id= or =party_id=.
+
+Every tenant has exactly one Live workspace row — see
+§[[*Live Workspace — Dedicated Sentinel UUID]] for details.
+
 ** Resolution Order Computation
 
 When a workspace is opened, its full ancestor chain is computed once via a
@@ -205,12 +278,14 @@ with recursive chain(id, depth) as (
     select id, 0
     from ores_workspaces_tbl
     where id = :target_workspace_id
+      and tenant_id = :tenant_id
       and valid_to = ores_utility_infinity_timestamp_fn()
     union all
     select w.parent_workspace_id, c.depth + 1
     from ores_workspaces_tbl w
     join chain c on c.id = w.id
-    where w.parent_workspace_id is not null
+    where w.tenant_id = :tenant_id
+      and w.parent_workspace_id is not null
       and w.valid_to = ores_utility_infinity_timestamp_fn()
 )
 select id from chain order by depth;
@@ -218,6 +293,13 @@ select id from chain order by depth;
 #+end_src
 
 This array is passed as =:resolution_order= to all workspace-aware queries.
+
+The function takes a second parameter =p_tenant_id= and filters all CTE rows
+by =tenant_id=.  This is required because the Live sentinel UUID appears once
+per tenant: without the tenant filter the CTE would match multiple rows when
+walking up to the Live root.  Party isolation for the workspace entity itself
+is enforced in the service layer (all =list_active=, =find_by_id=, and
+=read_all= queries include a =tenant_id= WHERE clause).
 
 ** Query Patterns
 
@@ -456,8 +538,8 @@ to every window would be noisy. This is applied in
 
 ** Data Workshop
 
-The =WorkspaceMdiWindow= provides a tree view of all workspaces in the tenant,
-grouped by parent/child relationships. Actions:
+The =WorkspaceMdiWindow= provides a tree view of all workspaces in the current
+party, grouped by parent/child relationships. Actions:
 
 | Action  | Description                                          |
 |---------+------------------------------------------------------|
@@ -500,13 +582,13 @@ is designed as a foundation for this extension.
 
 Three tiers of workspace permission are enforced in =workspace_handler.hpp=:
 
-| Permission                          | Default holders                |
-|-------------------------------------+--------------------------------|
-| =workspace::workspaces:read=        | All authenticated users        |
-| =workspace::workspaces:write=       | All authenticated users        |
-| =workspace::workspaces:archive=     | All authenticated users (own)  |
-| =workspace::workspaces:archive_any= | TenantAdmin                    |
-| =workspace::live_workspace:archive= | SuperAdmin only                |
+| Permission                          | Default holders                      |
+|-------------------------------------+--------------------------------------|
+| =workspace::workspaces:read=        | All authenticated users (own party)  |
+| =workspace::workspaces:write=       | All authenticated users (own party)  |
+| =workspace::workspaces:archive=     | All authenticated users (own ws)     |
+| =workspace::workspaces:archive_any= | TenantAdmin                          |
+| =workspace::live_workspace:archive= | SuperAdmin only                      |
 
 Archive is ownership-aware: a user may archive their own workspace with
 =workspaces:archive=; archiving another user's workspace requires

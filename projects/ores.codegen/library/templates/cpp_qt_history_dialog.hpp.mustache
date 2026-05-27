@@ -3,9 +3,9 @@
 #ifndef ORES_QT_{{domain_entity.entity_upper}}_HISTORY_DIALOG_HPP
 #define ORES_QT_{{domain_entity.entity_upper}}_HISTORY_DIALOG_HPP
 
-#include <QWidget>
 #include <QToolBar>
 #include <QTableWidget>
+#include "ores.qt/HistoryDialogBase.hpp"
 {{#domain_entity.qt.has_uuid_primary_key}}
 #include <boost/uuid/uuid.hpp>
 {{/domain_entity.qt.has_uuid_primary_key}}
@@ -25,7 +25,7 @@ namespace ores::qt {
  * Shows all historical versions of a {{domain_entity.entity_singular_words}} with ability
  * to view details or revert to a previous version.
  */
-class {{domain_entity.entity_pascal}}HistoryDialog final : public QWidget {
+class {{domain_entity.entity_pascal}}HistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -55,10 +55,10 @@ public:
     ~{{domain_entity.entity_pascal}}HistoryDialog() override;
 
     void loadHistory();
+    void markAsStale() override;
+    [[nodiscard]] QString code() const override;
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
     void openVersionRequested(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}},
                               int versionNumber);
     void revertVersionRequested(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});

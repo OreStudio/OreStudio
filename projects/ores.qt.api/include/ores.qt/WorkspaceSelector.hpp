@@ -22,8 +22,7 @@
 
 #include <vector>
 #include <QWidget>
-#include <QComboBox>
-#include <QCompleter>
+#include <QListWidget>
 #include <QLabel>
 #include <QFutureWatcher>
 #include "ores.logging/make_logger.hpp"
@@ -35,21 +34,13 @@ namespace ores::qt {
 class ClientManager;
 
 /**
- * @brief Compact searchable workspace selector for MDI window toolbars.
+ * @brief Workspace selector listbox for MDI window bottom bars.
  *
- * Shows the current workspace and lets the user switch to any active workspace.
- * Fetches the workspace list from the server asynchronously on first show.
- * Emits workspaceChanged when the selection changes.
- *
- * Usage in a window's setupToolbar():
- * @code
- *   auto* spacer = new QWidget();
- *   spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
- *   toolbar_->addWidget(spacer);
- *   workspaceSelector_ = new WorkspaceSelector(clientManager_, this);
- *   workspaceSelector_->setCurrentContext(windowWorkspaceContext_);
- *   toolbar_->addWidget(workspaceSelector_);
- * @endcode
+ * Shows all active workspaces as a compact list; the selected row is the
+ * active workspace for that window.  Each row displays the workspace name
+ * and its parent workspace name (if any).  Fetches the workspace list from
+ * the server asynchronously on construction.  Emits workspaceChanged when
+ * the user clicks a different row.
  */
 class ORES_QT_API WorkspaceSelector : public QWidget {
     Q_OBJECT
@@ -81,13 +72,14 @@ signals:
 
 private slots:
     void onWorkspacesLoaded();
-    void onComboActivated(int index);
+    void onListCurrentRowChanged(int row);
     void onResolutionLoaded();
 
 private:
     struct WorkspaceEntry {
         QString id;
         QString name;
+        QString parent_name; // empty for Live (top-level)
     };
 
     struct FetchResult {
@@ -103,7 +95,7 @@ private:
         QString pending_name;
     };
 
-    void populateCombo();
+    void populateList();
     WorkspaceContext entryToContext(const WorkspaceEntry& e) const;
     void resolveAndEmit(const WorkspaceEntry& e);
 
@@ -112,7 +104,7 @@ private:
     std::vector<WorkspaceEntry> entries_;
 
     QLabel* label_;
-    QComboBox* combo_;
+    QListWidget* list_;
     QFutureWatcher<FetchResult>* watcher_;
     QFutureWatcher<ResolveResult>* resolve_watcher_;
     bool fetching_{false};

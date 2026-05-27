@@ -100,7 +100,7 @@ public:
      * changed on the server. Shows a visual indicator that the data may be
      * out of date.
      */
-    void markAsStale();
+    void markAsStale() override;
 
     /**
      * @brief Returns the alpha-2 code of the country being edited.

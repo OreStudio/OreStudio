@@ -38,7 +38,7 @@ WorkspaceHistoryDialog::WorkspaceHistoryDialog(
     const QString& code,
     ClientManager* clientManager,
     QWidget* parent)
-    : QWidget(parent),
+    : HistoryDialogBase(parent),
       ui_(new Ui::WorkspaceHistoryDialog),
       id_(id),
       code_(code),
@@ -55,6 +55,14 @@ WorkspaceHistoryDialog::WorkspaceHistoryDialog(
 
 WorkspaceHistoryDialog::~WorkspaceHistoryDialog() {
     delete ui_;
+}
+
+void WorkspaceHistoryDialog::markAsStale() {
+    loadHistory();
+}
+
+QString WorkspaceHistoryDialog::code() const {
+    return code_;
 }
 
 void WorkspaceHistoryDialog::setupUi() {

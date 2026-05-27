@@ -156,3 +156,27 @@ ORES_NATS_MONITOR_URL=http://localhost:8221
   that these are alpha versions. Ask user to report problems on discord.
 - consider adding screenshots with functionality like qwen. ask LLM if its
   possible to jazz up the screenshots. https://qwen.ai/qwencode
+
+* Entity test results
+
+** Account
+
+- My Account still has session history but we are no longer recording bytes sent
+  or received. we probably should remove this dialog.
+- My Account password change dialog does not have show password.
+- My sessions are no longer populated. however, we should at least record login
+  and logout even if no bytes sent / received.
+
+** Ref data
+
+- currency details has rounding, monetary natures, market tiers.
+- currency: no eventing.
+- currency history recorded at says 56 years ago.
+- adding new rounding type results in a very strange order of -658...
+- no eventing in rounding types.
+- every rounding type is duplicated: Up twice etc. one for IAM user, other for
+  DDL user. Every entry has two versions with the same version number.
+- history dialog does not remember geometry.
+- monetary nature: no eventing,
+- history dialog does not remember geometry.
+- market tiers: we have icon but does nothing.

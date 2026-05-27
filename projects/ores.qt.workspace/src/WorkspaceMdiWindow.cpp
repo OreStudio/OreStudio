@@ -19,20 +19,17 @@
  */
 #include "ores.qt/WorkspaceMdiWindow.hpp"
 
-#include <map>
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/string_generator.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/PaginationWidget.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.workspace.api/messaging/workspace_protocol.hpp"
 
 namespace ores::qt {
@@ -49,16 +46,15 @@ WorkspaceMdiWindow::WorkspaceMdiWindow(
       username_(username),
       badgeCache_(badgeCache),
       toolbar_(nullptr),
-      treeWidget_(nullptr),
+      tableView_(nullptr),
       model_(nullptr),
+      proxyModel_(nullptr),
       paginationWidget_(nullptr),
       reloadAction_(nullptr),
       addAction_(nullptr),
-      openAction_(nullptr),
       editAction_(nullptr),
-      historyAction_(nullptr),
-      archiveAction_(nullptr),
-      deleteAction_(nullptr) {
+      deleteAction_(nullptr),
+      historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -66,19 +62,17 @@ WorkspaceMdiWindow::WorkspaceMdiWindow(
 }
 
 void WorkspaceMdiWindow::setupUi() {
-    setMinimumSize(700, 300);
-
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();
     layout->addWidget(toolbar_);
     layout->addWidget(loadingBar());
 
-    setupTree();
-    layout->addWidget(treeWidget_, 1);
+    setupTable();
+    layout->addWidget(tableView_);
 
     paginationWidget_ = new PaginationWidget(this);
-    layout->addWidget(createBottomBar(paginationWidget_));
+    layout->addWidget(paginationWidget_);
 }
 
 void WorkspaceMdiWindow::setupToolbar() {
@@ -106,17 +100,6 @@ void WorkspaceMdiWindow::setupToolbar() {
     connect(addAction_, &QAction::triggered, this,
             &WorkspaceMdiWindow::addNew);
 
-    toolbar_->addSeparator();
-
-    openAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::FolderOpen, IconUtils::DefaultIconColor),
-        tr("Open"));
-    openAction_->setToolTip(tr("Open selected workspace (make it the active context)"));
-    openAction_->setEnabled(false);
-    connect(openAction_, &QAction::triggered, this,
-            &WorkspaceMdiWindow::openSelected);
-
     editAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
             Icon::Edit, IconUtils::DefaultIconColor),
@@ -126,63 +109,49 @@ void WorkspaceMdiWindow::setupToolbar() {
     connect(editAction_, &QAction::triggered, this,
             &WorkspaceMdiWindow::editSelected);
 
-    historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
-    historyAction_->setToolTip(tr("View workspace version history"));
-    historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
-            &WorkspaceMdiWindow::onHistoryRequested);
-
-    archiveAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Archive, IconUtils::DefaultIconColor),
-        tr("Archive"));
-    archiveAction_->setToolTip(tr("Archive selected workspace"));
-    archiveAction_->setEnabled(false);
-    connect(archiveAction_, &QAction::triggered, this,
-            &WorkspaceMdiWindow::archiveSelected);
-
     deleteAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
             Icon::Delete, IconUtils::DefaultIconColor),
         tr("Delete"));
-    deleteAction_->setToolTip(
-        tr("Permanently soft-delete selected workspace and associated data"));
+    deleteAction_->setToolTip(tr("Delete selected workspace"));
     deleteAction_->setEnabled(false);
     connect(deleteAction_, &QAction::triggered, this,
             &WorkspaceMdiWindow::deleteSelected);
+
+    historyAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::History, IconUtils::DefaultIconColor),
+        tr("History"));
+    historyAction_->setToolTip(tr("View workspace history"));
+    historyAction_->setEnabled(false);
+    connect(historyAction_, &QAction::triggered, this,
+            &WorkspaceMdiWindow::viewHistorySelected);
 }
 
-void WorkspaceMdiWindow::setupTree() {
+void WorkspaceMdiWindow::setupTable() {
     model_ = new ClientWorkspaceModel(clientManager_, this);
+    proxyModel_ = new QSortFilterProxyModel(this);
+    proxyModel_->setSourceModel(model_);
+    proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
 
-    treeWidget_ = new QTreeWidget(this);
-    treeWidget_->setColumnCount(5);
-    treeWidget_->setHeaderLabels({
-        tr("Name"), tr("Status"), tr("Version"), tr("Modified By"), tr("Recorded At")});
-    treeWidget_->setRootIsDecorated(true);
-    treeWidget_->setAnimated(true);
-    treeWidget_->setAlternatingRowColors(true);
-    treeWidget_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    treeWidget_->setSelectionMode(QAbstractItemView::SingleSelection);
-    treeWidget_->header()->setStretchLastSection(false);
-    treeWidget_->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-    treeWidget_->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    treeWidget_->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-    treeWidget_->header()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
-    treeWidget_->header()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
+    tableView_ = new QTableView(this);
+    tableView_->setModel(proxyModel_);
+    tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableView_->setSortingEnabled(true);
+    tableView_->setAlternatingRowColors(true);
+    tableView_->verticalHeader()->setVisible(false);
 
     using cs = column_style;
     auto* delegate = new EntityItemDelegate({
-        cs::text_left,       // Name
-        cs::badge_centered,  // Status
-        cs::mono_center,     // Version
-        cs::text_left,       // Modified By
-        cs::mono_left        // Recorded At
-    }, treeWidget_);
-    delegate->set_badge_color_resolver(1, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+        cs::text_left,
+        cs::text_left,
+        cs::badge_centered,
+        cs::text_left,
+        cs::mono_center,
+        cs::text_left,
+    }, tableView_);
+    delegate->set_badge_color_resolver(2, [cache = badgeCache_](const QString& value) -> badge_color_pair {
         static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
         if (!cache) return default_gray;
         auto* def = cache->resolve("workspace_status", value.toStdString());
@@ -190,7 +159,12 @@ void WorkspaceMdiWindow::setupTree() {
         return {QColor(QString::fromStdString(def->background_colour)),
                 QColor(QString::fromStdString(def->text_colour))};
     });
-    treeWidget_->setItemDelegate(delegate);
+    tableView_->setItemDelegate(delegate);
+
+    initializeTableSettings(tableView_, model_,
+        "WorkspaceListWindow",
+        {ClientWorkspaceModel::Description},
+        {900, 400}, 2);
 }
 
 void WorkspaceMdiWindow::setupConnections() {
@@ -199,16 +173,17 @@ void WorkspaceMdiWindow::setupConnections() {
     connect(model_, &ClientWorkspaceModel::loadError,
             this, &WorkspaceMdiWindow::onLoadError);
 
-    connect(treeWidget_, &QTreeWidget::itemSelectionChanged,
+    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &WorkspaceMdiWindow::onSelectionChanged);
-    connect(treeWidget_, &QTreeWidget::itemDoubleClicked,
-            this, &WorkspaceMdiWindow::onItemDoubleClicked);
+    connect(tableView_, &QTableView::doubleClicked,
+            this, &WorkspaceMdiWindow::onDoubleClicked);
 
     connect(paginationWidget_, &PaginationWidget::page_size_changed,
             this, [this](std::uint32_t size) {
         model_->set_page_size(size);
         model_->refresh();
     });
+
     connect(paginationWidget_, &PaginationWidget::load_all_requested,
             this, [this]() {
         const auto total = model_->total_available_count();
@@ -217,6 +192,7 @@ void WorkspaceMdiWindow::setupConnections() {
             model_->refresh();
         }
     });
+
     connect(paginationWidget_, &PaginationWidget::page_requested,
             this, [this](std::uint32_t offset, std::uint32_t limit) {
         model_->load_page(offset, limit);
@@ -227,92 +203,19 @@ void WorkspaceMdiWindow::setupConnections() {
 
 void WorkspaceMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading workspaces";
+    clearStaleIndicator();
     emit statusChanged(tr("Loading workspaces..."));
     model_->refresh();
 }
 
-namespace {
-
-using children_map_t = std::map<
-    boost::uuids::uuid,
-    std::vector<const workspace::domain::workspace*>>;
-
-void addTreeItems(QTreeWidgetItem* parent,
-    const boost::uuids::uuid& parent_id,
-    const children_map_t& children_map) {
-
-    auto it = children_map.find(parent_id);
-    if (it == children_map.end())
-        return;
-
-    for (const auto* ws : it->second) {
-        const QString id_str =
-            QString::fromStdString(boost::uuids::to_string(ws->id));
-        auto* item = new QTreeWidgetItem(parent);
-        item->setText(0, QString::fromStdString(ws->name));
-        item->setText(1, QString::fromStdString(ws->status_code));
-        item->setText(2, QString::number(ws->version));
-        item->setText(3, QString::fromStdString(ws->modified_by));
-        item->setText(4, relative_time_helper::format(ws->recorded_at));
-        item->setData(0, Qt::UserRole, id_str);
-        addTreeItems(item, ws->id, children_map);
-    }
-}
-
-} // namespace
-
-void WorkspaceMdiWindow::buildTree() {
-    treeWidget_->clear();
-
-    const auto& all = model_->workspaces();
-    if (all.empty())
-        return;
-
-    std::map<boost::uuids::uuid, const workspace::domain::workspace*> by_id;
-    for (const auto& ws : all)
-        by_id[ws.id] = &ws;
-
-    children_map_t children_map;
-
-    std::vector<const workspace::domain::workspace*> roots;
-    for (const auto& ws : all) {
-        if (!ws.parent_workspace_id) {
-            roots.push_back(&ws);
-        } else {
-            if (by_id.count(*ws.parent_workspace_id)) {
-                children_map[*ws.parent_workspace_id].push_back(&ws);
-            } else {
-                roots.push_back(&ws);
-            }
-        }
-    }
-
-    for (const auto* ws : roots) {
-        const QString id_str =
-            QString::fromStdString(boost::uuids::to_string(ws->id));
-        auto* item = new QTreeWidgetItem(treeWidget_);
-        item->setText(0, QString::fromStdString(ws->name));
-        item->setText(1, QString::fromStdString(ws->status_code));
-        item->setText(2, QString::number(ws->version));
-        item->setText(3, QString::fromStdString(ws->modified_by));
-        item->setText(4, relative_time_helper::format(ws->recorded_at));
-        item->setData(0, Qt::UserRole, id_str);
-        addTreeItems(item, ws->id, children_map);
-    }
-
-    treeWidget_->expandAll();
-}
-
 void WorkspaceMdiWindow::onDataLoaded() {
-    const auto loaded = static_cast<int>(model_->workspaces().size());
+    const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 workspaces").arg(loaded).arg(total));
 
     paginationWidget_->update_state(loaded, total);
     paginationWidget_->set_load_all_enabled(
         loaded < static_cast<int>(total) && total > 0 && total <= 1000);
-
-    buildTree();
 }
 
 void WorkspaceMdiWindow::onLoadError(const QString& error_message,
@@ -326,65 +229,21 @@ void WorkspaceMdiWindow::onSelectionChanged() {
     updateActionStates();
 }
 
-void WorkspaceMdiWindow::onItemDoubleClicked(QTreeWidgetItem* item, int /*column*/) {
-    if (!item)
+void WorkspaceMdiWindow::onDoubleClicked(const QModelIndex& index) {
+    if (!index.isValid())
         return;
 
-    const auto target_id = boost::uuids::string_generator()(
-        item->data(0, Qt::UserRole).toString().toStdString());
-    for (const auto& ws : model_->workspaces()) {
-        if (ws.id == target_id) {
-            emit showWorkspaceDetails(ws);
-            return;
-        }
+    auto sourceIndex = proxyModel_->mapToSource(index);
+    if (auto* workspace = model_->getWorkspace(sourceIndex.row())) {
+        emit showWorkspaceDetails(*workspace);
     }
 }
 
 void WorkspaceMdiWindow::updateActionStates() {
-    const bool has_selection = !treeWidget_->selectedItems().isEmpty();
-    openAction_->setEnabled(has_selection);
-    editAction_->setEnabled(has_selection);
-    historyAction_->setEnabled(has_selection);
-    archiveAction_->setEnabled(has_selection);
-    deleteAction_->setEnabled(has_selection);
-}
-
-void WorkspaceMdiWindow::openSelected() {
-    auto selected = treeWidget_->selectedItems();
-    if (selected.isEmpty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Open requested but no item selected";
-        return;
-    }
-
-    const auto id_str = selected.first()->data(0, Qt::UserRole).toString();
-    const auto target_id =
-        boost::uuids::string_generator()(id_str.toStdString());
-    for (const auto& ws : model_->workspaces()) {
-        if (ws.id == target_id) {
-            emit workspaceActivated(ws);
-            return;
-        }
-    }
-    BOOST_LOG_SEV(lg(), warn) << "Could not find workspace for id: "
-                              << id_str.toStdString();
-}
-
-void WorkspaceMdiWindow::onHistoryRequested() {
-    auto selected = treeWidget_->selectedItems();
-    if (selected.isEmpty()) {
-        BOOST_LOG_SEV(lg(), warn) << "History requested but no item selected";
-        return;
-    }
-
-    const auto target_id = boost::uuids::string_generator()(
-        selected.first()->data(0, Qt::UserRole).toString().toStdString());
-    for (const auto& ws : model_->workspaces()) {
-        if (ws.id == target_id) {
-            emit showWorkspaceHistory(ws);
-            return;
-        }
-    }
-    BOOST_LOG_SEV(lg(), warn) << "Could not find workspace for history request";
+    const bool hasSelection = tableView_->selectionModel()->hasSelection();
+    editAction_->setEnabled(hasSelection);
+    deleteAction_->setEnabled(hasSelection);
+    historyAction_->setEnabled(hasSelection);
 }
 
 void WorkspaceMdiWindow::addNew() {
@@ -393,150 +252,75 @@ void WorkspaceMdiWindow::addNew() {
 }
 
 void WorkspaceMdiWindow::editSelected() {
-    auto selected = treeWidget_->selectedItems();
+    const auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Edit requested but no item selected";
+        BOOST_LOG_SEV(lg(), warn) << "Edit requested but no row selected";
         return;
     }
 
-    const auto target_id = boost::uuids::string_generator()(
-        selected.first()->data(0, Qt::UserRole).toString().toStdString());
-    for (const auto& ws : model_->workspaces()) {
-        if (ws.id == target_id) {
-            emit showWorkspaceDetails(ws);
-            return;
-        }
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* workspace = model_->getWorkspace(sourceIndex.row())) {
+        emit showWorkspaceDetails(*workspace);
     }
 }
 
-void WorkspaceMdiWindow::archiveSelected() {
-    auto selected = treeWidget_->selectedItems();
+void WorkspaceMdiWindow::viewHistorySelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Archive requested but no item selected";
+        BOOST_LOG_SEV(lg(), warn) << "View history requested but no row selected";
         return;
     }
 
-    if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, tr("Disconnected"),
-            tr("Cannot archive workspace while disconnected."));
-        return;
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* workspace = model_->getWorkspace(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showWorkspaceHistory for code: "
+                                   << workspace->name;
+        emit showWorkspaceHistory(*workspace);
     }
-
-    const auto id_str = selected.first()->data(0, Qt::UserRole).toString();
-    const auto target_id =
-        boost::uuids::string_generator()(id_str.toStdString());
-    std::string workspace_id;
-    QString workspace_name;
-    for (const auto& ws : model_->workspaces()) {
-        if (ws.id == target_id) {
-            workspace_id = boost::uuids::to_string(ws.id);
-            workspace_name = QString::fromStdString(ws.name);
-            break;
-        }
-    }
-
-    if (workspace_id.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "No valid workspace selected for archive";
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Archive requested for workspace id: "
-                               << workspace_id;
-
-    const std::string actor = username_.toStdString();
-
-    auto reply = MessageBoxHelper::question(this, tr("Archive Workspace"),
-        tr("Are you sure you want to archive workspace '%1'?").arg(workspace_name),
-        QMessageBox::Yes | QMessageBox::No);
-
-    if (reply != QMessageBox::Yes) {
-        BOOST_LOG_SEV(lg(), debug) << "Archive cancelled by user";
-        return;
-    }
-
-    QPointer<WorkspaceMdiWindow> self = this;
-    using OpResult = std::pair<bool, std::string>;
-
-    auto task = [self, workspace_id, actor]() -> OpResult {
-        if (!self) return {};
-        BOOST_LOG_SEV(lg(), debug) << "Sending archive request for workspace id: "
-                                   << workspace_id;
-        workspace::messaging::archive_workspace_request request;
-        request.id = workspace_id;
-        request.modified_by = actor;
-        request.change_reason_code = "user.archive";
-        request.change_commentary = "Archived by user";
-        auto result = self->clientManager_->process_authenticated_request(
-            std::move(request));
-        if (!result) return {false, "Failed to communicate with server"};
-        return {result->success, result->message};
-    };
-
-    auto* watcher = new QFutureWatcher<OpResult>(self);
-    connect(watcher, &QFutureWatcher<OpResult>::finished,
-            self, [self, watcher, workspace_id, workspace_name]() {
-        auto [success, message] = watcher->result();
-        watcher->deleteLater();
-
-        if (success) {
-            BOOST_LOG_SEV(lg(), debug) << "Workspace archived: " << workspace_id;
-            emit self->workspaceDeleted(QString::fromStdString(workspace_id));
-            self->model_->refresh();
-            emit self->statusChanged(
-                tr("Workspace '%1' archived successfully").arg(workspace_name));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Archive failed for workspace "
-                                       << workspace_id << ": " << message;
-            auto msg = QString::fromStdString(message);
-            emit self->errorOccurred(msg);
-            MessageBoxHelper::critical(self, tr("Archive Failed"), msg);
-        }
-    });
-
-    QFuture<OpResult> future = QtConcurrent::run(task);
-    watcher->setFuture(future);
 }
 
 void WorkspaceMdiWindow::deleteSelected() {
-    auto selected = treeWidget_->selectedItems();
+    const auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Delete requested but no item selected";
+        BOOST_LOG_SEV(lg(), warn) << "Delete requested but no row selected";
         return;
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, tr("Disconnected"),
-            tr("Cannot delete workspace while disconnected."));
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot delete workspace while disconnected.");
         return;
     }
 
-    const auto id_str = selected.first()->data(0, Qt::UserRole).toString();
-    const auto target_id =
-        boost::uuids::string_generator()(id_str.toStdString());
-    std::string workspace_id;
-    QString workspace_name;
-    for (const auto& ws : model_->workspaces()) {
-        if (ws.id == target_id) {
-            workspace_id = boost::uuids::to_string(ws.id);
-            workspace_name = QString::fromStdString(ws.name);
-            break;
+    std::vector<boost::uuids::uuid> ids;
+    std::vector<std::string> codes;  // For display purposes
+    for (const auto& index : selected) {
+        auto sourceIndex = proxyModel_->mapToSource(index);
+        if (auto* workspace = model_->getWorkspace(sourceIndex.row())) {
+            ids.push_back(workspace->id);
+            codes.push_back(workspace->name);
         }
     }
 
-    if (workspace_id.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "No valid workspace selected for delete";
+    if (ids.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No valid workspaces to delete";
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for workspace id: "
-                               << workspace_id;
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size()
+                               << " workspaces";
 
-    const std::string actor = username_.toStdString();
+    QString confirmMessage;
+    if (ids.size() == 1) {
+        confirmMessage = QString("Are you sure you want to delete workspace '%1'?")
+            .arg(QString::fromStdString(codes.front()));
+    } else {
+        confirmMessage = QString("Are you sure you want to delete %1 workspaces?")
+            .arg(ids.size());
+    }
 
-    auto reply = MessageBoxHelper::question(this, tr("Delete Workspace"),
-        tr("Permanently delete workspace '%1' and all its associated data?\n\n"
-           "This action cannot be undone.").arg(workspace_name),
-        QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(this, "Delete Workspace",
+        confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -544,45 +328,82 @@ void WorkspaceMdiWindow::deleteSelected() {
     }
 
     QPointer<WorkspaceMdiWindow> self = this;
-    using OpResult = std::pair<bool, std::string>;
+    auto* cm = clientManager_;
+    const std::string username = username_.toStdString();
+    using DeleteResult = std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
 
-    auto task = [self, workspace_id, actor]() -> OpResult {
-        if (!self) return {};
-        BOOST_LOG_SEV(lg(), debug) << "Sending delete request for workspace id: "
-                                   << workspace_id;
-        workspace::messaging::remove_workspace_request request;
-        request.id = workspace_id;
-        request.modified_by = actor;
-        request.change_reason_code = "user.delete";
-        request.change_commentary = "Deleted by user";
-        auto result = self->clientManager_->process_authenticated_request(
-            std::move(request));
-        if (!result) return {false, "Failed to communicate with server"};
-        return {result->success, result->message};
+    auto task = [self, cm, username, ids, codes]() -> DeleteResult {
+        DeleteResult results;
+        if (!cm) return {};
+
+        BOOST_LOG_SEV(lg(), debug) << "Making delete request for "
+                                   << ids.size() << " workspaces";
+
+        for (std::size_t i = 0; i < ids.size(); ++i) {
+            workspace::messaging::archive_workspace_request request;
+            request.id = boost::uuids::to_string(ids[i]);
+            request.modified_by = username;
+            auto response_result = cm->process_authenticated_request(
+                std::move(request));
+            if (!response_result) {
+                results.push_back({ids[i], codes[i], false, "Failed to communicate with server"});
+            } else {
+                results.push_back({ids[i], codes[i], response_result->success, response_result->message});
+            }
+        }
+
+        return results;
     };
 
-    auto* watcher = new QFutureWatcher<OpResult>(self);
-    connect(watcher, &QFutureWatcher<OpResult>::finished,
-            self, [self, watcher, workspace_id, workspace_name]() {
-        auto [success, message] = watcher->result();
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
+            self, [self, watcher]() {
+        auto results = watcher->result();
         watcher->deleteLater();
 
-        if (success) {
-            BOOST_LOG_SEV(lg(), debug) << "Workspace deleted: " << workspace_id;
-            emit self->workspaceDeleted(QString::fromStdString(workspace_id));
-            self->model_->refresh();
-            emit self->statusChanged(
-                tr("Workspace '%1' deleted successfully").arg(workspace_name));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Delete failed for workspace "
-                                       << workspace_id << ": " << message;
-            auto msg = QString::fromStdString(message);
+        int success_count = 0;
+        int failure_count = 0;
+        QString first_error;
+
+        for (const auto& [id, code, success, message] : results) {
+            if (success) {
+                BOOST_LOG_SEV(lg(), debug) << "Workspace deleted: " << code;
+                success_count++;
+                emit self->workspaceDeleted(QString::fromStdString(code));
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Workspace deletion failed: "
+                                           << code << " - " << message;
+                failure_count++;
+                if (first_error.isEmpty()) {
+                    first_error = QString::fromStdString(message);
+                }
+            }
+        }
+
+        self->model_->refresh();
+
+        if (failure_count == 0) {
+            QString msg = success_count == 1
+                ? "Successfully deleted 1 workspace"
+                : QString("Successfully deleted %1 workspaces").arg(success_count);
+            emit self->statusChanged(msg);
+        } else if (success_count == 0) {
+            QString msg = QString("Failed to delete %1 %2: %3")
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "workspace" : "workspaces")
+                .arg(first_error);
             emit self->errorOccurred(msg);
-            MessageBoxHelper::critical(self, tr("Delete Failed"), msg);
+            MessageBoxHelper::critical(self, "Delete Failed", msg);
+        } else {
+            QString msg = QString("Deleted %1, failed to delete %2")
+                .arg(success_count)
+                .arg(failure_count);
+            emit self->statusChanged(msg);
+            MessageBoxHelper::warning(self, "Partial Success", msg);
         }
     });
 
-    QFuture<OpResult> future = QtConcurrent::run(task);
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 

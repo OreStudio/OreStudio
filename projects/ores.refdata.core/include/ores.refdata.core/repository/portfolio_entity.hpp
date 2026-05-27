@@ -41,7 +41,7 @@ struct portfolio_entity {
     int version = 0;
     std::string party_id;
     std::string name;
-    std::string description;
+    std::optional<std::string> description;
     std::optional<std::string> parent_portfolio_id;
     std::optional<std::string> owner_unit_id;
     std::string purpose_type;

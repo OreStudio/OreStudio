@@ -47,10 +47,15 @@ trigger a refresh.
 The detail dialog inherits =QDialog= and is =final=.  It exposes
 =set{Entity}(...)= to populate for edit and =get{Entity}() const= to
 read back the edited domain object.  One =QLineEdit= or =QComboBox=
-per editable field.  On save: read fields into a domain object, call
+per editable field.  On save: call =promptChangeReason()= (inherited
+from =DetailDialogBase=) to collect audit fields before sending to the
+server, then read fields into a domain object, set
+=change_reason_code= and =change_commentary= on the entity, and call
 the service asynchronously (same =QtConcurrent= + =QFutureWatcher=
 pattern as the model), emit =accepted()= on success or =rejected()=
-with an error message on failure.
+with an error message on failure.  On delete: show a confirmation
+dialog first, then call =promptChangeReason()= before the async
+delete.
 
 * History dialog
 

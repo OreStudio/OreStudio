@@ -683,7 +683,7 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
             if (changeDialog.exec() == QDialog::Accepted) {
                 BOOST_LOG_SEV(lg(), info) << "Password changed successfully";
                 statusLabel_->setText("Login successful!");
-                emit loginSucceeded(usernameEdit_->text().trimmed());
+                emit loginSucceeded(QString::fromStdString(clientManager_->currentUsername()));
                 emit closeRequested();
             } else {
                 BOOST_LOG_SEV(lg(), warn) << "Password change canceled";
@@ -729,7 +729,7 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                     }
                 }
                 statusLabel_->setText("Login successful!");
-                emit loginSucceeded(usernameEdit_->text().trimmed());
+                emit loginSucceeded(QString::fromStdString(clientManager_->currentUsername()));
                 if (clientManager_->lastPartySetupRequired()) {
                     BOOST_LOG_SEV(lg(), info)
                         << "Selected party is inactive - party provisioning wizard required"
@@ -750,7 +750,7 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
             BOOST_LOG_SEV(lg(), info)
                 << "Tenant is in bootstrap mode - provisioning wizard required";
             statusLabel_->setText("Login successful!");
-            emit loginSucceeded(usernameEdit_->text().trimmed());
+            emit loginSucceeded(QString::fromStdString(clientManager_->currentUsername()));
             emit tenantBootstrapDetected();
             emit closeRequested();
         } else if (result.party_setup_required) {
@@ -759,7 +759,7 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                 << " party_id=" << clientManager_->currentPartyId()
                 << " party_name=" << clientManager_->currentPartyName().toStdString();
             statusLabel_->setText("Login successful!");
-            emit loginSucceeded(usernameEdit_->text().trimmed());
+            emit loginSucceeded(QString::fromStdString(clientManager_->currentUsername()));
             emit partySetupDetected();
             emit closeRequested();
         } else {
@@ -775,7 +775,7 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                 BOOST_LOG_SEV(lg(), info) << "No party context for this account";
             }
             statusLabel_->setText("Login successful!");
-            emit loginSucceeded(usernameEdit_->text().trimmed());
+            emit loginSucceeded(QString::fromStdString(clientManager_->currentUsername()));
             emit closeRequested();
         }
     } else {

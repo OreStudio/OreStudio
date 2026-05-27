@@ -1453,12 +1453,26 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     c.get('name'): c.get('cpp_type', '')
                     for c in domain_entity.get('columns', [])
                 }
-                for qt_col in qt['columns']:
+                for idx, qt_col in enumerate(qt['columns']):
                     field = qt_col.get('field')
                     cpp_type = domain_col_types.get(field, '')
                     if qt_col.get('is_string') and cpp_type.startswith('std::optional<'):
                         qt_col['is_optional_string'] = True
                         qt_col['is_string'] = False
+                    # Auto-assign column index for badge resolver calls
+                    qt_col.setdefault('column_index', idx)
+                    # Default column_style when not specified
+                    if 'column_style' not in qt_col:
+                        if qt_col.get('is_badge'):
+                            qt_col['column_style'] = 'cs::badge_centered'
+                        elif qt_col.get('is_int'):
+                            qt_col['column_style'] = 'cs::mono_center'
+                        else:
+                            qt_col['column_style'] = 'cs::text_left'
+                # Compute has_badge_columns flag
+                qt['has_badge_columns'] = any(
+                    c.get('is_badge') for c in qt['columns']
+                )
             # Add iterator variable reference for templates
             qt['item_var'] = qt.get('item_var', 'item')
             # Auto-generate default detail_fields if not provided

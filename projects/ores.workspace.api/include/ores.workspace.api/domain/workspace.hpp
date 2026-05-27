@@ -24,6 +24,7 @@
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::workspace::domain {
 
@@ -35,6 +36,16 @@ namespace ores::workspace::domain {
  * (ores_utility_live_workspace_id_fn()).
  */
 struct workspace final {
+    /**
+     * @brief Tenant that owns this workspace.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
+     * @brief Party within the tenant that owns this workspace.
+     */
+    boost::uuids::uuid party_id;
+
     /**
      * @brief Version number for optimistic locking and change tracking.
      */

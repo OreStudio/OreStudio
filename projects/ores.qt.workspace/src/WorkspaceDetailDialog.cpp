@@ -19,7 +19,9 @@
  */
 #include "ores.qt/WorkspaceDetailDialog.hpp"
 
+#include <QColor>
 #include <QMessageBox>
+#include <QComboBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QPlainTextEdit>
@@ -27,8 +29,11 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ui_WorkspaceDetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MdiUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.workspace.api/messaging/workspace_protocol.hpp"
 
 namespace ores::qt {
@@ -38,15 +43,36 @@ using namespace ores::logging;
 WorkspaceDetailDialog::WorkspaceDetailDialog(QWidget* parent)
     : DetailDialogBase(parent),
       ui_(new Ui::WorkspaceDetailDialog),
-      clientManager_(nullptr) {
+      clientManager_(nullptr),
+      parentWatcher_(new QFutureWatcher<WorkspaceListResult>(this)),
+      accountWatcher_(new QFutureWatcher<AccountListResult>(this)) {
 
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+
+    connect(parentWatcher_, &QFutureWatcher<WorkspaceListResult>::finished,
+            this, &WorkspaceDetailDialog::onParentWorkspacesLoaded);
+    connect(accountWatcher_, &QFutureWatcher<AccountListResult>::finished,
+            this, &WorkspaceDetailDialog::onAccountsLoaded);
 }
 
 WorkspaceDetailDialog::~WorkspaceDetailDialog() {
     delete ui_;
+}
+
+void WorkspaceDetailDialog::markAsStale() {
+    if (isStale_)
+        return;
+
+    isStale_ = true;
+    BOOST_LOG_SEV(lg(), info) << "Workspace detail data marked as stale for: "
+                              << workspace_.name;
+
+    MdiUtils::markParentWindowAsStale(this);
+
+    emit statusMessage(QString("Workspace '%1' has been modified on the server")
+        .arg(QString::fromStdString(workspace_.name)));
 }
 
 QTabWidget* WorkspaceDetailDialog::tabWidget() const {
@@ -87,16 +113,25 @@ void WorkspaceDetailDialog::setupConnections() {
             &WorkspaceDetailDialog::onFieldChanged);
     connect(ui_->sourcePathEdit, &QLineEdit::textChanged, this,
             &WorkspaceDetailDialog::onFieldChanged);
-    connect(ui_->parentEdit, &QLineEdit::textChanged, this,
-            &WorkspaceDetailDialog::onFieldChanged);
-    connect(ui_->ownerEdit, &QLineEdit::textChanged, this,
-            &WorkspaceDetailDialog::onFieldChanged);
-    connect(ui_->statusEdit, &QLineEdit::textChanged, this,
-            &WorkspaceDetailDialog::onFieldChanged);
+    connect(ui_->parentCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &WorkspaceDetailDialog::onFieldChanged);
+    connect(ui_->ownerCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &WorkspaceDetailDialog::onFieldChanged);
+    connect(ui_->statusCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &WorkspaceDetailDialog::onFieldChanged);
 }
 
 void WorkspaceDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    if (clientManager_ && clientManager_->isConnected()) {
+        loadParentWorkspaces();
+        loadAccounts();
+    }
+}
+
+void WorkspaceDetailDialog::setBadgeCache(BadgeCache* badgeCache) {
+    badgeCache_ = badgeCache;
+    populateStatusCombo();
 }
 
 void WorkspaceDetailDialog::setUsername(const std::string& username) {
@@ -116,6 +151,14 @@ void WorkspaceDetailDialog::setCreateMode(bool createMode) {
     setProvenanceEnabled(!createMode);
     if (createMode) {
         workspace_.id = boost::uuids::random_generator()();
+        // Default status to 'active'
+        const int idx = ui_->statusCombo->findData(QString("active"));
+        if (idx >= 0) {
+            const bool blocked = ui_->statusCombo->blockSignals(true);
+            ui_->statusCombo->setCurrentIndex(idx);
+            ui_->statusCombo->blockSignals(blocked);
+        }
+        selectCurrentOwner(); // picks the account matching username_
     }
     hasChanges_ = false;
     updateSaveButtonState();
@@ -126,9 +169,9 @@ void WorkspaceDetailDialog::setReadOnly(bool readOnly) {
     ui_->nameEdit->setReadOnly(true);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->sourcePathEdit->setReadOnly(readOnly);
-    ui_->parentEdit->setReadOnly(readOnly);
-    ui_->ownerEdit->setReadOnly(readOnly);
-    ui_->statusEdit->setReadOnly(readOnly);
+    ui_->parentCombo->setEnabled(!readOnly);
+    ui_->ownerCombo->setEnabled(!readOnly);
+    ui_->statusCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -137,15 +180,15 @@ void WorkspaceDetailDialog::updateUiFromWorkspace() {
     ui_->nameEdit->setText(QString::fromStdString(workspace_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(workspace_.description));
     ui_->sourcePathEdit->setText(QString::fromStdString(workspace_.source_path));
+    selectCurrentParent();
+    selectCurrentOwner();
     {
-        const auto& _opt = workspace_.parent_workspace_id;
-        ui_->parentEdit->setText(_opt
-            ? QString::fromStdString(boost::uuids::to_string(*_opt))
-            : QString{});
+        const int idx = ui_->statusCombo->findData(
+            QString::fromStdString(workspace_.status_code));
+        const bool blocked = ui_->statusCombo->blockSignals(true);
+        ui_->statusCombo->setCurrentIndex(idx >= 0 ? idx : 0);
+        ui_->statusCombo->blockSignals(blocked);
     }
-    ui_->ownerEdit->setText(QString::fromStdString(
-        boost::uuids::to_string(workspace_.owner_id)));
-    ui_->statusEdit->setText(QString::fromStdString(workspace_.status_code));
 
     populateProvenance(workspace_.version,
                        workspace_.modified_by,
@@ -164,14 +207,27 @@ void WorkspaceDetailDialog::updateWorkspaceFromUi() {
     }
     workspace_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     workspace_.source_path = ui_->sourcePathEdit->text().trimmed().toStdString();
-    workspace_.status_code = ui_->statusEdit->text().trimmed().toStdString();
+    workspace_.status_code = ui_->statusCombo->currentData().toString().toStdString();
     workspace_.modified_by = username_;
 
-    const auto owner_str = ui_->ownerEdit->text().trimmed().toStdString();
-    if (!owner_str.empty()) {
+    const QString ownerUuid = ui_->ownerCombo->currentData().toString();
+    if (!ownerUuid.isEmpty()) {
         try {
-            workspace_.owner_id = boost::uuids::string_generator{}(owner_str);
+            boost::uuids::string_generator gen;
+            workspace_.owner_id = gen(ownerUuid.toStdString());
         } catch (...) {}
+    }
+
+    const QString parentUuid = ui_->parentCombo->currentData().toString();
+    if (parentUuid.isEmpty()) {
+        workspace_.parent_workspace_id = std::nullopt;
+    } else {
+        try {
+            boost::uuids::string_generator gen;
+            workspace_.parent_workspace_id = gen(parentUuid.toStdString());
+        } catch (...) {
+            workspace_.parent_workspace_id = std::nullopt;
+        }
     }
 }
 
@@ -210,6 +266,15 @@ void WorkspaceDetailDialog::onSaveClicked() {
             "Please fill in all required fields.");
         return;
     }
+
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    workspace_.change_reason_code = crSel->reason_code;
+    workspace_.change_commentary  = crSel->commentary;
 
     updateWorkspaceFromUi();
 
@@ -283,6 +348,10 @@ void WorkspaceDetailDialog::onDeleteClicked() {
         return;
     }
 
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel) return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting workspace: "
         << workspace_.name;
 
@@ -293,13 +362,17 @@ void WorkspaceDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, id_str = boost::uuids::to_string(workspace_.id)]() -> DeleteResult {
+    auto task = [self, id_str = boost::uuids::to_string(workspace_.id),
+                 reason_code = crSel->reason_code,
+                 commentary = crSel->commentary]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         workspace::messaging::archive_workspace_request request;
         request.id = id_str;
+        request.change_reason_code = reason_code;
+        request.change_commentary = commentary;
         auto response_result = self->clientManager_->
             process_authenticated_request(std::move(request));
 
@@ -332,6 +405,173 @@ void WorkspaceDetailDialog::onDeleteClicked() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
+}
+
+void WorkspaceDetailDialog::populateStatusCombo() {
+    if (!badgeCache_ || !badgeCache_->isLoaded())
+        return;
+
+    const auto entries = badgeCache_->list_by_domain("workspace_status");
+    const bool blocked = ui_->statusCombo->blockSignals(true);
+    const QString current = ui_->statusCombo->currentData().toString();
+    ui_->statusCombo->clear();
+
+    for (const auto& [code, def] : entries) {
+        const QString qcode = QString::fromStdString(code);
+        const QString label = def
+            ? QString::fromStdString(def->name.empty() ? code : def->name)
+            : qcode;
+        ui_->statusCombo->addItem(label, qcode);
+    }
+
+    // Restore previous selection or fall back to index 0
+    const int idx = current.isEmpty() ? -1 : ui_->statusCombo->findData(current);
+    ui_->statusCombo->setCurrentIndex(idx >= 0 ? idx : 0);
+    ui_->statusCombo->blockSignals(blocked);
+}
+
+void WorkspaceDetailDialog::loadAccounts() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<WorkspaceDetailDialog> self = this;
+    auto* cm = clientManager_;
+    QFuture<AccountListResult> future =
+        QtConcurrent::run([self, cm]() -> AccountListResult {
+            if (!cm)
+                return {false, {}, "No client manager"};
+
+            iam::messaging::get_accounts_request_typed request;
+            request.limit = 500;
+            auto result = cm->process_authenticated_request(std::move(request));
+
+            if (!result)
+                return {false, {}, QString::fromStdString(result.error())};
+
+            return {true, std::move(result->accounts), {}};
+        });
+
+    accountWatcher_->setFuture(future);
+}
+
+void WorkspaceDetailDialog::loadParentWorkspaces() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<WorkspaceDetailDialog> self = this;
+    auto* cm = clientManager_;
+    QFuture<WorkspaceListResult> future =
+        QtConcurrent::run([self, cm]() -> WorkspaceListResult {
+            if (!cm)
+                return {false, {}, "No client manager"};
+
+            workspace::messaging::list_workspaces_request request;
+            auto result = cm->process_authenticated_request(std::move(request));
+
+            if (!result)
+                return {false, {}, QString::fromStdString(result.error())};
+
+            return {true, std::move(result->workspaces), {}};
+        });
+
+    parentWatcher_->setFuture(future);
+}
+
+
+void WorkspaceDetailDialog::onParentWorkspacesLoaded() {
+    const auto result = parentWatcher_->result();
+    if (!result.success)
+        return;
+
+    const QString selfUuid = QString::fromStdString(
+        boost::uuids::to_string(workspace_.id));
+
+    const bool hadSignals = ui_->parentCombo->blockSignals(true);
+    ui_->parentCombo->clear();
+    ui_->parentCombo->addItem(tr("(none)"), QString{});
+
+    for (const auto& ws : result.workspaces) {
+        const QString uuid = QString::fromStdString(boost::uuids::to_string(ws.id));
+        if (uuid == selfUuid)
+            continue;
+        const QString label = QString("%1 [%2]")
+            .arg(QString::fromStdString(ws.name))
+            .arg(uuid);
+        ui_->parentCombo->addItem(label, uuid);
+    }
+
+    selectCurrentParent();
+    ui_->parentCombo->blockSignals(hadSignals);
+}
+
+void WorkspaceDetailDialog::selectCurrentParent() {
+    if (!workspace_.parent_workspace_id.has_value()) {
+        ui_->parentCombo->setCurrentIndex(0);
+        return;
+    }
+
+    const QString targetUuid = QString::fromStdString(
+        boost::uuids::to_string(*workspace_.parent_workspace_id));
+
+    for (int i = 0; i < ui_->parentCombo->count(); ++i) {
+        if (ui_->parentCombo->itemData(i).toString() == targetUuid) {
+            ui_->parentCombo->setCurrentIndex(i);
+            return;
+        }
+    }
+    ui_->parentCombo->setCurrentIndex(0);
+}
+
+void WorkspaceDetailDialog::onAccountsLoaded() {
+    const auto result = accountWatcher_->result();
+    if (!result.success)
+        return;
+
+    const bool blocked = ui_->ownerCombo->blockSignals(true);
+    ui_->ownerCombo->clear();
+
+    for (const auto& acct : result.accounts) {
+        const QString uuid = QString::fromStdString(boost::uuids::to_string(acct.id));
+        const QString label = QString("%1 [%2]")
+            .arg(QString::fromStdString(acct.username))
+            .arg(uuid);
+        ui_->ownerCombo->addItem(label, uuid);
+    }
+
+    ui_->ownerCombo->blockSignals(blocked);
+    selectCurrentOwner();
+}
+
+void WorkspaceDetailDialog::selectCurrentOwner() {
+    if (ui_->ownerCombo->count() == 0)
+        return;
+
+    // In create mode, default to the account whose username matches username_
+    const bool blocked = ui_->ownerCombo->blockSignals(true);
+    if (createMode_ && !username_.empty()) {
+        const QString target = QString::fromStdString(username_);
+        for (int i = 0; i < ui_->ownerCombo->count(); ++i) {
+            // items are labelled "username [UUID]" — check prefix
+            if (ui_->ownerCombo->itemText(i).startsWith(target + " [")) {
+                ui_->ownerCombo->setCurrentIndex(i);
+                ui_->ownerCombo->blockSignals(blocked);
+                return;
+            }
+        }
+    }
+
+    // Edit mode: match current owner_id UUID
+    const QString targetUuid = QString::fromStdString(
+        boost::uuids::to_string(workspace_.owner_id));
+    for (int i = 0; i < ui_->ownerCombo->count(); ++i) {
+        if (ui_->ownerCombo->itemData(i).toString() == targetUuid) {
+            ui_->ownerCombo->setCurrentIndex(i);
+            ui_->ownerCombo->blockSignals(blocked);
+            return;
+        }
+    }
+    ui_->ownerCombo->setCurrentIndex(0);
+    ui_->ownerCombo->blockSignals(blocked);
 }
 
 }

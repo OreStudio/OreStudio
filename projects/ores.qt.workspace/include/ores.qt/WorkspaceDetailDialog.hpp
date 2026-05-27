@@ -21,9 +21,12 @@
 #define ORES_QT_WORKSPACE_DETAIL_DIALOG_HPP
 
 #include <vector>
+#include <QFutureWatcher>
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.iam.api/domain/account.hpp"
 #include "ores.workspace.api/domain/workspace.hpp"
 
 
@@ -58,10 +61,12 @@ public:
     ~WorkspaceDetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
+    void setBadgeCache(BadgeCache* badgeCache);
     void setUsername(const std::string& username);
     void setWorkspace(const workspace::domain::workspace& workspace);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
+    void markAsStale() override;
 
 
 signals:
@@ -73,6 +78,8 @@ private slots:
     void onDeleteClicked();
     void onCodeChanged(const QString& text);
     void onFieldChanged();
+    void onParentWorkspacesLoaded();
+    void onAccountsLoaded();
 
 protected:
     QTabWidget* tabWidget() const override;
@@ -87,15 +94,35 @@ private:
     void updateWorkspaceFromUi();
     void updateSaveButtonState();
     bool validateInput();
+    void loadParentWorkspaces();
+    void selectCurrentParent();
+    void loadAccounts();
+    void selectCurrentOwner();
+    void populateStatusCombo();
 
+    struct WorkspaceListResult {
+        bool success;
+        std::vector<workspace::domain::workspace> workspaces;
+        QString error_message;
+    };
+
+    struct AccountListResult {
+        bool success;
+        std::vector<iam::domain::account> accounts;
+        QString error_message;
+    };
 
     Ui::WorkspaceDetailDialog* ui_;
     ClientManager* clientManager_;
+    BadgeCache* badgeCache_{nullptr};
     std::string username_;
     workspace::domain::workspace workspace_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
+    bool isStale_{false};
+    QFutureWatcher<WorkspaceListResult>* parentWatcher_;
+    QFutureWatcher<AccountListResult>* accountWatcher_;
 
 };
 

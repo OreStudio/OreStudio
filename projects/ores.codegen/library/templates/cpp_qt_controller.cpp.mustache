@@ -10,6 +10,7 @@
 #include "ores.qt/{{domain_entity.entity_pascal}}DetailDialog.hpp"
 #include "ores.qt/{{domain_entity.entity_pascal}}HistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
 
 namespace ores::qt {
 
@@ -20,9 +21,15 @@ using namespace ores::logging;
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
+{{#domain_entity.qt.has_badge_columns}}
+    BadgeCache* badgeCache,
+{{/domain_entity.qt.has_badge_columns}}
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+{{#domain_entity.qt.has_badge_columns}}
+      badgeCache_(badgeCache),
+{{/domain_entity.qt.has_badge_columns}}
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -39,7 +46,12 @@ void {{domain_entity.entity_pascal}}Controller::showListWindow() {
     }
 
     // Create new window
+{{#domain_entity.qt.has_badge_columns}}
+    listWindow_ = new {{domain_entity.entity_pascal}}MdiWindow(clientManager_, username_, badgeCache_);
+{{/domain_entity.qt.has_badge_columns}}
+{{^domain_entity.qt.has_badge_columns}}
     listWindow_ = new {{domain_entity.entity_pascal}}MdiWindow(clientManager_, username_);
+{{/domain_entity.qt.has_badge_columns}}
 
     // Connect signals
     connect(listWindow_, &{{domain_entity.entity_pascal}}MdiWindow::statusChanged,
@@ -68,6 +80,8 @@ void {{domain_entity.entity_pascal}}Controller::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<{{domain_entity.entity_pascal}}Controller>(this), key]() {
@@ -206,6 +220,8 @@ void {{domain_entity.entity_pascal}}Controller::showDetailWindow(
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, detailWindow);
 
     QPointer<{{domain_entity.entity_pascal}}Controller> self = this;
     connect(detailWindow, &QObject::destroyed, this,
@@ -289,6 +305,8 @@ void {{domain_entity.entity_pascal}}Controller::showHistoryWindow(const QString&
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
+    UiPersistence::restoreMdiGeometry(windowKey, historyWindow);
 
     QPointer<{{domain_entity.entity_pascal}}Controller> self = this;
     connect(historyWindow, &QObject::destroyed, this,

@@ -82,6 +82,9 @@ public:
     /** Returns true if the dialog has unsaved changes. Subclasses override. */
     virtual bool hasUnsavedChanges() const { return false; }
 
+    /** Called when server-side data has changed; override to show stale state. */
+    virtual void markAsStale() {}
+
     /**
      * @brief Returns true if the user has already confirmed closing this dialog.
      *

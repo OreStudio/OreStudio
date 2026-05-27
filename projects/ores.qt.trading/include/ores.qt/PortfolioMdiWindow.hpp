@@ -87,6 +87,8 @@ private slots:
 protected:
     void onWindowWorkspaceChanged(const WorkspaceContext& ctx) override;
 
+    bool isWorkspaceScoped() const override { return false; }
+
     QString normalRefreshTooltip() const override {
         return tr("Refresh portfolios");
     }

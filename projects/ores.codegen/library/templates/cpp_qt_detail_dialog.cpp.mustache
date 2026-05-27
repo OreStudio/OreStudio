@@ -21,6 +21,7 @@
 {{/domain_entity.qt.has_uuid_detail_fields}}
 {{/domain_entity.qt.has_uuid_primary_key}}
 #include "ui_{{domain_entity.entity_pascal}}DetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "{{domain_entity.qt.protocol_include}}"
@@ -426,6 +427,15 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
         return;
     }
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    {{domain_entity.qt.item_var}}_.change_reason_code = crSel->reason_code;
+    {{domain_entity.qt.item_var}}_.change_commentary  = crSel->commentary;
+
     update{{domain_entity.entity_pascal_short}}FromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving {{domain_entity.entity_singular_words}}: "
@@ -497,6 +507,10 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting {{domain_entity.entity_singular_words}}: "
         << {{domain_entity.qt.item_var}}_.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}};

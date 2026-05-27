@@ -22,10 +22,16 @@ rationale added to the codegen model:
 
 | Dimension           | Value | Rationale |
 |---------------------+-------+-----------|
-| ~has_tenant_id~     | false | Workspace is system-wide; cross-tenant isolation is handled via IAM, not per-tenant row scoping. |
 | ~has_workspace_id~  | false | A workspace cannot belong to a workspace; self-referential membership is undefined. |
 | ~has_pagination~    | false | A tenant holds at most ~20 active workspaces by product design; the tree view displaying the parent-workspace hierarchy does not support standard pagination. |
 | Tree view (not QTableView) | — | ~WorkspaceMdiWindow~ uses ~QTreeWidget~ to display the workspace inheritance chain; a flat paginated list loses that hierarchy. Codegen of the MDI window is skipped; only the detail and history dialogs are generated. |
+
+*Corrected*: The original plan listed ~has_tenant_id: false~ as a justified deviation with
+the rationale "cross-tenant isolation is handled via IAM." This was a modeling error.
+Authentication (IAM) verifies identity but does not substitute for data-layer tenant
+scoping — the workspace service would otherwise return rows from any tenant.  Workspace is
+a party-scoped entity: ~has_tenant_id: true~ and ~has_party_id: true~ are now set in the
+codegen model and the SQL table carries both columns.
 
 * What Changes
 

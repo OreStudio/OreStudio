@@ -13,31 +13,56 @@
  * ores_utility_live_workspace_id_fn(). This workspace is the root of all
  * workspace inheritance chains and can never be archived.
  *
- * The insert trigger validates modified_by; the bootstrap bypass (no non-service
- * user accounts yet) allows 'system' at database creation time.
+ * Run as the ddl service role: current_user resolves to 'ddl', which passes
+ * the modified_by validator. Use: run_sql.sh --user ddl -f <this_file>
  */
 
 DO $$
 DECLARE
-    v_live_id uuid := ores_utility_live_workspace_id_fn();
-    v_system_owner uuid := ores_utility_system_tenant_id_fn();
+    v_live_id    uuid := ores_utility_live_workspace_id_fn();
+    v_tenant_id  uuid := ores_utility_system_tenant_id_fn();
+    v_party_id   uuid;
+    v_owner_id   uuid;
 BEGIN
+    -- Live workspace is a system-level sentinel: it belongs to the system tenant
+    -- and system party, making it reachable by all workspace resolution chains
+    -- without being listed in any tenant's active workspace set.
+    v_party_id := ores_iam_account_parties_system_party_id_fn(v_tenant_id);
+    if v_party_id is null then
+        raise exception 'Cannot seed Live workspace: no system party found for system tenant';
+    end if;
+
+
+    -- Resolve the account UUID for the current service role (ddl user)
+    select id into v_owner_id
+    from ores_iam_accounts_tbl
+    where username = current_user
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    limit 1;
+
+    if v_owner_id is null then
+        raise exception 'Cannot seed Live workspace: no account found for current_user=%',
+            current_user;
+    end if;
+
     if not exists (
         select 1 from ores_workspaces_tbl
         where id = v_live_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_workspaces_tbl
-            (id, version, name, description, source_path,
+            (id, tenant_id, party_id,
+             version, name, description, source_path,
              parent_workspace_id, scope_portfolio_id,
              owner_id, status_code,
              modified_by, performed_by, change_reason_code, change_commentary,
              valid_from, valid_to)
         values
-            (v_live_id, 0, 'Live', 'Live production data space', '',
+            (v_live_id, v_tenant_id, v_party_id,
+             0, 'Live', 'Live production data space', '',
              null, null,
-             v_system_owner, 'active',
-             'system', 'system', 'system.initial_load', 'System initialisation',
+             v_owner_id, 'active',
+             current_user, current_user, 'system.initial_load', 'System initialisation',
              now(), 'infinity');
 
         raise notice 'Live workspace seeded: id=%', v_live_id;

@@ -294,7 +294,7 @@ caller's permissions against their JWT claims before any service operation.
 
 | Permission | Default role holders |
 |------------+---------------------|
-| ~workspace::workspaces:read~ | All authenticated users (via tenant default grants) |
+| ~workspace::workspaces:read~ | All authenticated users within the party (via party default grants) |
 | ~workspace::workspaces:write~ | All authenticated users |
 | ~workspace::workspaces:archive~ | All authenticated users (own workspaces only) |
 | ~workspace::workspaces:archive_any~ | ~TenantAdmin~ |
@@ -747,11 +747,13 @@ remains Live-only; non-live workspace report definitions run on-demand only.
        regenerated automatically rather than hand-wired per entity.
 13. Run ~recreate_database.sh -k -y~; validate schemas.
 
-Note on workspace visibility: all authenticated users within a tenant hold
-~workspace::workspaces:read~ by default, so workspaces are not private ACL
-objects.  Data restriction is handled by the ~scope_portfolio_id~ on the
-workspace itself (portfolio tree scoping), not by per-workspace read grants.
-This keeps the permission model simple and avoids over-engineering.
+Note on workspace visibility: workspaces are private to the party that owns
+them — a user in party A cannot see workspaces belonging to party B, even
+within the same tenant.  Within a party, all authenticated users hold
+~workspace::workspaces:read~ by default, so workspaces are not restricted by
+per-user ACLs.  Data restriction is handled by the ~scope_portfolio_id~ on
+the workspace itself (portfolio tree scoping), not by per-workspace read
+grants.  This keeps the permission model simple and avoids over-engineering.
 
 ** Phase 2: Service layer
 

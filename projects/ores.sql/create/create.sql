@@ -37,6 +37,7 @@
 -- 4. Workspace Tables (must be created before refdata to allow refdata FKs back)
 -- =============================================================================
 \ir ./workspace/workspace_create.sql
+\ir ./workspace/workspace_notify_trigger.sql
 
 -- =============================================================================
 -- 5. Operational Tables (depend on data governance tables for FK validation)

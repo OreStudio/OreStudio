@@ -300,7 +300,7 @@ BEGIN
 
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'workspace_status', 'Workspace Status',
-        'Lifecycle status codes for workspace records.', 15);
+        'Lifecycle status codes for workspace records.', 16);
 
     -- =============================================================================
     -- Badge Mappings

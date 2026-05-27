@@ -150,9 +150,9 @@ single-row table with =[[id:...][ores.X]]= in the Sub-component column.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                                                                |
+|-----+------------------------------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/879][#879]] | [modeling] Rework system_model.org: per-component headings, sub-component tables, key-doc links |
 
 * Review
 

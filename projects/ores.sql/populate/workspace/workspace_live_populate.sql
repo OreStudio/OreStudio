@@ -32,6 +32,7 @@ BEGIN
         raise exception 'Cannot seed Live workspace: no system party found for system tenant';
     end if;
 
+
     -- Resolve the account UUID for the current service role (ddl user)
     select id into v_owner_id
     from ores_iam_accounts_tbl

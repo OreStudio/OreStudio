@@ -139,6 +139,7 @@ begin
             using errcode = '23503';
     end if;
 
+
     -- Validate owner_id references a real account
     if not exists (
         select 1 from ores_iam_accounts_tbl

@@ -477,6 +477,7 @@ void WorkspaceDetailDialog::loadParentWorkspaces() {
     parentWatcher_->setFuture(future);
 }
 
+
 void WorkspaceDetailDialog::onParentWorkspacesLoaded() {
     const auto result = parentWatcher_->result();
     if (!result.success)

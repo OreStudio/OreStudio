@@ -59,13 +59,8 @@
 ;; org-capture target: prompt for title, create slug-named file in inbox/
 ;; ---------------------------------------------------------------------------
 
-(defvar-local ores/capture--pending-title nil
+(defvar ores/capture--pending-title nil
   "Title entered during target setup; used to pre-fill the yasnippet $1 field.")
-
-(defvar ores/capture--current-file nil
-  "Absolute path of the inbox file being captured.
-Set by `ores/capture--setup-inbox-file'; cleared (and deleted on abort)
-by `ores/capture--on-finalize'.")
 
 (defun ores/capture--title-to-slug (title)
   "Convert TITLE to a lowercase underscore slug."
@@ -76,33 +71,15 @@ by `ores/capture--on-finalize'.")
          (s (replace-regexp-in-string "^_+\\|_+$" "" s)))
     s))
 
-(defun ores/capture--setup-inbox-file ()
-  "Prompt for a title, create a slug-named org file in inbox/, and position point.
-Stores the title buffer-locally so `ores/capture--yas-expand' can pre-fill $1.
-Records the file path in `ores/capture--current-file' so the finalize hook
-can delete it if the capture is aborted."
+(defun ores/capture--inbox-file ()
+  "Prompt for a title and return the target inbox file path.
+Used as the expression inside the (file ...) capture target so that
+org-capture owns the buffer lifecycle: it sets :new-buffer t for new
+files and kills the buffer (without saving) on C-c C-k abort."
   (let* ((title (read-string "Capture title: "))
-         (slug  (ores/capture--title-to-slug title))
-         (file  (expand-file-name (concat slug ".org")
-                                  (ores/capture--inbox-dir))))
-    (setq ores/capture--current-file file)
-    (find-file file)
-    (setq-local ores/capture--pending-title title)
-    (goto-char (point-min))))
-
-(defun ores/capture--on-finalize ()
-  "Clean up after org-capture finishes.
-If the capture was aborted (`org-note-abort' is t), delete the inbox
-file that was created during target setup and kill its buffer."
-  (when (and org-note-abort ores/capture--current-file)
-    (let ((file ores/capture--current-file))
-      (when (file-exists-p file)
-        (delete-file file))
-      (when-let ((buf (get-file-buffer file)))
-        (kill-buffer buf))))
-  (setq ores/capture--current-file nil))
-
-(add-hook 'org-capture-after-finalize-hook #'ores/capture--on-finalize)
+         (slug  (ores/capture--title-to-slug title)))
+    (setq ores/capture--pending-title title)
+    (expand-file-name (concat slug ".org") (ores/capture--inbox-dir))))
 
 ;; ---------------------------------------------------------------------------
 ;; org-capture hook: expand the v2-capture yasnippet into the buffer
@@ -138,12 +115,14 @@ the canonical snippet file so org-capture and \"cap\" TAB share one template."
 
 (defun ores/setup-capture-templates ()
   "Register key \"c\" (Capture inbox) in `org-capture-templates'.
-Creates a fresh timestamped file in inbox/ and expands the v2-capture
-yasnippet for interactive filling.  Call once after `org' is loaded."
+Uses a (file ...) target so org-capture owns the buffer lifecycle:
+new files are killed without saving on C-c C-k abort.  The v2-capture
+yasnippet is expanded via :hook for interactive filling.
+Call once after `org' is loaded."
   (interactive)
   (add-to-list 'org-capture-templates
     '("c" "Capture (inbox)" plain
-      (function ores/capture--setup-inbox-file)
+      (file (ores/capture--inbox-file))
       ""
       :hook ores/capture--yas-expand
       :unnarrowed t)))

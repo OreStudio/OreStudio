@@ -9,7 +9,7 @@
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco
 #+branch: feature/per-sprint-capture-files
-#+pr:
+#+pr: 874
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-27
@@ -20,41 +20,44 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Replace the monolithic per-sprint capture.org with per-file product backlog captures in four lifecycle buckets (inbox, next, deferred, discarded). Rename near→next and far→deferred across the whole doc graph. Add =compass capture= command. Update all doc references.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-27                               |
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | STARTED                                                                  |
+| Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]]     |
+| Now          | PR #874 open; review round 1 addressed.                                  |
+| Waiting on   | PR merge.                                                                |
+| Next         | Merge; mark DONE.                                                        |
+| Last touched | 2026-05-27                                                               |
 
 * Acceptance
 
--
-
-* Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+- All near/far references replaced with next/deferred across the doc graph.
+- Four bucket dirs (inbox, next, deferred, discarded) with index docs.
+- =compass capture= command implemented (create, file, promote).
+- Commit recipe updated with bucket brackets.
+- Document types updated for four-bucket structure.
 
 * Notes
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                                                 |
+|-----+---------------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/874][#874]] | Per-sprint capture workflow: inbox/next/deferred/discarded buckets |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                            | File                                                | Decision | Notes                                                    |
+|---+------------------------------------------------------------+-----------------------------------------------------+----------+----------------------------------------------------------|
+| 1 | discarded.org references far/near instead of deferred/next | doc/agile/product_backlog/discarded.org             | Accept   | Fixed in 08be55b                                         |
+| 2 | currency_rounding_duplicates: sprint note → capture in inbox | doc/agile/product_backlog/inbox/currency_rounding_duplicates.org | Accept   | Fixed in 08be55b                                 |
+| 3 | task: --near/--far flags → --next/--deferred               | compass_product_backlog/task_implement_...org       | Accept   | Fixed in 08be55b                                         |
+| 4 | task: count format still says far=7                        | compass_product_backlog/task_implement_...org       | Accept   | Fixed in 08be55b                                         |
+| 5 | story: line 37 still references --near/--far               | compass_product_backlog/story.org                   | Accept   | Fixed in 08be55b; also fixed filetag and summary line    |
+| 6 | process.org line 28: "captures from near"                  | doc/agile/process.org                               | Accept   | Fixed in 08be55b                                         |
 
 * Result

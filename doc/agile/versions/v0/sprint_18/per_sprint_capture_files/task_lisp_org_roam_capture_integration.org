@@ -47,9 +47,9 @@ Add a new =ores-capture.el= module to =ores.lisp= providing two entry points for
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                                                                    |
+|------+--------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/877][#877]] | Add ores-capture.el: org-roam capture template writing to inbox |
 
 * Review
 

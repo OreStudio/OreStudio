@@ -2,54 +2,63 @@
 :ID: 482430DB-BE56-4589-B5A7-B616F7CC27F2
 :END:
 #+title: Task: Add org-roam capture template in ores.lisp writing to inbox
-#+description: Implement environment-aware org-roam capture template in ores.lisp that writes new captures directly to doc/agile/product_backlog/inbox/ of the current environment.
+#+description: Implement environment-aware org-capture template in ores.lisp that writes new captures directly to doc/agile/product_backlog/inbox/ of the current environment.
 #+type: task
 #+version: 2
 #+level: s1
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco
 #+branch: feature/lisp-capture-template
-#+pr:
+#+pr: 878
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-27
-#+updated: 2026-05-27
+#+updated: 2026-05-28
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Add a new =ores-capture.el= module to =ores.lisp= providing two entry points for creating v2 capture docs in =inbox/=: an =org-roam-capture-templates= entry (key "c") that uses org-roam's native capture UI, and an =ores/capture= interactive command that delegates to =compass.sh= and opens the result.
+Add a new =ores-capture.el= module to =ores.lisp= providing two entry points for creating v2 capture docs in =inbox/=: an =org-capture-templates= entry (key "c") that uses org-capture with a yasnippet template, and an =ores/capture= interactive command that delegates to =compass.sh= and opens the result.
 
 * Status
 
 | Field        | Value                                                                    |
 |--------------+--------------------------------------------------------------------------|
-| State        | STARTED                                                                  |
+| State        | DONE                                                                     |
 | Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]]    |
-| Now          | Implementing ores-capture.el.                                            |
+| Now          | PR #878 open for review.                                                 |
 | Waiting on   | Nothing.                                                                 |
-| Next         | PR.                                                                      |
-| Last touched | 2026-05-27                                                               |
+| Next         | Merge.                                                                   |
+| Last touched | 2026-05-28                                                               |
 
 * Acceptance
 
-- =projects/ores.lisp/src/ores-capture.el= exists and provides =ores-capture=.
-- =ores/setup-capture-templates= registers key ="c"= in =org-roam-capture-templates= targeting =inbox/${slug}.org= in the current checkout.
-- The template frontmatter uses =%(upcase (org-id-new))= for uppercase UUIDs and =%(format-time-string "%Y-%m-%d")= for dates.
-- =ores/capture= interactive command calls =compass.sh capture --note= and opens the created file.
-- Component overview updated to document =ores-capture.el=.
+- [X] =projects/ores.lisp/src/ores-capture.el= exists and provides =ores-capture=.
+- [X] =ores/setup-capture-templates= registers key ="c"= in =org-capture-templates= targeting =inbox/${slug}.org= in the current checkout.
+- [X] The =v2-capture= yasnippet at =projects/ores.lisp/snippets/org-mode/v2-capture= (trigger =cap=) uses backtick Elisp for uppercase UUIDs and dates; shared by both the =org-capture= entry and direct TAB expansion.
+- [X] Title entered at the capture prompt is pre-filled in the yasnippet =$1= tab stop.
+- [X] Cancel (=C-c C-k=) leaves no file in =inbox/=.
+- [X] =ores/capture= interactive command calls =compass.sh capture --note= and opens the created file.
+- [X] Component overview updated to document =ores-capture.el=.
 
 * Plan
 
 * Notes
 
+The implementation went through several iterations to arrive at the final design:
+
+- Initially registered in =org-roam-capture-templates= (wrong variable); corrected to =org-capture-templates=.
+- The =(file FUNCTION)= target requires passing the function *symbol*, not a call form.
+- Cancel was creating files in =inbox/= because =org-roam-db-autosync-mode= or Emacs auto-save was writing the buffer before abort. Tried a temp-file-in-=/tmp/= workaround (move to inbox on save, delete on abort), but this broke =ores/checkout-root= in the =:hook= since the temp buffer has no project context.
+- Final design: build the full snippet body (with title substituted) inside =ores/capture--inbox-file= while still in project context; cache it in =ores/capture--snippet-body=; the =:hook= calls =yas-expand-snippet= with the pre-built body — no project-root lookup needed at hook time. Cancel cleanup uses =org-capture-prepare-finalize-hook= (marks buffer unmodified) and =org-capture-after-finalize-hook= (deletes file if auto-save wrote it).
+
 * PRs
 
 | PR   | Title                                                                    |
 |------+--------------------------------------------------------------------------|
-| [[https://github.com/OreStudio/OreStudio/pull/877][#877]] | Add ores-capture.el: org-roam capture template writing to inbox |
+| [[https://github.com/OreStudio/OreStudio/pull/877][#877]] | Add ores-capture.el: org-roam capture template writing to inbox (closed) |
 | [[https://github.com/OreStudio/OreStudio/pull/878][#878]] | Add ores-capture.el: org-capture template with yasnippet writing to inbox |
 
 * Review
@@ -59,3 +68,5 @@ Add a new =ores-capture.el= module to =ores.lisp= providing two entry points for
 |   |                 |      |          |       |
 
 * Result
+
+=ores-capture.el= implemented and PR #878 open. Two entry points delivered: =ores/setup-capture-templates= for interactive org-capture + yasnippet workflow, and =ores/capture= for LLM/CLI use via compass. The =v2-capture= snippet is the single template source shared by both.

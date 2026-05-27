@@ -8,7 +8,7 @@
 #+level: s1
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/lisp-capture-template
 #+pr:
 #+blocked_on: none
 #+blocked_since:
@@ -20,28 +20,28 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a new =ores-capture.el= module to =ores.lisp= providing two entry points for creating v2 capture docs in =inbox/=: an =org-roam-capture-templates= entry (key "c") that uses org-roam's native capture UI, and an =ores/capture= interactive command that delegates to =compass.sh= and opens the result.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-27                               |
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | STARTED                                                                  |
+| Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]]    |
+| Now          | Implementing ores-capture.el.                                            |
+| Waiting on   | Nothing.                                                                 |
+| Next         | PR.                                                                      |
+| Last touched | 2026-05-27                                                               |
 
 * Acceptance
 
--
+- =projects/ores.lisp/src/ores-capture.el= exists and provides =ores-capture=.
+- =ores/setup-capture-templates= registers key ="c"= in =org-roam-capture-templates= targeting =inbox/${slug}.org= in the current checkout.
+- The template frontmatter uses =%(upcase (org-id-new))= for uppercase UUIDs and =%(format-time-string "%Y-%m-%d")= for dates.
+- =ores/capture= interactive command calls =compass.sh capture --note= and opens the created file.
+- Component overview updated to document =ores-capture.el=.
 
 * Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
 
 * Notes
 

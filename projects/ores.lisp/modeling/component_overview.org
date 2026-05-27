@@ -68,6 +68,11 @@ ergonomics.
 - =ores-prodigy.el= — registers all ORE Studio background services
   (databases, NATS, HTTP server, domain services) with Prodigy for
   point-and-click process lifecycle management.
+- =ores-capture.el= — product-backlog capture integration. Provides
+  =ores/capture= (interactive command that delegates to =compass.sh
+  capture --note=) and =ores/setup-capture-templates= (registers key
+  ="c"= in =org-roam-capture-templates= targeting =inbox/= of the
+  current checkout).
 - =ores-org-roam-export.el= — org-roam → HTML export pipeline; walks the
   node graph and publishes the documentation site.
 

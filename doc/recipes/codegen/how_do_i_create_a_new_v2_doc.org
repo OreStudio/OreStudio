@@ -245,21 +245,30 @@ projects/ores.codegen/generate_v2_doc.sh \
 :ID: 978E0A8F-197C-48DA-A405-457E0AEE91D9
 :END:
 
-[[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Captures]] live in the product backlog under =doc/agile/product_backlog/= in
-either the =next/=|=deferred bucket (candidate work for the next version) or next/=|=deferred/=
-(longer-term wishlist). The =--parent-dir= picks the bucket.
+[[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Captures]] live in =doc/agile/product_backlog/= across four buckets:
+=inbox/= (untriaged), =next/= (upcoming candidate), =deferred/=
+(long-horizon), =discarded/= (explicitly rejected).
+
+The preferred way to file a new capture is =compass capture=, which
+lands the file in =inbox/= automatically:
+
+#+begin_src sh :results verbatim
+projects/ores.compass/compass.sh capture --note "Add an uptime screen"
+#+end_src
+
+To create directly in a specific bucket via codegen:
 
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type capture --slug add_uptime_screen \
-  --parent-dir doc/agile/product_backlog/near \
+  --parent-dir doc/agile/product_backlog/next \
   --title "Add an uptime screen" \
   --description "Surface live service health in the Qt UI." \
   --tags "ui,observability"
 #+end_src
 
-The blurb in the generated file automatically picks up the bucket
-name from the =--parent-dir= basename.
+The bucket name is derived from =--parent-dir= basename and appears in
+the generated blurb automatically.
 
 ** New memory
 :PROPERTIES:

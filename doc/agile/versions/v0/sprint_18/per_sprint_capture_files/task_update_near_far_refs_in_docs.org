@@ -8,8 +8,8 @@
 #+level: s1
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/per-sprint-capture-files
+#+pr: 874
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-27
@@ -20,41 +20,38 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Sweep all =.org= files for residual =near= / =far= bucket terminology and replace with =inbox=, =next=, =deferred=, =discarded= as appropriate — ensuring the doc graph is consistent with the renamed buckets.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-27                               |
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]]     |
+| Now          | Done — swept in PR #874 and its review round 1 fix commit.              |
+| Waiting on   | Nothing.                                                                 |
+| Next         | —                                                                        |
+| Last touched | 2026-05-27                                                               |
 
 * Acceptance
 
--
-
-* Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+- All =near= / =far= bucket references replaced across glossary, lifecycle, cybernetic_levels, skills, runbooks, recipes, agile index docs.
+- =process.org= updated (captures from near → next; near↔far arrows; see-also text).
+- =discarded.org= boilerplate corrected.
+- =compass_product_backlog= story/task acceptance criteria use =--next= / =--deferred=.
 
 * Notes
 
+Work was folded into PR #874 (main rename commit) and the review-round-1 fix commit =08be55b=.
+
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                                                              |
+|------+--------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/874][#874]] | Per-sprint capture workflow: inbox/next/deferred/discarded buckets |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
-
 * Result
+
+All near/far bucket references replaced across 30+ =.org= files. Doc graph now consistently uses inbox/next/deferred/discarded.

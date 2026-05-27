@@ -56,8 +56,8 @@ Draft skill was written manually during sprint 18 before compass skill support e
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                              | File          | Decision | Notes              |
+|---+--------------------------------------------------------------+---------------+----------+--------------------|
+| 1 | Folder names are snake_case not kebab-case                   | SKILL.org     | Accept   | Fixed in d851ef9df |
 
 * Result

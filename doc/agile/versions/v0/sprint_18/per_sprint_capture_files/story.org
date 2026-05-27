@@ -2,7 +2,7 @@
 :ID: E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F
 :END:
 #+title: Story: Per-sprint capture workflow: individual files and compass integration
-#+description: Replace the single capture.org per sprint with a captures/ folder where each note is a separate file scaffolded by compass. Add compass commands to create a capture, promote it to story/task, or file it into the backlog (near/far/wontdo). Add a wontdo backlog bucket for ideas explicitly rejected.
+#+description: Replace the single capture.org per sprint with a captures/ folder where each note is a separate file scaffolded by compass. Add compass commands to create a capture, promote it to story/task, or file it into the backlog (near/far/discarded). Add a discarded backlog bucket for ideas explicitly rejected.
 #+type: story
 #+version: 2
 #+level: s2
@@ -17,7 +17,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 The single =capture.org= file per sprint has become unmanageable: annotations accumulate, implemented items are forgotten, and the file becomes noise rather than signal.
 
-Replace it with a =captures/= folder inside the current sprint, where each capture is a separate file scaffolded by compass. The LLM calls compass on the user's behalf to file a capture in one step. Captures can then be promoted into stories or tasks (via compass), or moved into the product backlog (near, far, or a new wontdo bucket). This makes it easy to triage: promote the valuable, file the deferred, discard the stale.
+Replace it with a =captures/= folder inside the current sprint, where each capture is a separate file scaffolded by compass. The LLM calls compass on the user's behalf to file a capture in one step. Captures can then be promoted into stories or tasks (via compass), or moved into the product backlog (near, far, or a new discarded bucket). This makes it easy to triage: promote the valuable, file the deferred, discard the stale.
 
 * Status
 
@@ -35,10 +35,10 @@ Replace it with a =captures/= folder inside the current sprint, where each captu
 - A =captures/= folder exists alongside stories in the current sprint; each capture is a separate =.org= file.
 - =compass capture --note "..."= scaffolds a new capture file in the current sprint's =captures/= folder and prints the path.
 - =compass capture promote <slug>= converts an existing capture into a story (in the current sprint) or into a task on a named story.
-- =compass capture file <slug> [near|far|wontdo]= moves a capture into the appropriate product backlog bucket.
-- A =wontdo/= bucket exists under =doc/agile/product_backlog/= with its own index doc.
+- =compass capture file <slug> [near|far|discarded]= moves a capture into the appropriate product backlog bucket.
+- A =discarded/= bucket exists under =doc/agile/product_backlog/= with its own index doc.
 - A codegen template produces valid capture =.org= files with the correct frontmatter shape.
-- The [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] knowledge doc is updated to document the =wontdo= bucket and the new per-sprint =captures/= pattern.
+- The [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] knowledge doc is updated to document the =discarded= bucket and the new per-sprint =captures/= pattern.
 - The [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] runbook links to the correct compass recipe and the product backlog doc.
 
 * Tasks

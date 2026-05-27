@@ -54,8 +54,8 @@ Write a recipe that lets a user paste a paragraph of freeform notes into Claude 
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                        | File                        | Decision | Notes          |
+|---+--------------------------------------------------------+-----------------------------+----------+----------------|
+| 1 | EOF delimiter indented — shell syntax error on copy-paste | how_do_i_create_a_pr.org:53 | Accept   | Fixed in 2d2158c |
 
 * Result

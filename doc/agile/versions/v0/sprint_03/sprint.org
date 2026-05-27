@@ -37,7 +37,7 @@ code/ + /finish login related functionality/.)
 | Now            | Sprint closed 2025-12-31. UI now uses the new socket layer end-to-end; accounts and sessions ship as part of v0. |
 | Waiting on     | Nothing.                                                                                                         |
 | Next           | [[id:38DAA167-E791-48FB-AFEB-1813615037DE][Sprint 04]]                                                           |
-| Release Notes  | —                                                                                                                |
+| Release Notes  | [[id:2B050F4F-006C-44F6-8F51-0FB44DCD292D][Release notes]]                                                                                                                |
 | Last touched   | 2025-12-31                                                                                                       |
 
 * Stories

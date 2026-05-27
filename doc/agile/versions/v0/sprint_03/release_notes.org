@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 2B050F4F-006C-44F6-8F51-0FB44DCD292D
+:END:
+#+title: Sprint 03 Release Notes
+#+description: Sprint 03 release notes (November 2025).
+#+type: release_notes
+#+version: 2
+#+level: cross
+#+filetags: :release_notes:sprint_03:v0:
+#+created: 2025-11-07
+#+updated: 2025-11-07
+
+/November 2025/
+
+This sprint focused on *enabling secure user sessions*, *improving test reliability*, and *laying the groundwork for robust CI/CD* with database integration and better build hygiene.
+
+-----
+
+* ✅ Highlights
+
+- *Login and session management implemented* — users can now securely log in and out.
+- *Account locking logic added* after repeated failed login attempts.
+- *PostgreSQL integrated into CI* — enabling realistic integration testing using test databases and synthetic data.
+- *Test isolation achieved* — tests now use separate database instances to prevent interference.
+- *Boost.Log usage standardized* — resolved memory noise and improved logging consistency.
+
+
+* 🛠️ Key Improvements
+
+** Authentication & Security
+- Implemented session support for login/logout workflows.
+- Added account lockout after N failed password attempts.
+- Began implementation of *authentication bootstrap workflow* (postponed): system will require creation of an initial admin account before normal operation.
+- Added command-line arguments for database configuration in services (replacing hardcoded credentials).
+
+** Testing & CI/CD
+- Integrated *PostgreSQL into GitHub CI* using =setup-postgresql= action.
+- Isolated test database usage from application and across test suites.
+- Added *test data generators* using =faker-cxx= for more realistic scenarios.
+- Split test utilities into a dedicated =ores.testing= library to avoid Catch2 linkage in production code.
+- Improved code coverage and unified test structure post-refactor.
+- Fixed broken Linux, macOS, and Windows CI builds caused by missing DLLs and test configuration.
+
+** Build & Infrastructure
+- Enabled Qt GUI builds by switching to distro-supplied Qt to save disk space.
+- Resolved vcpkg patch application failures on Windows (line-ending issues).
+- Created a *staging directory* for clean binary output (aligned with Dogen approach).
+- Investigated dynamic library builds; concluded static linking is safer for now due to packaging complexity.
+
+** Code Quality
+- Standardized Boost.Log usage, eliminating local static loggers that caused valgrind noise.
+- Fixed misspelling issues that broke builds due to org-mode URL typos.
+- Added =write_one= method to repository pattern for consistency with MongoDB-style APIs.
+- PostgreSQL support fully implemented for currency CRUD operations.
+
+
+* ⚠️ Known Issues & Postponed
+
+- *CTest shows only one test per suite* — individual test results not visible in CDash. Issue reported to Kitware.
+- *OpenSSL leaks still appear in valgrind* — mostly initialization-related; suppressions applied temporarily.
+- *Feature flags framework postponed* — needed to manage bootstrap vs. secure mode, but deferred for next sprint.
+- *Authentication bootstrap workflow not completed* — core logic defined, but not yet enforced in service startup.
+
+* 📊 Time Summary
+
+- *Total effort*: not tracked
+- *PRs merged*: not tracked
+- *Sprint duration*: 2025-10-23 → 2025-11-07
+
+-----
+
+/Next sprint: [[id:38DAA167-E791-48FB-AFEB-1813615037DE][Sprint 04]]./

@@ -39,7 +39,7 @@ portfolios / trades.
 | Now            | Sprint closed 2026-02-28. Two items carry forward: the trade-import mapping dialog (6h work-in-progress) and the party-level refdata restrictions (framework only). |
 | Waiting on     | Nothing.                                                                                                                                                            |
 | Next           | [[id:A63C60DC-C3A6-4F4F-8977-012A7BF1D566][Sprint 14]]                                                                                                              |
-| Release Notes  | —                                                                                                                                                                   |
+| Release Notes  | [[id:0B0A8BDA-2DB1-4222-825E-493B1D5A68F0][Release notes]]                                                                                                                                                                   |
 | Last touched   | 2026-02-28                                                                                                                                                          |
 
 * Stories

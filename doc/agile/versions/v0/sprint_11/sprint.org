@@ -38,7 +38,7 @@ metadata, eventing).
 | Now            | Sprint closed 2026-02-06. One task carries forward: the sqlgen bound-parameters work, BLOCKED on upstream =getml/sqlgen#119=. |
 | Waiting on     | Upstream sqlgen bound-parameter support.                                                                                      |
 | Next           | [[id:D846B986-2D6D-434E-AF68-4B3DDAAA09D8][Sprint 12]]                                                                        |
-| Release Notes  | —                                                                                                                             |
+| Release Notes  | [[id:B0269759-8AB2-4856-8EAD-B1E57C0AB7FB][Release notes]]                                                                                                                             |
 | Last touched   | 2026-02-06                                                                                                                    |
 
 * Stories

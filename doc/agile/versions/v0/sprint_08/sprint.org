@@ -36,7 +36,7 @@ skills to make the next entity cheaper.
 | Now            | Sprint closed 2026-01-11. Three observability-review items and the accounts-dialog polish carry forward. |
 | Waiting on     | None — carried-forward items are scheduled for sprint 09+.                                               |
 | Next           | [[id:AF0B027B-77BF-4794-810D-39AD49A5EFAD][Sprint 09]]                                                   |
-| Release Notes  | —                                                                                                        |
+| Release Notes  | [[id:67E62E6F-F85E-48E1-8099-4E6AE3E0872B][Release notes]]                                                                                                        |
 | Last touched   | 2026-01-11                                                                                               |
 
 * Stories

@@ -30,7 +30,7 @@ the stack.
 | Now            | Sprint closed 2024-07-28. All stories merged.          |
 | Waiting on     | Nothing.                                               |
 | Next           | [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]] |
-| Release Notes  | —                                                      |
+| Release Notes  | [[id:9FEBF736-19F2-4007-BF3A-ACCA6DB5C537][Release notes]]                                                      |
 | Last touched   | 2024-07-28                                             |
 
 * Stories

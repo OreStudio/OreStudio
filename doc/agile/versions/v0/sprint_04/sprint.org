@@ -33,7 +33,7 @@ UI; introduce the Claude Code skills layer.
 | Now            | Sprint closed 2025-11-30. LLM-driven review pass complete across the first three components; currencies UI feature-complete; the Claude Code skills layer is in the build. |
 | Waiting on     | Nothing.                                                                                                                                                                   |
 | Next           | [[id:2429DB80-EC7B-482C-9FF3-4D1933035863][Sprint 05]]                                                                                                                     |
-| Release Notes  | —                                                                                                                                                                          |
+| Release Notes  | [[id:142E1574-03BE-435F-AABB-6E4504C32D28][Release notes]]                                                                                                                                                                          |
 | Last touched   | 2025-11-30                                                                                                                                                                 |
 
 * Stories

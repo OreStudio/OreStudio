@@ -38,7 +38,7 @@ out the largest v0 sprint to date.
 | Now            | Sprint closed 2026-02-20. Three items carry forward: sqlgen follow-up (BLOCKED on vcpkg release of merged upstream features) and the caching analysis (POSTPONED for design / scoping reasons). |
 | Waiting on     | vcpkg release of sqlgen with the merged features.                                                                                                                                               |
 | Next           | [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]]                                                                                                                                          |
-| Release Notes  | —                                                                                                                                                                                               |
+| Release Notes  | [[id:79707B34-5D13-49AC-89B3-A993C96779C8][Release notes]]                                                                                                                                                                                               |
 | Last touched   | 2026-02-20                                                                                                                                                                                      |
 
 * Stories

@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 596C2583-C27B-4570-885B-808C227D6911
+:END:
+#+title: Sprint 07 Release Notes
+#+description: Sprint 07 release notes (December 2025).
+#+type: release_notes
+#+version: 2
+#+level: cross
+#+filetags: :release_notes:sprint_07:v0:
+#+created: 2025-12-30
+#+updated: 2025-12-30
+
+/December 2025/
+
+This sprint represents a major architectural leap for OreStudio. We have successfully evolved from a local binary-protocol application to a multi-channel platform featuring a RESTful HTTP API, a web-based portal (Wt), and a robust Identity and Access Management (IAM) suite.
+
+-----
+
+* ✅ Highlights
+
+- *Multi-Channel Access*: Launched the =ores.http= server (Boost.Beast) with JWT authentication and established the =ores.wt= web component project structure.
+- *Identity & Access Management (IAM)*: Renamed and expanded =ores.accounts= to =ores.iam=. Implemented a full user self-registration (signup) workflow and laid the infrastructure for Role-Based Access Control (RBAC).
+- *Global Observability*: Migrated logging to =ores.telemetry=, integrating Boost.Log with distributed tracing (OTLP roadmap) and JSON Lines export for external processing.
+- *Cross-Platform Stability*: Resolved macOS-specific =std::chrono= build errors and stabilized the Windows WSL development environment.
+
+
+* 🛠️ Detailed Component Updates
+
+** 1. Connectivity & Web Infrastructure
+
+- *HTTP/REST Support*: Added dynamic routing, path parameter extraction, and CORS management.
+- *Interactive API*: Integrated *Swagger UI* to serve auto-generated OpenAPI 3.0 specifications directly from the backend.
+- *Wt Integration*: Configured the C++ web toolkit with transitive dependency linking (Freetype, Pango) to ensure reliable static builds.
+- *Socket Recording*: Enabled session recording at the socket level for auditing and performance debugging.
+
+** 2. Security & Geolocation
+
+- *RBAC Infrastructure*: Seeded the database with predefined roles and permissions. Added protocol messages for listing and assigning roles.
+- *Geolocation Refactor*: Replaced MaxMind with =ip2country=. Hardened the SQL layer against injection and improved IPv6 handling in PostgreSQL functions.
+- *Account Security*: Added password reset logic and input validation for the new signup service.
+
+** 3. Quality & Documentation
+
+- *Test Coverage*: Pushed coverage above *70%* via new suites for CSV exporters, filesystem operations, and session statistics.
+- *Doxygen Audit*: Standardized documentation for *60+ sub-namespaces* using formalized naming conventions (e.g., =ores.<component>.hpp=).
+- *Database Maintenance*: Automated the cleanup of orphaned test databases (=oresdb_test_*=) to maintain CI/CD health.
+
+* 📊 Time Summary
+
+- *Total effort*: not tracked
+- *PRs merged*: not tracked
+- *Sprint duration*: 2025-12-13 → 2025-12-30
+
+-----
+
+/Next sprint: [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]]./

@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 79707B34-5D13-49AC-89B3-A993C96779C8
+:END:
+#+title: Sprint 12 Release Notes
+#+description: Sprint 12 release notes (February 2026).
+#+type: release_notes
+#+version: 2
+#+level: cross
+#+filetags: :release_notes:sprint_12:v0:
+#+created: 2026-02-20
+#+updated: 2026-02-20
+
+/February 2026/
+
+This sprint focused on a massive expansion of the *Legal Entity and Party framework*, the introduction of *Trading & Book hierarchies*, and a major infrastructure shift toward a *unified database model* with Row-Level Security (RLS). It represents a foundational shift in the system's architecture, moving from a basic reference data store to a sophisticated, secure, and hierarchy-aware financial platform. We have significantly matured the organizational model, enhanced security protocols, and established the core infrastructure for trade lifecycle management.
+
+-----
+
+* ✅ Highlights
+
+- *Party & Counterparty Ecosystem*: Implemented a comprehensive C++ and SQL stack for managing global legal entities, supporting GLEIF data integration, hierarchical corporate structures, and multi-identifier mapping (LEI, BIC).
+- *Trading & Risk Foundation*: Launched the =ores.trading= component, establishing the "Trade Envelope" and a dual-layer hierarchy of *Portfolios* (for risk aggregation) and *Books* (for trade capture).
+- *Unified Security Architecture*: Migrated to a single-database model, replacing physical database cloning with *Row-Level Security (RLS)* to isolate tenant and party-level data.
+- *Automated Evaluation Onboarding*: Introduced a "First Login" wizard for Evaluation Tenants, featuring automated GLEIF hierarchy imports and synthetic data generation for immediate platform testing.
+- *Finite State Machine (FSM)*: Developed a native PostgreSQL FSM framework to govern complex entity lifecycles, currently powering trade status transitions and audit-trailed authorizations.
+
+
+
+
+
+* 🛠️ Key Improvements
+
+** Identity & Access Management (IAM)
+
+- *System & Operational Roles*: Introduced "System" vs. "Operational" party distinctions and separated "Tenant Admin" from "Super Admin" roles for granular platform control.
+- *Human-Readable Short Codes*: Implemented a mnemonic generation engine to replace UUIDs in daily operations (e.g., "GLDMN" for Goldman Sachs) with built-in collision resolution.
+- *Audit Integrity*: Hardened the audit trail by ensuring =modified_by= fields are derived from the authenticated database session, preventing identity spoofing in communication protocols.
+
+** Architecture & Infrastructure
+
+- *Single-Database Migration*: Eliminated =ores_admin= and =ores_template= databases in favor of a unified model using a two-phase setup (Superuser vs. DDL user).
+- *SQL Security*: Extended the =sqlgen= library to support *bound parameters*, significantly reducing the surface area for SQL injection by moving away from raw =libpq= queries.
+- *Portable Build System*: Fixed macOS CI failures by replacing GNU-specific =getopt= logic with portable shell parsing for database scripts.
+
+** UI & Developer Experience
+
+- *Qt GUI Enhancements*: Upgraded the entity list views with a *Strategy Pattern* to reduce code duplication and added a visual *Party Hierarchy Graph* for navigating parent-child relationships.
+- *Advanced List Widgets*: Centralized UI metadata (column widths, alignment, persistence) into a single source of truth, ensuring a consistent experience across all 24 MDI windows.
+- *Interactive Shell*: Integrated a REPL shell widget into =ores.qt=, allowing administrators to perform bulk tasks (like tenant provisioning) directly from the GUI.
+
+** Testing & Data Quality
+
+- *FK-Aware Generators*: Overhauled synthetic data generation to respect Foreign Key constraints, allowing for the creation of complex, interconnected test datasets (e.g., linking a =party_id= to its =identifiers=).
+- *Coverage Hardening*: Added 110+ test cases and 12 new unit test files, successfully re-enabling 19 previously skipped tests in the DQ and IAM modules.
+- *GLEIF Integration*: Established an automated pipeline to ingest global LEI data, including specialized detection logic for 93+ central banks and supranational entities.
+
+* ⚠️ Known Issues & Postponed
+
+- *Caching Architecture*: Analysis of the =ores.caching= library (using *immer* for immutable data structures) has been *POSTPONED* to a future sprint to prioritize core trading functionality.
+- *libpq Transition*: Full removal of raw =libpq= calls is *BLOCKED* pending the official release and package update of the enhanced =sqlgen= library.
+- *Multi-Schema Model*: The story to "Split create schemas from main populate script" was *CANCELLED* as the project has moved to a unified RLS-based database design.
+
+* 📊 Time Summary
+
+- *Total effort*: not tracked
+- *PRs merged*: not tracked
+- *Sprint duration*: 2026-02-06 → 2026-02-20
+
+-----
+
+/Next sprint: [[id:48230FC0-9061-48DC-853F-1E507C1A97AD][Sprint 13]]./

@@ -38,7 +38,7 @@ Wizard that uses them.
 | Now            | Sprint closed 2026-01-27. Two stories carry forward: the FPML export/import implementation and the BOINC compute-grid design. |
 | Waiting on     | None — carried items scheduled forward.                                                                                       |
 | Next           | [[id:A48C03EC-395B-4842-B60D-DE93DD24BF57][Sprint 11]]                                                                        |
-| Release Notes  | —                                                                                                                             |
+| Release Notes  | [[id:ECB9453A-BBAB-4EA0-993F-862E7899DFC7][Release notes]]                                                                                                                             |
 | Last touched   | 2026-01-27                                                                                                                    |
 
 * Stories

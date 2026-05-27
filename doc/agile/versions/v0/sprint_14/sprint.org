@@ -40,7 +40,7 @@ ORE Import Wizard, CMake preset suffixes.
 | Now            | Sprint closed 2026-03-19. One BACKLOG item carries forward: the trade- import dialog (second attempt, postponed again). The ORE Import Wizard landed in this sprint covers part of its goal. |
 | Waiting on     | Nothing.                                                                                                                                                                                     |
 | Next           | [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]]                                                                                                                                       |
-| Release Notes  | —                                                                                                                                                                                            |
+| Release Notes  | [[id:0875ADA0-D41A-4A2E-94A3-9E51CB78FD96][Release notes]]                                                                                                                                                                                            |
 | Last touched   | 2026-03-19                                                                                                                                                                                   |
 
 * Stories

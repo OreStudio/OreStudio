@@ -48,7 +48,7 @@ The largest v0 sprint to date (157h, 89 tasks across 22 stories).
 | Now            | Sprint closed 2026-04-17.                              |
 | Waiting on     | Nothing.                                               |
 | Next           | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
-| Release Notes  | —                                                      |
+| Release Notes  | [[id:88484BF4-AC03-4058-98DF-2D769C0D6223][Release notes]]                                                      |
 | Last touched   | 2026-04-17                                             |
 
 * Stories

@@ -39,7 +39,7 @@ coverage of the entities that landed in earlier sprints.
 | Now            | Sprint closed 2026-01-20. Two items carry forward: the per-entity documentation refactor (already mostly absorbed into v2) and the party-table groundwork. |
 | Waiting on     | Nothing.                                                                                                                                                   |
 | Next           | [[id:4BAC3B0F-819F-43F3-8A59-2B48ABE56938][Sprint 10]]                                                                                                     |
-| Release Notes  | —                                                                                                                                                          |
+| Release Notes  | [[id:B366C8FE-240E-493D-8D18-747BE840870A][Release notes]]                                                                                                                                                          |
 | Last touched   | 2026-01-20                                                                                                                                                 |
 
 * Stories

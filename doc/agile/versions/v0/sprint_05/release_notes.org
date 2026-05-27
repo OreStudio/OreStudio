@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: D642B102-262B-44EF-9C4C-29326D3B2AF6
+:END:
+#+title: Sprint 05 Release Notes
+#+description: Sprint 05 release notes (December 2025).
+#+type: release_notes
+#+version: 2
+#+level: cross
+#+filetags: :release_notes:sprint_05:v0:
+#+created: 2025-12-01
+#+updated: 2025-12-01
+
+/December 2025/
+
+This sprint focused heavily on *refining the core application architecture* and *enhancing the developer toolchain* with AI-driven documentation and release features. Key achievements include consolidating currency message types and significantly improving the Command Line Interface (CLI) experience.
+
+-----
+
+* ✅ Highlights
+- *Protocol Simplification (Breaking Change):* Consolidated =create_currency= and =update_currency= message types into a single =save_currency= message, simplifying the messaging protocol across all layers.
+- *CLI Modernization:* Completed a major refactor of the client shell (=ores.shell=) to introduce a *REPL interface* for all entities and reorganize the CLI structure for improved scalability.
+- *Developer Toolchain:* Added capabilities for *AI-generated sprint summaries and release notes* to streamline documentation and reporting.
+- *Data Paging Support:* Implemented *pagination support* in the database layer (=sqlgen=) and communication layer, preparing for handling large datasets efficiently.
+- *Initial UI/UX Features:* Introduced *XML import dialog* functionality in =ores.qt= and implemented the foundational *authentication bootstrap workflow*.
+
+* 🛠️ Key Improvements
+
+** Architecture & Protocol
+- *Currency Save Simplification:* Merged currency =update= and =create= operations into a single =save= concept, simplifying =currency_repository= and reducing message types in =ores.comms/protocol/message_types.hpp=.
+- *Improved Protocol Error Handling:* Enhanced client connection logic to display an *informative error message* when protocol versions are incompatible, showing both client and server versions (e.g., "Server version: 2. Client version 1").
+- *Database Connectivity:* Implemented *proper database configuration* handling for both console and UI modes, moving away from hard-coded settings.
+- *Pagination:* Added support for *offsets* in the =sqlgen= library to enable basic data pagination.
+- *Code Quality:* Addressed and suppressed remaining *OpenSSL valgrind leaks* based on LLM rationale (initialization leaks).
+
+** User Interface (Qt)
+- *XML Import:* Implemented the *basic XML import functionality* and the corresponding *import dialog* in =ores.qt=.
+- *Authentication:* Completed the *basic authentication bootstrap workflow*.
+- *Asset Management:* Resolved asset loading issues by ensuring icons and other necessary assets are properly copied into the application package.
+
+** Developer Experience & Tooling
+- *CLI/Shell Refactor:* Reorganized the Command Line Interface structure by entity and completed the full *REPL implementation* in =ores.shell= to support all entities, significantly improving interactive usage.
+- *Automated Documentation:* Added infrastructure to *generate sprint summaries* and *release notes* using AI, streamlining end-of-sprint activities.
+- *Version Management:* Fixed an issue where the version of =ores.qt= would not update correctly after modifying =version.hpp=.
+- *Diagrams:* Updated all UML diagrams to reflect the recent changes, particularly the shell and messaging consolidations.
+
+* ⚠️ Known Issues & Postponed
+- *PostgreSQL Leaks:* Remaining small, definite *valgrind leaks* related to =PQmakeEmptyPGresult= in =sqlgen= interaction with PostgreSQL. Status: *Investigated, deferring fix* to next sprint due to complexity.
+- *Create New Sprint Skill:* The Claude code skill to open a new sprint was created but still *needs final testing* before activation.
+- *Opening/Closing Currencies:* An existing bug where opening and closing currencies does not function correctly remains unresolved. *Deferred to next sprint*.
+- *SQLGEN Leak:* Still investigating 5,616 bytes definitely lost in 26 blocks related to =sqlgen::postgres::Connection::insert=. *Deferred to next sprint*.
+
+* 📊 Time Summary
+
+- *Total effort*: not tracked
+- *PRs merged*: not tracked
+- *Sprint duration*: 2025-11-16 → 2025-12-01
+
+-----
+
+/Next sprint: [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]]./

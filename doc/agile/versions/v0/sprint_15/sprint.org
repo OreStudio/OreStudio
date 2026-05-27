@@ -39,7 +39,7 @@ FX, bond, credit).
 | Now            | Sprint closed 2026-03-30. No BACKLOG carry-overs this sprint. |
 | Waiting on     | Nothing.                                                      |
 | Next           | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]]        |
-| Release Notes  | —                                                             |
+| Release Notes  | [[id:39CDAA48-85B3-4E2E-9519-3BD44C3B7AEB][Release notes]]                                                             |
 | Last touched   | 2026-03-30                                                    |
 
 * Stories

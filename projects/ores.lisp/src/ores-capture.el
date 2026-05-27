@@ -62,6 +62,11 @@
 (defvar-local ores/capture--pending-title nil
   "Title entered during target setup; used to pre-fill the yasnippet $1 field.")
 
+(defvar ores/capture--current-file nil
+  "Absolute path of the inbox file being captured.
+Set by `ores/capture--setup-inbox-file'; cleared (and deleted on abort)
+by `ores/capture--on-finalize'.")
+
 (defun ores/capture--title-to-slug (title)
   "Convert TITLE to a lowercase underscore slug."
   (let* ((s (downcase title))
@@ -73,14 +78,31 @@
 
 (defun ores/capture--setup-inbox-file ()
   "Prompt for a title, create a slug-named org file in inbox/, and position point.
-Stores the title buffer-locally so `ores/capture--yas-expand' can pre-fill $1."
+Stores the title buffer-locally so `ores/capture--yas-expand' can pre-fill $1.
+Records the file path in `ores/capture--current-file' so the finalize hook
+can delete it if the capture is aborted."
   (let* ((title (read-string "Capture title: "))
          (slug  (ores/capture--title-to-slug title))
          (file  (expand-file-name (concat slug ".org")
                                   (ores/capture--inbox-dir))))
+    (setq ores/capture--current-file file)
     (find-file file)
     (setq-local ores/capture--pending-title title)
     (goto-char (point-min))))
+
+(defun ores/capture--on-finalize ()
+  "Clean up after org-capture finishes.
+If the capture was aborted (`org-note-abort' is t), delete the inbox
+file that was created during target setup and kill its buffer."
+  (when (and org-note-abort ores/capture--current-file)
+    (let ((file ores/capture--current-file))
+      (when (file-exists-p file)
+        (delete-file file))
+      (when-let ((buf (get-file-buffer file)))
+        (kill-buffer buf))))
+  (setq ores/capture--current-file nil))
+
+(add-hook 'org-capture-after-finalize-hook #'ores/capture--on-finalize)
 
 ;; ---------------------------------------------------------------------------
 ;; org-capture hook: expand the v2-capture yasnippet into the buffer

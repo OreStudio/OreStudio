@@ -154,7 +154,7 @@ application::run(boost::asio::io_context& io_ctx,
 
     auto book_sub = event_bus.subscribe<rdev::book_changed_event>(
         [&nats](const rdev::book_changed_event& e) {
-            publish_entity_event(nats, std::string(rdev::book_changed_event::name),
+            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::book_changed_event>::name),
                 ev::domain::entity_change_event{
                     .entity     = "ores.refdata.book",
                     .timestamp  = e.timestamp,
@@ -165,7 +165,7 @@ application::run(boost::asio::io_context& io_ctx,
 
     auto business_centre_sub = event_bus.subscribe<rdev::business_centre_changed_event>(
         [&nats](const rdev::business_centre_changed_event& e) {
-            publish_entity_event(nats, std::string(rdev::business_centre_changed_event::name),
+            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::business_centre_changed_event>::name),
                 ev::domain::entity_change_event{
                     .entity     = "ores.refdata.business_centre",
                     .timestamp  = e.timestamp,
@@ -176,7 +176,7 @@ application::run(boost::asio::io_context& io_ctx,
 
     auto business_unit_sub = event_bus.subscribe<rdev::business_unit_changed_event>(
         [&nats](const rdev::business_unit_changed_event& e) {
-            publish_entity_event(nats, std::string(rdev::business_unit_changed_event::name),
+            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::business_unit_changed_event>::name),
                 ev::domain::entity_change_event{
                     .entity     = "ores.refdata.business_unit",
                     .timestamp  = e.timestamp,
@@ -187,7 +187,7 @@ application::run(boost::asio::io_context& io_ctx,
 
     auto counterparty_sub = event_bus.subscribe<rdev::counterparty_changed_event>(
         [&nats](const rdev::counterparty_changed_event& e) {
-            publish_entity_event(nats, std::string(rdev::counterparty_changed_event::name),
+            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::counterparty_changed_event>::name),
                 ev::domain::entity_change_event{
                     .entity     = "ores.refdata.counterparty",
                     .timestamp  = e.timestamp,
@@ -200,7 +200,7 @@ application::run(boost::asio::io_context& io_ctx,
         event_bus.subscribe<rdev::counterparty_contact_information_changed_event>(
             [&nats](const rdev::counterparty_contact_information_changed_event& e) {
                 publish_entity_event(nats,
-                    std::string(rdev::counterparty_contact_information_changed_event::name),
+                    std::string(ev::domain::event_traits<rdev::counterparty_contact_information_changed_event>::name),
                     ev::domain::entity_change_event{
                         .entity     = "ores.refdata.counterparty_contact_information",
                         .timestamp  = e.timestamp,
@@ -213,7 +213,7 @@ application::run(boost::asio::io_context& io_ctx,
         event_bus.subscribe<rdev::counterparty_identifier_changed_event>(
             [&nats](const rdev::counterparty_identifier_changed_event& e) {
                 publish_entity_event(nats,
-                    std::string(rdev::counterparty_identifier_changed_event::name),
+                    std::string(ev::domain::event_traits<rdev::counterparty_identifier_changed_event>::name),
                     ev::domain::entity_change_event{
                         .entity     = "ores.refdata.counterparty_identifier",
                         .timestamp  = e.timestamp,
@@ -224,7 +224,7 @@ application::run(boost::asio::io_context& io_ctx,
 
     auto country_sub = event_bus.subscribe<rdev::country_changed_event>(
         [&nats](const rdev::country_changed_event& e) {
-            publish_entity_event(nats, std::string(rdev::country_changed_event::name),
+            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::country_changed_event>::name),
                 ev::domain::entity_change_event{
                     .entity     = "ores.refdata.country",
                     .timestamp  = e.timestamp,
@@ -235,7 +235,7 @@ application::run(boost::asio::io_context& io_ctx,
 
     auto currency_sub = event_bus.subscribe<rdev::currency_changed_event>(
         [&nats](const rdev::currency_changed_event& e) {
-            publish_entity_event(nats, std::string(rdev::currency_changed_event::name),
+            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::currency_changed_event>::name),
                 ev::domain::entity_change_event{
                     .entity     = "ores.refdata.currency",
                     .timestamp  = e.timestamp,
@@ -248,7 +248,7 @@ application::run(boost::asio::io_context& io_ctx,
         event_bus.subscribe<rdev::currency_market_tier_changed_event>(
             [&nats](const rdev::currency_market_tier_changed_event& e) {
                 publish_entity_event(nats,
-                    std::string(rdev::currency_market_tier_changed_event::name),
+                    std::string(ev::domain::event_traits<rdev::currency_market_tier_changed_event>::name),
                     ev::domain::entity_change_event{
                         .entity     = "ores.refdata.currency_market_tier",
                         .timestamp  = e.timestamp,
@@ -259,7 +259,7 @@ application::run(boost::asio::io_context& io_ctx,
 
     auto monetary_nature_sub = event_bus.subscribe<rdev::monetary_nature_changed_event>(
         [&nats](const rdev::monetary_nature_changed_event& e) {
-            publish_entity_event(nats, std::string(rdev::monetary_nature_changed_event::name),
+            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::monetary_nature_changed_event>::name),
                 ev::domain::entity_change_event{
                     .entity     = "ores.refdata.monetary_nature",
                     .timestamp  = e.timestamp,
@@ -270,7 +270,7 @@ application::run(boost::asio::io_context& io_ctx,
 
     auto party_sub = event_bus.subscribe<rdev::party_changed_event>(
         [&nats](const rdev::party_changed_event& e) {
-            publish_entity_event(nats, std::string(rdev::party_changed_event::name),
+            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::party_changed_event>::name),
                 ev::domain::entity_change_event{
                     .entity     = "ores.refdata.party",
                     .timestamp  = e.timestamp,
@@ -283,7 +283,7 @@ application::run(boost::asio::io_context& io_ctx,
         event_bus.subscribe<rdev::party_contact_information_changed_event>(
             [&nats](const rdev::party_contact_information_changed_event& e) {
                 publish_entity_event(nats,
-                    std::string(rdev::party_contact_information_changed_event::name),
+                    std::string(ev::domain::event_traits<rdev::party_contact_information_changed_event>::name),
                     ev::domain::entity_change_event{
                         .entity     = "ores.refdata.party_contact_information",
                         .timestamp  = e.timestamp,
@@ -295,7 +295,7 @@ application::run(boost::asio::io_context& io_ctx,
     auto party_id_sub = event_bus.subscribe<rdev::party_identifier_changed_event>(
         [&nats](const rdev::party_identifier_changed_event& e) {
             publish_entity_event(nats,
-                std::string(rdev::party_identifier_changed_event::name),
+                std::string(ev::domain::event_traits<rdev::party_identifier_changed_event>::name),
                 ev::domain::entity_change_event{
                     .entity     = "ores.refdata.party_identifier",
                     .timestamp  = e.timestamp,
@@ -306,7 +306,7 @@ application::run(boost::asio::io_context& io_ctx,
 
     auto portfolio_sub = event_bus.subscribe<rdev::portfolio_changed_event>(
         [&nats](const rdev::portfolio_changed_event& e) {
-            publish_entity_event(nats, std::string(rdev::portfolio_changed_event::name),
+            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::portfolio_changed_event>::name),
                 ev::domain::entity_change_event{
                     .entity     = "ores.refdata.portfolio",
                     .timestamp  = e.timestamp,

@@ -45,9 +45,9 @@ Add =skill= to the list of types supported by =compass add=. Currently the comma
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                              |
+|-----+------------------------------------|
+| 881 | Add skill type to compass add      |
 
 * Review
 

@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 487021A2-0324-43AE-8150-797B41CA77B9
+:END:
+#+title: Task: Update skill-creation recipe to use compass
+#+description: Update the how-do-I-create-a-new-skill recipe so that the scaffold step uses compass add skill rather than calling generate_v2_doc.sh directly.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :improve_runbook_skill_tooling:sprint_18:v0:
+#+owner: marco
+#+branch: feature/improve-runbook-skill-tooling
+#+pr:
+#+blocked_on: EC72C05A-BC4C-47EC-ADF9-324190D9A246
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The skill-creation recipe (referenced by the skill-manager skill) currently directs LLM sessions to call =generate_v2_doc.sh --type skill= directly. Update it to use =compass add skill= once task [[id:EC72C05A-BC4C-47EC-ADF9-324190D9A246][Add skill type to compass add]] is complete. The skill-manager SKILL.org itself may need updating if it embeds the scaffold command.
+
+* Status
+
+| Field        | Value                                                                 |
+|--------------+-----------------------------------------------------------------------|
+| State        | BACKLOG                                                               |
+| Parent story | [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]                                |
+| Now          | Not yet started.                                                      |
+| Waiting on   | [[id:EC72C05A-BC4C-47EC-ADF9-324190D9A246][Task: Add skill type to compass add]]                                  |
+| Next         | Locate the skill-creation recipe and skill-manager SKILL.org.         |
+| Last touched | 2026-05-28                                                            |
+
+* Acceptance
+
+- The skill-creation recipe scaffold step reads =compass add skill= (not =generate_v2_doc.sh=).
+- The skill-manager SKILL.org =* How to use this skill= section references =compass add skill=.
+- No other content is changed unnecessarily.
+
+* Plan
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

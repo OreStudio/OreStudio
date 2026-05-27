@@ -27,7 +27,15 @@ Take a story from idea to open PR — scaffold, fill in, branch, mark STARTED, w
 
 In execution order:
 
-1. /Scaffold the story./ Use [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — specifically =compass goto= — to create the feature branch, scaffold the story, and link a task in one step:
+1. /Ensure main is up to date./ If you are not already on =main=, fetch without switching branches so the new branch starts from the latest remote state:
+
+   #+begin_src sh :results verbatim
+   git fetch origin main
+   #+end_src
+
+   =compass goto= also fetches =main= internally, but doing it explicitly first makes divergence visible before any files are created.
+
+2. /Scaffold the story./ Use [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — specifically =compass goto= — to create the feature branch, scaffold the story, and link a task in one step:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh goto \
@@ -37,15 +45,15 @@ In execution order:
 
    This fetches =main=, creates =feature/my-feature=, and writes =story.org= + a linked task into the current sprint. To add a task to an /existing/ story instead, see [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][the recipe]] for the =--story= form.
 
-2. /Fill in the story content./ Open =story.org= and complete the =* Goal=, =* Acceptance=, =* Tasks=, and =* Out of scope= sections. Use [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] as the entry-point skill. Every internal-doc reference uses an =[[id:UUID]]= link, never a relative path.
+3. /Fill in the story content./ Open =story.org= and complete the =* Goal=, =* Acceptance=, =* Tasks=, and =* Out of scope= sections. Use [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] as the entry-point skill. Every internal-doc reference uses an =[[id:UUID]]= link, never a relative path.
 
-3. /Mark the story STARTED./ Update the =* Status= table: state → =STARTED=, fill =Now= and =Next=, set =#+owner:=, refresh =#+updated:=. Follow [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] step 3.
+4. /Mark the story STARTED./ Update the =* Status= table: state → =STARTED=, fill =Now= and =Next=, set =#+owner:=, refresh =#+updated:=. Follow [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] step 3.
 
-4. /Wire into the sprint./ Add a row to the parent sprint's =* Stories= table. Each row: =| [[id:UUID][Title]] | STARTED | date | | Theme |=.
+5. /Wire into the sprint./ Add a row to the parent sprint's =* Stories= table. Each row: =| [[id:UUID][Title]] | STARTED | date | | Theme |=.
 
-5. /Commit the status change./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]]: =[agile] Mark <story> STARTED= with a =Co-Authored-By:= trailer.
+6. /Commit the status change./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]]: =[agile] Mark <story> STARTED= with a =Co-Authored-By:= trailer.
 
-6. /Push and open a PR./ Push with =git push -u origin <branch>=, then [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][create a PR]] with a structured body (Summary, Changes, Story/Task UUIDs, Story/Task page links). Record the PR number in the task's =* PRs= table.
+7. /Push and open a PR./ Push with =git push -u origin <branch>=, then [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][create a PR]] with a structured body (Summary, Changes, Story/Task UUIDs, Story/Task page links). Record the PR number in the task's =* PRs= table.
 
 * Postconditions
 

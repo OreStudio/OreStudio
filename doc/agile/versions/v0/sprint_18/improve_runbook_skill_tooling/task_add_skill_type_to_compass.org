@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: EC72C05A-BC4C-47EC-ADF9-324190D9A246
+:END:
+#+title: Task: Add skill type to compass add
+#+description: Extend compass add to support the skill document type so that LLM sessions can scaffold new skills via compass add skill rather than calling generate_v2_doc.sh directly.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :improve_runbook_skill_tooling:sprint_18:v0:
+#+owner: marco
+#+branch: feature/improve-runbook-skill-tooling
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =skill= to the list of types supported by =compass add=. Currently the command accepts =story task sprint version recipe knowledge component capture memory investigation product_identity= but not =skill=, forcing manual invocation of =generate_v2_doc.sh --type skill=. After this task, =compass add skill --slug <slug> --title "..." --description "..." --parent-dir doc/llm/skills= scaffolds the skill correctly.
+
+* Status
+
+| Field        | Value                                                                 |
+|--------------+-----------------------------------------------------------------------|
+| State        | BACKLOG                                                               |
+| Parent story | [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]                                |
+| Now          | Not yet started.                                                      |
+| Waiting on   | Nothing.                                                              |
+| Next         | Locate where compass add types are defined and add skill.             |
+| Last touched | 2026-05-28                                                            |
+
+* Acceptance
+
+- =compass add skill --slug my_skill --title "My Skill" --description "..." --parent-dir doc/llm/skills= creates =doc/llm/skills/my_skill/SKILL.org= with correct frontmatter.
+- =compass add --help= lists =skill= among the supported types.
+- Existing types are unaffected.
+
+* Plan
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

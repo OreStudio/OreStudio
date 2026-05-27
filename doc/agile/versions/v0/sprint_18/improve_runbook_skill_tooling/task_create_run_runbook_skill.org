@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 8DC89ACF-3A1A-4417-B4EE-BA031FD3AE00
+:END:
+#+title: Task: Create run-runbook skill
+#+description: Create a run-runbook skill that reads runbooks.org, matches the user request to the closest runbook, and executes it. If no match is found, lists available runbooks and asks the user to choose.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :improve_runbook_skill_tooling:sprint_18:v0:
+#+owner: marco
+#+branch: feature/improve-runbook-skill-tooling
+#+pr:
+#+blocked_on: EC72C05A-BC4C-47EC-ADF9-324190D9A246
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create a =run-runbook= skill at =doc/llm/skills/run-runbook/SKILL.org=, properly scaffolded via =compass add skill=. The skill reads =doc/llm/runbooks/runbooks.org=, matches the user's request to the closest runbook by title and description, and executes it end-to-end. If no match is found it lists the available runbooks and asks the user to choose. A draft was written manually during sprint 18; this task replaces it with a properly scaffolded version and deletes the draft.
+
+* Status
+
+| Field        | Value                                                                 |
+|--------------+-----------------------------------------------------------------------|
+| State        | BACKLOG                                                               |
+| Parent story | [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]                                |
+| Now          | Draft skill exists at doc/llm/skills/run-runbook/SKILL.org.           |
+| Waiting on   | [[id:EC72C05A-BC4C-47EC-ADF9-324190D9A246][Task: Add skill type to compass add]]                                  |
+| Next         | Delete draft, scaffold via compass, fill in skill content.            |
+| Last touched | 2026-05-28                                                            |
+
+* Acceptance
+
+- =doc/llm/skills/run-runbook/SKILL.org= is scaffolded via =compass add skill=.
+- Skill reads =doc/llm/runbooks/runbooks.org= and matches on title + description.
+- On match: reads the runbook file and executes every step in order.
+- On no match: lists available runbook titles and asks the user to select one.
+- Skill is registered in the skills catalogue (=claude_code_skills.org=).
+- Draft manually-created version is replaced.
+
+* Plan
+
+* Notes
+
+Draft skill was written manually during sprint 18 before compass skill support existed. Content is correct but the scaffold is not compliant with the v2 contract. Replace rather than edit in place.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary                                              | File          | Decision | Notes              |
+|---+--------------------------------------------------------------+---------------+----------+--------------------|
+| 1 | Folder names are snake_case not kebab-case                   | SKILL.org     | Accept   | Fixed in d851ef9df |
+
+* Result

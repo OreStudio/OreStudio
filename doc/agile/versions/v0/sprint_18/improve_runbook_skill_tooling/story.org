@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: E3C798C8-87E9-47E1-88F5-1BE6C8532BBE
+:END:
+#+title: Story: Improve LLM runbook and skill tooling
+#+description: Add skill support to compass add, update the skill-creation recipe to use it, and create a run-runbook skill that locates and executes the closest matching runbook from the catalogue.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :llm:skills:runbook:tooling:sprint_18:v0:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Tighten the runbook and skill workflow by closing three gaps discovered during sprint 18. First, =compass add= does not support =skill= as a document type, forcing manual invocation of =generate_v2_doc.sh=; this should be added. Second, the skill-creation recipe does not reference compass, so LLM sessions use the wrong scaffold path; the recipe should be updated. Third, there is no skill to locate and execute runbooks on demand; a =run-runbook= skill should be created so that "run the PR review runbook" resolves automatically from the catalogue.
+
+* Status
+
+| Field         | Value                                                                 |
+|---------------+-----------------------------------------------------------------------|
+| State         | STARTED                                                               |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                                            |
+| Now           | Story scaffolded; tasks broken out.                                   |
+| Waiting on    | Nothing.                                                              |
+| Next          | Task 1 — add skill type to compass.                                   |
+| Last touched  | 2026-05-28                                                            |
+
+* Acceptance
+
+- =compass add skill= scaffolds a new skill under =doc/llm/skills/<slug>/SKILL.org=.
+- The skill-creation recipe (=how_do_i_create_a_new_skill.org= or equivalent) references =compass add skill= as the scaffold step.
+- A =run-runbook= skill exists at =doc/llm/skills/run-runbook/SKILL.org=, properly scaffolded via compass.
+- Invoking the skill reads =doc/llm/runbooks/runbooks.org=, matches the user's request to the closest runbook, and executes it step by step.
+- If no match is found the skill lists available runbooks and asks the user to choose.
+
+* Tasks
+
+In execution order:
+
+1. [[id:EC72C05A-BC4C-47EC-ADF9-324190D9A246][Task: Add skill type to compass add]] — extend compass so =compass add skill= works.
+2. [[id:487021A2-0324-43AE-8150-797B41CA77B9][Task: Update skill-creation recipe to use compass]] — update the recipe so the scaffold step uses =compass add skill=.
+3. [[id:8DC89ACF-3A1A-4417-B4EE-BA031FD3AE00][Task: Create run-runbook skill]] — scaffold and fill the skill that locates and runs runbooks.
+
+* Decisions
+
+* Out of scope
+
+- Modifying the content of existing runbooks.
+- Automated runbook testing or dry-run mode.

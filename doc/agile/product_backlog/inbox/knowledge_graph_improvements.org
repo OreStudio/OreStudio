@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID:       F3CB848E-72C1-4F81-AAE4-1265F41D47C1
+:END:
+#+title: Knowledge graph improvements
+#+description: Issues with the current setup of the knowledge graph
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :inbox:capture:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+At present we have a number of problems with the Knowledge Graph:
+
+- missing configuration parameters on the left hand-side.
+- images are not displaying.
+
+* Why
+
+Motivation and context.
+
+* References
+
+-
+
+* See also
+
+-

@@ -33,11 +33,11 @@ description to be more informative.
 
 | Field        | Value                                                    |
 |--------------+----------------------------------------------------------|
-| State        | STARTED                                                  |
+| State        | DONE                                                     |
 | Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]]              |
-| Now          | In progress.                                             |
+| Now          | Complete.                                                |
 | Waiting on   | Nothing.                                                 |
-| Next         | Implement and raise PR; close the story.                 |
+| Next         | None.                                                    |
 | Last touched | 2026-05-28                                               |
 
 * Acceptance

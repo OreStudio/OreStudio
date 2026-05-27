@@ -50,6 +50,7 @@ Add a new =ores-capture.el= module to =ores.lisp= providing two entry points for
 | PR   | Title                                                                    |
 |------+--------------------------------------------------------------------------|
 | [[https://github.com/OreStudio/OreStudio/pull/877][#877]] | Add ores-capture.el: org-roam capture template writing to inbox |
+| [[https://github.com/OreStudio/OreStudio/pull/878][#878]] | Add ores-capture.el: org-capture template with yasnippet writing to inbox |
 
 * Review
 

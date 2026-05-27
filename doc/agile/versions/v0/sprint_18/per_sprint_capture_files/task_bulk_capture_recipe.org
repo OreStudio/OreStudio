@@ -48,9 +48,9 @@ Write a recipe that lets a user paste a paragraph of freeform notes into Claude 
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                                                                              |
+|------+------------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/876][#876]] | Bulk capture from freeform text; update PR/commit conventions |
 
 * Review
 

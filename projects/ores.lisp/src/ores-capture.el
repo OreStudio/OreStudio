@@ -22,13 +22,15 @@
 ;;
 ;;   `ores/capture'                - interactive command; calls compass.sh.
 ;;                                   Good for LLM-driven and CLI-style use.
-;;   `ores/setup-capture-templates' - registers an org-roam capture template
-;;                                   (key "c") so `org-roam-capture' presents
-;;                                   "Capture (inbox)" as an option.
+;;   `ores/setup-capture-templates' - registers a capture template under key
+;;                                   "c" in BOTH `org-capture-templates' (for
+;;                                   M-x org-capture / C-c c) and
+;;                                   `org-roam-capture-templates' (for M-x
+;;                                   org-roam-capture / C-c n c).
 ;;
-;; Call `ores/setup-capture-templates' once after org-roam is loaded, e.g.:
+;; Call `ores/setup-capture-templates' once at startup, e.g.:
 ;;
-;;   (with-eval-after-load 'org-roam
+;;   (with-eval-after-load 'org
 ;;     (ores/setup-capture-templates))
 ;;
 ;; Suggested key binding for `ores/capture':
@@ -38,7 +40,7 @@
 ;; Public API:
 ;;
 ;;   `ores/capture'                  - create a capture via compass.sh
-;;   `ores/setup-capture-templates'  - register org-roam template
+;;   `ores/setup-capture-templates'  - register in org-capture and org-roam-capture
 
 ;;; Code:
 
@@ -79,18 +81,70 @@
   "* What\n\n%?\n\n* Why\n\n\n\n* References\n\n-\n\n* See also\n\n-\n"
   "Body template for a new inbox capture; %? marks the initial cursor position.")
 
+;; ---------------------------------------------------------------------------
+;; org-capture target function (used when org-roam is not available)
+;; ---------------------------------------------------------------------------
+
+(defun ores/capture--title-to-slug (title)
+  "Convert TITLE to a lowercase underscore-separated slug."
+  (string-trim
+   (replace-regexp-in-string "[^a-z0-9]+" "_" (downcase title))
+   "_" "_"))
+
+(defun ores/capture--org-capture-target ()
+  "Set up a new v2 inbox capture file as the `org-capture' target.
+Prompts for a title, writes the frontmatter, and positions point at
+the end of the buffer so org-capture appends the body template."
+  (let* ((title (read-string "Capture title: "))
+         (slug  (ores/capture--title-to-slug title))
+         (date  (format-time-string "%Y-%m-%d"))
+         (id    (upcase (org-id-new)))
+         (file  (expand-file-name (concat slug ".org")
+                                  (ores/capture--inbox-dir))))
+    (find-file file)
+    (when (= (buffer-size) 0)
+      (insert ":PROPERTIES:\n"
+              ":ID: " id "\n"
+              ":END:\n"
+              "#+title: " title "\n"
+              "#+description: \n"
+              "#+type: capture\n"
+              "#+version: 2\n"
+              "#+level: cross\n"
+              "#+filetags: :inbox:capture:\n"
+              "#+created: " date "\n"
+              "#+updated: " date "\n"
+              "\n"
+              "This page is a "
+              "[[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] "
+              "in the *inbox* bucket of the product backlog "
+              "— a pre-sprint idea, not yet pulled into a sprint as a story.\n\n"))
+    (goto-char (point-max))))
+
+;; ---------------------------------------------------------------------------
+;; Template registration
+;; ---------------------------------------------------------------------------
+
 (defun ores/setup-capture-templates ()
-  "Register the inbox capture template with `org-roam-capture-templates'.
-Call this once after org-roam has been loaded."
-  (add-to-list 'org-roam-capture-templates
+  "Register key \"c\" (Capture inbox) in org-capture and org-roam-capture.
+Call once at startup, after `org' is loaded.  org-roam registration is
+skipped silently if org-roam is not present."
+  (interactive)
+  ;; Standard org-capture (M-x org-capture / C-c c)
+  (add-to-list 'org-capture-templates
     `("c" "Capture (inbox)" plain
+      (function ores/capture--org-capture-target)
       ,ores/capture--body-template
-      :target (file+head
-               ;; %(…) is evaluated at capture time, so ores/checkout-root
-               ;; resolves against the active project.
-               "%(expand-file-name \"${slug}.org\" (ores/capture--inbox-dir))"
-               ,ores/capture--head-template)
-      :unnarrowed t)))
+      :unnarrowed t))
+  ;; org-roam-capture (M-x org-roam-capture / C-c n c) — optional
+  (when (boundp 'org-roam-capture-templates)
+    (add-to-list 'org-roam-capture-templates
+      `("c" "Capture (inbox)" plain
+        ,ores/capture--body-template
+        :target (file+head
+                 "%(expand-file-name \"${slug}.org\" (ores/capture--inbox-dir))"
+                 ,ores/capture--head-template)
+        :unnarrowed t))))
 
 ;; ---------------------------------------------------------------------------
 ;; Direct command (compass-backed, suitable for interactive and LLM use)

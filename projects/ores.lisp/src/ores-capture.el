@@ -22,7 +22,7 @@
 ;;
 ;;   `ores/setup-capture-templates' - registers key "c" in
 ;;     `org-capture-templates'.  Selecting it creates a fresh
-;;     timestamped file in inbox/ and immediately expands the
+;;     slug-named file in inbox/ and immediately expands the
 ;;     v2-capture yasnippet so you fill in title, description, What,
 ;;     Why etc. via TAB.  Requires yasnippet to be active.
 ;;
@@ -56,11 +56,14 @@
   (expand-file-name "doc/agile/product_backlog/inbox" (ores/checkout-root)))
 
 ;; ---------------------------------------------------------------------------
-;; org-capture target: prompt for title, create slug-named file in inbox/
+;; org-capture target: prompt for title, return slug-named file in inbox/
 ;; ---------------------------------------------------------------------------
 
 (defvar ores/capture--pending-title nil
   "Title entered during target setup; used to pre-fill the yasnippet $1 field.")
+
+(defvar ores/capture--pending-file nil
+  "Inbox path for the capture in progress; deleted on abort if already written.")
 
 (defun ores/capture--title-to-slug (title)
   "Convert TITLE to a lowercase underscore slug."
@@ -72,14 +75,23 @@
     s))
 
 (defun ores/capture--inbox-file ()
-  "Prompt for a title and return the target inbox file path.
-Used as the expression inside the (file ...) capture target so that
-org-capture owns the buffer lifecycle: it sets :new-buffer t for new
-files and kills the buffer (without saving) on C-c C-k abort."
+  "Prompt for a title and return the inbox file path for the capture buffer."
   (let* ((title (read-string "Capture title: "))
-         (slug  (ores/capture--title-to-slug title)))
-    (setq ores/capture--pending-title title)
-    (expand-file-name (concat slug ".org") (ores/capture--inbox-dir))))
+         (slug  (ores/capture--title-to-slug title))
+         (file  (expand-file-name (concat slug ".org") (ores/capture--inbox-dir))))
+    (setq ores/capture--pending-title title
+          ores/capture--pending-file  file)
+    file))
+
+(defun ores/capture--finalize ()
+  "On abort, delete the inbox file if it was written before the user cancelled."
+  (when (and org-note-abort ores/capture--pending-file)
+    (when (file-exists-p ores/capture--pending-file)
+      (delete-file ores/capture--pending-file)))
+  (setq ores/capture--pending-file  nil
+        ores/capture--pending-title nil))
+
+(add-hook 'org-capture-after-finalize-hook #'ores/capture--finalize)
 
 ;; ---------------------------------------------------------------------------
 ;; org-capture hook: expand the v2-capture yasnippet into the buffer
@@ -101,7 +113,6 @@ the canonical snippet file so org-capture and \"cap\" TAB share one template."
                 (when (re-search-forward "^# --\n" nil t)
                   (buffer-substring-no-properties (point) (point-max)))))
          (title (or ores/capture--pending-title "Title"))
-         ;; Substitute the captured title as the editable default for $1.
          (body  (replace-regexp-in-string
                  (regexp-quote "${1:Title}")
                  (format "${1:%s}" title)
@@ -115,9 +126,8 @@ the canonical snippet file so org-capture and \"cap\" TAB share one template."
 
 (defun ores/setup-capture-templates ()
   "Register key \"c\" (Capture inbox) in `org-capture-templates'.
-Uses a (file ...) target so org-capture owns the buffer lifecycle:
-new files are killed without saving on C-c C-k abort.  The v2-capture
-yasnippet is expanded via :hook for interactive filling.
+The v2-capture yasnippet is expanded via :hook for interactive filling.
+On abort, `ores/capture--finalize' cleans up any file written to inbox/.
 Call once after `org' is loaded."
   (interactive)
   (add-to-list 'org-capture-templates

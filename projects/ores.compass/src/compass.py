@@ -814,6 +814,149 @@ def _default_parent_dir(doc_type):
         return _parent_dir(current_sprint.rel_path)
     return None
 
+BACKLOG_BUCKETS = ("near", "far", "discarded")
+CAPTURES_SUBDIR = "captures"
+
+def _current_sprint_dir():
+    """Return the captures/ folder path for the current sprint, or None."""
+    _, current_sprint = current_version_sprint(doc_index.load_all())
+    if current_sprint is None:
+        return None
+    return Path(PROJECT_ROOT) / _parent_dir(current_sprint.rel_path) / CAPTURES_SUBDIR
+
+def _backlog_dir(bucket):
+    return Path(PROJECT_ROOT) / "doc" / "agile" / "product_backlog" / bucket
+
+def _find_sprint_note(slug):
+    """Find a sprint note file by slug in any sprint captures/ folder. Returns Path or None."""
+    versions_root = Path(PROJECT_ROOT) / "doc" / "agile" / "versions"
+    for candidate in versions_root.rglob(f"captures/{slug}.org"):
+        return candidate
+    return None
+
+def cmd_capture(argv):
+    """Manage per-sprint capture notes.
+
+    Subcommands:
+      (default)  --note "..."  [--slug <slug>]   Create a note in the current sprint.
+      file <slug> near|far|discarded             Move a note to a backlog bucket.
+      promote <slug>                             Show promote instructions for a note.
+    """
+    if not argv or argv[0] in ("-h", "--help"):
+        print(
+            "usage:\n"
+            "  compass capture --note \"...\" [--slug <slug>]\n"
+            "      Create a sprint note in the current sprint's captures/ folder.\n"
+            "  compass capture file <slug> near|far|discarded\n"
+            "      Move a sprint note to a product backlog bucket.\n"
+            "  compass capture promote <slug>\n"
+            "      Print instructions for promoting a note to a story or task.\n"
+        )
+        return 0
+
+    subcommand = argv[0]
+
+    # --- file subcommand ---
+    if subcommand == "file":
+        if len(argv) < 3:
+            print("❌ usage: compass capture file <slug> near|far|discarded", file=sys.stderr)
+            return 1
+        slug, bucket = argv[1], argv[2]
+        if bucket not in BACKLOG_BUCKETS:
+            print(f"❌ bucket must be one of: {', '.join(BACKLOG_BUCKETS)}", file=sys.stderr)
+            return 1
+        src = _find_sprint_note(slug)
+        if src is None:
+            print(f"❌ No sprint note found for slug '{slug}'.", file=sys.stderr)
+            return 1
+        dst = _backlog_dir(bucket) / f"{slug}.org"
+        if dst.exists():
+            print(f"❌ {dst} already exists.", file=sys.stderr)
+            return 1
+        # Update #+type to capture and add bucket context, then git mv.
+        text = src.read_text(encoding="utf-8")
+        text = re.sub(r"^#\+type:.*$", "#+type: capture", text, flags=re.MULTILINE)
+        # Replace the sprint_note boilerplate line with a backlog capture line.
+        text = re.sub(
+            r"^This page is a \[\[id:[^\]]+\]\[sprint note\]\].*$",
+            f"This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] "
+            f"in the *{bucket}* bucket of the product backlog — a pre-sprint idea, "
+            f"not yet pulled into a sprint as a story.",
+            text, flags=re.MULTILINE
+        )
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_text(text, encoding="utf-8")
+        result = subprocess.run(
+            ["git", "mv", str(src), str(dst)],
+            cwd=str(PROJECT_ROOT), capture_output=True, text=True)
+        if result.returncode != 0:
+            # git mv failed (e.g. file not tracked yet); fall back to plain move.
+            src.unlink()
+        print(f"✅ Filed '{slug}' to {bucket} backlog: {dst.relative_to(PROJECT_ROOT)}")
+        print("ℹ️  Re-run regenerate_backlog_indexes.py to update the bucket index.")
+        return 0
+
+    # --- promote subcommand ---
+    if subcommand == "promote":
+        if len(argv) < 2:
+            print("❌ usage: compass capture promote <slug>", file=sys.stderr)
+            return 1
+        slug = argv[1]
+        src = _find_sprint_note(slug)
+        if src is None:
+            print(f"❌ No sprint note found for slug '{slug}'.", file=sys.stderr)
+            return 1
+        print(f"Sprint note: {src.relative_to(PROJECT_ROOT)}")
+        print("\nTo promote to a new story:")
+        print(f"  compass goto --slug {slug} --title \"<title>\" --description \"<desc>\" --tags \"<tags>\"")
+        print(f"  Then delete: {src.relative_to(PROJECT_ROOT)}")
+        print("\nTo promote to a task on an existing story:")
+        print(f"  compass goto --story <id-or-slug> --task-slug {slug} --task \"<title>\"")
+        print(f"  Then delete: {src.relative_to(PROJECT_ROOT)}")
+        return 0
+
+    # --- default: create a new sprint note ---
+    ap = argparse.ArgumentParser(prog="compass capture",
+                                 description="Create a sprint note in the current sprint.")
+    ap.add_argument("--note", required=True, help="The note text (used as description and body).")
+    ap.add_argument("--slug", default="", help="Snake_case slug (auto-generated from note if omitted).")
+    ap.add_argument("--title", default="", help="Title (defaults to first 60 chars of note).")
+    ap.add_argument("--tags", default="", help="Comma-separated tags.")
+    ap.add_argument("--dry-run", action="store_true", help="Print plan without creating the file.")
+    args = ap.parse_args(argv)
+
+    captures_dir = _current_sprint_dir()
+    if captures_dir is None:
+        print("❌ No current sprint found.", file=sys.stderr)
+        return 1
+
+    slug = args.slug or re.sub(r"[^a-z0-9]+", "_", args.note[:50].lower()).strip("_")
+    title = args.title or (args.note[:60] + ("…" if len(args.note) > 60 else ""))
+    out_file = captures_dir / f"{slug}.org"
+
+    if args.dry_run:
+        print(f"compass capture — plan (dry run):")
+        print(f"  file:  {out_file.relative_to(PROJECT_ROOT)}")
+        print(f"  slug:  {slug}")
+        print(f"  title: {title}")
+        return 0
+
+    gen = _import_generator()
+    captures_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        rc = gen.main(["--type", "sprint_note", "--slug", slug,
+                       "--parent-dir", str(captures_dir.relative_to(PROJECT_ROOT)),
+                       "--title", title, "--description", args.note,
+                       "--tags", args.tags or "capture"])
+    except SystemExit as exc:
+        rc = exc.code
+    if rc in (None, 0):
+        print(f"✅ Sprint note created: {out_file.relative_to(PROJECT_ROOT)}")
+        print("ℹ️  Use 'compass capture file <slug> near|far|discarded' to move to backlog,")
+        print("   or 'compass capture promote <slug>' for instructions to make it a story/task.")
+        return 0
+    return rc or 1
+
 def cmd_add(argv):
     """Create a v2 doc by calling ores.codegen as a library.
 
@@ -823,7 +966,7 @@ def cmd_add(argv):
     if not argv or argv[0] in ("-h", "--help"):
         print("usage: compass add <type> [generate_v2_doc options]\n"
               "  types: story task sprint version recipe knowledge component\n"
-              "         capture memory investigation product_identity\n"
+              "         capture sprint_note memory investigation product_identity\n"
               "  --parent-dir defaults to the current sprint (story) or "
               "version (sprint); required otherwise.\n"
               "  remaining flags are passed through to ores.codegen "
@@ -1035,6 +1178,8 @@ def main():
         sys.exit(cmd_add(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "goto":
         sys.exit(cmd_goto(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "capture":
+        sys.exit(cmd_capture(sys.argv[2:]))
 
     parser = argparse.ArgumentParser(description="Compass: orientation tool for ORE Studio")
     subparsers = parser.add_subparsers(dest="command", required=True)

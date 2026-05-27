@@ -46,6 +46,7 @@ TYPE_TO_TEMPLATE = {
     "release_notes": "v2_doc_release_notes.org.mustache",
     "investigation": "v2_doc_investigation.org.mustache",
     "runbook": "v2_doc_runbook.org.mustache",
+    "sprint_note": "v2_doc_sprint_note.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {
@@ -63,6 +64,7 @@ DEFAULT_INITIAL_STATE = {
     "memory": "",
     "investigation": "",
     "runbook": "",
+    "sprint_note": "",
 }
 
 # Composition: each type's direct parent type.
@@ -78,6 +80,7 @@ PARENT_OF_TYPE = {
 PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "skill", "product_identity",
     "capture", "memory", "release_notes", "investigation", "runbook",
+    "sprint_note",
 }
 
 
@@ -369,7 +372,7 @@ def main(argv=None):
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
     elif args.type in ("component", "recipe", "knowledge", "product_identity",
-                       "capture", "memory", "investigation"):
+                       "capture", "sprint_note", "memory", "investigation"):
         # Captures live at agile/product_backlog/<bucket>/<slug>.org. The
         # caller passes --parent-dir as that bucket directory; we validate
         # the bucket name only loosely (audit can tighten later).

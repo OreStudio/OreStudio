@@ -35,7 +35,7 @@ the =:ID:= is preserved, so any document that linked to the capture
 still resolves once it becomes a story. The =capture= entry in [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document
 types]] describes the full frontmatter contract.
 
-* The two buckets
+* The three buckets
 
 The buckets are not priority queues — they are /horizons/. Same idea,
 different reading audience:
@@ -48,6 +48,9 @@ different reading audience:
   exercises, and "what should v2.0 look like" conversations. May be
   vague, speculative, or contingent on technology / people / time we
   don't yet have.
+- [[id:A3F7B201-4D8E-4C2A-B5F9-8E1D3C6A9F02][Discarded]] :: ideas explicitly decided against. Not deferred — ruled
+  out. Kept in version control (not deleted) so the rationale is
+  preserved and the same idea is not re-proposed without context.
 
 * How to decide between near and far
 
@@ -75,6 +78,24 @@ a near idea later is higher than the cost of promoting a far one when
 its time comes — promotion is just =git mv= plus tag fixes; demotion
 is a sprint-planning conversation that didn't need to happen.
 
+Move to *discarded* (via =compass capture file <slug> discarded=) when
+the team has made a conscious decision not to pursue the idea and wants
+a record of that decision. A discarded capture should include a brief
+note explaining the rationale.
+
+* Per-sprint notes
+
+In addition to the backlog buckets, each sprint has a =captures/= folder
+holding per-file sprint notes. These are quick in-flight annotations — bugs
+spotted, ideas jotted mid-sprint — filed via =compass capture --note "..."=.
+
+Sprint notes can be:
+- Left as annotations for the sprint retrospective.
+- Promoted to a story or task: =compass capture promote <slug>=.
+- Filed into the backlog: =compass capture file <slug> near|far|discarded=.
+
+The old monolithic =capture.org= pattern is superseded by this per-file approach.
+
 * Lifecycle of a capture
 
 1. /Created/ via [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][=generate_v2_doc.sh=]] with =--type capture --parent-dir
@@ -99,6 +120,7 @@ edit their tables by hand; add a capture and re-run the script.
 
 - [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Near Bucket]] — every near capture, one row each.
 - [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][Far Bucket]] — every far capture, one row each.
+- [[id:A3F7B201-4D8E-4C2A-B5F9-8E1D3C6A9F02][Discarded Bucket]] — every discarded capture, one row each.
 
 * See also
 

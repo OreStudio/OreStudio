@@ -104,8 +104,12 @@ context, so the :hook can use it from the temp-file buffer."
         (real ores/capture--real-file))
     (when tmp
       (if org-note-abort
-          (when (file-exists-p tmp) (delete-file tmp))
-        (when (file-exists-p tmp)  (rename-file tmp real :ok-if-already-exists)))))
+          (progn
+            (when-let ((buf (get-file-buffer tmp)))
+              (with-current-buffer buf (set-buffer-modified-p nil))
+              (kill-buffer buf))
+            (when (file-exists-p tmp) (delete-file tmp)))
+        (when (file-exists-p tmp) (rename-file tmp real :ok-if-already-exists)))))
   (setq ores/capture--temp-file    nil
         ores/capture--real-file    nil
         ores/capture--checkout-root nil

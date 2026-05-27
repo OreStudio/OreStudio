@@ -122,7 +122,7 @@ Call once after `org' is loaded."
   (interactive)
   (add-to-list 'org-capture-templates
     '("c" "Capture (inbox)" plain
-      (file (ores/capture--inbox-file))
+      (file ores/capture--inbox-file)
       ""
       :hook ores/capture--yas-expand
       :unnarrowed t)))

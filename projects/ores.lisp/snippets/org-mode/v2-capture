@@ -1,0 +1,33 @@
+# -*- mode: snippet -*-
+# name: v2 capture (inbox)
+# key: cap
+# --
+:PROPERTIES:
+:ID: `(upcase (org-id-new))`
+:END:
+#+title: ${1:Title}
+#+description: ${2:One-sentence description.}
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :inbox:capture:
+#+created: `(format-time-string "%Y-%m-%d")`
+#+updated: `(format-time-string "%Y-%m-%d")`
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+${3:Describe the idea.}
+
+* Why
+
+${4:Motivation and context.}
+
+* References
+
+- $5
+
+* See also
+
+- $0

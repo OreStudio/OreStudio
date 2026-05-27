@@ -31,12 +31,12 @@ descriptions. Legacy content is removed or relocated.
 
 | Field        | Value                                        |
 |--------------+----------------------------------------------|
-| State        | STARTED                                      |
+| State        | DONE                                         |
 | Parent story | [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]]                     |
-| Now          | In progress — plan written, implementation pending. |
+| Now          | Complete.                                    |
 | Waiting on   | Nothing.                                     |
-| Next         | Implement restructure.                       |
-| Last touched | 2026-05-27                                   |
+| Next         | None.                                        |
+| Last touched | 2026-05-28                                   |
 
 * Acceptance
 

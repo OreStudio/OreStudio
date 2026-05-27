@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: B25C8D35-D25E-4CAF-BF67-A91FAFF4AC9D
+:END:
+#+title: Make bootstrap operation atomic using SQL transactions
+#+description: Make bootstrap operation atomic using SQL transactions
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+The bootstrap operation is currently not atomic. If an exception is thrown after
+the admin account is created but before the bootstrap mode feature flag is
+disabled, the system is left in an inconsistent state where:
+
+- An admin account exists in the database.
+- Bootstrap mode is still enabled (allowing creation of additional admin
+  accounts).
+
+**** Current Flow
+
+The bootstrap process in =bootstrap_service.cpp= performs these operations:
+
+1. Create account via =account_service=.
+2. Create login_info via =login_info_service=.
+3. Assign admin role via =authorization_service=.
+4. Disable bootstrap mode via =system_flags_service=.
+
+Each operation auto-commits independently, creating windows for partial failures.
+
+**** Solution
+
+Use sqlgen's =Transaction= class to wrap all bootstrap operations in a single
+database transaction. The class provides RAII semantics with automatic rollback
+on destructor if =commit()= was not called.
+
+#+begin_src c++
+// sqlgen's Transaction class pattern:
+~Transaction() {
+    if (!transaction_ended_) {
+        rollback();  // Auto-rollback on exception
+    }
+}
+#+end_src
+
+**** Challenges
+
+- Current architecture creates separate =database::context= connections per
+  service.
+- Need to pass a shared connection/transaction across services.
+- May require refactoring services to accept an optional transaction parameter.
+
+**** Mitigation
+
+The existing self-healing mechanism in
+=bootstrap_mode_service::initialize_bootstrap_state()= detects when bootstrap
+mode was not properly disabled after account creation and auto-corrects the
+state on server startup. This provides defence in depth but is not a substitute
+for proper transactional integrity.
+
+**** Acceptance Criteria
+
+- Bootstrap operation completes fully or rolls back entirely.
+- No partial state if any step fails.
+- Self-healing mechanism remains as defence in depth.

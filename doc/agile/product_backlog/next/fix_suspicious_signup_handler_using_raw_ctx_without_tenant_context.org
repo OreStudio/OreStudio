@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 39BAFE04-4C36-4F6C-A6F9-B5B005D9E4A7
+:END:
+#+title: Fix suspicious signup handler using raw ctx_ without tenant context
+#+description: Fix suspicious signup handler using raw ctx_ without tenant context
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+The =signup()= method in =auth_handler.hpp= uses raw =ctx_= (the service-level
+context with no tenant set) when calling =account_service= and
+=authorization_service=. Every other authenticated handler either calls
+=make_request_context()= to extract a tenant from the JWT, or explicitly calls
+=ctx_.with_tenant(...)= to set one before proceeding.
+
+Using =ctx_= directly means the =tenant_aware_pool= never sets
+=app.current_tenant_id=, so PostgreSQL RLS policies have no tenant to filter
+on. This may allow cross-tenant data leakage or bypass of tenant isolation
+during account creation.
+
+Tasks:
+
+- [ ] Audit what tenant isolation =signup= requires (new-tenant bootstrap vs.
+  existing-tenant self-service).
+- [ ] Ensure =account_service= and =authorization_service= are always called
+  with a valid tenant context.
+- [ ] Add a test that verifies signup cannot write to the wrong tenant.

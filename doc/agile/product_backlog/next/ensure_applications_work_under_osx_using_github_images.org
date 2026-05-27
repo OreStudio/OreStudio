@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 5B662F1E-B5DF-4EAA-B848-E12C14252730
+:END:
+#+title: Ensure applications work under OSX using github images
+#+description: Ensure applications work under OSX using github images
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We need to install the DMG and run the app.
+
+We think the package does not have all of the dependencies, but this did not
+work:
+
+#+begin_src cmake
+if(APPLE)
+    install(CODE "
+        # make sure the bundle is already on disk
+        set(BU_CHMOD_BUNDLE_ITEMS TRUE)
+        include(BundleUtilities)
+
+        # full path to the real executable inside the bundle
+        set(app_exe \"\${CMAKE_INSTALL_PREFIX}/OreStudio.app/Contents/MacOS/OreStudio\")
+
+        # directory where 3rd-party libraries will be copied
+        set(libs_dir \"\${CMAKE_INSTALL_PREFIX}/OreStudio.app/Contents/Frameworks\")
+
+        # discover all prerequisites and copy/fix them
+        fixup_bundle(\"\${app_exe}\" \"\" \"\${libs_dir}\")
+    " COMPONENT Runtime)
+endif()
+#+end_src
+
+We should ask someone with an OSX machine to test this.
+
+Links:
+
+- [[https://stackoverflow.com/questions/17974439/cant-use-fixup-bundle-to-create-a-portable-bundle-with-qt][SO: Can't use fixup_bundle() to create a portable bundle with Qt]]

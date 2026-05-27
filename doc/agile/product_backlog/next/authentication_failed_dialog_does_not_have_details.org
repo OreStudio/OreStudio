@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: 3B3F3E31-69A6-4DD4-8785-CA8561C0E8DA
+:END:
+#+title: Authentication failed dialog does not have details
+#+description: Authentication failed dialog does not have details
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+At present we show the C++ exception:
+
+#+begin_quote
+Authentication failed: Failed to connect to server: Connection refused [system:111 at /home/marco/Development/OreStudio/OreStudio.local1/build/output/linux-clang-debug/vcpkg_installed/x64-linux/include/boost/asio/detail/reactive_socket_connect_op.hpp:97:37 in function 'static void boost::asio::detail::reactive_socket_connect_op<boost::asio::detail::range_connect_op<boost::asio::ip::tcp, boost::asio::any_io_executor, boost::asio::ip::basic_resolver_results<boost::asio::ip::tcp>, boost::asio::detail::default_connect_condition, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::ip::basic_endpoint<boost::asio::ip::tcp>>>, boost::asio::any_io_executor>::do_complete(void *, operation *, const boost::system::error_code &, std::size_t) [Handler = boost::asio::detail::range_connect_op<boost::asio::ip::tcp, boost::asio::any_io_executor, boost::asio::ip::basic_resolver_results<boost::asio::ip::tcp>, boost::asio::detail::default_connect_condition, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::ip::basic_endpoint<boost::asio::ip::tcp>>>, IoExecutor = boost::asio::any_io_executor]']
+#+end_quote
+
+Add details button.

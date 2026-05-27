@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: B973051D-701E-4843-AF7A-0A98FCE58100
+:END:
+#+title: Improve tag support
+#+description: Improve tag support
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+At present we are not tagging DQ entities very well. For example, crypto
+currencies should be tagged as both crypto and currencies, etc.
+
+Also tags have duplicates, and versioning does not seem to be working:
+
+#+begin_src sql
+ores_frosty_leaf=> select * from dq_tags_artefact_tbl;
+              dataset_id              |                tag_id                | version |      name      |              description
+--------------------------------------+--------------------------------------+---------+----------------+---------------------------------------
+ 93d187a9-fa26-4569-ab26-18154b58c5c7 | 65bd2824-bd43-4090-9f1a-a97dfef529ca |       0 | flag           | Country and region flag images
+ c8912e75-9238-4f97-b8da-065a11b8bcc8 | 75ee83a7-2c54-448c-b073-8d68107d136e |       0 | cryptocurrency | Cryptocurrency icon images
+ 30c0e0b8-c486-4bc1-a6f4-19db8fa691c9 | 2d3eace5-733c-47b3-b328-f99a358fe2a8 |       0 | currency       | Currency reference data
+ d8093e17-8954-4928-a705-4fc03e400eee | 71e0c456-94fb-4e44-83f1-33ae1139e333 |       0 | currency       | Non-ISO currency reference data
+ d3a4e751-ae30-497c-96b1-f727201d536b | c57ee434-bbc2-48c1-9a59-c9799e701288 |       0 | cryptocurrency | Cryptocurrency reference data
+ 44ff5afd-a1b7-42d2-84a7-432092616c40 | d6453cf6-f23b-4f97-b600-51fcad21c8aa |       0 | geolocation    | IP address geolocation reference data
+#+end_src
+
+We need a generic tags table and then a junction between say datasets and tags,
+etc. Delete all of the existing half-baked tags implementations. Also have a
+look at the story in backlog about tags and labels.

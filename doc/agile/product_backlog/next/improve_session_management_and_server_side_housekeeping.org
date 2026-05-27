@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: 8E9E542C-4B59-4D0C-AA2F-EC6A90922DFC
+:END:
+#+title: Improve session management and server-side housekeeping
+#+description: Improve session management and server-side housekeeping
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Session tracking and lifecycle management needs improvement.
+
+- Session should record whether telemetry is enabled or not.
+- Send and receive byte counters are empty in sessions display.
+- Server should periodically housekeep sessions: mark disconnected sessions as
+  orphan, mark sessions as finished when connection drops.

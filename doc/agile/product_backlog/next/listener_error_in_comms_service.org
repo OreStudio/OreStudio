@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID: 5DBAD991-C9E9-4B7C-8A78-8FE2ADDA3F45
+:END:
+#+title: Listener error in comms service
+#+description: Listener error in comms service
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Investigate this:
+
+#+begin_src logview
+2026-01-22 20:40:20.194383 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
+2026-01-22 20:40:20.194413 [INFO] [ores.comms.net.server_session] Sent notification for event type 'ores.refdata.currency_changed' with 1 entity IDs to 127.0.0.1:49354
+2026-01-22 20:40:21.698972 [ERROR] [ores.eventing.service.postgres_listener_service] Connection error while consuming input.
+2026-01-22 20:40:21.699059 [INFO] [ores.eventing.service.postgres_listener_service] Listener thread stopped.
+#+end_src

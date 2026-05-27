@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: B5EFB803-EB60-4438-9304-3BC64FB54E1A
+:END:
+#+title: Three-level provisioning: end-to-end testing
+#+description: Three-level provisioning: end-to-end testing
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+End-to-end test of the complete three-level provisioning flow implemented
+across PRs #582, #611, #614, #619, and the correlation ID / summary page
+work on =feature/three-level-provisioning-e2e=. Branch:
+=feature/three-level-provisioning-e2e=.
+
+***** Tasks
+
+- [ ] Provision a fresh tenant from scratch (recreate DB, start services)
+- [ ] Log in as system admin; verify =TenantProvisioningWizard= fires
+- [ ] Step through bundle selection and install; verify DQ bundle published
+- [ ] Step through =PartyProvisionPage=; verify party + account created in DB
+      with =status='Inactive'=
+- [ ] Verify correlation ID appears on the summary page and matches
+      =ores_workflow_workflow_instances_tbl.correlation_id=
+- [ ] Verify bootstrap flag cleared; wizard does not reappear on next login
+- [ ] Log in as the provisioned party admin; verify =PartyProvisioningWizard= fires
+- [ ] Complete party wizard; verify party =status= set to =Active= in DB
+- [ ] Verify =PartyProvisioningWizard= does not reappear on subsequent logins
+- [ ] Verify compensation: force failure in each of the 3 workflow steps and
+      confirm rolled-back state in DB for party, account, account_party
+- [ ] Verify =Nats-Correlation-Id= header propagated to =refdata.v1.parties.save=
+      and =iam.v1.accounts.save= (check server logs)

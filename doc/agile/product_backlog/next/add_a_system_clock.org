@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: 6AF46825-AC25-44D3-BFAA-8D39A03E07C8
+:END:
+#+title: Add a system clock
+#+description: Add a system clock
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+At present we are using "now". We should have a ores function for this so that
+we can time travel if required.

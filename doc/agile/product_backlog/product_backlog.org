@@ -2,18 +2,18 @@
 :ID: D4219199-7B17-4A89-B4BC-6019738642DA
 :END:
 #+title: Product backlog
-#+description: What the product backlog is, how near and far buckets work, and how to choose between them.
+#+description: What the product backlog is, how next and deferred buckets work, and how to choose between them.
 #+type: knowledge
 #+version: 2
 #+level: cross
-#+filetags: :backlog:near:far:capture:knowledge:
+#+filetags: :backlog:next:deferred:capture:knowledge:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
 The product backlog is the set of ideas we may want to do but have not
 yet pulled into a sprint as a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]]. Every entry is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] living
-under =doc/agile/product_backlog/=, split into two buckets — [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] and
-[[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][far]] — by how soon we think the idea might be worked on. This page
+under =doc/agile/product_backlog/=, split into two buckets — [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] and
+[[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]] — by how soon we think the idea might be worked on. This page
 covers what the backlog is for, how to decide between buckets, and how
 a capture is eventually promoted into a sprint.
 
@@ -40,11 +40,11 @@ types]] describes the full frontmatter contract.
 The buckets are not priority queues — they are /horizons/. Same idea,
 different reading audience:
 
-- [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Near]] :: candidate work for the *next version*. Read during sprint
+- [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Next]] :: candidate work for the *next version*. Read during sprint
   planning and version-cut discussions. Concrete enough that someone
   can imagine the story / tasks; the scope is known well enough to
   argue about /whether/ rather than /how/.
-- [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][Far]] :: the long-term wishlist. Read during retros, vision
+- [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][Deferred]] :: the long-term wishlist. Read during retros, vision
   exercises, and "what should v2.0 look like" conversations. May be
   vague, speculative, or contingent on technology / people / time we
   don't yet have.
@@ -52,9 +52,9 @@ different reading audience:
   out. Kept in version control (not deleted) so the rationale is
   preserved and the same idea is not re-proposed without context.
 
-* How to decide between near and far
+* How to decide between next and deferred
 
-When you create a capture, place it in *near* if you can answer "yes"
+When you create a capture, place it in *next* if you can answer "yes"
 to all three:
 
 1. /Aligned/ — it fits the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]]; it isn't a left-field
@@ -64,7 +64,7 @@ to all three:
 3. /Eligible soon/ — there's a plausible path to pulling it into one of
    the next few sprints. Dependencies are either met or in flight.
 
-Place it in *far* if any one of:
+Place it in *deferred* if any one of:
 
 - The dependency story is long (months out, or "after v1.0").
 - The idea is exploratory — "what if we…?" rather than "we need to…".
@@ -73,8 +73,8 @@ Place it in *far* if any one of:
 - It is interesting but not yet aligned to identity — keeping it lets
   us reconsider during the next identity review.
 
-If you genuinely can't decide, default to /far/. The cost of demoting
-a near idea later is higher than the cost of promoting a far one when
+If you genuinely can't decide, default to /deferred/. The cost of demoting
+a next idea later is higher than the cost of promoting a deferred one when
 its time comes — promotion is just =git mv= plus tag fixes; demotion
 is a sprint-planning conversation that didn't need to happen.
 
@@ -83,43 +83,41 @@ the team has made a conscious decision not to pursue the idea and wants
 a record of that decision. A discarded capture should include a brief
 note explaining the rationale.
 
-* Per-sprint notes
+* Inbox
 
-In addition to the backlog buckets, each sprint has a =captures/= folder
-holding per-file sprint notes. These are quick in-flight annotations — bugs
-spotted, ideas jotted mid-sprint — filed via =compass capture --note "..."=.
+=inbox/= is the entry point for all new captures. Use =compass capture --note "..."=
+to file a quick note; it lands in inbox untriaged. At triage, move it to
+=next=, =deferred=, or =discarded= via =compass capture file <slug> <bucket>=,
+or promote it directly to a story via =compass capture promote <slug>=.
 
-Sprint notes can be:
-- Left as annotations for the sprint retrospective.
-- Promoted to a story or task: =compass capture promote <slug>=.
-- Filed into the backlog: =compass capture file <slug> near|far|discarded=.
-
-The old monolithic =capture.org= pattern is superseded by this per-file approach.
+The old monolithic per-sprint =capture.org= is superseded; inbox is the
+single landing zone for all unprocessed ideas.
 
 * Lifecycle of a capture
 
-1. /Created/ via [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][=generate_v2_doc.sh=]] with =--type capture --parent-dir
-   doc/agile/product_backlog/<bucket>=. The capture lives in its bucket
-   directory with whatever supporting files (images, sketches) sit next to it.
+1. /Created/ via =compass capture --note "..."= (lands in =inbox/=) or directly
+   via =compass add capture --parent-dir doc/agile/product_backlog/<bucket>=.
+   The capture lives in its bucket directory with any supporting files.
 2. /Refined/ during backlog refinement: the body is tightened, tags
-   are updated, the bucket may be moved (=git mv= between =near/=
-   and =far/= is cheap).
+   are updated, the bucket may be moved (=git mv= between =next/=
+   and =deferred/= is cheap).
 3. /Promoted/ when a sprint pulls it in: the file is moved into the
    relevant sprint story folder as =story.org=; =#+type:= flips from
    =capture= to =story=; the =:ID:= is preserved so existing
    references continue to resolve; the standard story shape (blurb,
    Goal, Status table, Acceptance, Tasks, …) is filled in. The
-   indexes ([[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]], [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][far]]) drop the entry on next regeneration.
+   indexes ([[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]], [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]]) drop the entry on next regeneration.
 4. /Abandoned/ if reconsidered and dropped. The file is deleted.
 
 * Browsing the backlog
 
-The two bucket indexes are auto-generated by
+The bucket indexes are auto-generated by
 =projects/ores.codegen/scripts/regenerate_backlog_indexes.py= — do not
 edit their tables by hand; add a capture and re-run the script.
 
-- [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Near Bucket]] — every near capture, one row each.
-- [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][Far Bucket]] — every far capture, one row each.
+- [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Inbox]] — every untriaged capture.
+- [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Next Bucket]] — every next capture, one row each.
+- [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][Deferred Bucket]] — every deferred capture, one row each.
 - [[id:A3F7B201-4D8E-4C2A-B5F9-8E1D3C6A9F02][Discarded Bucket]] — every discarded capture, one row each.
 
 * See also
@@ -128,4 +126,4 @@ External reading:
 
 - [[https://mcraveiro.github.io/nerd_food/on_product_backlog.html][On Product Backlog]] — earlier essay on how stories flow from capture to
   implementation. Conceptually correct, but not up-to-date with the cybernetic
-  v2 approach (it predates the capture / story split and the near/far buckets).
+  v2 approach (it predates the capture / story split and the next/deferred buckets).

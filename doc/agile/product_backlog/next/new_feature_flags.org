@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: 0DCDF2B0-E944-412C-ABA3-0E30B5D96B0C
+:END:
+#+title: New feature flags
+#+description: New feature flags
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+- allow sign-ups. If true, users can create their own accounts. Done.
+- auto-authorise sign-ups. If true, the account is automatically created. If
+  false, admin user has to authorise it.
+
+Notes:
+
+- we need a UI to manage the UI options.

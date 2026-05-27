@@ -1,0 +1,15 @@
+:PROPERTIES:
+:ID: B08CD01A-57C9-42A2-A680-A09FB6A36622
+:END:
+#+title: Consider adding clang-tidy build
+#+description: Consider adding clang-tidy build
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :infra:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/tidy.yml][=tidy.yml=]].

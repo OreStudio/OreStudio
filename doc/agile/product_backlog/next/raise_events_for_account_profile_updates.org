@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 328B684A-B06F-491F-A901-34ECCC6CAD37
+:END:
+#+title: Raise events for account profile updates
+#+description: Raise events for account profile updates
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Updating email from "My Account" does not raise an event. Account profile
+changes should emit events through the event bus for consistency with other
+entity modifications.

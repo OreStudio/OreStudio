@@ -2,7 +2,7 @@
 :ID: E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F
 :END:
 #+title: Story: Per-sprint capture workflow: individual files and compass integration
-#+description: Replace the single capture.org per sprint with a captures/ folder where each note is a separate file scaffolded by compass. Add compass commands to create a capture, promote it to story/task, or file it into the backlog (near/far/discarded). Add a discarded backlog bucket for ideas explicitly rejected.
+#+description: Replace the single capture.org per sprint with per-file product backlog captures in inbox/next/deferred/discarded buckets. Add compass capture command to create, file, and promote captures. Rename near/far to next/deferred for clarity.
 #+type: story
 #+version: 2
 #+level: s2
@@ -17,7 +17,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 The single =capture.org= file per sprint has become unmanageable: annotations accumulate, implemented items are forgotten, and the file becomes noise rather than signal.
 
-Replace it with a =captures/= folder inside the current sprint, where each capture is a separate file scaffolded by compass. The LLM calls compass on the user's behalf to file a capture in one step. Captures can then be promoted into stories or tasks (via compass), or moved into the product backlog (near, far, or a new discarded bucket). This makes it easy to triage: promote the valuable, file the deferred, discard the stale.
+Replace it with product-level captures in the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]], where each capture is a separate file scaffolded by compass. New captures land in =inbox/= (untriaged). At triage they move to =next/= (imminent candidate), =deferred/= (long-horizon idea), or =discarded/= (explicitly rejected). The LLM calls =compass capture --note "..."= on the user's behalf; captures can then be promoted into stories or tasks. This makes triage cheap: promote the valuable, file the deferred, discard the stale.
 
 * Status
 
@@ -25,27 +25,31 @@ Replace it with a =captures/= folder inside the current sprint, where each captu
 |---------------+--------------------------------------------------------------------------|
 | State         | STARTED                                                                  |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                                                |
-| Now           | Story scaffolded; runbook fixed.                                         |
+| Now           | Buckets renamed; compass capture implemented; commit recipe updated.     |
 | Waiting on    | Nothing.                                                                 |
-| Next          | Add codegen capture template; implement compass capture command.         |
+| Next          | Update document_types.org; add org-roam capture template in ores.lisp.  |
 | Last touched  | 2026-05-27                                                               |
 
 * Acceptance
 
-- A =captures/= folder exists alongside stories in the current sprint; each capture is a separate =.org= file.
-- =compass capture --note "..."= scaffolds a new capture file in the current sprint's =captures/= folder and prints the path.
-- =compass capture promote <slug>= converts an existing capture into a story (in the current sprint) or into a task on a named story.
-- =compass capture file <slug> [near|far|discarded]= moves a capture into the appropriate product backlog bucket.
-- A =discarded/= bucket exists under =doc/agile/product_backlog/= with its own index doc.
-- A codegen template produces valid capture =.org= files with the correct frontmatter shape.
-- The [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] knowledge doc is updated to document the =discarded= bucket and the new per-sprint =captures/= pattern.
+- =compass capture --note "..."= scaffolds a new capture in =doc/agile/product_backlog/inbox/= and prints the path.
+- =compass capture file <slug> next|deferred|discarded= moves a capture into the appropriate backlog bucket.
+- =compass capture promote <slug>= prints instructions to promote a capture to a story or task.
+- Four buckets exist under =doc/agile/product_backlog/=: =inbox/=, =next/=, =deferred/=, and =discarded/=, each with an index doc.
+- The product backlog uses =next/= and =deferred/= (renamed from =near/= and =far/=).
+- The [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] knowledge doc documents all four buckets and the capture lifecycle.
+- The [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] doc describes the capture type with the four-bucket structure.
+- The commit recipe documents =[inbox]=, =[next]=, =[deferred]=, =[discarded]= as component brackets for backlog commits.
 - The [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] runbook links to the correct compass recipe and the product backlog doc.
+- An org-roam capture template in =ores.lisp= writes new captures to the inbox of the active environment.
 
 * Tasks
 
 In execution order:
 
 - [[id:2365B41D-EB19-42C4-BA76-105B6E82B7C0][Implement per-sprint capture workflow]]
+- [[id:AEC50B97-6789-4E3A-B0F4-A70A01FCB341][Update document_types.org capture entry for inbox/next/deferred/discarded]]
+- [[id:482430DB-BE56-4589-B5A7-B616F7CC27F2][Add org-roam capture template in ores.lisp writing to inbox]]
 
 * Decisions
 

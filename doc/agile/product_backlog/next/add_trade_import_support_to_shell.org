@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 45CF30F5-5212-4610-B490-D4799629CE91
+:END:
+#+title: Add trade import support to shell
+#+description: Add trade import support to shell
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Add a shell command for importing ORE portfolio XML files. This should use the
+existing =ores.ore= importer and =trade_mapper= infrastructure to parse the
+portfolio file and create trades.
+
+The shell command should accept:
+
+- Portfolio XML file path
+- Target book ID (required, since ORE has no book concept)
+- Optional counterparty mapping (e.g., =--counterparty CPTY_A=<uuid>=)
+
+Acceptance criteria:
+
+- Shell command imports trades from an ORE portfolio XML file.
+- Trades are assigned to the specified book.
+- Counterparty mapping is supported.

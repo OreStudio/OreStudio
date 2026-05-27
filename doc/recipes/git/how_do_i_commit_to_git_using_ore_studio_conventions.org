@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :git:conventions:recipe:
 #+created: 2026-05-23
-#+updated: 2026-05-23
+#+updated: 2026-05-27
 
 ORE Studio uses a structured commit format to ensure that the project history
 remains readable, greppable, and attributable.
@@ -40,6 +40,21 @@ Examples:
 - =[doc] Tidy-up documentation around sprint 16 to 18=
 - =[site] Inline org-roam export utilities into ores.lisp=
 - =[agile] Open Sprint 18=
+
+*** Product backlog captures
+
+Commits that create, triage, or modify [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][captures]] in the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]] use
+the bucket name as the component bracket:
+
+| Action                          | Component      | Example                                       |
+|---------------------------------+----------------+-----------------------------------------------|
+| File a new capture (untriaged)  | =[inbox]=      | =[inbox] Capture idea about X=                |
+| Move capture to next bucket     | =[next]=       | =[next] Promote X capture to next backlog=    |
+| Move capture to deferred bucket | =[deferred]=   | =[deferred] Park X until after v1 launch=     |
+| Discard a capture               | =[discarded]=  | =[discarded] Rule out X — not aligned=        |
+| Promote capture to story        | =[agile]=      | =[agile] Promote X capture to story in s18=   |
+
+This makes =git log --oneline= trivially filterable by backlog bucket.
 
 ** 2. Commit Body
 

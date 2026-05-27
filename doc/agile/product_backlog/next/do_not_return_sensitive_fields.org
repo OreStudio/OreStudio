@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: AD0E7A7A-AC12-4446-987C-E8F0D39AAF65
+:END:
+#+title: Do not return sensitive fields
+#+description: Do not return sensitive fields
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+As per code review:
+
+#+begin_quote
+Major Security Flaw (list_accounts_response): The serialization format
+explicitly includes highly sensitive fields (password_hash, password_salt,
+totp_secret) for every domain::account returned. This is a severe security risk.
+These fields must not be exposed over any messaging protocol, even internal
+ones, unless it is a dedicated, highly protected replication channel.
+
+Proposed Change: Create a protocol-safe subset structure, e.g.,
+domain::account_summary, which contains only non-sensitive data (id, username,
+email, is_admin, version, modified_by). Update list_accounts_response to use
+std::vector<domain::account_summary>.
+
+Change list_accounts_response::accounts to use a non-sensitive type like
+std::vector<domain::account_summary>.
+#+end_quote

@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 4A6402CE-2DD4-4DDD-B50A-2285525D1DB4
+:END:
+#+title: Distinguish service roles from user roles; prevent leakage to tenants
+#+description: Distinguish service roles from user roles; prevent leakage to tenants
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Service account roles (=IamService=, =RefdataService=, etc.) are internal
+system roles assigned to NATS domain service accounts. They must never be:
+
+1. Shown to users in role-assignment UIs (Roles dialog, account editor).
+2. Copied to new tenants during provisioning — =ores_iam_provision_tenant_fn=
+   currently copies all system-tenant roles, including service roles, to every
+   provisioned tenant.
+
+Exposing service roles to tenants is a security concern: a misconfigured
+tenant admin could assign a service role to a user account, granting it
+service-level permissions (e.g. =iam::*= for =IamService=).
+
+Tasks:
+
+- [ ] Add a =role_type= column (or equivalent discriminator) to
+  =ores_iam_roles_tbl= with values =user= / =service=.
+- [ ] Mark all service roles as =service= type in =iam_roles_populate.sql=.
+- [ ] Update =ores_iam_provision_tenant_fn= to copy only =user=-type roles to
+  new tenants.
+- [ ] Update =role_handler::list()= and =authorization_service::list_roles()=
+  to exclude =service=-type roles from responses to non-system tenants.
+- [ ] Write a migration script to clean up service roles already copied to
+  existing tenant records.
+- [ ] Add integration tests confirming service roles cannot be assigned via the
+  public API.

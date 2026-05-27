@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: B3CB8B56-198A-4755-8C0E-C88DA145AAA9
+:END:
+#+title: LLM Integration
+#+description: LLM Integration
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+LLMs can be useful when learning a new subject as they can provide additional
+context to the information displayed in the screen. For example, a user can ask
+the LLM to explain a graph or a table. It would probably be fairly straight
+forward to allow dumping some of the information in a format that is friendly to
+LLMs (.e.g./ PNG, Markdown, plain text) and then make an API call to a local or
+remote LLM. We could probably create a set of useful canned prompts (explain
+this report, explain this chart).
+
+On a more blue skies approach, one could conceive asking the LLM for suggestions
+on how to act, on the basis of the analysis. This could result in suggestions
+for action the user could implement, or even on actions directly taken based on
+the LLM's suggestions. This is conceptually straightforward: the LLM could for
+example generate a well defined JSON with the proposed action, and the system
+would look for some predefined markers in the LLM output:
+
+#+begin_src text
+----- ACTION START
+<JSON>
+----- ACTION END
+#+end_src
+
+The JSON payload would describe the action:
+
+#+begin_src json
+{
+    "action": "some_action_type",
+    "key1": "value1",
+    ....
+#+end_src
+
+A trivial lookup table could de-serialise the JSON and execute the action. All
+that is required is for the LLM to "learn" how to generate JSON compliant with
+the desired format, which should be quite straightforward (perhaps with the help
+of fine-tuning). Agents probably provide most of this infrastructure already.
+The key thing is to ensure all functionality in the core becomes UI agnostic
+such that one could bolt an NLP UI around it.
+
+Links:
+
+- [[https://llama.meta.com/docs/how-to-guides/prompting/][How-to guides: Prompting]]
+- [[https://mychen76.medium.com/practical-techniques-to-constraint-llm-output-in-json-format-e3e72396c670][Practical Techniques to constraint LLM output in JSON format]]

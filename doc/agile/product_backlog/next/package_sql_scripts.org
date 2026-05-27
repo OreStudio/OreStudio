@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: 78C089CB-8717-4351-831B-E9A735228B99
+:END:
+#+title: Package SQL scripts
+#+description: Package SQL scripts
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We need to initialise the database on installation. The package should contain
+all of the necessary SQL as well as a script to do it.
+
+Or maybe we should do everything from within sqlgen and generate the scripts for
+the cases where we need manual work in database.

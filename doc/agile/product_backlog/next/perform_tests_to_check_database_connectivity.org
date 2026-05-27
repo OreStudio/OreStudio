@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 87816ACB-5893-4B35-8DE8-745C5CAE4730
+:END:
+#+title: Perform tests to check database connectivity
+#+description: Perform tests to check database connectivity
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We added some basic database monitoring but did not perform a lot of testing.
+
+We should also generalise this so that if the database goes down after start we
+still perform some kind of retry logic.
+
+See also this point from Gemini:
+
+#+begin_quote
+The new broadcast_all method appears to be unused in this pull request. The
+database status broadcast is implemented directly in
+=ores::comms::net::server::broadcast_database_status= without using the
+subscription_manager. If this method is not intended for future use, it could be
+removed to avoid dead code.
+#+end_quote

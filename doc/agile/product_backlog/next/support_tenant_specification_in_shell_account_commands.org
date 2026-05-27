@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 3A93ECF8-CB10-4C8A-BF27-66209A459BC8
+:END:
+#+title: Support tenant specification in shell account commands
+#+description: Support tenant specification in shell account commands
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Currently, shell commands like =accounts info <username>= only search within the
+current session's tenant. This creates a UX gap for SuperAdmins who need to
+manage accounts across multiple tenants.
+
+Affected commands:
+
+- =accounts info=
+- =accounts roles=
+- =accounts permissions=
+- =accounts assign-role=
+- =accounts revoke-role=
+
+Acceptance criteria:
+
+- Commands should accept an optional tenant identifier (hostname or tenant ID)
+- Format could be =accounts info user1@acme.localhost= or =accounts info user1 --tenant acme.localhost=
+- SuperAdmins should be able to view/manage accounts in any tenant
+- Regular users should only be able to view accounts in their own tenant
+- Clear error message when user lacks cross-tenant permissions

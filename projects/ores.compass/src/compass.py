@@ -814,43 +814,42 @@ def _default_parent_dir(doc_type):
         return _parent_dir(current_sprint.rel_path)
     return None
 
-BACKLOG_BUCKETS = ("near", "far", "discarded")
-CAPTURES_SUBDIR = "captures"
+BACKLOG_BUCKETS = ("next", "deferred", "discarded")
+BACKLOG_ROOT = Path("doc") / "agile" / "product_backlog"
 
-def _current_sprint_dir():
-    """Return the captures/ folder path for the current sprint, or None."""
-    _, current_sprint = current_version_sprint(doc_index.load_all())
-    if current_sprint is None:
-        return None
-    return Path(PROJECT_ROOT) / _parent_dir(current_sprint.rel_path) / CAPTURES_SUBDIR
+def _inbox_dir():
+    """Return the absolute path to the inbox/ backlog bucket."""
+    return Path(PROJECT_ROOT) / BACKLOG_ROOT / "inbox"
 
 def _backlog_dir(bucket):
     return Path(PROJECT_ROOT) / "doc" / "agile" / "product_backlog" / bucket
 
-def _find_sprint_note(slug):
-    """Find a sprint note file by slug in any sprint captures/ folder. Returns Path or None."""
-    versions_root = Path(PROJECT_ROOT) / "doc" / "agile" / "versions"
-    for candidate in versions_root.rglob(f"captures/{slug}.org"):
-        return candidate
+def _find_capture(slug):
+    """Find a capture by slug in inbox/ or any backlog bucket. Returns Path or None."""
+    backlog_root = Path(PROJECT_ROOT) / BACKLOG_ROOT
+    for bucket in ("inbox", *BACKLOG_BUCKETS):
+        candidate = backlog_root / bucket / f"{slug}.org"
+        if candidate.exists():
+            return candidate
     return None
 
 def cmd_capture(argv):
-    """Manage per-sprint capture notes.
+    """Manage product backlog captures.
 
     Subcommands:
-      (default)  --note "..."  [--slug <slug>]   Create a note in the current sprint.
-      file <slug> near|far|discarded             Move a note to a backlog bucket.
-      promote <slug>                             Show promote instructions for a note.
+      (default)  --note "..."  [--slug <slug>]        Create a capture in inbox/.
+      file <slug> next|deferred|discarded             Move an inbox capture to a bucket.
+      promote <slug>                                  Show instructions to promote to story/task.
     """
     if not argv or argv[0] in ("-h", "--help"):
         print(
             "usage:\n"
             "  compass capture --note \"...\" [--slug <slug>]\n"
-            "      Create a sprint note in the current sprint's captures/ folder.\n"
-            "  compass capture file <slug> near|far|discarded\n"
-            "      Move a sprint note to a product backlog bucket.\n"
+            "      Create a capture in doc/agile/product_backlog/inbox/.\n"
+            "  compass capture file <slug> next|deferred|discarded\n"
+            "      Move an inbox capture to a triaged product backlog bucket.\n"
             "  compass capture promote <slug>\n"
-            "      Print instructions for promoting a note to a story or task.\n"
+            "      Print instructions for promoting a capture to a story or task.\n"
         )
         return 0
 
@@ -859,31 +858,25 @@ def cmd_capture(argv):
     # --- file subcommand ---
     if subcommand == "file":
         if len(argv) < 3:
-            print("❌ usage: compass capture file <slug> near|far|discarded", file=sys.stderr)
+            print("❌ usage: compass capture file <slug> next|deferred|discarded", file=sys.stderr)
             return 1
         slug, bucket = argv[1], argv[2]
         if bucket not in BACKLOG_BUCKETS:
             print(f"❌ bucket must be one of: {', '.join(BACKLOG_BUCKETS)}", file=sys.stderr)
             return 1
-        src = _find_sprint_note(slug)
+        src = _find_capture(slug)
         if src is None:
-            print(f"❌ No sprint note found for slug '{slug}'.", file=sys.stderr)
+            print(f"❌ No capture found for slug '{slug}'.", file=sys.stderr)
             return 1
         dst = _backlog_dir(bucket) / f"{slug}.org"
         if dst.exists():
             print(f"❌ {dst} already exists.", file=sys.stderr)
             return 1
-        # Update #+type to capture and add bucket context, then git mv.
+        # Update bucket tag in filetags to reflect new location, then git mv.
         text = src.read_text(encoding="utf-8")
-        text = re.sub(r"^#\+type:.*$", "#+type: capture", text, flags=re.MULTILINE)
-        # Replace the sprint_note boilerplate line with a backlog capture line.
-        text = re.sub(
-            r"^This page is a \[\[id:[^\]]+\]\[sprint note\]\].*$",
-            f"This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] "
-            f"in the *{bucket}* bucket of the product backlog — a pre-sprint idea, "
-            f"not yet pulled into a sprint as a story.",
-            text, flags=re.MULTILINE
-        )
+        # Replace any existing bucket tag with the new one.
+        for old_bucket in ("inbox", *BACKLOG_BUCKETS):
+            text = re.sub(rf":{re.escape(old_bucket)}:", f":{bucket}:", text)
         dst.parent.mkdir(parents=True, exist_ok=True)
         dst.write_text(text, encoding="utf-8")
         result = subprocess.run(
@@ -902,11 +895,11 @@ def cmd_capture(argv):
             print("❌ usage: compass capture promote <slug>", file=sys.stderr)
             return 1
         slug = argv[1]
-        src = _find_sprint_note(slug)
+        src = _find_capture(slug)
         if src is None:
-            print(f"❌ No sprint note found for slug '{slug}'.", file=sys.stderr)
+            print(f"❌ No capture found for slug '{slug}'.", file=sys.stderr)
             return 1
-        print(f"Sprint note: {src.relative_to(PROJECT_ROOT)}")
+        print(f"Capture: {src.relative_to(PROJECT_ROOT)}")
         print("\nTo promote to a new story:")
         print(f"  compass goto --slug {slug} --title \"<title>\" --description \"<desc>\" --tags \"<tags>\"")
         print(f"  Then delete: {src.relative_to(PROJECT_ROOT)}")
@@ -915,9 +908,9 @@ def cmd_capture(argv):
         print(f"  Then delete: {src.relative_to(PROJECT_ROOT)}")
         return 0
 
-    # --- default: create a new sprint note ---
+    # --- default: create a new capture in inbox ---
     ap = argparse.ArgumentParser(prog="compass capture",
-                                 description="Create a sprint note in the current sprint.")
+                                 description="Create a capture in the product backlog inbox.")
     ap.add_argument("--note", required=True, help="The note text (used as description and body).")
     ap.add_argument("--slug", default="", help="Snake_case slug (auto-generated from note if omitted).")
     ap.add_argument("--title", default="", help="Title (defaults to first 60 chars of note).")
@@ -925,14 +918,10 @@ def cmd_capture(argv):
     ap.add_argument("--dry-run", action="store_true", help="Print plan without creating the file.")
     args = ap.parse_args(argv)
 
-    captures_dir = _current_sprint_dir()
-    if captures_dir is None:
-        print("❌ No current sprint found.", file=sys.stderr)
-        return 1
-
+    inbox_dir = _inbox_dir()
     slug = args.slug or re.sub(r"[^a-z0-9]+", "_", args.note[:50].lower()).strip("_")
     title = args.title or (args.note[:60] + ("…" if len(args.note) > 60 else ""))
-    out_file = captures_dir / f"{slug}.org"
+    out_file = inbox_dir / f"{slug}.org"
 
     if args.dry_run:
         print(f"compass capture — plan (dry run):")
@@ -942,10 +931,10 @@ def cmd_capture(argv):
         return 0
 
     gen = _import_generator()
-    captures_dir.mkdir(parents=True, exist_ok=True)
+    inbox_dir.mkdir(parents=True, exist_ok=True)
     try:
-        rc = gen.main(["--type", "sprint_note", "--slug", slug,
-                       "--parent-dir", str(captures_dir.relative_to(PROJECT_ROOT)),
+        rc = gen.main(["--type", "capture", "--slug", slug,
+                       "--parent-dir", str(inbox_dir.relative_to(PROJECT_ROOT)),
                        "--title", title, "--description", args.note,
                        "--tags", args.tags or "capture"])
     except SystemExit as exc:
@@ -966,7 +955,7 @@ def cmd_add(argv):
     if not argv or argv[0] in ("-h", "--help"):
         print("usage: compass add <type> [generate_v2_doc options]\n"
               "  types: story task sprint version recipe knowledge component\n"
-              "         capture sprint_note memory investigation product_identity\n"
+              "         capture memory investigation product_identity\n"
               "  --parent-dir defaults to the current sprint (story) or "
               "version (sprint); required otherwise.\n"
               "  remaining flags are passed through to ores.codegen "

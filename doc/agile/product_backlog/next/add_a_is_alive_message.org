@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID: 463467F7-E02A-483B-A5F8-6C930CDD9E4C
+:END:
+#+title: Add a "is alive" message
+#+description: Add a "is alive" message
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We need to brainstorm this. At present we can only tell if a server is there or
+not by connecting. It would be nice to give some visual indicator to the user
+that the server is not up as soon as the user types the host. this may not be a
+good idea.
+
+Notes:
+
+- could tell client if registration / sign-up is supported.

@@ -1,0 +1,15 @@
+:PROPERTIES:
+:ID: CE1614D5-400C-460F-A970-878AA11E1045
+:END:
+#+title: No samples in sessions
+#+description: No samples in sessions
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+For some reason we are no longer sampling for sessions. Investigate why.

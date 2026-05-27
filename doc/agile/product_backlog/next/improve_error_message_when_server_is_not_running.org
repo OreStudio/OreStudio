@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: A29A45EC-190B-472A-A20B-C8F4A0E78F04
+:END:
+#+title: Improve error message when server is not running
+#+description: Improve error message when server is not running
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+At present we get:
+
+#+begin_quote
+Failed to connect to server: Failed to connect to server
+#+end_quote
+
+If we try again after the error, "authenticating..." shows up in red.

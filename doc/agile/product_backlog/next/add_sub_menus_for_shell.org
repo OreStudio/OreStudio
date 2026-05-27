@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: 87DB430D-2DC0-4082-9EAD-78B722DE7EB2
+:END:
+#+title: Add sub-menus for shell
+#+description: Add sub-menus for shell
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We did the plan for this work.
+
+Notes:
+
+- log full version including timestamp.
+- add info command which is the same as CLI.
+- move paging commands into a paging menu, e.g. =page next= instead of =next=?

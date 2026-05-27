@@ -36,7 +36,7 @@ Sprint 18 acquires a clear one-sentence mission and a curated Stories table that
 * Acceptance
 
 - =doc/agile/versions/v0/sprint_18/sprint.org= has a non-placeholder one-sentence mission.
-- At least one capture from =doc/agile/product_backlog/near/= has been promoted into a sprint 18 story.
+- At least one capture from =doc/agile/product_backlog/next/= has been promoted into a sprint 18 story.
 - All promoted stories appear in the sprint's Stories table.
 - Site builds clean.
 

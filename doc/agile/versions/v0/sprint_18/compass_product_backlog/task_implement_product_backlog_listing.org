@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 092931C3-633E-4885-8AA0-31B88E196A65
 :END:
-#+title: Task: Implement product backlog near/far listing in compass
-#+description: Add compass backlog command to list near and far captures with counts and titles, mirroring the sprint in-flight display.
+#+title: Task: Implement product backlog next/deferred listing in compass
+#+description: Add compass backlog command to list next and deferred captures with counts and titles, mirroring the sprint in-flight display.
 #+type: task
 #+version: 2
 #+level: s1
@@ -16,11 +16,11 @@
 #+updated: 2026-05-24
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — near and far listing]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — next and deferred listing]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Add a =backlog= subcommand to =compass.py= that reads the near and far
+Add a =backlog= subcommand to =compass.py= that reads the next and deferred
 capture buckets from the doc index and prints them in a human-readable
 (and optionally JSON) format. Also fix the CWD bug in =compass.sh= that
 causes generated files to land inside =projects/ores.compass/= instead of
@@ -31,7 +31,7 @@ the repo root.
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
 | State        | DONE                                                            |
-| Parent story | [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — near and far listing]] |
+| Parent story | [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — next and deferred listing]] |
 | Now          | Complete.                                    |
 | Waiting on   | Nothing.                                                           |
 | Next         | None.                                                              |
@@ -45,10 +45,10 @@ the repo root.
 - =compass.sh backlog= prints near captures then far captures, each group
   headed by a count line (e.g. =Near (12):=).
 - Each capture prints as one line: title and relative path.
-- =compass.sh backlog --near= prints only the near bucket; =--far= only far.
+- =compass.sh backlog --near= prints only the next bucket; =--far= only far.
 - =compass.sh backlog --json= emits ={"near": [...], "far": [...]}= with
   the same fields as the =where --json= in-flight entries.
-- =compass.sh backlog --count= prints only the counts (=near=12 far=7=),
+- =compass.sh backlog --count= prints only the counts (=next=12 far=7=),
   useful for scripting.
 - Existing =where=, =list=, =search=, and =add= commands are unaffected.
 

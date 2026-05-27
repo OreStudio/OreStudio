@@ -78,7 +78,7 @@ the folder under the story that eventually claims it.
 Discovered tasks must leave =DISCOVERED= within one System 2 session of
 the story or sprint they were discovered in. They move to: =BACKLOG=
 (claimed by the same story), =BACKLOG= under a different story (folder
-move), the product backlog (as a /far/ story candidate), or =ABANDONED=
+move), the product backlog (as a /deferred/ story candidate), or =ABANDONED=
 with a reason.
 
 * Story lifecycle

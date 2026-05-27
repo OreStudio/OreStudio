@@ -25,7 +25,7 @@ doc/
 ├── meta/                 ← the contract: how documents are shaped
 ├── agile/                ← the operational tree
 │   ├── versions/         ← the composition tree (the bulk of v2)
-│   └── product_backlog/  ← pre-sprint ideas (near / far buckets)
+│   └── product_backlog/  ← pre-sprint ideas (next / deferred buckets)
 ├── recipes/              ← operational how-tos, by topic
 ├── knowledge/            ← cross-cutting reference material
 │   └── external/         ← reference docs for systems we don't own
@@ -90,8 +90,8 @@ See [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] for the full in
 Holds [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][captures]] — ideas not yet pulled into a sprint as stories. Split into two
 buckets:
 
-- =near/= — candidate work for the next version.
-- =far/= — longer-term wishlist.
+- =next/=|=deferred — candidate work for the next version.
+- next/=|=deferred/= — longer-term wishlist.
 
 When a capture is promoted into a sprint, the file moves into the appropriate
 sprint folder and its =#+type:= flips from =capture= to =story=. The =:ID:= is

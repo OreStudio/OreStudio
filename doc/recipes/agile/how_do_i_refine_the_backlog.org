@@ -10,16 +10,16 @@
 #+created: 2026-05-24
 #+updated: 2026-05-24
 
-Backlog refinement operates on the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]] — the =near/= and
-=far/= capture buckets under =doc/agile/product_backlog/=. For
+Backlog refinement operates on the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]] — the =next/=|=deferred and
+next/=|=deferred/= capture buckets under =doc/agile/product_backlog/=. For
 automated orchestration, use the [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][backlog-refiner]] skill. For sprint
 selection specifically, use [[id:2C2E794B-7565-4FD8-BD26-E7949C874E43][How do I plan a sprint?]].
 
 * Question
 
 How do I tidy the product backlog — pruning stale captures,
-sharpening vague ones, and re-prioritising between =near/= and
-=far/=?
+sharpening vague ones, and re-prioritising between =next/=|=deferred and
+next/=|=deferred/=?
 
 * Answer
 
@@ -35,8 +35,8 @@ sharpening vague ones, and re-prioritising between =near/= and
    - *V — Valid?* Is the need still real? If the work shipped or
      the idea was abandoned, mark =ABANDONED= in the capture's
      status table and commit.
-   - *B — Bucket?* Does it belong in =near/= (next version) or
-     =far/= (longer horizon)? Move by renaming the file; =:ID:=
+   - *B — Bucket?* Does it belong in =next/=|=deferred (next version) or
+     next/=|=deferred/= (longer horizon)? Move by renaming the file; =:ID:=
      stays unchanged.
    - *C — Clear?* Is the title a complete thought and the
      description specific enough to act on? Sharpen both in place
@@ -59,15 +59,15 @@ sharpening vague ones, and re-prioritising between =near/= and
 4. /Move items between buckets/:
 
    #+begin_src sh :results verbatim
-   git mv doc/agile/product_backlog/near/<slug>.org \
-          doc/agile/product_backlog/far/<slug>.org
+   git mv doc/agile/product_backlog/next/<slug>.org \
+          doc/agile/product_backlog/deferred/<slug>.org
    #+end_src
 
 5. /Commit the sweep/:
 
    #+begin_src sh :results verbatim
    git add doc/agile/product_backlog/
-   git commit -m "[agile] Backlog refinement — near/far housekeeping"
+   git commit -m "[agile] Backlog refinement — next/deferred housekeeping"
    #+end_src
 
 ** Healthy backlog heuristics
@@ -84,7 +84,7 @@ this procedure interactively.
 * Tested by
 
 Manual. Run at the start of each sprint planning cycle or whenever
-the near bucket exceeds 20 items.
+the next bucket exceeds 20 items.
 
 * See also
 
@@ -92,4 +92,4 @@ the near bucket exceeds 20 items.
 - [[id:2C2E794B-7565-4FD8-BD26-E7949C874E43][How do I plan a sprint?]] — use after refinement to select stories.
 - [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] — preferred scaffold entry point.
 - [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — full codegen reference.
-- [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — the near/far structure and its invariants.
+- [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — the next/deferred structure and its invariants.

@@ -30,7 +30,7 @@ awareness of the previous and the next.
 
 * Inputs
 
-- The [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] bucket of the product backlog.
+- The [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] bucket of the product backlog.
 - The current [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]]'s mission and identity.
 - Completed sprints under =doc/agile/versions/v0/= for historical
   pattern.
@@ -56,7 +56,7 @@ Before acting, load:
    capture contract.
 3. [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]] — task and story state machines you will be supervising
    indirectly.
-4. [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — how near and far buckets work, the
+4. [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — how near and deferred buckets work, the
    capture-to-story promotion rules.
 5. The version's =version.org=, the previous sprint's =* Retrospective=,
    the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]] (for vetoes).

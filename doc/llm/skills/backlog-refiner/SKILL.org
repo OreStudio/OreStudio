@@ -2,7 +2,7 @@
 :ID: 5358EC5A-F7FD-473A-A8AB-AF77E4D83A58
 :END:
 #+title: Backlog Refiner
-#+description: Run a backlog housekeeping session: scan, clarify, cull, and re-prioritise captures in the near/far buckets.
+#+description: Run a backlog housekeeping session: scan, clarify, cull, and re-prioritise captures in the next/deferred buckets.
 #+type: skill
 #+version: 2
 #+level: cross
@@ -13,7 +13,7 @@
 #+begin_export markdown
 ---
 name: backlog-refiner
-description: Run a backlog housekeeping session: scan the near/far captures, clarify descriptions, cull stale items, and re-prioritise between buckets.
+description: Run a backlog housekeeping session: scan the next/deferred captures, clarify descriptions, cull stale items, and re-prioritise between buckets.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -23,7 +23,7 @@ license: Complete terms in LICENSE.txt
 When the user asks to tidy, groom, or review the product backlog —
 not to plan a specific sprint (use [[id:FB451B15-9674-4B61-A9F8-7DAEEB4B365A][sprint-planner]] for that) but to keep the
 backlog healthy: pruning stale captures, clarifying vague ones,
-moving items between [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] and [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][far]], or filing new ideas as they
+moving items between [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] and [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]], or filing new ideas as they
 come up.
 
 * How to use this skill
@@ -31,12 +31,12 @@ come up.
 1. /List both buckets/ to get a full picture before changing anything:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh list --type capture --sort path | grep near
-   ./projects/ores.compass/compass.sh list --type capture --sort path | grep far
+   ./projects/ores.compass/compass.sh list --type capture --sort path | grep next
+   ./projects/ores.compass/compass.sh list --type capture --sort path | grep deferred
    #+end_src
 
-   Note the total count — near should stay manageable (≤ 20 is a
-   useful heuristic). A crowded near bucket signals drift; a sparse
+   Note the total count — next should stay manageable (≤ 20 is a
+   useful heuristic). A crowded next bucket signals drift; a sparse
    one may mean work is being under-captured.
 
 2. /Read each capture/ in the target bucket. For each one assess:
@@ -47,8 +47,8 @@ come up.
    - *Clarity* — is the =#+title= and =#+description= specific
      enough that someone could act on it without back-channel
      context? If not, sharpen both in place.
-   - *Bucket fit* — does this item belong in =near/= (candidate for
-     the next version) or =far/= (longer-horizon)? Move by
+   - *Bucket fit* — does this item belong in =next/= (candidate for
+     the next version) or =deferred/= (longer-horizon)? Move by
      renaming the file path; the =:ID:= stays unchanged so
      existing links keep working.
    - *Duplicates* — if two captures describe the same idea, merge
@@ -59,17 +59,14 @@ come up.
    [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]] skill's codegen step to scaffold each one:
 
    #+begin_src sh :results verbatim
-   projects/ores.codegen/generate_v2_doc.sh \
-     --type capture --slug <slug> \
-     --parent-dir doc/agile/product_backlog/near \
-     --title "<title>" --description "<one-liner>"
+   projects/ores.compass/compass.sh capture --note "<idea text>"
    #+end_src
 
-4. /Re-prioritise/ by moving files between =near/= and =far/=:
+4. /Re-prioritise/ by moving files between =next/= and =deferred/=:
 
    #+begin_src sh :results verbatim
-   git mv doc/agile/product_backlog/near/<slug>.org \
-          doc/agile/product_backlog/far/<slug>.org
+   git mv doc/agile/product_backlog/next/<slug>.org \
+          doc/agile/product_backlog/deferred/<slug>.org
    #+end_src
 
 5. /Commit/ the full sweep in one atomic commit per bucket (or one
@@ -77,7 +74,7 @@ come up.
 
    #+begin_src sh :results verbatim
    git add doc/agile/product_backlog/
-   git commit -m "[agile] Backlog refinement — near bucket housekeeping"
+   git commit -m "[agile] Backlog refinement — next bucket housekeeping"
    #+end_src
 
 * Recipes
@@ -89,7 +86,7 @@ come up.
 
 * Reference
 
-- [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — the near/far structure and its invariants.
+- [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — the next/deferred structure and its invariants.
 - [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] — the document type contract.
 - [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — full frontmatter contract for all types.
 - [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile product owner]] — atomic operations (file, promote, scaffold)

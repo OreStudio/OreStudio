@@ -58,7 +58,7 @@ In execution order:
 * See also
 
 - [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — full =compass goto= syntax (new story and add-task-to-existing forms, =--dry-run= flag).
-- [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — where captures live before becoming stories; the =near=, =far=, and =discarded= buckets; how to promote a capture into a sprint.
+- [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — where captures live before becoming stories; the =next=, =deferred=, and =discarded= buckets; how to promote a capture into a sprint.
 - [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] — what comes after the PR is open.
 - [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]] — commit format reference.
 - [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] — the next runbook: from task pickup to merge.

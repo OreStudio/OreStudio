@@ -246,7 +246,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 :END:
 
 [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Captures]] live in the product backlog under =doc/agile/product_backlog/= in
-either the =near/= bucket (candidate work for the next version) or =far/=
+either the =next/=|=deferred bucket (candidate work for the next version) or next/=|=deferred/=
 (longer-term wishlist). The =--parent-dir= picks the bucket.
 
 #+begin_src sh :results verbatim

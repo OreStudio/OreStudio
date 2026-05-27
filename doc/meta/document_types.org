@@ -517,9 +517,9 @@ discovery (see [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]]).
 
 A pre-sprint idea — see [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] in the glossary.
 
-- Folder :: =doc/agile/product_backlog/{near,far}/<slug>.org= — flat
-  files inside the bucket. =near/= = candidate work for the next
-  version; =far/= = longer-term wishlist.
+- Folder :: =doc/agile/product_backlog/{inbox,next,deferred,discarded}/<slug>.org= — flat
+  files inside the bucket. =next/= = candidate work for the next
+  version; =deferred/= = longer-term wishlist.
 - Level :: =cross= (sits between product identity and the operational
   tree; not tied to a specific level).
 - Slug :: =snake_case=. Becomes the filename.
@@ -726,7 +726,7 @@ identity.
 When a knowledge or meta document's role is /navigation/ — it
 summarises a tree of related documents and links to them — it is
 called an /index page/. Examples in this repo: [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]],
-[[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]], [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]], the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] and [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][far]] bucket indexes.
+[[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]], [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]], the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] and [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]] bucket indexes.
 
 Index pages have three extra requirements on top of the usual
 knowledge / meta contract:

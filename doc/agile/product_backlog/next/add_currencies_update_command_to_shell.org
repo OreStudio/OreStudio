@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: BBD99C8F-F548-4A9A-8A1D-C796E0DFF182
+:END:
+#+title: Add currencies update command to shell
+#+description: Add currencies update command to shell
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+At present we can only add new currencies. We also need to be able to update.
+Also, adding currencies requires supplying all parameters.

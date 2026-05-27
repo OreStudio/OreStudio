@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID: 6F9AD4DF-4F64-4BB2-9494-EBB68CC51CA3
+:END:
+#+title: Add support for FIX
+#+description: Add support for FIX
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Links:
+
+- [[https://github.com/jamesdbrock/hffix][GH: hffix]]: "The High Frequency FIX Parser library is an open source
+  implementation of tagvalue FIX (classic FIX) intended for use by developers of
+  high frequency, low latency financial software. The purpose of the library is
+  to do fast, efficient encoding and decoding of FIX in place, at the location
+  of the I/O buffer. The library does not use intermediate message objects, and
+  it does no memory allocation on the free store (the “heap”)."

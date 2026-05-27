@@ -814,6 +814,138 @@ def _default_parent_dir(doc_type):
         return _parent_dir(current_sprint.rel_path)
     return None
 
+BACKLOG_BUCKETS = ("next", "deferred", "discarded")
+BACKLOG_ROOT = Path("doc") / "agile" / "product_backlog"
+
+def _inbox_dir():
+    """Return the absolute path to the inbox/ backlog bucket."""
+    return Path(PROJECT_ROOT) / BACKLOG_ROOT / "inbox"
+
+def _backlog_dir(bucket):
+    return Path(PROJECT_ROOT) / "doc" / "agile" / "product_backlog" / bucket
+
+def _find_capture(slug):
+    """Find a capture by slug in inbox/ or any backlog bucket. Returns Path or None."""
+    backlog_root = Path(PROJECT_ROOT) / BACKLOG_ROOT
+    for bucket in ("inbox", *BACKLOG_BUCKETS):
+        candidate = backlog_root / bucket / f"{slug}.org"
+        if candidate.exists():
+            return candidate
+    return None
+
+def cmd_capture(argv):
+    """Manage product backlog captures.
+
+    Subcommands:
+      (default)  --note "..."  [--slug <slug>]        Create a capture in inbox/.
+      file <slug> next|deferred|discarded             Move an inbox capture to a bucket.
+      promote <slug>                                  Show instructions to promote to story/task.
+    """
+    if not argv or argv[0] in ("-h", "--help"):
+        print(
+            "usage:\n"
+            "  compass capture --note \"...\" [--slug <slug>]\n"
+            "      Create a capture in doc/agile/product_backlog/inbox/.\n"
+            "  compass capture file <slug> next|deferred|discarded\n"
+            "      Move an inbox capture to a triaged product backlog bucket.\n"
+            "  compass capture promote <slug>\n"
+            "      Print instructions for promoting a capture to a story or task.\n"
+        )
+        return 0
+
+    subcommand = argv[0]
+
+    # --- file subcommand ---
+    if subcommand == "file":
+        if len(argv) < 3:
+            print("❌ usage: compass capture file <slug> next|deferred|discarded", file=sys.stderr)
+            return 1
+        slug, bucket = argv[1], argv[2]
+        if bucket not in BACKLOG_BUCKETS:
+            print(f"❌ bucket must be one of: {', '.join(BACKLOG_BUCKETS)}", file=sys.stderr)
+            return 1
+        src = _find_capture(slug)
+        if src is None:
+            print(f"❌ No capture found for slug '{slug}'.", file=sys.stderr)
+            return 1
+        dst = _backlog_dir(bucket) / f"{slug}.org"
+        if dst.exists():
+            print(f"❌ {dst} already exists.", file=sys.stderr)
+            return 1
+        # Update bucket tag in filetags to reflect new location, then git mv.
+        text = src.read_text(encoding="utf-8")
+        # Replace any existing bucket tag with the new one.
+        for old_bucket in ("inbox", *BACKLOG_BUCKETS):
+            text = re.sub(rf":{re.escape(old_bucket)}:", f":{bucket}:", text)
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_text(text, encoding="utf-8")
+        result = subprocess.run(
+            ["git", "mv", str(src), str(dst)],
+            cwd=str(PROJECT_ROOT), capture_output=True, text=True)
+        if result.returncode != 0:
+            # git mv failed (e.g. file not tracked yet); fall back to plain move.
+            src.unlink()
+        print(f"✅ Filed '{slug}' to {bucket} backlog: {dst.relative_to(PROJECT_ROOT)}")
+        print("ℹ️  Re-run regenerate_backlog_indexes.py to update the bucket index.")
+        return 0
+
+    # --- promote subcommand ---
+    if subcommand == "promote":
+        if len(argv) < 2:
+            print("❌ usage: compass capture promote <slug>", file=sys.stderr)
+            return 1
+        slug = argv[1]
+        src = _find_capture(slug)
+        if src is None:
+            print(f"❌ No capture found for slug '{slug}'.", file=sys.stderr)
+            return 1
+        print(f"Capture: {src.relative_to(PROJECT_ROOT)}")
+        print("\nTo promote to a new story:")
+        print(f"  compass goto --slug {slug} --title \"<title>\" --description \"<desc>\" --tags \"<tags>\"")
+        print(f"  Then delete: {src.relative_to(PROJECT_ROOT)}")
+        print("\nTo promote to a task on an existing story:")
+        print(f"  compass goto --story <id-or-slug> --task-slug {slug} --task \"<title>\"")
+        print(f"  Then delete: {src.relative_to(PROJECT_ROOT)}")
+        return 0
+
+    # --- default: create a new capture in inbox ---
+    ap = argparse.ArgumentParser(prog="compass capture",
+                                 description="Create a capture in the product backlog inbox.")
+    ap.add_argument("--note", required=True, help="The note text (used as description and body).")
+    ap.add_argument("--slug", default="", help="Snake_case slug (auto-generated from note if omitted).")
+    ap.add_argument("--title", default="", help="Title (defaults to first 60 chars of note).")
+    ap.add_argument("--tags", default="", help="Comma-separated tags.")
+    ap.add_argument("--dry-run", action="store_true", help="Print plan without creating the file.")
+    args = ap.parse_args(argv)
+
+    inbox_dir = _inbox_dir()
+    slug = args.slug or re.sub(r"[^a-z0-9]+", "_", args.note[:50].lower()).strip("_")
+    title = args.title or (args.note[:60] + ("…" if len(args.note) > 60 else ""))
+    out_file = inbox_dir / f"{slug}.org"
+
+    if args.dry_run:
+        print(f"compass capture — plan (dry run):")
+        print(f"  file:  {out_file.relative_to(PROJECT_ROOT)}")
+        print(f"  slug:  {slug}")
+        print(f"  title: {title}")
+        return 0
+
+    gen = _import_generator()
+    inbox_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        rc = gen.main(["--type", "capture", "--slug", slug,
+                       "--parent-dir", str(inbox_dir.relative_to(PROJECT_ROOT)),
+                       "--title", title, "--description", args.note,
+                       "--tags", args.tags or "capture"])
+    except SystemExit as exc:
+        rc = exc.code
+    if rc in (None, 0):
+        print(f"✅ Sprint note created: {out_file.relative_to(PROJECT_ROOT)}")
+        print("ℹ️  Use 'compass capture file <slug> near|far|discarded' to move to backlog,")
+        print("   or 'compass capture promote <slug>' for instructions to make it a story/task.")
+        return 0
+    return rc or 1
+
 def cmd_add(argv):
     """Create a v2 doc by calling ores.codegen as a library.
 
@@ -1035,6 +1167,8 @@ def main():
         sys.exit(cmd_add(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "goto":
         sys.exit(cmd_goto(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "capture":
+        sys.exit(cmd_capture(sys.argv[2:]))
 
     parser = argparse.ArgumentParser(description="Compass: orientation tool for ORE Studio")
     subparsers = parser.add_subparsers(dest="command", required=True)

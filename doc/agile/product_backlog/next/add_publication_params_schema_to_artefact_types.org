@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 20535DE5-3044-4119-96FA-6B16AFB98EB4
+:END:
+#+title: Add =publication_params_schema= to artefact types
+#+description: Add =publication_params_schema= to artefact types
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+The GLEIF librarian integration plan (=2026-02-08=) requires artefact types to
+declare what parameters they accept so that the publish wizard can render
+per-dataset configuration pages dynamically. The =PublishBundleWizard= and its
+=LeiPartyConfigPage= are already in place, but the database column that drives
+them is missing.
+
+Tasks:
+
+- [ ] Add =publication_params_schema jsonb= nullable column to
+  =ores_dq_artefact_types_tbl= (new migration/alter script under
+  =projects/ores.sql/create/dq/=).
+- [ ] Populate the column for the two LEI artefact types
+  (=gleif.lei_parties.small= and =gleif.lei_counterparties.small=) in
+  =projects/ores.sql/populate/= with the JSON schema describing their accepted
+  parameters (e.g. =target_party_ids= for counterparties).
+- [ ] Update the =artefact_type= domain type and IO in =ores.dq.api= to include
+  the new nullable field.
+- [ ] Expose the schema via the =dq.v1.artefact_types.list= response so the Qt
+  client can read it.
+- [ ] Update =LeiPartyConfigPage= in =PublishBundleWizard= to read the schema
+  and drive its UI from it rather than hard-coding the fields.

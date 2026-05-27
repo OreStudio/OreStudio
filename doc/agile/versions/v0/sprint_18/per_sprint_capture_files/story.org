@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F
+:END:
+#+title: Story: Per-sprint capture workflow: individual files and compass integration
+#+description: Replace the single capture.org per sprint with per-file product backlog captures in inbox/next/deferred/discarded buckets. Add compass capture command to create, file, and promote captures. Rename near/far to next/deferred for clarity.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :agile:compass:capture:workflow:codegen:sprint_18:v0:
+#+created: 2026-05-27
+#+updated: 2026-05-27
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The single =capture.org= file per sprint has become unmanageable: annotations accumulate, implemented items are forgotten, and the file becomes noise rather than signal.
+
+Replace it with product-level captures in the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]], where each capture is a separate file scaffolded by compass. New captures land in =inbox/= (untriaged). At triage they move to =next/= (imminent candidate), =deferred/= (long-horizon idea), or =discarded/= (explicitly rejected). The LLM calls =compass capture --note "..."= on the user's behalf; captures can then be promoted into stories or tasks. This makes triage cheap: promote the valuable, file the deferred, discard the stale.
+
+* Status
+
+| Field         | Value                                                                    |
+|---------------+--------------------------------------------------------------------------|
+| State         | STARTED                                                                  |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                                                |
+| Now           | Buckets renamed; compass capture implemented; commit recipe updated.     |
+| Waiting on    | Nothing.                                                                 |
+| Next          | Update document_types.org; bulk capture recipe; Emacs story/task cmds.  |
+| Last touched  | 2026-05-27                                                               |
+
+* Acceptance
+
+- =compass capture --note "..."= scaffolds a new capture in =doc/agile/product_backlog/inbox/= and prints the path.
+- =compass capture file <slug> next|deferred|discarded= moves a capture into the appropriate backlog bucket.
+- =compass capture promote <slug>= prints instructions to promote a capture to a story or task.
+- Four buckets exist under =doc/agile/product_backlog/=: =inbox/=, =next/=, =deferred/=, and =discarded/=, each with an index doc.
+- The product backlog uses =next/= and =deferred/= (renamed from =near/= and =far/=).
+- The [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] knowledge doc documents all four buckets and the capture lifecycle.
+- The [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] doc describes the capture type with the four-bucket structure.
+- The commit recipe documents =[inbox]=, =[next]=, =[deferred]=, =[discarded]= as component brackets for backlog commits.
+- The [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] runbook links to the correct compass recipe and the product backlog doc.
+- An org-roam capture template in =ores.lisp= writes new captures to the inbox of the active environment.
+- A recipe documents how to write a freeform paragraph and have the LLM decompose it into well-structured captures in =inbox/=.
+- Emacs commands =ores/new-story= and =ores/new-task= in =ores.lisp= scaffold artefacts in the current sprint via compass, bound to keys, and offer to commit with a well-formed message.
+- All =near= / =far= bucket references across the doc graph have been updated to =next= / =deferred=.
+
+* Tasks
+
+In execution order:
+
+- [[id:2365B41D-EB19-42C4-BA76-105B6E82B7C0][Implement per-sprint capture workflow]]
+- [[id:5FBF9C85-5304-4F6D-8C69-0B0CF759191E][Update remaining near/far bucket references across all docs]]
+- [[id:AEC50B97-6789-4E3A-B0F4-A70A01FCB341][Update document_types.org capture entry for inbox/next/deferred/discarded]]
+- [[id:477F1A3A-7090-4519-937B-2A79176CBAF6][Write recipe: bulk capture from freeform text]]
+- [[id:482430DB-BE56-4589-B5A7-B616F7CC27F2][Add org-roam capture template in ores.lisp writing to inbox]]
+- [[id:CD06F3DD-B447-421C-8D61-261226FA4A71][Add Emacs new-story and new-task commands with key bindings to ores.lisp]]
+
+* Decisions
+
+* Out of scope
+
+- Migrating existing =capture.org= files to the new per-file layout (old files are left as-is; the new layout is forward-only).
+- Automatic background filing of captures without explicit user instruction.

@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 45D1741E-5DEF-454A-9358-928D44AF31E7
+:END:
+#+title: Synthetic data generator improvements
+#+description: Three issues: (1) cities must nest within the same parent city, not mixed hierarchies; (2) generate multiple counterparty root nodes with a probability distribution over tree depth; (3) block tenant bootstrapping if system has not been bootstrapped first.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :generator:testing:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Three bugs / gaps in the synthetic data generator:
+
+1. *City hierarchy* — counterparties and parties are assigned cities drawn from the full global list rather than from cities belonging to the same parent (country → region → city). Fix the generator to respect the geographic hierarchy.
+2. *Counterparty tree shape* — currently only one root counterparty is generated. Produce multiple root nodes; use a configurable probability distribution over depth (e.g. geometric with max depth parameter) to vary tree shape realistically.
+3. *Bootstrap guard* — tenant bootstrapping should be blocked if the system has not yet been bootstrapped. Add a pre-check that queries for a bootstrapped system record and aborts with a clear error if absent.

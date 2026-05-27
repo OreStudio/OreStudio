@@ -1,0 +1,15 @@
+:PROPERTIES:
+:ID: 0EB5C748-2C87-45AE-9BDB-7C6F57872B4E
+:END:
+#+title: Consider adding sanitizer build
+#+description: Consider adding sanitizer build
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :infra:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/sanitizer.yml][=sanitizer.yml=]].

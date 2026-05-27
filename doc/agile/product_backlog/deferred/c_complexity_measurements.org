@@ -1,0 +1,23 @@
+:PROPERTIES:
+:ID: D6DC4DE5-22FA-4F48-8C8F-EEA1FCAB1C48
+:END:
+#+title: C++ Complexity Measurements
+#+description: C++ Complexity Measurements
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Since we are no longer taking a close look at the generated code and since
+Gemini code review does not catch all issues, we should try to find some
+automated tools to measure complexity and point to places where generated code
+is not ideal.
+
+Links:
+
+- [[https://github.com/metrixplusplus/metrixplusplus?tab=readme-ov-file][GH: metrixplusplus]]: "Metrix++ is an extendable tool for code metrics
+  collection and analysis."

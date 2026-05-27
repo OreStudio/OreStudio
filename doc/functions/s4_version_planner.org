@@ -32,7 +32,7 @@ the version can release.
 - The [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]] (the constraint).
 - Completed versions' release notes for pattern.
 - The current sprint sequence and the proposed next-sprint mission.
-- The [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] backlog for upcoming-version candidates.
+- The [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] backlog for upcoming-version candidates.
 
 * Outputs
 

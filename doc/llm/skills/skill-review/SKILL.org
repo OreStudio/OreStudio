@@ -80,7 +80,7 @@ might overlap.
 
 8. /File findings/. Either:
    - Open a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the current sprint for each fix-shaped finding,
-   - Open a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in =near/= for larger restructures, or
+   - Open a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in =next/=|=deferred for larger restructures, or
    - Apply the fix directly when it's a one-line correction.
 
 * Recipes

@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: 2CA98337-C2F0-482F-87AC-C343B02DA5B2
+:END:
+#+title: currency rounding types are duplicated: every entry shows tw…
+#+description: currency rounding types are duplicated: every entry shows twice, once for IAM user and once for DDL user, both with the same version number
+#+type: capture
+#+version: 2
+#+level: s1
+#+filetags: :bug:refdata:currencies:
+#+created: 2026-05-27
+#+updated: 2026-05-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story. It can be promoted to a story, added as a task, or moved to another bucket via =compass capture=.
+
+* Note
+
+currency rounding types are duplicated: every entry shows twice, once for IAM user and once for DDL user, both with the same version number
+
+* Actions
+
+-
+
+* See also
+
+-

@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: 09F5DED0-A8C9-4AE7-B822-64AA0A4305C8
+:END:
+#+title: Add a delete all button which deletes all currencies
+#+description: Add a delete all button which deletes all currencies
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+It is useful especially in test environments to be able to delete all entities
+before a re-import.
+
+Notes:
+
+- purge button.

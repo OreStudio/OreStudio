@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: C8695D21-AFFE-4E09-B1FB-92DCF3340FFC
+:END:
+#+title: Create python script to split xsdcpp output
+#+description: Create python script to split xsdcpp output
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We are generating one very large file with all the types. This is not ideal.
+Also, this will probably not work for FPML as the schema is even larger.

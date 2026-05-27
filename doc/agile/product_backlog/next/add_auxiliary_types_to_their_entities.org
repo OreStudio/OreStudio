@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: D7A0AE09-4A0E-427D-8DD2-AD72E589BB6F
+:END:
+#+title: Add auxiliary types to their entities
+#+description: Add auxiliary types to their entities
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+The toolbars of each entity should have icons for the auxiliary types they use.
+Also we may need to make the menu options a bit more obvious (e.g. "Purpose
+Types"?).

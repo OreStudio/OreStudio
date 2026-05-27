@@ -62,7 +62,7 @@ You probably want one of:
   area (Domain / Architecture / Security / Documentation).
 - *A component or file in the codebase* → [[id:D773166D-0C91-8CB4-3323-42166BC07687][Modeling]] (UML overview) or [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][Doxygen]]
   (low-level C++ API).
-- *Pre-sprint ideas* → [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]], split by horizon ([[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] / [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][far]]).
+- *Pre-sprint ideas* → [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]], split by horizon ([[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] / [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]]).
 - *Historical design documents* → [[id:6E09902A-5D78-4697-9934-F818073FA5D9][Plans]], legacy pre-sprint plans kept for
   context on past decisions.
 

@@ -17,10 +17,8 @@ destination ([[id:1737C00C-699A-475A-BC94-743C6CDA1001][sprint backlog]] or [[id
 
 * Agile
 
-- add a template for sprint captures. Very often we are doing something and we
-  just need to jot down a quick annotation, but if it goes into product backlog
-  it will get lost. Ideally it should start in sprint and then get filled.
-- add a memory for the tmp directory.
+- add a memory for the tmp directory. actually add a memory for the meaning of
+  some directories, samples, tmp etc.
 - add recipes to do doc commands (list etc). Link it to skills.
 - add a skill which drains capture buffer: for each entry decides to either file
   it as a task or a story in current sprint, or into product backlog.
@@ -45,7 +43,8 @@ destination ([[id:1737C00C-699A-475A-BC94-743C6CDA1001][sprint backlog]] or [[id
 - create a summary page of the cybernetics approach instead of linking to
   wikipedia.
 - in Cybernetic Levels explain how our approach connects and does not connect to
-  cybernets. Explain limitations.
+  cybernetics. Explain limitations.
+- in compass: cybernetic information architecture - add a link.
 - add knowledge pages for CMake: what is it, how we use it. Link to build pages.
 - add knowledge page for vcpkg: what is it, how we use it. link to submodule
   updates.
@@ -113,6 +112,7 @@ destination ([[id:1737C00C-699A-475A-BC94-743C6CDA1001][sprint backlog]] or [[id
   - running local scripts.
   - remote login operations via HTTP. A true client.
   - integration with CLI. Direct database access.
+- emacs capture: https://www.gnu.org/software/emacs/manual/html_mono/org.html#Setting-up-capture
 
 * Environment
 
@@ -154,6 +154,7 @@ ORES_NATS_MONITOR_URL=http://localhost:8221
   have been removed.
 - add a download button for the releases. Make sure the page states a disclaimer
   that these are alpha versions. Ask user to report problems on discord.
+- add a note saying packages are zipped.
 - consider adding screenshots with functionality like qwen. ask LLM if its
   possible to jazz up the screenshots. https://qwen.ai/qwencode
 
@@ -180,3 +181,115 @@ ORES_NATS_MONITOR_URL=http://localhost:8221
 - monetary nature: no eventing,
 - history dialog does not remember geometry.
 - market tiers: we have icon but does nothing.
+- rounding types: deleting does auto refresh.
+
+* Knowledge Graph
+
+We are not loading images correctly:
+
+#+begin_quote
+http://localhost:35901/img/%252FOreStudio%252Fassets%252Fimages%252Fstatus_bar_connected.png net::ERR_CONNECTION_REFUSEDUnderstand this error
+%2FOreStudio%2Fassets%2Fimages%2Fstatus_bar_disconnected.png:1  GET http://localhost:35901/img/%252FOreStudio%252Fassets%252Fimages%252Fstatus_bar_disconnected.png net::ERR_CONNECTION_REFUSEDUnderstand this error
+%2FOreStudio%2Fassets%2Fimages%2Fmain_window_instance_colour.png:1  GET http://localhost:35901/img/%252FOreStudio%252Fassets%252Fimages%252Fmain_window_instance_colour.png net::ERR_CONNECTION_REFUSEDUnderstand this error
+%2FOreStudio%2Fassets%2Fimages%2Ftitle_bar_version.png:1  GET http://localhost:35901/img/%252FOreStudio%252Fassets%252Fimages%252Ftitle_bar_version.png net::ERR_CONNECTION_REFUSEDUnderstand this error
+%2FOreStudio%2Fassets%2Fimages%2Fsplash_screen_version.png:1  GET http://localhost:35901/img/%252FOreStudio%252Fassets%252Fimages%252Fsplash_screen_version.png net::ERR_CONNECTION_REFUSEDUnderstand this error
+%2FOreStudio%2Fassets%2Fimages%2Flogin_dialog_version_registration.png:1  GET http://localhost:35901/img/%252FOreStudio%252Fassets%252Fimages%252Flogin_dialog_version_registration.png net::ERR_CONNECTION_REFUSEDUnderstand this error
+%2FOreStudio%2Fassets%2Fimages%2Fapplication_system_tray.png:1  GET http://localhost:35901/img/%252FOreStudio%252Fassets%252Fimages%252Fapplication_system_tray.png net::ERR_CONNECTION_REFUSED
+#+end_quote
+
+- sprint 17 release notes not linked.
+- MSVC C1202 Workaround Cleanup not linked.
+- Type definition facet not linked
+- Page Not Found not linked
+- manual Introduction not linked, however not clear how this would work. We are
+  using org-mode includes. Same with Connecting to ORE Studio.
+- options we see in org-mode on the right don't show up in our knowledge graph.
+- Add Knowledge to the menus, remove knowledge graph. Then add section in
+  knowledge about knowledge graph and explain
+
+* LLM
+
+- Add a section saying this is an LLM first system. Also explain the mix of:
+  - MASD
+  - Zettletasken
+  - Cybernetics
+- add link to claude settings page.
+- add a general page on cybernetics and Stafford Beer's Viable System Model.
+  Link it to Cybernetic Levels.
+
+* Component Docs
+
+- rename modeling directory to docs.
+- move summary to top, remove summary title. update templates.
+- links to files become proj: links.
+
+* Agile
+
+- add link for Manuals index page and site nav link (PR #818).
+- PRs should be links.
+- add task and sprint ID to all commits.
+- make tasks a table. remove any commentary.
+
+* ORE Studio Manuals
+
+- make the manuals a table. Formats are just HTML, PDF.
+- however, we also need a "manuals as sections" so we can link to pages.
+- page has Emacs 29.1 (Org mode 9.6.6)
+
+* General
+
+- convert CODE_OF_CONDUCT.md and CONTRIBUTING.md to org. Link to it in
+  contributing.
+- add page on DeepWiki. https://deepwiki.com/OreStudio/OreStudio
+
+* System Model
+
+- ask LLM to check the docs generated by Devin and see if it can be used to
+  improve system docs. https://deepwiki.com/OreStudio/OreStudio/1-overview
+
+* Login
+
+- session is not automatically renewing token
+- cannot override saved connection details in connection manager.
+- select party if you click on party, should automatically select operational
+  party.
+
+* Help System
+
+#+begin_src markdown
+
+I have a user manual written in Emacs Org-mode that exports to HTML files (e.g.,
+index.html, intro.html, advanced.html, along with a CSS file and an images/
+folder).
+
+I want to use the Qt Help Framework (QHelpEngine) to consume this documentation
+natively inside my Qt C++ application.
+
+Please act as a Senior C++ and Automation Engineer and implement the following
+User Story.
+
+---
+
+### User Story
+As a Developer,
+I want to automate the compilation of my exported HTML documentation into a Qt Compressed Help (.qch) file and display it inside my Qt application,
+So that users have a native help system with a Table of Contents and a text browser.
+
+### Technical Requirements
+
+#### Part 1: Automation Script (Python)
+Write a Python script (e.g., generate_help.py) that:
+1. Scans a directory of exported HTML files.
+2. Automatically generates the required Qt Help Project (.qhp) XML file.
+   - It should dynamically populate the <files> section with all .html, .css, and image files it finds.
+   - For the Table of Contents (<toc>), it can either parse the HTML titles or accept a simple hardcoded structure I can edit later.
+3. Automatically executes the system command `qhelpgenerator manual.qhp -o manual.qch` to compile the final binary.
+
+#### Part 2: Qt C++ Implementation
+Provide a clean, modern C++ (Qt 6 preferred, but Qt 5 compatible) implementation showing how to load this `manual.qch` file. Please provide:
+1. The necessary initialization code for `QHelpEngine`.
+2. How to extract and display the Table of Contents (`QHelpContentWidget`) in a sidebar (like a QDockWidget or QTreeView).
+3. How to connect that sidebar to a `QTextBrowser` so that clicking a topic opens the correct HTML page.
+
+Please provide well-commented, production-ready code for both parts.
+#+end_src

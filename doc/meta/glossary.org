@@ -264,7 +264,7 @@ Work spotted in passing while executing another task. Filed without triage in
 
 A TODO state, not a folder. Tasks and stories in =BACKLOG= have been triaged but
 not started. The /product backlog/ (work not yet pulled into a sprint) lives
-separately under =agile/product_backlog/{near,far}/= as a tree of [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][captures]].
+separately under =agile/product_backlog/{inbox,next,deferred,discarded}/= as a tree of [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][captures]].
 
 #+ATTR_HTML: :class hug-leading
 | Field     | Value           |
@@ -278,9 +278,9 @@ separately under =agile/product_backlog/{near,far}/= as a tree of [[id:671F18E4-
 
 A pre-sprint idea: something we may want to do but have not yet pulled into a
 sprint as a story. Captures live within the capture document in a sprint, if
-short-lived, or in =doc/agile/product_backlog/{near,far}/<slug>.org= if
-long-lived. The bucket is the source of truth: =near/= = candidate work for the
-next version, =far/= = longer-term wishlist. Captures are /not stateful/ — no
+long-lived. New captures land in =inbox/= (untriaged); at triage they move to
+=next/= (candidate for the next version), =deferred/= (longer-term wishlist),
+or =discarded/= (explicitly rejected). Captures are /not stateful/ — no
 TODO keyword, no =* Status= table. They have only two effective states:
 /pending/ (the file exists in a bucket) and /promoted/ (the file has been
 converted into a =story=). On promotion the file is moved into the appropriate
@@ -292,8 +292,8 @@ preserved* so existing links keep working.
 |-----------------+-----------------------------------------------------------------------------------------------------|
 | Owner           | cross-cutting: filed by [[id:BF4F183F-BB33-44F2-A53F-D9BD602E9BE8][System 2]]; identity-fit reviewed by [[id:6DF00A64-7CC3-40A7-950B-55D2B05A31C7][System 5]]; horizon by [[id:6CA8B181-BD81-4EF4-AF27-64F5491D62F0][System 4]] / [[id:8F13BA75-EDAA-46CC-9BE2-E356D60BF4F4][System 3]] |
 | How to generate | [[id:978E0A8F-197C-48DA-A405-457E0AEE91D9][New capture]] in the v2-doc recipe                                                                    |
-| Example         | [[id:CEBAB022-2039-47A4-AAB2-BB2FFBA5507C][Add a dashboard for users]] (in the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] bucket)                                                      |
-| Inventory       | [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] (browse via [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] / [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][far]])                                                             |
+| Example         | [[id:CEBAB022-2039-47A4-AAB2-BB2FFBA5507C][Add a dashboard for users]] (in the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] bucket)                                                      |
+| Inventory       | [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] (browse via [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] / [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]])                                                             |
 
 * Memory
 :PROPERTIES:

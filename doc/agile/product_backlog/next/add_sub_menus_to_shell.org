@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID: EE2B4AB1-2D50-4FF0-A5B7-92CB3C59F212
+:END:
+#+title: Add sub-menus to shell
+#+description: Add sub-menus to shell
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+There are a lot of entries in the shell main menu, we need to group them. These
+could be based on the component.
+
+Notes:
+
+- shell has no parties or counterparties commands.
+- It should be possible to set the "output type" or format in the shell, from
+  json to table. Find the correct terminology for this.

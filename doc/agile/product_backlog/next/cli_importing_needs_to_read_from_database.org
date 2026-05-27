@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: 10638DCE-D90C-42C9-84D3-D6F35F557A24
+:END:
+#+title: CLI Importing needs to read from database
+#+description: CLI Importing needs to read from database
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+After we do the import into the database, we need to read the currencies again
+to get the valid from/to.

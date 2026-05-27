@@ -66,7 +66,7 @@ In execution order.
 | [[id:7EF64A67-EB1C-4F79-9FF2-1C59DD6146AB][Track PRs per task and surface in compass where]] | DONE    | 2026-05-24 | 2026-05-24 | PRs table in task docs; =compass where --prs= fetches live PR status via =gh=.          |
 | [[id:026AA423-68A1-43A1-8F2A-D9D3D6379E6C][Add org-roam index links to compass.org folder entries]] | DONE | 2026-05-24 | 2026-05-24 | Each folder in compass.org links to its index file; missing index files created. |
 | [[id:A2B3BFD0-F44C-48F3-BB01-6BAECB851356][Remove unused GitHub Actions workflows]] | DONE | 2026-05-24 | 2026-05-24 | Delete the four dormant Gemini workflows; PR review stays via the gemini-code-assist app. |
-| [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — near and far listing]] | BACKLOG | 2026-05-24 | | =compass backlog= lists near/far captures with counts, mirroring =where= in-flight display. |
+| [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — next and deferred listing]] | BACKLOG | 2026-05-24 | | =compass backlog= lists next/deferred captures with counts, mirroring =where= in-flight display. |
 | [[id:8D295781-33E7-4812-AAC6-134BD7CD0DDC][Rebuild org-roam DB independently from CMake]]       | BACKLOG | 2026-05-24 | | Extract org-roam sync into =.build-org-roam.el=; add =rebuild_org_roam_db= cmake target.   |
 | [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                         | DONE    | 2026-05-24 | 2026-05-25 | Replace broken per-mode ores.lisp with an env-aware emacs-dashboard console for all dev commands. |
 | [[id:7225526E-DCDB-4DC6-A95D-22C7117E5EAA][Port Tufte visualisation skill into ORE Studio]]     | DONE    | 2026-05-25 | 2026-05-25 | Convert =tufte-viz= SKILL and two Tufte reference docs to org-mode; install and catalogue. |
@@ -83,6 +83,7 @@ In execution order.
 | [[id:5B7C4B18-3CF2-4546-A73E-95F46228DBD2][Fix account registration NATS SSL error]] | BACKLOG | 2026-05-26 | | Registration fails with "NATS connect failed: SSL Error"; fix the registration path's NATS/TLS config. |
 | [[id:8BD3D28A-C5A1-4F8D-A685-1BC6EBF5C812][Sprint health charts]]                            | STARTED | 2026-05-26 |            | Generate daily charts of PRs, commits, story completions, and line churn using gnuplot. |
 | [[id:A388F0C8-0804-420F-A542-2C929CFCEC92][Document NATS: technology overview, system integration, and recipes]] | STARTED | 2026-05-26 | | NATS knowledge page, system model section, per-component subject tables, and NATS recipes. |
+| [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] | STARTED | 2026-05-27 | | captures/ folder per sprint; compass capture command; wontdo backlog bucket. |
 
 * Health Review
 

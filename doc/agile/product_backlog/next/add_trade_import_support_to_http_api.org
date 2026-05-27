@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: ED218750-9F23-4F90-8D5B-A1E9A898C7F3
+:END:
+#+title: Add trade import support to HTTP API
+#+description: Add trade import support to HTTP API
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Add an HTTP endpoint for importing ORE portfolio XML files. This should use the
+existing =ores.ore= importer and =trade_mapper= infrastructure.
+
+The endpoint should accept a multipart form with:
+
+- The portfolio XML file
+- Target book ID
+- Optional counterparty mappings as JSON
+
+Acceptance criteria:
+
+- HTTP endpoint imports trades from an ORE portfolio XML file.
+- Returns a summary of imported trades (count, any validation errors).

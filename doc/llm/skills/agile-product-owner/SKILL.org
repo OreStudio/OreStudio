@@ -26,7 +26,7 @@ When you need to act as the product owner of ORE Studio:
 - Promote a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] from the product backlog into a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in a
   sprint.
 - Open a new [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] for the current [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]].
-- Re-prioritise the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] / [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][far]] buckets.
+- Re-prioritise the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] / [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]] buckets.
 - Update the version identity when scope shifts.
 
 * How to use this skill
@@ -46,7 +46,7 @@ When you need to act as the product owner of ORE Studio:
    [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] contract is authoritative; key choices:
 
    - /A new idea, no immediate plan to start it/ → a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in
-     =near/= or =far/=.
+     =next/=|=deferred or next/=|=deferred/=.
    - /A coherent user-visible outcome ready to start/ → a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]]
      in the current sprint.
    - /A single PR-sized unit of work that fits an existing story/
@@ -67,10 +67,10 @@ When you need to act as the product owner of ORE Studio:
    phase]]), closure ([[id:7D72A9DA-984F-4130-BFF6-97B66B233907][closure]] — release notes, release cut,
    post-mortem). Owned by [[id:8F13BA75-EDAA-46CC-9BE2-E356D60BF4F4][System 3]].
 
-6. /Prioritise/. The near/far split /is/ the prioritisation
-   mechanism: items in =near/= are candidate work for the next
-   version, items in =far/= are longer-term. Re-bucket by moving
-   files between =near/= and =far/= (the =:ID:= is preserved). For
+6. /Prioritise/. The next/deferred split /is/ the prioritisation
+   mechanism: items in =next/=|=deferred are candidate work for the next
+   version, items in next/=|=deferred/= are longer-term. Re-bucket by moving
+   files between =next/=|=deferred and next/=|=deferred/= (the =:ID:= is preserved). For
    ordering inside a sprint, edit the =* Stories= table of the
    sprint document.
 
@@ -83,7 +83,7 @@ When you need to act as the product owner of ORE Studio:
 - [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — story / sprint / version /
   capture scaffolds.
 - [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — locate the current
-  sprint, near/far buckets, in-flight stories.
+  sprint, near/deferred buckets, in-flight stories.
 - [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — inspect a capture before
   promotion.
 
@@ -94,7 +94,7 @@ When you need to act as the product owner of ORE Studio:
   closure) and which cybernetic system owns each.
 - [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] — the composition tree (versions → sprints → stories
   → tasks).
-- [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — the pre-sprint queue ([[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] / [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][far]]).
+- [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — the pre-sprint queue ([[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] / [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]]).
 - [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — the contract for every type touched here.
 - [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]] — TODO state transitions on stateful docs.
 

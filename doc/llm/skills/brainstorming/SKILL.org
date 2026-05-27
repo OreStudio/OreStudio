@@ -69,7 +69,7 @@ output. Always scaffold via the codegen — never hand-write.
    [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New knowledge document".
 
 8. /If the design is pre-sprint and not yet committed to a
-   version/ → file as a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][near]] / [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][far]] bucket via
+   version/ → file as a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] / [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]] bucket via
    [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New capture".
 
 9. /If the design is a one-off cross-cutting analysis/ — e.g. a

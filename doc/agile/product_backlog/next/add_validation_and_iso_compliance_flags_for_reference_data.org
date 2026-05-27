@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: 95027540-CE71-4971-AF9B-2AE3645A5FCE
+:END:
+#+title: Add validation and ISO compliance flags for reference data
+#+description: Add validation and ISO compliance flags for reference data
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Several validation gaps and missing metadata in reference data entities.
+
+- It is possible to create a country without a name; likely a currency too. Add
+  required field validation.
+- Fictional countries should have X prefixes (following ISO 3166 conventions).
+- Add an "is ISO compliant" flag (or similar) for currencies and countries that
+  are part of the ISO standard vs. custom/internal entries.

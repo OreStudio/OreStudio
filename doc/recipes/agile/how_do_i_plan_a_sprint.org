@@ -2,7 +2,7 @@
 :ID: 2C2E794B-7565-4FD8-BD26-E7949C874E43
 :END:
 #+title: How do I plan a sprint?
-#+description: Procedure for a sprint planning session: set the mission, score near-backlog captures against sprint goals, and promote winners into stories.
+#+description: Procedure for a sprint planning session: set the mission, score next-backlog captures against sprint goals, and promote winners into stories.
 #+type: recipe
 #+version: 2
 #+level: cross
@@ -73,7 +73,7 @@ against it, and promote selected captures into stories?
    b. Remove the capture from the backlog:
 
       #+begin_src sh :results verbatim
-      git rm doc/agile/product_backlog/near/<slug>.org
+      git rm doc/agile/product_backlog/next/<slug>.org
       #+end_src
 
    c. Fill in the story's =* Goal=, =* Acceptance=, and at least

@@ -39,9 +39,9 @@ lands the infrastructure.
 
 * Tasks
 
-In execution order:
-
-- [[id:05422CA3-6AF9-493F-B3CD-B2EA00707370][Badges to database (phase 1 infrastructure)]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:05422CA3-6AF9-493F-B3CD-B2EA00707370][Badges to database (phase 1 infrastructure)]] | DONE | 2026-05-20 | 2026-03-28 | Codegen models for badge_severity + code_domain + badge_definition + badge_mapping junction; integrate generated SQL + C++ artefacts; population seed data from hardcoded colours; BadgeCache in ores.qt wired into client startup. Foundation that lets Wt reuse the same metadata. |
 
 * Decisions
 

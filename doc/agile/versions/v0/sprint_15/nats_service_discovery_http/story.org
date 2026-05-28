@@ -37,9 +37,9 @@ NATS so users don't need to configure http_port manually.
 
 * Tasks
 
-In execution order:
-
-- [[id:CB0C08A7-E7BA-40D5-8F01-1E2CDAF61B8C][Add NATS service discovery for HTTP base URL]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CB0C08A7-E7BA-40D5-8F01-1E2CDAF61B8C][Add NATS service discovery for HTTP base URL]] | DONE | 2026-05-20 | 2026-03-22 | Qt client automatically discovers the HTTP server's base URL after login via NATS; protocol types moved to ores.http shared utility lib so ores.qt can include them without linking ores.http.server; architecture migration plan added for splitting service libraries into *.types + *.core (later refined to *.api + *.core). |
 
 * Decisions
 

@@ -45,12 +45,12 @@ Continued in: [[id:CE26E56B-944F-4C89-B5A9-E0DABF521908][Per-type instrument tab
 
 * Tasks
 
-In execution order:
-
-- [[id:9723ED40-7424-4F44-BDB7-79C6C019B3E9][CDM Phase 1: Rates instrument domain model]]
-- [[id:4DEF3837-B3D1-488D-AFA5-C247B04F13BD][CDM Phase 2: FX instrument domain model]]
-- [[id:C97528C9-7E46-4F3E-A1AC-7213E933C601][CDM Phase 4: Credit instrument domain model]]
-- [[id:7DE89D9D-0DB1-4748-90A9-B9280480D542][CDM Phase 3: Bond instrument domain model]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9723ED40-7424-4F44-BDB7-79C6C019B3E9][CDM Phase 1: Rates instrument domain model]] | DONE | 2026-05-20 | 2026-03-26 | Rates instruments: Swap, CrossCurrencySwap, CapFloor, Swaption. SQL: ores_trading_instruments_tbl + ores_trading_swap_legs_tbl + notify triggers + drop files. Domain: instrument + swap_leg structs with JSON I/O + table I/O + generator + protocol. Repository + service layer. Qt UI: ClientInstrumentModel + InstrumentMdiWindow + InstrumentDetailDialog + InstrumentHistoryDialog + InstrumentController. |
+| [[id:4DEF3837-B3D1-488D-AFA5-C247B04F13BD][CDM Phase 2: FX instrument domain model]] | DONE | 2026-05-20 | 2026-03-27 | FX instruments: FxForward, FxSwap, FxOption. SQL: ores_trading_fx_instruments_tbl (bought/sold currencies + amounts, value_date, settlement, option fields). Domain + repo + service + Qt UI (Model + MDI + Detail + History + Controller). |
+| [[id:C97528C9-7E46-4F3E-A1AC-7213E933C601][CDM Phase 4: Credit instrument domain model]] | DONE | 2026-05-20 | 2026-03-28 | Credit instruments: CreditDefaultSwap, CDSIndex, SyntheticCDO. SQL: ores_trading_credit_instruments_tbl (reference_entity, currency, notional, spread, recovery_rate, tenor, dates, day_count, payment_frequency, optional fields for index + seniority + restructuring). Domain + repo + service + Qt UI. |
+| [[id:7DE89D9D-0DB1-4748-90A9-B9280480D542][CDM Phase 3: Bond instrument domain model]] | DONE | 2026-05-20 | 2026-03-30 | Bond instruments: Bond, ForwardBond, CallableBond, ConvertibleBond, BondRepo. SQL: ores_trading_bond_instruments_tbl (issuer, currency, face_value, coupon_rate + frequency, day_count, issue_date, maturity_date, optional fields for settlement_days, call_date, conversion_ratio). Domain + repo + service + Qt UI. |
 
 * Decisions
 

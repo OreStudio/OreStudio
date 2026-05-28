@@ -41,9 +41,9 @@ domain-specific HTTP route handlers (core).
 
 * Tasks
 
-In execution order:
-
-- [[id:AFCD8728-5BD6-4FA5-8AA6-5EB5CD6B78F0][Move generators to api layer; split http.server]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AFCD8728-5BD6-4FA5-8AA6-5EB5CD6B78F0][Move generators to api layer; split http.server]] | DONE | 2026-05-20 | 2026-03-25 | Synthetic generators relocated from core to api layers across ores.trading + ores.reporting + ores.iam + ores.refdata + ores.compute (+ tests); auth_session_service relocated from ores.iam.core to ores.iam.api (in-memory, no core deps); domain-specific HTTP route handlers (iam, refdata, variability, assets) moved into their respective domain core modules; ores.http.server now exclusively manages generic server infrastructure (compute_routes only remaining domain-specific route); generator directories standardised to generators/ (plural); faker-cxx added as private dep on affected api libs. |
 
 * Decisions
 

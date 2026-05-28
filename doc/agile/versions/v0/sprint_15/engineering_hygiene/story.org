@@ -38,11 +38,11 @@ tenant_id fix in system-settings tests; dev-environment scripts
 
 * Tasks
 
-In execution order:
-
-- [[id:D89D5322-3305-4438-BF79-0DC92E4F6BF2][Fix sccache cache bloat causing slow/cold builds]]
-- [[id:2290BAB5-8F2F-4D43-B33B-23A6A8B1F485][Fix missing tenant_id in system settings tests]]
-- [[id:B081370C-C11C-4463-994F-74F06C93A59A][Add ORES_PRESET to .env + start-client.sh]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D89D5322-3305-4438-BF79-0DC92E4F6BF2][Fix sccache cache bloat causing slow/cold builds]] | DONE | 2026-05-20 | 2026-03-24 | GitHub Actions cache had hit 11.5 GB (over the 10 GB repo limit), causing LRU eviction of sccache entries and forcing cold full rebuilds (>2h CI). Root causes: per-PR sccache saves (12 entries × ~1 GB), sccache limit too small (1000M caused within-build eviction for 1,362 files), no cross-PR cache sharing meant Qt + sccache duplicated per PR. |
+| [[id:2290BAB5-8F2F-4D43-B33B-23A6A8B1F485][Fix missing tenant_id in system settings tests]] | DONE | 2026-05-20 | 2026-03-24 | make_system_setting() helper in repository_system_settings_repository_tests.cpp now requires + assigns tenant_id; all 7 call sites updated; resolves Postgres invalid input syntax for type uuid: "" rejections. |
+| [[id:B081370C-C11C-4463-994F-74F06C93A59A][Add ORES_PRESET to .env + start-client.sh]] | DONE | 2026-05-20 | 2026-03-25 | init-environment.sh requires --preset and stores ORES_PRESET in .env (single source of truth); start-services.sh / stop-services.sh / status-services.sh source ORES_PRESET; new start-client.sh launches Qt client with preset + custom instance colors (named or hex) + display names; ores-prodigy.el registers services from ORES_PRESET in .env. |
 
 * Decisions
 

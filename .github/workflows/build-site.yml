@@ -45,7 +45,7 @@ jobs:
           version: 29.1
       - name: Build site
         run: |
-          emacs -Q --script .build-site.el
+          emacs -Q --script projects/ores.lisp/src/ores-build-site.el
 
   # Deploy to GitHub Pages only for pushes to main (and manual runs); never
   # for pull requests. Runs after the build gate has passed.
@@ -68,7 +68,7 @@ jobs:
           version: 29.1
       - name: Build site
         run: |
-          emacs -Q --script .build-site.el
+          emacs -Q --script projects/ores.lisp/src/ores-build-site.el
       - name: Setup Pages
         uses: actions/configure-pages@v6
         with:

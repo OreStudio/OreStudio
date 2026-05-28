@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: AD6B59E1-A267-4927-A3FF-D624BB123658
+:END:
+#+title: Story: Move .build-*.el scripts to ores.lisp
+#+description: Relocate .build-*.el files from the project root into projects/ores.lisp/src/, rename to ores- prefix, and update all GitHub workflow and CMake references.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :ores.lisp:build:emacs:sprint_18:v0:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Move the five =.build-*.el= scripts from the project root into
+=projects/ores.lisp/src/=, rename them to the =ores-= prefix convention
+already used by the rest of =ores.lisp=, and update every CMake target and
+GitHub workflow that references them. The project root is cleaned up; all
+build scripts live alongside the other Emacs Lisp in the project.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
+| Now           | Complete. deploy_site build verified.  |
+| Waiting on    | Nothing.                               |
+| Next          | None.                                  |
+| Last touched  | 2026-05-28                             |
+
+* Acceptance
+
+- =.build-manual.el=, =.build-plan.el=, =.build-settings.el=,
+  =.build-site.el=, =.build-skills.el= are deleted from the project root.
+- Equivalents exist under =projects/ores.lisp/src/= with =ores-= prefix.
+- All CMake targets and GitHub workflow references updated to new paths.
+- =cmake --build --preset linux-clang-debug-ninja --target deploy_site= runs
+  without error.
+
+* Tasks
+
+In execution order:
+
+- [[id:674D3887-A2FE-4D6C-B856-8665BFC84E0B][Task: Implement Move .build-*.el scripts to ores.lisp]]
+
+* Decisions
+
+* Out of scope
+
+-

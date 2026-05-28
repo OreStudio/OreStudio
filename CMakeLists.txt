@@ -321,34 +321,34 @@ endif()
 set(ORES_SITE_DIRECTORY "build/output/site")
 add_custom_target(deploy_site
     COMMENT "Deploying ORE Studio Website to ${ORES_SITE_DIRECTORY}" VERBATIM
-    COMMAND emacs -Q --script .build-site.el
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-site.el
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 set(ORES_MANUAL_PDF "doc/manual/user_guide/user_manual.pdf")
 add_custom_target(deploy_manual
     COMMENT "Building ORE Studio User Manual PDF to ${ORES_MANUAL_PDF}" VERBATIM
-    COMMAND emacs -Q --script .build-manual.el
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-manual.el
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 set(ORES_SKILLS_DIRECTORY ".claude/skills")
 add_custom_target(deploy_skills
     COMMENT "Deploying ORE Studio Claude Code Skills to ${ORES_SIRE_DIRECTORY}" VERBATIM
     COMMAND echo "Removing skills directory" && rm -rf ${ORES_SKILLS_DIRECTORY}
-    COMMAND emacs -Q --script .build-skills.el 2>&1
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-skills.el 2>&1
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 set(ORES_CLAUDE_SETTINGS_FILE ".claude/settings.json")
 add_custom_target(deploy_settings
     COMMENT "Deploying ORE Studio Claude Code Settings to ${ORES_CLAUDE_SETTINGS_FILE}" VERBATIM
     COMMAND echo "Removing settings file" && rm -f ${ORES_CLAUDE_SETTINGS_FILE}
-    COMMAND emacs -Q --script .build-settings.el 2>&1
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-settings.el 2>&1
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 set(ORES_TASKS_DIRECTORY "build/output/plan")
 add_custom_target(deploy_plan
     COMMENT "Deploying ORE Studio Plan to ${ORES_TASKS_DIRECTORY}" VERBATIM
     COMMAND echo "Removing site directory" && rm -rf ${ORES_TASKS_DIRECTORY}
-    COMMAND emacs -Q --script .build-plan.el
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-plan.el
     COMMAND mkdir -p ${ORES_TASKS_DIRECTORY}
     COMMAND mv doc/agile/v0/version_zero.tjp ${ORES_TASKS_DIRECTORY}
     COMMAND cd ${ORES_TASKS_DIRECTORY}

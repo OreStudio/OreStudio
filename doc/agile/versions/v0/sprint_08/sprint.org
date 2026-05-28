@@ -41,6 +41,8 @@ skills to make the next entity cheaper.
 
 * Stories
 
+For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].
+
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading

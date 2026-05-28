@@ -53,6 +53,8 @@ The largest v0 sprint to date (157h, 89 tasks across 22 stories).
 
 * Stories
 
+For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].
+
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading

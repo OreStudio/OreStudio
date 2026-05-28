@@ -25,7 +25,7 @@ sub-component tables for all four architecture layers in one file. This task
 splits each layer into its own dedicated org-mode document, linked back from
 the main page via org-roam ID links. It also adds a PlantUML diagram
 illustrating the four-layer architecture (Foundation → Infrastructure →
-Domain → Application) and wires in org-roam links wherever [[id:BCA8C543-6EC6-49BD-9A94-8AC4DFF0E2FB][ores.nats]] is
+Domain → Application) and wires in org-roam links wherever [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] is
 mentioned as a plain-text "NATS" reference. Finally it merges the
 now-superseded =site_pdf_and_manual_book= story into =user_manual_pdf_build=
 by moving its task file here, deleting the old story directory, and updating
@@ -56,7 +56,7 @@ all org-roam cross-references.
   =projects/modeling/assets/= and embedded in =system_model.org= following
   the existing diagram convention.
 - All plain-text "NATS" references in =system_model.org= and its sub-pages
-  are replaced with =[[id:BCA8C543-6EC6-49BD-9A94-8AC4DFF0E2FB][ores.nats]]=.
+  are replaced with =[[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]=.
 - =site_pdf_and_manual_book= story is merged: its task file is moved to
   =user_manual_pdf_build/=, the old story directory is deleted, and every
   org-roam link pointing at =6EBB206D-167F-4A0F-8F50-04D7EB4B7E33= is

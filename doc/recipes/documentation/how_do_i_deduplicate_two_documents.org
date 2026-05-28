@@ -52,8 +52,9 @@ precondition that exists in the deletion candidate but is absent from
 the survivor.
 
 #+begin_src sh :results verbatim
-# Find all id-links in the deletion candidate (cross-references to keep)
-grep -oE '\[\[id:[A-F0-9-]+\]' doc/path/to/deletion_candidate.org | sort -u
+# Find all UUIDs referenced in the deletion candidate (case-insensitive)
+grep -oE '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}' \
+  doc/path/to/deletion_candidate.org | sort -u
 #+end_src
 
 For each unique item: insert it into the survivor at the
@@ -81,16 +82,16 @@ replace it with the survivor's UUID:
 
 #+begin_src sh :results verbatim
 # Find all references to the deleted UUID
-grep -r "UUID-D" doc/ projects/ --include="*.org" -l
+grep -r "<UUID-D>" doc/ projects/ --include="*.org" -l
 
-# Replace in each file (repeat per file, or use sed):
-sed -i 's/UUID-D/UUID-S/g' path/to/referencing_file.org
+# Replace in each file (perl for cross-platform compatibility):
+perl -pi -e 's/<UUID-D>/<UUID-S>/g' path/to/referencing_file.org
 #+end_src
 
 Verify no stale references remain:
 
 #+begin_src sh :results verbatim
-grep -r "UUID-D" doc/ projects/ --include="*.org"
+grep -r "<UUID-D>" doc/ projects/ --include="*.org"
 #+end_src
 
 ** Worked example — sprint health review runbooks

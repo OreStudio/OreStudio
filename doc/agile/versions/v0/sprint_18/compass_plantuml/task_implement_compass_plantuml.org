@@ -33,11 +33,11 @@ standard header are updated.
 
 | Field        | Value                                                             |
 |--------------+-------------------------------------------------------------------|
-| State        | BACKLOG                                                           |
+| State        | DONE                                                              |
 | Parent story | [[id:76F0DB10-084D-4A72-A585-5DE660884677][PlantUML integration: recipe and codegen scaffold]]                 |
-| Now          | Not yet started.                                                  |
+| Now          | Complete.                                                         |
 | Waiting on   | Nothing.                                                          |
-| Next         | Audit existing .puml files; write recipe; implement compass sub-command. |
+| Next         | None.                                                             |
 | Last touched | 2026-05-28                                                        |
 
 * Acceptance

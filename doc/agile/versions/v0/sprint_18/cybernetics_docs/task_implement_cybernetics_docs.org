@@ -8,8 +8,8 @@
 #+level: s1
 #+filetags: :cybernetics_docs:sprint_18:v0:
 #+owner: marco
-#+branch: feature/cybernetics-docs
-#+pr: 896
+#+branch: feature/cybernetics-docs-impl
+#+pr:
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28

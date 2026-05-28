@@ -23,12 +23,14 @@ frontmatter?
 
 * Answer
 
-For *stories, tasks, sprints, and skills*, use
-[[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][compass add]] instead. It defaults =--parent-dir= from where you are (current
-sprint for stories/tasks, current version for sprints, =doc/llm/skills= for
-skills) so you rarely need to type a path. This recipe remains the
-authoritative reference for all other doc types and for edge cases (explicit
-=--id=, non-current parents, etc.).
+For *all standard document types*, use [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][compass add]] instead of calling
+=generate_v2_doc.sh= directly. It supports: =story=, =task=, =sprint=,
+=version=, =recipe=, =knowledge=, =component=, =capture=, =memory=,
+=investigation=, =product_identity=, =skill=, =diagram=. It defaults
+=--parent-dir= from context (current sprint for stories/tasks, current version
+for sprints, =doc/llm/skills= for skills) so you rarely need to type a path.
+This recipe remains the authoritative reference for edge cases (explicit =--id=,
+non-current parents, cross-sprint predecessors, etc.).
 
 Call =projects/ores.codegen/generate_v2_doc.sh= with the type, slug, parent
 directory, and the document's title and description. The script fills in a fresh
@@ -138,8 +140,8 @@ Component overview files are always named =component_overview.org=.
 Use =--slug component_overview= (not the component name):
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_v2_doc.sh \
-  --type component --slug component_overview \
+./projects/ores.compass/compass.sh add component \
+  --slug component_overview \
   --parent-dir projects/ores.example/modeling \
   --title "ores.example" \
   --description "One-line summary of what the component does." \
@@ -158,8 +160,8 @@ Use the =how_do_i_<thing>= slug convention. The output is
 =<parent-dir>/how_do_i_<thing>.org=:
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_v2_doc.sh \
-  --type recipe --slug how_do_i_clear_the_cache \
+./projects/ores.compass/compass.sh add recipe \
+  --slug how_do_i_clear_the_cache \
   --parent-dir doc/recipes/cmake \
   --title "How do I clear the cache?" \
   --description "Remove the CMake binary cache to force a clean re-configure." \
@@ -177,8 +179,8 @@ for an example that also captures a =#+RESULTS:= snapshot.
 :END:
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_v2_doc.sh \
-  --type knowledge --slug build_system_decisions \
+./projects/ores.compass/compass.sh add knowledge \
+  --slug build_system_decisions \
   --parent-dir doc/knowledge/architecture \
   --title "Build system decisions" \
   --description "Why we picked Ninja over Make as the default generator." \

@@ -54,9 +54,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                  |
+|-----+--------------------------------------------------------|
+| 906 | [docs] Document ORE Studio as an LLM-first system      |
 
 * Review
 

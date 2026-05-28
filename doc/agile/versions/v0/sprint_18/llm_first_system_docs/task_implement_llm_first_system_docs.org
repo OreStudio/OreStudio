@@ -55,14 +55,14 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                  |
+|-----+--------------------------------------------------------|
+| 906 | [docs] Document ORE Studio as an LLM-first system      |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                  | File            | Decision | Notes                                              |
+|---+------------------------------------------------------------------+-----------------+----------+----------------------------------------------------|
+| 1 | Avoid duplicating .claude/ paths; reference claude_code.org instead | llm_first.org | Accept   | Fixed in e63d844e0 — replaced paths with id-link reference |
 
 * Result

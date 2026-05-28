@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: B730ECAB-A0BF-4894-9275-C0F4199272E3
+:END:
+#+title: Viable System Model
+#+description: Stafford Beer's Viable System Model: the five systems, the S3* audit channel, and how they organise a viable system.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :meta:cybernetics:vsm:knowledge:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+* Summary
+
+The Viable System Model (VSM) is Stafford Beer's [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][cybernetic]] framework
+for designing organisations that can survive and adapt. A viable system
+is one capable of independent existence in a changing environment; the
+VSM describes the minimum structural conditions for viability. It
+consists of five interacting systems (S1–S5) and an independent audit
+channel (S3*), each operating at a different time horizon. The model is
+recursive: every S1 unit is itself a viable system with its own
+internal S1–S5 structure. ORE Studio uses the VSM's five-level
+separation of concerns as the basis for its [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]].
+
+* Detail
+
+** The five systems
+
+#+ATTR_HTML: :class hug-leading
+| System | Name         | Time horizon | Concern                                                          |
+|--------+--------------+--------------+------------------------------------------------------------------|
+| S1     | Operations   | Immediate    | Does the actual work; interacts directly with the environment.   |
+| S2     | Coordination | Short        | Prevents oscillation and collision between S1 units.            |
+| S3     | Control      | Medium       | Allocates resources; integrates S2 signals; manages the inside. |
+| S3*    | Audit        | Continuous   | Independent channel; observes S1 directly to detect drift.      |
+| S4     | Intelligence | Long         | Watches the environment; adapts the system to future demands.   |
+| S5     | Policy       | Indefinite   | Carries identity; defines what the system is and is not.        |
+
+** System 1 — Operations
+
+S1 units are the operational elements that interact with the
+environment to produce the system's outputs. Each S1 is autonomous
+within constraints set by S3. In Beer's original formulation, S1 units
+are factories, branches, or teams — the things that do the work.
+Multiple S1 units can run concurrently; S2 exists precisely to stop
+them from colliding.
+
+** System 2 — Coordination
+
+S2 is not a management layer but an anti-oscillation mechanism. It
+carries scheduling, shared protocols, and coordination signals that
+prevent S1 units from inadvertently disrupting each other. S2 has no
+authority to direct S1; it only smooths.
+
+** System 3 — Control
+
+S3 manages the operational cluster (S1 + S2) from inside. It allocates
+resources, sets performance targets, and integrates the signals coming
+up from S2. S3 is the highest level with direct access to operational
+detail — S4 and S5 must work through S3 to affect operations.
+
+** System 3* — Audit
+
+S3* ("three-star") is Beer's answer to the problem of information
+distortion: by the time signals travel from S1 through S2 to S3, they
+have been aggregated and filtered. S3* bypasses this chain and samples
+S1 directly. It reports to S3 but is organisationally independent of
+it. The audit channel is not a spy network; it is a structural
+correction for the inevitable loss of granularity in hierarchical
+reporting.
+
+** System 4 — Intelligence
+
+S4 looks outward and forward. It models the environment, identifies
+trends, and feeds that intelligence back to S5 as strategic input. S4
+is where the system senses the need to adapt before a crisis forces it.
+Without S4, the system is blind to change until it is too late.
+
+** System 5 — Policy
+
+S5 carries the identity of the whole system — the answer to "what are
+we?". It adjudicates conflicts between S3 (inside, now) and S4
+(outside, future), sets policy, and maintains the values that make the
+system coherent over time. S5 is not a chief executive; it is a
+constitutional function.
+
+** Recursion
+
+The VSM is recursive: each S1 unit, if it is non-trivial, is itself a
+viable system with its own internal S1–S5 structure. There is no fixed
+bottom level. The model applies at every scale at which a system needs
+to be self-regulating.
+
+** Viability
+
+A system is viable if and only if all five systems are present and
+connected. Missing S4 produces strategic blindness. Missing S3* allows
+operational drift to go undetected. A weak S5 produces identity
+confusion — the system pursues incoherent goals because it does not
+know what it is.
+
+* See also
+
+- [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] — the broader science from which the VSM derives.
+- [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — how ORE Studio maps S1–S5 onto its agile roles, and where it diverges.

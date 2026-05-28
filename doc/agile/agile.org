@@ -43,7 +43,7 @@ External essays on the agile approach this project draws from:
 
 #+begin_note
 These describe historical ideas that are the basis of the current process, but
-not the process as it stands now with it's [[https://en.wikipedia.org/wiki/Cybernetics][cybernetic]] inspiration.
+not the process as it stands now with it's [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][cybernetic]] inspiration.
 #+end_note
 
 - [[https://mcraveiro.github.io/nerd_food/on_product_backlog.html][On Product Backlog]] — how stories flow from capture to

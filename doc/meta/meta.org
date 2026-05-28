@@ -16,8 +16,10 @@ contact; refer back to individual entries as needed.
 
 1. [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — what we mean by [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]], [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]], [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]], [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]], [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]],
    [[id:58D491A6-E4BD-4B0D-86BD-BB8465DFD4C7][plan]], [[id:117A95F9-B03D-490B-BB74-DA9FE74537E2][recipe]], and many other architectural terms.
-2. [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic levels]] — the five levels of concern and what each is responsible for.
-3. [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — every document type, its frontmatter contract, filename
+2. [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] — what cybernetics is and how it informs ORE Studio.
+3. [[id:B730ECAB-A0BF-4894-9275-C0F4199272E3][Viable System Model]] — Beer's five-system model and the S3* audit channel.
+4. [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic levels]] — the five levels of concern and what each is responsible for.
+5. [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — every document type, its frontmatter contract, filename
    convention, and required sections.
-4. [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]] — =TODO= state transitions and where each state lives.
-5. [[id:F58CA9E7-C65F-4D17-A9A7-95FDE25B9EBD][Execution model]] — how LLMs and agents operate inside this system.
+6. [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]] — =TODO= state transitions and where each state lives.
+7. [[id:F58CA9E7-C65F-4D17-A9A7-95FDE25B9EBD][Execution model]] — how LLMs and agents operate inside this system.

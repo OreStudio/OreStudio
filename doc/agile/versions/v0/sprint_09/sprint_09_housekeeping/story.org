@@ -36,10 +36,10 @@ continue the notebook OCR thread.
 
 * Tasks
 
-In execution order:
-
-- [[id:69888C3D-64D0-44CE-AE77-6D9A83DC17D8][Sprint and product backlog refinement]]
-- [[id:F3187F2D-D903-4674-8338-D83AF02736EC][OCR scan notebooks for this sprint]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:69888C3D-64D0-44CE-AE77-6D9A83DC17D8][Sprint and product backlog refinement]] | DONE | 2026-05-19 | 2026-01-20 | Maintain sprint 09 backlog and groom the product backlog. |
+| [[id:F3187F2D-D903-4674-8338-D83AF02736EC][OCR scan notebooks for this sprint]] | DONE | 2026-05-19 | 2026-01-20 | Continue notebook OCR thread for sprint 09. |
 
 * Decisions
 

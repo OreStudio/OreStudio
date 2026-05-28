@@ -40,12 +40,12 @@ documentation refactor — is postponed.
 
 * Tasks
 
-In execution order:
-
-- [[id:49BD7089-C2DD-4349-807B-57646076C043][Clean up system models and component models]]
-- [[id:C8D1E83A-D4C7-4B40-9FD1-210C9AF0ECF2][Refactor PR-related skills into pr-manager]]
-- [[id:251A6ED5-33F1-4A9B-B450-1EB91C7C7B49][Fix valgrind errors in nightly]]
-- [[id:1BC0F53E-529A-4B38-A428-41EE1DA7581D][Refactor documentation per entity]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:49BD7089-C2DD-4349-807B-57646076C043][Clean up system models and component models]] | DONE | 2026-05-19 | 2026-01-12 | Refresh system + component models out of sync with recent refactorings; introduce component-model-creator skill; new component docs for ores.logging, ores.http, ores.http.server, ores.wt. |
+| [[id:C8D1E83A-D4C7-4B40-9FD1-210C9AF0ECF2][Refactor PR-related skills into pr-manager]] | DONE | 2026-05-19 | 2026-01-12 | Rename pr-summary -> pr-manager; consolidate the 5-step PR lifecycle; remove duplicated PR creation logic from autonomous developer skills. |
+| [[id:251A6ED5-33F1-4A9B-B450-1EB91C7C7B49][Fix valgrind errors in nightly]] | DONE | 2026-05-19 | 2026-01-14 | Eventing tests fail under clang valgrind; one new possible leak on both clang and gcc. |
+| [[id:1BC0F53E-529A-4B38-A428-41EE1DA7581D][Refactor documentation per entity]] | BACKLOG | 2026-05-19 |  | Split recipes per entity; create a top-level domain document per entity that cross-references recipes, component model, entity implementation files (SQL included), and skills. Recipes attach to components rather than being global. |
 
 * Decisions
 

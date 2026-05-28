@@ -2,7 +2,7 @@
 :ID: D4E65EF1-54F4-47E1-9388-58BE9E36FBE3
 :END:
 #+title: How do I create a recipe?
-#+description: Meta-recipe — scaffold, name, structure, and link a new how-to recipe that satisfies the v2 contract.
+#+description: Meta-recipe — scaffold, name, structure, and link a new how-to recipe that satisfies the doc contract.
 #+type: recipe
 #+version: 2
 #+level: cross
@@ -10,9 +10,9 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-The v2 [[id:117A95F9-B03D-490B-BB74-DA9FE74537E2][recipe]] contract is defined in [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]§=recipe=. The codegen
-scaffold for /every/ v2 doc type (including recipes) lives at [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a
-new v2 doc?]]; this recipe specialises that flow with the conventions that make a
+The [[id:117A95F9-B03D-490B-BB74-DA9FE74537E2][recipe]] contract is defined in [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]§=recipe=. The codegen
+scaffold for /every/ doc type (including recipes) lives at [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a
+new doc?]]; this recipe specialises that flow with the conventions that make a
 /good/ recipe, distinct from a bare skeleton.
 
 * Question
@@ -59,7 +59,7 @@ that question is.
    skeleton:
 
    #+begin_src sh :results verbatim
-   projects/ores.codegen/generate_v2_doc.sh \
+   projects/ores.codegen/generate_doc.sh \
      --type recipe --slug how_do_i_clear_the_cache \
      --parent-dir doc/recipes/cmake \
      --title "How do I clear the cache?" \
@@ -142,7 +142,7 @@ that question is.
 
 * Script
 
-The wrapper called above is =projects/ores.codegen/generate_v2_doc.sh=.
+The wrapper called above is =projects/ores.codegen/generate_doc.sh=.
 It uses the same Mustache template infrastructure as the C++ codegen.
 The recipe template is at
 =projects/ores.codegen/library/templates/recipe/recipe.org.mustache=.
@@ -156,7 +156,7 @@ contract is held by review.
 
 * See also
 
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — the generic codegen flow this
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — the generic codegen flow this
   recipe specialises.
 - [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — locate the topic
   inventory and existing recipes before adding a new one.

@@ -21,8 +21,8 @@ These apply in every session, with no exceptions:
 
 - /UNIX line endings/ — all new files use LF, never CRLF.
 - /New org docs via codegen only/ — never write =.org= frontmatter by hand.
-  Always use =projects/ores.codegen/generate_v2_doc.sh=.
-  See [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]].
+  Always use =projects/ores.codegen/generate_doc.sh=.
+  See [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]].
 - /Check recipes first/ — before searching for how to do anything, open
   [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] and find the matching topic.
 - /Every new =.org= file must carry =#+version: 2=/ — the CI gate rejects
@@ -58,8 +58,7 @@ Read these first on a new contact:
 
 * Documentation
 
-- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — v2 frontmatter contract, version tagging, and the
-  touch-it-to-port-it rule for v1 files.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — frontmatter contract and version tagging.
 - [[id:6AC06A04-EB95-4925-8488-C7A47C6A451F][How do I validate component documentation before committing?]] —
   =validate_docs.sh= before every push that touches =modeling/=.
 - [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]] — =doc_version_audit.py=

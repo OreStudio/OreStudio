@@ -18,7 +18,7 @@ recipes; each topic has its own inventory that lists its recipes.
 
 - [[id:571CC11B-E2A2-47C0-AE13-8BD4B974F0C3][Agile recipes]] — open sprints, generate release notes.
 - [[id:5720A0FB-E510-4F25-99CB-410D42062799][CMake recipes]] — build, test, deploy.
-- [[id:69796171-66F4-4459-913D-01523FC27E54][Codegen recipes]] — run the C++ generator, scaffold v2 docs.
+- [[id:69796171-66F4-4459-913D-01523FC27E54][Codegen recipes]] — run the C++ generator, scaffold docs.
 - [[id:95FF6AF4-2320-4CB6-A007-B016B7DA16ED][Documentation recipes]] — find docs, inspect links, author new
   recipes.
 - [[id:95A33EA9-DFF9-4937-8A3F-AD82E42A68D3][Compass recipes]] — the compass tool: orient, search, index, navigate.

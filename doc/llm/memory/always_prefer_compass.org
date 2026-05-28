@@ -13,12 +13,12 @@
 
 Always use =compass add= (or the appropriate compass subcommand) to scaffold
 new agile artefact files — tasks, stories, sprints, epics. Never write them
-manually using the Write tool or generate_v2_doc.sh.
+manually using the Write tool or generate_doc.sh.
 
 *Why:* Compass handles UUID generation, file placement, correct frontmatter,
 and wiring into the project graph automatically. Manual creation (with Write
-or generate_v2_doc.sh) was explicitly corrected by the user during sprint 18
-dashboard work (2026-05-25). The generate_v2_doc.sh codegen recipe remains
+or generate_doc.sh) was explicitly corrected by the user during sprint 18
+dashboard work (2026-05-25). The generate_doc.sh codegen recipe remains
 correct for knowledge, recipe, and memory files — compass is specifically for
 agile artefacts.
 

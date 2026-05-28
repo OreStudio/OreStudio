@@ -72,5 +72,5 @@ Manual preview before pushing documentation changes.  The
   Emacs step, no HTTP server).
 - [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — publish Claude Code skills alongside
   the site.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — add org files that will appear in the
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — add org files that will appear in the
   compiled site.

@@ -83,7 +83,7 @@ impact propagates through multiple layers.
   in-flight stories, related knowledge.
 - [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — inspect a single component
   overview and follow its links.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — for scaffolding the migration
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — for scaffolding the migration
   story and its tasks.
 
 * Reference

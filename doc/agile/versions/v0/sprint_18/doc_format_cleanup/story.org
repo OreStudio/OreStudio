@@ -47,12 +47,13 @@ in script names, template names, or doc titles — the current format is just
 
 * Tasks
 
-| Task                                                                                                 | State   | Start      | End | Description                                                    |
-|------------------------------------------------------------------------------------------------------+---------+------------+-----+----------------------------------------------------------------|
-| [[id:3DA3AC61-58A0-48B3-B399-3625508680E2][Audit documents lacking v2 frontmatter]]      | BACKLOG | 2026-05-28 |     | Categorise: historical (leave), active (migrate), obsolete (delete). |
-| [[id:C89CEA6F-E264-438C-AD38-39B381B4C632][Migrate active v1 docs to current format]]    | BACKLOG | 2026-05-28 |     | Add frontmatter to plans, skill docs, active index files.      |
-| [[id:F35BD43B-B8A6-45E0-B414-891C030C168C][Rename v2-branded codegen scripts and templates]] | BACKLOG | 2026-05-28 | | Rename generate_v2_doc.sh, v2_doc_generate.py, all templates. |
-| [[id:58290C08-1D11-4E11-BBB5-C0B6C2EFC844][Remove v2 terminology from documentation]]    | BACKLOG | 2026-05-28 |     | Rename recipe, update memory, retire port_v1_doc_to_v2 runbook.|
+| Task                                                                                                 | State   | Start      | End        | Description                                                    |
+|------------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------|
+| [[id:3DA3AC61-58A0-48B3-B399-3625508680E2][Audit documents lacking v2 frontmatter]]      | DONE    | 2026-05-28 | 2026-05-29 | Categorise: historical (leave), active (migrate), obsolete (delete). |
+| [[id:C89CEA6F-E264-438C-AD38-39B381B4C632][Migrate active v1 docs to current format]]    | DONE    | 2026-05-28 | 2026-05-29 | Add frontmatter to plans, skill docs, active index files.      |
+| [[id:F35BD43B-B8A6-45E0-B414-891C030C168C][Rename v2-branded codegen scripts and templates]] | DONE | 2026-05-28 | 2026-05-29 | Rename generate_v2_doc.sh, v2_doc_generate.py, all templates. |
+| [[id:58290C08-1D11-4E11-BBB5-C0B6C2EFC844][Remove v2 terminology from documentation]]    | STARTED | 2026-05-29 |            | Rename recipe, update memory, retire port_v1_doc_to_v2 runbook.|
+| [[id:4381FFC6-FDEA-46B3-80C5-3A315AE21B9F][Drop #+version field from all org files]]     | BACKLOG | 2026-05-29 |            | Remove #+version: 2 from ~1840 files, templates, and audit script. |
 
 * Decisions
 
@@ -64,4 +65,4 @@ in script names, template names, or doc titles — the current format is just
 
 - Sprint 01–17 story/task files (~1400 historical records).
 - Backlog capture files (~331 files in deferred/next/inbox).
-- The =#+version:= field value itself — it remains =2= as the schema version number; only the external "v2" branding on filenames and titles is removed.
+- The =#+version:= field value itself — handled in task 5 (drop_version_field) as a separate, focused PR due to the ~1840 file scope.

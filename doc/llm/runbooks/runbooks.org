@@ -17,7 +17,7 @@ instructions, recipes, skills, functions, settings, and memory, see
 [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]].
 
 To create a new runbook: =compass add runbook= or
-=projects/ores.codegen/generate_v2_doc.sh --type runbook=. List
+=projects/ores.codegen/generate_doc.sh --type runbook=. List
 all runbooks with =compass list --type runbook=.
 
 * Catalogue
@@ -35,7 +35,6 @@ all runbooks with =compass list --type runbook=.
 | [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]]                                    | Sync main → read comments → decide → fix → push → reply → resolve → record|
 | [[id:1EE6EF7C-53E1-41D1-B6AF-6E21D7ACFB25][Create a new recipe]]                                        | Scaffold → fill Question/Answer → test commands → wire inventory → PR       |
 | [[id:F91B7D13-8A16-4466-B444-36D7B8AC3EBE][Add a new knowledge document]]                               | Scaffold → fill Summary/Detail → tag → wire knowledge index → PR            |
-| [[id:7BAF8188-A760-4F62-9B49-F9DA6E84FC17][Port a v1 document to v2]]                                    | Audit → scaffold v2 → port content → tag → validate → delete v1 → PR       |
 | [[id:30FE3C0F-ECCB-46AD-AC1F-75C6CE05F0E7][Run a sprint health review]]                                  | Branch → charts → task scaffold → System 2 analysis → findings → shape fixes → PR |
 | [[id:0CED1212-6763-4238-B861-9740C62AE499][Handle a hotfix]]                                             | Extract error → branch hotfix/ → scaffold → diagnose/fix → commit → PR    |
 

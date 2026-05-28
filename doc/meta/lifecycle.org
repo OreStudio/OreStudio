@@ -10,7 +10,7 @@
 #+created: 2026-05-18
 #+updated: 2026-05-21
 
-This document is the generic state machine that applies to every stateful v2
+This document is the generic state machine that applies to every stateful
 document — [[id:31C868B9-306E-4282-BA8C-07E647021B34][tasks]], [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][stories]], [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprints]], and [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][versions]]. It defines what each [[https://orgmode.org/manual/TODO-Basics.html][TODO
 keyword]] means, the legal transitions between them, and the rules audit uses to
 verify the system is healthy. It is /not/ agile-specific --- the rhythm /around/

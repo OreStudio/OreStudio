@@ -2,7 +2,7 @@
 :ID: DD7857D9-068E-D724-5C63-A67BD5F1C009
 :END:
 #+title: Release Notes Generator Skill
-#+description: Close a sprint by combining merged-PR data with the sprint's stories into a v2 org-mode release-notes file, fill in the blurb, export to Markdown, then tag main and open a draft GitHub release.
+#+description: Close a sprint by combining merged-PR data with the sprint's stories into an org-mode release-notes file, fill in the blurb, export to Markdown, then tag main and open a draft GitHub release.
 #+type: skill
 #+version: 2
 #+level: cross
@@ -42,14 +42,14 @@ sprint's PRs, tagging =main=, and opening a draft GitHub release.
    =sprint.org= and all =story.org= files, extracts story
    descriptions into the Key Improvements section, derives
    Highlights from the retrospective, and renders
-   =v2_doc_release_notes.org.mustache= via pystache:
+   =doc_release_notes.org.mustache= via pystache:
 
    #+begin_src sh
    python3 build/scripts/generate_release_notes.py
    #+end_src
 
    Output: =doc/agile/versions/v0/sprint_N/release_notes.org= — a
-   standard v2 org-mode document with a proper UUID, frontmatter,
+   standard org-mode document with a proper UUID, frontmatter,
    and a *summary blurb placeholder* that must be filled in.
 
 4. /Fill in the blurb/. Open =release_notes.org= and replace the
@@ -98,8 +98,8 @@ The release notes pipeline separates three concerns:
   org files and extracts story descriptions.
 
 - /Template rendering/ — the script renders
-  =projects/ores.codegen/library/templates/v2_doc_release_notes.org.mustache=
-  via pystache (same infrastructure as all other v2 documents).
+  =projects/ores.codegen/library/templates/doc_release_notes.org.mustache=
+  via pystache (same infrastructure as all other documents).
   Story descriptions are the first sentence of each story's =* Goal=
   section; Highlights come from the =* Retrospective ** What went
   well= bullets.

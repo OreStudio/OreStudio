@@ -29,7 +29,7 @@ From the project root:
 Two checks run in sequence:
 
 1. /Component structure/ — every =projects/ores.*/= has a
-   =modeling/component_overview.org= with the required v2 frontmatter
+   =modeling/component_overview.org= with the required frontmatter
    (=:ID:=, =#+type: component=, =#+description:=), required sections, and
    at least one =.puml= diagram. Exceptions are listed in
    =projects/ores.codegen/docs_exceptions.txt=.

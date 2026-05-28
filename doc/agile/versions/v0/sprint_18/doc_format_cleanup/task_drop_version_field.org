@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 4381FFC6-FDEA-46B3-80C5-3A315AE21B9F
+:END:
+#+title: Task: Drop #+version field from all org files and templates
+#+description: Remove #+version: 2 from every .org file and mustache template; retire doc_version_audit.py.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :doc_format_cleanup:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove the =#+version:= field from every =.org= file in the repo and from all
+codegen Mustache templates. The field was introduced as a migration tracker
+(v1 legacy vs. v2 current); with the migration complete there is only one
+format, so the field has no further meaning.
+
+Scope:
+- Strip =#+version: 2= from all ~1840 =.org= files under =doc/=, =projects/=.
+- Remove =#+version: {{version}}= (or the literal =2=) from all 14 Mustache
+  templates under =projects/ores.codegen/library/templates/=.
+- Retire =projects/ores.codegen/scripts/doc_version_audit.py= (or gut it to
+  a no-op) and remove its invocation from CI / =validate_docs.sh=.
+- Remove the =* Version tagging= section from =doc/meta/document_types.org=.
+- Retire =doc/recipes/documentation/how_do_i_audit_doc_versions.org= (or strip
+  to just the =--check= gate description if CI keeps a different check).
+- Remove =#+version:= from the compass =add= and =generate_doc.sh= codegen
+  paths in =doc_generate.py=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- No =.org= file in the repo contains a =#+version:= line.
+- No Mustache template in =library/templates/= emits =#+version:=.
+- CI passes without =doc_version_audit.py --check=.
+- =doc_generate.py= no longer writes =#+version: 2= into generated files.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

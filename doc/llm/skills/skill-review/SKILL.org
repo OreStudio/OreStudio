@@ -2,7 +2,7 @@
 :ID: 44D7A328-F69C-4EE9-83A5-74BD3634AD69
 :END:
 #+title: Skill Review Skill
-#+description: Review one or more Claude Code skills against the v2 skill contract — frontmatter, required sections, task-shape, no duplicated content.
+#+description: Review one or more Claude Code skills against the skill contract — frontmatter, required sections, task-shape, no duplicated content.
 #+type: skill
 #+version: 2
 #+level: cross
@@ -13,7 +13,7 @@
 #+begin_export markdown
 ---
 name: skill-review
-description: Review existing skills against the v2 skill contract. Use when auditing skill quality, before adding a new skill, or after significant codebase changes that may have invalidated skill instructions.
+description: Review existing skills against the skill contract. Use when auditing skill quality, before adding a new skill, or after significant codebase changes that may have invalidated skill instructions.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -21,7 +21,7 @@ license: Complete terms in LICENSE.txt
 * When to use this skill
 
 When you need to confirm one or more existing skills still match the
-v2 contract — periodic audit, after a codebase change that may have
+doc contract — periodic audit, after a codebase change that may have
 invalidated their instructions, or before adding a new skill that
 might overlap.
 
@@ -45,7 +45,7 @@ might overlap.
    reference docs it depends on), and incoming links (other skills
    that link to it).
 
-3. /Check each skill against the v2 contract/. The contract is the
+3. /Check each skill against the doc contract/. The contract is the
    authoritative source — read =skill= in [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]; the items
    below are the ones to focus on during review:
 
@@ -87,12 +87,12 @@ might overlap.
 
 - [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — list the skills.
 - [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — inspect one skill's metadata.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]]§"New Claude Code skill" — the
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]]§"New Claude Code skill" — the
   scaffold the contract is built around.
 
 * Reference
 
-- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]]§=skill= — the v2 contract every skill satisfies.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]]§=skill= — the doc contract every skill satisfies.
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]] — canonical inventory of all skills.
 
 * Artefacts                                                        :noexport:

@@ -67,7 +67,7 @@ correct response.
    essentials:
 
    #+begin_src sh :results verbatim
-   projects/ores.codegen/generate_v2_doc.sh \
+   projects/ores.codegen/generate_doc.sh \
      --type memory --slug <slug> \
      --parent-dir doc/llm/memory \
      --title "<one-line title>" \

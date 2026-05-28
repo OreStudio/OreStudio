@@ -55,8 +55,8 @@ of these exclusions, push back: the right home is somewhere else.
 ** Feedback
 
 - [[id:F9B796DF-2C06-42EF-AACF-D69E53621FF9][Do not re-export ORES_* env vars in Bash tool calls]].
-- [[id:46F83AC1-F41F-4878-9A1D-2E49742E1BFE][Always use codegen to create new v2 documents]] — never write =.org= files
-  directly; use =generate_v2_doc.sh= to scaffold them.
+- [[id:46F83AC1-F41F-4878-9A1D-2E49742E1BFE][Always use codegen to create new documents]] — never write =.org= files
+  directly; use =generate_doc.sh= to scaffold them.
 - [[id:7F176058-4FF7-4731-920B-26FE318E338F][Always use compass to create agile artefacts]] — never write task/story files
   manually; always scaffold with =compass add=.
 - [[id:387016AD-42CF-4830-B504-F255F6A7D1AB][Check recipes before searching for how to do something]] — =doc/recipes/=
@@ -80,7 +80,7 @@ of these exclusions, push back: the right home is somewhere else.
   search/list/show/where/goto/capture before =find= / =grep= / =ls=;
   gaps in compass are captures, not workarounds.
 - [[id:09B8AA56-2F85-47EA-949C-0CBFD36BCD1B][#+version: field is schema version, not a content revision counter]] —
-  always =#+version: 2= for v2 docs; never increment it when editing content.
+  always =#+version: 2= for docs; never increment it when editing content.
 
 ** User
 
@@ -98,5 +98,5 @@ of these exclusions, push back: the right home is somewhere else.
 
 - [[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]] — operational recipe.
 - [[id:7357C672-A49F-4974-9399-A166F761D222][ores-memory skill]] — LLM-side procedure for adding memories.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]]§"New memory" — the codegen
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]]§"New memory" — the codegen
   scaffold flow.

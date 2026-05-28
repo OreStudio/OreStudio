@@ -2,7 +2,7 @@
 :ID: F91B7D13-8A16-4466-B444-36D7B8AC3EBE
 :END:
 #+title: Add a new knowledge document
-#+description: Scaffold a v2 knowledge doc, fill in the content, and wire it into the knowledge index.
+#+description: Scaffold a knowledge doc, fill in the content, and wire it into the knowledge index.
 #+type: runbook
 #+version: 2
 #+level: cross
@@ -25,7 +25,7 @@ Create a new knowledge document: scaffold, fill in the durable factual content, 
 
 In execution order:
 
-1. /Scaffold./ Use [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]]§"New knowledge document": =generate_v2_doc.sh --type knowledge=.
+1. /Scaffold./ Use [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]]§"New knowledge document": =generate_doc.sh --type knowledge=.
 
 2. /Fill in the Summary./ Write the three-to-five sentence summary — the load-bearing field that every grep and index reads.
 

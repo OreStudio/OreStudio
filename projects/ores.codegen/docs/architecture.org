@@ -39,7 +39,7 @@ projects/ores.codegen/
 ├── scripts/                 # Shell scripts for common operations
 ├── src/                     # Python source
 │   ├── generator.py
-│   ├── v2_doc_generate.py
+│   ├── doc_generate.py
 │   ├── fpml_parser.py
 │   ├── images_generate_sql.py
 │   ├── lei_extract_subset.py
@@ -49,10 +49,10 @@ projects/ores.codegen/
 ├── docs/
 │   ├── architecture.org     # This document
 │   ├── cpp_generation_analysis.md
-│   └── v2_doc_generator.md
+│   └── doc_generator.md
 ├── requirements.txt
 ├── run_generator.sh
-└── generate_v2_doc.sh
+└── generate_doc.sh
 #+end_example
 
 ** Internal modules
@@ -60,7 +60,7 @@ projects/ores.codegen/
 | File                                  | Purpose                                                                  |
 |---------------------------------------+--------------------------------------------------------------------------|
 | =src/generator.py=                    | Main generator: JSON models + Mustache templates → SQL / C++ / etc.      |
-| =src/v2_doc_generate.py=              | v2 information-architecture document generator (task/story/sprint/...)   |
+| =src/doc_generate.py=              | v2 information-architecture document generator (task/story/sprint/...)   |
 | =src/fpml_parser.py=                  | FPML Genericode XML → JSON models                                        |
 | =src/iso_generate_metadata_sql.py=    | ISO standards → SQL                                                      |
 | =src/images_generate_sql.py=          | Image artefacts (flags, crypto icons) → SQL                              |
@@ -189,5 +189,5 @@ To add a new model-template pair:
   org-document generator.
 - =projects/ores.codegen/docs/cpp_generation_analysis.md= — analysis of
   the C++ code generation paths.
-- =projects/ores.codegen/docs/v2_doc_generator.md= — full CLI
-  reference for =generate_v2_doc.sh=.
+- =projects/ores.codegen/docs/doc_generator.md= — full CLI
+  reference for =generate_doc.sh=.

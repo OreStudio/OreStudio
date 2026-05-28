@@ -8,8 +8,8 @@
 #+level: s1
 #+filetags: :doc_format_cleanup:sprint_18:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/remove-v2-doc-refs
+#+pr: 912
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
@@ -55,12 +55,12 @@ Key active files requiring body updates:
 
 | Field        | Value                                                                        |
 |--------------+------------------------------------------------------------------------------|
-| State        | BACKLOG                                                                      |
+| State        | STARTED                                                                      |
 | Parent story | [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] |
-| Now          | Not yet started.                                                             |
-| Waiting on   | [[id:F35BD43B-B8A6-45E0-B414-891C030C168C][Rename codegen task]] — new script names must be settled first. |
-| Next         | Begin once rename task is merged.                                            |
-| Last touched | 2026-05-28                                                                   |
+| Now          | Applying changes across all active guidance docs.                            |
+| Waiting on   | Nothing.                                                                     |
+| Next         | PR and review.                                                               |
+| Last touched | 2026-05-29                                                                   |
 
 * Acceptance
 
@@ -80,14 +80,14 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                           | Title                                                         |
+|--------------------------------------------------------------+---------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/912][#912]] | Remove v2 terminology from all active guidance documentation   |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                   | File                                    | Decision | Notes                                              |
+|---+---------------------------------------------------+-----------------------------------------+----------+----------------------------------------------------|
+| 1 | Remove empty * PRs / * Review tables from task doc | task_drop_version_field.org             | Declined | Standard codegen scaffolding present in all tasks  |
 
 * Result

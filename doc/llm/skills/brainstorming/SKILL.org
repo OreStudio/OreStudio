@@ -2,7 +2,7 @@
 :ID: 460C89DA-50D2-40C3-88B2-BE52E430D170
 :END:
 #+title: Brainstorming Skill
-#+description: Turn a fuzzy idea into a validated design through one-question-at-a-time dialogue; then file the result as the right kind of v2 doc.
+#+description: Turn a fuzzy idea into a validated design through one-question-at-a-time dialogue; then file the result as the right kind of doc.
 #+type: skill
 #+version: 2
 #+level: cross
@@ -13,7 +13,7 @@
 #+begin_export markdown
 ---
 name: brainstorming
-description: Explore user intent and design through collaborative dialogue — one question at a time, alternatives with trade-offs, incremental validation — then file the outcome as the appropriate v2 doc (story plan, knowledge doc, or product-backlog capture).
+description: Explore user intent and design through collaborative dialogue — one question at a time, alternatives with trade-offs, incremental validation — then file the outcome as the appropriate doc (story plan, knowledge doc, or product-backlog capture).
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -57,20 +57,20 @@ fully-formed designs through natural collaborative dialogue.
 
 ** Phase 4 — file the design
 
-This is where v2 differs from v1: pick the /right shape/ for the
+Pick the /right shape/ for the
 output. Always scaffold via the codegen — never hand-write.
 
 6. /If the design is one story/'s plan → put it in the story's
    =* Plan= section. The story itself is scaffolded via [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I
-   create a new v2 doc?]] §"New story".
+   create a new doc?]] §"New story".
 
 7. /If the design captures durable, cross-cutting rationale/ → file
    as a [[id:BD1F3458-F991-46BE-ABEB-5F06C2633375][knowledge]] doc under =doc/knowledge/<topic>/=. Scaffold via
-   [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New knowledge document".
+   [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] §"New knowledge document".
 
 8. /If the design is pre-sprint and not yet committed to a
    version/ → file as a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] / [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]] bucket via
-   [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New capture".
+   [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] §"New capture".
 
 9. /If the design is a one-off cross-cutting analysis/ — e.g. a
    migration plan that spans many stories — file as
@@ -96,7 +96,7 @@ output. Always scaffold via the codegen — never hand-write.
 
 * Recipes
 
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — for every output of the
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — for every output of the
   brainstorm (story / plan section / capture / knowledge doc).
 - [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — gather context
   before asking the first question.

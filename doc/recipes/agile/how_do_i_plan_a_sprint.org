@@ -115,4 +115,4 @@ Manual. Run once per sprint, at the start of the planning phase.
 - [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]] — use this first if the sprint
   has not been scaffolded yet.
 - [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] — preferred way to create stories and tasks.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — full codegen reference for all doc types.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — full codegen reference for all doc types.

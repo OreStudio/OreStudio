@@ -95,8 +95,8 @@ folder, set its mission, and link it from the version manifest?
 * Script
 
 The entry point is =projects/ores.compass/compass.sh add=, mapping to
-=src/compass.py= (=cmd_add=), which calls =ores.codegen='s =v2_doc_generate=
-as a library. The sprint template is =v2_doc_sprint.org.mustache=.
+=src/compass.py= (=cmd_add=), which calls =ores.codegen='s =doc_generate=
+as a library. The sprint template is =doc_sprint.org.mustache=.
 
 * Tested by
 
@@ -108,5 +108,5 @@ file carries =#+version: 2=.
 - [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][Sprint]] (glossary).
 - [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][Planning phase]] of the agile process.
 - [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] — preferred scaffold entry point.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New sprint" — full codegen reference.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] §"New sprint" — full codegen reference.
 - [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint]] — the skill that drives this recipe.

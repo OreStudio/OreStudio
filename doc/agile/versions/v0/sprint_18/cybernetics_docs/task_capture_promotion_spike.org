@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: F82855FC-85AD-4A92-9B33-9A33AED9EC8A
+:END:
+#+title: Task: Spike: capture promotion runbook and compass support
+#+description: Investigate and define the capture→story promotion flow: write a runbook, evaluate extending compass capture promote to automate it.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :cybernetics_docs:sprint_18:v0:
+#+owner: marco
+#+branch: feature/cybernetics-docs
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Improve cybernetics documentation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Define the canonical *capture→story promotion* flow and determine how
+much of it =compass capture promote= should automate. Promoting a
+capture differs from starting a new story in three important ways:
+
+- The capture's UUID must be *inherited* by the story (identity
+  continuity — existing id-links stay valid).
+- The story's Goal and Acceptance are populated from the capture's
+  =* What= and =* Why= sections, not written from scratch.
+- The capture file must be deleted (=git rm=) and its row removed from
+  any index file (sprint =capture.org=, backlog bucket index).
+
+Currently =compass capture promote= only prints instructions; it does
+not execute the steps. This spike decides whether to automate it, and
+in either case produces a runbook the LLM can follow.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                       |
+| Parent story | [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Improve cybernetics documentation]] |
+| Now          | Not yet started.                                                              |
+| Waiting on   | Nothing.                                                                      |
+| Next         | Begin spike.                                                                  |
+| Last touched | 2026-05-28                                                                    |
+
+* Acceptance
+
+- [ ] The three distinctions between promotion and new-story creation
+  are documented (UUID inheritance, content population, capture cleanup).
+- [ ] =compass capture promote= evaluated: current behaviour documented;
+  gap between current and desired behaviour articulated.
+- [ ] A =promote_capture_to_story= runbook written (or a decision made
+  to automate in compass with a note on what the automation requires).
+- [ ] Recommendation recorded in =* Result=: automate vs. manual runbook,
+  with rationale and any follow-up tasks created.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -235,6 +235,7 @@ A document is /done/ when:
 - [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]] — the generic TODO state machine on each document.
 - [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — per-type frontmatter and section contract.
 - [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — what the backlog is and how next/deferred buckets work.
+- [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Sprint themes]] — the six themes and epic convention for sprint story tables.
 - [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — definitions of every term used here.
 - [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — the recipe used at every promotion
   step above.

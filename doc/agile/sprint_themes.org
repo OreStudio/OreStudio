@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: A064D838-F127-4DD6-BB42-9A7902039AEE
+:END:
+#+title: Sprint themes
+#+description: Definitions of the six sprint themes (Product, Tooling, Agile, LLMs, Documentation, Infrastructure) and the epic convention used to group stories in sprint backlogs.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :agile:sprint:themes:knowledge:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+* Summary
+
+Each [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]]'s =* Stories= section is split into six theme subheadings so
+that the reader can scan the backlog by domain at a glance. Themes are
+permanent labels — every story in every sprint belongs to exactly one.
+Within a theme, an /epic/ is an optional sub-grouping for a cluster of
+stories that form a coherent multi-story arc toward a single named
+capability.
+
+* Detail
+
+** Themes
+
+| Theme          | What belongs here                                                        |
+|----------------+--------------------------------------------------------------------------|
+| Product        | End-user features: ORE types and imports, trading domain, Qt UI, workspace, data quality, user-facing CLI. |
+| Tooling        | Developer and LLM tooling: =ores.compass=, codegen, sqlgen, build scripts, developer CLI. |
+| Agile          | Sprint management: health reviews, charts, captures, backlog refinement, sprint planning. |
+| LLMs           | LLM-facing infrastructure: Claude Code skills, runbooks, recipes, AI code review. |
+| Documentation  | Knowledge graph, system model, diagrams, site content, user manual.      |
+| Infrastructure | Build system, CI/CD, test infrastructure, database infrastructure, comms substrate, security primitives, compiler/platform work. |
+
+** Epics
+
+An epic is an optional =***= sub-subheading inside a theme for a cluster
+of two or more stories that all contribute to a single named capability.
+It carries a one-paragraph description of what the arc is working toward.
+Stories that belong to no epic sit directly in the theme's table without
+a sub-heading.
+
+Example structure:
+
+#+begin_src org
+,** Product
+
+,*** Epic: ORE Imports End-to-End
+
+Enable loading ORE input files into workspaces end-to-end — sample data
+sourcing, execution support, and full instrument-type coverage.
+
+| [[id:...][ORE sample data]]                    | BACKLOG | ... |
+| [[id:...][Add support for running ORE samples]] | BACKLOG | ... |
+| [[id:...][Work through all types for Example 1]] | BACKLOG | ... |
+
+| [[id:...][Standalone product story]]            | DONE    | ... |
+#+end_src
+
+Epics are structural headings only — they have no =:ID:=, no document
+file, and no state machine. They are introduced where the grouping adds
+clarity; they are not forced on every theme.
+
+* See also
+
+- [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — the loop: backlog refinement, sprint phases, closure.
+- [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][Sprint]] — the document type that hosts theme subheadings.

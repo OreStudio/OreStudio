@@ -30,6 +30,7 @@ recipes; each topic has its own inventory that lists its recipes.
 - [[id:B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44][Git recipes]] — pure git workflows (branches, submodules).
 - [[id:FCF81F0B-AFBF-4169-BD24-04DBD08180A9][GitHub recipes]] — =gh= CLI, PRs, CI checks, review threads.
 - [[id:51FE4DF6-D12F-4CF3-A32F-E793979AA68B][LLM prompt recipes]] — reusable prompts for LLM chat interfaces.
+- [[id:A4720C4D-DED8-413A-A29E-6851D4196868][PlantUML recipes]] — add and maintain diagrams in org-mode documents.
 
 * See also
 

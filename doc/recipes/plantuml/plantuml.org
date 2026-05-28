@@ -1,0 +1,26 @@
+:PROPERTIES:
+:ID: A4720C4D-DED8-413A-A29E-6851D4196868
+:END:
+#+title: PlantUML recipes
+#+description: Recipes for adding and maintaining PlantUML diagrams in ORE Studio org-mode documents.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :recipe:plantuml:diagram:index:knowledge:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+Recipes for working with PlantUML diagrams in ORE Studio. Every diagram
+follows the same file convention: a GPL mode-line and licence header,
+=@startuml= / =@enduml= delimiters, and a =title= line. Use
+=compass add diagram= to scaffold a new =.puml= file that matches this
+convention from the first line.
+
+* Diagrams
+
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]] — scaffold, edit, export PNG, embed in org-mode.
+
+* See also
+
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the main system architecture diagram (=projects/modeling/ores.puml=).
+- [[id:B9D3D469-9E59-465F-8C18-34546B680D13][component_overview.org]] — component-level diagram convention.

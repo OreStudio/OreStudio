@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: F35BD43B-B8A6-45E0-B414-891C030C168C
+:END:
+#+title: Task: Rename v2-branded codegen scripts and templates
+#+description: Rename generate_v2_doc.sh, v2_doc_generate.py, and all v2_doc_*.mustache templates; update all callers in compass.py, CMake, and CI.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :doc_format_cleanup:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove the =v2= prefix from every codegen artefact:
+- =projects/ores.codegen/generate_v2_doc.sh= → =generate_doc.sh=
+- =projects/ores.codegen/src/v2_doc_generate.py= → =doc_generate.py=
+- All =projects/ores.codegen/library/templates/v2_doc_*.org.mustache= → =doc_*.org.mustache=
+- Update every caller: =compass.py=, =CMakeLists.txt=, CI workflows, and any
+  shell scripts that invoke =generate_v2_doc.sh= directly.
+
+* Status
+
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                      |
+| Parent story | [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] |
+| Now          | Not yet started.                                                             |
+| Waiting on   | Nothing.                                                                     |
+| Next         | Begin implementation.                                                        |
+| Last touched | 2026-05-28                                                                   |
+
+* Acceptance
+
+- No file under =projects/ores.codegen/= has =v2= in its name.
+- =compass goto= and =compass add= still scaffold documents correctly after the rename.
+- CI build passes (no broken script references).
+- =generate_doc.sh --help= works; =generate_v2_doc.sh= no longer exists.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 58290C08-1D11-4E11-BBB5-C0B6C2EFC844
+:END:
+#+title: Task: Remove v2 terminology from documentation
+#+description: Rename how_do_i_create_a_new_v2_doc.org, update use_codegen_for_v2_docs memory, retire port_v1_doc_to_v2 runbook, and update all doc references.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :doc_format_cleanup:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove "v2" from documentation titles, filenames, and body text where it
+refers to the old format label rather than a meaningful version number:
+- Rename =doc/recipes/codegen/how_do_i_create_a_new_v2_doc.org= (title and
+  file) — drop "v2" from both.
+- Update =doc/llm/memory/use_codegen_for_v2_docs.org= — rename and rewrite
+  to refer to the tool by its new name.
+- Retire =doc/llm/runbooks/port_v1_doc_to_v2/runbook.org= — archive or delete
+  since v1 migration is complete.
+- Update every =[[id:...]]= back-link and prose reference in recipes, memories,
+  and skills that pointed to the renamed/deleted docs.
+
+* Status
+
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                      |
+| Parent story | [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] |
+| Now          | Not yet started.                                                             |
+| Waiting on   | [[id:F35BD43B-B8A6-45E0-B414-891C030C168C][Rename codegen task]] — script names must be settled first. |
+| Next         | Begin once rename task is merged.                                            |
+| Last touched | 2026-05-28                                                                   |
+
+* Acceptance
+
+- =doc/recipes/codegen/how_do_i_create_a_new_v2_doc.org= no longer exists; replacement has no "v2" in filename or title.
+- =doc/llm/memory/use_codegen_for_v2_docs.org= renamed/updated; =compass search= returns the new name.
+- =doc/llm/runbooks/port_v1_doc_to_v2/= retired.
+- No recipe, memory, or skill body text refers to the old filenames.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

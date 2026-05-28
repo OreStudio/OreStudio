@@ -84,7 +84,7 @@ to borrow its language for separating concerns:
 - Concerns that are durable belong to S5 (product identity).
 
 For where this mapping aligns with and departs from canonical VSM, see
-the /Connection and limitations/ section of [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]].
+the /Connection to and divergence from the VSM/ section of [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]].
 
 * See also
 

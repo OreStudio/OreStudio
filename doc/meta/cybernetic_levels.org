@@ -211,7 +211,7 @@ analogy.
   the product lifetime. This is directly analogous to Beer's intended
   separation.
 
-- *S3* as independent audit* — the audit channel is structurally
+- *S3\* as independent audit* — the audit channel is structurally
   separate from the operational hierarchy in both Beer's model and ORE
   Studio. In both cases it bypasses the reporting chain to observe S1
   directly.

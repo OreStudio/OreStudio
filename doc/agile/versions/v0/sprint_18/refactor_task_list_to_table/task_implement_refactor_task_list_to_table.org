@@ -58,9 +58,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                              |
+|-----+--------------------------------------------------------------------|
+| 893 | [codegen,agile] Replace story Tasks bullet list with status table |
 
 * Review
 

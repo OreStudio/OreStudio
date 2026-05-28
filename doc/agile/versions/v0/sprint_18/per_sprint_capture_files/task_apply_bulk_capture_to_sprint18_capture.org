@@ -63,9 +63,10 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                              | File        | Decision | Notes                                    |
+|---+--------------------------------------------------------------+-------------+----------+------------------------------------------|
+| 1 | Forward extra args to cmd_backlog; wrap in try/except        | compass.py  | Accept   | Fixed in 1774529fc                       |
+| 2 | Forward sys.argv[2:] in bucket command short-circuit         | compass.py  | Accept   | Fixed in 1774529fc                       |
 
 * Result
 

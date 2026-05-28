@@ -1,4 +1,4 @@
-;;; .build-plan.el --- v0 version manifest          -*- lexical-binding: t; -*-
+;;; ores-build-plan.el --- v0 version manifest          -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2025  Marco Craveiro
 
@@ -74,5 +74,5 @@
   (error
    (message "Build failed: %s" (error-message-string err))))
 
-(provide '.build-plan)
-;;; .build-plan.el ends here
+(provide 'ores-build-plan)
+;;; ores-build-plan.el ends here

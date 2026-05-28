@@ -1,10 +1,10 @@
-;;; .build-site.el --- Build product site. -*- lexical-binding: t; -*-
+;;; ores-build-site.el --- Build product site. -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2024 Marco Craveiro
 ;;
 ;; Author: Marco Craveiro <marco.craveiro@gmail.com>
 ;; Maintainer: Marco Craveiro <marco.craveiro@gmail.com>
-;; URL: https://github.com/MASD-Project/progen/blob/main/.build-site.el
+;; URL: https://github.com/OreStudio/OreStudio
 ;;
 ;; This program is free software; you can redistribute it and/or modify it under
 ;; the terms of the GNU General Public License as published by the Free Software
@@ -239,5 +239,5 @@
    (message "Build failed: %s" (error-message-string err))
    (kill-emacs 1)))
 
-(provide '.build-site)
-;;; .build-site.el ends here
+(provide 'ores-build-site)
+;;; ores-build-site.el ends here

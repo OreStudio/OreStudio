@@ -1,4 +1,4 @@
-;;; .build-skills.el --- -*- lexical-binding: t; -*-
+;;; ores-build-skills.el --- -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2025  Marco Craveiro
 
@@ -93,5 +93,5 @@
   (error
    (message "Build failed: %s" (error-message-string err))))
 
-(provide '.build-skills)
-;;; .build-skills.el ends here
+(provide 'ores-build-skills)
+;;; ores-build-skills.el ends here

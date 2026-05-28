@@ -1,4 +1,4 @@
-;;; .build-settings.el --- -*- lexical-binding: t; -*-
+;;; ores-build-settings.el --- -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2026  Marco Craveiro
 
@@ -67,5 +67,5 @@
   (error
    (message "Settings deployment failed: %s" (error-message-string err))))
 
-(provide '.build-settings)
-;;; .build-settings.el ends here
+(provide 'ores-build-settings)
+;;; ores-build-settings.el ends here

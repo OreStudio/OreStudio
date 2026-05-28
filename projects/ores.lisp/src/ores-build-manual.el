@@ -1,4 +1,4 @@
-;;; .build-manual.el --- Build user manual PDF. -*- lexical-binding: t; -*-
+;;; ores-build-manual.el --- Build user manual PDF. -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2024 Marco Craveiro
 ;;
@@ -43,13 +43,15 @@
 ;; — to a `marginfigure'. Larger screenshots stay in the text column. This
 ;; is a LaTeX-export-only transform; the HTML site is unaffected.
 ;;
-;; The repo root is captured at load time: during org export `load-file-name'
-;; is nil and `buffer-file-name' may be too, so computing it inside the filter
-;; would crash. Float-placement options (`[htbp]' etc.) and `\includegraphics'
-;; options are optional in the regexps, so begin/end can never mismatch and
+;; The repo root is computed from this script's location (3 levels up from
+;; projects/ores.lisp/src/). During org export `load-file-name' is nil and
+;; `buffer-file-name' may be too, so it is captured at load time.
+;; Float-placement options (`[htbp]' etc.) and `\includegraphics' options
+;; are optional in the regexps, so begin/end can never mismatch and
 ;; option-less images are still matched.
 (defvar ores/repo-root
-  (file-name-directory (or load-file-name buffer-file-name default-directory))
+  (expand-file-name "../../../"
+                    (file-name-directory (or load-file-name buffer-file-name default-directory)))
   "Repository root, captured when this script is loaded.")
 (defvar ores/margin-max-w 510)
 (defvar ores/margin-max-h 320)
@@ -117,8 +119,7 @@
 ;; with the single source of truth.
 (defun ores/cmake-version ()
   "Return the project VERSION string from CMakeLists.txt, or \"0.0.0\"."
-  (let ((cmake (expand-file-name "CMakeLists.txt"
-                (file-name-directory (or load-file-name buffer-file-name)))))
+  (let ((cmake (expand-file-name "CMakeLists.txt" ores/repo-root)))
     (with-temp-buffer
       (insert-file-contents cmake)
       (if (re-search-forward
@@ -150,7 +151,7 @@
 
 (let ((manual-file (expand-file-name
                     "doc/manual/user_guide/user_manual.org"
-                    (file-name-directory (or load-file-name buffer-file-name)))))
+                    ores/repo-root)))
   (condition-case err
       (progn
         (find-file manual-file)
@@ -161,5 +162,5 @@
      (message "Manual PDF build failed: %s" (error-message-string err))
      (kill-emacs 1))))
 
-(provide '.build-manual)
-;;; .build-manual.el ends here
+(provide 'ores-build-manual)
+;;; ores-build-manual.el ends here

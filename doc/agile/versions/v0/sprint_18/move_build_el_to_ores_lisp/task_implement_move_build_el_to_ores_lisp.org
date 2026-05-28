@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 674D3887-A2FE-4D6C-B856-8665BFC84E0B
+:END:
+#+title: Task: Implement Move .build-*.el scripts to ores.lisp
+#+description: Initial task for: Move .build-*.el scripts to ores.lisp
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :move_build_el_to_ores_lisp:sprint_18:v0:
+#+owner: marco
+#+branch: feature/move-build-el-to-ores-lisp
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AD6B59E1-A267-4927-A3FF-D624BB123658][Move .build-*.el scripts to ores.lisp]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Copy each =.build-*.el= to =projects/ores.lisp/src/ores-build-*.el=, fix
+internal path calculations where =load-file-name= was used to find the repo
+root (=.build-manual.el= is the only affected file), update the =provide=
+symbol in each file, then update every CMake target and GitHub workflow
+reference. Remove the originals from the project root.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:AD6B59E1-A267-4927-A3FF-D624BB123658][Move .build-*.el scripts to ores.lisp]] |
+| Now          | Complete. deploy_site build verified.  |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-28                             |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

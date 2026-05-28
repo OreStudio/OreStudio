@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Generate a v2 information-architecture document (task, story, sprint,
-# or version) from a Mustache template. See src/v2_doc_generate.py for
+# Generate an information-architecture document (task, story, sprint,
+# or version) from a Mustache template. See src/doc_generate.py for
 # the contract and doc/meta/document_types.org for the document
 # format the templates follow.
 
@@ -17,4 +17,4 @@ if [ ! -d "$VENV_PATH" ]; then
 fi
 
 source "$VENV_PATH/bin/activate"
-exec python3 "$SCRIPT_DIR/src/v2_doc_generate.py" "$@"
+exec python3 "$SCRIPT_DIR/src/doc_generate.py" "$@"

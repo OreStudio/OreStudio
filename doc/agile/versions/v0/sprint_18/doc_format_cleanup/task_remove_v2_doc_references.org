@@ -20,16 +20,36 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Remove "v2" from documentation titles, filenames, and body text where it
-refers to the old format label rather than a meaningful version number:
-- Rename =doc/recipes/codegen/how_do_i_create_a_new_v2_doc.org= (title and
-  file) — drop "v2" from both.
-- Update =doc/llm/memory/use_codegen_for_v2_docs.org= — rename and rewrite
-  to refer to the tool by its new name.
-- Retire =doc/llm/runbooks/port_v1_doc_to_v2/runbook.org= — archive or delete
-  since v1 migration is complete.
-- Update every =[[id:...]]= back-link and prose reference in recipes, memories,
-  and skills that pointed to the renamed/deleted docs.
+Remove all "v2" references from active guidance documents — the docs an LLM
+or developer will follow in future sessions. Scope is broader than originally
+stated: in addition to renaming files, all body text in active docs must be
+updated.
+
+Three categories (identified during audit):
+
+1. *File renames:*
+   - =doc/recipes/codegen/how_do_i_create_a_new_v2_doc.org= → drop "v2" from filename and title.
+   - =doc/llm/memory/use_codegen_for_v2_docs.org= → rename and rewrite.
+   - =doc/llm/runbooks/port_v1_doc_to_v2/runbook.org= → retire (v1 migration complete).
+
+2. *Body text updates in active guidance docs* (~30 files):
+   Recipes, memories, skills, runbooks, meta, and orientation docs that contain
+   "v2_doc", "generate_v2", "v2 format", "v2 recipe", etc. in prose or code
+   blocks. These must be updated to use the new script/template names once task 3
+   (rename codegen) is merged.
+
+3. *Leave as-is:*
+   Sprint 17–18 story/task DONE records that mention "v2" in historical context
+   (e.g. "implemented compass add for v2 docs") — accurate history, not guidance.
+
+Key active files requiring body updates:
+- =doc/llm/llm_instructions.org=, =doc/orientation.org=
+- =doc/meta/document_types.org=, =doc/meta/glossary.org=
+- =doc/llm/memory/version_field_is_schema_version.org=, =doc/llm/memory/always_prefer_compass.org=, =doc/llm/memory/memory.org=
+- =doc/llm/runbooks/add_a_new_knowledge_document/runbook.org=, =doc/llm/runbooks/create_a_new_recipe/runbook.org=
+- All skill =SKILL.org= files referencing v2
+- =doc/recipes/codegen/codegen.org=, =how_do_i_add_a_new_document_type.org=, =how_do_i_run_codegen.org=
+- =doc/recipes/documentation/how_do_i_audit_doc_versions.org=, =how_do_i_create_a_memory.org=, =how_do_i_create_a_recipe.org=
 
 * Status
 
@@ -38,16 +58,17 @@ refers to the old format label rather than a meaningful version number:
 | State        | BACKLOG                                                                      |
 | Parent story | [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] |
 | Now          | Not yet started.                                                             |
-| Waiting on   | [[id:F35BD43B-B8A6-45E0-B414-891C030C168C][Rename codegen task]] — script names must be settled first. |
+| Waiting on   | [[id:F35BD43B-B8A6-45E0-B414-891C030C168C][Rename codegen task]] — new script names must be settled first. |
 | Next         | Begin once rename task is merged.                                            |
 | Last touched | 2026-05-28                                                                   |
 
 * Acceptance
 
-- =doc/recipes/codegen/how_do_i_create_a_new_v2_doc.org= no longer exists; replacement has no "v2" in filename or title.
-- =doc/llm/memory/use_codegen_for_v2_docs.org= renamed/updated; =compass search= returns the new name.
-- =doc/llm/runbooks/port_v1_doc_to_v2/= retired.
-- No recipe, memory, or skill body text refers to the old filenames.
+- =how_do_i_create_a_new_v2_doc.org= no longer exists; replacement has no "v2" in filename or title.
+- =use_codegen_for_v2_docs.org= renamed/updated.
+- =port_v1_doc_to_v2/= retired and removed from runbooks catalogue.
+- No active guidance doc (recipe, memory, skill, runbook, meta, orientation) contains "v2_doc", "generate_v2", or "v2 format" in body text.
+- Sprint 17–18 DONE story/task records are untouched.
 
 * Plan
 

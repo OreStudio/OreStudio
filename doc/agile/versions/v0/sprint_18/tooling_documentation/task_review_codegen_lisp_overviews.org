@@ -73,6 +73,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | DONE task's =Now= field should be =Nothing.= not descriptive prose. | task_add_ores_sql_scripts_section.org | Accept | Fixed in c980b6e7b. |
+| 2 | Empty PRs/Review tables should be omitted from new task docs. | task_standardise_script_naming.org | Decline | Standard template convention — all task docs start with these sections. |
 
 * Result

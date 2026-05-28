@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 1781D045-E150-41F4-916B-93E643ABE71F
+:END:
+#+title: compass list has no --fields flag to narrow output to a subs…
+#+description: compass list has no --fields flag to narrow output to a subset of columns (e.g. just ID, title, description). Currently outputs the full line for every doc. Add --fields to allow callers to select which columns to display.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

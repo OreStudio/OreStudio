@@ -2,13 +2,13 @@
 :ID: 14606A1B-2742-DE34-F813-B4E3B736AEF1
 :END:
 #+title: Sprint 18 Capture
-#+description: Assorted notes taken during Sprint which have not yet been filled but we do not want to forget.
+#+description: Assorted notes taken during Sprint which have not yet been filled but we do not want to forget. DRAINED 2026-05-28 — all entries triaged into product backlog via bulk capture recipe.
 #+type: capture
 #+version: 2
 #+level: s3
 #+filetags: :ore:workflow:marketdata:controller:plugins:trading:reporting:windows:sprint_16:v0:
 #+created: 2026-05-23
-#+updated: 2026-05-23
+#+updated: 2026-05-28
 #+todo: STARTED | DONE
 
 This page is the short-lived [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] document for [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] of ORE Studio. At

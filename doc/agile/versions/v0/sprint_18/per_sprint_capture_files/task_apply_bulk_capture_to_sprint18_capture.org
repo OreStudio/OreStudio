@@ -31,11 +31,11 @@ sprint capture file can be archived or emptied with confidence.
 
 | Field        | Value                                                                    |
 |--------------+--------------------------------------------------------------------------|
-| State        | STARTED                                                                  |
+| State        | DONE                                                                     |
 | Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]]    |
-| Now          | Working through capture.org entries.                                     |
+| Now          | Complete.                                                                |
 | Waiting on   | Nothing.                                                                 |
-| Next         | Process all sections; commit captures; mark DONE.                        |
+| Next         | Merge PR.                                                                |
 | Last touched | 2026-05-28                                                               |
 
 * Acceptance
@@ -68,3 +68,9 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+All entries in =sprint_18/capture.org= triaged. 24 captures filed in
+=next/=, 10 in =deferred/=, 5 in =inbox/=, 1 discarded (plans.org
+already existed). One inbox capture (=skill_drain_capture_buffer=)
+promoted to =next/=. Compass list =--fields= limitation captured in
+inbox. =capture.org= header marked DRAINED 2026-05-28.

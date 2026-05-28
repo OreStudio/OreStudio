@@ -25,9 +25,9 @@ Replace it with product-level captures in the [[id:D4219199-7B17-4A89-B4BC-60197
 |---------------+--------------------------------------------------------------------------|
 | State         | STARTED                                                                  |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                                                |
-| Now           | All tasks done except bulk-capture triage of sprint 18 capture.org.     |
-| Waiting on    | Nothing.                                                                 |
-| Next          | Run bulk capture recipe against sprint 18 capture.org.                  |
+| Now           | All tasks complete; PR pending.                                          |
+| Waiting on    | PR merge.                                                                |
+| Next          | Merge PR and close story.                                                |
 | Last touched  | 2026-05-28                                                               |
 
 * Acceptance

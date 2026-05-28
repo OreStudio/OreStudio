@@ -41,20 +41,13 @@ data types will follow in the UI.
 
 * Tasks
 
-In execution order:
-
-- [[id:104891B2-0266-4D01-BAAC-7F3EF9184008][Add export functionality for currencies]]
-- [[id:ACB8F76F-844A-48F0-87B2-76840767F452][Add currency editing support]]
-- [[id:32448B40-ED11-4EE4-8FF8-49DAA81A70A9][Implement adding new currencies]]
-- [[id:22500F9E-B815-4027-82B0-CB74173240BE][Create a history dialog for currencies]]
-- [[id:DE00D3A0-6519-43E0-B2CD-F6D39EC6706D][Add multi-selection support to currencies]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Currency details is always on top.
-- Do not auto maximise windows (also in ui_polish_and_branding).
-- Allow MDI windows outside main window.
-- Add edit menu and export menu.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:104891B2-0266-4D01-BAAC-7F3EF9184008][Add export functionality for currencies]] | DONE | 2025-11-25 | 2025-11-25 | Export currencies from the Qt UI to file (JSON / XML) via a menu action. |
+| [[id:ACB8F76F-844A-48F0-87B2-76840767F452][Add currency editing support]] | DONE | 2025-11-25 | 2025-11-25 | Allow currency rows to be edited from the Qt UI with validation and a save action. |
+| [[id:32448B40-ED11-4EE4-8FF8-49DAA81A70A9][Implement adding new currencies]] | DONE | 2025-11-25 | 2025-11-25 | Add a new-currency dialog and wire it to the repository. |
+| [[id:22500F9E-B815-4027-82B0-CB74173240BE][Create a history dialog for currencies]] | DONE | 2025-11-25 | 2025-11-25 | A dialog that shows the bitemporal history of a selected currency row. |
+| [[id:DE00D3A0-6519-43E0-B2CD-F6D39EC6706D][Add multi-selection support to currencies]] | DONE | 2025-11-25 | 2025-11-25 | Allow multiple currency rows to be selected and acted on together. |
 
 * Decisions
 

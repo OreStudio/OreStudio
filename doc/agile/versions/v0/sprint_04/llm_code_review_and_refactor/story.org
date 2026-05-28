@@ -43,21 +43,11 @@ split, Catch2 tags).
 
 * Tasks
 
-In execution order:
-
-- [[id:B08CB742-8E1C-4A0C-87AE-154BA9DEEFCD][Review all code created so far with an LLM]]
-- [[id:80B50B7C-F56A-4AF3-A7AB-A469D8715891][Restructure components to follow the Dogen approach]]
-- [[id:95C39216-F5D9-466D-A051-FBF65466A8AD][Generate PlantUML diagrams for all components]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Consider adding tags to Catch2 tests.
-- Split JSON-based =operator<<= from domain type.
-- Add a table representation of domain types.
-- Add a comint-based emacs mode for the client.
-- Split main window class.
-- Move =base32_encode= to utilities.
-- Improve UML diagrams.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B08CB742-8E1C-4A0C-87AE-154BA9DEEFCD][Review all code created so far with an LLM]] | DONE | 2025-11-28 | 2025-11-28 | Run an LLM-driven review pass across every component and capture findings as follow-on tasks. |
+| [[id:80B50B7C-F56A-4AF3-A7AB-A469D8715891][Restructure components to follow the Dogen approach]] | DONE | 2025-11-28 | 2025-11-28 | Reorganise component layouts to match the Dogen project's modeling-first convention. |
+| [[id:95C39216-F5D9-466D-A051-FBF65466A8AD][Generate PlantUML diagrams for all components]] | DONE | 2025-11-28 | 2025-11-28 | Add a PlantUML diagram per component and wire it into the build via the mad target. |
 
 * Decisions
 

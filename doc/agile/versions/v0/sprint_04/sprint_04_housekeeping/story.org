@@ -37,14 +37,10 @@ report. Also where the postponed Debian-install issue is parked.
 
 * Tasks
 
-In execution order:
-
-- [[id:9F3BA7C7-7E51-4D32-BE59-82D0DEC3BB52][Sprint and product backlog refinement]]
-- [[id:92C5EC82-B40B-4030-A633-FFD684F39418][Generate a pie chart for tasks in org via R]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- POSTPONED: Current issues with package install in Debian.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9F3BA7C7-7E51-4D32-BE59-82D0DEC3BB52][Sprint and product backlog refinement]] | DONE | 2025-11-30 | 2025-11-30 | Curate sprint 04 backlog through the sprint and groom the product backlog as work surfaces new ideas. |
+| [[id:92C5EC82-B40B-4030-A633-FFD684F39418][Generate a pie chart for tasks in org via R]] | DONE | 2025-11-30 | 2025-11-30 | Add an R-based pie chart for sprint resourcing alongside the bar chart. |
 
 * Decisions
 

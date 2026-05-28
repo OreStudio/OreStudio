@@ -40,21 +40,11 @@ project-specific branding (splash, app icon), modernised icon set
 
 * Tasks
 
-In execution order:
-
-- [[id:BCDD540F-BA92-4063-A279-941319276787][Create a splash screen and gray background]]
-- [[id:6E1179B7-FD91-4EA7-90A6-A657A23C30A8][Use Fluent icons]]
-- [[id:15EA20F9-CE64-49B8-B64A-5337F040192D][Create an icon for the application]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Add about to menu.
-- Currency details is always on top (also in currencies_ui).
-- Do not auto maximise windows.
-- Allow MDI windows outside main window.
-- Add packaging support for images.
-- POSTPONED: Make UI/UX look more professional (deferred to a later
-  sprint).
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BCDD540F-BA92-4063-A279-941319276787][Create a splash screen and gray background]] | DONE | 2025-11-22 | 2025-11-22 | Replace the default splash with a project-branded image; give the MDI background a neutral gray. |
+| [[id:6E1179B7-FD91-4EA7-90A6-A657A23C30A8][Use Fluent icons]] | DONE | 2025-11-22 | 2025-11-22 | Switch the icon set to Microsoft's Fluent icons for a more polished, modern look. |
+| [[id:15EA20F9-CE64-49B8-B64A-5337F040192D][Create an icon for the application]] | DONE | 2025-11-22 | 2025-11-22 | Design an application icon for ORE Studio and embed it in the Qt resources and the OS package metadata. |
 
 * Decisions
 

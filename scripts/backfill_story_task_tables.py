@@ -26,7 +26,7 @@ TASKS_SECTION_RE = re.compile(
     r"(^\* Tasks\n)(.*?)(?=^\* |\Z)",
     re.MULTILINE | re.DOTALL,
 )
-LINK_RE = re.compile(r"\[\[id:([A-F0-9\-]+)\]\[([^\]]+)\]\]", re.IGNORECASE)
+LINK_RE = re.compile(r"\[\[id:([A-F0-9\-]+)\]\[(.*?)\]\]", re.IGNORECASE)
 STATE_ROW_RE = re.compile(r"^\| State\s*\|\s*(\S+)\s*\|", re.MULTILINE)
 LAST_TOUCHED_RE = re.compile(r"^\| Last touched\s*\|\s*([^\|]+?)\s*\|", re.MULTILINE)
 CREATED_RE = re.compile(r"^#\+created:\s*(\S+)", re.MULTILINE)
@@ -94,7 +94,7 @@ def build_table(task_rows: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def process_story(story_file: Path, dry_run: bool) -> dict:
+def process_story(story_file: Path, dry_run: bool, force: bool = False) -> dict:
     """
     Process one story.org file.
 
@@ -116,8 +116,8 @@ def process_story(story_file: Path, dry_run: bool) -> dict:
         result["message"] = str(e)
         return result
 
-    # Skip if Tasks section already has a table
-    if "| Task |" in original:
+    # Skip if Tasks section already has a table (unless --force)
+    if "| Task |" in original and not force:
         result["status"] = "skipped"
         result["message"] = "already has task table"
         return result
@@ -187,6 +187,7 @@ def main() -> None:
     parser.add_argument("sprint_dir", nargs="?", type=Path, default=DEFAULT_SPRINT_DIR,
                         help="Path to sprint directory (default: sprint_18)")
     parser.add_argument("--dry-run", action="store_true", help="Show what would change without writing files.")
+    parser.add_argument("--force", action="store_true", help="Re-process stories that already have a task table.")
     args = parser.parse_args()
 
     sprint_dir = args.sprint_dir
@@ -212,7 +213,7 @@ def main() -> None:
     warnings = []
 
     for story_file in story_files:
-        result = process_story(story_file, dry_run=args.dry_run)
+        result = process_story(story_file, dry_run=args.dry_run, force=args.force)
         slug = result["slug"]
         status = result["status"]
         rows = result["rows_added"]

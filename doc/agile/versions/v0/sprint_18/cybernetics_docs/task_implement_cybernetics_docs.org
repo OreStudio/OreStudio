@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 6210901B-2B78-430D-AB5A-E10C4F81633D
+:END:
+#+title: Task: Improve cybernetics documentation
+#+description: Initial task for: Improve cybernetics documentation
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :cybernetics_docs:sprint_18:v0:
+#+owner: marco
+#+branch: feature/cybernetics-docs
+#+pr: 896
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Improve cybernetics documentation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Deliver three bundled documentation improvements to the cybernetics
+meta-layer:
+
+1. Create a standalone *cybernetics summary page*
+   (=doc/meta/cybernetics.org=) that explains what cybernetics is and
+   replaces bare Wikipedia links currently used across the repo.
+2. Expand [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] (=doc/meta/cybernetic_levels.org=) with a
+   section on how ORE Studio's approach connects to and diverges from
+   Beer's VSM, including known limitations.
+3. Create a new *Viable System Model knowledge page*
+   (=doc/meta/viable_system_model.org=) introducing Beer's five systems
+   and linking to Cybernetic Levels.
+
+* Status
+
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | STARTED                                                                       |
+| Parent story | [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Improve cybernetics documentation]] |
+| Now          | In progress.                                                                  |
+| Waiting on   | Nothing.                                                                      |
+| Next         | Implement documentation changes.                                              |
+| Last touched | 2026-05-28                                                                    |
+
+* Acceptance
+
+- [ ] =doc/meta/cybernetics.org= created as a v2 knowledge doc; covers
+  what cybernetics is, key ideas (feedback, regulation, variety),
+  Stafford Beer's contribution, and how it informs ORE Studio.
+- [ ] =doc/meta/viable_system_model.org= created as a v2 knowledge doc;
+  introduces the five VSM systems and the 3* audit channel; links to
+  [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]].
+- [ ] =doc/meta/cybernetic_levels.org= expanded: new section on where
+  ORE Studio's mapping aligns with and departs from canonical VSM,
+  including known limitations.
+- [ ] Existing Wikipedia cybernetics links replaced with in-repo id-links.
+- [ ] =doc/meta/meta.org= index updated to list both new pages.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/896][#896]] | [agile] Promote cybernetics docs capture to story; add capture promotion spike |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Goal section contains template placeholder text | =task_implement_cybernetics_docs.org= l.23 | Accepted | Fixed in =ca391ff52= |
+| 2 | State mismatch: task BACKLOG vs story task table STARTED | =task_implement_cybernetics_docs.org= l.33 | Accepted | Fixed in =ca391ff52= |
+| 3 | Acceptance section empty | =task_implement_cybernetics_docs.org= l.38 | Accepted | Fixed in =ca391ff52= |
+
+* Result

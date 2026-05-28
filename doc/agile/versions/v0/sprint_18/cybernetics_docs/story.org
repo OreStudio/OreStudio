@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 8AA261FC-B334-45A8-9954-85DD4BECEA45
+:END:
+#+title: Story: Improve cybernetics documentation
+#+description: Three bundled docs: standalone cybernetics summary page; expand Cybernetic Levels with VSM connection and limitations; new Viable System Model knowledge page.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :cybernetics:documentation:meta:sprint_18:v0:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Deliver three bundled documentation improvements to the cybernetics
+meta-layer:
+
+1. A standalone *cybernetics summary page* (=doc/meta/cybernetics.org=)
+   that explains what cybernetics is and replaces the bare Wikipedia
+   link currently used in several docs.
+2. Expand [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] (=doc/meta/cybernetic_levels.org=) with a
+   section on how ORE Studio's approach connects to and diverges from
+   Beer's Viable System Model, including known limitations.
+3. A new *Viable System Model knowledge page*
+   (=doc/meta/viable_system_model.org=) introducing Beer's VSM, linked
+   from Cybernetic Levels and the cybernetics summary.
+
+The three pages form a coherent reading path: cybernetics (concept) →
+VSM (the model) → Cybernetic Levels (how we apply it in ORE Studio).
+
+* Status
+
+| Field         | Value                                             |
+|---------------+---------------------------------------------------|
+| State         | STARTED                                           |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
+| Now           | In progress.                                      |
+| Waiting on    | Nothing.                                          |
+| Next          | Implement task.                                   |
+| Last touched  | 2026-05-28                                        |
+
+* Acceptance
+
+- [ ] =doc/meta/cybernetics.org= created as a v2 knowledge doc; covers
+  what cybernetics is, key ideas (feedback, regulation, variety),
+  Stafford Beer's contribution, and how it informs ORE Studio.
+- [ ] =doc/meta/viable_system_model.org= created as a v2 knowledge doc;
+  introduces the five VSM systems and the 3* audit channel; links to
+  [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]].
+- [ ] =doc/meta/cybernetic_levels.org= expanded: new section explains
+  where ORE Studio's mapping aligns with and departs from canonical VSM,
+  and lists known limitations.
+- [ ] Existing Wikipedia cybernetics links in the repo replaced with
+  in-repo id-links where a suitable page now exists.
+- [ ] =doc/meta/meta.org= index updated to list both new pages.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6210901B-2B78-430D-AB5A-E10C4F81633D][Improve cybernetics documentation]] | STARTED | 2026-05-28 | | Create cybernetics.org, viable_system_model.org; expand cybernetic_levels.org |
+| [[id:F82855FC-85AD-4A92-9B33-9A33AED9EC8A][Spike: capture promotion runbook and compass support]] | BACKLOG | 2026-05-28 | | Runbook + compass evaluate for promoting a capture to a story (UUID inheritance, content population, cleanup) |
+
+* Decisions
+
+* Out of scope
+
+- Deeper changes to the ORE Studio execution model or agile process.
+- A full academic treatment of VSM.

@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 5D11EB95-8B20-4A11-B9A6-C883C9E4B0CF
+:END:
+#+title: Story: Document deduplication recipe
+#+description: Create a generalised how-to recipe for deduplicating two documents (merge, delete, re-link), and apply it to resolve the duplicate sprint health review runbooks.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :documentation:recipe:deduplication:llm:sprint_18:v0:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+owner: Marco Craveiro
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+As the doc graph grows, duplicate documents appear — two files that
+cover the same ground under slightly different names. Leaving both
+alive creates confusion about which is authoritative and breaks the
+principle that every id-link resolves to exactly one canonical source.
+
+This story delivers a [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipe]] that generalises the deduplication
+procedure: given two documents, identify the candidate for survival
+(richer, more complete, better linked) and the candidate for deletion;
+merge any unique content from the deletion candidate into the survivor;
+delete the deletion candidate; update all id-links that pointed to the
+deleted UUID.
+
+The worked example that drives the recipe is a pair of near-identical
+sprint health review runbooks discovered in =doc/llm/runbooks/=.
+
+* Status
+
+| Field         | Value                                        |
+|---------------+----------------------------------------------|
+| State         | STARTED                                      |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                    |
+| Now           | Implementing recipe and resolving the duplicate. |
+| Waiting on    | Nothing.                                     |
+| Next          | Scaffold recipe; apply deduplication.        |
+| Last touched  | 2026-05-28                                   |
+
+* Acceptance
+
+- [ ] =doc/recipes/documentation/how_do_i_deduplicate_two_documents.org=
+  exists, =#+version: 2=, scaffolded via =generate_v2_doc.sh=.
+- [ ] Recipe covers all four steps: nominate survivor/deletion, merge
+  unique content, delete the deletion candidate, update all id-links.
+- [ ] Recipe is wired into the [[id:95FF6AF4-2320-4CB6-A007-B016B7DA16ED][Documentation recipes]] index.
+- [ ] The duplicate =run_a_sprint_health_review= runbook is deleted;
+  its unique chart-regeneration content is merged into
+  =run_sprint_health_review=.
+- [ ] =doc/llm/runbooks/runbooks.org= catalogue row updated to point
+  to the survivor UUID (=30FE3C0F=).
+
+* Tasks
+
+In execution order:
+
+- [ ] Create document deduplication recipe and resolve health review duplicates.
+
+* Decisions
+
+* Out of scope
+
+- Automated duplicate detection — finding duplicates is manual; this
+  recipe only governs what to do once two have been identified.
+- Deduplication of non-org files (source code, scripts).

@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: A99F288C-9E89-45C9-9AA9-085E2A585392
+:END:
+#+title: How do I deduplicate two documents?
+#+description: Procedure for resolving a pair of duplicate org-mode documents: nominate survivor and deletion candidate, merge unique content, delete the duplicate, and relink all references.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :documentation:deduplication:maintenance:recipe:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+When two documents cover the same ground, one must be nominated as
+the canonical source (survivor) and the other removed (deletion
+candidate) — but only after any unique content in the deletion
+candidate has been merged into the survivor. The =[[:ID:]=] of the
+deletion candidate must then be replaced by the survivor's UUID
+everywhere it appears in the graph.
+
+* Question
+
+How do I resolve a pair of duplicate org-mode documents — identify
+which to keep, merge any unique content, delete the duplicate, and
+update all references?
+
+* Answer
+
+The user supplies two document paths (or UUIDs). Call them =A= (the
+richer, better-linked document) and =B= (the thinner duplicate).
+
+** Step 1 — Nominate survivor and deletion candidate
+
+Compare the two documents on these criteria and pick the survivor:
+
+| Criterion | Weight |
+|-----------+--------|
+| Step/section count — more complete wins | high |
+| Cross-link density — more id-links wins | medium |
+| Filetags — =:runbook:= / =:recipe:= tag present | medium |
+| Version — v2 wins over v1 | high |
+| Created date — older is not automatically better; quality wins | low |
+
+Record the decision:
+
+- *Survivor*: =<path>= (ID: =<UUID-S>=) — reason.
+- *Deletion candidate*: =<path>= (ID: =<UUID-D>=) — reason.
+
+** Step 2 — Identify and merge unique content
+
+Read both documents in full. List every section, step, link, or
+precondition that exists in the deletion candidate but is absent from
+the survivor.
+
+#+begin_src sh :results verbatim
+# Find all id-links in the deletion candidate (cross-references to keep)
+grep -oE '\[\[id:[A-F0-9-]+\]' doc/path/to/deletion_candidate.org | sort -u
+#+end_src
+
+For each unique item: insert it into the survivor at the
+semantically correct position. Prefer adding to an existing section
+over creating a new one.
+
+After merging, add a link to the deletion candidate's document in the
+survivor's =* See also= if the content originally lived in a
+meaningfully distinct context (e.g. "charts" vs "lifecycle").
+
+** Step 3 — Delete the deletion candidate
+
+Use =git rm= so the deletion is tracked in history:
+
+#+begin_src sh :results verbatim
+git rm doc/path/to/deletion_candidate.org
+# If the file lives alone in its folder, remove the folder too:
+git rm -r doc/path/to/deletion_candidate_folder/
+#+end_src
+
+** Step 4 — Update all references
+
+Find every file that links to the deletion candidate's UUID and
+replace it with the survivor's UUID:
+
+#+begin_src sh :results verbatim
+# Find all references to the deleted UUID
+grep -r "UUID-D" doc/ projects/ --include="*.org" -l
+
+# Replace in each file (repeat per file, or use sed):
+sed -i 's/UUID-D/UUID-S/g' path/to/referencing_file.org
+#+end_src
+
+Verify no stale references remain:
+
+#+begin_src sh :results verbatim
+grep -r "UUID-D" doc/ projects/ --include="*.org"
+#+end_src
+
+** Worked example — sprint health review runbooks
+
+Two runbooks named "Run a sprint health review" existed:
+
+| Role | Folder | ID |
+|------+--------+----|
+| Survivor | =run_sprint_health_review/= | =30FE3C0F-ECCB-46AD-AC1F-75C6CE05F0E7= |
+| Deleted | =run_a_sprint_health_review/= | =124E48B7-1B4F-4663-95B8-6A25F8F5EFC0= |
+
+The survivor had 12 steps covering the full lifecycle (task
+scaffolding, shape fixes, DONE marking, PR). The deletion candidate
+had 7 steps but added chart regeneration (cmake target) and chart
+verification (PNG file check) not present in the survivor. Those two
+steps and their preconditions were merged into the survivor before the
+deletion candidate was removed.
+
+The single external reference — a row in [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] — was
+updated from =124E48B7= to =30FE3C0F=.
+
+* Script
+
+No wrapper script. All steps use standard shell tools (=grep=,
+=sed=, =git rm=) available without configuration.
+
+* Tested by
+
+Manual. Applied to the sprint health review runbook pair in Sprint 18
+as the first concrete exercise of this recipe.
+
+* See also
+
+- [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]] — sibling meta-recipe.
+- [[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]] — sibling doc-authoring recipe.
+- [[id:95FF6AF4-2320-4CB6-A007-B016B7DA16ED][Documentation recipes]] — the topic index this recipe lives under.

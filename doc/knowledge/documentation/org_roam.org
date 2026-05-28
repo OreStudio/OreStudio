@@ -75,6 +75,10 @@ This writes a fresh =.org-id-locations-file= at the repo root on every
 build, derived entirely from the files in the working tree. The file is
 =.gitignore=d (it's machine-specific absolute paths) but is always
 regenerated before =org-publish-all= so every =[[id:UUID]]= link resolves.
+The recursive scan covers the entire repo root; =build/=, =.git/=, and
+=vcpkg/= directories rarely contain =.org= files so the scan is fast in
+practice. The subsequent =org-roam-db-sync= step applies its own
+=org-roam-file-exclude-regexp= to keep build artefacts out of the database.
 
 *** Advice on =org-html-headline= for id-link anchors
 
@@ -88,7 +92,7 @@ an empty anchor to every heading that carries an =:ID:= property:
 (defun ores/org-html-headline-id-anchor (orig-fun headline contents info)
   (let ((rendered (funcall orig-fun headline contents info))
         (uuid (org-element-property :ID headline)))
-    (if uuid
+    (if (and rendered uuid)
         (concat (format "<a id=\"ID-%s\" class=\"id-anchor\"></a>\n" uuid)
                 rendered)
       rendered)))
@@ -116,9 +120,10 @@ is stable across org-roam minor versions.
 org-roam-ui is a React application that must be compiled from source.
 Checking a compiled build into =external/org-roam-ui= avoids needing
 Node.js or npm on the CI runner. The site build copies this pre-built bundle
-to =build/output/site/OreStudio/graph/=, patches the graph page's
-=<head>= to include the ORE Studio stylesheet and nav bar, and writes the
-generated =graphdata.json= alongside it.
+to the =graph/= subdirectory of the site output (see the =deploy_site= row
+in [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] for the full output path), patches the graph page's =<head>= to
+include the ORE Studio stylesheet and nav bar, and writes the generated
+=graphdata.json= alongside it.
 
 * See also
 

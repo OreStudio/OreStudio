@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 22C0724C-75A7-4060-8F1D-000E62BE8352
+:END:
+#+title: Task: Update story codegen template to task table
+#+description: Change the story doc scaffold to generate a task status table (Task | State | Start | End | Description) instead of a bullet list.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :refactor_task_list_to_table:sprint_18:v0:
+#+owner: marco
+#+branch: feature/refactor-task-list-to-table
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFF169EC-0B35-4800-8BEE-1CF7D0DEE8D6][Refactor story task lists to a status table]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Update the story doc scaffold so that the =* Tasks= section generates a
+status table instead of a bullet list. The table columns are:
+
+| Task | State | Start | End | Description |
+
+Changes required:
+- The Jinja/codegen template for =story= type in =ores.codegen=.
+- The =compass add story= scaffolding path if it has its own template.
+
+* Status
+
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | DONE                                                                         |
+| Parent story | [[id:FFF169EC-0B35-4800-8BEE-1CF7D0DEE8D6][Refactor story task lists to a status table]]                                  |
+| Now          | Complete.                                                                    |
+| Waiting on   | Nothing.                                                                     |
+| Next         | Back-fill sprint 18 stories (separate task).                                 |
+| Last touched | 2026-05-28                                                                   |
+
+* Acceptance
+
+- Running =compass add story= or =generate_v2_doc.sh --type story= produces
+  a =* Tasks= section containing the table skeleton, not a bullet list.
+- The table header row is =| Task | State | Start | End | Description |=.
+- Existing story docs are not modified by this task (back-fill is a
+  separate task).
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR  | Title                                                              |
+|-----+--------------------------------------------------------------------|
+| 893 | [codegen,agile] Replace story Tasks bullet list with status table |
+
+* Review
+
+| # | Comment summary                                              | File                                    | Decision | Notes              |
+|---+--------------------------------------------------------------+-----------------------------------------+----------+--------------------|
+| 1 | Back-fill task Waiting on is stale; template task is DONE    | task_backfill_sprint18_story_task_tables | Accept   | Fixed in 9fb190431 |
+
+* Result
+
+Updated =projects/ores.codegen/library/templates/v2_doc_story.org.mustache=.
+Replaced =* Tasks= bullet list with the table skeleton:
+
+=| Task | State | Start | End | Description |=
+
+Verified via =generate_v2_doc.sh --type story= — output contains the
+correct table header.

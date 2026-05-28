@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: FFF169EC-0B35-4800-8BEE-1CF7D0DEE8D6
+:END:
+#+title: Story: Refactor story task lists to a status table
+#+description: Replace the bullet-list Tasks section in story docs with a table (Task | State | Start | End | Description), then back-fill all sprint 18 stories.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :agile:story:task:refactor:sprint_18:v0:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The =* Tasks= section in story docs is currently a plain bullet list,
+giving no visibility into task state, start/end dates, or a brief
+description. This makes it hard to track progress at a glance.
+
+Replace the bullet list with a table that matches the structure of the
+sprint's =* Stories= table, adapted for tasks:
+
+| Task | State | Start | End | Description |
+
+Then update the codegen template so all future stories scaffold the
+table, and back-fill every in-flight sprint 18 story.
+
+* Status
+
+| Field         | Value                                                               |
+|---------------+---------------------------------------------------------------------|
+| State         | STARTED                                                             |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                                           |
+| Now           | Template updated. Back-fill task ready to start.                    |
+| Waiting on    | Nothing.                                                            |
+| Next          | Run back-fill task across all sprint 18 stories.                    |
+| Last touched  | 2026-05-28                                                          |
+
+* Acceptance
+
+- The =* Tasks= section in every new story doc scaffolded by compass or
+  codegen contains a table with columns =Task=, =State=, =Start=, =End=,
+  =Description=.
+- Every sprint 18 story doc has its =* Tasks= bullet list replaced with
+  the table format.
+- Task rows link to the task doc via =[[id:UUID][Title]]=.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:22C0724C-75A7-4060-8F1D-000E62BE8352][Update story codegen template to task table]] | DONE | 2026-05-28 | 2026-05-28 | Update scaffold to generate task table |
+| [[id:3F5D9276-12DB-4A6B-A355-95E26AFA1CBD][Back-fill all sprint 18 story task lists]] | BACKLOG | | | Replace bullet lists with tables in all sprint 18 stories |
+
+* Decisions
+
+* Out of scope
+
+- Back-filling stories from sprints prior to sprint 18.

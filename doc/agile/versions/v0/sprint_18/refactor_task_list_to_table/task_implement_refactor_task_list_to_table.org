@@ -64,9 +64,9 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                              | File                                    | Decision | Notes              |
+|---+--------------------------------------------------------------+-----------------------------------------+----------+--------------------|
+| 1 | Back-fill task Waiting on is stale; template task is DONE    | task_backfill_sprint18_story_task_tables | Accept   | Fixed in 9fb190431 |
 
 * Result
 

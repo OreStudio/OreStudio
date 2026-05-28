@@ -48,15 +48,10 @@ and the feature-flags split.
 
 * Tasks
 
-In execution order:
-
-- [[id:3E57DCDC-F728-4B42-B262-74DFC751D04A][Add account support]]
-- [[id:9327C7D2-4BBA-41FF-8448-7D61C436391D][Add session support]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- POSTPONED: Implement authentication bootstrap workflow (carries
-  forward to a successor story).
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3E57DCDC-F728-4B42-B262-74DFC751D04A][Add account support]] | DONE | 2025-12-20 | 2025-12-20 | Domain type, repository, and end-to-end import/export path for user accounts. |
+| [[id:9327C7D2-4BBA-41FF-8448-7D61C436391D][Add session support]] | DONE | 2025-12-20 | 2025-12-20 | Domain type and lifecycle for client sessions on top of the cobalt-based server. |
 
 * Decisions
 

@@ -41,11 +41,11 @@ configurable via CLI flags.
 
 * Tasks
 
-In execution order:
-
-- [[id:662F38B1-2474-4815-805C-3545D942A861][Add Postgres support for currency]]
-- [[id:4960FBB8-43BD-4936-B407-A1D9C797D7BE][Add write-one to repository]]
-- [[id:DB5B3729-820D-4D11-8DC4-5A2FED022463][Add database command-line arguments to service]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:662F38B1-2474-4815-805C-3545D942A861][Add Postgres support for currency]] | DONE | 2025-11-25 | 2025-11-25 | Persist currency reference data through the Postgres repository layer end-to-end. |
+| [[id:4960FBB8-43BD-4936-B407-A1D9C797D7BE][Add write-one to repository]] | DONE | 2025-11-25 | 2025-11-25 | Add a single-row write entry point to the repository alongside batch writes. |
+| [[id:DB5B3729-820D-4D11-8DC4-5A2FED022463][Add database command-line arguments to service]] | DONE | 2025-11-25 | 2025-11-25 | Expose database connection parameters as CLI flags for the service runtime. |
 
 * Decisions
 

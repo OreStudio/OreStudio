@@ -45,18 +45,11 @@ CTest item lands there.
 
 * Tasks
 
-In execution order:
-
-- [[id:5E739596-D2B8-4206-B2BF-5171CCC9B954][Separate test database from application]]
-- [[id:36BE3E39-DC25-4723-AA29-8A130A1E8C21][Add generators for test data generation]]
-- [[id:1B023B81-0BC0-4733-AACB-89E42C9BF068][Add tests at suite level to ctest]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Split test code from utility.
-- CLI tests are failing on GitHub.
-- Tidy-up tests after refactor.
-- BLOCKED: CTest shows only one test per test suite (carries forward).
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5E739596-D2B8-4206-B2BF-5171CCC9B954][Separate test database from application]] | DONE | 2025-12-01 | 2025-12-01 | Use a dedicated Postgres database for tests so they don't collide with the dev/app database. |
+| [[id:36BE3E39-DC25-4723-AA29-8A130A1E8C21][Add generators for test data generation]] | DONE | 2025-12-01 | 2025-12-01 | Add deterministic data generators so each test can build representative input without ad-hoc fixtures. |
+| [[id:1B023B81-0BC0-4733-AACB-89E42C9BF068][Add tests at suite level to ctest]] | DONE | 2025-12-01 | 2025-12-01 | Register each Catch2 suite as its own ctest entry so the dashboard reports per-suite status. |
 
 * Decisions
 

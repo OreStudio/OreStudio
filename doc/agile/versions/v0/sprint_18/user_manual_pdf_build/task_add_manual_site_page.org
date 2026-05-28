@@ -9,7 +9,7 @@
 #+filetags: :user_manual_pdf_build:sprint_18:v0:
 #+owner: marco
 #+branch: feature/add-manual-site-page
-#+pr:
+#+pr: 882
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
@@ -67,9 +67,9 @@ description to be more informative.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                    | Title                                                                           |
+|-------------------------------------------------------+---------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/882][#882]] | [manual] Add user_manual_site.org; restructure manuals.org; close story |
 
 * Review
 

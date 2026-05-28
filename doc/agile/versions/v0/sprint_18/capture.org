@@ -19,7 +19,11 @@ All entries drained 2026-05-28 — filed into product backlog via bulk capture r
 
 * New
 
-(empty — all entries have been drained)
+
+
+- add a recipe: how do i build the site locally to mirror how do i serve the
+  site locally. cross reference them.
+- org-timestamps need to be written into the build directory.
 
 * Drained
 

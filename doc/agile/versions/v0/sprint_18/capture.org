@@ -16,3 +16,74 @@ the end of the sprint, short-lived captures will migrate to their next
 destination ([[id:1737C00C-699A-475A-BC94-743C6CDA1001][sprint backlog]] or [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]]).
 
 All entries drained 2026-05-28 — filed into product backlog via bulk capture recipe.
+
+* New
+
+(empty — all entries have been drained)
+
+* Drained
+
+Entries triaged 2026-05-28 via bulk capture recipe. Each row links to the filed capture.
+
+** Next
+
+| Capture | Description |
+|---------+-------------|
+| [[id:965094BF-34BE-407E-9FA8-A9F678A49F0F][Architecture doc isolation links]] | Architecture doc should link to multi-party, multi-company, workspace isolation docs |
+| [[id:16658195-56DC-4A93-9F6F-B01DED87E6BC][Component doc template improvements]] | Remove summary section; use proj: links for file/dir references |
+| [[id:22967702-376F-4E62-9778-ACCE777D6FF9][Definition of done glossary entry]] | Add Definition of Done to glossary and link from all usage sites |
+| [[id:7E9E53D9-1716-4BC3-903A-0165ADEE9D6C][Catalogues and recipes as tables]] | Convert skills, memory, and recipes catalogues from bullet lists to tables |
+| [[id:DB48E1D9-348F-453C-AA23-374E892EEF7F][Dev environment recipe platform scope]] | Clarify that the dev environment recipe is Linux-only or broaden scope |
+| [[id:17C3FE61-9E04-4D43-9869-7595D9070EFB][Entity sync audit (CLI/HTTP/shell)]] | Document which entities are missing CLI, HTTP, or shell coverage |
+| [[id:6AD0E8A2-9335-4F40-BBB1-A73DF3D805CA][UML relationships and namespace descriptions]] | Add relationships and namespace/class descriptions to all UML diagrams |
+| [[id:FAF8F00A-6A8D-4DBD-86D7-393ADF19155F][Document tmp dir LLM guidance]] | LLM guidance doc: all temporary data goes under project tmp/ |
+| [[id:F64A3ABD-766C-4122-8542-5CFF550BF0E4][Test babel recipe types]] | Load org-babel and test all recipe types (SQL, CLI, etc.) in use |
+| [[id:C0553E54-B1F4-425A-B2F2-ECB159F0F768][Babel env file dynamic loading]] | Babel source blocks should query .env file dynamically for paths/ports |
+| [[id:4A99CD28-9F24-4EE0-9ED4-B03D3752767D][Environment port consistency]] | All env ports should derive from a single base port, going up by 1 |
+| [[id:FF073DA6-7D40-49F1-BCDD-3B6EABDBAC14][Environment variables documentation and validation]] | Document all ORES_* env vars; add script to validate init-env |
+| [[id:FB4258E3-8807-498D-81BC-DF88A5976F4D][Site cleanup legacy on recompile]] | Always rm -rf site on recompile to remove legacy output |
+| [[id:5C22A0EA-891B-4EB8-B46A-EB0156EB5B0E][Fix site links after UUID upcase]] | Local site links resolve to absolute paths after UUID upcase migration |
+| [[id:FF3F3BD1-7F2A-472F-95A3-536EFB162337][Knowledge graph sidebar config]] | org-roam knowledge graph no longer exposes sidebar/properties config |
+| [[id:F5F97646-0E3F-4F50-8A0C-F2922950E912][Fix session token auto-renewal]] | Client session is not automatically renewing its authentication token |
+| [[id:8E10AC52-DB01-46D0-8544-D7F4F614D928][Fix connection manager saved details override]] | Cannot override saved connection details in connection manager |
+| [[id:33F09157-72DB-44A0-9686-BD9143053284][Implement Qt help system integration]] | Integrate org-mode user manual into Qt's native help system (QHelpEngine) |
+| [[id:0A03AE8C-6C02-4EDE-B540-C00EBA654295][Fix My Account session history dialog]] | Session history shows no bytes; dialog may need removal or fix |
+| [[id:DCC5853D-1B41-4EB0-8A85-07E2A8FABC07][Refdata entity event logging gaps]] | Multiple ref-data entities missing event notifications and history |
+| [[id:1D24F897-527E-48AC-9C77-79029C06CFBF][Fix history dialog geometry persistence]] | History dialogs do not remember size/position between sessions |
+| [[id:3A0BADDD-3E23-42FB-B8E3-058D0EC4CBDD][Knowledge graph missing links]] | Several pages not linked in the org-roam knowledge graph |
+| [[id:A1BE55B3-AE99-47C8-919D-DD0658CB75D7][Agile doc polish (PRs, tasks, manuals, nav)]] | Bundle: PR refs as links, tasks as tables, manuals nav, sprint/task IDs in commits |
+| [[id:60918833-3B12-4148-AC1C-1D637ACF92B2][ORE Studio manuals table and sections]] | Manuals page: table format, section links, remove stale Emacs version note |
+| [[id:08850964-F6C7-414F-8EB2-0F0474E06EA1][Skill: drain capture buffer]] | Skill that processes a capture buffer entry by entry, filing each to inbox/next/deferred |
+
+** Deferred
+
+| Capture | Description |
+|---------+-------------|
+| [[id:A759E29B-28B5-45C1-94B0-E27E1B6DBE5E][Rename modeling dir to docs]] | Rename modeling/ to docs/ across all components |
+| [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Cybernetics documentation suite]] | Standalone cybernetics summary; explain VSM connection and limitations |
+| [[id:833B4DAA-CF4A-4B90-8070-16395ED8890D][CMake and vcpkg knowledge pages]] | Knowledge pages for CMake and vcpkg: what they are and how we use them |
+| [[id:15FB60D6-344F-4DCA-B3A0-F4E765D8B1CF][Emacs plots for ORE Studio]] | Use Emacs chart library for lightweight ORE Studio functionality plots |
+| [[id:2F466FCB-63A0-4DA0-B04B-0DD35C579CFC][Extend Emacs dashboard with HTTP entity views]] | Extend dashboard with HTTP-backed entity views (users, etc.) |
+| [[id:17619D15-F13F-4AB5-8BD4-6B18A06BC5F1][Screenshot policy for bug tasks]] | Save screenshots of bugs into task directories for posterity |
+| [[id:C71C152D-58CE-4CBA-946E-6B163900DFC0][Org publish incremental rebuild]] | Investigate whether org-publish can skip unchanged files |
+| [[id:06EFC714-A0F8-4898-9DD0-04631D428150][LLM-first system documentation]] | Document that ORE Studio is an LLM-first system; explain MASD/Zettelkasten/Cybernetics mix |
+| [[id:A1E08C28-2906-4B8E-A3D0-FDED89FED20A][Convert contributing docs to org]] | Convert CODE_OF_CONDUCT.md and CONTRIBUTING.md to org-mode |
+| [[id:3CFCA9CD-50D7-482F-847B-60676A801CAB][Knowledge graph menu rename to Knowledge]] | Rename Knowledge Graph menu item to Knowledge; add knowledge graph sub-section |
+
+** Inbox
+
+| Capture | Description |
+|---------+-------------|
+| [[id:3DD10722-9E5C-4C2B-BDD6-11C7F89B3A88][Fix account password change show password]] | My Account password change dialog missing show/hide password toggle |
+| [[id:82A24629-DBD4-454E-8EF1-2E3C0728ECC9][Fix refdata UI minor bugs]] | Market tiers icon does nothing; rounding type delete doesn't refresh |
+| [[id:D87F645D-857B-4894-B4A6-0DA2E35F26D3][Knowledge graph org options not visible]] | Org-mode properties/options don't appear in knowledge graph view |
+| [[id:1D286AC1-D951-4062-87D9-C7C9E3B55874][Add Claude settings link to docs]] | Add link to Claude Code settings page in LLM documentation section |
+| [[id:32172CAF-FE28-4C7B-87CD-4992A894D8A8][Add compass calls to Claude settings]] | Register key compass commands in Claude Code settings as shell shortcuts |
+| [[id:D2A77801-5AE5-4077-B48E-731E790B0ED0][Memory for project directory meanings]] | Add memory for meaning of key project directories (tmp, samples, etc.) |
+| [[id:285A8782-E934-4F17-B989-5739115D40A4][Recipes for doc list commands]] | Add recipes for compass list/search/etc.; link to skills catalogue |
+
+** Discarded
+
+| Capture | Reason |
+|---------+--------|
+| [[id:79AA755E-59AD-43D2-9AF9-72886063BFFC][Missing plans index document]] | plans.org already exists |

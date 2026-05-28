@@ -32,7 +32,7 @@ plantuml -version
 #+end_src
 
 On Ubuntu/Debian: =sudo apt install plantuml=.
-Check the [[id:A0B1C2D3-0000-0000-0000-000000000001][llm instructions]] for the exact version used in CI.
+Check the [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] for the exact version used in CI.
 
 ** 2. Scaffold the =.puml= file
 

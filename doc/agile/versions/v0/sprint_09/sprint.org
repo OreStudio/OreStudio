@@ -42,20 +42,51 @@ coverage of the entities that landed in earlier sprints.
 | Release Notes  | [[id:B366C8FE-240E-493D-8D18-747BE840870A][Release notes]]                                                                                                                                                          |
 | Last touched   | 2026-01-20                                                                                                                                                 |
 
+** Achievements
+
+- Data Quality subsystem and Data Librarian established as flagship features.
+- ores.security module introduced with RAII OpenSSL.
+- Connection management (ores.connections) live with Connection Browser MDI.
+- Database renamed ores.risk → ores.refdata; consistent component_entity naming enforced.
+- CLI list/delete coverage extended to five entities.
+- Qt icon-enum and theme refactored for consistent visual identity.
+
 * Stories
 
+For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].
+
+** Infrastructure
+
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                  | State   | Start      | End        | Theme                                                                                   |
+| Story                                                                                  | State   | Start      | End        | Description |
+|----------------------------------------------------------------------------------------+---------+------------+------------+--------------------------------------------------------------------------------------|
+| [[id:E7DDB653-CEAA-4922-B0F9-8BD5393A747E][Engineering hygiene]]                       | DONE    |            | 2026-01-14 | model refresh + pr-manager skill + valgrind fixes; documentation refactor postponed. |
+| [[id:8C29B0E8-64EA-4F32-ADD0-59419769BCD4][Security module]]                           | DONE    |            | 2026-01-13 | ores.security with RAII OpenSSL.                                                     |
+| [[id:AACC71E6-3DEE-47D2-B77C-E0B4847260BD][Connection management]]                     | DONE    |            | 2026-01-15 | ores.connections + Connection Browser MDI + modernised login dialog.                 |
+| [[id:61485635-64BA-4C31-A35B-2F60D7FB41AA][Database naming refactor]]                  | DONE    |            | 2026-01-14 | ores.risk → ores.refdata; =<component>_<entity>_<suffix>= across the schema.         |
+
+** Product
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                  | State   | Start      | End        | Description |
 |----------------------------------------------------------------------------------------+---------+------------+------------+-----------------------------------------------------------------------------------------|
-| [[id:1E7A8ABC-1ABC-4A37-BDCE-1D8DFB9D21FF][Sprint 09 housekeeping]]                    | DONE    |            | 2026-01-20 | backlog + OCR.                                                                          |
-| [[id:09A8D544-22F3-491A-82A9-306B1AA7C756][CLI entity coverage]]                       | DONE    |            | 2026-01-12 | list/delete commands for the five entities the CLI was missing; helper-driven refactor. |
-| [[id:E7DDB653-CEAA-4922-B0F9-8BD5393A747E][Engineering hygiene]]                       | DONE    |            | 2026-01-14 | model refresh + pr-manager skill + valgrind fixes; documentation refactor postponed.    |
-| [[id:8C29B0E8-64EA-4F32-ADD0-59419769BCD4][Security module]]                           | DONE    |            | 2026-01-13 | ores.security with RAII OpenSSL.                                                        |
-| [[id:AACC71E6-3DEE-47D2-B77C-E0B4847260BD][Connection management]]                     | DONE    |            | 2026-01-15 | ores.connections + Connection Browser MDI + modernised login dialog.                    |
-| [[id:61485635-64BA-4C31-A35B-2F60D7FB41AA][Database naming refactor]]                  | DONE    |            | 2026-01-14 | ores.risk → ores.refdata; =<component>_<entity>_<suffix>= across the schema.            |
 | [[id:3579AB5E-D5D8-45AE-8CB5-00AD1C58644F][Data Quality subsystem and Data Librarian]] | DONE    |            | 2026-01-20 | the flagship of the sprint.                                                             |
 | [[id:ABD80EC4-E7E4-4BB2-B5AE-4FC7F8C46FD3][Qt visual refresh]]                         | DONE    |            | 2026-01-20 | icon-enum + theme refactor.                                                             |
 | [[id:EF555D10-3FD3-4928-8E43-E63284D7706F][Party database groundwork]]                 | BACKLOG |            |            | table structure only; postponed.                                                        |
+
+** Tooling
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                  | State   | Start      | End        | Description |
+|----------------------------------------------------------------------------------------+---------+------------+------------+-----------------------------------------------------------------------------------------|
+| [[id:09A8D544-22F3-491A-82A9-306B1AA7C756][CLI entity coverage]]                       | DONE    |            | 2026-01-12 | list/delete commands for the five entities the CLI was missing; helper-driven refactor. |
+
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                  | State   | Start      | End        | Description |
+|----------------------------------------------------------------------------------------+---------+------------+------------+----------------|
+| [[id:1E7A8ABC-1ABC-4A37-BDCE-1D8DFB9D21FF][Sprint 09 housekeeping]]                    | DONE    |            | 2026-01-20 | backlog + OCR. |
 
 * Charts
 

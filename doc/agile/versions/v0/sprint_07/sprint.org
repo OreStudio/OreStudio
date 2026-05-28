@@ -24,33 +24,57 @@ telemetry as first-class components, and tidy the build platform.
 
 * Status
 
-| Field          | Value                                                  |
-|----------------+--------------------------------------------------------|
-| State          | DONE                                                   |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
-| Previous       | [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]] |
-| Start          | 2025-12-13                                             |
-| End (expected) | 2025-12-30                                             |
-| Now            | Sprint closed 2025-12-30.                              |
-| Waiting on     | Nothing.                                               |
-| Next           | [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]] |
-| Release Notes  | [[id:596C2583-C27B-4570-885B-808C227D6911][Release notes]]                                                      |
-| Last touched   | 2025-12-30                                             |
+| Field          | Value         |
+|----------------+---------------|
+| State          | DONE          |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]     |
+| Previous       | [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]]     |
+| Start          | 2025-12-13    |
+| End (expected) | 2025-12-30    |
+| Now            | Nothing.      |
+| Waiting on     | Nothing.      |
+| Next           | [[id:49C4E380-68EE-4D80-839A-41311A99C734][Sprint 08]]     |
+| Release Notes  | [[id:596C2583-C27B-4570-885B-808C227D6911][Release notes]] |
+| Last touched   | 2025-12-30    |
+
+** Achievements
+
+- Accounts broadened into a proper IAM component with RBAC.
+- Roles and permissions layer live end-to-end.
+- Currencies history view polished; Qt UX improved across the board.
+- Wt and HTTP stack introduced as the web presentation tier.
+- Observability and telemetry established as first-class components.
 
 * Stories
 
+For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].
+
+** Infrastructure
+
 #+ATTR_HTML: :class hug-leading
-| Story                                                                    | State | Start      | End        | Theme                                                                                |
-|--------------------------------------------------------------------------+-------+------------+------------+--------------------------------------------------------------------------------------|
-| [[id:A5060B3B-A3C0-40FF-B5D3-36ED1E74B609][Sprint 07 housekeeping]]      | DONE  |            | 2025-12-30 | recurring per-sprint chores: backlog, AI summary, notebook OCR.                      |
-| [[id:BB39ECBD-1EA5-4D53-A117-A0C88E0463C1][Build platform follow-up]]    | DONE  |            | 2025-12-18 | WSL setup, prebuilt Qt, Windows clang build breaks. Continues from sprint 04.        |
-| [[id:818B6261-1780-4FB3-AA89-DA02C91DA363][Currencies history polish]]   | DONE  |            | 2025-12-20 | visual distinction for the active version, revert action, country flags.             |
-| [[id:72F723F4-378C-4E0A-B6F1-6BA3C29F5BEA][Qt UX polish]]                | DONE  |            | 2025-12-22 | account management UI, exit confirmation, relative-time formatting.                  |
-| [[id:B306F938-F939-44CA-9D69-6FAEDBF91C08][Comms features]]              | DONE  |            | 2025-12-25 | optional compression, =LISTEN=/=NOTIFY= through the shell, type traits for messages. |
-| [[id:6B57C190-4BB7-4F63-BF3D-7FB6D81D8D94][Accounts to IAM]]             | DONE  |            | 2025-12-25 | rename =ores.accounts= to =ores.iam=, add lock, password reset, sign-up.             |
-| [[id:6255BC9F-95BC-4FC7-98C8-6060B8679B85][Roles and permissions]]       | DONE  |            | 2025-12-28 | RBAC core, enforcement, Qt UI.                                                       |
-| [[id:8C4C8429-9328-46DD-88EF-27689FB556F2][Observability and telemetry]] | DONE  |            | 2025-12-28 | new components, MaxMind replacement.                                                 |
-| [[id:DB625C07-811A-4A61-8DE8-910B29913744][Wt and HTTP introduction]]    | DONE  |            | 2025-12-30 | Wt scaffolding, HTTP entry point.                                                    |
+| Story                       | State | Start |        End | Description |
+|-----------------------------+-------+-------+------------+--------------------------------------------------------------------------------------|
+| [[id:BB39ECBD-1EA5-4D53-A117-A0C88E0463C1][Build platform follow-up]]    | DONE  |       | 2025-12-18 | WSL setup, prebuilt Qt, Windows clang build breaks. Continues from sprint 04.        |
+| [[id:B306F938-F939-44CA-9D69-6FAEDBF91C08][Comms features]]              | DONE  |       | 2025-12-25 | optional compression, =LISTEN=/=NOTIFY= through the shell, type traits for messages. |
+| [[id:8C4C8429-9328-46DD-88EF-27689FB556F2][Observability and telemetry]] | DONE  |       | 2025-12-28 | new components, MaxMind replacement.                                                 |
+| [[id:DB625C07-811A-4A61-8DE8-910B29913744][Wt and HTTP introduction]]    | DONE  |       | 2025-12-30 | Wt scaffolding, HTTP entry point.                                                    |
+
+** Product
+
+#+ATTR_HTML: :class hug-leading
+| Story                     | State | Start |        End | Description |
+|---------------------------+-------+-------+------------+--------------------------------------------------------------------------|
+| [[id:818B6261-1780-4FB3-AA89-DA02C91DA363][Currencies history polish]] | DONE  |       | 2025-12-20 | visual distinction for the active version, revert action, country flags. |
+| [[id:72F723F4-378C-4E0A-B6F1-6BA3C29F5BEA][Qt UX polish]]              | DONE  |       | 2025-12-22 | account management UI, exit confirmation, relative-time formatting.      |
+| [[id:6B57C190-4BB7-4F63-BF3D-7FB6D81D8D94][Accounts to IAM]]           | DONE  |       | 2025-12-25 | rename =ores.accounts= to =ores.iam=, add lock, password reset, sign-up. |
+| [[id:6255BC9F-95BC-4FC7-98C8-6060B8679B85][Roles and permissions]]     | DONE  |       | 2025-12-28 | RBAC core, enforcement, Qt UI.                                           |
+
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story                  | State | Start |        End | Description |
+|------------------------+-------+-------+------------+-----------------------------------------------------------------|
+| [[id:A5060B3B-A3C0-40FF-B5D3-36ED1E74B609][Sprint 07 housekeeping]] | DONE  |       | 2025-12-30 | recurring per-sprint chores: backlog, AI summary, notebook OCR. |
 
 * Charts
 

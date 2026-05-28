@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 09B8AA56-2F85-47EA-949C-0CBFD36BCD1B
+:END:
+#+title: #+version: field is schema version, not a content revision counter
+#+description: The #+version: field in org files denotes the document format schema version (always 2 for v2 docs) — never increment it when updating content.
+#+type: memory
+#+memory_subtype: feedback
+#+version: 2
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+The =#+version:= field in ORE Studio org files is the document format schema
+version, not a content revision counter. All v2 documents carry =#+version: 2=
+and that value must never be changed when updating content.
+
+*Why:* The user corrected this after an LLM bumped a runbook from
+=#+version: 3= to =#+version: 4= during a content edit, mistaking it for a
+revision counter.
+
+*How to apply:* When editing any =.org= file — runbooks, recipes, stories,
+tasks, knowledge docs — leave =#+version:= untouched. Only update =#+updated:=
+with today's date.

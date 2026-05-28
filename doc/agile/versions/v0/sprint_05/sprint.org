@@ -24,32 +24,73 @@ skills layer.
 
 * Status
 
-| Field          | Value                                                                                                                                                                                                |
-|----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| State          | DONE                                                                                                                                                                                                 |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                                                                                                               |
-| Previous       | [[id:38DAA167-E791-48FB-AFEB-1813615037DE][Sprint 04]]                                                                                                                                               |
-| Start          | 2025-11-16                                                                                                                                                                                           |
-| End (expected) | 2025-12-01                                                                                                                                                                                           |
-| Now            | Sprint closed 2025-12-01. Bootstrap workflow live; CLI/REPL reshape landed; currency messaging collapsed to =save_currency=; skills layer grew to cover sprint-opening and release-notes generation. |
-| Waiting on     | Nothing.                                                                                                                                                                                             |
-| Next           | [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]]                                                                                                                                               |
-| Release Notes  | [[id:D642B102-262B-44EF-9C4C-29326D3B2AF6][Release notes]]                                                                                                                                                                                                    |
-| Last touched   | 2025-12-01                                                                                                                                                                                           |
+| Field          | Value         |
+|----------------+---------------|
+| State          | DONE          |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]     |
+| Previous       | [[id:38DAA167-E791-48FB-AFEB-1813615037DE][Sprint 04]]     |
+| Start          | 2025-11-16    |
+| End (expected) | 2025-12-01    |
+| Now            | Nothing.      |
+| Waiting on     | Nothing.      |
+| Next           | [[id:06CB9D8B-92D5-4C51-A1D7-B73B22EB93E8][Sprint 06]]     |
+| Release Notes  | [[id:D642B102-262B-44EF-9C4C-29326D3B2AF6][Release notes]] |
+| Last touched   | 2025-12-01    |
+
+** Achievements
+
+- Bootstrap workflow live.
+- CLI/REPL reshape landed.
+- Currency messaging collapsed to =save_currency=.
+- Skills layer grew to cover sprint-opening and release-notes generation.
 
 * Stories
 
+For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].
+
+** Infrastructure
+
 #+ATTR_HTML: :class hug-leading
-| Story                                                                           | State | Start      | End        | Theme                                                                                                   |
-|---------------------------------------------------------------------------------+-------+------------+------------+---------------------------------------------------------------------------------------------------------|
-| [[id:DE3EEE9F-331E-440C-B62C-ABDEFE1D87E2][Sprint 05 housekeeping]]             | DONE  |            | 2025-12-01 | backlog, AI sprint summary, OCR notebooks.                                                              |
-| [[id:656EABB7-C9D1-4FDD-8CAC-0AB77ADCD9B2][Claude Code skills expansion]]       | DONE  |            | 2025-11-17 | new-sprint skill, release-notes skill, project-planning support.                                        |
-| [[id:69C49095-A91F-41D9-9D7E-0E9478143E93][Valgrind leaks follow-up]]           | DONE  |            | 2025-11-25 | successor of sprint 03's OpenSSL BLOCKED item; sweeps up sqlgen residuals and comms-test leaks.         |
-| [[id:A465D630-5972-484B-A2E8-AD1F91657103][Authentication bootstrap follow-up]] | DONE  |            | 2025-11-22 | successor of sprint 03's POSTPONED bootstrap workflow; adds delete-account and the feature-flags split. |
-| [[id:645DF0B4-51B5-40BC-BE07-0AB986111653][Infrastructure features]]            | DONE  |            | 2025-11-20 | detached-mode default; database configuration unified across console and Qt.                            |
-| [[id:7BE09D1C-E25A-4783-A911-C37DEC55CC43][CLI / REPL reshape]]                 | DONE  |            | 2025-11-25 | entity-first command syntax across CLI and REPL; synchronous REPL sockets.                              |
-| [[id:9836E113-DEA9-4605-AE1B-9B0C955B6B73][Currencies UI polish]]               | DONE  |            | 2025-11-28 | JSON parsing, merged save_currency message, XML-import dialog.                                          |
-| [[id:3A763AFB-22F3-4E9A-B121-A71997221C3F][Documentation and diagrams]]         | DONE  |            | 2025-12-01 | UML refresh after the reshape; per-component diagram links.                                             |
+| Story                              | State | Start |        End | Description |
+|------------------------------------+-------+-------+------------+---------------------------------------------------------------------------------------------------------|
+| [[id:69C49095-A91F-41D9-9D7E-0E9478143E93][Valgrind leaks follow-up]]           | DONE  |       | 2025-11-25 | successor of sprint 03's OpenSSL BLOCKED item; sweeps up sqlgen residuals and comms-test leaks.         |
+| [[id:A465D630-5972-484B-A2E8-AD1F91657103][Authentication bootstrap follow-up]] | DONE  |       | 2025-11-22 | successor of sprint 03's POSTPONED bootstrap workflow; adds delete-account and the feature-flags split. |
+| [[id:645DF0B4-51B5-40BC-BE07-0AB986111653][Infrastructure features]]            | DONE  |       | 2025-11-20 | detached-mode default; database configuration unified across console and Qt.                            |
+
+** Product
+
+#+ATTR_HTML: :class hug-leading
+| Story                | State | Start |        End | Description |
+|----------------------+-------+-------+------------+----------------------------------------------------------------|
+| [[id:9836E113-DEA9-4605-AE1B-9B0C955B6B73][Currencies UI polish]] | DONE  |       | 2025-11-28 | JSON parsing, merged save_currency message, XML-import dialog. |
+
+** Tooling
+
+#+ATTR_HTML: :class hug-leading
+| Story              | State | Start |        End | Description |
+|--------------------+-------+-------+------------+----------------------------------------------------------------------------|
+| [[id:7BE09D1C-E25A-4783-A911-C37DEC55CC43][CLI / REPL reshape]] | DONE  |       | 2025-11-25 | entity-first command syntax across CLI and REPL; synchronous REPL sockets. |
+
+** LLMs
+
+#+ATTR_HTML: :class hug-leading
+| Story                        | State | Start |        End | Description |
+|------------------------------+-------+-------+------------+------------------------------------------------------------------|
+| [[id:656EABB7-C9D1-4FDD-8CAC-0AB77ADCD9B2][Claude Code skills expansion]] | DONE  |       | 2025-11-17 | new-sprint skill, release-notes skill, project-planning support. |
+
+** Documentation
+
+#+ATTR_HTML: :class hug-leading
+| Story                      | State | Start |        End | Description |
+|----------------------------+-------+-------+------------+-------------------------------------------------------------|
+| [[id:3A763AFB-22F3-4E9A-B121-A71997221C3F][Documentation and diagrams]] | DONE  |       | 2025-12-01 | UML refresh after the reshape; per-component diagram links. |
+
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story                  | State | Start |        End | Description |
+|------------------------+-------+-------+------------+--------------------------------------------|
+| [[id:DE3EEE9F-331E-440C-B62C-ABDEFE1D87E2][Sprint 05 housekeeping]] | DONE  |       | 2025-12-01 | backlog, AI sprint summary, OCR notebooks. |
 
 * Charts
 

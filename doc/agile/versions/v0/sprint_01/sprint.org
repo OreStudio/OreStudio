@@ -20,30 +20,59 @@ the stack.
 
 * Status
 
-| Field          | Value                                                  |
-|----------------+--------------------------------------------------------|
-| State          | DONE                                                   |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
-| Previous       | —                                                      |
-| Start          | 2024-06-15                                             |
-| End (expected) | 2025-02-02                                             |
-| Now            | Sprint closed 2024-07-28. All stories merged.          |
-| Waiting on     | Nothing.                                               |
-| Next           | [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]] |
-| Release Notes  | [[id:9FEBF736-19F2-4007-BF3A-ACCA6DB5C537][Release notes]]                                                      |
-| Last touched   | 2024-07-28                                             |
+| Field          | Value         |
+|----------------+---------------|
+| State          | DONE          |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]     |
+| Previous       | —             |
+| Start          | 2024-06-15    |
+| End (expected) | 2025-02-02    |
+| Now            | Nothing.      |
+| Waiting on     | Nothing.      |
+| Next           | [[id:8CBC2B51-E3D0-4320-8582-3CFD2F96537A][Sprint 02]]     |
+| Release Notes  | [[id:9FEBF736-19F2-4007-BF3A-ACCA6DB5C537][Release notes]] |
+| Last touched   | 2024-07-28    |
+
+** Achievements
+
+- Project bootstrapped: build, packaging, and CI in place.
+- Qt UI scaffold established as the desktop surface.
+- Currencies working end-to-end as the first live domain feature.
+- Documentation infrastructure laid down.
 
 * Stories
 
+For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].
+
+** Infrastructure
+
 #+ATTR_HTML: :class hug-leading
-| Story                                                                     | State | Start      | End        | Theme                                                                                                        |
-|---------------------------------------------------------------------------+-------+------------+------------+--------------------------------------------------------------------------------------------------------------|
-| [[id:64E55E42-12EB-46CF-8269-6B30DA277A1B][Project bootstrap]]            | DONE  |            | 2024-07-01 | diffuse story covering repo, build, CI, and packaging. The plumbing every later story stands on.             |
-| [[id:36A36BCB-6D25-4CEA-A2DE-53741EDAD563][Qt UI scaffold]]               | DONE  |            | 2024-07-28 | initial Qt application: hello world, splash, refactor toward a usable layout, icon set.                      |
-| [[id:C85F2DCA-F7D6-40AE-B796-8B4CF84A7093][Documentation infrastructure]] | DONE  |            | 2024-07-28 | project site, Doxygen, README, seed domain notes.                                                            |
-| [[id:1D334356-F123-43B5-A98E-317EBAD2848A][Build quality]]                | DONE  |            | 2024-07-28 | nightly memcheck, Valgrind stabilisation, C++ standard bump, vcpkg warning hygiene.                          |
-| [[id:AF70CDF6-071F-43A9-91BB-7EB9A59A550F][Currencies end-to-end]]        | DONE  |            | 2024-07-28 | tight story: bring currency data through XML, JSON, the database, and the Qt UI as the pathfinder data type. |
-| [[id:BCA419E2-DFF2-474B-969E-CFBD19E7C832][Sprint 01 housekeeping]]       | DONE  |            | 2024-07-28 | sprint-level work that doesn't fit a product story: sprint instrumentation, dev setup, community channels.   |
+| Story             | State | Start |        End | Description |
+|-------------------+-------+-------+------------+--------------------------------------------------------------------------------------------------|
+| [[id:64E55E42-12EB-46CF-8269-6B30DA277A1B][Project bootstrap]] | DONE  |       | 2024-07-01 | diffuse story covering repo, build, CI, and packaging. The plumbing every later story stands on. |
+| [[id:1D334356-F123-43B5-A98E-317EBAD2848A][Build quality]]     | DONE  |       | 2024-07-28 | nightly memcheck, Valgrind stabilisation, C++ standard bump, vcpkg warning hygiene.              |
+
+** Product
+
+#+ATTR_HTML: :class hug-leading
+| Story                 | State | Start |        End | Description |
+|-----------------------+-------+-------+------------+--------------------------------------------------------------------------------------------------------------|
+| [[id:36A36BCB-6D25-4CEA-A2DE-53741EDAD563][Qt UI scaffold]]        | DONE  |       | 2024-07-28 | initial Qt application: hello world, splash, refactor toward a usable layout, icon set.                      |
+| [[id:AF70CDF6-071F-43A9-91BB-7EB9A59A550F][Currencies end-to-end]] | DONE  |       | 2024-07-28 | tight story: bring currency data through XML, JSON, the database, and the Qt UI as the pathfinder data type. |
+
+** Documentation
+
+#+ATTR_HTML: :class hug-leading
+| Story                        | State | Start |        End | Description |
+|------------------------------+-------+-------+------------+---------------------------------------------------|
+| [[id:C85F2DCA-F7D6-40AE-B796-8B4CF84A7093][Documentation infrastructure]] | DONE  |       | 2024-07-28 | project site, Doxygen, README, seed domain notes. |
+
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story                  | State | Start |        End | Description |
+|------------------------+-------+-------+------------+------------------------------------------------------------------------------------------------------------|
+| [[id:BCA419E2-DFF2-474B-969E-CFBD19E7C832][Sprint 01 housekeeping]] | DONE  |       | 2024-07-28 | sprint-level work that doesn't fit a product story: sprint instrumentation, dev setup, community channels. |
 
 * Charts
 

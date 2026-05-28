@@ -17,6 +17,8 @@ sprints that compose a [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]]. The
 
 - [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — how the loop runs: backlog refinement, opening and closing
   sprints, sizing tasks, cross-sprint continuations.
+- [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Sprint themes]] — definitions of the six themes and the epic convention used
+  to group stories in sprint backlogs.
 - [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] — every version of the product, the sprints inside each, and the
   stories and tasks that compose those sprints.
 - [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — pre-sprint ideas split into [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] (next-version candidates)

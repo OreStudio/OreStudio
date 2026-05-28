@@ -149,17 +149,23 @@ Closure is more than transitioning to =DONE=. The sequence is:
 1. *Resolve every story.* Every story in the sprint is =DONE=,
    =ABANDONED=, or has been explicitly carried to a successor (see
    /Cross-sprint continuations/).
-2. *Generate the release notes* if a release is being cut. The notes
+2. *Write the Achievements.* Add a =** Achievements= sub-heading
+   inside =* Status=, after the Status table. Write 3–7 bullet points
+   capturing what the sprint actually delivered — specific outcomes,
+   not story titles. Clear the =Now= field to =Nothing.= at the same
+   time. Achievements are only written at sprint close; the heading
+   does not appear in in-flight sprints.
+3. *Generate the release notes* if a release is being cut. The notes
    are produced from the closed tasks' =* Result= sections and the
    PRs that landed.
-3. *Cut the release* (tag, build, publish artefacts) when the version
+4. *Cut the release* (tag, build, publish artefacts) when the version
    warrants it. Not every sprint produces a release; many sprints
    land mid-version. See [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] for what the release tag means in
    terms of CMake major/minor.
-4. *Run the post-mortem.* Fill the sprint's =* Retrospective= section
+5. *Run the post-mortem.* Fill the sprint's =* Retrospective= section
    — what went well, what hurt, what changed. Past sprints under
    =doc/agile/versions/v0/sprint_*/= are the template.
-5. *Transition the sprint* itself to =DONE= and update =Last touched=
+6. *Transition the sprint* itself to =DONE= and update =Last touched=
    on the Status row.
 
 Sprint closure ends when all five steps are complete; the next
@@ -235,6 +241,7 @@ A document is /done/ when:
 - [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]] — the generic TODO state machine on each document.
 - [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — per-type frontmatter and section contract.
 - [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — what the backlog is and how next/deferred buckets work.
+- [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Sprint themes]] — the six themes and epic convention for sprint story tables.
 - [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — definitions of every term used here.
 - [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — the recipe used at every promotion
   step above.

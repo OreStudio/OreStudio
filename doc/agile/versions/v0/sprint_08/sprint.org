@@ -39,22 +39,53 @@ skills to make the next entity cheaper.
 | Release Notes  | [[id:67E62E6F-F85E-48E1-8099-4E6AE3E0872B][Release notes]]                                                                                                        |
 | Last touched   | 2026-01-11                                                                                               |
 
+** Achievements
+
+- Countries landed as the first proper reference-data entity end-to-end.
+- Database schema and seeding overhauled; TimescaleDB tier detection in place.
+- Native pagination adopted across list views (sqlgen 0.6.0).
+- Change management infrastructure landed: reason codes with UI.
+- Entity-creator skills suite extended to Qt, shell, HTTP, Wt, and CLI surfaces.
+- Wt/HTTP validated and documented as the second presentation tier.
+
 * Stories
 
+For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].
+
+** Infrastructure
+
 #+ATTR_HTML: :class hug-leading
-| Story                                                                             | State   | Start      | End        | Theme                                                                                      |
+| Story                                                                             | State   | Start      | End        | Description |
+|-----------------------------------------------------------------------------------+---------+------------+------------+------------------------------------------------------------------------------------------|
+| [[id:42E6C351-795F-48AA-A435-EB3D1C9B6704][Database schema and seeding overhaul]] | DONE    |            | 2025-12-31 | rerun SQL from scratch with TimescaleDB tier detection; remove code seeders.             |
+| [[id:DA77FB50-27E8-4B42-A826-CAB289C7826E][Comms substrate evolution]]            | DONE    |            | 2026-01-11 | composable options, rename =ores.shell= → =ores.comms.shell=, dynamic channel discovery. |
+| [[id:40D153E3-4A87-44B6-B605-1E3E28A44D03][Native pagination support]]            | DONE    |            | 2026-01-07 | adopt sqlgen 0.6.0.                                                                      |
+| [[id:13FBE901-B255-49F7-88C3-13B2A2506BF3][Wt and HTTP review]]                   | DONE    |            | 2026-01-06 | validate the sprint-07 surfaces; document the HTTP service.                              |
+| [[id:150E3C44-AADB-48C8-A11E-322B44A0357A][Change management infrastructure]]     | DONE    |            | 2026-01-11 | reasons base + UI.                                                                       |
+| [[id:CD9E9D04-44D2-4D0D-95CE-719D55C40DA4][Observability follow-up]]              | BACKLOG |            |            | review pass only; three implementation tasks carry forward.                              |
+
+** Product
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                             | State   | Start      | End        | Description |
 |-----------------------------------------------------------------------------------+---------+------------+------------+--------------------------------------------------------------------------------------------|
-| [[id:F40E0162-A092-4716-A256-206FDBA93452][Sprint 08 housekeeping]]               | DONE    |            | 2026-01-11 | backlog refinement, OCR scans; AI summary deferred.                                        |
-| [[id:42E6C351-795F-48AA-A435-EB3D1C9B6704][Database schema and seeding overhaul]] | DONE    |            | 2025-12-31 | rerun SQL from scratch with TimescaleDB tier detection; remove code seeders.               |
 | [[id:CB564C6A-F248-4740-8D1C-A1BE148CE576][Qt UX polish]]                         | DONE    |            | 2026-01-11 | validate holiday features; assorted dialog fixes; log-viewer UI; accounts polish deferred. |
-| [[id:DA77FB50-27E8-4B42-A826-CAB289C7826E][Comms substrate evolution]]            | DONE    |            | 2026-01-11 | composable options, rename =ores.shell= → =ores.comms.shell=, dynamic channel discovery.   |
-| [[id:40D153E3-4A87-44B6-B605-1E3E28A44D03][Native pagination support]]            | DONE    |            | 2026-01-07 | adopt sqlgen 0.6.0.                                                                        |
-| [[id:13FBE901-B255-49F7-88C3-13B2A2506BF3][Wt and HTTP review]]                   | DONE    |            | 2026-01-06 | validate the sprint-07 surfaces; document the HTTP service.                                |
-| [[id:150E3C44-AADB-48C8-A11E-322B44A0357A][Change management infrastructure]]     | DONE    |            | 2026-01-11 | reasons base + UI.                                                                         |
 | [[id:501C05B5-AA7F-4807-A4F2-627B857CE2AA][Reference data: countries]]            | DONE    |            | 2026-01-11 | first proper refdata entity, end-to-end.                                                   |
-| [[id:B302B2B6-13F8-49CC-A6AF-88418668BE31][Entity-creator skills suite]]          | DONE    |            | 2026-01-11 | Qt, shell, HTTP (incl. recipes), Wt, CLI.                                                  |
 | [[id:77211166-9316-40C0-88D6-C92F983A00B5][Books domain modelling analysis]]      | DONE    |            | 2026-01-11 | strategic next-modelling effort.                                                           |
-| [[id:CD9E9D04-44D2-4D0D-95CE-719D55C40DA4][Observability follow-up]]              | BACKLOG |            |            | review pass only; three implementation tasks carry forward.                                |
+
+** LLMs
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                             | State   | Start      | End        | Description |
+|-----------------------------------------------------------------------------------+---------+------------+------------+-------------------------------------------|
+| [[id:B302B2B6-13F8-49CC-A6AF-88418668BE31][Entity-creator skills suite]]          | DONE    |            | 2026-01-11 | Qt, shell, HTTP (incl. recipes), Wt, CLI. |
+
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                             | State   | Start      | End        | Description |
+|-----------------------------------------------------------------------------------+---------+------------+------------+-----------------------------------------------------|
+| [[id:F40E0162-A092-4716-A256-206FDBA93452][Sprint 08 housekeeping]]               | DONE    |            | 2026-01-11 | backlog refinement, OCR scans; AI summary deferred. |
 
 * Charts
 

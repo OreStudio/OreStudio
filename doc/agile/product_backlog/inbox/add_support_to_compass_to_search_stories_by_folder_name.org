@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID:       809D32DC-22D2-4E9E-ACAA-1771A84EA1E2
+:END:
+#+title: Add support to compass to search stories by folder name
+#+description: Improve compass search to support a common use case which is to search by exact folder name, with underscores.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :inbox:capture:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+At present compass does not find a story if we search by the exact story name.
+We need to replace underscores with spaces for it to work. It should work
+without having to do this.
+
+* Why
+
+LLM just did the following:
+
+#+begin_src shell
+Now scaffold Task 1 with compass. Let me check the compass goto usage for adding a task to an existing story:
+
+● Bash(python3 tools/compass/compass.py --help 2>&1 | head -30)
+  ⎿  python3: can't open file '/mnt/development/Development/OreStudio/OreStudio.local2/tools/compass/compass.py': [Errno 2] No su
+     ch file or directory
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Bash(projects/ores.compass/compass.sh goto --help 2>&1)
+  ⎿  usage: compass goto [-h] [--story STORY] [--slug SLUG] [--title TITLE]
+                         [--description DESCRIPTION] [--tags TAGS] [--task TASK]
+                         [--task-slug TASK_SLUG] [--base BASE] [--dry-run]
+     … +19 lines (ctrl+o to expand)
+
+● Bash(projects/ores.compass/compass.sh index --rebuild 2>&1 | tail -5)
+  ⎿  ✅ Done.
+        Files updated: 1852
+        Files skipped (up to date): 0
+        Total content chunks: 1899
+
+● Bash(projects/ores.compass/compass.sh where --story user_manual_pdf_build 2>&1)
+  ⎿  Error: Exit code 2
+     usage: compass.py [-h]
+                       {index,search,debug,where,status,fleet,list,show,add,goto} ...
+     compass.py: error: unrecognized arguments: --story user_manual_pdf_build
+
+❯ also make all references to NATS a org-roam link. the new story could follow the existing compass stories naming compass_plantum...
+● Bash(projects/ores.compass/compass.sh search "user manual pdf build" 2>&1 | head -20)
+  ⎿  Found 10 results for 'user manual pdf build':
+     --------------------------------------------------
+     📄 "Task: Add CMake target to build user manual PDF and commit it"  🏷️   "doc" "manual" "cmake" "pdf" "latex" "user_manual_pd
+     … +18 lines (ctrl+o to expand)
+
+● Good — story UUID is C42C3563-671F-4721-8CE8-5EE05925255F. Now scaffold both tasks. Task 1 goes into user_manual_pdf_build, and for
+  the new story I'll use compass_plantuml as the slug per user's note. Let me run them sequentially:
+
+● Bash(projects/ores.compass/compass.sh goto \
+        --story C42C3563-671F-4721-8CE8-5EE05925255F \…)
+  ⎿  ✅ created and switched to feature/task-split-system-model-layers (off origin/main)
+     doc/agile/versions/v0/sprint_18/user_manual_pdf_build/task_split_system_model_layers.org
+     … +3 lines (ctrl+o to expand)
+#+end_src
+
+Even if we did:
+
+#+begin_src shell
+marco@neumann:~/Development/OreStudio/OreStudio.local2$ ./projects/ores.compass/compass.sh search user_manual_pdf_build
+
+Found 9 results for 'user_manual_pdf_build':
+--------------------------------------------------
+📄 "Task: Add CMake target to build user manual PDF and commit it"  🏷️  "doc" "manual" "cmake" "pdf" "latex" "user_manual_pdf_build" "sprint_18" "v0"
+   doc/agile/versions/v0/sprint_18/user_manual_pdf_build/task_add_cmake_pdf_target.org
+   ......s1 #+filetags: :doc:manual:cmake:pdf:latex:user_manual_pdf_build:sprint_18:v0: #+owner: marco #+branch: feature/user-manual......
+--------------------------------------------------
+📄 "Task: Write Chapter 1: Login and Connection Manager"  🏷️  "doc" "manual" "chapter_01" "user_manual_pdf_build" "sprint_18" "v0"
+   doc/agile/versions/v0/sprint_18/user_manual_pdf_build/task_chapter_01_login_connection_manager.org
+   ......s1 #+filetags: :doc:manual:chapter_01:user_manual_pdf_build:sprint_18:v0: #+owner: marco #+branch: feature/user-manual-chapter......
+--------------------------------------------------
+📄 "Task: Create documentation update skill"  🏷️  "doc" "manual" "skill" "llm" "user_manual_pdf_build" "sprint_18" "v0"
+   doc/agile/versions/v0/sprint_18/user_manual_pdf_build/task_create_documentation_update_skill.org
+   ......s1 #+filetags: :doc:manual:skill:llm:user_manual_pdf_build:sprint_18:v0: #+owner: marco #+branch: feature/user-manual-system......
+--------------------------------------------------
+📄 "Task: Write Chapter 1: System bootstrapping concepts and provisioning wizards"  🏷️  "doc" "manual" "chapter_01" "bootstrapping" "user_manual_pdf_build" "sprint_18" "v0"
+   doc/agile/versions/v0/sprint_18/user_manual_pdf_build/task_chapter_01_system_bootstrapping_concepts.org
+   ......s1 #+filetags: :doc:manual:chapter_01:bootstrapping:user_manual_pdf_build:sprint_18:v0: #+owner: marco #+branch: feature/user-manual......
+--------------------------------------------------
+📄 "Task: Add user_manual_site.org and update manuals.org"  🏷️  "user_manual_pdf_build" "sprint_18" "v0"
+   doc/agile/versions/v0/sprint_18/user_manual_pdf_build/task_add_manual_site_page.org
+   ......s1 #+filetags: :user_manual_pdf_build:sprint_18:v0: #+owner: marco #+branch: feature/add-manual-site-page #+pr: 882 #+blocked......
+--------------------------------------------------
+📄 "Task: User manual restructure"  🏷️  "doc" "manual" "retrospective" "user_manual_pdf_build" "sprint_18" "v0"
+   doc/agile/versions/v0/sprint_18/user_manual_pdf_build/task_user_manual_restructure.org
+   ......s1 #+filetags: :doc:manual:retrospective:user_manual_pdf_build:sprint_18:v0: #+owner: marco #+branch: feature/user-manual-restructure #+pr......
+--------------------------------------------------
+📄 "Deploy the documentation site"  🏷️  "runbook" "site" "deploy" "documentation"
+   doc/llm/runbooks/deploy_documentation_site/runbook.org
+   ......4. /Build the manual PDF./ Run =cmake --build ... --target deploy_manual= per the =user_manual_pdf_build= story.  5. /Verify......
+--------------------------------------------------
+📄 "Task: Health review 2 — sprint 18 backlog audit and shape check"  🏷️  "sprint_health_review" "sprint_18" "v0"
+   doc/agile/versions/v0/sprint_18/sprint_health_review/task_health_review_2.org
+   ......Real in-flight count is 3: =ore_samples_support=, =user_manual_pdf_build=, =sprint_health_review=. That is GREEN.  *** Overall......
+--------------------------------------------------
+📄 "Task: Generate all missing screenshots for the manual"  🏷️  "manual" "screenshots" "documentation" "user_manual_pdf_build" "sprint_18" "v0"
+   doc/agile/versions/v0/sprint_18/user_manual_pdf_build/task_generate_missing_screenshots.org
+   ......s1 #+filetags: :manual:screenshots:documentation:user_manual_pdf_build:sprint_18:v0: #+owner: marco #+branch: feature/finish-missing-screenshots #+pr......
+--------------------------------------------------
+#+end_src
+
+This should have matched the story first, then all tasks for the story. We
+should somehow detect the underscores and then give priority to catalogues.
+
+* References
+
+-
+
+* See also
+
+-

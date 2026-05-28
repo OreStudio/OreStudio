@@ -40,6 +40,7 @@ lifecycle operations, and codegen pipeline propagation for workspace_id
 |------+-------+-------+-----+-------------|
 | [[id:7EC6A5B1-5E00-44F3-BA8B-8143621667B2][Task: Workspace: bitemporal schema, service layer, UI, and lifecycle operations]] | DONE | 2026-05-22 | 2026-05-22 | Full implementation of the workspace entity as a first-class domain object with bitemporal history, a complete NATS serv |
 | [[id:293A6F5A-5027-41C0-AC4E-00E4140A0F44][Task: Add workspace_id to codegen pipeline (Phases 1-4)]] | DONE | 2026-05-22 | 2026-05-22 | - Phase 4: propagate `workspace_id` through the C++ codegen layer — adds `workspace_id` field to all domain entities fla |
+| [[id:15C29EF8-6012-480F-8D11-81701591921E][Task: [workspace] Phase 3+4: controller wiring and Data Workshop UI]] | DONE | 2026-05-22 | 2026-05-22 | Completes the remaining workspace propagation work after PR #773 (codegen) was merged. |
 | [[id:E56D4AE5-9D91-4943-AC74-F7D9D3A95987][Task: docs: Update workspace design plan with Phase 3–4 progress]] | DONE | 2026-05-22 | 2026-05-22 | Update the workspace design plan document to reflect completion of Phases 1–2 and substantial progress through Phases 3– |
 
 * Decisions

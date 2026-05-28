@@ -39,6 +39,8 @@ four ORE XML document types (portfolio, market data, fixings, calendar).
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:B5D90461-980A-4BBC-9A1C-15BE795BE9C6][Task: Add ore roundtrip command and retire Thing 2 coverage check]] | DONE | 2026-05-22 | 2026-05-22 | - Phase 1 (`ores.ore`): Implements `exporter::roundtrip_portfolio` — walks a directory of ORE portfolio XMLs recursively |
+| [[id:EF0B846B-3406-4411-AB08-877514890B66][Task: [ore] Add initial ORE domain roundtrip baseline (Thing 3, Phase 5)]] | DONE | 2026-05-22 | 2026-05-22 | - Fixes `leg_type_from_string` in `swap_instrument_mapper.cpp`: only 6 of 17 `legType` enum values were mapped, causing |
+| [[id:9AF052AC-0875-4BC5-964B-B4821ED7B161][Task: [ore,cli,scripts] Extend roundtrip to all four ORE XML document types]] | DONE | 2026-05-22 | 2026-05-22 | - Add `reverse()` to `calendar_adjustment_mapper` and `conventions_mapper` so all four ORE XML document types can be ser |
 
 * Decisions
 

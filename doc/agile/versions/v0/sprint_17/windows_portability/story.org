@@ -39,6 +39,13 @@ feature for Qt.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
+| [[id:4097525F-66B6-48D8-9EE1-6297FE896B40][Task: [qt.api] Move Cron widgets to qt.api to fix Windows link error]] | DONE | 2026-05-22 | 2026-05-22 | - `lld-link: undefined symbol: ores::qt::CronExpressionWidget::staticMetaObject` when linking `ores.qt.scheduler.dll` on |
+| [[id:B64C5983-F243-4380-A2DB-5E55830EE0AF][Task: [qt.api/database] Fix Windows MSVC export and libpq link]] | DONE | 2026-05-22 | 2026-05-22 | Two Windows-only fixes from the latest main CI run: |
+| [[id:40C6968A-7D60-44F0-9B14-B2887A0525AB][Task: [database] Link OpenSSL for libpq on Windows]] | DONE | 2026-05-22 | 2026-05-22 | Windows clang builds still fail linking \`ores.database.dll\` after #708: |
+| [[id:F099EEEB-345D-419E-A0A3-F7BCCAF4A7B2][Task: [backlog] Analyse Windows WiX installer size and file-count limits]] | DONE | 2026-05-22 | 2026-05-22 | Analysis story for the two WiX v3 failures still blocking the Windows \`cpack\` step, following up on PR #693 and commit |
+| [[id:25886210-F144-4243-A741-7607243726CE][Task: [cpack/windows] Clear WiX v3 size and file-count limits]] | DONE | 2026-05-22 | 2026-05-22 | Short-term fixes from the WiX analysis in #710, clearing both remaining \`cpack\` errors on Windows. |
+| [[id:D07E1889-FD0C-4F0B-AB3F-60D1519D08BA][Task: [cmake] Lift libpq Windows workaround to PostgreSQL imported target]] | DONE | 2026-05-22 | 2026-05-22 | PRs #708 and #709 patched the Windows libpq link workaround (\`pgport\`, \`pgcommon\`, \`OpenSSL::SSL\`/\`Crypto\`, \`Se |
+| [[id:9D673CFC-3396-4D61-950F-4888D19F1BD9][Task: [vcpkg] Add opt-in qt feature for Windows users]] | DONE | 2026-05-22 | 2026-05-22 | Some Windows users struggle to install Qt externally (e.g. Qt online |
 
 * Decisions
 

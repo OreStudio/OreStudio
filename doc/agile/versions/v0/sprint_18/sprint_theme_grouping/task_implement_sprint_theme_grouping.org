@@ -67,8 +67,15 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                          | File                          | Decision | Notes                                            |
+|---+----------------------------------------------------------+-------------------------------+----------+--------------------------------------------------|
+| 1 | Achievements bullet count violates 4–6 rule              | process.org                   | Fixed    | Relaxed rule to 3–7                              |
+| 2 | Theme column misleading after subheading grouping        | v2_doc_sprint.org.mustache    | Fixed    | Renamed to Description across template + all 18 |
+| 3 | Sprint_18 Theme column same issue                        | sprint_18/sprint.org          | Fixed    | Covered by comment 2 fix                         |
+| 4 | Sprints 02–06 Achievements: lowercase + semicolons       | sprint_02/sprint.org          | Fixed    | Capitalised + full stops across 02–06            |
+| 5 | Sprint_03 same style issue                               | sprint_03/sprint.org          | Fixed    | Covered by comment 4 fix                         |
+| 6 | Sprint_04 same style issue                               | sprint_04/sprint.org          | Fixed    | Covered by comment 4 fix                         |
+| 7 | Sprint_05 same style issue                               | sprint_05/sprint.org          | Fixed    | Covered by comment 4 fix                         |
+| 8 | Sprint_06 same style issue                               | sprint_06/sprint.org          | Fixed    | Covered by comment 4 fix                         |
 
 * Result

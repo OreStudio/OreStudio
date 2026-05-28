@@ -60,7 +60,6 @@ Entries triaged 2026-05-28 via bulk capture recipe. Each row links to the filed 
 | Capture | Description |
 |---------+-------------|
 | [[id:A759E29B-28B5-45C1-94B0-E27E1B6DBE5E][Rename modeling dir to docs]] | Rename modeling/ to docs/ across all components |
-| [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Cybernetics documentation suite]] | Standalone cybernetics summary; explain VSM connection and limitations |
 | [[id:833B4DAA-CF4A-4B90-8070-16395ED8890D][CMake and vcpkg knowledge pages]] | Knowledge pages for CMake and vcpkg: what they are and how we use them |
 | [[id:15FB60D6-344F-4DCA-B3A0-F4E765D8B1CF][Emacs plots for ORE Studio]] | Use Emacs chart library for lightweight ORE Studio functionality plots |
 | [[id:2F466FCB-63A0-4DA0-B04B-0DD35C579CFC][Extend Emacs dashboard with HTTP entity views]] | Extend dashboard with HTTP-backed entity views (users, etc.) |

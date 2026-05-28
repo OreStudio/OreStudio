@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 6210901B-2B78-430D-AB5A-E10C4F81633D
+:END:
+#+title: Task: Improve cybernetics documentation
+#+description: Initial task for: Improve cybernetics documentation
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :cybernetics_docs:sprint_18:v0:
+#+owner: marco
+#+branch: feature/cybernetics-docs
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Improve cybernetics documentation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Improve cybernetics documentation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-28                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

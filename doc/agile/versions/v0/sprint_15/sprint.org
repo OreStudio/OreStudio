@@ -58,7 +58,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                    | State | Start      | End        | Theme                                                                   |
+| Story                                                                                    | State | Start      | End        | Description |
 |------------------------------------------------------------------------------------------+-------+------------+------------+-------------------------------------------------------------------------|
 | [[id:BFAC3A00-1684-4546-B10B-5BA358B5A867][Unified system_settings]]                     | DONE  |            | 2026-03-20 | replace feature_flags.                                                  |
 | [[id:679DA033-934A-4330-951F-5016675CC8AF][Compute grid observability]]                  | DONE  |            | 2026-03-21 | telemetry + RAG dashboard.                                              |
@@ -72,7 +72,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Product
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                    | State | Start      | End        | Theme                                                                 |
+| Story                                                                                    | State | Start      | End        | Description |
 |------------------------------------------------------------------------------------------+-------+------------+------------+-----------------------------------------------------------------------|
 | [[id:FD12BBD4-BD95-454A-A636-5F22C928C4D1][Fix ORE import bugs]]                         | DONE  |            | 2026-03-19 | real-data shakedown of the sprint-14 wizard.                          |
 | [[id:7B5E0C11-8C1F-4D91-ADEA-2596197CD0D4][Loading indicator on entity list windows]]    | DONE  |            | 2026-03-20 | UI consistency.                                                       |
@@ -84,7 +84,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Agile
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                    | State | Start      | End        | Theme               |
+| Story                                                                                    | State | Start      | End        | Description |
 |------------------------------------------------------------------------------------------+-------+------------+------------+---------------------|
 | [[id:DF3C08D8-A11E-4E2E-908A-5BD0DDC29626][Sprint 15 housekeeping]]                      | DONE  |            | 2026-03-24 | backlog refinement. |
 

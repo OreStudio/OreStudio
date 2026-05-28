@@ -44,12 +44,11 @@ later sprints with the codegen-driven approach.)
 
 ** Achievements
 
-- Session cancellation live;
-- variability is its own service;
-- comms substrate has handshake/protocol split and retry;
-- logging migrated to =std::string_view= (with the inevitable post-migration
-  cleanup);
-- two predecessor links from sprint 05 closed.
+- Session cancellation live.
+- Variability is its own service.
+- Comms substrate has handshake/protocol split and retry.
+- Logging migrated to =std::string_view= (with the inevitable post-migration cleanup).
+- Two predecessor links from sprint 05 closed.
 
 * Stories
 
@@ -58,7 +57,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                            | State | Start      | End        | Theme                                                                                                      |
+| Story                                                                            | State | Start      | End        | Description |
 |----------------------------------------------------------------------------------+-------+------------+------------+------------------------------------------------------------------------------------------------------------|
 | [[id:4B50A7E5-D862-47A6-AEBE-353CAD55B058][Session lifecycle follow-up]]         | DONE  |            | 2025-12-04 | successor of sprint 05's authentication bootstrap; lands session cancellation + logout + client heartbeat. |
 | [[id:88971AFE-E0B4-4E54-B0D7-B1C627C2F239][Comms robustness]]                    | DONE  |            | 2025-12-10 | split protocol, handshake service, multi-thread coverage, retry-with-give-up.                              |
@@ -68,7 +67,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Product
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                            | State | Start      | End        | Theme                                                              |
+| Story                                                                            | State | Start      | End        | Description |
 |----------------------------------------------------------------------------------+-------+------------+------------+--------------------------------------------------------------------|
 | [[id:55C35962-46A0-4353-93AD-FC15BF847C7E][Variability service]]                 | DONE  |            | 2025-12-08 | feature-flag service end-to-end.                                   |
 | [[id:50BB2ACB-5687-4BAD-B03A-12AF606E8EAB][Bootstrap polish]]                    | DONE  |            | 2025-12-13 | context to DB, drop bootstrap flag, manifest password-validation knob. |
@@ -76,14 +75,14 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Tooling
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                            | State | Start      | End        | Theme                                                                                           |
+| Story                                                                            | State | Start      | End        | Description |
 |----------------------------------------------------------------------------------+-------+------------+------------+-------------------------------------------------------------------------------------------------|
 | [[id:06C56CA2-9846-4DC9-B2F3-271BF4F084CE][CLI entity syntax follow-up]]         | DONE  |            | 2025-12-13 | successor of sprint 05's CLI/REPL reshape; mops up snags and adds top-level shell login/logout. |
 
 ** Agile
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                            | State | Start      | End        | Theme                                   |
+| Story                                                                            | State | Start      | End        | Description |
 |----------------------------------------------------------------------------------+-------+------------+------------+-----------------------------------------|
 | [[id:193A779F-A313-414C-9236-D075B84A2F67][Sprint 06 housekeeping]]              | DONE  |            | 2025-12-15 | backlog, AI summary via the skill, OCR. |
 

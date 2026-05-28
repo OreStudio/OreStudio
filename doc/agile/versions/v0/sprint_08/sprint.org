@@ -55,7 +55,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                             | State   | Start      | End        | Theme                                                                                    |
+| Story                                                                             | State   | Start      | End        | Description |
 |-----------------------------------------------------------------------------------+---------+------------+------------+------------------------------------------------------------------------------------------|
 | [[id:42E6C351-795F-48AA-A435-EB3D1C9B6704][Database schema and seeding overhaul]] | DONE    |            | 2025-12-31 | rerun SQL from scratch with TimescaleDB tier detection; remove code seeders.             |
 | [[id:DA77FB50-27E8-4B42-A826-CAB289C7826E][Comms substrate evolution]]            | DONE    |            | 2026-01-11 | composable options, rename =ores.shell= → =ores.comms.shell=, dynamic channel discovery. |
@@ -67,7 +67,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Product
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                             | State   | Start      | End        | Theme                                                                                      |
+| Story                                                                             | State   | Start      | End        | Description |
 |-----------------------------------------------------------------------------------+---------+------------+------------+--------------------------------------------------------------------------------------------|
 | [[id:CB564C6A-F248-4740-8D1C-A1BE148CE576][Qt UX polish]]                         | DONE    |            | 2026-01-11 | validate holiday features; assorted dialog fixes; log-viewer UI; accounts polish deferred. |
 | [[id:501C05B5-AA7F-4807-A4F2-627B857CE2AA][Reference data: countries]]            | DONE    |            | 2026-01-11 | first proper refdata entity, end-to-end.                                                   |
@@ -76,14 +76,14 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** LLMs
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                             | State   | Start      | End        | Theme                                     |
+| Story                                                                             | State   | Start      | End        | Description |
 |-----------------------------------------------------------------------------------+---------+------------+------------+-------------------------------------------|
 | [[id:B302B2B6-13F8-49CC-A6AF-88418668BE31][Entity-creator skills suite]]          | DONE    |            | 2026-01-11 | Qt, shell, HTTP (incl. recipes), Wt, CLI. |
 
 ** Agile
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                             | State   | Start      | End        | Theme                                               |
+| Story                                                                             | State   | Start      | End        | Description |
 |-----------------------------------------------------------------------------------+---------+------------+------------+-----------------------------------------------------|
 | [[id:F40E0162-A092-4716-A256-206FDBA93452][Sprint 08 housekeeping]]               | DONE    |            | 2026-01-11 | backlog refinement, OCR scans; AI summary deferred. |
 

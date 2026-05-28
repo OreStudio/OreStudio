@@ -57,14 +57,14 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                              | State   | Start      | End        | Theme                                                 |
+| Story                                                                              | State   | Start      | End        | Description |
 |------------------------------------------------------------------------------------+---------+------------+------------+-------------------------------------------------------|
 | [[id:5BAFBEB2-C875-4655-BB78-801A3BF65022][Schema polish]]                         | DONE    |            | 2026-01-26 | layer cleanup, rounding types, icon labels, mapping artefact. |
 
 ** Product
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                              | State   | Start      | End        | Theme                                                                                                               |
+| Story                                                                              | State   | Start      | End        | Description |
 |------------------------------------------------------------------------------------+---------+------------+------------+---------------------------------------------------------------------------------------------------------------------|
 | [[id:700D4325-2AD1-4E0D-B6AF-900ABBE1A66E][Party schemes and FPML reference data]] | DONE    |            | 2026-01-23 | 13 types via FpML codegen + DQ artefact workflow; GLEIF subset. Continues from sprint 09 party-database groundwork. |
 | [[id:2A572D8A-644C-40D9-87D2-7A49A9C07D1B][Image cache polish]]                    | DONE    |            | 2026-01-23 | reload on new datasets; incremental loading via =modified_since=.                                                   |
@@ -77,7 +77,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Tooling
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                              | State   | Start      | End        | Theme                                                                            |
+| Story                                                                              | State   | Start      | End        | Description |
 |------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------|
 | [[id:49A3B815-B5E9-4B3D-9213-100BF96C266D][Codegen infrastructure]]                | DONE    |            | 2026-01-24 | simple in-tree codegen; domain-types SQL; ER diagram from SQL.                   |
 | [[id:38B6DDDF-C02B-4072-B599-41AB3BCC9C28][SQL directory refactor]]                | DONE    |            | 2026-01-24 | create/, drop/, populate/ by component; safer teardown; admin naming convention. |
@@ -85,14 +85,14 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Documentation
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                              | State   | Start      | End        | Theme                                                                       |
+| Story                                                                              | State   | Start      | End        | Description |
 |------------------------------------------------------------------------------------+---------+------------+------------+-----------------------------------------------------------------------------|
 | [[id:EBC22454-356D-4B6C-A3BE-E8EDFD858FCA][External data reorganisation]]          | DONE    |            | 2026-01-24 | domain-specific subdirectories + manifests; coding schemes via DQ pipeline. |
 
 ** Agile
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                              | State   | Start      | End        | Theme                            |
+| Story                                                                              | State   | Start      | End        | Description |
 |------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------|
 | [[id:61F6AB0B-BB2E-43E7-9735-447A7E3D55DE][Sprint 10 housekeeping]]                | DONE    |            | 2026-01-27 | backlog + OCR + misspell-CI fix. |
 

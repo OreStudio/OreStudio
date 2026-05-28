@@ -150,7 +150,7 @@ Closure is more than transitioning to =DONE=. The sequence is:
    =ABANDONED=, or has been explicitly carried to a successor (see
    /Cross-sprint continuations/).
 2. *Write the Achievements.* Add a =** Achievements= sub-heading
-   inside =* Status=, after the Status table. Write 4–6 bullet points
+   inside =* Status=, after the Status table. Write 3–7 bullet points
    capturing what the sprint actually delivered — specific outcomes,
    not story titles. Clear the =Now= field to =Nothing.= at the same
    time. Achievements are only written at sprint close; the heading

@@ -68,7 +68,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                 | State | Start      | End        | Theme                                                                                           |
+| Story                                                                                 | State | Start      | End        | Description |
 |---------------------------------------------------------------------------------------+-------+------------+------------+-------------------------------------------------------------------------------------------------|
 | [[id:2FAF5366-2FED-4FBE-99F2-8CB46CA84AEB][Party isolation RLS policies]]             | DONE  |            | 2026-04-09 | close the gaps. Continues from sprint 13 party_isolation_books_portfolios_trades.               |
 | [[id:7399693E-F61B-4E3D-B37C-F53F3CE5A197][Generic object storage API]]               | DONE  |            | 2026-04-03 | ores.storage + compute grid migration.                                                          |
@@ -82,7 +82,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Product
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                 | State | Start      | End        | Theme                                                                                                                 |
+| Story                                                                                 | State | Start      | End        | Description |
 |---------------------------------------------------------------------------------------+-------+------------+------------+-----------------------------------------------------------------------------------------------------------------------|
 | [[id:FFC60DB1-B82A-4C8A-961E-2C6720379508][Asset class and product_type unification]] | DONE  |            | 2026-04-03 | rename + analysis + implementation.                                                                                   |
 | [[id:4FCD03AC-51AD-47AD-8203-FAEFAA4211B9][Workflow engine]]                          | DONE  |            | 2026-04-06 | scaffold + FSM state UUIDs + generalised event-driven engine.                                                         |
@@ -101,7 +101,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Agile
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                 | State | Start      | End        | Theme               |
+| Story                                                                                 | State | Start      | End        | Description |
 |---------------------------------------------------------------------------------------+-------+------------+------------+---------------------|
 | [[id:C1DB4C7A-16D7-4289-A457-A6C6CE5C8B5C][Sprint 16 housekeeping]]                   | DONE  |            | 2026-04-17 | backlog refinement. |
 

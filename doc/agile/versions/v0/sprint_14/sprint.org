@@ -59,7 +59,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                     | State   | Start      | End        | Theme                                                                                          |
+| Story                                                                                     | State   | Start      | End        | Description |
 |-------------------------------------------------------------------------------------------+---------+------------+------------+------------------------------------------------------------------------------------------------|
 | [[id:7B45BE68-3970-4657-B2A3-F24151156AC7][pgmq queue management and messaging UI]]       | DONE    |            | 2026-03-03 | first MQ UI.                                                                                   |
 | [[id:ED082D5A-4AFB-4BF9-81DB-8712F881DDE3][Custom MQ tables and in-process scheduler]]    | DONE    |            | 2026-03-04 | replace external extensions. Continues from sprint 13 scheduling_subsystem.                    |
@@ -71,7 +71,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Product
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                     | State   | Start      | End        | Theme                                                                             |
+| Story                                                                                     | State   | Start      | End        | Description |
 |-------------------------------------------------------------------------------------------+---------+------------+------------+-----------------------------------------------------------------------------------|
 | [[id:F80BAD05-2E66-458D-9223-1DB0A83EF694][ORE import wizard]]                            | DONE    |            | 2026-03-01 | seven-page directory-scan wizard. Continues from sprint 13 trade_import_analysis. |
 | [[id:84559B48-546B-4724-BDD0-53DBFCA2C24A][Reporting subsystem]]                          | DONE    |            | 2026-03-03 | design + schema + domain + messaging + repo + Qt UI with cron widget.             |
@@ -82,14 +82,14 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Tooling
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                     | State   | Start      | End        | Theme                              |
+| Story                                                                                     | State   | Start      | End        | Description |
 |-------------------------------------------------------------------------------------------+---------+------------+------------+------------------------------------|
 | [[id:4D9869DA-72CE-4B92-BB19-91C274CA7A2B][CLI domain layer]]                             | DONE    |            | 2026-03-03 | domain sub-menu in CLI syntax.     |
 
 ** Agile
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                     | State   | Start      | End        | Theme               |
+| Story                                                                                     | State   | Start      | End        | Description |
 |-------------------------------------------------------------------------------------------+---------+------------+------------+---------------------|
 | [[id:7DCF008E-33A5-4493-8FF2-ABE1E7D78053][Sprint 14 housekeeping]]                       | DONE    |            | 2026-03-12 | backlog refinement. |
 

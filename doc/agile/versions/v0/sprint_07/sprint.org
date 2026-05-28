@@ -52,7 +52,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading
-| Story                       | State | Start |        End | Theme                                                                                |
+| Story                       | State | Start |        End | Description |
 |-----------------------------+-------+-------+------------+--------------------------------------------------------------------------------------|
 | [[id:BB39ECBD-1EA5-4D53-A117-A0C88E0463C1][Build platform follow-up]]    | DONE  |       | 2025-12-18 | WSL setup, prebuilt Qt, Windows clang build breaks. Continues from sprint 04.        |
 | [[id:B306F938-F939-44CA-9D69-6FAEDBF91C08][Comms features]]              | DONE  |       | 2025-12-25 | optional compression, =LISTEN=/=NOTIFY= through the shell, type traits for messages. |
@@ -62,7 +62,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Product
 
 #+ATTR_HTML: :class hug-leading
-| Story                     | State | Start |        End | Theme                                                                    |
+| Story                     | State | Start |        End | Description |
 |---------------------------+-------+-------+------------+--------------------------------------------------------------------------|
 | [[id:818B6261-1780-4FB3-AA89-DA02C91DA363][Currencies history polish]] | DONE  |       | 2025-12-20 | visual distinction for the active version, revert action, country flags. |
 | [[id:72F723F4-378C-4E0A-B6F1-6BA3C29F5BEA][Qt UX polish]]              | DONE  |       | 2025-12-22 | account management UI, exit confirmation, relative-time formatting.      |
@@ -72,7 +72,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Agile
 
 #+ATTR_HTML: :class hug-leading
-| Story                  | State | Start |        End | Theme                                                           |
+| Story                  | State | Start |        End | Description |
 |------------------------+-------+-------+------------+-----------------------------------------------------------------|
 | [[id:A5060B3B-A3C0-40FF-B5D3-36ED1E74B609][Sprint 07 housekeeping]] | DONE  |       | 2025-12-30 | recurring per-sprint chores: backlog, AI summary, notebook OCR. |
 

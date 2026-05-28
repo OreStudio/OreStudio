@@ -57,7 +57,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                            | State   | Start      | End        | Theme                                                                              |
+| Story                                                                                            | State   | Start      | End        | Description |
 |--------------------------------------------------------------------------------------------------+---------+------------+------------+------------------------------------------------------------------------------------|
 | [[id:4CE5CC79-DC9B-491F-A8F7-F635DE33D55A][Test coverage and FK-aware generators]]               | DONE    |            | 2026-02-11 | back over 50% coverage; KVP-context proposal sown.                                 |
 | [[id:74A0B830-2F12-406F-9550-961098C11DC6][Infrastructure cleanup]]                              | DONE    |            | 2026-02-12 | merge databases away; OSX CI back.                                                 |
@@ -68,7 +68,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Product
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                            | State   | Start      | End        | Theme                                                                                                                      |
+| Story                                                                                            | State   | Start      | End        | Description |
 |--------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------------------------------------------------|
 | [[id:5B48D17B-F510-4458-8FB9-95832F9782C2][Qt and eventing polish]]                              | DONE    |            | 2026-02-10 | shell widget; name-based roles; several small fixes.                                                                       |
 | [[id:76D84778-4544-4EE6-A17A-033019DBACB0][Party database and domain]]                           | DONE    |            | 2026-02-09 | implement party + counterparty + identifier + contact-info end-to-end. Continues from sprint 09 party_database_groundwork. |
@@ -87,14 +87,14 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Tooling
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                            | State   | Start      | End        | Theme                     |
+| Story                                                                                            | State   | Start      | End        | Description |
 |--------------------------------------------------------------------------------------------------+---------+------------+------------+---------------------------|
 | [[id:E8004B20-AE81-4D48-A677-CDE07A300E92][sqlgen follow-up]]                                    | ?       |            |            | BLOCKED on vcpkg.         |
 
 ** Agile
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                            | State   | Start      | End        | Theme           |
+| Story                                                                                            | State   | Start      | End        | Description |
 |--------------------------------------------------------------------------------------------------+---------+------------+------------+-----------------|
 | [[id:8F521A37-BEC0-469E-AF32-87DF684DE3B2][Sprint 12 housekeeping]]                              | DONE    |            | 2026-02-20 | backlog + OCR.  |
 

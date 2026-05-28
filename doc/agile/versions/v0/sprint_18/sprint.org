@@ -49,7 +49,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Product
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                                | State   | Start      | End        | Theme                                                                                              |
+| Story                                                                                                | State   | Start      | End        | Description |
 |------------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------------------------|
 | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]]      | STARTED | 2026-05-24 |            | =deploy_manual= target builds =user_manual.org= to PDF; commit and link the result.               |
 | [[id:D495A1B3-7677-4884-935F-1B6E6D65C983][ORE sample data]]                                  | BACKLOG | 2026-05-24 |            | Source or generate representative ORE input files for integration testing.                         |
@@ -63,7 +63,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Tooling
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                                | State   | Start      | End        | Theme                                                                                              |
+| Story                                                                                                | State   | Start      | End        | Description |
 |------------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------------------------|
 | [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][ores.compass repository compass tool]]             | DONE    | 2026-05-24 | 2026-05-24 | Python repository compass: temporal orientation, semantic doc search, agile scaffolding.           |
 | [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][ores.compass Locate — temporal orientation]]       | DONE    | 2026-05-24 | 2026-05-24 | =where=/=status=: report current version, sprint, and in-flight stories and tasks from the graph. |
@@ -79,7 +79,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Agile
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                                | State   | Start      | End        | Theme                                                                                              |
+| Story                                                                                                | State   | Start      | End        | Description |
 |------------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------------------------|
 | [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]]                       | DONE    | 2026-05-24 | 2026-05-24 | Build backlog-refiner and sprint-planner skills/recipes; set sprint 18 mission.                    |
 | [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]]         | DONE    | 2026-05-25 | 2026-05-26 | =sprint-reviewer= skill writes a structured health-check section into =sprint.org=.               |
@@ -90,7 +90,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** LLMs
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                                | State   | Start      | End        | Theme                                                                                              |
+| Story                                                                                                | State   | Start      | End        | Description |
 |------------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------------------------|
 | [[id:7225526E-DCDB-4DC6-A95D-22C7117E5EAA][Port Tufte visualisation skill into ORE Studio]]   | DONE    | 2026-05-25 | 2026-05-25 | Convert =tufte-viz= SKILL and two Tufte reference docs to org-mode; install and catalogue.        |
 | [[id:3D1935DC-562C-4AA3-A352-AC1BC037DFDD][Runbook support]]                                  | DONE    | 2026-05-26 | 2026-05-26 | Add runbook document type: named composition of recipes for repeatable multi-step operations.      |
@@ -101,7 +101,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Documentation
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                                | State   | Start      | End        | Theme                                                                                              |
+| Story                                                                                                | State   | Start      | End        | Description |
 |------------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------------------------|
 | [[id:4E375DD6-E300-4A0A-BD20-3D06AC8ED7A1][Port domain concept notes to knowledge documents]] | STARTED | 2026-05-25 |            | Tidy personal finance/ORE domain notes into v2 knowledge docs; align with ORE Studio terms.       |
 | [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]]                         | DONE    | 2026-05-26 | 2026-05-28 | Add layer blurbs and table-based component inventory to the system model.                          |
@@ -112,7 +112,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                                | State   | Start      | End        | Theme                                                                                              |
+| Story                                                                                                | State   | Start      | End        | Description |
 |------------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------------------------|
 | [[id:A4BEF88C-1372-46CE-864B-C30AC3BE95EB][Inline org-roam export into ores.lisp]]            | DONE    | 2026-05-22 | 2026-05-22 | Vendor =org-roam-export.el= into =ores.lisp= so the CI site build is self-contained.              |
 | [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]]                    | DONE    | 2026-05-23 | 2026-05-24 | Permanently resolve MSVC C1202 and Clang expression nesting limits via structural isolation.       |

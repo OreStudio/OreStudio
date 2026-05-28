@@ -57,7 +57,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                     | State | Start      | End        | Theme                                                               |
+| Story                                                                                     | State | Start      | End        | Description |
 |-------------------------------------------------------------------------------------------+-------+------------+------------+---------------------------------------------------------------------|
 | [[id:0A69CB02-19DF-4DF7-BEDD-81C57A604737][Engineering hygiene]]                          | DONE  |            | 2026-02-06 | past review comments; apt-get retry; vcpkg cache fix.               |
 | [[id:B726D4EA-4E80-4D54-A5CC-0CD895CE883C][Database role split and schema consolidation]] | DONE  |            | 2026-01-31 | preconditions: RBAC, single public schema, SQL tree tidy-up.        |
@@ -72,14 +72,14 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Tooling
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                     | State | Start      | End        | Theme                                             |
+| Story                                                                                     | State | Start      | End        | Description |
 |-------------------------------------------------------------------------------------------+-------+------------+------------+---------------------------------------------------|
 | [[id:18CCF6C9-7D23-48B3-9D4D-2A8AEB4EE30D][sqlgen improvements]]                          | DONE  |            | 2026-02-06 | libpq audit; upstream notice + bound-params work. |
 
 ** Agile
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                     | State | Start      | End        | Theme           |
+| Story                                                                                     | State | Start      | End        | Description |
 |-------------------------------------------------------------------------------------------+-------+------------+------------+-----------------|
 | [[id:572C63F9-9A87-40FB-8609-8D4D7C1CCD39][Sprint 11 housekeeping]]                       | DONE  |            | 2026-02-06 | backlog + OCR.  |
 

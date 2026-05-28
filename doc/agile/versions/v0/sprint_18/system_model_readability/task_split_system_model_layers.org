@@ -6,9 +6,9 @@
 #+type: task
 #+version: 2
 #+level: s1
-#+filetags: :user_manual_pdf_build:sprint_18:v0:
+#+filetags: :system_model_readability:sprint_18:v0:
 #+owner: marco
-#+branch: feature/task-split-system-model-layers
+#+branch: feature/split-system-model-layers
 #+pr: 887
 #+blocked_on: none
 #+blocked_since:
@@ -16,7 +16,7 @@
 #+updated: 2026-05-28
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -28,7 +28,7 @@ illustrating the four-layer architecture (Foundation → Infrastructure →
 Domain → Application) and wires in org-roam links wherever [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] is
 mentioned as a plain-text "NATS" reference. Finally it merges the
 now-superseded =site_pdf_and_manual_book= story into =user_manual_pdf_build=
-by moving its task file here, deleting the old story directory, and updating
+by moving its task file there, deleting the old story directory, and updating
 all org-roam cross-references.
 
 * Status
@@ -36,7 +36,7 @@ all org-roam cross-references.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | STARTED                                |
-| Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
+| Parent story | [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]] |
 | Now          | PR #887 raised; awaiting CI and review. |
 | Waiting on   | Nothing.                               |
 | Next         | Address review comments; merge.        |

@@ -10,110 +10,120 @@
 #+created: 2026-05-28
 #+updated: 2026-05-28
 
-This page is part of the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]].
-
-* Summary
-
-Domain is the reason ORE Studio exists — everything else is
-infrastructure supporting what lives here. Each domain component is a
-self-contained vertical that speaks [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] to every other vertical;
-none depends on any application component. To add new domain types, see
-the [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]] skill. To understand how tenants and parties are
-isolated at the messaging layer, see
-[[id:4E762126-2152-11F1-B1D1-40B0768014EB][NATS multi-tenancy and multi-party design]].
+This page is part of the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]]. Domain is the reason ORE Studio exists —
+everything else is infrastructure supporting what lives here. Each domain
+component is a self-contained vertical that speaks [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] to every other
+vertical; none depends on any application component. To add new domain types,
+see the [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]] skill. To understand how tenants and parties are
+isolated at the messaging layer, see [[id:4E762126-2152-11F1-B1D1-40B0768014EB][NATS multi-tenancy and multi-party design]].
 
 * Detail
 
 ** ores.refdata
 
-Reference data — currencies, countries, coding schemes, FpML taxonomy,
-and market conventions. The foundational data set that all other domain
-services read; it is always a dependency, never a dependent.
+Reference data — currencies, countries, coding schemes, FpML taxonomy, and
+market conventions. The foundational data set that all other domain services
+read; it is always a dependency, never a dependent.
 
-| Sub-component           | Role                                          | Dependencies                                  |
-|-------------------------+-----------------------------------------------+-----------------------------------------------|
-| [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]]        | Shared reference data types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                        |
-| [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata.core]]       | CRUD, validation, coding scheme resolution    | [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]         |
-| [[id:E75568D2-588A-4FE2-9ED1-6826B60C0E10][ores.refdata.service]]    | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                  | [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]             |
+| Sub-component        | Role                                               | Dependencies                    |
+|----------------------+----------------------------------------------------+---------------------------------|
+| [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]]     | Shared reference data types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                               |
+| [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata.core]]    | CRUD, validation, coding scheme resolution         | [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
+| [[id:E75568D2-588A-4FE2-9ED1-6826B60C0E10][ores.refdata.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                          | [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]    |
 
-- [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — how pricing configurations relate to reference data entities.
+Related documents:
+
+- [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — how pricing configurations relate to reference data
+  entities.
 - [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]] — FpML coding scheme taxonomy and resolution logic.
-- [[id:7A3D1E52-B8F4-4C91-A9E7-6F2C3D841B05][Librarian party & counterparty publication design]] — how reference data is propagated across party boundaries.
+- [[id:7A3D1E52-B8F4-4C91-A9E7-6F2C3D841B05][Librarian party & counterparty publication design]] — how reference data is
+  propagated across party boundaries.
 
 ** ores.iam
 
 Identity and access management — account lifecycle, login with
 password/scrypt/SSO, session tracking with geolocation, and role-based
-authorisation. Multi-tenancy (tenant isolation) and multi-party
-(party-scoped data access) are both enforced here before any domain
-request is processed.
+authorisation. Multi-tenancy (tenant isolation) and multi-party (party-scoped
+data access) are both enforced here before any domain request is processed.
 
-| Sub-component        | Role                                          | Dependencies                                        |
-|----------------------+-----------------------------------------------+-----------------------------------------------------|
-| [[id:4E0DC581-D74D-4BD1-87D2-7F524A36D20C][ores.iam.api]]         | Shared IAM types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol    | —                                                   |
-| [[id:28A7AF22-1EB1-4989-B4BD-A383D09605F3][ores.iam.client]]      | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] client for IAM — login, session, RBAC | [[id:4E0DC581-D74D-4BD1-87D2-7F524A36D20C][ores.iam.api]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                 |
-| [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]]        | Account lifecycle, RBAC, session management   | [[id:4E0DC581-D74D-4BD1-87D2-7F524A36D20C][ores.iam.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]]     |
-| [[id:70F2D886-BB3F-4FE0-929C-45509E1CE967][ores.iam.service]]     | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                  | [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                     |
+| Sub-component    | Role                                            | Dependencies                               |
+|------------------+-------------------------------------------------+--------------------------------------------|
+| [[id:4E0DC581-D74D-4BD1-87D2-7F524A36D20C][ores.iam.api]]     | Shared IAM types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol         | —                                          |
+| [[id:28A7AF22-1EB1-4989-B4BD-A383D09605F3][ores.iam.client]]  | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] client for IAM — login, session, RBAC | [[id:4E0DC581-D74D-4BD1-87D2-7F524A36D20C][ores.iam.api]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                    |
+| [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]]    | Account lifecycle, RBAC, session management     | [[id:4E0DC581-D74D-4BD1-87D2-7F524A36D20C][ores.iam.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]] |
+| [[id:70F2D886-BB3F-4FE0-929C-45509E1CE967][ores.iam.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                       | [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                   |
+
+Related documents:
 
 - [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — IAM concepts and the account/session model.
-- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — RBAC graph, permission assignment, and enforcement.
-- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — how tenant isolation is implemented in ores.iam.core.
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — RBAC graph, permission assignment, and
+  enforcement.
+- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — how tenant isolation is implemented in
+  ores.iam.core.
 - [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]] — multi-party login flow and party-scoped data access.
 
 ** ores.dq
 
-Data quality — provenance, validation metadata, change management, and
-DQ-6 governance. Owns the =publish-from-dq= cross-service write pattern:
-target services expose =<service>.v1.<entity>.publish-from-dq= subjects
-so DQ can initiate writes without violating service table isolation.
+Data quality — provenance, validation metadata, change management, and DQ-6
+governance. Owns the =publish-from-dq= cross-service write pattern: target
+services expose =<service>.v1.<entity>.publish-from-dq= subjects so DQ can
+initiate writes without violating service table isolation.
 
-| Sub-component      | Role                                          | Dependencies                              |
-|--------------------+-----------------------------------------------+-------------------------------------------|
-| [[id:FFCFC860-204D-4F48-AE34-D3E382D7A02B][ores.dq.api]]        | Shared DQ types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol     | —                                         |
-| [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq.core]]       | DQ rules, provenance tracking, governance     | [[id:FFCFC860-204D-4F48-AE34-D3E382D7A02B][ores.dq.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]             |
-| [[id:FA64A6DE-7010-4FD8-A1F8-D153B3CD96A9][ores.dq.service]]    | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                  | [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]               |
+| Sub-component   | Role                                      | Dependencies               |
+|-----------------+-------------------------------------------+----------------------------|
+| [[id:FFCFC860-204D-4F48-AE34-D3E382D7A02B][ores.dq.api]]     | Shared DQ types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol    | —                          |
+| [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq.core]]    | DQ rules, provenance tracking, governance | [[id:FFCFC860-204D-4F48-AE34-D3E382D7A02B][ores.dq.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
+| [[id:FA64A6DE-7010-4FD8-A1F8-D153B3CD96A9][ores.dq.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                 | [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]    |
+
+Related documents:
 
 - [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data Quality]] — DQ-6 governance model, provenance design, and the publish-from-dq pattern.
 
 ** ores.fpml
 
-FpML processing infrastructure — parsing, validating, and serialising
-financial product XML. The FpML schema defines every instrument family;
-ores.fpml translates between FpML XML and ORE Studio internal types.
+FpML processing infrastructure — parsing, validating, and serialising financial
+product XML. The FpML schema defines every instrument family; ores.fpml
+translates between FpML XML and ORE Studio internal types.
 
-| Sub-component  | Role                                            | Dependencies                |
-|----------------+-------------------------------------------------+-----------------------------|
-| [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]]      | FpML XML parsing, validation, serialisation     | [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]]                |
+| Sub-component | Role                                        | Dependencies |
+|---------------+---------------------------------------------+--------------|
+| [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]]     | FpML XML parsing, validation, serialisation | [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]] |
+
+Related documents:
 
 - [[id:FCC3BBA5-DFA3-17F4-69B3-B7958C05B1F8][Financial Products Markup Language]] — the FpML standard and how ORE Studio uses it.
 - [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]] — how FpML coding schemes are mapped to ores.refdata entities.
 
 ** ores.ore
 
-ORE XML import/export — converts between [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine]] XML
-format and ORE Studio domain types. The bridge between the ORE Engine
-computation layer and ORE Studio's domain model.
+| Sub-component    | Role                                    | Dependencies                           |
+|------------------+-----------------------------------------+----------------------------------------|
+| [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]]     | Shared ORE types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                      |
+| [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]]    | ORE XML parsing, domain type conversion | [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]] |
+| [[id:EF8FD20D-0B9C-4379-8BBD-B4FCF2F5F0C7][ores.ore.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint               | [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]               |
 
-| Sub-component      | Role                                          | Dependencies                                    |
-|--------------------+-----------------------------------------------+-------------------------------------------------|
-| [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]]       | Shared ORE types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol     | —                                               |
-| [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]]      | ORE XML parsing, domain type conversion       | [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]]     |
-| [[id:EF8FD20D-0B9C-4379-8BBD-B4FCF2F5F0C7][ores.ore.service]]   | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                  | [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                   |
+ORE XML import/export — converts between [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine]] XML qformat and
+ORE Studio domain types. The bridge between the ORE Engine computation layer and
+ORE Studio's domain model.
+
+Related documents:
 
 - [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the ORE XML model configuration format used for scenario runs.
 
 ** ores.trading
 
-Trade booking and lifecycle — FSM-enforced trade status transitions,
-portfolio and book management, and trade blotters. Every trade enters
-the system through ores.trading.core and is tracked through its full
-lifecycle from booking to settlement.
+Trade booking and lifecycle — FSM-enforced trade status transitions, portfolio
+and book management, and trade blotters. Every trade enters the system through
+ores.trading.core and is tracked through its full lifecycle from booking to
+settlement.
 
-| Sub-component         | Role                                          | Dependencies                                          |
-|-----------------------+-----------------------------------------------+-------------------------------------------------------|
-| [[id:FD34A3B5-0E24-467A-A9D7-A2F2E7480E1B][ores.trading.api]]      | Shared trade types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol    | —                                                     |
-| [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading.core]]     | Trade FSM, portfolio/book management          | [[id:FD34A3B5-0E24-467A-A9D7-A2F2E7480E1B][ores.trading.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]]  |
-| [[id:0EBAD7F6-F0DF-4FF5-8404-C3F0EA8E8BBD][ores.trading.service]]  | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                  | [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                     |
+| Sub-component        | Role                                      | Dependencies                                      |
+|----------------------+-------------------------------------------+---------------------------------------------------|
+| [[id:FD34A3B5-0E24-467A-A9D7-A2F2E7480E1B][ores.trading.api]]     | Shared trade types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                                 |
+| [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading.core]]    | Trade FSM, portfolio/book management      | [[id:FD34A3B5-0E24-467A-A9D7-A2F2E7480E1B][ores.trading.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]] |
+| [[id:0EBAD7F6-F0DF-4FF5-8404-C3F0EA8E8BBD][ores.trading.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                 | [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                      |
+
+Related documents:
 
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — trade lifecycle, blotter design, and FSM state transitions.
 - [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]] — how P&L is computed and attributed across trading books.
@@ -121,105 +131,109 @@ lifecycle from booking to settlement.
 
 ** ores.marketdata
 
-Market data — series, observations, fixings, yield curves, and
-volatility surfaces. The data that flows into ORE Engine scenarios:
-curve shapes, vol surfaces, and fixing histories.
+Market data — series, observations, fixings, yield curves, and volatility
+surfaces. The data that flows into ORE Engine scenarios: curve shapes, vol
+surfaces, and fixing histories.
 
-| Sub-component              | Role                                          | Dependencies                                  |
-|----------------------------+-----------------------------------------------+-----------------------------------------------|
-| [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]]        | Shared market data types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]]                         |
-| [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata.core]]       | Series, observations, curve/surface storage   | [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]         |
-| [[id:57182ECE-6364-421A-A46F-73841F9961B4][ores.marketdata.service]]    | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                  | [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]             |
+| Sub-component           | Role                                            | Dependencies                       |
+|-------------------------+-------------------------------------------------+------------------------------------|
+| [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]]     | Shared market data types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]]                   |
+| [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata.core]]    | Series, observations, curve/surface storage     | [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
+| [[id:57182ECE-6364-421A-A46F-73841F9961B4][ores.marketdata.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                       | [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]    |
 
-- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — yield curve structure, interpolation, and storage model.
+Related documents:
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — yield curve structure, interpolation, and storage
+  model.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — vol surface design and calibration data model.
-- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — tenor conventions and time structure model used throughout market data.
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — tenor conventions and time structure model used
+  throughout market data.
 
 ** ores.synthetic
 
-Synthetic market data and scenario generation for stress testing and
-demo environments. Produces complete, internally consistent market data
-sets without requiring real market feeds.
+Synthetic market data and scenario generation for stress testing and demo
+environments. Produces complete, internally consistent market data sets without
+requiring real market feeds.
 
-| Sub-component             | Role                                          | Dependencies                                              |
-|---------------------------+-----------------------------------------------+-----------------------------------------------------------|
-| [[id:44039E5B-3435-4BCB-824F-3990AF341FBE][ores.synthetic.api]]        | Shared synthetic data types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                                    |
-| [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]]       | Scenario generation, curve/surface synthesis  | [[id:44039E5B-3435-4BCB-824F-3990AF341FBE][ores.synthetic.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]]   |
-| [[id:702753E8-0E07-4690-AFAB-D75514ADE660][ores.synthetic.service]]    | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                  | [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                         |
+| Sub-component          | Role                                               | Dependencies                                           |
+|------------------------+----------------------------------------------------+--------------------------------------------------------|
+| [[id:44039E5B-3435-4BCB-824F-3990AF341FBE][ores.synthetic.api]]     | Shared synthetic data types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                                      |
+| [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]]    | Scenario generation, curve/surface synthesis       | [[id:44039E5B-3435-4BCB-824F-3990AF341FBE][ores.synthetic.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]] |
+| [[id:702753E8-0E07-4690-AFAB-D75514ADE660][ores.synthetic.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                          | [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                         |
 
 ** ores.assets
 
-Binary asset storage with hierarchical tagging and CRUD management.
-Stores images, attachments, and other binary content associated with
-domain entities.
+| Sub-component       | Role                                      | Dependencies                   |
+|---------------------+-------------------------------------------+--------------------------------|
+| [[id:34DDEE6A-915F-404B-8721-01376903D3E4][ores.assets.api]]     | Shared asset types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                              |
+| [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets.core]]    | Asset CRUD, tagging, hierarchical storage | [[id:34DDEE6A-915F-404B-8721-01376903D3E4][ores.assets.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
+| [[id:6D1AA78F-F37B-4030-B32C-B8B5EB4B0EEE][ores.assets.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                 | [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]    |
 
-| Sub-component        | Role                                          | Dependencies                                  |
-|----------------------+-----------------------------------------------+-----------------------------------------------|
-| [[id:34DDEE6A-915F-404B-8721-01376903D3E4][ores.assets.api]]      | Shared asset types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol    | —                                             |
-| [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets.core]]     | Asset CRUD, tagging, hierarchical storage     | [[id:34DDEE6A-915F-404B-8721-01376903D3E4][ores.assets.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]             |
-| [[id:6D1AA78F-F37B-4030-B32C-B8B5EB4B0EEE][ores.assets.service]]  | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                  | [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]               |
+Binary asset storage with hierarchical tagging and CRUD management. Stqores
+images, attachments, and other binary content associated with domain entities.
 
 ** ores.storage
 
 File storage abstractions — local filesystem paths and HTTP-based remote
-storage. Used by the compute layer to stage ORE Engine input and output
-files between runs.
+storage. Used by the compute layer to stage ORE Engine input and output files
+between runs.
 
-| Sub-component  | Role                                          | Dependencies                              |
-|----------------+-----------------------------------------------+-------------------------------------------|
-| [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]]   | File staging abstraction for compute jobs     | [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]               |
+| Sub-component | Role                                      | Dependencies             |
+|---------------+-------------------------------------------+--------------------------|
+| [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]]  | File staging abstraction for compute jobs | [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] |
 
 ** ores.scheduler
 
-Task scheduling for compute jobs — wraps =pg_cron= to schedule ORE
-scenario runs and report generation at defined intervals or calendar
-times.
+Task scheduling for compute jobs — wraps =pg_cron= to schedule ORE scenario runs
+and report generation at defined intervals or calendar times.
 
-| Sub-component            | Role                                          | Dependencies                                  |
-|--------------------------+-----------------------------------------------+-----------------------------------------------|
-| [[id:B49ED6E9-20DC-421F-A0F9-D7EAB6B54F9B][ores.scheduler.api]]       | Shared scheduler types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                             |
-| [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler.core]]      | pg_cron integration, schedule management      | [[id:B49ED6E9-20DC-421F-A0F9-D7EAB6B54F9B][ores.scheduler.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]         |
-| [[id:86B4ECD8-FF01-438A-99BB-55B4CA523AED][ores.scheduler.service]]   | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                  | [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]             |
+| Sub-component          | Role                                          | Dependencies                      |
+|------------------------+-----------------------------------------------+-----------------------------------|
+| [[id:B49ED6E9-20DC-421F-A0F9-D7EAB6B54F9B][ores.scheduler.api]]     | Shared scheduler types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                 |
+| [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler.core]]    | pg_cron integration, schedule management      | [[id:B49ED6E9-20DC-421F-A0F9-D7EAB6B54F9B][ores.scheduler.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
+| [[id:86B4ECD8-FF01-438A-99BB-55B4CA523AED][ores.scheduler.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                     | [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]    |
 
 ** ores.reporting
 
 Report execution and result persistence — runs ORE Engine output through
-configured report definitions and stores the results for retrieval by
-the analytics and UI layers.
+configured report definitions and stores the results for retrieval by the
+analytics and UI layers.
 
-| Sub-component            | Role                                          | Dependencies                                          |
-|--------------------------+-----------------------------------------------+-------------------------------------------------------|
-| [[id:E5AC5738-0694-494E-823E-0322F4902AD2][ores.reporting.api]]       | Shared reporting types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                                     |
-| [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting.core]]      | Report definition, execution, result storage  | [[id:E5AC5738-0694-494E-823E-0322F4902AD2][ores.reporting.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]]  |
-| [[id:544947D0-7E23-4145-8F62-EC8341ED42FF][ores.reporting.service]]   | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                  | [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                     |
+| Sub-component          | Role                                          | Dependencies                                        |
+|------------------------+-----------------------------------------------+-----------------------------------------------------|
+| [[id:E5AC5738-0694-494E-823E-0322F4902AD2][ores.reporting.api]]     | Shared reporting types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                                   |
+| [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting.core]]    | Report definition, execution, result storage  | [[id:E5AC5738-0694-494E-823E-0322F4902AD2][ores.reporting.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]] |
+| [[id:544947D0-7E23-4145-8F62-EC8341ED42FF][ores.reporting.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                     | [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                      |
+
+Related documents:
 
 - [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] — report execution design and the relationship between report definitions and ORE output.
 - [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]] — how P&L reports are structured and attributed.
 
 ** ores.analytics
 
-Risk analytics results and aggregation — NPV, sensitivities, Greeks,
-and scenario analysis. Consumes ores.reporting output and provides the
-query layer for the analytics UI.
+Risk analytics results and aggregation — NPV, sensitivities, Greeks, and
+scenario analysis. Consumes ores.reporting output and provides the query layer
+for the analytics UI.
 
-| Sub-component            | Role                                          | Dependencies                                          |
-|--------------------------+-----------------------------------------------+-------------------------------------------------------|
-| [[id:66D3F1D6-1926-40CF-BCF5-AA42F14AD6D5][ores.analytics.api]]       | Shared analytics types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                                     |
-| [[id:BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5][ores.analytics.core]]      | NPV, sensitivity, scenario aggregation        | [[id:66D3F1D6-1926-40CF-BCF5-AA42F14AD6D5][ores.analytics.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]]  |
-| [[id:E5952F27-53BD-4C4D-85CD-556B6421B768][ores.analytics.service]]   | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                  | [[id:BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5][ores.analytics.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                     |
+| Sub-component          | Role                                          | Dependencies                                        |
+|------------------------+-----------------------------------------------+-----------------------------------------------------|
+| [[id:66D3F1D6-1926-40CF-BCF5-AA42F14AD6D5][ores.analytics.api]]     | Shared analytics types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                                   |
+| [[id:BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5][ores.analytics.core]]    | NPV, sensitivity, scenario aggregation        | [[id:66D3F1D6-1926-40CF-BCF5-AA42F14AD6D5][ores.analytics.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]] |
+| [[id:E5952F27-53BD-4C4D-85CD-556B6421B768][ores.analytics.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                     | [[id:BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5][ores.analytics.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                      |
 
 ** ores.workflow
 
-Workflow management for multi-step compute pipelines — tracks pipeline
-state, retries failed steps, and signals completion. Works with
-ores.scheduler and ores.compute to orchestrate end-to-end valuation
-runs. See [[id:CEAD2E6A-8C12-489F-B64A-652EE2B81811][Workspace design]] for how workspaces scope workflow execution.
+Workflow management for multi-step compute pipelines — tracks pipeline state,
+retries failed steps, and signals completion. Works with ores.scheduler and
+ores.compute to orchestrate end-to-end valuation runs. See [[id:CEAD2E6A-8C12-489F-B64A-652EE2B81811][Workspace design]] for
+how workspaces scope workflow execution.
 
-| Sub-component            | Role                                          | Dependencies                                  |
-|--------------------------+-----------------------------------------------+-----------------------------------------------|
-| [[id:85319483-4AE9-4162-91F7-D72A8201134B][ores.workflow.api]]        | Shared workflow types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                             |
-| [[id:440294D7-385D-41EE-92CB-CAB937E65E81][ores.workflow.core]]       | Pipeline state machine, step tracking, retry  | [[id:85319483-4AE9-4162-91F7-D72A8201134B][ores.workflow.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]         |
-| [[id:1AF4AEC8-70EC-496C-821E-4E2E1BB303E5][ores.workflow.service]]    | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                  | [[id:440294D7-385D-41EE-92CB-CAB937E65E81][ores.workflow.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]             |
+| Sub-component         | Role                                         | Dependencies                     |
+|-----------------------+----------------------------------------------+----------------------------------|
+| [[id:85319483-4AE9-4162-91F7-D72A8201134B][ores.workflow.api]]     | Shared workflow types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                |
+| [[id:440294D7-385D-41EE-92CB-CAB937E65E81][ores.workflow.core]]    | Pipeline state machine, step tracking, retry | [[id:85319483-4AE9-4162-91F7-D72A8201134B][ores.workflow.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
+| [[id:1AF4AEC8-70EC-496C-821E-4E2E1BB303E5][ores.workflow.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                    | [[id:440294D7-385D-41EE-92CB-CAB937E65E81][ores.workflow.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]    |
 
 * See also
 

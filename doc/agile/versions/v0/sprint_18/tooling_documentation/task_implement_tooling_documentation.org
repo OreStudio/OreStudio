@@ -9,7 +9,7 @@
 #+filetags: :tooling_documentation:sprint_18:v0:
 #+owner: marco
 #+branch: feature/tooling-documentation
-#+pr: 903
+#+pr: 907
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
@@ -38,11 +38,11 @@ The Tooling section in =knowledge.org= must also link to [[id:6F7A122F-BC0F-4F3E
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] |
-| Now          | Not yet started.                       |
+| Now          | Implementing Tooling section and developer scripts doc. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Open PR.                               |
 | Last touched | 2026-05-28                               |
 
 * Acceptance
@@ -63,12 +63,14 @@ task closes. Plans do not outlive their task.)
 
 | PR  | Title                                                 |
 |-----+-------------------------------------------------------|
-| 903 | [agile] Scaffold tooling documentation story (sprint 18) |
+| 903 | [agile] Scaffold tooling documentation story (sprint 18)           |
+| 907 | [doc] Add Tooling section to knowledge.org and developer scripts doc |
 
 * Review
 
 | # | Comment summary                               | File                                     | Decision | Notes                      |
 |---+-----------------------------------------------+------------------------------------------+----------+----------------------------|
-| 1 | Acceptance criteria section empty (all 4 tasks) | task_implement_tooling_documentation.org | Accept   | Fixed in 8ef145efe          |
+| 1 | Acceptance criteria section empty (all 4 tasks)              | task_implement_tooling_documentation.org | Accept  | Fixed in 8ef145efe           |
+| 2 | Inconsistent script naming (hyphens vs underscores)           | developer_scripts.org                    | Decline | Doc reflects actual filenames; rename is a separate task. |
 
 * Result

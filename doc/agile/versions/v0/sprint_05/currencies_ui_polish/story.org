@@ -39,19 +39,11 @@ single =save_currency= message; ship a Qt dialog for XML import.
 
 * Tasks
 
-In execution order:
-
-- [[id:88C04494-05AD-4CD3-B599-80924AEA8595][Add JSON parsing support for currency]]
-- [[id:C905CE58-8EB6-4713-8205-3E55CE7A3C70][Merge update and create currency messages]]
-- [[id:0879D701-7C3E-494A-9252-217DCECED40F][Implement import dialog for XML import in Qt]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Opening and closing currencies does not work.
-- Delete currency only deletes single currency.
-- Add pagination support.
-- Implement basic XML import XML in Qt (paired with the dialog
-  task).
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:88C04494-05AD-4CD3-B599-80924AEA8595][Add JSON parsing support for currency]] | DONE | 2025-11-28 | 2025-11-28 | Currencies can already round-trip through XML; add JSON round-trip via reflect-cpp for parity. |
+| [[id:C905CE58-8EB6-4713-8205-3E55CE7A3C70][Merge update and create currency messages]] | DONE | 2025-11-28 | 2025-11-28 | Bitemporal repositories always insert, so the create/update split was never semantically necessary. Collapse to a single save_currency message. |
+| [[id:0879D701-7C3E-494A-9252-217DCECED40F][Implement import dialog for XML import in Qt]] | DONE | 2025-11-28 | 2025-11-28 | Qt-side XML import: choose a file, parse, preview, commit. Wraps the existing XML import path with a GUI. |
 
 * Decisions
 

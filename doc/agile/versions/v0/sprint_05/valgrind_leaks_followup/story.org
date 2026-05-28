@@ -44,11 +44,11 @@ Continued from: [[id:1A411B50-2C3A-4248-9AE7-59A835EF6774][Logging and observabi
 
 * Tasks
 
-In execution order:
-
-- [[id:C4AAFE26-A61F-48C1-9F8D-00C64898CA17][Resolve all of the OpenSSL leaks in Valgrind]]
-- [[id:7D95A76C-F755-44C4-84FA-A00C0E263573][Investigate Valgrind leak on sqlgen]]
-- [[id:0CD5F988-F59C-47A4-869F-7FEC3B5416EC][Fix Valgrind leaks for comms tests]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C4AAFE26-A61F-48C1-9F8D-00C64898CA17][Resolve all of the OpenSSL leaks in Valgrind]] | DONE | 2025-11-25 | 2025-11-25 | Suppress the OpenSSL initialisation leaks (LLM-confirmed as benign) — closes sprint 03's BLOCKED follow-up. |
+| [[id:7D95A76C-F755-44C4-84FA-A00C0E263573][Investigate Valgrind leak on sqlgen]] | DONE | 2025-11-25 | 2025-11-25 | Triage the remaining sqlgen-flavoured leaks; confirm upstream fixes have landed. |
+| [[id:0CD5F988-F59C-47A4-869F-7FEC3B5416EC][Fix Valgrind leaks for comms tests]] | DONE | 2025-11-25 | 2025-11-25 | Real leaks surfaced in the ores.comms test suite; fix them and confirm Valgrind is clean. |
 
 * Decisions
 

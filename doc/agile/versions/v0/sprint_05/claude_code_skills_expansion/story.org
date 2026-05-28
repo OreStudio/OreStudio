@@ -40,15 +40,11 @@ off the backlog, and project-planning support borrowed from Dogen.
 
 * Tasks
 
-In execution order:
-
-- [[id:79B815F3-9A40-49D5-A7DC-DE2EB1099934][Create a Claude Code skill to open a new sprint]]
-- [[id:C9E69A10-8DE8-49C3-ACD2-4C470059E947][Add skill to generate release notes]]
-- [[id:BFB7FB18-06B9-451F-B0D4-D4D47EEDD771][Add support for project planning]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- POSTPONED: Troubleshoot skills in Claude.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:79B815F3-9A40-49D5-A7DC-DE2EB1099934][Create a Claude Code skill to open a new sprint]] | DONE | 2025-11-17 | 2025-11-17 | Skill that updates version strings, copies the backlog template, and creates the next sprint backlog file. |
+| [[id:C9E69A10-8DE8-49C3-ACD2-4C470059E947][Add skill to generate release notes]] | DONE | 2025-11-17 | 2025-11-17 | Skill that produces release notes from a sprint backlog automatically. |
+| [[id:BFB7FB18-06B9-451F-B0D4-D4D47EEDD771][Add support for project planning]] | DONE | 2025-11-17 | 2025-11-17 | Bring across the Dogen-style project-planning approach (Gantt-style milestones in org-mode) and a supporting skill. |
 
 * Decisions
 

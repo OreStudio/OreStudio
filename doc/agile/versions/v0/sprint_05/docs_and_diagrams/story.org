@@ -39,16 +39,10 @@ diagram so org-roam navigation picks them up.
 
 * Tasks
 
-In execution order:
-
-- [[id:7ED4E6E3-BEEC-458D-BBCA-F4415DD0E443][Update all UML diagrams after shell changes]]
-- [[id:C37DC0D8-F9FD-489D-A661-4B262F3037C5][Add links to UML diagrams]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Minor updates to UML diagrams.
-- Documentation fixes.
-- Fix site links to main page.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7ED4E6E3-BEEC-458D-BBCA-F4415DD0E443][Update all UML diagrams after shell changes]] | DONE | 2025-12-01 | 2025-12-01 | Refresh per-component UML diagrams to reflect the entity-first CLI restructure and merged currency messages. |
+| [[id:C37DC0D8-F9FD-489D-A661-4B262F3037C5][Add links to UML diagrams]] | DONE | 2025-12-01 | 2025-12-01 | Each component model now links to its PlantUML diagram from the org-roam graph. |
 
 * Decisions
 

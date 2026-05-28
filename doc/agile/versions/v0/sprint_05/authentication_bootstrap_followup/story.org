@@ -50,15 +50,11 @@ and heartbeat.
 
 * Tasks
 
-In execution order:
-
-- [[id:68777EF7-8D69-4985-88A1-6363EA5EBEE9][Implement authentication bootstrap workflow]]
-- [[id:A2EAFE45-EB1F-4771-B053-4E996B78403C][Implement delete account]]
-- [[id:21FB0404-F5BE-40C4-B9DE-0D703025518F][Split feature flags out of accounts]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- POSTPONED: Implement session cancellation.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:68777EF7-8D69-4985-88A1-6363EA5EBEE9][Implement authentication bootstrap workflow]] | DONE | 2025-11-22 | 2025-11-22 | Implement the bootstrap workflow that creates the first admin account on a fresh database; POSTPONED in sprint 03. |
+| [[id:A2EAFE45-EB1F-4771-B053-4E996B78403C][Implement delete account]] | DONE | 2025-11-22 | 2025-11-22 | Add a delete-account flow end-to-end: protocol message, repository bitemporal soft delete, CLI command. |
+| [[id:21FB0404-F5BE-40C4-B9DE-0D703025518F][Split feature flags out of accounts]] | DONE | 2025-11-22 | 2025-11-22 | Extract feature flags from ores.accounts into their own component so they can be managed independently. |
 
 * Decisions
 

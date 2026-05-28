@@ -39,21 +39,10 @@ across console and Qt.
 
 * Tasks
 
-In execution order:
-
-- [[id:9AC0485F-8F7B-4C15-A60B-8EA9F6C7A439][Add a detached mode]]
-- [[id:1D788878-759E-402B-A948-0F035CDA9BF2][Implement database configuration]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Version of =ores.qt= does not update (build-system issue with
-  duplicated version files after the header/impl split).
-- Uninformative incompatible protocol-version error in Qt (paired
-  with the merged-currency-messages work).
-- Update enums in message types to use magic enums.
-- Tidy-up database code.
-- Add support for offsets in sqlgen.
-- Copy across icons and other assets to package.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9AC0485F-8F7B-4C15-A60B-8EA9F6C7A439][Add a detached mode]] | DONE | 2025-11-20 | 2025-11-20 | Default sub-window mode setting (attached / detached) so new windows respect the user's preference. |
+| [[id:1D788878-759E-402B-A948-0F035CDA9BF2][Implement database configuration]] | DONE | 2025-11-20 | 2025-11-20 | Replace hard-coded database settings with configuration: CLI flags + env vars + config file, in both console and Qt UI. |
 
 * Decisions
 

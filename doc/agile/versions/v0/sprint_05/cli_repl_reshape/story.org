@@ -47,18 +47,11 @@ validation snags and top-level shell login/logout land there.
 
 * Tasks
 
-In execution order:
-
-- [[id:BECA4987-76D8-43AC-B62C-F32EAD34E44D][Reorganise CLI structure by entity]]
-- [[id:7F80B71D-B377-472F-8537-D1801556EE3F][Update ores.shell with REPL commands for all entities]]
-- [[id:D7591EF4-3BF5-486A-A356-5CFA4DFDCC70][REPL needs synchronous socket operations]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Consider renaming =client= to =repl= (done).
-- CANCELLED: Split console recipes by entity (rolled into the
-  reorganisation work).
-- CANCELLED: Create a /request response/ helper.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BECA4987-76D8-43AC-B62C-F32EAD34E44D][Reorganise CLI structure by entity]] | DONE | 2025-11-25 | 2025-11-25 | Switch from import/export-first to entity-first: ./ores.cli currencies export rather than ./ores.cli export --entity currencies. |
+| [[id:7F80B71D-B377-472F-8537-D1801556EE3F][Update ores.shell with REPL commands for all entities]] | DONE | 2025-11-25 | 2025-11-25 | Expand the REPL so every domain entity has the standard verb set (list, add, delete, import, export). |
+| [[id:D7591EF4-3BF5-486A-A356-5CFA4DFDCC70][REPL needs synchronous socket operations]] | DONE | 2025-11-25 | 2025-11-25 | Replace async socket calls in the REPL with synchronous ones to match the interactive command flow. |
 
 * Decisions
 

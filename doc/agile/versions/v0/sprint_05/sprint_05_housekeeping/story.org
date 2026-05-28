@@ -37,11 +37,11 @@ and an OCR of paper notebook sketches used during design sessions.
 
 * Tasks
 
-In execution order:
-
-- [[id:9E386DEB-2DCE-4F97-A0B9-C38240EC4752][Sprint and product backlog refinement]]
-- [[id:477DBA5E-17AF-4218-87DB-8A6D52477ABA][Add AI-generated sprint summary]]
-- [[id:CDDCCA59-32E3-4A69-8820-15E8B8B2E047][OCR scan notebooks for this sprint]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9E386DEB-2DCE-4F97-A0B9-C38240EC4752][Sprint and product backlog refinement]] | DONE | 2025-12-01 | 2025-12-01 | Maintain sprint 05 backlog and groom product backlog as work surfaces new items. |
+| [[id:477DBA5E-17AF-4218-87DB-8A6D52477ABA][Add AI-generated sprint summary]] | DONE | 2025-12-01 | 2025-12-01 | Have an LLM produce a human-readable summary from the sprint backlog; ship as a skill so future sprints can reuse it. |
+| [[id:CDDCCA59-32E3-4A69-8820-15E8B8B2E047][OCR scan notebooks for this sprint]] | DONE | 2025-12-01 | 2025-12-01 | Capture the paper notebook pages used during sprint 05 design discussions as searchable text. |
 
 * Decisions
 

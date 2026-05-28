@@ -4,7 +4,6 @@
 #+title: Story: Service lifecycle controller
 #+description: ores.controller component for managing service definitions + instances + lifecycle events; service dashboard polish; normalise all services to NATS-based hosting with unified heartbeat; menu restructure.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :controller:services:lifecycle:dashboard:nats:sprint_16:v0:
 #+created: 2026-05-20

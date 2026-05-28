@@ -4,7 +4,6 @@
 #+title: How do I fix a failing CI check?
 #+description: Identify the failing check via gh, read the run log, apply the fix as a new commit, and push.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :github:pr:ci:gh:recipe:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Task: Reporting UI: cron widget, party codename plan
 #+description: Qt UI for report types / concurrency policies / report definitions / instances (MDI windows, detail dialogs, history); CronExpressionWidget + CronEditorDialog; scheduling backend message handlers leveraging pg_cron + pgmq; party codename design plan; tenant provisioning wizard gains initial-report-definition step; new icons (Arrow Trending, Chart Multiple, Tasks App).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :reporting:qt:cron:codename:wizard:reporting_subsystem:sprint_14:v0:
 #+owner: marco

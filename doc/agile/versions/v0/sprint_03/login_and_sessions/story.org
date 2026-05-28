@@ -4,7 +4,6 @@
 #+title: Story: Login and sessions
 #+description: Account and session domain types end-to-end across client, server, and Postgres.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :login:accounts:sessions:sprint_03:v0:
 #+created: 2025-11-20

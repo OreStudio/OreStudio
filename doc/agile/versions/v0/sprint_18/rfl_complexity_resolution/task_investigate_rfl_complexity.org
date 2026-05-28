@@ -4,7 +4,6 @@
 #+title: Task: Investigate RFL complexity root cause
 #+description: Analyze the root cause of Clang and MSVC compilation failures related to reflect-cpp complexity.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :investigation:reflect_cpp:rfl_complexity_resolution:sprint_18:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Move DataLibrarianWindow and publish dialogs from mktdata to refdata
 #+description: Data Librarian moves from Mktdata plugin to Refdata plugin: window management, menu actions, lifecycle cleanup.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:plugins:refdata:mktdata:refactor:qt_plugin_architecture:sprint_16:v0:
 #+owner: marco

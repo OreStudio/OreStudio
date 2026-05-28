@@ -4,7 +4,6 @@
 #+title: Task: Decompose trade into rfl::Flatten sub-structs to fix MSVC C1202
 #+description: - Root cause: MSVC C1202 fires in any TU that reflects both `get_trades_response` (a `vector<trade>`) and another large 
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :msvc_c1202_fix:sprint_17:v0:
 #+owner: marco

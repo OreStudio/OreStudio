@@ -4,7 +4,6 @@
 #+title: S1 Agent
 #+description: The function of System 1 — the Claude subagent that picks up a single task and lands a PR for it.
 #+type: function
-#+version: 2
 #+level: s1
 #+filetags: :function:s1:agent:operations:
 #+created: 2026-05-21

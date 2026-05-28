@@ -4,7 +4,6 @@
 #+title: How do I add a new change reason category?
 #+description: Add a new change reason category
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:change_reason_categories:
 #+created: 2026-05-21

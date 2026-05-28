@@ -4,7 +4,6 @@
 #+title: How do I generate PlantUML diagrams?
 #+description: Build all PlantUML diagrams with the `mad` target, or a single component's diagram with `generate_<comp>_diagram`.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :cmake:build:plantuml:diagrams:recipe:
 #+created: 2026-05-18

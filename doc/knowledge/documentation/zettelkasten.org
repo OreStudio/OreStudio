@@ -4,7 +4,6 @@
 #+title: Zettelkasten
 #+description: The Zettelkasten note-taking method — atomic notes, unique identifiers, and emergent structure — as applied to the ORE Studio knowledge graph.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :zettelkasten:documentation:knowledge:org_roam:
 #+created: 2026-05-28

@@ -4,7 +4,6 @@
 #+title: Add a delete all button which deletes all currencies
 #+description: Add a delete all button which deletes all currencies
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

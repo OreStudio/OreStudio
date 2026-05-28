@@ -4,7 +4,6 @@
 #+title: Task: Add database command-line arguments to service
 #+description: Expose database connection parameters as CLI flags for the service runtime.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :cli:postgres:service:postgres_currency_persistence:sprint_03:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: FX trade UX improvements: tabs, currency pairs, rate computation
 #+description: Split the FX forward product into tabs for clarity; introduce a currency pair concept so users select a pair not two individual currencies; compute rate automatically from notional amounts.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :ui:trades:ux:
 #+created: 2026-05-22

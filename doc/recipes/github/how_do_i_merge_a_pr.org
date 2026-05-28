@@ -4,7 +4,6 @@
 #+title: How do I merge a PR?
 #+description: Merge an approved, green PR via the gh CLI and clean up the feature branch.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :github:pr:merge:gh:recipe:
 #+created: 2026-05-21

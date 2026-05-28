@@ -2,7 +2,6 @@
 :ID: 7A3D1E52-B8F4-4C91-A9E7-6F2C3D841B05
 :END:
 #+title: Librarian Party & Counterparty Publication Design
-#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

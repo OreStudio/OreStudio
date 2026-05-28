@@ -4,7 +4,6 @@
 #+title: Task: Add bound parameters to sqlgen
 #+description: Replace remaining libpq escapes for SQL-injection-safe queries with native sqlgen bound parameters.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sqlgen:upstream:security:bound_params:sqlgen_improvements:sprint_11:v0:
 #+owner: marco

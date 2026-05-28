@@ -4,7 +4,6 @@
 #+title: Add action type to trades
 #+description: Add action type to trades
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Versions
 #+description: Index of every ORE Studio version — what each is for, when it ran, and which sprints compose it.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :versions:index:knowledge:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Story: Build stabilisation 3
 #+description: Windows clang-cl, dynamic libraries, vcpkg patching on Windows, Postgres in CI.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :build:ci:windows:sprint_03:v0:
 #+created: 2025-11-01

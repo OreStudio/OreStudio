@@ -4,7 +4,6 @@
 #+title: Task: Fix DB dashboard operations to use .env database name
 #+description: Kill connections, Teardown DB and Recreate DB all prompt for a database via completing-read instead of reading ORES_DATABASE_NAME from .env.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ores_studio_emacs_dashboard:sprint_18:v0:
 #+owner: marco

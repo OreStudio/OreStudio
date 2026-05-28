@@ -4,7 +4,6 @@
 #+title: Story: Workflow engine hardening
 #+description: Package renames, ORE import error reporting and step log, pg_notify pipeline fix, badge RLS, system reset, controller shutdown latency fix.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :workflow:ore:controller:sprint_17:v0:
 #+created: 2026-05-21

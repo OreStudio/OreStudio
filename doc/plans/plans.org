@@ -4,7 +4,6 @@
 #+title: Plans
 #+description: Index of legacy design and implementation plans kept for historical reference.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :plans:index:knowledge:
 #+created: 2026-05-21

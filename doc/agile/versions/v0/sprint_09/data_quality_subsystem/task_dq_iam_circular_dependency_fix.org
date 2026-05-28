@@ -4,7 +4,6 @@
 #+title: Task: Resolve DQ-IAM circular dependency
 #+description: Relocate change_reason_constants.hpp to the more foundational ores.database module; system models + CMake deps synchronised; deterministic time values via make_timepoint helper for DQ tests; skill docs updated.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :dq:iam:refactor:dependency:tests:data_quality_subsystem:sprint_09:v0:
 #+owner: marco

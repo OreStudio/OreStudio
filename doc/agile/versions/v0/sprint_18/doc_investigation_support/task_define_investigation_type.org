@@ -4,7 +4,6 @@
 #+title: Task: Define investigation document type and extend codegen
 #+description: Formalize the 'investigation' document type and add automated scaffolding support.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :meta:codegen:doc_investigation_support:sprint_18:v0:
 #+owner: marco

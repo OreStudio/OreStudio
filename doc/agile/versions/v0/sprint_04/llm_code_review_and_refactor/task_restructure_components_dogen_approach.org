@@ -4,7 +4,6 @@
 #+title: Task: Restructure components to follow the Dogen approach
 #+description: Reorganise component layouts to match the Dogen project's modeling-first convention.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :refactor:architecture:dogen:llm_code_review_and_refactor:sprint_04:v0:
 #+owner: marco

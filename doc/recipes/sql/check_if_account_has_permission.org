@@ -4,7 +4,6 @@
 #+title: Check if Account Has Permission
 #+description: Check if Account Has Permission
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:sql:rbac_roles_and_permissions:
 #+created: 2026-05-21

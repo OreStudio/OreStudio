@@ -4,7 +4,6 @@
 #+title: Faker with seeds
 #+description: Faker with seeds
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

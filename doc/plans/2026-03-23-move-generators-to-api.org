@@ -2,7 +2,6 @@
 :ID: B3F7D2A1-9C5E-4D82-8B1F-3E6A7C4F1D90
 :END:
 #+title: Move Synthetic Generators to API Layer
-#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

@@ -4,7 +4,6 @@
 #+title: Story: PlantUML and modeling refresh
 #+description: Component PlantUML generation script; bulk refresh of all component diagrams; migrate all component docs to v2 information architecture.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :modeling:plantuml:documentation:sprint_17:v0:
 #+created: 2026-05-21

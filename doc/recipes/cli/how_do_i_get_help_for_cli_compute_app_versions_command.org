@@ -4,7 +4,6 @@
 #+title: How do I get help for the CLI compute app-versions command?
 #+description: Show available operations under =ores.cli compute app-versions=
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:compute_app_versions:
 #+created: 2026-05-21

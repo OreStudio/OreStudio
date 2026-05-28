@@ -4,7 +4,6 @@
 #+title: Register the key compass commands in Claude Code settings (C…
 #+description: Register the key compass commands in Claude Code settings (CLAUDE.md or settings.json) so they are available as shell shortcuts without needing to type the full path each time.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

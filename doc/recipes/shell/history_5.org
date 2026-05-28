@@ -4,7 +4,6 @@
 #+title: History
 #+description: History
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:shell:change_reason_categories:
 #+created: 2026-05-21

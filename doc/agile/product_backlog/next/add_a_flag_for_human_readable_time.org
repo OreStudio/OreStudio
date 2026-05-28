@@ -4,7 +4,6 @@
 #+title: Add a flag for human readable time
 #+description: Add a flag for human readable time
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

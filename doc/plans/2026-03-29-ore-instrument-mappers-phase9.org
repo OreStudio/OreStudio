@@ -2,7 +2,6 @@
 :ID: C9E3A2F4-DE45-11F1-B02C-40B0768014EB
 :END:
 #+title: ORE Instrument Mappers — Phase 9
-#+version: 2
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 * Overview

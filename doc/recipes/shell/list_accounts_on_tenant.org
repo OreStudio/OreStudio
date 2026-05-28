@@ -4,7 +4,6 @@
 #+title: List accounts on Tenant
 #+description: List accounts on Tenant
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:shell:tenants:
 #+created: 2026-05-21

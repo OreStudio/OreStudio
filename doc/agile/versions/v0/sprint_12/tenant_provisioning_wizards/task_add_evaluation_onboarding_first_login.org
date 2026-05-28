@@ -4,7 +4,6 @@
 #+title: Task: Add evaluation-tenant onboarding wizard on first login
 #+description: First-login wizard offers to install a catalogue + set up the tenant; user can cancel; stops appearing once a root party exists beyond the system party.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :tenants:onboarding:wizard:evaluation:tenant_provisioning_wizards:sprint_12:v0:
 #+owner: marco

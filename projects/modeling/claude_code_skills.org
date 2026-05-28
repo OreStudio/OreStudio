@@ -2,7 +2,6 @@
 :ID: F663DF66-4F62-0884-DB23-BB2D6A42B644
 :END:
 #+title: Claude Code Skills
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 

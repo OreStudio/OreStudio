@@ -4,7 +4,6 @@
 #+title: Task: End-to-end fixes for grid work
 #+description: Service dashboard offline threshold raised to 120s; ORES_VERSION macro for accurate version display; status-services.sh node vs service counts; idle heartbeat sender in wrapper for online hosts; ores.platform::datetime for cross-platform timestamps; result_handler::submit uses service context for unauthenticated wrapper requests; outcome code mapping fix; host_id persisted to result; file extension preservation in artifact URIs (.tar.gz, .csv, .xml); double-slash URL fix in AppVersionDetailDialog; SIGSEGV fix; pill badges on Result UI; main window geometry persistence; RAII thread cleanup + terminate() guard in wrapper.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compute:qt:bug_fix:polish:platform:wrapper:compute_grid_polish_and_e2e:sprint_15:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Create a comms library
 #+description: Extract a comms library so the messaging types live in one place, separate from client and server domain code.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :client_server:comms:library:client_server_foundations:sprint_02:v0:
 #+owner: marco

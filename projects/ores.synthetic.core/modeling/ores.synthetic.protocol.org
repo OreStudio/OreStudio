@@ -2,7 +2,6 @@
 :ID: 7AF2DCAB-BC62-43A9-885A-E557FCD4254F
 :END:
 #+title: ores.synthetic Messaging Reference
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: overview

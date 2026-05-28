@@ -2,7 +2,6 @@
 :ID: 8F82C72D-CB65-45A8-AD91-3DBDFBD4BEDE
 :END:
 #+title: Instrument Tables Redesign — Standalone Asset-Class Tables
-#+version: 2
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 * Overview

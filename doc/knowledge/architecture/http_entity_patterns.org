@@ -4,7 +4,6 @@
 #+title: HTTP entity patterns
 #+description: REST route structure, handler skeleton, and CRUD conventions for ores.http.server entity endpoints.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:architecture:http:entity:rest:
 #+created: 2026-05-21

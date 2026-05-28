@@ -4,7 +4,6 @@
 #+title: Task: Implement the where command
 #+description: Add a where/status subcommand reporting the current version, sprint, and in-flight stories and tasks.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compass:python:agile:compass_locate:sprint_18:v0:
 #+owner: marco

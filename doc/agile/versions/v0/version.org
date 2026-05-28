@@ -4,7 +4,6 @@
 #+title: Version 0
 #+description: The pre-1.0 alpha version. Establishes architecture, models all ORE inputs/outputs, and adds GUI for all data operations.
 #+type: version
-#+version: 2
 #+level: s4
 #+filetags: :v0:alpha:
 #+created: 2024-06-15

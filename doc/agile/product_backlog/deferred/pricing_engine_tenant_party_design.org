@@ -4,7 +4,6 @@
 #+title: Review pricing engine type tenant vs party design
 #+description: PricingEngineType has a tenant but no party. Review whether a party FK is needed and whether defaulting tenant to system() is correct or if a well-known invalid tenant should be required.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:design:analytics:
 #+created: 2026-05-22

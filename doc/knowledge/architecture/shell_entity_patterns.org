@@ -4,7 +4,6 @@
 #+title: Shell entity patterns
 #+description: REPL command registration, message-based communication, and operation shapes for ores.shell entity commands.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:architecture:shell:entity:
 #+created: 2026-05-21

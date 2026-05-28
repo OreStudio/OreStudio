@@ -4,7 +4,6 @@
 #+title: Task: Implement party-related entities at the database layer
 #+description: Core tables for parties, counterparties, identifiers, contact info, account-party associations; four lookup tables (party_types, party_statuses, party_id_schemes, contact_types); codegen template support for validations + indexes; FK to DQ coding schemes.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :party:counterparty:database:codegen:party_database_and_domain:sprint_12:v0:
 #+owner: marco

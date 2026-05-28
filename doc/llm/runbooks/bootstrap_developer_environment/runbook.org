@@ -4,7 +4,6 @@
 #+title: Bootstrap a developer environment
 #+description: Fresh-install setup: clone, CMake configure, build, run tests, and verify everything works.
 #+type: runbook
-#+version: 2
 #+level: cross
 #+filetags: :runbook:bootstrap:build:cmake:
 #+created: 2026-05-26

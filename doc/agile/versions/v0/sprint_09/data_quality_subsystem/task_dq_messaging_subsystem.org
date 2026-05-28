@@ -4,7 +4,6 @@
 #+title: Task: DQ messaging subsystem
 #+description: New 0x6000-0x6FFF subsystem in the binary protocol; CRUD + history for every DQ entity; change-management messages migrated from IAM (0x2050-0x2061) to DQ (0x6070-0x6081); protocol bump 21.3 -> 22.0.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :dq:comms:protocol:breaking_change:data_quality_subsystem:sprint_09:v0:
 #+owner: marco

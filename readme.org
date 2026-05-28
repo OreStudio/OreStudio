@@ -4,7 +4,6 @@
 #+title: ORE Studio
 #+description: Graphical front-end for the Open Source Risk Engine (ORE), built for learning quantitative finance by doing.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :readme:
 #+created: 2024-06-15

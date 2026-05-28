@@ -4,7 +4,6 @@
 #+title: Run a sprint health review
 #+description: Scaffold a health review task, run the System 2 analysis, write findings into the task, add a summary row to sprint.org, and raise a PR.
 #+type: runbook
-#+version: 2
 #+level: cross
 #+filetags: :runbook:agile:sprint:review:health:
 #+created: 2026-05-26

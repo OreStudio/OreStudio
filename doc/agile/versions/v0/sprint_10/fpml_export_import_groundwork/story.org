@@ -4,7 +4,6 @@
 #+title: Story: FPML export and import groundwork
 #+description: ores.fpml component scaffolded for future FPML export/import; full implementation deferred.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :fpml:component:export_import:sprint_10:v0:
 #+created: 2026-05-19

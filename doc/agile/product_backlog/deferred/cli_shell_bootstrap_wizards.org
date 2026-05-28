@@ -4,7 +4,6 @@
 #+title: Run bootstrap wizards from ores.cli and ores.shell
 #+description: System, tenant, and party provisioning wizards should be runnable from ores.cli or ores.shell so an operator can bootstrap without the Qt UI.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :cli:infrastructure:
 #+created: 2026-05-22

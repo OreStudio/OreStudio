@@ -4,7 +4,6 @@
 #+title: Task: Extend roundtrip to all four ORE XML document types
 #+description: - Add `reverse()` to `calendar_adjustment_mapper` and `conventions_mapper` so all four ORE XML document types can be ser
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_domain_roundtrip:sprint_17:v0:
 #+owner: marco

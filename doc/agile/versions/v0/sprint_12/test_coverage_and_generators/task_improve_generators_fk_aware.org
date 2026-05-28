@@ -4,7 +4,6 @@
 #+title: Task: Improve generators with FK-aware test data
 #+description: Generators for entities with FK UUID columns no longer produce dangling references; KVP-based generation context proposed.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :tests:generators:fk:refactor:test_coverage_and_generators:sprint_12:v0:
 #+owner: marco

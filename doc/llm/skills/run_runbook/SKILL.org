@@ -2,7 +2,6 @@
 :ID: 9DB6FA12-F4FD-423C-881C-69DD527679E9
 :END:
 #+title: Run Runbook
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

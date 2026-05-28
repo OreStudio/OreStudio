@@ -2,7 +2,6 @@
 :ID: 8FBACF31-CFFC-4C98-9964-92B58952FC69
 :END:
 #+title: Compute Console Rework
-#+version: 2
 #+DATE: 2026-03-27
 #+AUTHOR: Marco Craveiro
 

@@ -4,7 +4,6 @@
 #+title: Add a new knowledge document
 #+description: Scaffold a knowledge doc, fill in the content, and wire it into the knowledge index.
 #+type: runbook
-#+version: 2
 #+level: cross
 #+filetags: :runbook:knowledge:documentation:
 #+created: 2026-05-26

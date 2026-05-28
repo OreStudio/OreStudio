@@ -4,7 +4,6 @@
 #+title: Task: Analyse Windows WiX installer size and file-count limits
 #+description: Analysis story for the two WiX v3 failures still blocking the Windows \`cpack\` step, following up on PR #693 and commit
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :windows_portability:sprint_17:v0:
 #+owner: marco

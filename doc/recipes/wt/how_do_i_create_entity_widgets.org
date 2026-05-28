@@ -4,7 +4,6 @@
 #+title: How do I create Wt widgets for a new entity?
 #+description: Walk through list widget, detail dialog, and application integration for a new entity in ores.wt.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:wt:entity:ui:
 #+created: 2026-05-21

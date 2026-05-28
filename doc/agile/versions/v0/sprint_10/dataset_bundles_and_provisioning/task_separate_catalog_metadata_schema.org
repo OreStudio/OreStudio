@@ -4,7 +4,6 @@
 #+title: Task: Separate catalog metadata schema from production data
 #+description: Split the monolithic ores schema into metadata (dq_*, change_control) and production (refdata_*, iam_*, assets_*, geo_*, variability_*, telemetry_*); schema-qualified references; ER generator updated; data-flow documented (unidirectional metadata → production).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sql:schema:refactor:bootstrap:dataset_bundles_and_provisioning:sprint_10:v0:
 #+owner: marco

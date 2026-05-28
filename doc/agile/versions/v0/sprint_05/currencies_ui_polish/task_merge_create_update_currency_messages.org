@@ -4,7 +4,6 @@
 #+title: Task: Merge update and create currency messages
 #+description: Bitemporal repositories always insert, so the create/update split was never semantically necessary. Collapse to a single save_currency message.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :currencies:protocol:refactor:currencies_ui_polish:sprint_05:v0:
 #+owner: marco

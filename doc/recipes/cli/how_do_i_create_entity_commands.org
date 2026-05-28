@@ -4,7 +4,6 @@
 #+title: How do I create CLI commands for a new entity?
 #+description: Walk through list, add, delete, export, and import commands for a new entity in ores.cli.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:entity:
 #+created: 2026-05-21

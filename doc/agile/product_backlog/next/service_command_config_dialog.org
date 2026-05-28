@@ -4,7 +4,6 @@
 #+title: Service command-line configuration dialog with bitemporal support
 #+description: A dialog to view and change each service's command-line options (log level, telemetry flags, etc.) saved to the database with bitemporal history so changes are audited.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :ui:infrastructure:database:
 #+created: 2026-05-22

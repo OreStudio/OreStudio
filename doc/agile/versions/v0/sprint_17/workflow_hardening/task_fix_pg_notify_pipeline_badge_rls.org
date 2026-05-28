@@ -4,7 +4,6 @@
 #+title: Task: Fix pg_notify pipeline, badge RLS, and system reset
 #+description: - pg_notify timestamp format: All 143 notify triggers now emit ISO 8601 UTC (`YYYY-MM-DDThh:mm:ssZ`); `datetime::from_is
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :workflow_hardening:sprint_17:v0:
 #+owner: marco

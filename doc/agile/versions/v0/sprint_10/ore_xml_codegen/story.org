@@ -4,7 +4,6 @@
 #+title: Story: ORE XML codegen
 #+description: New ores.ore component; generate C++ for ORE via xsdcpp; round-trip tests; Windows MSVC build fix.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :ore:xml:xsdcpp:codegen:windows:sprint_10:v0:
 #+created: 2026-05-19

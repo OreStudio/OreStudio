@@ -4,7 +4,6 @@
 #+title: PlantUML class diagram conventions
 #+description: How ORE Studio writes PlantUML class diagrams — skeleton, namespaces, class styling, members, relationships, layout, and test-suite blocks.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:architecture:plantuml:diagrams:
 #+created: 2026-05-21

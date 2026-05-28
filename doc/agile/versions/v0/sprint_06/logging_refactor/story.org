@@ -4,7 +4,6 @@
 #+title: Story: Logging refactor (std::string_view)
 #+description: Move loggers to std::string_view; fix the regressions and Valgrind leaks that followed.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :logging:refactor:performance:sprint_06:v0:
 #+created: 2025-12-12

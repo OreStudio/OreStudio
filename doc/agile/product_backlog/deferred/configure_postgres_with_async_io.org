@@ -4,7 +4,6 @@
 #+title: Configure postgres with async IO
 #+description: Configure postgres with async IO
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:far:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Task: Implement RBAC enforcement
 #+description: Enforce role-based access at the message handler layer: reject requests the calling session lacks permission for.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :iam:rbac:authorization:comms:roles_and_permissions:sprint_07:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Generalise workflow engine and migrate existing sagas
 #+description: Event-driven engine with definition registry + startup recovery; provision_parties + ore_import sagas migrated; publish_step_completion helper; ores.workflow.api created with shared messaging types.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :workflow:engine:saga:events:recovery:workflow_engine:sprint_16:v0:
 #+owner: marco

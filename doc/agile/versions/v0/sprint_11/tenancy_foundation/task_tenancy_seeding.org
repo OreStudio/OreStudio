@@ -4,7 +4,6 @@
 #+title: Task: Tenancy and seeding
 #+description: All populate scripts pass ores_iam_system_tenant_id_fn() as the first upsert parameter so foundational data is scoped to the system tenant.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :tenancy:sql:populate:seeding:tenancy_foundation:sprint_11:v0:
 #+owner: marco

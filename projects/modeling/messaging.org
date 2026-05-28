@@ -4,7 +4,6 @@
 #+title: ORE Studio Messaging Reference
 #+description: Index of NATS subject namespaces owned by each domain service, with links to per-service messaging references.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :nats:messaging:index:knowledge:
 #+created: 2026-05-26

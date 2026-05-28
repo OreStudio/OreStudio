@@ -4,7 +4,6 @@
 #+title: How do I refresh org-babel results?
 #+description: Run emacs in batch mode to execute org-babel src blocks in a file and save the updated #+RESULTS back to disk.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :emacs:org_mode:babel:recipe:
 #+created: 2026-05-18

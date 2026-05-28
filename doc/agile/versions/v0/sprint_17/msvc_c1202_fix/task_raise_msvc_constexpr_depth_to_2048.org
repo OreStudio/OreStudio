@@ -4,7 +4,6 @@
 #+title: Task: Raise MSVC constexpr depth to 2048 for rfl trading types
 #+description: - `ores.qt.api` was failing to compile `ClientManager.cpp` on Windows with C1202 ("recursive type or function dependency
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :msvc_c1202_fix:sprint_17:v0:
 #+owner: marco

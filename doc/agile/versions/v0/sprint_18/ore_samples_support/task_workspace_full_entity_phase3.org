@@ -4,7 +4,6 @@
 #+title: Task: Workspace full entity: Qt UI
 #+description: Regenerate WorkspaceDetailDialog and add WorkspaceHistoryDialog; wire history toolbar action in WorkspaceMdiWindow.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_samples_support:sprint_18:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Ensure applications work under OSX using github images
 #+description: Ensure applications work under OSX using github images
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

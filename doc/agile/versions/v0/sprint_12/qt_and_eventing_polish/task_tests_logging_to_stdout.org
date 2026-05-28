@@ -4,7 +4,6 @@
 #+title: Task: Tests logging to stdout in github
 #+description: Excessive stdout output in CDash; investigated and resolved (logging disabled or routed correctly now).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :tests:ci:logging:qt_and_eventing_polish:sprint_12:v0:
 #+owner: marco

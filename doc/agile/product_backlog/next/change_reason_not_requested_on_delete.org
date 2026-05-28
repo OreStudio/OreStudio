@@ -4,7 +4,6 @@
 #+title: Change reason not requested on delete
 #+description: Change reason not requested on delete
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

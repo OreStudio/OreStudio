@@ -4,7 +4,6 @@
 #+title: Task: Fix MSVC linker error and C1202 in trade variant
 #+description: - Error 1 (LNK2001 – `ores.refdata.service`): `host::execute` was missing its Windows DLL export annotation. Added `expo
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :msvc_c1202_fix:sprint_17:v0:
 #+owner: marco

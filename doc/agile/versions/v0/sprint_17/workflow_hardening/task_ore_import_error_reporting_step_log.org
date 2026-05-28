@@ -4,7 +4,6 @@
 #+title: Task: ORE import error reporting, step log, and service isolation
 #+description: - Step outcome tri-state: replaces the binary `success` flag with `step_outcome` (`completed` / `completed_with_warnings
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :workflow_hardening:sprint_17:v0:
 #+owner: marco

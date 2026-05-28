@@ -4,7 +4,6 @@
 #+title: Story: Strict service table isolation
 #+description: SECURITY DEFINER validators, NAMEDATALEN truncation fixes, IAM party cache via NATS (Phase 4.3), dead DML grant removal (Phases 5.2 and 5.3), p_tenant_id fix.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :sql:isolation:iam:nats:sprint_17:v0:
 #+created: 2026-05-21

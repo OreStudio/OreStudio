@@ -4,7 +4,6 @@
 #+title: Task: Generate release notes for previous sprint
 #+description: Two-step release-notes generation now that the sprint backlog bursts the LLM prompt window: summarise first, then write release notes from the summary.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :release_notes:llm:agile:process:sprint_13_housekeeping:sprint_13:v0:
 #+owner: marco

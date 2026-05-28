@@ -4,7 +4,6 @@
 #+title: Task: Remove toolbars from detail dialogs
 #+description: Detail dialogs use plain buttons (delete, cancel, save) instead of in-dialog toolbars.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:ux:dialogs:refactor:detail_dialogs_modernisation:sprint_13:v0:
 #+owner: marco

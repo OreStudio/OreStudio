@@ -4,7 +4,6 @@
 #+title: Task: Equity per-type: finish read path + delete legacy generic
 #+description: Completes the equity per-type migration begun in PR #720. That PR
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :fx_forward_equity_types:sprint_17:v0:
 #+owner: marco

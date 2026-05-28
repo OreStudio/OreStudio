@@ -4,7 +4,6 @@
 #+title: Story: Batch operations
 #+description: Atomic batch save + delete across protocols; single transaction; consolidated response shape; protocol 46.0.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :protocol:batch:sql:atomic:sprint_13:v0:
 #+created: 2026-05-20

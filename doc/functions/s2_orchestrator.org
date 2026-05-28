@@ -4,7 +4,6 @@
 #+title: S2 Orchestrator
 #+description: The function of System 2 — the orchestrator LLM the user assigns to one story, who decomposes it into tasks and oversees their execution.
 #+type: function
-#+version: 2
 #+level: s2
 #+filetags: :function:s2:orchestrator:coordination:
 #+created: 2026-05-21

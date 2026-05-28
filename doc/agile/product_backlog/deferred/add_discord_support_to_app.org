@@ -4,7 +4,6 @@
 #+title: Add discord support to app
 #+description: Add discord support to app
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :infra:capture:far:
 #+created: 2026-05-21

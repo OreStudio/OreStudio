@@ -4,7 +4,6 @@
 #+title: Document Types
 #+description: Every type of document, its frontmatter contract, folder, and structure.
 #+type: meta
-#+version: 2
 #+level: cross
 #+filetags: :meta:document_types:frontmatter:tags:
 #+created: 2026-05-18
@@ -302,22 +301,6 @@ Rules:
 - Audit also verifies the parent-tag invariant: every task must carry
   exactly one story slug as a tag; every story must carry exactly one
   sprint slug; every sprint must carry exactly one version slug.
-
-* Version tagging
-
-Every =.org= file in the repo carries =#+version: 2= (the current format,
-with =#+type:=, =#+description:=, =#+filetags:=, etc. per this spec).
-
-The audit script enforces this:
-
-#+begin_src sh :results verbatim
-# CI gate — exits non-zero if any .org file is missing #+version:
-python3 projects/ores.codegen/scripts/doc_version_audit.py --check
-#+end_src
-
-See [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]] for the full tooling
-reference, and [[id:6AC06A04-EB95-4925-8488-C7A47C6A451F][How do I validate component documentation before committing?]]
-for the combined pre-commit check.
 
 * Document types
 

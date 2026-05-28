@@ -2,7 +2,6 @@
 :ID: 982EC471-A825-45C1-982F-38681A2C14FD
 :END:
 #+title: FX Forward ORE Import End-to-End Wiring
-#+version: 2
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 * Overview

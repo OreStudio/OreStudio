@@ -4,7 +4,6 @@
 #+title: All environment ports should derive from a single base port,…
 #+description: All environment ports should derive from a single base port, incrementing by 1. The current setup has overlapping ORES_HTTP_PORT and ORES_CONTROLLER_SERVICE_HTTP_PORT. Document the port assignments and enforce the convention.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

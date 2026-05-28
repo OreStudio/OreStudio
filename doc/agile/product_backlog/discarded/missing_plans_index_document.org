@@ -4,7 +4,6 @@
 #+title: We are missing a plans.org index page that links all plan do…
 #+description: We are missing a plans.org index page that links all plan documents together, analogous to how runbooks.org and recipes catalogs work.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

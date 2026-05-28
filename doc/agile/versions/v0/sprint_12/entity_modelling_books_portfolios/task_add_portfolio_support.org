@@ -4,7 +4,6 @@
 #+title: Task: Add portfolio support
 #+description: Implementation of the portfolio entity based on the modelling analysis; hierarchical-tree storage following the Postgres-tree pattern.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :portfolios:sql:refdata:hierarchy:entity_modelling_books_portfolios:sprint_12:v0:
 #+owner: marco

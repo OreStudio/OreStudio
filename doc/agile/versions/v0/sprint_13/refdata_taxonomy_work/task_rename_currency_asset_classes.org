@@ -4,7 +4,6 @@
 #+title: Task: Rename currency asset classes
 #+description: Avoid 'asset classes' for values that aren't usual asset classes; pick clearer naming.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :refdata:currency:naming:polish:refdata_taxonomy_work:sprint_13:v0:
 #+owner: marco

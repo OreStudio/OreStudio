@@ -4,7 +4,6 @@
 #+title: Task: Add a detached mode
 #+description: Default sub-window mode setting (attached / detached) so new windows respect the user's preference.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:ux:mdi:infrastructure_features:sprint_05:v0:
 #+owner: marco

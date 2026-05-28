@@ -4,7 +4,6 @@
 #+title: Add
 #+description: Add
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:shell:change_reasons:
 #+created: 2026-05-21

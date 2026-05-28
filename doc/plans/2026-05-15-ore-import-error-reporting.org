@@ -2,7 +2,6 @@
 :ID: E7976556-8EA4-4A54-A414-BE0D11762DEC
 :END:
 #+title: ORE Import Error Reporting and Step Warning State
-#+version: 2
 #+date: 2026-05-15
 #+author: Marco Craveiro
 #+STATUS: COMPLETE

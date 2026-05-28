@@ -4,7 +4,6 @@
 #+title: Task: Data Librarian UI
 #+description: Three-panel Data Librarian MDI window: dataset browser, accession card details, methodology panel; IP geolocation catalog + iptoasn staging; Visual Assets catalog; TCP_NODELAY for parallel-request latency; menu restructuring (System / Data); Origin 'Source' renamed to 'Primary'.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:dq:librarian:ux:geo:assets:data_quality_subsystem:sprint_09:v0:
 #+owner: marco

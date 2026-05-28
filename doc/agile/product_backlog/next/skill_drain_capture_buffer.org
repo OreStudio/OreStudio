@@ -4,7 +4,6 @@
 #+title: Add a skill that processes a capture buffer entry by entry a…
 #+description: Add a skill that processes a capture buffer entry by entry and decides whether each belongs in the current sprint backlog, a new story, or the product backlog.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

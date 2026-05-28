@@ -4,7 +4,6 @@
 #+title: Connecting to ORE Studio
 #+description: How to start ORE Studio, connect to a backend service, manage connections, read the status bar, log in and log out.
 #+type: manual
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:chapter:
 #+created: 2024-06-23

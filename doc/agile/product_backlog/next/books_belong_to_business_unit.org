@@ -4,7 +4,6 @@
 #+title: Books must belong to a business unit; portfolio explorer toggle
 #+description: Books need a business unit FK. The portfolio explorer should have a show/hide option for business unit nodes in the tree.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :ui:domain:database:
 #+created: 2026-05-22

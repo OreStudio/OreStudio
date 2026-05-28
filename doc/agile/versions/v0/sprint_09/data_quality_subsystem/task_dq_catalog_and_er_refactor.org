@@ -4,7 +4,6 @@
 #+title: Task: DQ catalog and ER refactor
 #+description: dq_catalog_tbl as top-level grouping; ER diagram (ores_schema.puml) standardised to <component>_<entity>_tbl naming and re-packaged by component prefix; missing DQ + telemetry + geo entities integrated.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :dq:er_diagram:sql:refactor:data_quality_subsystem:sprint_09:v0:
 #+owner: marco

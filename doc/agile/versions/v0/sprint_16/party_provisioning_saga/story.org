@@ -4,7 +4,6 @@
 #+title: Story: Party provisioning saga
 #+description: provision_parties_workflow executor; per-party Inactive status trigger; correlation IDs across services; ores.workflow.service + PartyProvisionPage UX.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :workflow:party:iam:provisioning:saga:sprint_16:v0:
 #+created: 2026-05-20

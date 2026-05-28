@@ -4,7 +4,6 @@
 #+title: Task: Write the ORE Studio dashboard user manual section
 #+description: Add a dashboard chapter to the user guide covering: launching the dashboard, each command group, bookmarks, and the ORE Studio shell.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :emacs:lisp:dashboard:ores_studio_emacs_dashboard:sprint_18:v0:
 #+owner: marco

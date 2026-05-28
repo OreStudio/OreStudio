@@ -4,7 +4,6 @@
 #+title: Work a task through to merged PR
 #+description: Complete lifecycle from picking up an existing task to merging the PR.
 #+type: runbook
-#+version: 2
 #+level: cross
 #+filetags: :agile:task:pr:review:merge:
 #+created: 2026-05-26

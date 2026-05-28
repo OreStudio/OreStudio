@@ -4,7 +4,6 @@
 #+title: Analysis
 #+description: Index of one-off historical analyses — architecture, entity design, Qt patterns, and early explorations.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :analysis:index:knowledge:
 #+created: 2026-05-24

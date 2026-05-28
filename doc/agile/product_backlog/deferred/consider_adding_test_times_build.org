@@ -4,7 +4,6 @@
 #+title: Consider adding test times build
 #+description: Consider adding test times build
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :infra:capture:far:
 #+created: 2026-05-21

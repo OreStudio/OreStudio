@@ -4,7 +4,6 @@
 #+title: Task: Wrap bond/credit/commodity/scripted in *_export_result structs
 #+description: - Introduces four new export-result wrappers — `bond_export_result`, `credit_export_result`, `commodity_export_result`, 
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :import_export_cleanup:sprint_17:v0:
 #+owner: marco

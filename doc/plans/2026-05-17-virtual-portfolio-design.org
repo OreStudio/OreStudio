@@ -2,7 +2,6 @@
 :ID: AD2D6529-4870-4BD0-9B68-6DF3CCAAFBCA
 :END:
 #+title: Virtual Portfolio Design
-#+version: 2
 #+SUBTITLE: User-owned reporting overlays that aggregate real portfolios and books across the book tree
 #+DATE: 2026-05-17
 #+AUTHOR: ORE Studio Team

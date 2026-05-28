@@ -4,7 +4,6 @@
 #+title: Task: Form map + trade type flags + create-mode instrument
 #+description: Phase 5 + 6: trade type cache; activateForm helper; instrument form visibility during trade creation; thread-safety + magic numbers + error handling improvements.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:trade:instrument:cache:refactor:trade_detail_dialog_unification:sprint_16:v0:
 #+owner: marco

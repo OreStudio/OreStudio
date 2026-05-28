@@ -4,7 +4,6 @@
 #+title: Code Review Checklist
 #+description: The canonical category-by-category checklist ORE Studio reviewers apply — used both for PR-delta reviews and full-component audits.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:review:conventions:quality:
 #+created: 2026-05-21

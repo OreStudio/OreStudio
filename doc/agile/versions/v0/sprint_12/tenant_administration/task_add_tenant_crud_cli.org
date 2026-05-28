@@ -4,7 +4,6 @@
 #+title: Task: Add tenant CRUD commands to CLI
 #+description: Add / list / etc commands for tenants via ores.cli.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :cli:tenants:iam:tenant_administration:sprint_12:v0:
 #+owner: marco

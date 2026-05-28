@@ -4,7 +4,6 @@
 #+title: Task: Add skill to generate release notes
 #+description: Skill that produces release notes from a sprint backlog automatically.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :claude_code:skills:release_notes:claude_code_skills_expansion:sprint_05:v0:
 #+owner: marco

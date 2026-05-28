@@ -4,7 +4,6 @@
 #+title: Add account permissions visibility and tabbed dialog
 #+description: Add account permissions visibility and tabbed dialog
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Task: Add opt-in qt feature for Windows users
 #+description: Some Windows users struggle to install Qt externally (e.g. Qt online
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :windows_portability:sprint_17:v0:
 #+owner: marco

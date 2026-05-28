@@ -4,7 +4,6 @@
 #+title: Task: Remove superseded ores.lisp modules
 #+description: Delete or gut ores-db.el and other per-mode modules that are superseded by the dashboard; keep reusable helpers (ores-env.el, ores-shell.el).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :emacs:lisp:dashboard:ores_studio_emacs_dashboard:sprint_18:v0:
 #+owner: marco

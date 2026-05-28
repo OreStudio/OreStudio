@@ -4,7 +4,6 @@
 #+title: Story: Session telemetry and plotting
 #+description: RTT sampling + byte counters + TimescaleDB session_samples hypertable; QChartView panel plots session history.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :telemetry:qt:timescaledb:session:sprint_13:v0:
 #+created: 2026-05-20

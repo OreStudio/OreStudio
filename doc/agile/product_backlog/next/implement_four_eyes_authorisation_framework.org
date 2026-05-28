@@ -4,7 +4,6 @@
 #+title: Implement four-eyes authorisation framework
 #+description: Implement four-eyes authorisation framework
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

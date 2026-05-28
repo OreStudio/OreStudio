@@ -4,7 +4,6 @@
 #+title: Story: Hotfix handling
 #+description: Hotfix runbook, branching recipe update, and Hotfixes section in sprint template.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :hotfix:runbook:agile:git:sprint_18:v0:
 #+created: 2026-05-28

@@ -4,7 +4,6 @@
 #+title: Task: Implement runbook support
 #+description: Add runbook document type to codegen, compass, glossary, and document types; write concrete runbook.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :runbook:codegen:compass:glossary:runbook_support:sprint_18:v0:
 #+owner: marco

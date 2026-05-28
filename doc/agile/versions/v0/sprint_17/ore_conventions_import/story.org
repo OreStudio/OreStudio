@@ -4,7 +4,6 @@
 #+title: Story: ORE conventions import
 #+description: Codegen stack for seven ORE convention types; deposit_convention Phase 2; CLI import handler (Phase 3).
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :ore:conventions:codegen:cli:sprint_17:v0:
 #+created: 2026-05-21

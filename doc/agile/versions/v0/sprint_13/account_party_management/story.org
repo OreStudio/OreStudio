@@ -4,7 +4,6 @@
 #+title: Story: Account-party management and login
 #+description: Multi-party login flow: link accounts to multiple parties, server returns choices, client picks (or auto-selects); AccountPartiesWidget in account detail dialog; protocol 38.0.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :party:iam:login:protocol:qt:sprint_13:v0:
 #+created: 2026-05-20

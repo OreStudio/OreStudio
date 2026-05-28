@@ -2,7 +2,6 @@
 :ID: 98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70
 :END:
 #+title: DQ Publish Pattern — Architecture and Decision
-#+version: 2
 #+SUBTITLE: Reconciling bulk artefact publishing with strict service table isolation
 #+DATE: 2026-05-14
 #+AUTHOR: ORE Studio Team

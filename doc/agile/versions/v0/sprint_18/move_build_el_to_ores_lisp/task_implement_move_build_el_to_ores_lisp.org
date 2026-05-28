@@ -4,7 +4,6 @@
 #+title: Task: Implement Move .build-*.el scripts to ores.lisp
 #+description: Initial task for: Move .build-*.el scripts to ores.lisp
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :move_build_el_to_ores_lisp:sprint_18:v0:
 #+owner: marco

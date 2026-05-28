@@ -4,7 +4,6 @@
 #+title: Task: Break cross-plugin symbol dependencies (plugin isolation phase 1)
 #+description: - Add `IBusinessUnitBrowser` abstract interface to `ores.qt.api`; `BusinessUnitController` implements it. `OrgExplorerMd
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :symbol_visibility:sprint_17:v0:
 #+owner: marco

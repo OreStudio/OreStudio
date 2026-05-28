@@ -4,7 +4,6 @@
 #+title: Task: Fix misspell that breaks the build
 #+description: Repair a misspelled symbol that surfaces as a build break.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :build:bug_fix:sprint_03_housekeeping:sprint_03:v0:
 #+owner: marco

@@ -5,7 +5,6 @@
 #+title: Identity and Access Management
 #+description: IAM concepts — identity lifecycle, authentication, authorisation, and access control enforcement — as realised in the ores.iam.* components.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:security:iam:
 #+created: 2024-06-15

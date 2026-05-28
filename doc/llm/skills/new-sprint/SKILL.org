@@ -4,7 +4,6 @@
 #+title: New Sprint Skill
 #+description: Open a new sprint under the current version — scaffold the folder, set its mission, wire it into the version manifest, and optionally bump the project version.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:agile:sprint:
 #+created: 2024-09-01

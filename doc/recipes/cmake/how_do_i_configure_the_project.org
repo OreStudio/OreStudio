@@ -4,7 +4,6 @@
 #+title: How do I configure the project?
 #+description: Pick a CMake preset and configure — this is the once-per-checkout step before building.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :cmake:build:configure:presets:recipe:
 #+created: 2026-05-18

@@ -4,7 +4,6 @@
 #+title: Task: Rewrite system model with layer blurbs and component tables
 #+description: Add narrative introduction, layer blurbs, and table-based component inventories to system_model.org.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :architecture:documentation:system_model:system_model_readability:sprint_18:v0:
 #+owner: CodeWhale

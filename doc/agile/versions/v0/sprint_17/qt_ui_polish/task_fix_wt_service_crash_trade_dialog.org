@@ -4,7 +4,6 @@
 #+title: Task: Fix wt.service crash, trade dialog UI, geometry persistence, and IAM party cache
 #+description: - [iam] Fix party cache cold-start and bootstrap gaps: warm cache for all active tenants at startup; handle missing entr
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt_ui_polish:sprint_17:v0:
 #+owner: marco

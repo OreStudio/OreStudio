@@ -4,7 +4,6 @@
 #+title: Story: Party database and domain
 #+description: Land party + counterparty + identifier + contact-information at the database layer; mirror them at the C++ domain layer; expose in Qt.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :party:counterparty:database:domain:qt:sprint_12:v0:
 #+created: 2026-05-19

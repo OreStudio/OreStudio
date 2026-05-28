@@ -4,7 +4,6 @@
 #+title: Introduction
 #+description: Overview of ORE Studio's purpose, architecture, and what this manual covers.
 #+type: manual
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:chapter:
 #+created: 2024-06-23

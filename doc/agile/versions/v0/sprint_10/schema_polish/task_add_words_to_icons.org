@@ -4,7 +4,6 @@
 #+title: Task: Add labels (CSV/ORE/FPML) to import/export icons
 #+description: Two well-defined import/export icons get textual badges (CSV, ORE, FPML) so the toolbar is readable.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:icons:ux:toolbar:schema_polish:sprint_10:v0:
 #+owner: marco

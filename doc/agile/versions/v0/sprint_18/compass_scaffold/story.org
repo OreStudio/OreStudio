@@ -4,7 +4,6 @@
 #+title: Story: ores.compass Scaffold — agile authoring over codegen
 #+description: Add stories, tasks, sprints and recipes from the compass CLI by delegating to ores.codegen.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :compass:tooling:python:agile:codegen:sprint_18:v0:
 #+created: 2026-05-24

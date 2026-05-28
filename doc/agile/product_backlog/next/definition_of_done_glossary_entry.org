@@ -4,7 +4,6 @@
 #+title: Add a Definition of Done entry to the glossary and link to i…
 #+description: Add a Definition of Done entry to the glossary and link to it from every place we use the term (sprint acceptance criteria, story templates, etc.).
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

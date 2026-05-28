@@ -4,7 +4,6 @@
 #+title: Task: Bump lukka/get-cmake from 4.3.1 to 4.3.2
 #+description: Bumps [lukka/get-cmake](https://github.com/lukka/get-cmake) from 4.3.1 to 4.3.2.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sprint_17_housekeeping:sprint_17:v0:
 #+owner: marco

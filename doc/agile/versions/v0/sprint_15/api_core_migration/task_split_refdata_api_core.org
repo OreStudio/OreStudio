@@ -4,7 +4,6 @@
 #+title: Task: Split ores.refdata into api + core
 #+description: ores.refdata.api for public contracts (domain types + eventing + messaging + CSV support); ores.refdata.core for internal logic (handlers + repositories + generators + services). All dependent modules updated. .env loads ORES_TEST_DB_* credentials during CMake configure.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :architecture:refactor:api:core:refdata:api_core_migration:sprint_15:v0:
 #+owner: marco

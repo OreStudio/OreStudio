@@ -4,7 +4,6 @@
 #+title: Create a document tracking which entities have full CLI/HTTP…
 #+description: Create a document tracking which entities have full CLI/HTTP/shell coverage and which are missing layers. Use it as a prioritised backlog for bringing entities into sync, adding recipes as gaps are closed.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

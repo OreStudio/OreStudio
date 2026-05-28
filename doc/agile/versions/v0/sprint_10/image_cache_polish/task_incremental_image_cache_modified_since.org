@@ -4,7 +4,6 @@
 #+title: Task: Incremental image cache loading with modified_since
 #+description: Protocol: add optional modified_since to list_images_request and recorded_at to image_info; client tracks last_load_time and only fetches changed images.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:assets:protocol:performance:image_cache_polish:sprint_10:v0:
 #+owner: marco

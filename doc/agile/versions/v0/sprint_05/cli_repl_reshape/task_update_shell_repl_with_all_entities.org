@@ -4,7 +4,6 @@
 #+title: Task: Update ores.shell with REPL commands for all entities
 #+description: Expand the REPL so every domain entity has the standard verb set (list, add, delete, import, export).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :shell:repl:cli:cli_repl_reshape:sprint_05:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Implement NATS support
 #+description: Replace the entire binary protocol stack (SSL/ASIO transport + NNG broker) with cnats request/reply: ~107k lines removed, ~20k lines added; new ores.nats component with nats::service::client interface; 10 domain services wired to NATS (iam, variability, refdata, assets, trading, dq, reporting, scheduler, synthetic, telemetry); ores.comms.shell + ores.http.server + ores.qt all migrated; subject prefix ores.{tier}.{instance} for environment isolation; _INBOX.* reply-subject prefix bug fixed; ores.mq removed in favour of JetStream via jetstream_admin.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :nats:messaging:microservices:refactor:jetstream:nats_migration:sprint_14:v0:
 #+owner: marco

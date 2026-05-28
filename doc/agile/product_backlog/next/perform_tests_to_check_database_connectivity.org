@@ -4,7 +4,6 @@
 #+title: Perform tests to check database connectivity
 #+description: Perform tests to check database connectivity
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

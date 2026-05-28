@@ -4,7 +4,6 @@
 #+title: Start work on a new story
 #+description: Complete procedure from story scaffold to PR creation.
 #+type: runbook
-#+version: 2
 #+level: cross
 #+filetags: :runbook:agile:story:git:pr:compass:
 #+created: 2026-05-26

@@ -4,7 +4,6 @@
 #+title: Component Model Creator
 #+description: Create or update component_overview.org and the PlantUML class diagram for an ORE Studio component.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:component:documentation:plantuml:
 #+created: 2024-09-01

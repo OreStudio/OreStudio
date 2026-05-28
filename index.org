@@ -2,7 +2,6 @@
 :ID: D04D3476-D7C5-3954-A33B-C641EBCB43F6
 :END:
 #+TITLE:      ORE Studio
-#+version: 1
 #+AUTHOR:     Marco Craveiro et al.
 #+EMAIL:      marco.craveiro@gmail.com
 #+language:   en

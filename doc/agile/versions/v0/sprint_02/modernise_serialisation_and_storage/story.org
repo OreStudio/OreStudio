@@ -4,7 +4,6 @@
 #+title: Story: Modernise serialisation and storage
 #+description: Adopt reflect-cpp for JSON and XML, and sqlgen for Postgres — cut hand-written boilerplate.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :serialisation:reflect_cpp:sqlgen:postgres:sprint_02:v0:
 #+created: 2025-08-15

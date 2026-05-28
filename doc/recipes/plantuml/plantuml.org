@@ -4,7 +4,6 @@
 #+title: PlantUML recipes
 #+description: Recipes for adding and maintaining PlantUML diagrams in ORE Studio org-mode documents.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipe:plantuml:diagram:index:knowledge:
 #+created: 2026-05-28

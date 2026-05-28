@@ -4,7 +4,6 @@
 #+title: Story: Validate tenancy across surfaces
 #+description: Shell, Data Librarian publication, DQ metadata indexes, and event-bus subscriptions all checked for correct tenant isolation; gaps fixed.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :tenancy:validation:shell:librarian:eventing:sprint_11:v0:
 #+created: 2026-05-19

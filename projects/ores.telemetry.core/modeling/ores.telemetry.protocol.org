@@ -2,7 +2,6 @@
 :ID: A6B7C8D9-E0F1-2345-ABCD-456789012345
 :END:
 #+title: ores.telemetry Messaging Reference
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: overview

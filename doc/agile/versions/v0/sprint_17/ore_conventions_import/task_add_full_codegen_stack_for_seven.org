@@ -4,7 +4,6 @@
 #+title: Task: Add full codegen stack for seven ORE convention types
 #+description: - Expands ORE import convention coverage from 2 (zero, deposit) to all 9 types: swap, ois, fra, ibor_index, overnight_in
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_conventions_import:sprint_17:v0:
 #+owner: marco

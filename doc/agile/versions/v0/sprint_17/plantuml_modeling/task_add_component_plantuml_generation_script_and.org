@@ -4,7 +4,6 @@
 #+title: Task: Add component PlantUML generation script and bulk-refresh all diagrams
 #+description: - Add `build/scripts/generate_component_puml.py`: a regex-based script that walks each project's `include/` headers and 
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :plantuml_modeling:sprint_17:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: System Model: Domain Layer
 #+description: Component inventory for the Domain layer: reference data, IAM, data quality, FpML, ORE import/export, trading, market data, analytics, and workflow.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :modeling:architecture:domain:system_model:
 #+created: 2026-05-28

@@ -4,7 +4,6 @@
 #+title: ORES Memory Skill
 #+description: Decide when to write, update, or push back on a project-scope memory; then scaffold it into doc/llm/memory/ via the codegen.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:memory:documentation:
 #+created: 2026-05-21

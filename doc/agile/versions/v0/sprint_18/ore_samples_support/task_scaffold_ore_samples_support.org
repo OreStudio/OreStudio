@@ -4,7 +4,6 @@
 #+title: Task: Scaffold ORE samples support
 #+description: Review workspace-full-entity, workspace-design Phase 4 remaining, and data-import-session plans; create task stubs for each phase of work needed to support running ORE samples.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_samples_support:sprint_18:v0:
 #+owner: marco

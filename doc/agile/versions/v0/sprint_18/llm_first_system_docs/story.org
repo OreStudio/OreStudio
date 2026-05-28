@@ -4,7 +4,6 @@
 #+title: Story: Document ORE Studio as an LLM-first system
 #+description: Add LLM-first philosophy page and Claude Code tool page to doc/llm/; update llm.org index to surface both.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :llm:documentation:claude_code:sprint_18:v0:
 #+created: 2026-05-28

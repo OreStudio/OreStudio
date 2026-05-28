@@ -4,7 +4,6 @@
 #+title: org-roam
 #+description: How ORE Studio uses org-roam — knowledge graph, id-links, the hacks that make the static site work, and the org-roam-ui integration.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :org_roam:documentation:knowledge:emacs:
 #+created: 2026-05-28

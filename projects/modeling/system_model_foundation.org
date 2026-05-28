@@ -4,7 +4,6 @@
 #+title: System Model: Foundation Layer
 #+description: Component inventory for the Foundation layer: the bedrock utilities, platform abstractions, logging, telemetry, database access, security, and code generation that underpin all other layers.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :modeling:architecture:foundation:system_model:
 #+created: 2026-05-28

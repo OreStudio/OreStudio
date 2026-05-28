@@ -4,7 +4,6 @@
 #+title: Task: v2 information architecture (sprints 08-11)
 #+description: Migrates sprints 08-11 of v0 into the v2 cybernetic information architecture
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :v2_doc_architecture:sprint_17:v0:
 #+owner: marco

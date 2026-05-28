@@ -4,7 +4,6 @@
 #+title: Task: Modernise login dialog
 #+description: Dark-themed, modeless LoginDialog and SignUpDialog as MDI subwindows; auto-login after sign-up; saved-connections dropdown.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:login:ux:refactor:connection_management:sprint_09:v0:
 #+owner: marco

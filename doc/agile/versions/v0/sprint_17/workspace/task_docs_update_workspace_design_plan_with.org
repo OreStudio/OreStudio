@@ -4,7 +4,6 @@
 #+title: Task: docs: Update workspace design plan with Phase 3–4 progress
 #+description: Update the workspace design plan document to reflect completion of Phases 1–2 and substantial progress through Phases 3–
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :workspace:sprint_17:v0:
 #+owner: marco

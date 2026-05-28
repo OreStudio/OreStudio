@@ -4,11 +4,10 @@
 #+title: Task: Drop #+version field from all org files and templates
 #+description: Remove #+version: 2 from every .org file and mustache template; retire doc_version_audit.py.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :doc_format_cleanup:sprint_18:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/drop-version-field
 #+pr:
 #+blocked_on: none
 #+blocked_since:
@@ -41,12 +40,12 @@ Scope:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                                                      |
 | Parent story | [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-29                               |
+| Now          | Stripping #+version: from all org files, templates, and codegen script.      |
+| Waiting on   | Nothing.                                                                     |
+| Next         | PR and review.                                                               |
+| Last touched | 2026-05-29                                                                   |
 
 * Acceptance
 

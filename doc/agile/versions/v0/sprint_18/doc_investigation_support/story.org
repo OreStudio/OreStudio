@@ -4,7 +4,6 @@
 #+title: Story: Add investigation support to document system
 #+description: Extend the cybernetic document system with formal investigation reports and improved git conventions.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :meta:documentation:codegen:story:sprint_18:v0:
 #+created: 2026-05-23

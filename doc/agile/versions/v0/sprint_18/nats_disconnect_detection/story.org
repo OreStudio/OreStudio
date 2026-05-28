@@ -4,7 +4,6 @@
 #+title: Story: Detect and report NATS disconnection
 #+description: Detect when the NATS connection or the backend services drop during an active session and surface a clear disconnected state with a way to reconnect.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :client:nats:connection:reliability:sprint_18:v0:
 #+created: 2026-05-26

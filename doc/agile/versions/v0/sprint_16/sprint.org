@@ -4,7 +4,6 @@
 #+title: Sprint 16
 #+description: ORE import end-to-end, plus the cross-cutting infrastructure it depends on: workflow engine + sagas, market data subsystem, service lifecycle controller, Qt plugin split, reporting + analytics, asset-class / product-type separation, and a ~20-fix Windows portability sweep.
 #+type: sprint
-#+version: 2
 #+level: s3
 #+filetags: :ore:workflow:marketdata:controller:plugins:trading:reporting:windows:sprint_16:v0:
 #+created: 2026-05-20

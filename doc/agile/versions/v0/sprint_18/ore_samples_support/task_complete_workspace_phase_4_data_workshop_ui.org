@@ -4,7 +4,6 @@
 #+title: Task: Complete workspace Phase 4: Data Workshop UI
 #+description: Finish workspace design Phase 4: report definition list and clone action in the Data Workshop UI.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_samples_support:sprint_18:v0:
 #+owner: marco

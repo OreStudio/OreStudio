@@ -4,7 +4,6 @@
 #+title: Task: IInstrumentForm registry + per-family form widgets
 #+description: Phase 4: IInstrumentForm interface + InstrumentFormRegistry; family-specific UI tabs replaced with dynamic registry-based approach; one form per family (FX, Swap, Bond, Credit, Equity, Commodity, Composite, Scripted).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:trade:instrument:registry:refactor:architecture:trade_detail_dialog_unification:sprint_16:v0:
 #+owner: marco

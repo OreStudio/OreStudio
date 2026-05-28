@@ -4,7 +4,6 @@
 #+title: Story: Advanced counterparty dialog
 #+description: Five-tab counterparty dialog (General / Identifiers / Contacts / Hierarchy / Metadata); refactor party + counterparty dialogs behind a strategy pattern.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :counterparty:party:qt:ux:refactor:sprint_12:v0:
 #+created: 2026-05-19

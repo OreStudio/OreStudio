@@ -4,7 +4,6 @@
 #+title: Task: Add LEI-to-BIC dataset
 #+description: Mapping dataset for BIC settlements; CSV in external/, dataset + populate scripts + publisher; download from GLEIF mapping site.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :gleif:bic:dataset:settlement:gleif_data_integration:sprint_12:v0:
 #+owner: marco

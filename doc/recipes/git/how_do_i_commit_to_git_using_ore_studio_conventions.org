@@ -4,7 +4,6 @@
 #+title: How do I commit to git using ORE Studio conventions?
 #+description: Standards for commit titles, descriptions, and co-author attribution.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :git:conventions:recipe:
 #+created: 2026-05-23

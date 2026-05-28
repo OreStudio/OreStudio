@@ -4,7 +4,6 @@
 #+title: The client session is not automatically renewing its authent…
 #+description: The client session is not automatically renewing its authentication token, causing sessions to expire silently. Implement token refresh on expiry so users are not logged out unexpectedly.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

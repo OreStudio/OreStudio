@@ -4,7 +4,6 @@
 #+title: Task: Symbol visibility migration: -fvisibility=hidden across all shared libraries
 #+description: - Applies `-fvisibility=hidden` to all 18 shared library targets and removes the `CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS` glob
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :symbol_visibility:sprint_17:v0:
 #+owner: marco

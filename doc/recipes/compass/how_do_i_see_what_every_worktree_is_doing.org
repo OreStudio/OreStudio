@@ -4,7 +4,6 @@
 #+title: How do I see what every worktree is doing?
 #+description: Use compass fleet to list each git worktree's branch, story, task and open PR.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :compass:worktrees:coordination:recipe:
 #+created: 2026-05-25

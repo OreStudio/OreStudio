@@ -4,7 +4,6 @@
 #+title: Task: Split feature flags out of accounts
 #+description: Extract feature flags from ores.accounts into their own component so they can be managed independently.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :refactor:feature_flags:accounts:authentication_bootstrap_followup:sprint_05:v0:
 #+owner: marco

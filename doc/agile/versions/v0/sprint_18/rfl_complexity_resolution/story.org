@@ -4,7 +4,6 @@
 #+title: Story: Resolve RFL complexity issues
 #+description: Permanently resolve MSVC C1202 and Clang expression nesting limits via structural isolation.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :msvc:clang:cpp:reflect_cpp:sprint_18:v0:story:
 #+created: 2026-05-23

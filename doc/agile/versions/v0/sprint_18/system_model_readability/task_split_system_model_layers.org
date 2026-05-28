@@ -4,7 +4,6 @@
 #+title: Task: Split system model layers into sub-pages and add architecture diagram
 #+description: Split each architecture layer in system_model.org into its own sub-page linked via org-roam; add a PlantUML 4-layer architecture diagram; merge site_pdf_and_manual_book story; add NATS org-roam links.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :system_model_readability:sprint_18:v0:
 #+owner: marco

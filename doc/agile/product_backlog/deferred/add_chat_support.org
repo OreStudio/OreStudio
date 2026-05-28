@@ -4,7 +4,6 @@
 #+title: Add chat support
 #+description: Add chat support
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:far:
 #+created: 2026-05-21

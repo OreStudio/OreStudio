@@ -4,7 +4,6 @@
 #+title: Story: Improve LLM runbook and skill tooling
 #+description: Add skill support to compass add, update the skill-creation recipe to use it, and create a run-runbook skill that locates and executes the closest matching runbook from the catalogue.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :llm:skills:runbook:tooling:sprint_18:v0:
 #+created: 2026-05-28

@@ -4,7 +4,6 @@
 #+title: Story: Comms substrate evolution
 #+description: Composable CLI options/parser; rename ores.shell to ores.comms.shell; dynamic notification-channel discovery.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :comms:cli:shell:refactor:sprint_08:v0:
 #+created: 2026-05-19

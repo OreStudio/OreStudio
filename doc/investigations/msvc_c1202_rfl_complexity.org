@@ -4,7 +4,6 @@
 #+title: Investigation: MSVC C1202 and rfl complexity
 #+description: Root cause analysis of recursive template depth limits in reflect-cpp.
 #+type: investigation
-#+version: 2
 #+level: cross
 #+filetags: :msvc:clang:cpp:reflect_cpp:investigation:
 #+created: 2026-05-23

@@ -4,7 +4,6 @@
 #+title: Task: Complete DQ publish pattern: async PublishDatasetsDialog with WorkflowStepsWidget
 #+description: - Replaces the synchronous text-log results page in `PublishDatasetsDialog` with async `QFutureWatcher` dispatch and `Wo
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :dq_publish_pattern:sprint_17:v0:
 #+owner: marco

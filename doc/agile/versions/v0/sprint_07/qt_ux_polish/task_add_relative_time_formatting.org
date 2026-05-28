@@ -4,7 +4,6 @@
 #+title: Task: Add support for relative time formatting
 #+description: Render timestamps as relative time ("3 minutes ago") with a tooltip showing the absolute time.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:ux:formatting:time:qt_ux_polish:sprint_07:v0:
 #+owner: marco

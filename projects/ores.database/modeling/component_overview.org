@@ -4,7 +4,6 @@
 #+title: ores.database
 #+description: PostgreSQL database access layer — connection pool, tenant context, bitemporal operations, and repository helpers.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :database:persistence:component:
 #+created: 2026-05-20

@@ -4,7 +4,6 @@
 #+title: Story: compass cross-worktree status (global where)
 #+description: Show what every git worktree is working on (branch, story, task, PR) so parallel agents don't collide.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :compass:worktrees:coordination:python:sprint_18:v0:
 #+created: 2026-05-25

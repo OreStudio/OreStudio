@@ -4,7 +4,6 @@
 #+title: Implement recursive CTE in compute_visible_party_ids
 #+description: compute_visible_party_ids currently returns only {party_id}. Implement the recursive CTE over ores_refdata_parties_tbl.parent_party_id so RLS sees the full descendant set.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:security:database:
 #+created: 2026-05-22

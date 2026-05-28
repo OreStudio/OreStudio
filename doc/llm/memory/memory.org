@@ -4,7 +4,6 @@
 #+title: Project memory
 #+description: Persistent project-scope memories for LLM sessions. One memory per file under doc/llm/memory/. Read at session start; appended to over time.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :memory:index:knowledge:
 #+created: 2024-06-15

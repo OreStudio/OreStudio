@@ -2,7 +2,6 @@
 :ID: 27A575D3-DB84-411D-B3C0-58122128E424
 :END:
 #+title: Strict Service Table Isolation
-#+version: 2
 #+SUBTITLE: Mandatory role drops + zero cross-component DB access
 #+DATE: 2026-05-12
 #+AUTHOR: ORE Studio Team

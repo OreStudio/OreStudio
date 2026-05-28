@@ -4,7 +4,6 @@
 #+title: Task: Add UI for log viewing
 #+description: Qt-LogViewer-based panel for both client and server logs; runtime log-level controls.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:logging:ux:qt_ux_polish:sprint_08:v0:
 #+owner: marco

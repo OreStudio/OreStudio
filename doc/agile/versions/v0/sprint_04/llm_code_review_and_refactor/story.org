@@ -4,7 +4,6 @@
 #+title: Story: LLM code review and refactor
 #+description: Run an LLM review across the codebase; act on its findings — Dogen-style component restructure, splits, moves, UML coverage.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :code_review:llm:refactor:uml:sprint_04:v0:
 #+created: 2025-11-28

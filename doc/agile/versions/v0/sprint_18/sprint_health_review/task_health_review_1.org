@@ -4,7 +4,6 @@
 #+title: Task: Health review 1 — sprint 18 mid-sprint analysis
 #+description: First System 2 health review of sprint 18: goal alignment, load, PR velocity, story/task balance, focus signal, velocity, and overall verdict.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sprint_health_review:sprint_18:v0:
 #+owner: marco

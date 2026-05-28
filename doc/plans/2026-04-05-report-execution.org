@@ -2,7 +2,6 @@
 :ID: B4E8D3F2-9C5A-4B7E-C7D4-3E2F9A6C8D0E
 :END:
 #+title: Report Execution Pipeline
-#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

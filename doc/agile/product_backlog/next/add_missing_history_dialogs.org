@@ -4,7 +4,6 @@
 #+title: Add missing history dialogs
 #+description: Add missing history dialogs
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

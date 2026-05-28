@@ -4,7 +4,6 @@
 #+title: Task: Per-platform package uploads via Packages tab
 #+description: Follow-up to #714. That PR moved package_uri to the junction and introduced vcpkg triplets; this one makes the Qt dialog
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compute_gleif:sprint_17:v0:
 #+owner: marco

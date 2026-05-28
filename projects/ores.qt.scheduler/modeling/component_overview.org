@@ -4,7 +4,6 @@
 #+title: ores.qt.scheduler
 #+description: Qt plugin for job scheduling UI — job definitions, job instances, and the scheduler monitor.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :qt:scheduler:ui:component:
 #+created: 2026-05-20

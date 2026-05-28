@@ -4,7 +4,6 @@
 #+title: Task: Split god admin account into RBAC roles
 #+description: Introduce ores_owner / ores_rw / ores_ro group roles + LOGIN service users (ores_http_user, etc.); ALTER DEFAULT PRIVILEGES; schema ownership held by the DDL user. Postgres passwords removed from GitHub workflows as part of this.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :iam:rbac:postgres:security:database_role_split_and_schema_consolidation:sprint_11:v0:
 #+owner: marco

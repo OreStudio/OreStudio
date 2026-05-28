@@ -4,7 +4,6 @@
 #+title: Task: Replace 4 remaining hand-crafted SQL files with codegen
 #+description: - Extends `sql_schema_domain_entity_create.mustache` and `generator.py` with
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sql_codegen_drift:sprint_17:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: How do I add a new account?
 #+description: Add a new account using =ores.cli= command-line arguments
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:accounts:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Reduce messaging handler boilerplate
 #+description: Factor out common JWT verify, permission check, and logging into a base handler class or free function so individual handlers don't repeat the same preamble.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:analytics:architecture:
 #+created: 2026-05-22

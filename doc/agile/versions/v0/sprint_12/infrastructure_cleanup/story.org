@@ -4,7 +4,6 @@
 #+title: Story: Infrastructure cleanup
 #+description: Merge admin and template databases away; fix OSX build with portable getopt.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :database:osx:ci:refactor:sprint_12:v0:
 #+created: 2026-05-19

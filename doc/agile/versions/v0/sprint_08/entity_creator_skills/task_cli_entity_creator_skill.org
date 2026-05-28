@@ -4,7 +4,6 @@
 #+title: Task: CLI entity creator skill
 #+description: Skill for adding CLI commands for a domain entity in ores.cli; parsers, options, application logic, recipes.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :skills:cli:scaffolding:entity_creator_skills:sprint_08:v0:
 #+owner: marco

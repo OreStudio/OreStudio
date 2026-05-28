@@ -4,7 +4,6 @@
 #+title: ores.shell
 #+description: Interactive REPL for connecting to ORE Studio via NATS — currency queries, account management, and auto-login.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :shell:repl:tool:component:
 #+created: 2026-05-20

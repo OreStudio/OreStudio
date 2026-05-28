@@ -4,7 +4,6 @@
 #+title: Story: Workflow engine
 #+description: ores.workflow component foundation; FSM state UUIDs replace ad-hoc status strings; generalised event-driven saga engine with startup recovery.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :workflow:saga:fsm:engine:sprint_16:v0:
 #+created: 2026-05-20

@@ -4,7 +4,6 @@
 #+title: Task: Create an icon for the application
 #+description: Design an application icon for ORE Studio and embed it in the Qt resources and the OS package metadata.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:ux:branding:icon:ui_polish_and_branding:sprint_04:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Add compass remember command
 #+description: Implement compass remember --what X --why Y to scaffold and register a new project memory from the command line.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compass_product_backlog:sprint_18:v0:
 #+owner: marco

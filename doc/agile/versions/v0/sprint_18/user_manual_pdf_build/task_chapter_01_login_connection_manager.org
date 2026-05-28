@@ -4,7 +4,6 @@
 #+title: Task: Write Chapter 1: Login and Connection Manager
 #+description: Flesh out system_bootstrapping.org with full prose covering the login screen and all Connection Manager functionality, with screenshot placeholders.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :doc:manual:chapter_01:user_manual_pdf_build:sprint_18:v0:
 #+owner: marco

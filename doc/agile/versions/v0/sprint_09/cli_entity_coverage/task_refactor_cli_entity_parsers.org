@@ -4,7 +4,6 @@
 #+title: Task: Refactor CLI entity parsers with generic helper
 #+description: Introduce simple_entity_config + handle_simple_entity_command in parser_helpers; refactor the five new entity parsers behind it. Net reduction ~314 lines.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :cli:refactor:helper:cli_entity_coverage:sprint_09:v0:
 #+owner: marco

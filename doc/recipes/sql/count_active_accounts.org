@@ -4,7 +4,6 @@
 #+title: Count Active Accounts
 #+description: Count Active Accounts
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:sql:accounts:
 #+created: 2026-05-21

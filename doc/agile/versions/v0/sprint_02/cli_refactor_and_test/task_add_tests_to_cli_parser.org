@@ -4,7 +4,6 @@
 #+title: Task: Add tests to CLI parser
 #+description: Add Catch2 tests covering the CLI parser's main flag and command paths.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :cli:testing:catch2:parser:cli_refactor_and_test:sprint_02:v0:
 #+owner: marco

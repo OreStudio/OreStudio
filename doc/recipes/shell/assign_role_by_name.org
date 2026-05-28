@@ -4,7 +4,6 @@
 #+title: Assign Role By Name
 #+description: Assign Role By Name
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:shell:accounts:
 #+created: 2026-05-21

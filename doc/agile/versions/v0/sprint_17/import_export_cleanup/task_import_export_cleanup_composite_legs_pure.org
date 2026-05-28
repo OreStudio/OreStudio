@@ -4,7 +4,6 @@
 #+title: Task: Import/export cleanup: composite legs, pure parser, batch fetches, trade list split
 #+description: - Phase 1: Unify instrument variant hierarchy — introduce `Instrument` concept, `with_legs<T,Leg>`, `trade_instrument` v
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :import_export_cleanup:sprint_17:v0:
 #+owner: marco

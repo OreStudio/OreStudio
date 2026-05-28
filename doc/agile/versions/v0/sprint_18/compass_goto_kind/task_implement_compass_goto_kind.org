@@ -4,7 +4,6 @@
 #+title: Task: Implement compass goto --kind flag
 #+description: Add --kind argument to cmd_goto, update hotfix runbook, branching recipe, compass memory, and sprint_themes.org.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compass_goto_kind:sprint_18:v0:
 #+owner: marco

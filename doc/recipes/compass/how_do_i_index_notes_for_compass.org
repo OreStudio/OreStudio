@@ -4,7 +4,6 @@
 #+title: How do I index notes for compass?
 #+description: Use compass index to build/update the local FTS cache from org-roam.db before searching.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :compass:search:index:recipe:
 #+created: 2026-05-24

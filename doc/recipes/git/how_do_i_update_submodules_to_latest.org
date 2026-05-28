@@ -4,7 +4,6 @@
 #+title: How do I update submodules to latest?
 #+description: Pull the latest commit on each git submodule's tracked branch.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:git:
 #+created: 2026-05-21

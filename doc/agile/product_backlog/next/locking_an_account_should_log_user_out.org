@@ -4,7 +4,6 @@
 #+title: Locking an account should log user out
 #+description: Locking an account should log user out
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

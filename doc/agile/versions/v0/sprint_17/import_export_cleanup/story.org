@@ -4,7 +4,6 @@
 #+title: Story: Import/export cleanup
 #+description: Composite legs, pure parser refactor, batch fetches, trade list split; wrap remaining instrument types in export_result structs.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :ore:trading:cleanup:sprint_17:v0:
 #+created: 2026-05-21

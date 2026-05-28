@@ -4,7 +4,6 @@
 #+title: Assorted UI polish work for detached mode
 #+description: Assorted UI polish work for detached mode
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

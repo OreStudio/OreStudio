@@ -4,7 +4,6 @@
 #+title: Task: Implement full environment isolation for database roles
 #+description: Environment-prefixed PostgreSQL roles + users so operations in one environment (e.g. local1) don't interfere with others (e.g. local2); psql DO-block variable substitution via set_config + current_setting; ORES_TEST_ENV_CMD passes env vars to make rat; variability core tests fixed for missing system tenant UUIDs; ores.http.core extracted for domain-layer route handlers (separating from ores.http.api).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sql:iam:environments:refactor:tests:environment_isolation_db_roles:sprint_15:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Add conventions import handler (Phase 3)
 #+description: - Adds `conventions` to the CLI entity enum so `--entity=conventions` is a valid import target
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_conventions_import:sprint_17:v0:
 #+owner: marco

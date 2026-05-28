@@ -4,7 +4,6 @@
 #+title: Add a documentation section explaining that ORE Studio is an…
 #+description: Add a documentation section explaining that ORE Studio is an LLM-first system and describing the combination of MASD, Zettelkasten, and Cybernetics that underpins its information architecture.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

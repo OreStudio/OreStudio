@@ -4,7 +4,6 @@
 #+title: Setup code quality actions
 #+description: Setup code quality actions
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :infra:capture:far:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Task: Add Analytics CRUD UI and restructure DQ project layout
 #+description: Analytics module Qt UI for pricing engines + model configurations; refactor Data Quality module; code generator enhanced to support combo box widgets in detail dialogs.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:analytics:dq:ui:codegen:reporting_and_analytics:sprint_16:v0:
 #+owner: marco

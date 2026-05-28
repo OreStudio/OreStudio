@@ -2,7 +2,6 @@
 :ID: 4A7E9C12-3B85-4F2D-A8D6-1C5E0B734F92
 :END:
 #+title: Asset Class Unification
-#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

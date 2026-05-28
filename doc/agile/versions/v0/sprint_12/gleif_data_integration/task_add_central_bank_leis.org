@@ -4,7 +4,6 @@
 #+title: Task: Add central-bank-related LEIs
 #+description: ~93 GLEIF-verified LEIs (33 sovereign issuers, 51 central banks, 9 supranationals); CENTRAL_BANK sector keyword detection with multilingual support; 3x financial-priority sampling.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :gleif:central_banks:leis:refdata:gleif_data_integration:sprint_12:v0:
 #+owner: marco

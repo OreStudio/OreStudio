@@ -4,7 +4,6 @@
 #+title: How do I address PR review comments?
 #+description: Read open review comments via gh, apply fixes as new commits (never amend), reply to each comment, and resolve the review thread.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :github:pr:review:gh:recipe:
 #+created: 2026-05-21

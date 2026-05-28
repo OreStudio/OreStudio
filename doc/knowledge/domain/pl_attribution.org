@@ -4,7 +4,6 @@
 #+title: P&L Attribution
 #+description: P&L attribution (Explain) methodology: the attribution identity, Bump and Reset, Bump and Run, trade activity categories, market data bucketing, time component, deal population rules, EOD sign-off, and aggregation.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:domain:finance:pnl:reporting:ore:
 #+created: 2026-05-25

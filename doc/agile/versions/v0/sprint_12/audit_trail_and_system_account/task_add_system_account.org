@@ -4,7 +4,6 @@
 #+title: Task: Add system account
 #+description: Non-login system account used for all initial population; publication uses the new admin account, not the system account.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :iam:system_account:bootstrap:audit:audit_trail_and_system_account:sprint_12:v0:
 #+owner: marco

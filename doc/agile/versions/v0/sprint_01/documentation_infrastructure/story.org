@@ -4,7 +4,6 @@
 #+title: Story: Documentation infrastructure
 #+description: Establish the documentation pipeline — project site, Doxygen, README, and the seed domain notes.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :documentation:site:doxygen:sprint_01:v0:
 #+created: 2024-06-22

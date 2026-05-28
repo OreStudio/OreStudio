@@ -4,7 +4,6 @@
 #+title: Story: Engineering hygiene
 #+description: System-model refresh, PR-skill consolidation, valgrind fixes; documentation refactor postponed.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :modeling:skills:qa:documentation:sprint_09:v0:
 #+created: 2026-05-19

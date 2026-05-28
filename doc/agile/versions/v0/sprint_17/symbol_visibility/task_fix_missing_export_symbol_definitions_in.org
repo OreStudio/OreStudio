@@ -4,7 +4,6 @@
 #+title: Task: Fix missing export symbol definitions in trading.api and trading.core
 #+description: - PR #738 added `ORES_X_LIBRARY` compile definitions and visibility flags to 43 libraries but missed `ores.trading.api` 
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :symbol_visibility:sprint_17:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Raise MSVC /constexpr:depth to 100000 to fix C1202 in ores.qt.api
 #+description: - The `ores.trading.api` target sets `/constexpr:depth` as `PUBLIC`, meaning it propagates to all consumers and the last
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :msvc_c1202_fix:sprint_17:v0:
 #+owner: marco

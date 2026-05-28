@@ -4,7 +4,6 @@
 #+title: Add widget to manage assets
 #+description: Add widget to manage assets
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

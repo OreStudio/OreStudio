@@ -4,7 +4,6 @@
 #+title: Story: Engineering hygiene
 #+description: Past PR-review comments, CI apt-get retries, vcpkg cache backend fix.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :review:ci:vcpkg:polish:sprint_11:v0:
 #+created: 2026-05-19

@@ -2,7 +2,6 @@
 :ID: 847AECEA-D0E6-4D4F-870A-F0E720B49256
 :END:
 #+title: Codegen IAM Permissions and Roles Population
-#+version: 2
 #+DATE: 2026-05-18
 #+AUTHOR: ORE Studio Team
 #+STATUS: PROPOSED

@@ -4,7 +4,6 @@
 #+title: Task: Fix Valgrind leaks for comms tests
 #+description: Real leaks surfaced in the ores.comms test suite; fix them and confirm Valgrind is clean.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :valgrind:comms:bug_fix:testing:valgrind_leaks_followup:sprint_05:v0:
 #+owner: marco

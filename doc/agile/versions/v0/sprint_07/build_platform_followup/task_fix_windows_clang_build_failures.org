@@ -4,7 +4,6 @@
 #+title: Task: Windows clang build failures
 #+description: Resolve the latest Windows clang build breaks: deprecated APIs, missing DLLs, signed/unsigned warnings.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :build:windows:clang:bug_fix:build_platform_followup:sprint_07:v0:
 #+owner: marco

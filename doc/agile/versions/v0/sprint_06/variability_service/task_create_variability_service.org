@@ -4,7 +4,6 @@
 #+title: Task: Create a variability service for feature flags
 #+description: Stand up ores.variability service: feature-flag domain model + repository + messaging.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :variability:feature_flags:service:variability_service:sprint_06:v0:
 #+owner: marco

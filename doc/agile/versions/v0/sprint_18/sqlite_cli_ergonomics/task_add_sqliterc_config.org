@@ -4,7 +4,6 @@
 #+title: Task: Add a default sqliterc with formatting and ergonomic defaults
 #+description: Author projects/ores.sql/utility/sqliterc.sql with commented defaults for output formatting, wide non-wrapping columns, and session settings.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sql:sqlite:tooling:sqlite_cli_ergonomics:sprint_18:v0:
 #+owner: marco

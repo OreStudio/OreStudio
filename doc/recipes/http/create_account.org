@@ -4,7 +4,6 @@
 #+title: Create Account
 #+description: Create Account
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:http:accounts_verb:
 #+created: 2026-05-21

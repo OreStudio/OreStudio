@@ -3,7 +3,6 @@
 :END:
 # -*- mode: org; indent-tabs-mode: nil -*-
 #+title: Server-Side ORE Import
-#+version: 2
 #+DATE: 2026-04-03
 #+AUTHOR: Marco Craveiro
 #+STATUS: IN PROGRESS

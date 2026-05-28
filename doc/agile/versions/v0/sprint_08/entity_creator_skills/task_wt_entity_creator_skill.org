@@ -4,7 +4,6 @@
 #+title: Task: Wt entity creator skill
 #+description: Skill for adding Wt list widget + detail dialog + application integration for a domain entity.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :skills:wt:scaffolding:entity_creator_skills:sprint_08:v0:
 #+owner: marco

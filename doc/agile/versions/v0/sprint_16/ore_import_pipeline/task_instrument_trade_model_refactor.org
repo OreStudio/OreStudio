@@ -4,7 +4,6 @@
 #+title: Task: Instrument-trade model refactor and portfolio export
 #+description: instrument_family discriminator + instrument_id UUIDs link trades to product-specific extension tables; new get_instrument_for_trade + export_portfolio NATS endpoints; thread-safe UUID generation; N+1 query awareness.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :trading:sql:domain:portfolio:nats:refactor:ore_import_pipeline:sprint_16:v0:
 #+owner: marco

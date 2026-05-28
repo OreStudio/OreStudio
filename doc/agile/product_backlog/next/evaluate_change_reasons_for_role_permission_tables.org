@@ -4,7 +4,6 @@
 #+title: Evaluate change reasons for role permission tables
 #+description: Evaluate change reasons for role permission tables
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :analysis:capture:near:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Sprint 01 Release Notes
 #+description: Sprint 01 release notes (July 2024).
 #+type: release_notes
-#+version: 2
 #+level: cross
 #+filetags: :release_notes:sprint_01:v0:
 #+created: 2025-02-02

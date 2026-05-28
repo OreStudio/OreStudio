@@ -4,7 +4,6 @@
 #+title: Task: Build ores.shell.lib as STATIC to fix Windows plugin DLL link
 #+description: Hotfix for the Windows `Continuous Windows` workflow on `main`, which has been failing all four configurations (msvc/cla
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :symbol_visibility:sprint_17:v0:
 #+owner: marco

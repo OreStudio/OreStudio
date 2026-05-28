@@ -4,7 +4,6 @@
 #+title: How do I investigate a test failure?
 #+description: Run a failing suite with logging on, parse the results via parse_test_results.py, drill into the per-test logs, and add targeted logging if needed.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :cmake:tests:debugging:recipe:
 #+created: 2026-05-21

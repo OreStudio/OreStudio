@@ -4,7 +4,6 @@
 #+title: ORE Studio User Manual
 #+description: Site entry point for the ORE Studio User Manual — chapter index with descriptions.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:manual:user_guide:index:
 #+created: 2026-05-28

@@ -2,7 +2,6 @@
 :ID: 046217E8-7259-492B-A713-A4043C867FE5
 :END:
 #+title: Party-Level Isolation and Tenant Types Design
-#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

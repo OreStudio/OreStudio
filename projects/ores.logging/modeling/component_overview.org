@@ -4,7 +4,6 @@
 #+title: ores.logging
 #+description: Core logging library on Boost.Log — severity levels, logger factory, and lifecycle management for all ORE Studio components.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :logging:infrastructure:component:
 #+created: 2026-05-20

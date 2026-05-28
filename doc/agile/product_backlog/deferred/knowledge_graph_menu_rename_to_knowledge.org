@@ -4,7 +4,6 @@
 #+title: Rename the Knowledge Graph menu item to Knowledge, remove th…
 #+description: Rename the Knowledge Graph menu item to Knowledge, remove the graph viewer from the nav, and add a section within the Knowledge page explaining the org-roam graph and how to use it.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

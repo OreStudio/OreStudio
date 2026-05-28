@@ -4,7 +4,6 @@
 #+title: Task: Add service lifecycle controller and dashboard enhancements
 #+description: ores.controller component for managing service definitions + instances + lifecycle events; process supervisor with dependency-ordered service launch; cert management; HTTP/Wt/wrapper definitions; service dashboard UX overhaul with badge status + Stop/Restart controls; graceful shutdown of child processes.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :controller:services:lifecycle:dashboard:qt:service_lifecycle_controller:sprint_16:v0:
 #+owner: marco

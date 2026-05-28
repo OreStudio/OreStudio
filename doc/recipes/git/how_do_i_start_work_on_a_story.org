@@ -4,7 +4,6 @@
 #+title: How do I start work on a story?
 #+description: Create a feature branch from main and mark the story STARTED in the sprint.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :git:branch:agile:story:recipe:
 #+created: 2026-05-21

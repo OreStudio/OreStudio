@@ -4,7 +4,6 @@
 #+title: Task: Remove MSVC C1202 workaround file splits
 #+description: Removes three sets of artificial code splits that were introduced solely to work around MSVC C1202 (constexpr budget exc
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :msvc_c1202_fix:sprint_17:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Auto connect
 #+description: Auto connect
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:shell:accounts:
 #+created: 2026-05-21

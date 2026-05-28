@@ -4,7 +4,6 @@
 #+title: Task: Add system accounts for services
 #+description: account_type classifications (user / service / algorithm / LLM); session-only authentication for service accounts; performed_by audit field across 42 tables (codegen-driven); telemetry async-sink deadlock fix; tenant_aware_pool fail-fast.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :iam:audit:services:telemetry:deadlock:service_accounts_and_audit:sprint_11:v0:
 #+owner: marco

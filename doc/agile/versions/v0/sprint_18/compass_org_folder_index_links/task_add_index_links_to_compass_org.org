@@ -4,7 +4,6 @@
 #+title: Task: Add index links to compass.org and create missing index files
 #+description: Wire each folder entry in doc/compass.org to its org-roam index file; scaffold any missing index docs.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :docs:compass:navigation:compass_org_folder_index_links:sprint_18:v0:
 #+owner: marco

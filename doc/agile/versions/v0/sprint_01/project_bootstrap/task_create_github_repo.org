@@ -4,7 +4,6 @@
 #+title: Task: Create GitHub repository
 #+description: Create the OreStudio GitHub organisation and the initial OreStudio repository with vcpkg support.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :infrastructure:github:bootstrap:project_bootstrap:sprint_01:v0:
 #+owner: marco

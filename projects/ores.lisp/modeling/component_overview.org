@@ -4,7 +4,6 @@
 #+title: ores.lisp
 #+description: Emacs Lisp developer tooling for ORE Studio — dashboard, database browser, shell integration, and org-roam export.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :lisp:tooling:emacs:component:
 #+created: 2026-05-25

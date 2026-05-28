@@ -4,7 +4,6 @@
 #+title: How do I refine the backlog?
 #+description: Checklist and procedure for a general backlog housekeeping session: scan, clarify, cull, and re-prioritise captures.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :agile:backlog:recipe:
 #+created: 2026-05-24

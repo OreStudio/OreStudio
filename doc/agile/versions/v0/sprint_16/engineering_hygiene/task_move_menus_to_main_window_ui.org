@@ -4,7 +4,6 @@
 #+title: Task: Move Compute and Market Data menus into MainWindow.ui
 #+description: Compute + Market Data menu structural definitions + action properties moved from MainWindow.cpp to MainWindow.ui.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:ui:menus:refactor:engineering_hygiene:sprint_16:v0:
 #+owner: marco

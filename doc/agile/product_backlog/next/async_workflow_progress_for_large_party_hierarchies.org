@@ -4,7 +4,6 @@
 #+title: Async workflow progress for large party hierarchies
 #+description: Async workflow progress for large party hierarchies
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

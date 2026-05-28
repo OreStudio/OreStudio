@@ -4,7 +4,6 @@
 #+title: Task: Add ores.reporting SQL schema
 #+description: SQL schema for the reporting subsystem: report_definitions + report_instances with FSM lifecycle; concurrency_policies + report_types enum tables; risk_report_configs for NPV / cashflow / XVA / VaR / SIMM with temporal junctions for portfolio + book scoping; NOTIFY triggers; RLS for tenant + party isolation; ores_reporting_ component prefix in the schema validator.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :reporting:sql:fsm:rls:reporting_subsystem:sprint_14:v0:
 #+owner: marco

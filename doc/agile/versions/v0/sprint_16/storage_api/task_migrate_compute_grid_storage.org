@@ -4,7 +4,6 @@
 #+title: Task: Migrate compute grid to generic storage API
 #+description: compute_storage helper class manages bucket names + keys for compute artifacts; messaging + Qt UI use new storage path structure; HTTP upload from POST to PUT.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compute:storage:refactor:qt:storage_api:sprint_16:v0:
 #+owner: marco

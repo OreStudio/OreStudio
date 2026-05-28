@@ -1,5 +1,4 @@
 #+TITLE: Qt Menu & Toolbar Structure — Analysis
-#+version: 1
 #+AUTHOR: Marco Craveiro
 #+DATE: 2026-04-09
 #+OPTIONS: toc:2 num:t

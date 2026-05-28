@@ -4,7 +4,6 @@
 #+title: Task: Phase 5.2: remove dead workflow DML grants on IAM and refdata tables
 #+description: - Verifies `provision_parties` workflow routes all writes through NATS (`refdata.v1.parties.save`, `iam.v1.accounts.save
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :strict_service_isolation:sprint_17:v0:
 #+owner: marco

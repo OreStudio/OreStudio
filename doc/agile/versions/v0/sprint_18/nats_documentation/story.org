@@ -4,7 +4,6 @@
 #+title: Story: Document NATS: technology overview, system integration, and recipes
 #+description: Create a NATS technology knowledge page, document its role in the system model, add per-component NATS sections with queue tables, and write NATS recipes.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :nats:messaging:documentation:knowledge:sprint_18:v0:
 #+created: 2026-05-26

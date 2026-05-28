@@ -4,7 +4,6 @@
 #+title: Sprint 14
 #+description: Messaging infrastructure: ORE Import Wizard; ores.reporting subsystem (design + schema + domain + UI); trade status FSM; CLI domain layer; messaging journey from pgmq+pg_cron → custom → NNG → NATS; party codename + race fixes; JWT RS256 in ores.security.
 #+type: sprint
-#+version: 2
 #+level: s3
 #+filetags: :messaging:nats:reporting:fsm:cli:jwt:codename:sprint_14:v0:
 #+created: 2026-05-20

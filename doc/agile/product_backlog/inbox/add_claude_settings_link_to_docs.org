@@ -4,7 +4,6 @@
 #+title: Add a link to the Claude Code settings page in the LLM docum…
 #+description: Add a link to the Claude Code settings page in the LLM documentation section, so contributors know where to configure skills, memory, and shell settings.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

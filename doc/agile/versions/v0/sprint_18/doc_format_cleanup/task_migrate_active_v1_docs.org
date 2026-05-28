@@ -4,7 +4,6 @@
 #+title: Task: Migrate active v1 docs to current format
 #+description: Add #+version:, #+type:, #+level: frontmatter to active non-historical docs identified in the audit (plans, skill docs, index files).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :doc_format_cleanup:sprint_18:v0:
 #+owner: marco

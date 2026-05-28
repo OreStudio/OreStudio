@@ -4,7 +4,6 @@
 #+title: Task: Implement runbook document type
 #+description: Add #+type: runbook to codegen, compass, glossary, and document types contract.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :runbook:codegen:compass:documentation:runbook_support:sprint_18:v0:
 #+owner: marco

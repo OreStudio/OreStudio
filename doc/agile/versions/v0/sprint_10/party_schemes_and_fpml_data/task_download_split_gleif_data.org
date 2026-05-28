@@ -4,7 +4,6 @@
 #+title: Task: Download and split GLEIF data
 #+description: Script to fetch the GLEIF Golden Copy and produce a representative subset for development use.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :party:gleif:data:scripts:party_schemes_and_fpml_data:sprint_10:v0:
 #+owner: marco

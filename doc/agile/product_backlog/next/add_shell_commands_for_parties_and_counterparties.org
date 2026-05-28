@@ -4,7 +4,6 @@
 #+title: Add shell commands for parties and counterparties
 #+description: Add shell commands for parties and counterparties
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

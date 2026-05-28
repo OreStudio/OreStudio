@@ -4,7 +4,6 @@
 #+title: Task: Fix CI: export conversion_error and raise MSVC constexpr depth
 #+description: Two separate CI failures introduced on main by recent merges:
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :msvc_c1202_fix:sprint_17:v0:
 #+owner: marco

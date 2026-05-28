@@ -4,7 +4,6 @@
 #+title: Task: Workspace: bitemporal schema, service layer, UI, and lifecycle operations
 #+description: Full implementation of the workspace entity as a first-class domain object with bitemporal history, a complete NATS serv
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :workspace:sprint_17:v0:
 #+owner: marco

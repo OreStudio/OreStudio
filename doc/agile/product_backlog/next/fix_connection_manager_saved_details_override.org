@@ -4,7 +4,6 @@
 #+title: It is not possible to override saved connection details in t…
 #+description: It is not possible to override saved connection details in the connection manager dialog. Users should be able to edit a saved connection without deleting and recreating it.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

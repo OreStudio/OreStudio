@@ -4,7 +4,6 @@
 #+title: Story: Track PRs per task and surface them in compass where
 #+description: Add a PRs table to task documents, record PRs on creation, and add --prs flag to compass where.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :compass:tooling:agile:sprint_18:v0:
 #+created: 2026-05-24

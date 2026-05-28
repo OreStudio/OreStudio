@@ -4,7 +4,6 @@
 #+title: Task: Add domain sub-menu layer to CLI
 #+description: Four top-level domains: refdata / iam / dq / variability; command syntax becomes ores.cli <domain> <entity> <op>; core parser refactored with domain-specific parsers; documentation + tests + entity parsers updated.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :cli:refactor:structure:docs:cli_domain_layer:sprint_14:v0:
 #+owner: marco

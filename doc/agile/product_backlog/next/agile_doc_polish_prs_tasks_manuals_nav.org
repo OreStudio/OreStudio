@@ -4,7 +4,6 @@
 #+title: Bundle of agile doc polish: (1) PR references in story/task …
 #+description: Bundle of agile doc polish: (1) PR references in story/task docs should be hyperlinks not plain text; (2) task lists should be formatted as tables; (3) the manuals index page and site nav link need wiring (PR #818 follow-up).
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

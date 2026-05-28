@@ -4,7 +4,6 @@
 #+title: Sprint 01
 #+description: Bootstrap project infrastructure and bring currencies end-to-end through the stack.
 #+type: sprint
-#+version: 2
 #+level: s3
 #+filetags: :bootstrap:currencies:v0:
 #+created: 2024-06-15

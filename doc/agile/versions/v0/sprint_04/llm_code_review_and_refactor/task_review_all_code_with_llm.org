@@ -4,7 +4,6 @@
 #+title: Task: Review all code created so far with an LLM
 #+description: Run an LLM-driven review pass across every component and capture findings as follow-on tasks.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :code_review:llm:llm_code_review_and_refactor:sprint_04:v0:
 #+owner: marco

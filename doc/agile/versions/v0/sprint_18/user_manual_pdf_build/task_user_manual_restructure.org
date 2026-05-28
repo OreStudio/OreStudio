@@ -4,7 +4,6 @@
 #+title: Task: User manual restructure
 #+description: Retrospective record of PR #807: restructured user_manual.org into chaptered layout, wrote the introduction chapter, migrated screenshots to assets/images.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :doc:manual:retrospective:user_manual_pdf_build:sprint_18:v0:
 #+owner: marco

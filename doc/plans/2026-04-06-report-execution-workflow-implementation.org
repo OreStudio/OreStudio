@@ -2,7 +2,6 @@
 :ID: D7E2F1A3-4B8C-5D9E-A6F3-1C0D8E7B4A2F
 :END:
 #+title: Report Execution Workflow — Implementation Plan
-#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

@@ -4,7 +4,6 @@
 #+title: Icon guidelines
 #+description: ORE Studio's visual language reference — variants, sizes, the full icon inventory grouped by semantic category.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:ui:icons:design:
 #+created: 2026-05-21

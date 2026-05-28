@@ -4,7 +4,6 @@
 #+title: Refactor trading reference type boilerplate into shared templates
 #+description: Refactor trading reference type boilerplate into shared templates
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

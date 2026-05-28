@@ -4,7 +4,6 @@
 #+title: Task: Add pgmq queue management and messaging UI
 #+description: MQ subsystem on top of pgmq: protocol 0xB000-0xB013 messages; ores_mq_metrics_samples_tbl time-series; ores_mq_scrape_metrics_fn pg_cron job; Qt monitor UI (ClientQueueModel + QueueMonitorMdiWindow + QueueDetailDialog + QueueChartWindow); protocol 46.3.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :mq:pgmq:protocol:qt:timescale:pgmq_queue_ui:sprint_14:v0:
 #+owner: marco

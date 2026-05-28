@@ -4,7 +4,6 @@
 #+title: How do I enable test logging?
 #+description: Turn on test-suite logging — configure-time flags (ORES_TEST_LOG_LEVEL, ORES_TEST_LOG_CONSOLE) and equivalent runtime environment variables.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :cmake:build:tests:logging:recipe:
 #+created: 2026-05-21

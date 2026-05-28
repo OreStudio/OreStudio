@@ -4,7 +4,6 @@
 #+title: Task: Analyse asset class modelling
 #+description: Full reconciliation audit: trading instrument_family_t, marketdata asset_class C++ enum, refdata bitemporal table, Qt hardcoded labels. Conclude that asset_class (risk taxonomy) + product_type (structural discriminator) are orthogonal and must coexist with shared refdata source of truth.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :trading:marketdata:refdata:analysis:asset_class:asset_class_and_product_type_unification:sprint_16:v0:
 #+owner: marco

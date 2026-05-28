@@ -4,7 +4,6 @@
 #+title: Task: Use sqlgen for Postgres
 #+description: Replace hand-written Postgres CRUD with sqlgen-generated code.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :storage:postgres:sqlgen:codegen:modernise_serialisation_and_storage:sprint_02:v0:
 #+owner: marco

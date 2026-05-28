@@ -5,7 +5,6 @@
 #+description: Never write org files directly — always use generate_doc.sh to scaffold them.
 #+type: memory
 #+memory_subtype: feedback
-#+version: 2
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-05-21

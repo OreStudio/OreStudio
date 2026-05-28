@@ -4,7 +4,6 @@
 #+title: SQL Schema Creator
 #+description: Create SQL table definitions, triggers, indexes, and population scripts for ORE Studio entities via codegen.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:sql:schema:codegen:
 #+created: 2024-09-01

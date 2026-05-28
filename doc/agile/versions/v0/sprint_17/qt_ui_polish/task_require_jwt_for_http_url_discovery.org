@@ -4,7 +4,6 @@
 #+title: Task: Require JWT for HTTP URL discovery; fail login on missing URL
 #+description: - Makes the NATS `http-server.v1.info.get` request require a JWT. Previously the handler was unauthenticated, leaking th
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt_ui_polish:sprint_17:v0:
 #+owner: marco

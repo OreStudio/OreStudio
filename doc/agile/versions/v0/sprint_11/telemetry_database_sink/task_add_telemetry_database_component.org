@@ -4,7 +4,6 @@
 #+title: Task: Add ores.telemetry.database component
 #+description: Split telemetry repository/mapper/entity into ores.telemetry.database to resolve the ores.telemetry ↔ ores.database circular dependency; Boost.Log database_sink_backend.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :telemetry:database:component:refactor:telemetry_database_sink:sprint_11:v0:
 #+owner: marco

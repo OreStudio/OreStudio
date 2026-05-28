@@ -4,7 +4,6 @@
 #+title: Task: Write Chapter 1: System bootstrapping concepts and provisioning wizards
 #+description: Explain the multi-tenant/multi-party model and walk through the system, tenant, and party provisioner wizards with screenshot placeholders.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :doc:manual:chapter_01:bootstrapping:user_manual_pdf_build:sprint_18:v0:
 #+owner: marco

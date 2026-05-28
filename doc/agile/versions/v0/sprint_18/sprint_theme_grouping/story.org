@@ -4,7 +4,6 @@
 #+title: Story: Sprint theme grouping
 #+description: Introduce theme subheadings into sprint.org to group stories by area and surface emerging patterns in the backlog.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :agile:sprint:readability:sprint_18:v0:
 #+created: 2026-05-28

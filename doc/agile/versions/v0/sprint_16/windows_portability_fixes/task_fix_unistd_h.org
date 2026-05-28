@@ -4,7 +4,6 @@
 #+title: Task: Remove unused unistd.h include breaking Windows builds
 #+description: Remove unused #include <unistd.h> from process_supervisor.cpp.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :windows:controller:bug_fix:header:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

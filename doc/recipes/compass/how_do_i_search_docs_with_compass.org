@@ -4,7 +4,6 @@
 #+title: How do I search docs with compass?
 #+description: Use compass search to full-text search the org-roam doc graph, with pretty/line/json output.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :compass:search:docs:recipe:
 #+created: 2026-05-24

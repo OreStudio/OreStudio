@@ -4,7 +4,6 @@
 #+title: ores.ore.core
 #+description: ORE XML import/export — currency configuration and ORE-format data exchange for the risk engine.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :ore:core:component:
 #+created: 2026-05-19

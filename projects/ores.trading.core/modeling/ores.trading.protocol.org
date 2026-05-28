@@ -2,7 +2,6 @@
 :ID: 0D9D09ED-2FD1-402A-9624-31E26D10812E
 :END:
 #+title: ores.trading Messaging Reference
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: overview

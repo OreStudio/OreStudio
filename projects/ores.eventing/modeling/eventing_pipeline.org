@@ -4,7 +4,6 @@
 #+title: Eventing Pipeline
 #+description: End-to-end walkthrough of how a database change becomes a NATS event and how clients consume it.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :eventing:design:pipeline:knowledge:
 #+created: 2026-05-26

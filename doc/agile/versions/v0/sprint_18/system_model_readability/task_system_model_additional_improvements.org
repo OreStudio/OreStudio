@@ -4,7 +4,6 @@
 #+title: Task: Additional system model improvements
 #+description: Fix the architecture_layers.puml diagram; simplify system_model.org layer section headings to linked one-liners removing duplicated blurb text.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :system_model_readability:sprint_18:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Source report definitions from DQ + improve party picker
 #+description: Login + party selection enhanced with business center codes + party categories; PartyPickerDialog refactored with separate system + operational sections, filtering, flag icons via image cache.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:party:picker:reporting:dq:reporting_and_analytics:sprint_16:v0:
 #+owner: marco

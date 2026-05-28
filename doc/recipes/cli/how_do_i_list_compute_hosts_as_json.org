@@ -4,7 +4,6 @@
 #+title: How do I list compute hosts as JSON?
 #+description: List compute hosts via =ores.cli= as JSON for piping into =jq=
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:compute_hosts:
 #+created: 2026-05-21

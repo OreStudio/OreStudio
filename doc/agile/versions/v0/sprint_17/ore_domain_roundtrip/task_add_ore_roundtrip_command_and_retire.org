@@ -4,7 +4,6 @@
 #+title: Task: Add ore roundtrip command and retire Thing 2 coverage check
 #+description: - Phase 1 (`ores.ore`): Implements `exporter::roundtrip_portfolio` — walks a directory of ORE portfolio XMLs recursively
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_domain_roundtrip:sprint_17:v0:
 #+owner: marco

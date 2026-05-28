@@ -4,7 +4,6 @@
 #+title: Task: Update document_types.org capture entry for inbox/next/deferred/discarded
 #+description: Revise the capture document-type entry to describe the four-bucket structure (inbox, next, deferred, discarded) and per-file layout.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco

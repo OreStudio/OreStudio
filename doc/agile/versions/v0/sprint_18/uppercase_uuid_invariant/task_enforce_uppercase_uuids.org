@@ -4,7 +4,6 @@
 #+title: Task: Enforce uppercase UUID invariant in codegen and audit docs
 #+description: Patch v2 doc templates and Python scripts so every generated UUID and link is uppercase; sweep org docs for stragglers.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :documentation:codegen:audit:uppercase_uuid_invariant:sprint_18:v0:
 #+owner: marco

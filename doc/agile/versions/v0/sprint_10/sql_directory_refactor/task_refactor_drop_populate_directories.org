@@ -4,7 +4,6 @@
 #+title: Task: Refactor drop/ and populate/ directory structure
 #+description: 56 files relocated into component subdirectories with git-history preserved; consistent naming (drop_COMPONENT.sql, populate_COMPONENT.sql); monolithic seed_upsert_functions split per component.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sql:refactor:structure:convention:sql_directory_refactor:sprint_10:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: The site build leaves legacy output alongside the new site. …
 #+description: The site build leaves legacy output alongside the new site. The build pipeline should always rm -rf site/ before recompiling so stale pages are never served.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

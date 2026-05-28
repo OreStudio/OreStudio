@@ -4,7 +4,6 @@
 #+title: Task: Refactor message handlers for per-request tenant context
 #+description: tenant_aware_handler base class; per-request database contexts from session.tenant_id; type-safe utility::uuid::tenant_id wrapper; system tenant changes from nil UUID to max UUID (RFC 9562); fixes cross-tenant data leakage.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :tenancy:security:handlers:rls:refactor:per_request_tenant_context:sprint_11:v0:
 #+owner: marco

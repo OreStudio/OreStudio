@@ -4,7 +4,6 @@
 #+title: Task: Add support for windows-msvc-clang-cl
 #+description: Add a CMake preset and toolchain wiring for clang-cl on Windows alongside MSVC.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :build:windows:clang_cl:presets:build_stabilisation_3:sprint_03:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Overhaul ores.compass component overview
 #+description: Extend the ores.compass component overview with a section per command pillar (Locate, Search, Scaffold, Fleet, Goto, Backlog), each with a prose description and a recipe table.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :tooling_documentation:sprint_18:v0:
 #+owner: marco

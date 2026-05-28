@@ -4,7 +4,6 @@
 #+title: Simplify verbose handler log names
 #+description: Handler log names like pricing_engine_type_handler_lg() should just be lg(). Affects all generated handler templates.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:logging:codegen:
 #+created: 2026-05-22

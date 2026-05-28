@@ -4,7 +4,6 @@
 #+title: Story: Remove unused GitHub Actions workflows
 #+description: Delete dormant/unused workflows (the Gemini ones) now that PR review comes from the gemini-code-assist app.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :ci:github:cleanup:sprint_18:v0:
 #+created: 2026-05-24

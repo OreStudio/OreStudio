@@ -4,7 +4,6 @@
 #+title: Task: Update submodule to latest master
 #+description: - Bump vcpkg submodule from `62159a45e` to `256acc6401` (latest microsoft/vcpkg master as of 2026-04-18).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sprint_17_housekeeping:sprint_17:v0:
 #+owner: marco

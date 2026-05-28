@@ -4,7 +4,6 @@
 #+title: Task: Discover notification channels dynamically
 #+description: Server-side event_channel_registry; new list_event_channels protocol messages (0x0015/0x0016); shell 'events channels' and 'events listen *' use discovery.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :comms:eventing:protocol:comms_substrate_evolution:sprint_08:v0:
 #+owner: marco

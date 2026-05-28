@@ -4,7 +4,6 @@
 #+title: Work units should use a combo box
 #+description: Work units are currently a free-text field. Replace with a combo box populated from the work unit table.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :ui:
 #+created: 2026-05-22

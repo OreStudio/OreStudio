@@ -4,7 +4,6 @@
 #+title: How do I generate sprint health charts?
 #+description: Run the sprint_metrics.py extractor and gnuplot scripts to produce per-metric PNGs for a sprint.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :sprint:charts:cmake:gnuplot:recipe:
 #+created: 2026-05-26

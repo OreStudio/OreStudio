@@ -4,7 +4,6 @@
 #+title: Add trade import support to HTTP API
 #+description: Add trade import support to HTTP API
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

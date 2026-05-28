@@ -4,7 +4,6 @@
 #+title: How do I serve the site locally?
 #+description: Use build/scripts/serve-site.sh to compile and preview the org-mode site before pushing.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :cmake:build:site:website:recipe:
 #+created: 2026-05-21

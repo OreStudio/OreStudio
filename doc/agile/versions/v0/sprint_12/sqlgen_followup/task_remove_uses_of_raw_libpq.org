@@ -4,7 +4,6 @@
 #+title: Task: Remove uses of raw libpq
 #+description: Replace remaining raw libpq calls with sqlgen calls once vcpkg picks up the sqlgen release with the new features.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sqlgen:libpq:cleanup:sqlgen_followup:sprint_12:v0:
 #+owner: marco

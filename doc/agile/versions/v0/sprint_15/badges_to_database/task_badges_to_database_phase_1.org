@@ -4,7 +4,6 @@
 #+title: Task: Badges to database (phase 1 infrastructure)
 #+description: Codegen models for badge_severity + code_domain + badge_definition + badge_mapping junction; integrate generated SQL + C++ artefacts; population seed data from hardcoded colours; BadgeCache in ores.qt wired into client startup. Foundation that lets Wt reuse the same metadata.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :badges:database:codegen:qt:wt:reuse:badges_to_database:sprint_15:v0:
 #+owner: marco

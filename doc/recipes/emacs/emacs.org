@@ -4,7 +4,6 @@
 #+title: Emacs recipes
 #+description: Inventory of emacs recipes.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipe:emacs:index:knowledge:
 #+created: 2026-05-21

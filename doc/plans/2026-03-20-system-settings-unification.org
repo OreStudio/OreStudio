@@ -2,7 +2,6 @@
 :ID: 8219C384-3CD8-449B-A0C1-40E7C36316C1
 :END:
 #+title: System Settings Unification: Replace Feature Flags with Typed System Settings
-#+version: 2
 #+DATE: 2026-03-20
 #+AUTHOR: ORE Studio Team
 #+STATUS: COMPLETED

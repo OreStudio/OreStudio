@@ -4,7 +4,6 @@
 #+title: Task: Fix shutdown latency: offload DB writes to thread pool
 #+description: - `monitor_process()` and `do_launch()` were running blocking libpqxx calls on the single-threaded `io_context`, seriali
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :workflow_hardening:sprint_17:v0:
 #+owner: marco

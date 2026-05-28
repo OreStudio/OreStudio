@@ -4,7 +4,6 @@
 #+title: Task: Write LLM-first system philosophy page
 #+description: Initial task for: Document ORE Studio as an LLM-first system
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :llm_first_system_docs:sprint_18:v0:
 #+owner: marco

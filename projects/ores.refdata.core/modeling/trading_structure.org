@@ -2,7 +2,6 @@
 :ID: 7A3F2C91-B4E8-4D12-9F6A-1C8D5E302A74
 :END:
 #+title: Trading Structure: Party, Book, Portfolio, Business Unit, Business Centre
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

@@ -4,7 +4,6 @@
 #+title: Task: Add repository integration tests for all analytics entities
 #+description: Synthetic data generators + repository tests for pricing engine types, model configurations, products, parameters; real ORE engine type codes; unique config names to fix CI.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :analytics:tests:repository:generators:reporting_and_analytics:sprint_16:v0:
 #+owner: marco

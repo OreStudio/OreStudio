@@ -4,7 +4,6 @@
 #+title: Replace hardcoded permission strings with per-component constants
 #+description: Permission strings like analytics::pricing_engine_types:write are hardcoded inline. Each component should declare a typed permission list; handlers reference the constants.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:security:architecture:
 #+created: 2026-05-22

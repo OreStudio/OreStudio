@@ -4,7 +4,6 @@
 #+title: List
 #+description: List
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:shell:roles:
 #+created: 2026-05-21

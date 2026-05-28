@@ -4,7 +4,6 @@
 #+title: Story: Compute grid polish and E2E fixes
 #+description: Loading-lifecycle refactor (AbstractClientModel); change-reason symmetry; UUID generation fix; AppVersion multi-platform support; result processing, host_id persistence, outcome codes, file extensions, service dashboard polish.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :compute:qt:polish:e2e:refactor:sprint_15:v0:
 #+created: 2026-05-20

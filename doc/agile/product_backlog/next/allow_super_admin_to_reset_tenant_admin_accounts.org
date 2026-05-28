@@ -4,7 +4,6 @@
 #+title: Allow super admin to reset tenant admin accounts
 #+description: Allow super admin to reset tenant admin accounts
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

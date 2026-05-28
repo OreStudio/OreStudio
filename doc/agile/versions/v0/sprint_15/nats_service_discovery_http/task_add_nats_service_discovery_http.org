@@ -4,7 +4,6 @@
 #+title: Task: Add NATS service discovery for HTTP base URL
 #+description: Qt client automatically discovers the HTTP server's base URL after login via NATS; protocol types moved to ores.http shared utility lib so ores.qt can include them without linking ores.http.server; architecture migration plan added for splitting service libraries into *.types + *.core (later refined to *.api + *.core).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :nats:http:discovery:qt:refactor:architecture:nats_service_discovery_http:sprint_15:v0:
 #+owner: marco

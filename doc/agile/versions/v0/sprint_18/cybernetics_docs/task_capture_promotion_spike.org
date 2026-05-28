@@ -4,7 +4,6 @@
 #+title: Task: Spike: capture promotion runbook and compass support
 #+description: Investigate and define the capture→story promotion flow: write a runbook, evaluate extending compass capture promote to automate it.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :cybernetics_docs:sprint_18:v0:
 #+owner: marco

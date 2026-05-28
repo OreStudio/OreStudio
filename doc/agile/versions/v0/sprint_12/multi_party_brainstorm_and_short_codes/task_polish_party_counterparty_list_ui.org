@@ -4,7 +4,6 @@
 #+title: Task: Polish party and counterparty list UI
 #+description: Capitalise party-category values (Operational / System / Internal); country flag icon column (from business centre); business-centre input as combo box not free text.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:party:counterparty:ux:polish:multi_party_brainstorm_and_short_codes:sprint_12:v0:
 #+owner: marco

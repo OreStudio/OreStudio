@@ -4,7 +4,6 @@
 #+title: Task: Update story codegen template to task table
 #+description: Change the story doc scaffold to generate a task status table (Task | State | Start | End | Description) instead of a bullet list.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :refactor_task_list_to_table:sprint_18:v0:
 #+owner: marco

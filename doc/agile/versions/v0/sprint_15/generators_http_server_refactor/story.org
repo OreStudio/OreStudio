@@ -4,7 +4,6 @@
 #+title: Story: Generators to api layer + http.server split
 #+description: Move synthetic generators from core to api across IAM / refdata / trading / reporting / compute; move HTTP route handlers into domain core modules; ores.http.server retains generic server infrastructure only.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :refactor:generators:http:architecture:sprint_15:v0:
 #+created: 2026-05-20

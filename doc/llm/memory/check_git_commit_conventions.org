@@ -5,7 +5,6 @@
 #+description: Before every commit, verify format against the ORE Studio conventions: [component] title, Story-ID/Task-ID trailers, Co-Authored-By.
 #+type: memory
 #+memory_subtype: feedback
-#+version: 2
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-05-28

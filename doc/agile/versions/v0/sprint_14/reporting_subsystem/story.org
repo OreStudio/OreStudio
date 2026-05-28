@@ -4,7 +4,6 @@
 #+title: Story: Reporting subsystem
 #+description: Design document, SQL schema, C++ domain + messaging + repository, Qt UI with cron widget, scheduling backend — for ores.reporting.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :reporting:sql:qt:cron:fsm:sprint_14:v0:
 #+created: 2026-05-20

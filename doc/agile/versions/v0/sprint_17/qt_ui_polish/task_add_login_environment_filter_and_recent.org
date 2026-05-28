@@ -4,7 +4,6 @@
 #+title: Task: Add login environment filter and recent parties to party picker
 #+description: - Label filter on login dialog: when `ORES_CHECKOUT_LABEL` is set (e.g. `local1`), environments whose `subject_prefix` e
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt_ui_polish:sprint_17:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Shell Entity Creator
 #+description: Create shell REPL commands for domain entities in ores.shell including list, add, history, and delete operations.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:shell:entity:
 #+created: 2024-09-01

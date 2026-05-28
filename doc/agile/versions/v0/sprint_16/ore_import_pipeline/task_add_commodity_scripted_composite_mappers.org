@@ -4,7 +4,6 @@
 #+title: Task: Add commodity, scripted and composite instrument mappers
 #+description: Commodity + composite + scripted mappers for ORE XML → ORES; round-trip tests; unified trade mapper updates.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore:trading:commodity:scripted:composite:mappers:ore_import_pipeline:sprint_16:v0:
 #+owner: marco

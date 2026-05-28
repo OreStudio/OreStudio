@@ -4,7 +4,6 @@
 #+title: Emacs
 #+description: Emacs as used in ORE Studio — editor overview, developer setup, and the build targets that Emacs drives.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :emacs:tooling:documentation:knowledge:
 #+created: 2026-05-28

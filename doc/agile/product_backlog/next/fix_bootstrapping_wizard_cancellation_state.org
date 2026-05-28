@@ -4,7 +4,6 @@
 #+title: Fix bootstrapping wizard cancellation leaving system in bad state
 #+description: Cancelling bootstrapping wizards mid-way leaves the system believing bootstrapping is complete, with no recovery path short of recreating the database. Investigate and implement a sensible cancellation/recovery model.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :bootstrap:wizard:ux:resilience:
 #+created: 2026-05-26

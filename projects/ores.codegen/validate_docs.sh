@@ -18,17 +18,12 @@
 #
 # Validate ORE Studio documentation structure.
 #
-# Runs two checks in sequence:
-#
-#   1. validate_docs.py — component documentation structure:
-#      - modeling/component_overview.org presence
-#      - Required v2 frontmatter (:ID:, #+type: component, #+description:)
-#      - Required sections (Summary, Inputs, Outputs, Entry points,
-#        Dependencies, See also)
-#      - At least one .puml file in modeling/
-#
-#   2. scripts/doc_version_audit.py --check — every .org file in the
-#      repo carries a #+version: 1|2 marker.
+# Runs validate_docs.py — component documentation structure:
+#   - modeling/component_overview.org presence
+#   - Required frontmatter (:ID:, #+type: component, #+description:)
+#   - Required sections (Summary, Inputs, Outputs, Entry points,
+#     Dependencies, See also)
+#   - At least one .puml file in modeling/
 #
 # Exceptions for the component check are in docs_exceptions.txt.
 # Format: CHECK_CODE component_name (one per line, # comments ignored).
@@ -52,4 +47,3 @@ if [ ! -d "$VENV_PATH" ]; then
 fi
 
 python3 "$SCRIPT_DIR/validate_docs.py" "$@"
-python3 "$SCRIPT_DIR/scripts/doc_version_audit.py" --check

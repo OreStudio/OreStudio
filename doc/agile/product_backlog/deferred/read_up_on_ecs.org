@@ -4,7 +4,6 @@
 #+title: Read up on ECS
 #+description: Read up on ECS
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :analysis:capture:far:
 #+created: 2026-05-21

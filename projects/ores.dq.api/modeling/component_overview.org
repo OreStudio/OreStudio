@@ -4,7 +4,6 @@
 #+title: ores.dq.api
 #+description: Domain types, JSON/table I/O, and NATS protocol schemas for the data-quality component.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :dq:api:component:
 #+created: 2026-05-19

@@ -5,7 +5,6 @@
 #+description: The sandboxed shell does not inherit the user SSH agent. Export SSH_AUTH_SOCK before git push/fetch/pull.
 #+type: memory
 #+memory_subtype: feedback
-#+version: 2
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-05-26

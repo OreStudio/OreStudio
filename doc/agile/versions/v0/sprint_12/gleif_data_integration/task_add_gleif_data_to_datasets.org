@@ -4,7 +4,6 @@
 #+title: Task: Add GLEIF data to datasets
 #+description: Codegen for lei_entities + lei_relationships artefact tables; Python lei_generate_metadata_sql.py + shell wrapper; GLEIF catalog + methodology + 4 datasets; methodology.txt updated.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :gleif:leis:codegen:sql:scripts:gleif_data_integration:sprint_12:v0:
 #+owner: marco

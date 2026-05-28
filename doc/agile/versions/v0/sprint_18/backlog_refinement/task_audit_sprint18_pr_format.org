@@ -4,7 +4,6 @@
 #+title: Task: Audit sprint 18 tasks: ensure all PRs have URLs and consistent format
 #+description: Check every task in sprint 18 has a PR URL set and that all PR tables use the canonical [[url][#NNN]] format.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :backlog_refinement:sprint_18:v0:
 #+owner: marco

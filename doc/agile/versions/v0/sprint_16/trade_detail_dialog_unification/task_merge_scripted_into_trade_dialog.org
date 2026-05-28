@@ -4,7 +4,6 @@
 #+title: Task: Merge scripted instrument family into TradeDetailDialog
 #+description: PR 6 of 6: standalone scripted controllers + MDI windows removed; integrated into TradeDetailDialog with UI tabs for script definition + body; error visibility for load failures; QLineEdit for trade type code.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:trade:scripted:instrument:trade_detail_dialog_unification:sprint_16:v0:
 #+owner: marco

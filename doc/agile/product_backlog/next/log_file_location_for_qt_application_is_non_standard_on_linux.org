@@ -4,7 +4,6 @@
 #+title: Log file location for Qt application is non-standard on Linux
 #+description: Log file location for Qt application is non-standard on Linux
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: ores.ore.service
 #+description: NATS service entrypoint for the ORE integration domain.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :ore:service:component:
 #+created: 2026-05-19

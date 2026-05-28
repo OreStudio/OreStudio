@@ -4,7 +4,6 @@
 #+title: Task: Implement import dialog for XML import in Qt
 #+description: Qt-side XML import: choose a file, parse, preview, commit. Wraps the existing XML import path with a GUI.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :currencies:qt:ux:import:xml:currencies_ui_polish:sprint_05:v0:
 #+owner: marco

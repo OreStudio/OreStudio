@@ -4,7 +4,6 @@
 #+title: Product backlog
 #+description: What the product backlog is, how next and deferred buckets work, and how to choose between them.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :backlog:next:deferred:capture:knowledge:
 #+created: 2026-05-21

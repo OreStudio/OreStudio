@@ -4,7 +4,6 @@
 #+title: Task: Add party hierarchy graph visualisation
 #+description: Visual tree of party hierarchy for a tenant: parent-child, party types, business centres.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :party:qt:viz:hierarchy:gleif_evaluation_wizard_and_hierarchy:sprint_12:v0:
 #+owner: marco

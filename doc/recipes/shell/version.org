@@ -4,7 +4,6 @@
 #+title: Version
 #+description: Version
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:shell:general:
 #+created: 2026-05-21

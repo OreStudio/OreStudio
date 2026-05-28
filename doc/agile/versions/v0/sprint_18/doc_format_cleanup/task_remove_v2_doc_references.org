@@ -4,7 +4,6 @@
 #+title: Task: Remove v2 terminology from documentation
 #+description: Rename how_do_i_create_a_new_v2_doc.org, update use_codegen_for_v2_docs memory, retire port_v1_doc_to_v2 runbook, and update all doc references.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :doc_format_cleanup:sprint_18:v0:
 #+owner: marco

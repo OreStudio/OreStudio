@@ -4,7 +4,6 @@
 #+title: Story: v2 documentation architecture
 #+description: Port all sprint retrospectives (01-16) to v2 cybernetic information architecture; site theme with dark CSS, sidebar TOC, and Pages enablement; close v0 sprint history.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :documentation:v2:site:sprint_17:v0:
 #+created: 2026-05-21

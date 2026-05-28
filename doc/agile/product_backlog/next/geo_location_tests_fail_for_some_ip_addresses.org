@@ -4,7 +4,6 @@
 #+title: Geo-location tests fail for some IP Addresses
 #+description: Geo-location tests fail for some IP Addresses
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

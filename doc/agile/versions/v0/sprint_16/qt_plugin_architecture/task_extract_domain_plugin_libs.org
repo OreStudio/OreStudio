@@ -4,7 +4,6 @@
 #+title: Task: Extract domain-specific plugin libraries
 #+description: Steps 2-8: IPlugin + PluginRegistry + plugin_context + LegacyPlugin; extract ores.qt.admin / compute / refdata / party / mktdata / trading plugins; migrate to QPluginLoader shared libraries; restore menus + toolbar via setup_menus().
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:plugins:architecture:refactor:domain:qt_plugin_architecture:sprint_16:v0:
 #+owner: marco

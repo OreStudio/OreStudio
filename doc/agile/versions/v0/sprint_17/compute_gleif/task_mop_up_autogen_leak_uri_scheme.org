@@ -4,7 +4,6 @@
 #+title: Task: Mop-up: autogen leak, URI scheme, per-row Retry
 #+description: Cleanup follow-ups surfaced during the per-platform package work (#714, #719). Three independent commits, each its own s
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compute_gleif:sprint_17:v0:
 #+owner: marco

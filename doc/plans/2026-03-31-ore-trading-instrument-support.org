@@ -2,7 +2,6 @@
 :ID: E3663D45-AE04-42AE-B588-06DCAE4DE119
 :END:
 #+title: ORE Trading Instrument Support — Complete Implementation
-#+version: 2
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 * Overview

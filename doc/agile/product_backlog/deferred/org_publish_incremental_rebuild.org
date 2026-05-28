@@ -4,7 +4,6 @@
 #+title: Investigate whether org-publish can detect unchanged files a…
 #+description: Investigate whether org-publish can detect unchanged files and skip re-exporting them, to speed up site rebuilds which currently re-process the entire doc graph on every run.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

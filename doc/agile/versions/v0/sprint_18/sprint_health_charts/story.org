@@ -4,7 +4,6 @@
 #+title: Story: Sprint health charts
 #+description: Generate daily charts of PRs, commits, story completions, and line churn using gnuplot from git and gh data.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :sprint:health:charts:gnuplot:metrics:sprint_18:v0:
 #+created: 2026-05-26

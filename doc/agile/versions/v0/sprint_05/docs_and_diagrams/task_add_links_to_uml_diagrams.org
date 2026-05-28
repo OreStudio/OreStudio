@@ -4,7 +4,6 @@
 #+title: Task: Add links to UML diagrams
 #+description: Each component model now links to its PlantUML diagram from the org-roam graph.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :uml:documentation:links:docs_and_diagrams:sprint_05:v0:
 #+owner: marco

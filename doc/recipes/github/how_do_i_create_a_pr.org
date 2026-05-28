@@ -4,7 +4,6 @@
 #+title: How do I create a PR?
 #+description: Open a pull request via the gh CLI with a structured title and HEREDOC body — and the conventions ORE Studio follows on title format.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :github:pr:gh:recipe:
 #+created: 2026-05-21

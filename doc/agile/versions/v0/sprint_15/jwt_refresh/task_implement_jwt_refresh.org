@@ -4,7 +4,6 @@
 #+title: Task: Implement JWT refresh
 #+description: Configurable token lifetimes via iam.token.* system settings (access_lifetime, party_selection_lifetime, max_session_seconds, refresh_threshold_pct); iam.v1.auth.refresh NATS endpoint + validate_allow_expired() method; ores_iam_auth_events_tbl TimescaleDB hypertable with hourly + daily continuous aggregate views (90d raw, 3y daily); make_request_context returns std::expected with token_expired / unauthorized; error_reply via X-Error NATS headers; 48 domain handlers updated; hot-reload of token settings on system_setting_changed; shell reactive retry; Qt proactive QTimer at 80% of token lifetime; sessionExpired signal + warning dialog.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :iam:jwt:refresh:nats:timescale:handlers:settings:qt:shell:jwt_refresh:sprint_15:v0:
 #+owner: marco

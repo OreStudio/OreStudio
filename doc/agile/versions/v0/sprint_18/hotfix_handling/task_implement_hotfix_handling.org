@@ -4,7 +4,6 @@
 #+title: Task: Implement Hotfix handling
 #+description: Write the hotfix runbook, update the branching recipe with hotfix conventions, and add a Hotfixes section to the sprint template.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :hotfix_handling:sprint_18:v0:
 #+owner: marco

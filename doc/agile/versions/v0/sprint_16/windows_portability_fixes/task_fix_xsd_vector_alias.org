@@ -4,7 +4,6 @@
 #+title: Task: Fix xsd::vector to use alias for non-bool to support incomplete types
 #+description: Replace previous xsd::vector<T> wrapper class with template alias + type trait selector; std::vector<T> for most types, custom char-backed bool_vector for bool.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore:xsdcpp:vector:template:refactor:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Implement the goto command
 #+description: Add a compass goto command: fetch main, create a feature branch, scaffold a linked story+task, print next steps.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compass:workflow:python:compass_goto:sprint_18:v0:
 #+owner: marco

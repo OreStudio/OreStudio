@@ -4,7 +4,6 @@
 #+title: Task: Add party-related support at the domain level
 #+description: 11 new C++ domain types in ores.refdata + ores.iam; account_party junction; full stack (JSON + table I/O, generators, repository, service, protocol); 40 new message types.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :party:counterparty:domain:cpp:protocol:party_database_and_domain:sprint_12:v0:
 #+owner: marco

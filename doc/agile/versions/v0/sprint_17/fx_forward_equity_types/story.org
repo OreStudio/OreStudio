@@ -4,7 +4,6 @@
 #+title: Story: FX forward E2E and equity per-type migration
 #+description: Wire FX forward ORE import end-to-end; complete equity per-type instrument tables (forwards + read path + legacy cleanup).
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :trading:ore:equity:fx:sprint_17:v0:
 #+created: 2026-05-21

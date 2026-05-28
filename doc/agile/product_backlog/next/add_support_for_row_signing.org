@@ -4,7 +4,6 @@
 #+title: Add support for row signing
 #+description: Add support for row signing
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

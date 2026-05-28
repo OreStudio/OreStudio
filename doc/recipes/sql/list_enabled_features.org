@@ -4,7 +4,6 @@
 #+title: List Enabled Features
 #+description: List Enabled Features
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:sql:feature_flags:
 #+created: 2026-05-21

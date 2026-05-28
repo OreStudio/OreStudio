@@ -4,7 +4,6 @@
 #+title: Task: Eliminate NAMEDATALEN truncation warnings for indexes and RLS policies
 #+description: - Strip redundant `ores_<service>_` prefix from all PostgreSQL index names and RLS policy names across the SQL schema (~
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :strict_service_isolation:sprint_17:v0:
 #+owner: marco

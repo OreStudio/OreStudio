@@ -4,7 +4,6 @@
 #+title: Task: Add batch support for saves and deletes
 #+description: save_*_request takes std::vector<entity>; save_*_response returns {bool success, std::string message}; delete uses SQL WHERE IN for atomicity across 23 entities in dq / refdata / trading / iam; new save_result.hpp (later removed); temporal guard for tenant_type / tenant_status batch deletes; protocol 46.0 (breaking).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :protocol:batch:sql:atomic:refactor:batch_operations:sprint_13:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: System Model: Infrastructure Layer
 #+description: Component inventory for the Infrastructure layer: NATS messaging backbone, service runner, test isolation, event bus, connection bookmarks, and file storage.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :modeling:architecture:infrastructure:system_model:nats:
 #+created: 2026-05-28

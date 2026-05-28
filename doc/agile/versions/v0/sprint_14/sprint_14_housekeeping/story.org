@@ -4,7 +4,6 @@
 #+title: Story: Sprint 14 housekeeping
 #+description: Sprint backlog refinement.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :agile:housekeeping:sprint_14:v0:
 #+created: 2026-05-20

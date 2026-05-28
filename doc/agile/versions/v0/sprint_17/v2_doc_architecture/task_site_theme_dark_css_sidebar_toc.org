@@ -4,7 +4,6 @@
 #+title: Task: Site theme: dark CSS + sidebar TOC + preamble + Pages enablement
 #+description: Adopts the dark CSS + sidebar-TOC approach from
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :v2_doc_architecture:sprint_17:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Wire service token provider for all services
 #+description: Only ores.reporting.service currently has make_service_token_provider wired up. All outbound-NATS services need it; add the dependency and wiring as each service grows.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:security:infrastructure:
 #+created: 2026-05-22

@@ -4,7 +4,6 @@
 #+title: Wt Entity Creator
 #+description: Create Wt web UI components for domain entities including list widgets, detail dialogs, and application integration.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:wt:entity:ui:
 #+created: 2024-09-01

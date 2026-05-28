@@ -4,7 +4,6 @@
 #+title: Task: Per-type rates instrument tables
 #+description: Replace generic instrument with per-type rates domain objects: standalone asset-class-specific tables; SQL schema; C++ domain + repository; Qt UI forms; legacy generic instrument infrastructure removed; party_id + RLS.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :trading:rates:sql:refactor:domain:qt:per_type_instrument_tables:sprint_16:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Clean up product website
 #+description: Tighten the product website: navigation, broken links, stale screenshots.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :documentation:website:doc_polish:sprint_04:v0:
 #+owner: marco

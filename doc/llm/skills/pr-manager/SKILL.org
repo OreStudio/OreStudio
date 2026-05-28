@@ -4,7 +4,6 @@
 #+title: PR Manager Skill
 #+description: Drive a pull request through its full lifecycle — summary, creation, monitoring, review, merge — by picking the matching git recipe at each rung.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:git:pr:
 #+created: 2024-09-01

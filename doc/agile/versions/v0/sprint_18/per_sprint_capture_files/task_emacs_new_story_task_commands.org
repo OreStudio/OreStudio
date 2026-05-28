@@ -4,7 +4,6 @@
 #+title: Task: Add Emacs new-story and new-task commands with key bindings to ores.lisp
 #+description: Implement environment-aware new-story and new-task Emacs commands in ores.lisp, bound to keys. new-story prompts for title/description and scaffolds a story+task in the current sprint via compass. new-task lists current-sprint stories, lets user pick one, then scaffolds a task. Both commit with a well-formed message when the user confirms.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco

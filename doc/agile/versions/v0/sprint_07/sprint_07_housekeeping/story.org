@@ -4,7 +4,6 @@
 #+title: Story: Sprint 07 housekeeping
 #+description: Sprint sundries: backlog, AI summary, OCR notebooks.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :housekeeping:agile:sprint_07:v0:
 #+created: 2026-05-19

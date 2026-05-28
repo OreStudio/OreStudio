@@ -4,7 +4,6 @@
 #+title: Add two knowledge pages: one for CMake (what it is, how ORE …
 #+description: Add two knowledge pages: one for CMake (what it is, how ORE Studio uses it, link to build pages) and one for vcpkg (what it is, how it is used, link to submodule update recipes).
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

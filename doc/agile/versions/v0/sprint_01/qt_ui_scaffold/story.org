@@ -4,7 +4,6 @@
 #+title: Story: Qt UI scaffold
 #+description: Stand up the initial Qt application shell — hello world, splash, refactor toward a usable layout, and icon set.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :qt:ux:scaffold:sprint_01:v0:
 #+created: 2024-06-22

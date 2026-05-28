@@ -4,7 +4,6 @@
 #+title: Task: Move context to database
 #+description: The runtime context (session, user, request metadata) lived in memory; persist it to the database so it survives restarts.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :context:postgres:refactor:bootstrap_polish:sprint_06:v0:
 #+owner: marco

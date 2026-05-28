@@ -4,7 +4,6 @@
 #+title: Story: Test infrastructure follow-up
 #+description: Continuation of sprint 03's CTest suite-level work — lands the BLOCKED CTest-only-shows-one-test-per-suite item.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :testing:ctest:sprint_04:v0:
 #+created: 2025-11-20

@@ -4,7 +4,6 @@
 #+title: Tracing: OpenTelemetry identifiers across Qt and NATS
 #+description: Tracing: OpenTelemetry identifiers across Qt and NATS
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :analysis:capture:near:
 #+created: 2026-05-21

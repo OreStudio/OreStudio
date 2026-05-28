@@ -4,7 +4,6 @@
 #+title: CMake recipes
 #+description: Inventory of cmake recipes.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cmake:index:knowledge:
 #+created: 2026-05-21

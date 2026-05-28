@@ -4,7 +4,6 @@
 #+title: Task: Fix Windows build error in http_client path conversion
 #+description: Use path::string().c_str() instead of path::c_str() in http_client.cpp.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :windows:storage:http:bug_fix:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Currency combos with flag icons, date pickers, and dialog polish
 #+description: - OreCurrencyComboBox / OreDateEdit: new global-namespace custom widgets for uic compatibility. `OreDateEdit` shows `yyy
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt_ui_polish:sprint_17:v0:
 #+owner: marco

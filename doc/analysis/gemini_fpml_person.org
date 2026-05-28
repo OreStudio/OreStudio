@@ -1,4 +1,3 @@
-#+version: 1
 i want to model "person" as per FPML in my trading system. what fields do I need?
 
 In Financial products Markup Language (FpML), a Person is typically modeled as a component of a Party. While a Party represents a legal entity (like a bank or a hedge fund), the Person structure is used to identify specific individuals associated with that party—such as a trader, a confirmer, or a compliance officer.

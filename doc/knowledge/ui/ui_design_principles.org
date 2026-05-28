@@ -4,7 +4,6 @@
 #+title: UI design principles
 #+description: The ORE Studio UI design system — Jony Ive-level precision; design direction, typography, colour, spacing, motion, and the rules that hold them together.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:ui:design:
 #+created: 2026-05-21

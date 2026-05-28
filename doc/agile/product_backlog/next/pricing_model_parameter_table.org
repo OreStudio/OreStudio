@@ -4,7 +4,6 @@
 #+title: Add pricing model parameter validation table
 #+description: Add a table of valid pricing model parameters with their types; validate values on insertion; UI should offer available parameters for a model with type-appropriate fields.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:analytics:ui:database:
 #+created: 2026-05-22

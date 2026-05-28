@@ -4,7 +4,6 @@
 #+title: CMake setup
 #+description: Preset menu, output directory layout, build types, and parallelism for the ORE Studio CMake build.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :cmake:build:architecture:knowledge:
 #+created: 2026-05-18

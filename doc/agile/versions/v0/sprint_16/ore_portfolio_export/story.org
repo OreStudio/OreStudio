@@ -4,7 +4,6 @@
 #+title: Story: ORE portfolio export
 #+description: export_portfolio in ores.ore exporter + Qt Open Instrument + Export to ORE XML actions.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :ore:export:qt:portfolio:sprint_16:v0:
 #+created: 2026-05-20

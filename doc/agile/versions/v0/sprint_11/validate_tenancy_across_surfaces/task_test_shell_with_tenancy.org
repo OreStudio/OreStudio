@@ -4,7 +4,6 @@
 #+title: Task: Test shell functionality with tenancy enabled
 #+description: Scenarios: super-admin login, tenant-admin creation + login, tenant-user creation + login; bootstrap mode replay. ores.iam::client login() + logout() helpers; messaging enum refactoring; C++ enum codegen.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :shell:tenancy:validation:iam:codegen:validate_tenancy_across_surfaces:sprint_11:v0:
 #+owner: marco

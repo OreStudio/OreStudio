@@ -4,7 +4,6 @@
 #+title: Story: Tooling documentation
 #+description: Add a Tooling section to knowledge.org, a developer scripts doc, overhaul the ores.compass component overview with per-command sections and recipe links, add a scripts section to ores.sql, and review ores.lisp and ores.codegen overviews.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :docs:knowledge:tooling:compass:sql:lisp:codegen:sprint_18:v0:
 #+created: 2026-05-28

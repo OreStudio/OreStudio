@@ -4,7 +4,6 @@
 #+title: Story: Scheduler UI complete
 #+description: Job Instances execution history + Scheduler Monitor live status views; real-time job lifecycle events; reactive UI.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :scheduler:qt:ui:nats:monitoring:sprint_16:v0:
 #+created: 2026-05-20

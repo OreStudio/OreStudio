@@ -4,7 +4,6 @@
 #+title: Task: Add reporting component design document
 #+description: Design specification for ores.reporting: report_type enum; report_definition (template, lifecycle FSM); report_instance (execution, lifecycle FSM); risk_report_config; scheduler integration via pg_cron at the time; open questions captured.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :reporting:design:fsm:documentation:reporting_subsystem:sprint_14:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Cybernetics
 #+description: What cybernetics is, its key ideas (feedback, variety, regulation), Stafford Beer's contribution, and how it informs ORE Studio.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :meta:cybernetics:knowledge:
 #+created: 2026-05-28

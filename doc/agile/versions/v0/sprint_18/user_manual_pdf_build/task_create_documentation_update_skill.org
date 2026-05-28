@@ -4,7 +4,6 @@
 #+title: Task: Create documentation update skill
 #+description: A Claude Code skill that instructs the LLM to update the user manual whenever functionality is added or changed.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :doc:manual:skill:llm:user_manual_pdf_build:sprint_18:v0:
 #+owner: marco

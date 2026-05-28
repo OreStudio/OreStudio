@@ -5,7 +5,6 @@
 #+description: The #+version: field in org files denotes the document format schema version (always 2 for docs) — never increment it when updating content.
 #+type: memory
 #+memory_subtype: feedback
-#+version: 2
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-05-28

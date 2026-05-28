@@ -4,7 +4,6 @@
 #+title: Task: Create downloads.org and wire Downloads + Agile into site nav
 #+description: Write doc/downloads.org with the full release/binary table; add Downloads and Agile href entries to site-html-preamble in .build-site.el.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :site:nav:downloads:agile:site_nav_downloads_agile:sprint_18:v0:
 #+owner: marco

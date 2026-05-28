@@ -4,7 +4,6 @@
 #+title: Task: Add PRs table to task template and update PR recipe
 #+description: Update v2_doc_task.org.mustache to include a * PRs table; update how_do_i_create_a_pr.org to record PRs and embed UUIDs.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :agile:compass:pr_tracking_in_tasks:sprint_18:v0:
 #+owner: marco

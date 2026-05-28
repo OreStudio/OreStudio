@@ -4,7 +4,6 @@
 #+title: Task: Review comms analyser work
 #+description: Validate the comms analyser; add a UI surface for it.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :comms:analyser:review:ux:observability_followup:sprint_08:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Knowledge graph improvements
 #+description: Issues with the current setup of the knowledge graph
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :inbox:capture:
 #+created: 2026-05-28

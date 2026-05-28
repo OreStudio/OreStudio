@@ -4,7 +4,6 @@
 #+title: Sprint 02 Release Notes
 #+description: Sprint 02 release notes (October 2025).
 #+type: release_notes
-#+version: 2
 #+level: cross
 #+filetags: :release_notes:sprint_02:v0:
 #+created: 2025-10-23

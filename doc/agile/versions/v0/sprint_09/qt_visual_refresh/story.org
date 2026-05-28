@@ -4,7 +4,6 @@
 #+title: Story: Qt visual refresh
 #+description: Centralise Qt icon handling behind a semantic enum + theme system.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :qt:icons:refactor:theming:sprint_09:v0:
 #+created: 2026-05-19

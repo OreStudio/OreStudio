@@ -4,7 +4,6 @@
 #+title: Task: Add command to dump currencies
 #+description: Add an ORE Studio CLI command that dumps currency reference data to a file in JSON or XML.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :currencies:cli:export:reference_data:currencies_temporal_and_export:sprint_02:v0:
 #+owner: marco

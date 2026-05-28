@@ -4,7 +4,6 @@
 #+title: Task: Implement Sprint theme grouping
 #+description: Initial task for: Sprint theme grouping
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sprint_theme_grouping:sprint_18:v0:
 #+owner: marco

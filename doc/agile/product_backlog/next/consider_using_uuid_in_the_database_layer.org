@@ -4,7 +4,6 @@
 #+title: Consider using UUID in the database layer
 #+description: Consider using UUID in the database layer
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

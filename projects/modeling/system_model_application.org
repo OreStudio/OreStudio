@@ -4,7 +4,6 @@
 #+title: System Model: Application Layer
 #+description: Component inventory for the Application layer: Qt desktop, CLI, HTTP servers, Wt web frontend, compute engine, and orchestration controller.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :modeling:architecture:application:system_model:
 #+created: 2026-05-28

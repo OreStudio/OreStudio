@@ -4,7 +4,6 @@
 #+title: How do I plan a sprint?
 #+description: Procedure for a sprint planning session: set the mission, score next-backlog captures against sprint goals, and promote winners into stories.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :agile:sprint:planning:recipe:
 #+created: 2026-05-24

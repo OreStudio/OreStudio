@@ -4,7 +4,6 @@
 #+title: S5 Identity Steward
 #+description: The function of System 5 — the session, usually run with the user, that maintains the product identity and rules on what is in / out of scope.
 #+type: function
-#+version: 2
 #+level: s5
 #+filetags: :function:s5:identity:policy:
 #+created: 2026-05-21

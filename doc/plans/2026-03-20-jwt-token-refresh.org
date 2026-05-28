@@ -2,7 +2,6 @@
 :ID: 03FA2F6D-9920-4BA1-A895-F8F796C94789
 :END:
 #+title: JWT Token Refresh: Configurable Lifetimes, Proactive Renewal
-#+version: 2
 #+DATE: 2026-03-20
 #+AUTHOR: ORE Studio Team
 #+STATUS: COMPLETED

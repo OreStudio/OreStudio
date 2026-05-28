@@ -4,7 +4,6 @@
 #+title: Story: Build quality
 #+description: Raise the build's quality floor — nightly memcheck, Valgrind, C++ standard alignment, vcpkg hygiene.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :build:ci:quality:sprint_01:v0:
 #+created: 2024-06-23

@@ -4,7 +4,6 @@
 #+title: How do I create a recipe?
 #+description: Meta-recipe — scaffold, name, structure, and link a new how-to recipe that satisfies the doc contract.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :documentation:docs:recipe:meta:
 #+created: 2026-05-21

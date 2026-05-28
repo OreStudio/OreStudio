@@ -4,7 +4,6 @@
 #+title: Story: Compass PR review management
 #+description: Add compass subcommands to list, reply to, and resolve PR review comments — wrappers around the gh CLI.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :compass:github:pr:review:sprint_18:v0:
 #+created: 2026-05-26

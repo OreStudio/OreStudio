@@ -4,7 +4,6 @@
 #+title: Add an LLM guidance document stating that all temporary data…
 #+description: Add an LLM guidance document stating that all temporary data produced during tasks must be placed under the project's tmp/ directory, not scattered in arbitrary locations.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

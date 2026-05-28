@@ -4,7 +4,6 @@
 #+title: How do I ask an LLM to review C++ code?
 #+description: Reusable prompt for a fast, focused C++ code review in any LLM chat interface.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:llm:prompt:cpp:review:
 #+created: 2026-05-21

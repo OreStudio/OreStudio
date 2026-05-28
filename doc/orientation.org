@@ -4,7 +4,6 @@
 #+title: Orientation
 #+description: How to find your way through the ORE Studio documentation, by what brought you here.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :documentation:guide:knowledge:
 #+created: 2024-06-15

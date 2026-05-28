@@ -4,7 +4,6 @@
 #+title: View Entity History
 #+description: View Entity History
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:sql:temporal_queries:
 #+created: 2026-05-21

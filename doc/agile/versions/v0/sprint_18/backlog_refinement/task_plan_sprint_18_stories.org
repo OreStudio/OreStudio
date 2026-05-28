@@ -4,7 +4,6 @@
 #+title: Task: Set sprint goals and select sprint 18 stories
 #+description: Define sprint 18 mission and use the sprint-planner skill to identify and promote candidate stories from the backlog.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :agile:sprint_18:sprint_planning:v0:backlog_refinement:
 #+owner: marco

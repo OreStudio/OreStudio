@@ -4,7 +4,6 @@
 #+title: Add a system clock
 #+description: Add a system clock
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

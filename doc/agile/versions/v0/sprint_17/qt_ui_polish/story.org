@@ -4,7 +4,6 @@
 #+title: Story: Qt UI polish
 #+description: JWT HTTP URL discovery, currency combos with flag icons, login environment filter, party picker recent entries, trade dialog fixes, menu structure simplification.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :qt:ux:menu:sprint_17:v0:
 #+created: 2026-05-21

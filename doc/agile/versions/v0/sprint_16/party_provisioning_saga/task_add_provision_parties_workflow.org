@@ -4,7 +4,6 @@
 #+title: Task: Add provision_parties_workflow executor
 #+description: Saga-based workflow for provisioning parties + associated IAM accounts; NATS messaging infrastructure; workflow instance + step tracking; concrete provision_parties_workflow implementation.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :workflow:party:iam:saga:nats:party_provisioning_saga:sprint_16:v0:
 #+owner: marco

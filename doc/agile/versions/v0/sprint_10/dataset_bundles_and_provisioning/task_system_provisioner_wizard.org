@@ -4,7 +4,6 @@
 #+title: Task: Add System Provisioner Wizard to Qt
 #+description: Multi-page wizard: admin account, foundation bundle, data-governance bundle, data-catalogues bundle, provisioning execution; replaces the shell-only bootstrap; localhost-only create_initial_admin_request atomically creates admin + exits bootstrap mode.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:bootstrap:wizard:provisioning:dataset_bundles_and_provisioning:sprint_10:v0:
 #+owner: marco

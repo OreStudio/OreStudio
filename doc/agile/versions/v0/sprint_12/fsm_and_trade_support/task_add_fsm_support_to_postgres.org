@@ -4,7 +4,6 @@
 #+title: Task: Add FSM support to Postgres
 #+description: Generic FSM framework in Postgres (machines / states / transitions); notification triggers; RLS policies. Foundation for trade lifecycles and authorisation.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :fsm:postgres:trade_lifecycle:framework:fsm_and_trade_support:sprint_12:v0:
 #+owner: marco

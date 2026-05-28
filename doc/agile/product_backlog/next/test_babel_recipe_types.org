@@ -4,7 +4,6 @@
 #+title: Load org-babel and systematically test all recipe types in u…
 #+description: Load org-babel and systematically test all recipe types in use: SQL, CLI, shell, and HTTP. Verify each type executes correctly with the current .env settings.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

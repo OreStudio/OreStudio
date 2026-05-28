@@ -2,7 +2,6 @@
 :ID: AB46A15C-A46C-4317-8563-A3674BEE83AF
 :END:
 #+title: Data-Driven TradeDetailDialog Refactor
-#+version: 2
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+STATUS: DONE
 

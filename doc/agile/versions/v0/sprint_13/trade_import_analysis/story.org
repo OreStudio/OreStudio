@@ -4,7 +4,6 @@
 #+title: Story: Trade import mapping analysis
 #+description: Document the mapping requirements between ORE portfolio XML and the ORES model (counterparty resolution, book assignment, portfolio mapping, batch configuration).
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :trade:ore:xml:analysis:import:sprint_13:v0:
 #+created: 2026-05-20

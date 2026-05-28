@@ -4,7 +4,6 @@
 #+title: Task: Raise MSVC constexpr limits for ores.qt.api to fix C1202
 #+description: - `ClientManagerTrades.cpp` calls `rfl::json::read` with the `trade_instrument` variant (8 non-monostate alternatives, ~
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :msvc_c1202_fix:sprint_17:v0:
 #+owner: marco

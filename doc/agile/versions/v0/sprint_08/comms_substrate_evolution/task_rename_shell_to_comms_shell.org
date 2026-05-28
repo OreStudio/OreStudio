@@ -4,7 +4,6 @@
 #+title: Task: Rename ores.shell to ores.comms.shell
 #+description: The shell is specific to the binary comms protocol; namespaces, CMake targets, headers, and docs renamed.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :shell:comms:rename:refactor:comms_substrate_evolution:sprint_08:v0:
 #+owner: marco

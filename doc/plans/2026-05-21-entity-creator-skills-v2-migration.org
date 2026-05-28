@@ -2,7 +2,6 @@
 :ID: 3F7A2C1D-84BE-4E9F-B261-5C0D9A3E7B48
 :END:
 #+title: Entity Creator Skills: v1 → v2 Migration
-#+version: 2
 #+STATUS: TODO
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil

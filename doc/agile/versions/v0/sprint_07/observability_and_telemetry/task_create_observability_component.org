@@ -4,7 +4,6 @@
 #+title: Task: Create the observability component
 #+description: Stand up ores.observability as a peer of ores.logging: structured event capture, retention, query surface.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :observability:component:observability_and_telemetry:sprint_07:v0:
 #+owner: marco

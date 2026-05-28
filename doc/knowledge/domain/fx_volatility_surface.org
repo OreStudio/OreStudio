@@ -4,7 +4,6 @@
 #+title: FX Volatility Surface
 #+description: Structure, construction, and conventions of the FX implied volatility surface: pillar quoting (ATM/RR/STR), delta conventions, smile models (SABR, BS, spline), and cross-time interpolation.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:domain:finance:fx:volatility:ore:
 #+created: 2026-05-25

@@ -4,7 +4,6 @@
 #+title: Investigate the toolbar icon style in serial studio
 #+description: Investigate the toolbar icon style in serial studio
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:far:
 #+created: 2026-05-21

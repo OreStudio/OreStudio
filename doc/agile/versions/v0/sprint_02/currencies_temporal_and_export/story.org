@@ -4,7 +4,6 @@
 #+title: Story: Currencies temporal and export
 #+description: Add temporal versioning to currencies, ship a CLI dump command, and build a containing structure for ORE example data.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :currencies:temporal:cli:reference_data:sprint_02:v0:
 #+created: 2025-08-15

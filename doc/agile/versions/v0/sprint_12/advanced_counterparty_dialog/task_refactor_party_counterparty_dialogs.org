@@ -4,7 +4,6 @@
 #+title: Task: Refactor party + counterparty dialogs
 #+description: Strategy pattern: entity_detail_operations abstract interface; unified generic EntityDetailDialog; PartyDetailDialog deleted; PartyController + CounterpartyController instantiate the generic dialog with appropriate strategy.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:refactor:strategy_pattern:party:counterparty:advanced_counterparty_dialog:sprint_12:v0:
 #+owner: marco

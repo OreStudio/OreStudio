@@ -4,7 +4,6 @@
 #+title: Task: Add scripts section to ores.sql component overview
 #+description: Add a * Scripts section to the ores.sql component overview with a subsection per lifecycle and utility script, a purpose paragraph, and a recipe table where applicable.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :tooling_documentation:sprint_18:v0:
 #+owner: marco

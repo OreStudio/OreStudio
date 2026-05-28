@@ -5,7 +5,6 @@
 #+description: git add and git commit fail in the sandbox due to worktree index lock path; use dangerouslyDisableSandbox
 #+type: memory
 #+memory_subtype: feedback
-#+version: 2
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-05-28

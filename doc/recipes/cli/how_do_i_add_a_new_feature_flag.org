@@ -4,7 +4,6 @@
 #+title: How do I add a new feature flag?
 #+description: Add a new feature flag
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:feature_flags:
 #+created: 2026-05-21

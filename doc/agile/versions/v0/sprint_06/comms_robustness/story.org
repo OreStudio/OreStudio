@@ -4,7 +4,6 @@
 #+title: Story: Comms robustness
 #+description: Split protocol.hpp by component; add a handshake service; cover multi-threaded scenarios; add a Postgres listener; add retry to the client with give-up notification.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :comms:protocol:reliability:sprint_06:v0:
 #+created: 2025-12-10

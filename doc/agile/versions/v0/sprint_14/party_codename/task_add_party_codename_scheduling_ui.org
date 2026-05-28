@@ -4,7 +4,6 @@
 #+title: Task: Add party codename and report scheduling UI
 #+description: adjective_noun codename per party via ores_utility_generate_whimsical_name_fn(); used as prefix for per-party PGMQ queues ({codename}_report_events); codename visible (hidden by default) + read-only in detail dialog; enhanced report scheduling UI; centralised stamp_auth helper in tenant_aware_handler; party-scoped MQ visibility (ores_mq_list_party_queues_fn + ores_mq_metrics_party_fn + ores_mq_metric_samples_fn); idempotent MQ metrics scrape job registration.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :party:codename:reporting:qt:scheduling:iam:party_codename:sprint_14:v0:
 #+owner: marco

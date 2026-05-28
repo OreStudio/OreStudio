@@ -4,7 +4,6 @@
 #+title: PlantUML Class Modeler Skill
 #+description: Produce a clean PlantUML class diagram for a component (or the system as a whole) following the ORE Studio conventions.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:plantuml:diagrams:modeling:
 #+created: 2024-09-01

@@ -4,7 +4,6 @@
 #+title: Drop database roles before recreating the database
 #+description: recreate_database.sh does not drop roles before re-creating the database. Add role-drop logic to ensure a clean slate.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :database:infrastructure:
 #+created: 2026-05-22

@@ -4,7 +4,6 @@
 #+title: Task: Open Sprint 17
 #+description: - Opens Sprint 17 for development.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :v2_doc_architecture:sprint_17:v0:
 #+owner: marco

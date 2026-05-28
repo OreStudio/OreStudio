@@ -4,7 +4,6 @@
 #+title: Icon Guidelines Skill
 #+description: Pick the right icon for a UI element by consulting ORE Studio's visual-language catalogue; choose the variant that matches state.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:ui:icons:design:
 #+created: 2024-09-01

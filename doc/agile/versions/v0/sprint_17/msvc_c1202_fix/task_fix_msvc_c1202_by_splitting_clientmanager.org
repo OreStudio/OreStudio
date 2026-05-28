@@ -4,7 +4,6 @@
 #+title: Task: Fix MSVC C1202 by splitting ClientManager into focused TUs
 #+description: - MSVC `fatal error C1202` fires when `rfl` reflects too many complex types in a single translation unit — `ClientManage
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :msvc_c1202_fix:sprint_17:v0:
 #+owner: marco

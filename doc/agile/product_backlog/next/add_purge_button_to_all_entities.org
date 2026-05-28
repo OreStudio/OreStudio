@@ -4,7 +4,6 @@
 #+title: Add purge button to all entities
 #+description: Add purge button to all entities
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

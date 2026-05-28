@@ -4,7 +4,6 @@
 #+title: Add party explorer
 #+description: A party explorer showing the party hierarchy tree. Selecting a node shows all business units under that party on the right. Supports add, delete, copy of units.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :ui:iam:
 #+created: 2026-05-22

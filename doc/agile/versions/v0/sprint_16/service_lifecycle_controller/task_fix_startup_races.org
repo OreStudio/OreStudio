@@ -4,7 +4,6 @@
 #+title: Task: Fix startup races, terminal bleed, analytics service setup
 #+description: ores.analytics.service launch; multi-phase process shutdown sequence (SIGTERM / SIGQUIT / SIGKILL); enhanced log monitoring in process supervisor; exponential backoff for service authentication; TLS certificate validation for NATS connections.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :service:analytics:startup:shutdown:nats:tls:service_lifecycle_controller:sprint_16:v0:
 #+owner: marco

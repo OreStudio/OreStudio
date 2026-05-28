@@ -4,7 +4,6 @@
 #+title: Task: Merge swap/rates instrument into TradeDetailDialog
 #+description: PR 2 of 6: standalone instrument management components removed; swap + rates instrument support integrated into TradeDetailDialog; new UI tabs for swap core + rates extensions; thread-safety fix in background lambdas.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:trade:swap:rates:instrument:trade_detail_dialog_unification:sprint_16:v0:
 #+owner: marco

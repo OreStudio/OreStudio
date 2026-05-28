@@ -2,7 +2,6 @@
 :ID: D7D33E74-F42C-4908-BC5C-BC2BF652D0B5
 :END:
 #+title: NATS Migration: Binary Protocol to NATS/JetStream
-#+version: 2
 #+DATE: 2026-03-13
 #+AUTHOR: ORE Studio Team
 #+STATUS: COMPLETED

@@ -4,7 +4,6 @@
 #+title: Story: Telemetry database sink
 #+description: Split ores.telemetry.database to resolve circular deps; database logging sink for tests; three-tier tenant lifecycle (terminate / deprovision / purge); recursive-logging guard.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :telemetry:database:tests:refactor:sprint_11:v0:
 #+created: 2026-05-19

@@ -4,7 +4,6 @@
 #+title: Task: Remove non-existent MSVC constexpr pragmas
 #+description: - Remove `#pragma constexpr_depth` and `#pragma constexpr_steps` from `ClientManager.cpp` and `ClientManagerTrades.cpp`
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :msvc_c1202_fix:sprint_17:v0:
 #+owner: marco

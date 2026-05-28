@@ -4,7 +4,6 @@
 #+title: How do I see where we are?
 #+description: Use compass where/status to report the current version, sprint, and in-flight stories and tasks.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :compass:agile:orientation:recipe:
 #+created: 2026-05-24

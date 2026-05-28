@@ -4,7 +4,6 @@
 #+title: Handle a hotfix
 #+description: Diagnose and patch a broken build: extract error, branch hotfix/, scaffold, fix, commit, PR.
 #+type: runbook
-#+version: 2
 #+level: cross
 #+filetags: :hotfix:git:agile:runbook:
 #+created: 2026-05-28

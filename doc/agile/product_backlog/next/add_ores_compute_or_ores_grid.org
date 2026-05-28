@@ -4,7 +4,6 @@
 #+title: Add ores.compute or ores.grid
 #+description: Add ores.compute or ores.grid
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Task: Add Claude Code knowledge page
 #+description: Two-paragraph knowledge doc defining Claude Code (the Anthropic CLI), linking to settings; wire into llm.org.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :llm_first_system_docs:sprint_18:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Codegen drift remediation: template fixes + report_definitions
 #+description: Continues codegen drift remediation from PR #747, addressing three categories of work:
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sql_codegen_drift:sprint_17:v0:
 #+owner: marco

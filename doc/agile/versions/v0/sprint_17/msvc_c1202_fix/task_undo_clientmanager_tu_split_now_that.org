@@ -4,7 +4,6 @@
 #+title: Task: Undo ClientManager TU split now that trade is decomposed
 #+description: - The C1202 TU split from PRs #754 and #757 isolated `listTrades` and `getTradeDetail` into separate files to stay under
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :msvc_c1202_fix:sprint_17:v0:
 #+owner: marco

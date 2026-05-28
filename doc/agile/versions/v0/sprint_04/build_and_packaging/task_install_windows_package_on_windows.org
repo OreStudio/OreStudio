@@ -4,7 +4,6 @@
 #+title: Task: Install Windows package on Windows machine
 #+description: Verify the Windows package produced by CI installs and runs end-to-end on a real Windows machine.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :build:windows:packaging:build_and_packaging:sprint_04:v0:
 #+owner: marco

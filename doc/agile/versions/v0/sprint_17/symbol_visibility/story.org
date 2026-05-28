@@ -4,7 +4,6 @@
 #+title: Story: Symbol visibility migration
 #+description: Apply -fvisibility=hidden to all shared libraries; add export macros; break cross-plugin compile-time dependencies; build CLI and shell as static libraries.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :cmake:visibility:plugins:sprint_17:v0:
 #+created: 2026-05-21

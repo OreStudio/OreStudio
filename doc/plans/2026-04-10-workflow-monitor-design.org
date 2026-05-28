@@ -2,7 +2,6 @@
 :ID: 3453C341-C060-4FE8-9F14-6B4A8570F308
 :END:
 #+title: Workflow Monitor — Design & Implementation Plan
-#+version: 2
 #+DATE: 2026-04-10
 #+AUTHOR: Marco Craveiro
 

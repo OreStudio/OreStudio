@@ -4,7 +4,6 @@
 #+title: Document all valid ORES_* environment variables with their p…
 #+description: Document all valid ORES_* environment variables with their purpose. Add a script that validates the active env against the schema and errors on unknown variables, so misconfigured environments are caught at init time.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

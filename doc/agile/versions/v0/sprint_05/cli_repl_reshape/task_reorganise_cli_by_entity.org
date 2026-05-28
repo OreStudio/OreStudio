@@ -4,7 +4,6 @@
 #+title: Task: Reorganise CLI structure by entity
 #+description: Switch from import/export-first to entity-first: ./ores.cli currencies export rather than ./ores.cli export --entity currencies.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :cli:refactor:ux:cli_repl_reshape:sprint_05:v0:
 #+owner: marco

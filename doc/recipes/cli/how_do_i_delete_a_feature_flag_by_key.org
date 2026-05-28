@@ -4,7 +4,6 @@
 #+title: How do I delete a feature flag by key?
 #+description: Delete a feature flag by key
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:feature_flags:
 #+created: 2026-05-21

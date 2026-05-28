@@ -4,7 +4,6 @@
 #+title: ores.security
 #+description: Shared cryptographic primitives — scrypt password hashing, AES-256-GCM encryption, and OWASP password validation.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :security:crypto:component:
 #+created: 2026-05-20

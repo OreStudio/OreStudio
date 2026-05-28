@@ -4,7 +4,6 @@
 #+title: Task: Make compass output paths clickable in dashboard output pane
 #+description: Post-process compass where/list/status output so that org-mode file paths appear as clickable links that open the target file in the dashboard output pane.
 #+type: task
-#+version: 1
 #+level: s1
 #+filetags: :emacs:lisp:dashboard:compass:ores_studio_emacs_dashboard:sprint_18:v0:
 #+owner: marco

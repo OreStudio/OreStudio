@@ -2,7 +2,6 @@
 :ID: 091B481F-914A-43D3-B86B-58E35ED0E463
 :END:
 #+title: Equity Per-Type Instrument Migration
-#+version: 2
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+STATUS: DONE
 

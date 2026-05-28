@@ -4,7 +4,6 @@
 #+title: Task: Implement triple isolation for RFL complexity
 #+description: Apply the TU split, two-phase parse, and increased Clang limits to resolve compilation failures.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :refactor:build:reflect_cpp:rfl_complexity_resolution:sprint_18:v0:
 #+owner: marco

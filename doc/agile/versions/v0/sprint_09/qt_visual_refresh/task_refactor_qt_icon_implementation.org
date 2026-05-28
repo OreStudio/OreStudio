@@ -4,7 +4,6 @@
 #+title: Task: Refactor Qt icon implementation
 #+description: Introduce enum class Icon + enum class IconTheme in IconUtils; centralise iconPath / createRecoloredIcon; standardise icon colours (DefaultIconColor, ConnectedColor, DisconnectedColor); add Solarized Linear + Bold icon set.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:icons:refactor:theming:qt_visual_refresh:sprint_09:v0:
 #+owner: marco

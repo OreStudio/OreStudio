@@ -4,7 +4,6 @@
 #+title: The ORE Studio manuals page should list manuals in a table (…
 #+description: The ORE Studio manuals page should list manuals in a table (format columns: HTML, PDF). Manuals should also be structured as linked sections so individual pages can be linked to from elsewhere in the docs.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

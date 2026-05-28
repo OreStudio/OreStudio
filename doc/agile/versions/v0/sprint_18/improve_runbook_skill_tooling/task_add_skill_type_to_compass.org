@@ -4,7 +4,6 @@
 #+title: Task: Add skill type to compass add
 #+description: Extend compass add to support the skill document type so that LLM sessions can scaffold new skills via compass add skill rather than calling generate_v2_doc.sh directly.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :improve_runbook_skill_tooling:sprint_18:v0:
 #+owner: marco

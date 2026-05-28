@@ -4,7 +4,6 @@
 #+title: Deploy the documentation site
 #+description: Build the product site, deploy settings, skills, diagrams, and verify the output.
 #+type: runbook
-#+version: 2
 #+level: cross
 #+filetags: :runbook:site:deploy:documentation:
 #+created: 2026-05-26

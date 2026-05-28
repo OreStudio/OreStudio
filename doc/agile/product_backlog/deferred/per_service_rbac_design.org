@@ -4,7 +4,6 @@
 #+title: Design per-service RBAC role assignment
 #+description: Services currently accept any valid JWT regardless of role. Design and implement per-service role assignment so a service only accepts JWTs that carry the appropriate role.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :security:design:iam:
 #+created: 2026-05-22

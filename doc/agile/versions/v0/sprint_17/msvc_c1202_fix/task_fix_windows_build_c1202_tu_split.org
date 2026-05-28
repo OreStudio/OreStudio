@@ -4,7 +4,6 @@
 #+title: Task: Fix Windows build: C1202 TU split and workflow.api export
 #+description: Two Windows build failures fixed in this PR:
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :msvc_c1202_fix:sprint_17:v0:
 #+owner: marco

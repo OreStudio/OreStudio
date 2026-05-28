@@ -4,7 +4,6 @@
 #+title: Task: Implement NNG message broker
 #+description: Stand-alone ores.mq.broker executable on NNG; JWT embedded in message frames via jwt_size field (protocol 50.0); CRC includes JWT bytes; register_service_request/response + token_refresh_request/response broker messages; auth_session_service refactored for JWT validation; ores.comms.service self-registers handled message-type ranges at startup; nng_service_runner adapter; asynchronous dispatch via boost::asio::co_spawn.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :nng:broker:jwt:protocol:abandoned:nng_broker_attempt:sprint_14:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Disable RFL precompiled headers when building with coverage
 #+description: Guard target_precompile_headers with NOT WITH_PROFILING to fix sccache failure on coverage builds.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :build:pch:coverage:sccache:rfl_complexity_resolution:sprint_18:v0:
 #+owner: marco

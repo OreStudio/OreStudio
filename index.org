@@ -22,7 +22,8 @@ providing a graphical wrapper around Acadia's [[id:1CBDEA40-5FAE-4F04-BD21-2BB29
 [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]], the de-facto standard open-source library for quantitative finance.
 *ORE Studio* aims to augment ORE's robust analytics to eventually provide full
 life-cycle management for all entities within the trading system,
-point-and-click reporting, trade modelling and market-data management.
+point-and-click reporting, trade modelling and market-data management. ORE
+Studio was started by [[https://mcraveiro.github.io/][Marco Craveiro]].
 
 #+ATTR_HTML: :alt ORE Studio Qt User Interface :title ORE Studio Qt User Interface :align center
 #+ATTR_HTML: :width 100% :height 100%

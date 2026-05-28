@@ -2,7 +2,7 @@
 :ID: 37EA004E-340C-5FE4-14AB-D9678749733B
 :END:
 #+title: Introduction
-#+description: Introduction of the ORE Studio User Manual
+#+description: Overview of ORE Studio's purpose, architecture, and what this manual covers.
 #+type: manual
 #+version: 2
 #+level: cross

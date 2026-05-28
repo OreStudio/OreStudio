@@ -28,12 +28,12 @@ shows its figures instead of =TODO_*.png= placeholders.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                   |
 | Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
-| Now          | PR #853 merged (screenshot reconciliation, chapter restructure, tufte template, provisioner rewrite). Continuing on =feature/finish-missing-screenshots=; =connection_manager_tag_filter= now captured. |
-| Waiting on   | 3 chapter-2 captures from product owner (see below). |
-| Next         | Wire the refreshed screenshots; capture the 3 remaining chapter-2 shots. |
-| Last touched | 2026-05-26                             |
+| Now          | Complete.                              |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-28                             |
 
 * Acceptance
 

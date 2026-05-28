@@ -9,7 +9,7 @@
 #+filetags: :doc:manual:chapter_01:user_manual_pdf_build:sprint_18:v0:
 #+owner: marco
 #+branch: feature/user-manual-chapter-01
-#+pr:
+#+pr: 811
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-24
@@ -29,12 +29,12 @@ clearly labelled placeholder so the author knows exactly what to capture.
 
 | Field        | Value                                       |
 |--------------+---------------------------------------------|
-| State        | STARTED                                     |
+| State        | DONE                                        |
 | Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
-| Now          | Writing chapter content.                    |
+| Now          | Complete.                                   |
 | Waiting on   | Nothing.                                    |
-| Next         | Author takes screenshots per placeholders.  |
-| Last touched | 2026-05-24                                  |
+| Next         | None.                                       |
+| Last touched | 2026-05-28                                  |
 
 * Acceptance
 

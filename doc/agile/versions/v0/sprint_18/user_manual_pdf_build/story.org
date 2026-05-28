@@ -24,12 +24,12 @@ build themselves.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
-| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
-| Now           | All core tasks done. PRs #807, #810, #811, #814 merged. Manuals index page + site nav link in PR #818 (open). |
-| Waiting on    | PR #818 review and merge. Screenshots for all TODO_ placeholders in chapters. |
-| Next          | Merge PR #818; capture screenshots per placeholder instructions. |
-| Last touched  | 2026-05-24                               |
+| State         | DONE                                   |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                              |
+| Now           | Complete.                              |
+| Waiting on    | Nothing.                               |
+| Next          | None.                                  |
+| Last touched  | 2026-05-28                             |
 
 * Acceptance
 
@@ -47,8 +47,8 @@ In execution order:
 - [[id:63BF06CF-B61E-4163-A017-0E2D13586510][Task: Write Chapter 1: Login and Connection Manager]] (DONE — PR #811)
 - [[id:4834460E-0799-4379-ADD7-462A4BCF9FDF][Task: Write Chapter 1: System bootstrapping concepts and provisioning wizards]] (DONE — PR #814)
 - [[id:29379454-1B29-4BB5-905D-F129E0AC41FD][Task: Create documentation update skill]] (DONE — PR #814)
-- [[id:27422EEE-9435-49EC-B706-43BD66B2D7A6][Task: Generate all missing screenshots for the manual]] (STARTED)
-- Manuals index page and site nav link (PR #818)
+- [[id:27422EEE-9435-49EC-B706-43BD66B2D7A6][Task: Generate all missing screenshots for the manual]] (DONE — PRs #853, #866)
+- [[id:8763DD18-EBDD-4921-A5DF-FA667C838379][Task: Add user_manual_site.org and update manuals.org]] (DONE)
 
 * Decisions
 

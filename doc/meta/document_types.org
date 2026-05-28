@@ -10,6 +10,26 @@
 #+created: 2026-05-18
 #+updated: 2026-05-18
 
+Every =.org= file in ORE Studio carries a =#+type:= field that places it
+in a shared taxonomy. The taxonomy exists for three reasons. First,
+/structural contracts/: each type defines exactly which sections,
+frontmatter fields, and lifecycle (if any) a document must carry — an
+LLM or human loading any file immediately knows what shape it is and
+what rules apply. Second, /queryability/: =#+type:= is the primary
+filter for =compass list=, =grep=, and the audit scripts, making it
+possible to ask "all knowledge docs on security" or "every in-flight
+task" without noise from unrelated file shapes. Third, /level
+alignment/: types map to [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic levels]] — =task= to S1, =story= to S2,
+=sprint= to S3, =version= to S4, =product_identity= to S5 — so the
+type of a document tells you who owns it and at what time horizon. The
+=#+description:= field, capped at 120 characters, is the load-bearing
+summary every index and search reads first; it is as important as the
+type itself.
+
+The full vocabulary of types is in =* Document types= below. The rules
+for standard frontmatter, state, linking, and tags apply across all
+types and are defined in the sections that precede it.
+
 * Creating documents
 
 Never hand-write frontmatter or IDs. Use the generator:

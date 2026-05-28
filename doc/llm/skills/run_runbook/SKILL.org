@@ -7,7 +7,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
-#+filetags: 
+#+filetags: :skills:claude_code:runbook:
 #+created: 2026-05-28
 #+updated: 2026-05-28
 

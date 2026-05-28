@@ -4,7 +4,6 @@
 #+title: Task: Migrate all component docs to v2 information architecture
 #+description: - Migrates all component documentation from the legacy stub format to the v2 information architecture (`component_overvi
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :plantuml_modeling:sprint_17:v0:
 #+owner: marco

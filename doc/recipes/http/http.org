@@ -4,7 +4,6 @@
 #+title: HTTP recipes
 #+description: Inventory of http recipes grouped by category.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipe:http:index:knowledge:
 #+created: 2026-05-21

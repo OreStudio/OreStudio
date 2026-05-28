@@ -4,7 +4,6 @@
 #+title: Task: Consolidate doc-navigation into compass and add usage recipes
 #+description: Move doc_index/doc_list/doc_show from ores.codegen into ores.compass as compass list/show; delete codegen copies; repoint references; add compass recipes.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compass:codegen:docs:recipes:refactor:ores_compass_tool:sprint_18:v0:
 #+owner: marco

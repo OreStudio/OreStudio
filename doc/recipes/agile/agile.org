@@ -4,7 +4,6 @@
 #+title: Agile recipes
 #+description: Operational recipes for the agile cycle — opening sprints, generating release notes, and the housekeeping that goes with both.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipe:agile:sprint:release:index:knowledge:
 #+created: 2026-05-21

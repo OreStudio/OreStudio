@@ -2,7 +2,6 @@
 :ID: C5F9E4A3-0D6B-5C8F-D8E5-4F3A0B7D9E1F
 :END:
 #+title: Workflow Engine Generalisation
-#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

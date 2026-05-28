@@ -4,7 +4,6 @@
 #+title: How do I create Qt UI for a new entity?
 #+description: Walk through client model, list window, detail dialog, and history dialog for a new entity in ores.qt.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:qt:entity:ui:
 #+created: 2026-05-21

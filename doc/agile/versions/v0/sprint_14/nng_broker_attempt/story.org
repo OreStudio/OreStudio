@@ -4,7 +4,6 @@
 #+title: Story: NNG message broker attempt
 #+description: Stand up ores.mq.broker on NNG with JWT-in-frame and service self-registration; cancelled before final hook-up in favour of NATS.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :nng:broker:jwt:protocol:sprint_14:v0:
 #+created: 2026-05-20

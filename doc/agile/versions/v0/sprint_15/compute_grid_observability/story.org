@@ -4,7 +4,6 @@
 #+title: Story: Compute grid observability
 #+description: Telemetry pipeline with TimescaleDB hypertables + samplers; service heartbeat + RAG-status dashboard.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :compute:telemetry:timescale:dashboard:rag:sprint_15:v0:
 #+created: 2026-05-20

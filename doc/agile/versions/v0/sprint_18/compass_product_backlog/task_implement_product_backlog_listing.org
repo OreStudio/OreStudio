@@ -4,7 +4,6 @@
 #+title: Task: Implement product backlog next/deferred listing in compass
 #+description: Add compass backlog command to list next and deferred captures with counts and titles, mirroring the sprint in-flight display.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compass:tooling:python:backlog:sprint_18:v0:compass_product_backlog:
 #+owner: marco

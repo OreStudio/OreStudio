@@ -4,7 +4,6 @@
 #+title: Task: Normalize documentation IDs to uppercase
 #+description: Ensure all document :ID: properties and links use uppercase UUIDs to fix build failures and maintain consistency.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :meta:build:bug_fix:doc_investigation_support:sprint_18:v0:
 #+owner: marco

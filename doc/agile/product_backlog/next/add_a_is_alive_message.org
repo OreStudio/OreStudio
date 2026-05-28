@@ -4,7 +4,6 @@
 #+title: Add a "is alive" message
 #+description: Add a "is alive" message
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

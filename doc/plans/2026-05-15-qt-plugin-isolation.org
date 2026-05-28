@@ -2,7 +2,6 @@
 :ID: 3125F901-7AC2-421C-8AEF-8C508B0E315B
 :END:
 #+title: Qt Plugin Isolation: Cross-Plugin Symbol Dependencies
-#+version: 2
 #+STATUS: COMPLETE
 #+date: 2026-05-15
 #+author: Marco Craveiro

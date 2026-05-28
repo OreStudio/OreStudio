@@ -4,7 +4,6 @@
 #+title: Task: Generate PlantUML diagrams for all components
 #+description: Add a PlantUML diagram per component and wire it into the build via the mad target.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :plantuml:uml:diagrams:components:llm_code_review_and_refactor:sprint_04:v0:
 #+owner: marco

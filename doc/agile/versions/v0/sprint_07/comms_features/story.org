@@ -4,7 +4,6 @@
 #+title: Story: Comms features
 #+description: Payload compression, listen/notify routed to shell, message-grouping type traits, session recording support.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :comms:protocol:compression:sprint_07:v0:
 #+created: 2026-05-19

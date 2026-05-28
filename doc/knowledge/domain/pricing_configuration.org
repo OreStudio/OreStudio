@@ -4,7 +4,6 @@
 #+title: Pricing Configuration
 #+description: Named, versioned bundle of valuation settings: valuation model mapping, smile surface configuration, Greek configuration, general valuation settings, model parameters, layered overrides, and MRU views.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:domain:finance:pricing:ore:
 #+created: 2026-05-25

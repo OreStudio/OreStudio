@@ -4,7 +4,6 @@
 #+title: Add ISO 20022 Support
 #+description: Add ISO 20022 Support
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

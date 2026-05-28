@@ -4,7 +4,6 @@
 #+title: Stop and start service does not trigger ores.qt reconnection
 #+description: Stop and start service does not trigger ores.qt reconnection
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

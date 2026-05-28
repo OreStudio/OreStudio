@@ -4,7 +4,6 @@
 #+title: How do I find docs matching a pattern?
 #+description: List documents by regex on title/description, by filetag, by #+type:, or by path prefix, using compass list.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :documentation:docs:search:recipe:
 #+created: 2026-05-21

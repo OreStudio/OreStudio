@@ -4,7 +4,6 @@
 #+title: Story: Port domain concept notes to knowledge documents
 #+description: Tidy personal notes on finance/ORE domain concepts into v2 knowledge documents under doc/knowledge/domain, splitting by topic and aligning terminology with ORE Studio terms.
 #+type: story
-#+version: 2
 #+level: s2
 #+category: enabler
 #+filetags: :knowledge:domain:finance:ore:sprint_18:v0:

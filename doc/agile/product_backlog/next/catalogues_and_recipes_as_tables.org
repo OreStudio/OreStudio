@@ -4,7 +4,6 @@
 #+title: Convert three catalogues from bullet lists to tables: skills…
 #+description: Convert three catalogues from bullet lists to tables: skills catalogue, memory catalogue, and recipes topics — improving scannability and alignment with the table-based style used elsewhere.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

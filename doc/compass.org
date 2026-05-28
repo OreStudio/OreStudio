@@ -4,7 +4,6 @@
 #+title: Compass
 #+description: Entry point for the ORE Studio cybernetic information management architecture. Read this first to orient yourself.
 #+type: meta
-#+version: 2
 #+level: cross
 #+filetags: :meta:overview:entry_point:
 #+created: 2026-05-18

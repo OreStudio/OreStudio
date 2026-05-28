@@ -4,7 +4,6 @@
 #+title: Story: Environment isolation for database roles
 #+description: Environment-prefixed PostgreSQL roles + users so dev environments don't contaminate each other; ORES_TEST_ENV_CMD for custom test runners; psql DO-block set_config workaround.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :sql:iam:environments:refactor:sprint_15:v0:
 #+created: 2026-05-20

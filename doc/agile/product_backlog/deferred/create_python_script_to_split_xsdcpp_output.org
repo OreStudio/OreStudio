@@ -4,7 +4,6 @@
 #+title: Create python script to split xsdcpp output
 #+description: Create python script to split xsdcpp output
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:far:
 #+created: 2026-05-21

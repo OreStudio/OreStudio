@@ -4,7 +4,6 @@
 #+title: How do I check the CLI version?
 #+description: Display =ores.cli= version, build, and licence information
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:general:
 #+created: 2026-05-21

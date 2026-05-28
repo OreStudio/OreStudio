@@ -4,7 +4,6 @@
 #+title: Story: Market data subsystem
 #+description: ORE market data file types parser + serializer; market data domain model with DB schema + C++ CDM; ORE key decomposition + database repository; market data service layer; Market Data MDI UI.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :marketdata:ore:timescale:qt:nats:sprint_16:v0:
 #+created: 2026-05-20

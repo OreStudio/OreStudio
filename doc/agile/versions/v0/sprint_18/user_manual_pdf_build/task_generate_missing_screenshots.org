@@ -4,7 +4,6 @@
 #+title: Task: Generate all missing screenshots for the manual
 #+description: Capture every [SCREENSHOT NEEDED] placeholder image across the user manual chapters and wire them in.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :manual:screenshots:documentation:user_manual_pdf_build:sprint_18:v0:
 #+owner: marco

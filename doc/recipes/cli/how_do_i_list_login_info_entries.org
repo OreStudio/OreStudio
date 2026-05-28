@@ -4,7 +4,6 @@
 #+title: How do I list login info entries?
 #+description: List login info entries via =ores.cli=
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:login_info:
 #+created: 2026-05-21

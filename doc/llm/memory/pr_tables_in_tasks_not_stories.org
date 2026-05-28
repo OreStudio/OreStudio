@@ -5,7 +5,6 @@
 #+description: Story docs do not carry a PRs table; PRs are recorded in the task that implements them.
 #+type: memory
 #+memory_subtype: feedback
-#+version: 2
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-05-26

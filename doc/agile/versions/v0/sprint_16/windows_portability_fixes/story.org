@@ -4,7 +4,6 @@
 #+title: Story: Windows portability fixes
 #+description: Long sweep of cross-platform fixes surfaced by Windows builds: MSYS2 path mangling, NATS cert generation, strptime, stack overflow, MOC dllimport, _wfopen_s, SIGQUIT, /FS, DLL export limit, MSVC PDB, xsd::vector, etc.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :windows:portability:ci:bug_fix:msvc:clang:sprint_16:v0:
 #+created: 2026-05-20

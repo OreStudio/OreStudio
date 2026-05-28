@@ -4,7 +4,6 @@
 #+title: Task: Investigate how performed by is being set
 #+description: Audit the source of performed_by; should be the database account.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :audit:iam:analysis:audit_trail_and_system_account:sprint_12:v0:
 #+owner: marco

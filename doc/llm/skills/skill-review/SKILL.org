@@ -4,7 +4,6 @@
 #+title: Skill Review Skill
 #+description: Review one or more Claude Code skills against the skill contract — frontmatter, required sections, task-shape, no duplicated content.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:review:meta:
 #+created: 2024-09-01

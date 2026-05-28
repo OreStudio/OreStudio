@@ -4,7 +4,6 @@
 #+title: Interest Rate Curves
 #+description: Day-count conventions, discount factors, bootstrapping from deposits/FRAs/IRS/OIS, and interpolation methods for interest rate curves used in FX and rates pricing.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:ore:
 #+created: 2026-05-25

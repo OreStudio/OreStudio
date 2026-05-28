@@ -4,7 +4,6 @@
 #+title: How do I add a new currency?
 #+description: Add a new currency
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:currencies:
 #+created: 2026-05-21

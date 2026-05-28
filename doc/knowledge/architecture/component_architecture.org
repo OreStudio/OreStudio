@@ -4,7 +4,6 @@
 #+title: Component architecture
 #+description: api/core/service split, facet placement, CMake dependency chain, and scaffold profiles for ORE Studio components.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:architecture:component:cmake:codegen:
 #+created: 2026-05-21

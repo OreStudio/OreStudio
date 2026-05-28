@@ -4,7 +4,6 @@
 #+title: Product backlog — inbox
 #+description: Untriaged captures: ideas and notes filed via compass capture, not yet sorted into next, deferred, or discarded.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :backlog:inbox:capture:index:knowledge:
 #+created: 2026-05-27

@@ -4,7 +4,6 @@
 #+title: Task: Party table structure
 #+description: First-cut SQL table for party (LEI, tenant_id, party_type_id, business_center_id, status, etc.). Foundation for later domain layer + UI.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :party:sql:fpml:party_database_groundwork:sprint_09:v0:
 #+owner: marco

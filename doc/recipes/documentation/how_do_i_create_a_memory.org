@@ -4,7 +4,6 @@
 #+title: How do I create a memory?
 #+description: Scaffold a memory file under doc/llm/memory/ — feedback, user, project, or reference subtype — and wire it into the inventory.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :documentation:memory:recipe:
 #+created: 2026-05-21

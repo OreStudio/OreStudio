@@ -4,7 +4,6 @@
 #+title: Task: Add trade import mapping dialog
 #+description: Qt dialog accessible from book list toolbar: pick ORE XML, preview trades (count, types, counterparties), choose target ORES book, map counterparty names (or auto-create), review + confirm; ImportTradeDialog wired through BookController.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :trade:qt:import:ui:ore:book:trade_import_dialog:sprint_13:v0:
 #+owner: marco

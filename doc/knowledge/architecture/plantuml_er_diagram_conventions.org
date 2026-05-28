@@ -4,7 +4,6 @@
 #+title: PlantUML ER diagram conventions
 #+description: How ORE Studio writes PlantUML entity-relationship diagrams for the SQL schema — skeleton, entity styling, field notation, relationships, domain packages.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:architecture:plantuml:sql:diagrams:
 #+created: 2026-05-21

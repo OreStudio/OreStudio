@@ -4,7 +4,6 @@
 #+title: Task: Data import: DB schema and FSM
 #+description: Add the data import session database schema and the finite state machine governing the import lifecycle.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_samples_support:sprint_18:v0:
 #+owner: marco

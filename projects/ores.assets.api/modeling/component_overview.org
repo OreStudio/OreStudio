@@ -4,7 +4,6 @@
 #+title: ores.assets.api
 #+description: Domain types, JSON I/O, and NATS protocol schemas for the assets component.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :assets:api:component:
 #+created: 2026-05-19

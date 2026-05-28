@@ -4,7 +4,6 @@
 #+title: Task: Phase 3+4: controller wiring and Data Workshop UI
 #+description: Completes the remaining workspace propagation work after PR #773 (codegen) was merged.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :workspace:sprint_17:v0:
 #+owner: marco

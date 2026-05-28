@@ -4,7 +4,6 @@
 #+title: Task: Copy org-roam-export.el code into ores.lisp
 #+description: Inline the org-roam-export functions from ~/.emacs.d/config/org-roam-export.el into projects/ores.lisp (or wherever ores.lisp lives) so the site build does not depend on the runner's emacs config.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :site:ci:build:bug_fix:inline_org_roam_export:sprint_18:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: The 'How do I set up a development environment?' recipe cove…
 #+description: The 'How do I set up a development environment?' recipe covers Linux only. Either rename it to make the Linux scope explicit, or expand it with macOS and Windows sections.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

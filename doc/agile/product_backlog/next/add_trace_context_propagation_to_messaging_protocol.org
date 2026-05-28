@@ -4,7 +4,6 @@
 #+title: Add trace context propagation to messaging protocol
 #+description: Add trace context propagation to messaging protocol
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

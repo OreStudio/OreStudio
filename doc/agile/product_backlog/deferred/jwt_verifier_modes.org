@@ -4,7 +4,6 @@
 #+title: Replace optional JWT verifier with explicit modes
 #+description: The JWT verifier is currently optional<jwt_authenticator>. Replace with an enum mode (allow_all / strict) for clarity and safety.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:security:api:
 #+created: 2026-05-22

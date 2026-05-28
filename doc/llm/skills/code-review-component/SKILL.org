@@ -4,7 +4,6 @@
 #+title: Code Review Component Skill
 #+description: Audit an entire component against the ORE Studio code-review checklist — every file plus structure, CMake, modeling, and test coverage.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:review:component:audit:
 #+created: 2024-09-01

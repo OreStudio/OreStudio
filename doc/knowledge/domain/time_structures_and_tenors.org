@@ -4,7 +4,6 @@
 #+title: Time Structures and Tenors
 #+description: Scalar, tenor, and term-structure concepts; settlement conventions; standard tenor labels; curve-type tenor conventions (spot/swap/CDS); date rolling; IMM dates; broken dates and turn points.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:domain:finance:tenors:curves:ore:
 #+created: 2026-05-25

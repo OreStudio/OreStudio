@@ -4,7 +4,6 @@
 #+title: Tufte's Principles for Data Visualisation
 #+description: Core principles from The Visual Display of Quantitative Information: graphical excellence, integrity, data-ink ratio, chartjunk, small multiples, and data density.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :skills:design:visualisation:tufte:knowledge:
 #+created: 2026-05-25

@@ -4,7 +4,6 @@
 #+title: Story: Party-level refdata restrictions
 #+description: Per-party visibility for currencies + countries via junction tables; framework in place but full enforcement postponed.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :rls:party:refdata:currency:country:sprint_13:v0:
 #+created: 2026-05-20

@@ -2,7 +2,6 @@
 :ID: 126F3756-77E8-9D14-B8EB-E0FF7C19A384
 :END:
 #+title: IAM Account
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

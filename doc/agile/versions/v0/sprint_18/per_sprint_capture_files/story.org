@@ -4,7 +4,6 @@
 #+title: Story: Per-sprint capture workflow: individual files and compass integration
 #+description: Replace the single capture.org per sprint with per-file product backlog captures in inbox/next/deferred/discarded buckets. Add compass capture command to create, file, and promote captures. Rename near/far to next/deferred for clarity.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :agile:compass:capture:workflow:codegen:sprint_18:v0:
 #+created: 2026-05-27

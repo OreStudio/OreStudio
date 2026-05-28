@@ -4,7 +4,6 @@
 #+title: Task: Fix refdata validate functions: use p_tenant_id not system_tenant_id
 #+description: - `ores_refdata_validate_monetary_nature_fn`, `ores_refdata_validate_currency_market_tier_fn`, and `ores_refdata_validat
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :strict_service_isolation:sprint_17:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Download Workunit Config
 #+description: Download Workunit Config
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:http:compute_file_storage_verb:
 #+created: 2026-05-21

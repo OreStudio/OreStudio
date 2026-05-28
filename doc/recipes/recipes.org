@@ -4,7 +4,6 @@
 #+title: Recipes
 #+description: Index of operational how-to recipes, grouped by topic. Each topic has its own inventory.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipes:index:knowledge:
 #+created: 2024-06-15

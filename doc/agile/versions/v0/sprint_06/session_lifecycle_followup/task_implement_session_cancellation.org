@@ -4,7 +4,6 @@
 #+title: Task: Implement session cancellation
 #+description: Cancel all active sessions when the server stops, so it can shut down cleanly under SIGINT or programmatic shutdown.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :comms:sessions:shutdown:asio:session_lifecycle_followup:sprint_06:v0:
 #+owner: marco

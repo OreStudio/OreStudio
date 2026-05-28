@@ -4,7 +4,6 @@
 #+title: System Model
 #+description: ORE Studio's four-layer architecture (foundation / infrastructure / domain / application) and the components in each layer.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :modeling:architecture:system_model:index:
 #+created: 2024-06-15

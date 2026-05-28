@@ -4,7 +4,6 @@
 #+title: Story: Qt and eventing polish
 #+description: Shell widget in Qt, name-based role management, connections-save fix, configurable icon theme, test-stdout, unsubscribe-before-logout, events for connect/login.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :qt:eventing:polish:ux:shell:sprint_12:v0:
 #+created: 2026-05-19

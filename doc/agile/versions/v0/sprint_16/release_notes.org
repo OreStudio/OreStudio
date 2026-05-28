@@ -4,7 +4,6 @@
 #+title: Sprint 16 Release Notes
 #+description: Sprint 16 release notes (April 2026).
 #+type: release_notes
-#+version: 2
 #+level: cross
 #+filetags: :release_notes:sprint_16:v0:
 #+created: 2026-04-18

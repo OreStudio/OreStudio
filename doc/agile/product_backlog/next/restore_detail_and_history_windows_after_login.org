@@ -4,7 +4,6 @@
 #+title: Restore detail and history windows after login
 #+description: Restore detail and history windows after login
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

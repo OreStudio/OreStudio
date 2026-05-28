@@ -4,7 +4,6 @@
 #+title: How do I set up a development environment?
 #+description: Install all required packages on Ubuntu/Debian/WSL with one script, then initialise the database before the first build.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :cmake:build:environment:setup:recipe:
 #+created: 2026-05-22

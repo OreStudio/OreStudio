@@ -4,7 +4,6 @@
 #+title: Task: Per-type equity instrument tables
 #+description: Per-type equity instrument tables for options, forwards, swaps, positions; SQL schemas + repository layer + NATS handlers; per-type check constraints + typed error reply.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :trading:equity:sql:nats:refactor:domain:per_type_instrument_tables:sprint_16:v0:
 #+owner: marco

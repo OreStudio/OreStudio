@@ -4,7 +4,6 @@
 #+title: Improve icon for methodology and dimensions
 #+description: Improve icon for methodology and dimensions
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

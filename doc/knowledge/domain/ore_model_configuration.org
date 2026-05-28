@@ -4,7 +4,6 @@
 #+title: ORE Model Configuration
 #+description: Analysis of the ORE model-configuration XML files (~1,486 examples) and a proposal for representing them as persisted domain entities in ORE Studio.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:ore:model_configuration:domain:
 #+created: 2024-06-15

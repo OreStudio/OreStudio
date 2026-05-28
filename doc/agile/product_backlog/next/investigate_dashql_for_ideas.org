@@ -4,7 +4,6 @@
 #+title: Investigate dashql for ideas
 #+description: Investigate dashql for ideas
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

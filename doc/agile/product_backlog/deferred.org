@@ -4,7 +4,6 @@
 #+title: Product backlog — deferred
 #+description: Index of pre-sprint captures kept for the longer-term wishlist.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :backlog:deferred:capture:index:knowledge:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Task: Drop site banner, restore index cards, GitHub icon in nav
 #+description: - Drop the oversized banner image from the site preamble — leaves the nav band alone at the top of every page.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :v2_doc_architecture:sprint_17:v0:
 #+owner: marco

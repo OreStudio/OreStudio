@@ -4,7 +4,6 @@
 #+title: Task: Add /FS to serialise MSVC PDB writes under parallel Ninja builds
 #+description: Add /FS compiler option to Windows build configuration to prevent C1041 errors during parallel builds with Ninja.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :windows:msvc:ninja:pdb:cmake:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

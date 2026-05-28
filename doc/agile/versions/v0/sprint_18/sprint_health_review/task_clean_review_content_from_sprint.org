@@ -4,7 +4,6 @@
 #+title: Task: Move health review content from sprint.org into task
 #+description: The Health Review section in sprint.org is too verbose; full review content belongs in the task Result section with only a short link left in sprint.org.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sprint_health_review:sprint_18:v0:
 #+owner: marco

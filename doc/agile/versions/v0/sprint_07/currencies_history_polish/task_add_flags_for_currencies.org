@@ -4,7 +4,6 @@
 #+title: Task: Add flags for currencies
 #+description: Render a country flag alongside each currency in the list and detail views.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :currencies:qt:ux:flags:currencies_history_polish:sprint_07:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Party identifier scheme analysis
 #+description: Analysis pass: catalogue the party identifier schemes we need (LEI, BIC, MIC, CEDB, Natural Person, National ID, Internal, ACER, DTCC, AII/MPID).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :party:analysis:fpml:schemes:party_schemes_and_fpml_data:sprint_10:v0:
 #+owner: marco

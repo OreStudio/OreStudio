@@ -4,7 +4,6 @@
 #+title: Story: Per-request tenant context
 #+description: Refactor message handlers to create per-request database contexts from session tenant_id; type-safe tenant_id wrapper; system tenant moves from nil UUID to max UUID.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :tenancy:security:handlers:rls:sprint_11:v0:
 #+created: 2026-05-19

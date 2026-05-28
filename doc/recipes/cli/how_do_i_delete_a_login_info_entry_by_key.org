@@ -4,7 +4,6 @@
 #+title: How do I delete a login info entry by key?
 #+description: Delete a login info entry by key
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:login_info:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Revoke Role By Name
 #+description: Revoke Role By Name
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:shell:accounts:
 #+created: 2026-05-21

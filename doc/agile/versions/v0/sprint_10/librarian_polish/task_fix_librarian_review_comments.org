@@ -4,7 +4,6 @@
 #+title: Task: Fix code review comments for librarian
 #+description: PR review fixes: domain viewing/editing; dimension nodes in the tree as filters; dependency-message diagram check; country flags load after restart; header colour vs row colour; namespace crypto icons vs country flags (AE clash); publish-failure error visibility (raised as separate story).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :librarian:qt:review:polish:librarian_polish:sprint_10:v0:
 #+owner: marco

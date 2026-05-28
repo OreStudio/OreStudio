@@ -4,7 +4,6 @@
 #+title: Story: Tenancy-based test isolation
 #+description: Centralised tenant_context C++ service; per-test tenant provisioning + deprovisioning; RLS policies; --tenant CLI flag; psqlrc support.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :tenancy:tests:rls:cli:sprint_11:v0:
 #+created: 2026-05-19

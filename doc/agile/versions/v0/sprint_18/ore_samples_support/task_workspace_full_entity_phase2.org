@@ -4,7 +4,6 @@
 #+title: Task: Workspace full entity: C++ core
 #+description: Add read_history to workspace repository and service; route get_workspace_history_request in the handler.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_samples_support:sprint_18:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Write recipe: bulk capture from freeform text
 #+description: Create a recipe for authoring a paragraph of freeform text and having the LLM decompose it into one or more well-structured captures filed in inbox/.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco

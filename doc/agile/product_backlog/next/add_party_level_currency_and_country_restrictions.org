@@ -4,7 +4,6 @@
 #+title: Add party level currency and country restrictions
 #+description: Add party level currency and country restrictions
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

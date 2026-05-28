@@ -4,7 +4,6 @@
 #+title: How do I add a doc with compass?
 #+description: Use compass add to create a doc (story/task/sprint/recipe/...) via ores.codegen, with parent-dir defaulted from where we are.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :compass:codegen:agile:recipe:
 #+created: 2026-05-24

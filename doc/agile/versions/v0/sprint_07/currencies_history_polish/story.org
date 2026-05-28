@@ -4,7 +4,6 @@
 #+title: Story: Currencies history polish
 #+description: Make the currencies history dialog usable: visually distinguish the latest version, add revert/reload buttons, add flag icons.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :currencies:qt:ux:history:sprint_07:v0:
 #+created: 2026-05-19

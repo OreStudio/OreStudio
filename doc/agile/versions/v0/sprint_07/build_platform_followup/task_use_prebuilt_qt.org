@@ -4,7 +4,6 @@
 #+title: Task: Use prebuilt Qt
 #+description: Switch CI and dev installs to a prebuilt Qt rather than building from vcpkg; saves significant time + disk.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :build:qt:vcpkg:build_platform_followup:sprint_07:v0:
 #+owner: marco

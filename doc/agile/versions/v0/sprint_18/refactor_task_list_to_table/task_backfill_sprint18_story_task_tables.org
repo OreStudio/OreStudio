@@ -4,7 +4,6 @@
 #+title: Task: Back-fill sprint 18 story task lists to tables
 #+description: Replace the bullet-list Tasks section in every sprint 18 story doc with the new task status table format.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :refactor_task_list_to_table:sprint_18:v0:
 #+owner: marco

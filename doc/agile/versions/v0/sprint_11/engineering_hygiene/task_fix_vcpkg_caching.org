@@ -4,7 +4,6 @@
 #+title: Task: Fix vcpkg caching (x-gha removed upstream)
 #+description: Replace the silently-removed x-gha vcpkg binary-cache backend with the files provider backed by actions/cache@v4 across 5 workflow files; saves ~21 min per build.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ci:vcpkg:cache:build:engineering_hygiene:sprint_11:v0:
 #+owner: marco

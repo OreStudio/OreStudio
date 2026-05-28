@@ -4,7 +4,6 @@
 #+title: Sign-up dialog should be disabled if feature is disabled
 #+description: Sign-up dialog should be disabled if feature is disabled
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

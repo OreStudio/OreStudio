@@ -4,7 +4,6 @@
 #+title: Create a new component
 #+description: Scaffold a new ORE Studio component with api/core/service split, CMake wiring, component overview, and stub tests.
 #+type: runbook
-#+version: 2
 #+level: cross
 #+filetags: :runbook:component:codegen:cmake:
 #+created: 2026-05-26

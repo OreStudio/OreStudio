@@ -4,7 +4,6 @@
 #+title: Sprint 18 Capture
 #+description: Assorted notes taken during Sprint which have not yet been filled but we do not want to forget. DRAINED 2026-05-28 — all entries triaged into product backlog via bulk capture recipe.
 #+type: capture
-#+version: 2
 #+level: s3
 #+filetags: :ore:workflow:marketdata:controller:plugins:trading:reporting:windows:sprint_16:v0:
 #+created: 2026-05-23

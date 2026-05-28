@@ -4,7 +4,6 @@
 #+title: Sprint Planner
 #+description: Run a sprint planning session: read sprint goals, score next-backlog captures against them, and promote selected ones into stories.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:agile:sprint:planning:
 #+created: 2026-05-24

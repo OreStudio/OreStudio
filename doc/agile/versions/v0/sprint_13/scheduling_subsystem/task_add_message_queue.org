@@ -4,7 +4,6 @@
 #+title: Task: Add a message queue
 #+description: Basic queue infrastructure for asynchronous processing — sets up the foundation that the scheduling subsystem and future trade-import paths will both consume.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :messaging:queue:async:infrastructure:scheduling_subsystem:sprint_13:v0:
 #+owner: marco

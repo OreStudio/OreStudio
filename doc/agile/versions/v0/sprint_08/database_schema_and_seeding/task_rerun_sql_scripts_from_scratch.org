@@ -4,7 +4,6 @@
 #+title: Task: Rerun SQL scripts from scratch
 #+description: Validate schema bring-up from a clean slate; add TimescaleDB license-tier detection and per-database extension install; document the schema.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sql:timescaledb:bootstrap:database_schema_and_seeding:sprint_08:v0:
 #+owner: marco

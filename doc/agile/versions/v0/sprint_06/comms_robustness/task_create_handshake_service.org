@@ -4,7 +4,6 @@
 #+title: Task: Create handshake service in comms
 #+description: Move the handshake logic out of session into a dedicated handshake service so failures are reported with structure rather than as opaque read errors.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :comms:handshake:refactor:comms_robustness:sprint_06:v0:
 #+owner: marco

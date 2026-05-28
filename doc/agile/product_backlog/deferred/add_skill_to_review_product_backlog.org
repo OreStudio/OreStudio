@@ -4,7 +4,6 @@
 #+title: Add skill to review product backlog
 #+description: Add skill to review product backlog
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :infra:capture:far:
 #+created: 2026-05-21

@@ -2,7 +2,6 @@
 :ID: D9143823-DFCD-4208-96BE-8AD647A78C8D
 :END:
 #+title: Workflow Engine Hardening
-#+version: 2
 #+SUBTITLE: Dynamic steps, ownership relocation, idempotency, and a reusable step widget
 #+DATE: 2026-05-14
 #+AUTHOR: ORE Studio Team

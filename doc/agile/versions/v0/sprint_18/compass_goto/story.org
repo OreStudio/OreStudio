@@ -4,7 +4,6 @@
 #+title: Story: compass goto: start a unit of work in one command
 #+description: A compass goto command that fetches main, creates a feature branch, scaffolds a linked story+task, and prints next steps.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :compass:workflow:agile:python:sprint_18:v0:
 #+created: 2026-05-25

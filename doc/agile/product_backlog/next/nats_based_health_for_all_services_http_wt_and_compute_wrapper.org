@@ -4,7 +4,6 @@
 #+title: NATS-based health for all services: HTTP, WT and compute wrapper
 #+description: NATS-based health for all services: HTTP, WT and compute wrapper
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

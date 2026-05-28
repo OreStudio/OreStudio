@@ -2,7 +2,6 @@
 :ID: B3E7F2A1-9C5D-4E82-AF1B-7D8C3E6B0F24
 :END:
 #+title: Currency Taxonomy Enhancement: Asset Class and Market Tier
-#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

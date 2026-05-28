@@ -4,7 +4,6 @@
 #+title: How do I start a unit of work with compass?
 #+description: Use compass goto to fetch main, create a feature branch, and scaffold a linked story and task in one step.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :compass:workflow:agile:recipe:
 #+created: 2026-05-25

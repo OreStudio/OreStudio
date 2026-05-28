@@ -4,7 +4,6 @@
 #+title: Task: Improvements to connection browser
 #+description: Inline rename, drag-reorder folders, password policy validation, test-connection button, expanded start state, tags support, brighter-disabled-state fix, login-dialog integration.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:connections:ux:polish:connection_management:sprint_09:v0:
 #+owner: marco

@@ -2,7 +2,6 @@
 :ID: 5319618A-FEB6-46F4-9588-11495CA8E164
 :END:
 #+title: MSVC C1202 — Decompose trade into Sub-Structs
-#+version: 2
 #+DATE: 2026-05-17
 #+AUTHOR: ORE Studio Team
 #+STATUS: IN PROGRESS

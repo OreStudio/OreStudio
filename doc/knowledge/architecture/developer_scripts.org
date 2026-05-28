@@ -4,7 +4,6 @@
 #+title: Developer scripts
 #+description: Inventory of standalone scripts in scripts/, grouped by purpose, with descriptions and notes on Python/shell companion pairs.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:architecture:tooling:scripts:
 #+created: 2026-05-28

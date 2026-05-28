@@ -4,7 +4,6 @@
 #+title: Task: Apply bulk capture recipe to sprint 18 capture.org
 #+description: Process sprint 18 capture.org using the bulk capture recipe: decompose entries into well-structured per-file captures filed in the product backlog inbox/next/deferred buckets.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco

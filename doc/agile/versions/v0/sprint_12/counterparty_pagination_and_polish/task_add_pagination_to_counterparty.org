@@ -4,7 +4,6 @@
 #+title: Task: Add pagination to counterparty
 #+description: offset/limit on get_counterparties_request; total_available_count on response; ClientCounterpartyModel with load_page + fetchMore + set_page_size; PaginationWidget in CounterpartyMdiWindow; protocol bump 31.0.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :counterparty:pagination:protocol:qt:counterparty_pagination_and_polish:sprint_12:v0:
 #+owner: marco

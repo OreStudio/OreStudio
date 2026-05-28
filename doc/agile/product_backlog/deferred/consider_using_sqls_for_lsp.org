@@ -4,7 +4,6 @@
 #+title: Consider using sqls for LSP
 #+description: Consider using sqls for LSP
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:far:
 #+created: 2026-05-21

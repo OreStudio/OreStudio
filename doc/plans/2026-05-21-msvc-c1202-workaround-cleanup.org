@@ -2,7 +2,6 @@
 :ID: 7E3A9C2F-B405-4D81-A63E-F18D205B47C9
 :END:
 #+title: MSVC C1202 Workaround Cleanup
-#+version: 2
 #+STATUS: COMPLETE
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil

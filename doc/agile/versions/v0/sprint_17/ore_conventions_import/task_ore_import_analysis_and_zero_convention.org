@@ -4,7 +4,6 @@
 #+title: Task: ORE import analysis and zero_convention pilot
 #+description: Delivers Phase 1 of the ORE import conventions plan: a working end-to-end
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_conventions_import:sprint_17:v0:
 #+owner: marco

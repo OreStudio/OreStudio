@@ -4,7 +4,6 @@
 #+title: ores.qt.compute
 #+description: Qt plugin for compute/reporting UI — report definitions, instances, apps, compute dashboard, and concurrency policies.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :qt:compute:reporting:ui:component:
 #+created: 2026-05-20

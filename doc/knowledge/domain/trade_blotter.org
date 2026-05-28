@@ -4,7 +4,6 @@
 #+title: Trade Blotter
 #+description: Primary front-office screen: multi-panel architecture, deal grid columns and colour coding, deal actions (new/amend/cancel/link/allocate), deal entry form and field interdependence, structure view, STP panel, dynamic books, Expiry Manager, Fixing Manager, Barrier Management, Delta Jump Screen, Spike Map, and cross-screen navigation.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:blotter:ore:
 #+created: 2026-05-25

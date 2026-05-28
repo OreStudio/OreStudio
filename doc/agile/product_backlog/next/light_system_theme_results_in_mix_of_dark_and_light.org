@@ -4,7 +4,6 @@
 #+title: Light system theme results in mix of dark and light
 #+description: Light system theme results in mix of dark and light
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

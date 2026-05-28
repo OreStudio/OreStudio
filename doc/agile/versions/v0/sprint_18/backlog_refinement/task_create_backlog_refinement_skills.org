@@ -4,7 +4,6 @@
 #+title: Task: Create backlog-refiner and sprint-planner skills and recipes
 #+description: Author the backlog-refiner and sprint-planner Claude Code skills and their companion agile recipes.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :agile:backlog:skills:recipes:sprint_18:v0:backlog_refinement:
 #+owner: marco

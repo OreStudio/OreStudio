@@ -4,7 +4,6 @@
 #+title: Task: Display provision correlation ID on tenant summary
 #+description: TenantProvisioningWizard summary page shows the provision correlation ID for cross-referencing service logs.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:workflow:correlation:wizard:ux:party_provisioning_saga:sprint_16:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Story: Sprint 05 housekeeping
 #+description: Sprint sundries: backlog refinement, AI-generated sprint summary, OCR scan of paper notebooks.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :housekeeping:agile:llm:sprint_05:v0:
 #+created: 2025-12-01

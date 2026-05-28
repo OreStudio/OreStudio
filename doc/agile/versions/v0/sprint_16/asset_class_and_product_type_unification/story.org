@@ -4,7 +4,6 @@
 #+title: Story: Asset class and product_type unification
 #+description: Rename instrument_family → product_type; separate asset_class (risk taxonomy) from product_type (structural routing); unify modelling end-to-end.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :trading:asset_class:product_type:refactor:fpml:sprint_16:v0:
 #+created: 2026-05-20

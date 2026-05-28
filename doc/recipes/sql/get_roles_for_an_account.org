@@ -4,7 +4,6 @@
 #+title: Get Roles for an Account
 #+description: Get Roles for an Account
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:sql:rbac_roles_and_permissions:
 #+created: 2026-05-21

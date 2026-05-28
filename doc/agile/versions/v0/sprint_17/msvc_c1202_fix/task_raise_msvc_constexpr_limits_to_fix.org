@@ -4,7 +4,6 @@
 #+title: Task: Raise MSVC constexpr limits to fix C1202 on rfl-reflected structs
 #+description: - `fra_instrument` has 18 fields; `rfl`'s duplicate-field-names check performs an O(N²) constexpr expansion that exhaust
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :msvc_c1202_fix:sprint_17:v0:
 #+owner: marco

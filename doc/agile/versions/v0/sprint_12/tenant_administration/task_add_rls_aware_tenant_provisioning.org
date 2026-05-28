@@ -4,7 +4,6 @@
 #+title: Task: Add RLS-aware tenant provisioning for tests
 #+description: Tenant repository tests bypass RLS via a privileged tenant_provisioning_helper; 6 SKIP'd tenant tests re-enabled.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :tenants:tests:rls:iam:tenant_administration:sprint_12:v0:
 #+owner: marco

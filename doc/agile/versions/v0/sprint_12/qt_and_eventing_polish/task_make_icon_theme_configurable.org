@@ -4,7 +4,6 @@
 #+title: Task: Make icon theme configurable
 #+description: Allow switching the icon theme without rebuilding; ideally without restarting.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:theming:ux:icons:qt_and_eventing_polish:sprint_12:v0:
 #+owner: marco

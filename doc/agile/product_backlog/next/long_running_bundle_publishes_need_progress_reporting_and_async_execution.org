@@ -4,7 +4,6 @@
 #+title: Long-running bundle publishes need progress reporting and async execution
 #+description: Long-running bundle publishes need progress reporting and async execution
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

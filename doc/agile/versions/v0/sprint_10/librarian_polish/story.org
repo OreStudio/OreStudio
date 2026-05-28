@@ -4,7 +4,6 @@
 #+title: Story: Librarian polish
 #+description: Address PR-review feedback on the Data Librarian landed in sprint 09.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :librarian:qt:polish:dq:sprint_10:v0:
 #+created: 2026-05-19

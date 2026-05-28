@@ -4,7 +4,6 @@
 #+title: Knowledge
 #+description: Index of durable cross-cutting knowledge — domain concepts, architecture, security, and supporting topics.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:index:
 #+created: 2024-06-15

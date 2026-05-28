@@ -4,7 +4,6 @@
 #+title: Task: v2 cybernetic information architecture (sprints 01-07)
 #+description: Stands up the v2 information architecture under =doc/v2/= and migrates the first
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :v2_doc_architecture:sprint_17:v0:
 #+owner: marco

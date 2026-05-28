@@ -2,7 +2,6 @@
 :ID: E4D5F6A7-B8C9-0123-DEFA-234567890123
 :END:
 #+title: ores.variability Messaging Reference
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: overview

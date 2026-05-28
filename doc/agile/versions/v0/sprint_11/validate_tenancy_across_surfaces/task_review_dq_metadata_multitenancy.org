@@ -4,7 +4,6 @@
 #+title: Task: Review DQ metadata tables for multi-tenancy
 #+description: Audit: 11 DQ metadata tables have unique version indexes without tenant_id, blocking cross-tenant duplication; decision recorded; fix lands as part of the publish-across-tenants task.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :dq:tenancy:analysis:sql:validate_tenancy_across_surfaces:sprint_11:v0:
 #+owner: marco

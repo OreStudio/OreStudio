@@ -4,7 +4,6 @@
 #+title: ores.http.core
 #+description: HTTP route implementations for the ORE Studio REST API — IAM, assets, risk, storage, and variability routes.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :http:core:component:
 #+created: 2026-05-19

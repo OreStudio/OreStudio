@@ -4,7 +4,6 @@
 #+title: How do I create shell commands for a new entity?
 #+description: Walk through list, add, history, and delete commands for a new entity in ores.shell.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:shell:entity:
 #+created: 2026-05-21

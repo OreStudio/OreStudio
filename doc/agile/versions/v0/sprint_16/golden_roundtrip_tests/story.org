@@ -4,7 +4,6 @@
 #+title: Story: ORE golden roundtrip tests
 #+description: Golden file XML roundtrip tests for Commodity + BondOption, Credit + Equity, and Exotic + Hybrid + Scripted instruments.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :ore:tests:golden:roundtrip:xml:sprint_16:v0:
 #+created: 2026-05-20

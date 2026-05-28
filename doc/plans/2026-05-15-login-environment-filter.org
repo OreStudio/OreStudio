@@ -2,7 +2,6 @@
 :ID: D7F263C4-7A0C-4ABD-85E7-0BD90C0C4D98
 :END:
 #+title: Login Dialog Label Filter
-#+version: 2
 #+date: 2026-05-15
 #+author: Marco Craveiro
 

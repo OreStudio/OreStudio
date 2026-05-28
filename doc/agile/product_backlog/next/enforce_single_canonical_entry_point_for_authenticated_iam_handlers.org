@@ -4,7 +4,6 @@
 #+title: Enforce single canonical entry point for authenticated IAM handlers
 #+description: Enforce single canonical entry point for authenticated IAM handlers
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Story: Portfolio explorer
 #+description: Combined PortfolioBookTreeMdiWindow: hierarchical tree + filtered trade table; breadcrumb scope; trade counts; eventing for book + portfolio changes; protocol 43.0.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :qt:portfolio:trades:explorer:protocol:sprint_13:v0:
 #+created: 2026-05-20

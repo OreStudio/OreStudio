@@ -4,7 +4,6 @@
 #+title: How do I create a new doc?
 #+description: Use generate_doc.sh to create any document type with frontmatter, UUID, and skeleton sections pre-filled.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :codegen:templates:agile:recipe:
 #+created: 2026-05-18

@@ -4,7 +4,6 @@
 #+title: Task: Assorted fixes to accounts dialog
 #+description: Save-button enable-on-change, my-account dialog reshape, session-history non-maximisable, byte counters, status taxonomy (locked/unlocked/reset), right-click menu.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:accounts:ux:polish:qt_ux_polish:sprint_08:v0:
 #+owner: marco

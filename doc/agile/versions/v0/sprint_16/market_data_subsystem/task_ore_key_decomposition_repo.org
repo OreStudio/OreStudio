@@ -4,7 +4,6 @@
 #+title: Task: ORE key decomposition and database repository
 #+description: Phase 3 + 4: ores.marketdata.core project with database entities + mappers + repositories; series_key_registry structures ORE keys for lossless reconstruction.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :marketdata:ore:sql:repository:decomposition:market_data_subsystem:sprint_16:v0:
 #+owner: marco

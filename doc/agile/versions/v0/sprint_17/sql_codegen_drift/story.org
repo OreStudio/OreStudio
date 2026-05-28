@@ -4,7 +4,6 @@
 #+title: Story: SQL codegen drift remediation
 #+description: Replace all remaining hand-crafted SQL files with generated output; fix entity model profile dispatch and composite natural-key indexes.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :sql:codegen:sprint_17:v0:
 #+created: 2026-05-21

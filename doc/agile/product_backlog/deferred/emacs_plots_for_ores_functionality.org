@@ -4,7 +4,6 @@
 #+title: Explore using the Emacs chart library to provide lightweight…
 #+description: Explore using the Emacs chart library to provide lightweight plots of ORE Studio data (e.g. session activity, trade counts) directly inside the Emacs dashboard.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

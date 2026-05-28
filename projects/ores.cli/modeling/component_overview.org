@@ -4,7 +4,6 @@
 #+title: ores.cli
 #+description: Command-line tool for importing and exporting ORE Studio reference data (currencies, countries) from JSON, XML, and CSV.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :cli:tool:component:
 #+created: 2026-05-20

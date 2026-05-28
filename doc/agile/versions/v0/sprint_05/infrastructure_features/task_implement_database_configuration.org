@@ -4,7 +4,6 @@
 #+title: Task: Implement database configuration
 #+description: Replace hard-coded database settings with configuration: CLI flags + env vars + config file, in both console and Qt UI.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :configuration:postgres:cli:infrastructure_features:sprint_05:v0:
 #+owner: marco

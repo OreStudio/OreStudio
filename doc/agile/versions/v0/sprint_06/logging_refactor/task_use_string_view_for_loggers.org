@@ -4,7 +4,6 @@
 #+title: Task: Use std::string_view for loggers
 #+description: Take std::string_view rather than std::string in the logging API so call sites avoid an allocation per log line.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :logging:string_view:performance:logging_refactor:sprint_06:v0:
 #+owner: marco

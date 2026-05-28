@@ -4,7 +4,6 @@
 #+title: Task: Check eventing across tenants
 #+description: tenant_id propagated through SQL triggers → JSONB payloads → event bus → subscription_manager; subscription_manager::notify() filters by session tenant; backward-compatible broadcast when tenant absent; 5 new test cases.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :eventing:tenancy:validation:subscription:validate_tenancy_across_surfaces:sprint_11:v0:
 #+owner: marco

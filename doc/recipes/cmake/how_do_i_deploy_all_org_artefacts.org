@@ -4,7 +4,6 @@
 #+title: How do I deploy all org-mode artefacts?
 #+description: Build the site, skills, settings, and diagrams in one shot with the deploy_org CMake target.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :cmake:build:org:recipe:
 #+created: 2026-05-22

@@ -5,7 +5,6 @@
 #+description: When needing to know how to perform a project operation, look in doc/recipes/ first.
 #+type: memory
 #+memory_subtype: feedback
-#+version: 2
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Task: Create NATS external knowledge page
 #+description: Scaffold doc/knowledge/external/nats.org describing NATS as a technology: subjects, queue groups, JetStream, security model, and upstream links.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :nats_documentation:sprint_18:v0:
 #+owner: marco

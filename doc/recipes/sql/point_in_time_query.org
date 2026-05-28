@@ -4,7 +4,6 @@
 #+title: Point-in-Time Query
 #+description: Point-in-Time Query
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:sql:temporal_queries:
 #+created: 2026-05-21

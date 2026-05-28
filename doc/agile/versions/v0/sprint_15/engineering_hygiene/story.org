@@ -4,7 +4,6 @@
 #+title: Story: Engineering hygiene
 #+description: sccache CI cache bloat fix; tenant_id fix in system-settings repository tests; dev environment setup scripts (ORES_PRESET in .env, start-client.sh).
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :ci:sccache:tests:dev_env:scripts:sprint_15:v0:
 #+created: 2026-05-20

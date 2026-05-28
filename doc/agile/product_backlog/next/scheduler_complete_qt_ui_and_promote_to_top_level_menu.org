@@ -4,7 +4,6 @@
 #+title: Scheduler: complete Qt UI and promote to top-level menu
 #+description: Scheduler: complete Qt UI and promote to top-level menu
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

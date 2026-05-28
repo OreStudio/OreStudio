@@ -4,7 +4,6 @@
 #+title: ORES Recipe Sync Skill
 #+description: Keep recipe documentation in sync with the source it describes — CLI parsers, HTTP routes, shell commands, or any other recipe topic.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:recipes:documentation:
 #+created: 2026-05-21

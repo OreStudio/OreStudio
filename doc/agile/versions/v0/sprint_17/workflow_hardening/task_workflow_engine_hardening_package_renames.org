@@ -4,7 +4,6 @@
 #+title: Task: Workflow engine hardening + package renames
 #+description: - Item 1: Dynamic step lists — `workflow_instance` gains `step_count` and `materialised_steps_json` so the step sequence
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :workflow_hardening:sprint_17:v0:
 #+owner: marco

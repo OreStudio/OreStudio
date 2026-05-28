@@ -4,7 +4,6 @@
 #+title: Task: Implement Per-sprint capture workflow: individual files and compass integration
 #+description: Initial task for: Per-sprint capture workflow: individual files and compass integration
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Sprint 18
 #+description: Sprint 18 — ORE imports, more ORE types, compass tool, and backlog refinement tooling.
 #+type: sprint
-#+version: 2
 #+level: s3
 #+filetags: :v0:
 #+created: 2026-05-22

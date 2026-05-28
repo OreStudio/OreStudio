@@ -4,7 +4,6 @@
 #+title: Add support for PDF generation
 #+description: Add support for PDF generation
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:far:
 #+created: 2026-05-21

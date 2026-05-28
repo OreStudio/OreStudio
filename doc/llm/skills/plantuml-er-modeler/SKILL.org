@@ -4,7 +4,6 @@
 #+title: PlantUML ER Modeler Skill
 #+description: Produce a clean PlantUML entity-relationship diagram for the ORE Studio SQL schema following the project conventions.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:plantuml:sql:diagrams:
 #+created: 2024-09-01

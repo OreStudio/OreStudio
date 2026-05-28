@@ -4,7 +4,6 @@
 #+title: Task: goto: add a task to an existing story
 #+description: Extend compass goto with an existing-story mode (--story) that branches and adds a task to an existing story instead of creating a new one.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compass:workflow:python:compass_goto:sprint_18:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Add :eval never to list-presets sh block to fix site build
 #+description: - Adds `:eval never` to the `#+begin_src sh` block in `how_do_i_list_available_presets.org`
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :v2_doc_architecture:sprint_17:v0:
 #+owner: marco

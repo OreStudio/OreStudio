@@ -4,7 +4,6 @@
 #+title: How do I bump the project version?
 #+description: Bump ORE Studio's version number — CMakeLists.txt, vcpkg.json, the three GitHub workflow package filenames, and the readme badges.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :cmake:build:release:version:recipe:
 #+created: 2026-05-21

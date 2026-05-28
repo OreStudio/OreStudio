@@ -4,7 +4,6 @@
 #+title: Task: Analyse ORE trade import mapping requirements
 #+description: Document how ORE XML trade references (CounterParty string, NettingSetId, PortfolioIds) map to ORES UUID-keyed entities. Decide: auto-create vs mapping dialog vs config file for counterparties; how to assign books (no ORE equivalent); whether to map PortfolioIds or ignore; batch import configurations.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :trade:ore:xml:analysis:import:design:trade_import_analysis:sprint_13:v0:
 #+owner: marco

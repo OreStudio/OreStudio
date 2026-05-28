@@ -4,7 +4,6 @@
 #+title: Understanding Settlements and SSI
 #+description: Understanding Settlements and SSI
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :analysis:capture:near:
 #+created: 2026-05-21

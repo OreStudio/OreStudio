@@ -4,7 +4,6 @@
 #+title: Task: Build as static library on Windows to avoid DLL export limit
 #+description: Build trading.core as static library on Windows to address 65535 symbol DLL limit; update installation command for static archives.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :windows:cmake:trading:static_lib:dll:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

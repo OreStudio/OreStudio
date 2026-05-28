@@ -4,7 +4,6 @@
 #+title: Sprint 15 Release Notes
 #+description: Sprint 15 release notes (March 2026).
 #+type: release_notes
-#+version: 2
 #+level: cross
 #+filetags: :release_notes:sprint_15:v0:
 #+created: 2026-03-30

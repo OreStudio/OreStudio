@@ -4,7 +4,6 @@
 #+title: Qt menu and toolbar patterns
 #+description: Plugin registration, on_login() menu wiring, and MDI window toolbar construction for ores.qt entities.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:qt:entity:menu:toolbar:
 #+created: 2026-05-21

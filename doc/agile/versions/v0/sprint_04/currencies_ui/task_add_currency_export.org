@@ -4,7 +4,6 @@
 #+title: Task: Add export functionality for currencies
 #+description: Export currencies from the Qt UI to file (JSON / XML) via a menu action.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :currencies:qt:ux:export:currencies_ui:sprint_04:v0:
 #+owner: marco

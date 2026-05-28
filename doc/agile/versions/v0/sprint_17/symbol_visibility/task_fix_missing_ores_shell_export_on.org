@@ -4,7 +4,6 @@
 #+title: Task: Fix missing ORES_SHELL_EXPORT on host class (Windows linker error)
 #+description: - `ores::shell::app::host` was missing the `ORES_SHELL_EXPORT` macro, so `host::execute` was not exported from the `ores
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :symbol_visibility:sprint_17:v0:
 #+owner: marco

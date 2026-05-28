@@ -4,7 +4,6 @@
 #+title: SQL recipes
 #+description: Inventory of sql recipes grouped by category.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipe:sql:index:knowledge:
 #+created: 2026-05-21

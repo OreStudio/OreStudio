@@ -4,7 +4,6 @@
 #+title: How do I register a new compute host node?
 #+description: Register a new compute host node
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:compute_hosts:
 #+created: 2026-05-21

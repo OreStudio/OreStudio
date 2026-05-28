@@ -4,7 +4,6 @@
 #+title: Story: PlantUML integration: recipe and codegen scaffold
 #+description: Add a how-do-I recipe for embedding PlantUML diagrams in org-mode documents; extend ores.codegen/compass to scaffold .puml skeletons with licence header and standard structure.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :plantuml:diagram:codegen:compass:recipe:documentation:sprint_18:v0:
 #+created: 2026-05-28

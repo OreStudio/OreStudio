@@ -4,7 +4,6 @@
 #+title: Investigations
 #+description: Index of targeted deep-dive investigations into specific technical problems.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :investigations:index:knowledge:
 #+created: 2026-05-24

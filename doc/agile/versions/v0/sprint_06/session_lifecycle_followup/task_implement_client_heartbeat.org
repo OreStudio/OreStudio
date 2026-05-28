@@ -4,7 +4,6 @@
 #+title: Task: Implement client heartbeat for disconnect detection
 #+description: Client sends periodic heartbeats so it (and the server) detect dropped connections rather than waiting on a stalled read.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :comms:sessions:heartbeat:reliability:session_lifecycle_followup:sprint_06:v0:
 #+owner: marco

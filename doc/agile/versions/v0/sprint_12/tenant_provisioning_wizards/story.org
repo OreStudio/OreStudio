@@ -4,7 +4,6 @@
 #+title: Story: Tenant provisioning wizards
 #+description: Enforce root party uniqueness; new tenant provisioning wizard (incl. synthetic); gate wizard steps by tenant type; UX polish; evaluation-tenant onboarding on first login.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :tenants:wizard:qt:provisioning:synthetic:sprint_12:v0:
 #+created: 2026-05-19

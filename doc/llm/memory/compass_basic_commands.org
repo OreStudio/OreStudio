@@ -5,7 +5,6 @@
 #+description: Syntax reference for the most-used compass commands: search, show, list, add, where, goto.
 #+type: memory
 #+memory_subtype: reference
-#+version: 2
 #+level: cross
 #+filetags: :memory:reference:
 #+created: 2026-05-28

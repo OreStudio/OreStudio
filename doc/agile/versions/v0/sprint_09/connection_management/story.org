@@ -4,7 +4,6 @@
 #+title: Story: Connection management
 #+description: ores.connections component, Connection Browser MDI, login-dialog modernisation, prodigy multi-environment support.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :connections:qt:login:environments:sprint_09:v0:
 #+created: 2026-05-19

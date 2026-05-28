@@ -4,7 +4,6 @@
 #+title: How do I add a PlantUML diagram?
 #+description: Write a .puml diagram, export it to PNG with plantuml, and embed it in org-mode with correct figure metadata.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :plantuml:diagram:recipe:documentation:
 #+created: 2026-05-28

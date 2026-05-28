@@ -2,7 +2,6 @@
 :ID: 6F1A8C2E-9A4D-4F71-B6E0-2D5C8B9E7A41
 :END:
 #+title: Bootstrap, Role Lifecycle and Architecture Violations
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

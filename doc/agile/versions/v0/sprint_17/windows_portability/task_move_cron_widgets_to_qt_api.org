@@ -4,7 +4,6 @@
 #+title: Task: Move Cron widgets to qt.api to fix Windows link error
 #+description: - `lld-link: undefined symbol: ores::qt::CronExpressionWidget::staticMetaObject` when linking `ores.qt.scheduler.dll` on
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :windows_portability:sprint_17:v0:
 #+owner: marco

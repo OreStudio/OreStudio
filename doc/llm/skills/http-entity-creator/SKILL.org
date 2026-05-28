@@ -4,7 +4,6 @@
 #+title: HTTP Entity Creator
 #+description: Create HTTP REST API endpoints for domain entities in ores.http.server including CRUD operations and history.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:http:entity:rest:
 #+created: 2024-09-01

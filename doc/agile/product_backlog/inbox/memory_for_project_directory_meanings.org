@@ -4,7 +4,6 @@
 #+title: Add a memory for the meaning of key project directories: tmp…
 #+description: Add a memory for the meaning of key project directories: tmp, samples, and others, so contributors know where transient vs permanent data lives.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

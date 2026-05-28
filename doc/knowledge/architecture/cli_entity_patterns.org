@@ -4,7 +4,6 @@
 #+title: CLI entity patterns
 #+description: Options structs, parser layout, and command-dispatch conventions for ores.cli entity commands.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:architecture:cli:entity:
 #+created: 2026-05-21

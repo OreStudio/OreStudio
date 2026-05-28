@@ -4,7 +4,6 @@
 #+title: Story: SQLite CLI quality-of-life setup
 #+description: Ship a default .sqliterc that gives sensible formatting and ergonomic defaults when connecting to SQLite via the command-line shell.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :sql:sqlite:tooling:developer_experience:sprint_18:v0:
 #+created: 2026-05-24

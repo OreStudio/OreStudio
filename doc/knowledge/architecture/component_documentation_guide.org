@@ -4,7 +4,6 @@
 #+title: Component Documentation Guide
 #+description: Practical guide to writing component_overview.org files: what each section means, how to fill it in, and what makes a good entry.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :documentation:component:knowledge:
 #+created: 2026-05-20

@@ -4,7 +4,6 @@
 #+title: Task: OCR scan notebooks for this sprint
 #+description: Capture the paper notebook pages used during sprint 05 design discussions as searchable text.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :agile:ocr:notebook:sprint_05_housekeeping:sprint_05:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Add workflow monitor + late fixes
 #+description: ores.qt.workflow plugin with workflow monitor; JetStream durability + SIGSEGV fix in engine; trade nullable dates; compute fixes; ORE import workflow + correlation IDs selectable/copyable; master-detail layout.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :workflow:qt:plugin:monitor:compute:ore:workflow_monitor:sprint_16:v0:
 #+owner: marco

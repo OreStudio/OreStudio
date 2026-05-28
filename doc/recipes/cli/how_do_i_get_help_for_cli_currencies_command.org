@@ -4,7 +4,6 @@
 #+title: How do I get help for the CLI refdata currencies command?
 #+description: Show available operations under =ores.cli refdata currencies=
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:currencies:
 #+created: 2026-05-21

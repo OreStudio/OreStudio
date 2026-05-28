@@ -4,7 +4,6 @@
 #+title: Task: Rename v2-branded codegen scripts and templates
 #+description: Rename generate_v2_doc.sh, v2_doc_generate.py, and all v2_doc_*.mustache templates; update all callers in compass.py, CMake, and CI.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :doc_format_cleanup:sprint_18:v0:
 #+owner: marco

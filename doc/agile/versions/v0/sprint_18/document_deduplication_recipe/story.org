@@ -4,7 +4,6 @@
 #+title: Story: Document deduplication recipe
 #+description: Create a generalised how-to recipe for deduplicating two documents (merge, delete, re-link), and apply it to resolve the duplicate sprint health review runbooks.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :documentation:recipe:deduplication:llm:sprint_18:v0:
 #+created: 2026-05-28

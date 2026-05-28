@@ -4,7 +4,6 @@
 #+title: How do I generate a PR summary?
 #+description: Walk the current branch's commits since the merge base with main and assemble a structured PR title and body.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :github:pr:summary:recipe:
 #+created: 2026-05-21

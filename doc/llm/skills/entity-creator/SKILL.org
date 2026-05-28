@@ -4,7 +4,6 @@
 #+title: Entity Creator
 #+description: Create a complete full-stack ORE Studio entity across all layers via codegen — the orchestrator skill.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:entity:codegen:orchestrator:
 #+created: 2026-05-21

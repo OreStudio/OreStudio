@@ -4,7 +4,6 @@
 #+title: Story: Improve cybernetics documentation
 #+description: Three bundled docs: standalone cybernetics summary page; expand Cybernetic Levels with VSM connection and limitations; new Viable System Model knowledge page.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :cybernetics:documentation:meta:sprint_18:v0:
 #+created: 2026-05-28

@@ -4,7 +4,6 @@
 #+title: Compute Engine
 #+description: Distributed computation architecture for valuation and reporting: run configurations, compute jobs, orchestration, chunking, environments, lifecycle, priorities, and auditability.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:domain:finance:compute:ore:
 #+created: 2026-05-25

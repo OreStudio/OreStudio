@@ -4,7 +4,6 @@
 #+title: Task: Add component id-links and architectural cross-references to system model
 #+description: Wire all unlinked Qt plugin component rows to their component_overview.org via id-links; add cross-references to key architectural docs (workspaces, multi-tenancy, multi-party); consolidate DQ isolation content.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :system_model_readability:sprint_18:v0:
 #+owner: marco

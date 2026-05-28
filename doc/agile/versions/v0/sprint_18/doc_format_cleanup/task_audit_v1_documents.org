@@ -4,7 +4,6 @@
 #+title: Task: Audit documents lacking v2 frontmatter
 #+description: Categorise all .org files without #+version: into: historical sprint records (leave), active docs needing migration, and obsolete docs to delete.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :doc_format_cleanup:sprint_18:v0:
 #+owner: marco

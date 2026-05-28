@@ -4,7 +4,6 @@
 #+title: Story: Bootstrap polish
 #+description: Move context to the database; remove bootstrap mode from context once it's no longer needed; surface system-level password-validation control via the manifest; verify server checks DB connectivity on startup.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :bootstrap:context:configuration:sprint_06:v0:
 #+created: 2025-12-13

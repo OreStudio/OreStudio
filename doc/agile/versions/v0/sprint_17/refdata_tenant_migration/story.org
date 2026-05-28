@@ -4,7 +4,6 @@
 #+title: Story: Refdata tenant_id strong-type migration
 #+description: Migrate 11 party domain types from raw UUID to utility::uuid::tenant_id strong type.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :refdata:tenancy:codegen:sprint_17:v0:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Task: Implement compass where with --prs flag
 #+description: Add the where subcommand to compass.py: current version/sprint, STARTED items, and --prs flag fetching PR status via gh.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compass:python:pr_tracking_in_tasks:sprint_18:v0:
 #+owner: marco

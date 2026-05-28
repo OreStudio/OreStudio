@@ -4,7 +4,6 @@
 #+title: Open a new sprint
 #+description: Close the current sprint, generate release notes, scaffold the next sprint, and bump the project version.
 #+type: runbook
-#+version: 2
 #+level: cross
 #+filetags: :runbook:agile:sprint:release:
 #+created: 2026-05-26

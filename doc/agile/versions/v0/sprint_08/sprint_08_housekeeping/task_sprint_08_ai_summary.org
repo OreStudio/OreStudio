@@ -4,7 +4,6 @@
 #+title: Task: Add AI-generated sprint summary
 #+description: Produce sprint 08's summary via the AI-summary skill.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :agile:llm:summary:sprint_08_housekeeping:sprint_08:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Story: Windows portability fixes
 #+description: WiX installer size limits, libpq/OpenSSL linking, libpq PostgreSQL CMake target, vcpkg Qt feature flag.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :windows:cmake:vcpkg:sprint_17:v0:
 #+created: 2026-05-21

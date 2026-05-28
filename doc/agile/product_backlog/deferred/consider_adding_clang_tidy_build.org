@@ -4,7 +4,6 @@
 #+title: Consider adding clang-tidy build
 #+description: Consider adding clang-tidy build
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :infra:capture:far:
 #+created: 2026-05-21

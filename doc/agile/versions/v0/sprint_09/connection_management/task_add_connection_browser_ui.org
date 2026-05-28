@@ -4,7 +4,6 @@
 #+title: Task: Add Connection Browser MDI window
 #+description: Hierarchical tree view of folders and environments; master-password support; full CRUD for folders and environments; database purge; pre-fill login from saved connection with auto-submit.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:connections:ux:connection_management:sprint_09:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Unit Test Writer Skill
 #+description: Generate Catch2 unit tests following the ORE Studio conventions — file structure, naming, includes, test-case shape, generators, database helpers.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:tests:catch2:
 #+created: 2024-09-01

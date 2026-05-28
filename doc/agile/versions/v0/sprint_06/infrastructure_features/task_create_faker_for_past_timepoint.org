@@ -4,7 +4,6 @@
 #+title: Task: Create faker for past timepoint
 #+description: Add a faker generator for past timepoints so tests can produce realistic bitemporal history without hand-rolling dates.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :testing:faker:temporal:infrastructure_features:sprint_06:v0:
 #+owner: marco

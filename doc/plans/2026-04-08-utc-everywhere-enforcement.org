@@ -2,7 +2,6 @@
 :ID: 3268BB6F-E87B-4EDD-B622-015888C1A6D3
 :END:
 #+title: UTC-Everywhere Timestamp Enforcement
-#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

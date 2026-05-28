@@ -4,7 +4,6 @@
 #+title: Story: MSVC C1202 constexpr depth fixes
 #+description: Trade struct decomposition into rfl::Flatten sub-structs and constexpr depth/step limit raises to fix MSVC C1202 across all TUs.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :windows:msvc:constexpr:rfl:sprint_17:v0:
 #+created: 2026-05-21

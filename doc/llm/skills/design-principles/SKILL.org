@@ -4,7 +4,6 @@
 #+title: Design Principles Skill
 #+description: Apply ORE Studio's UI design system — pick a design direction, commit to typography/colour/spacing, hold the craft floor.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:ui:design:
 #+created: 2024-09-01

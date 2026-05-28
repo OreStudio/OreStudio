@@ -4,7 +4,6 @@
 #+title: Story: Runbook support
 #+description: Add runbook entity to the information architecture: a named composition of recipes and skills for repeatable multi-step operations.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :architecture:runbook:workflow:recipes:sprint_18:v0:
 #+created: 2026-05-26

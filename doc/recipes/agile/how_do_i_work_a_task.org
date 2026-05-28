@@ -4,7 +4,6 @@
 #+title: How do I work a task?
 #+description: Procedure for picking up, executing, and closing a task: BACKLOG to STARTED to DONE, with Notes and Result fields.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :agile:task:recipe:
 #+created: 2026-05-24

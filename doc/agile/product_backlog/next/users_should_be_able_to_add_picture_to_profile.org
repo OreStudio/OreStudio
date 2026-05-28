@@ -4,7 +4,6 @@
 #+title: Users should be able to add picture to profile
 #+description: Users should be able to add picture to profile
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

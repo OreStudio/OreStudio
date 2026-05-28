@@ -4,7 +4,6 @@
 #+title: Task: Migrate 11 party domain types to utility::uuid::tenant_id strong type
 #+description: - Replaces `std::string tenant_id` with `utility::uuid::tenant_id` across all 11 party-cluster domain types (`party`, `b
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :refdata_tenant_migration:sprint_17:v0:
 #+owner: marco

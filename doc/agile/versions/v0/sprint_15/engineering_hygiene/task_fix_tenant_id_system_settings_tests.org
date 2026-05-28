@@ -4,7 +4,6 @@
 #+title: Task: Fix missing tenant_id in system settings tests
 #+description: make_system_setting() helper in repository_system_settings_repository_tests.cpp now requires + assigns tenant_id; all 7 call sites updated; resolves Postgres invalid input syntax for type uuid: "" rejections.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :tests:system_settings:bug_fix:engineering_hygiene:sprint_15:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Story: Fix account registration NATS SSL error
 #+description: Registering a new account fails with 'Account creation failed: NATS connect failed: SSL Error'. The client cannot complete registration against the backend; investigate and fix the NATS/TLS configuration on the registration path.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :client:nats:registration:tls:bug:sprint_18:v0:
 #+created: 2026-05-26

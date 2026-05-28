@@ -4,7 +4,6 @@
 #+title: Task: Update remaining near/far bucket references across all docs
 #+description: Sweep all .org files for residual near/far bucket terminology and replace with inbox/next/deferred/discarded as appropriate.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco

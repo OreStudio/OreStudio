@@ -4,7 +4,6 @@
 #+title: Codegen recipes
 #+description: Inventory of codegen recipes.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipe:codegen:index:knowledge:
 #+created: 2026-05-21

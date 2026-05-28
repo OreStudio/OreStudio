@@ -4,7 +4,6 @@
 #+title: Add sound assets
 #+description: Add sound assets
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

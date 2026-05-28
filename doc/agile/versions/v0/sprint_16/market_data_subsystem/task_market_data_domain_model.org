@@ -4,7 +4,6 @@
 #+title: Task: ORE market data domain model — DB schema and C++ CDM
 #+description: Phase 1 + 2: ores.marketdata.api C++ CDM with market series + observations + fixings; PostgreSQL + TimescaleDB schema with bitemporal history + multi-tenancy; soft-delete via BEFORE DELETE triggers replacing rules.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :marketdata:sql:timescale:cpp:domain:market_data_subsystem:sprint_16:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Enable Qt GUI
 #+description: Wire the Qt GUI to the cobalt-based client so it runs over the new socket layer.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:ux:client_server:client_console_qt_integration:sprint_03:v0:
 #+owner: marco

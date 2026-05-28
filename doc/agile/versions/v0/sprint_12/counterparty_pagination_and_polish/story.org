@@ -4,7 +4,6 @@
 #+title: Story: Counterparty pagination and polish
 #+description: Pagination across the counterparty path; business-centres full CRUD; identifier cardinality + non-Latin text handling.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :counterparty:pagination:business_centres:qt:sprint_12:v0:
 #+created: 2026-05-19

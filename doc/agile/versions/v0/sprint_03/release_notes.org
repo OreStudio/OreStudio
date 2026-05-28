@@ -4,7 +4,6 @@
 #+title: Sprint 03 Release Notes
 #+description: Sprint 03 release notes (November 2025).
 #+type: release_notes
-#+version: 2
 #+level: cross
 #+filetags: :release_notes:sprint_03:v0:
 #+created: 2025-11-07

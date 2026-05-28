@@ -4,7 +4,6 @@
 #+title: Synthetic data generator improvements
 #+description: Three issues: (1) cities must nest within the same parent city, not mixed hierarchies; (2) generate multiple counterparty root nodes with a probability distribution over tree depth; (3) block tenant bootstrapping if system has not been bootstrapped first.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :generator:testing:
 #+created: 2026-05-22

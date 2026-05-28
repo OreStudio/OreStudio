@@ -4,7 +4,6 @@
 #+title: Task: Add Tooling section to knowledge.org and developer scripts doc
 #+description: Add a * Tooling section to knowledge.org and write a Developer scripts knowledge doc cataloguing scripts/ and linking to tool component overviews.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :tooling_documentation:sprint_18:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Add virtual portfolio tree support
 #+description: Add virtual portfolio tree support
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

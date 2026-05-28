@@ -4,7 +4,6 @@
 #+title: Agile process
 #+description: How the project's agile loop runs — backlog refinement, opening a sprint, sizing tasks, closing a sprint, and closing a version.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :agile:process:sprint:backlog:knowledge:
 #+created: 2026-05-21

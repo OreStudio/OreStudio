@@ -4,7 +4,6 @@
 #+title: Task: Sprint and product backlog refinement
 #+description: Maintain sprint 16 backlog and groom the product backlog.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :agile:backlog:sprint_16_housekeeping:sprint_16:v0:
 #+owner: marco

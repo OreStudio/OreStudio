@@ -4,7 +4,6 @@
 #+title: Currency types: enum, management screen, combo box
 #+description: Currency types should be a proper database-backed enum. Add a management screen and tables; use a combo box in the currencies form.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :ui:database:domain:
 #+created: 2026-05-22

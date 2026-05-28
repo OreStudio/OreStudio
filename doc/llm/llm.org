@@ -4,7 +4,6 @@
 #+title: LLM Configuration and Artefacts
 #+description: Comprehensive overview of all LLM support components: instructions, runbooks, recipes, skills, functions, settings, and memories.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :llm:index:knowledge:
 #+created: 2026-05-22

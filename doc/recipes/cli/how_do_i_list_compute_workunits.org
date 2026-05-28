@@ -4,7 +4,6 @@
 #+title: How do I list compute workunits?
 #+description: List compute workunits via =ores.cli=
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:compute_workunits:
 #+created: 2026-05-21

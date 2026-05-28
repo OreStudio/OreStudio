@@ -4,7 +4,6 @@
 #+title: Task: Service dashboard, shutdown fixes and DB timezone
 #+description: Standardised exit codes; last 20 lines of logs captured on failure; PID files for supervised services; TimeZone=UTC on raw libpq connections; double-disconnect crash fix; Last Error column in dashboard; PluginRegistry lifecycle fix.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :controller:qt:database:utc:dashboard:service_lifecycle_controller:sprint_16:v0:
 #+owner: marco

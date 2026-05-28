@@ -4,7 +4,6 @@
 #+title: List Test Databases
 #+description: List Test Databases
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:sql:database_management:
 #+created: 2026-05-21

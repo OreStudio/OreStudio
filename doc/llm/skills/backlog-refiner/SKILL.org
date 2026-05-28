@@ -4,7 +4,6 @@
 #+title: Backlog Refiner
 #+description: Run a backlog housekeeping session: scan, clarify, cull, and re-prioritise captures in the next/deferred buckets.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:agile:backlog:
 #+created: 2026-05-24

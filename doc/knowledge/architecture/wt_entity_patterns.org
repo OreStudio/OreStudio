@@ -4,7 +4,6 @@
 #+title: Wt entity patterns
 #+description: List widget, detail dialog, and application-integration patterns for ores.wt entity UI components.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:architecture:wt:entity:ui:
 #+created: 2026-05-21

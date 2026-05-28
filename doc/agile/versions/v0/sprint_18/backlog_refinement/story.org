@@ -4,7 +4,6 @@
 #+title: Story: Product backlog refinement
 #+description: Build the skills and recipes for backlog housekeeping and sprint planning sessions.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :agile:backlog:skills:recipes:sprint_18:v0:
 #+created: 2026-05-24

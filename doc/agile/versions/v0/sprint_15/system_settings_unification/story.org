@@ -4,7 +4,6 @@
 #+title: Story: Unified system_settings (replace feature_flags)
 #+description: Replace boolean-only ores_variability_feature_flags_tbl with ores_variability_system_settings_tbl supporting bool / int / string / JSON; migration across SQL, domain, service, NATS protocol, shell, CLI, HTTP, Qt UI; legacy files removed.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :variability:settings:refactor:protocol:qt:sprint_15:v0:
 #+created: 2026-05-20

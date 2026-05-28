@@ -4,7 +4,6 @@
 #+title: Task: Build ores.cli.lib as a static library
 #+description: - Fixes Windows link error: `undefined symbol: ores::cli::app::host::execute`
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :symbol_visibility:sprint_17:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Download Package
 #+description: Download Package
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:http:compute_file_storage_verb:
 #+created: 2026-05-21

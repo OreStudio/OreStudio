@@ -4,7 +4,6 @@
 #+title: Design and implement instrument/trade integration
 #+description: Instruments and trades are not yet integrated. Design the linkage (instrument attached to trade, shared fields strategy) and implement end-to-end.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:trades:design:
 #+created: 2026-05-22

@@ -4,7 +4,6 @@
 #+title: LLM prompt recipes
 #+description: Index of reusable prompts for LLM chat interactions, grouped by use-case.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipes:llm:prompt:index:knowledge:
 #+created: 2026-05-21

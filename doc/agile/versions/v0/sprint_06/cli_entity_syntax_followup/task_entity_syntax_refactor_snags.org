@@ -4,7 +4,6 @@
 #+title: Task: Entity syntax refactor snags
 #+description: Mop up the snags left by sprint 05's entity-first reshape: argument validation edge cases, help text inconsistencies.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :cli:bug_fix:cli_entity_syntax_followup:sprint_06:v0:
 #+owner: marco

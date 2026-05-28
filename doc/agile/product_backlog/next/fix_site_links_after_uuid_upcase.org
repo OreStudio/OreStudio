@@ -4,7 +4,6 @@
 #+title: After the UUID upcase migration, local site links resolve to…
 #+description: After the UUID upcase migration, local site links resolve to absolute local filesystem paths instead of site-relative URLs. Org-publish path resolution needs to be fixed so links are relative to the site root.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

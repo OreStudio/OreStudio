@@ -4,7 +4,6 @@
 #+title: Task: Add core infrastructure for roles and permissions
 #+description: Domain model (role, permission, role-permission, user-role), repositories, sqlgen schemas.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :iam:rbac:domain_model:roles_and_permissions:sprint_07:v0:
 #+owner: marco

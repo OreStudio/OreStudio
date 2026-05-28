@@ -4,7 +4,6 @@
 #+title: Task: Split registrar.cpp to fix MSVC C1202 constexpr depth limit
 #+description: Split NATS handler registration logic into multiple translation units to prevent MSVC C1202 caused by excessive template instantiations.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :windows:msvc:trading:constexpr:refactor:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

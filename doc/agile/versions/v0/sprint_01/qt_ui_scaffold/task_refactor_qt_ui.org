@@ -4,7 +4,6 @@
 #+title: Task: Refactor Qt UI
 #+description: Tidy the Qt UI — launcher, logging, column names, row sizes, tab opening, table sizing — before more widgets are added.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:ux:refactor:qt_ui_scaffold:sprint_01:v0:
 #+owner: marco

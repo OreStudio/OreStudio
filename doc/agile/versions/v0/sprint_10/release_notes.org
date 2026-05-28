@@ -4,7 +4,6 @@
 #+title: Sprint 10 Release Notes
 #+description: Sprint 10 release notes (January 2026).
 #+type: release_notes
-#+version: 2
 #+level: cross
 #+filetags: :release_notes:sprint_10:v0:
 #+created: 2026-01-28

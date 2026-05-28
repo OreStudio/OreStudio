@@ -4,7 +4,6 @@
 #+title: Story: Port Tufte visualisation skill into ORE Studio
 #+description: Reformat the tufte-viz SKILL and its two reference documents into org-mode, add them to doc/llm/skills/tufte-viz/, and catalogue the skill in claude_code_skills.org.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :skills:design:visualisation:tufte:sprint_18:v0:
 #+created: 2026-05-25

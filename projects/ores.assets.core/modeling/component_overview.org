@@ -4,7 +4,6 @@
 #+title: ores.assets.core
 #+description: Asset management — SVG images, tags, currency-image associations, and NATS message handlers.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :assets:core:component:
 #+created: 2026-05-19

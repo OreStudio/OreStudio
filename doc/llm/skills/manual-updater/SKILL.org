@@ -2,7 +2,6 @@
 :ID: 00F85A2F-547A-4F11-99EB-A46A7DE5AB1C
 :END:
 #+title: Manual Updater
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

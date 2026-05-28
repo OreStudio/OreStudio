@@ -4,7 +4,6 @@
 #+title: Compass recipes
 #+description: Inventory of recipes for using the compass tool: search, orientation, doc navigation, and indexing.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipe:compass:docs:search:
 #+created: 2026-05-24

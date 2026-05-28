@@ -4,7 +4,6 @@
 #+title: Task: Reformat and install the tufte-viz skill and reference docs
 #+description: Convert SKILL.md and the two Tufte reference Markdown files to org-mode; place them under doc/llm/skills/tufte-viz/; catalogue the skill in claude_code_skills.org.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :skills:design:visualisation:tufte:tufte_skill_port:sprint_18:v0:
 #+owner: marco

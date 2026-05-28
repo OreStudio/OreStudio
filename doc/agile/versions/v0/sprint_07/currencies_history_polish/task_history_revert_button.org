@@ -4,7 +4,6 @@
 #+title: Task: History should have a revert button
 #+description: Add a revert action to the history dialog so a user can roll the currency back to a prior version.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :currencies:qt:ux:history:revert:currencies_history_polish:sprint_07:v0:
 #+owner: marco

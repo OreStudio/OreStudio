@@ -4,7 +4,6 @@
 #+title: Sprint 17
 #+description: Windows/MSVC portability, symbol visibility, ORE conventions, workspace, DQ publish, service isolation, SQL codegen drift, Qt UI, and v2 documentation architecture.
 #+type: sprint
-#+version: 2
 #+level: s3
 #+filetags: :windows:msvc:visibility:ore:workspace:dq:isolation:codegen:qt:documentation:sprint_17:v0:
 #+created: 2026-05-21

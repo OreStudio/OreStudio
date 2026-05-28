@@ -4,7 +4,6 @@
 #+title: Task: Add mapping artefact to population functions
 #+description: Hard-coded mapping moved into the artefact pipeline.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sql:populate:artefact:schema_polish:sprint_10:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Implement a cobalt-based server and client
 #+description: Build the runtime split: a Boost.cobalt-based server process and a client embedded in the Qt application.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :client_server:cobalt:async:client_server_foundations:sprint_02:v0:
 #+owner: marco

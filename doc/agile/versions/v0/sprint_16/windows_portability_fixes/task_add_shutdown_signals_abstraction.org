@@ -4,7 +4,6 @@
 #+title: Task: Add shutdown_signals abstraction; fix Windows SIGQUIT build
 #+description: signals.hpp defines platform-specific shutdown signals (excludes SIGQUIT on Windows); domain_service_runner_impl.hpp uses centralised list.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :windows:platform:signals:shutdown:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

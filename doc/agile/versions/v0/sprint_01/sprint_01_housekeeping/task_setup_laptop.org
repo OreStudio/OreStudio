@@ -4,7 +4,6 @@
 #+title: Task: Setup laptop for development
 #+description: Install all required toolchains, libraries, and editor configuration on the dev laptop.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :setup:tooling:bootstrap:sprint_01_housekeeping:sprint_01:v0:
 #+owner: marco

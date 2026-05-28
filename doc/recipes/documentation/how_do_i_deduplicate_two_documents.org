@@ -4,7 +4,6 @@
 #+title: How do I deduplicate two documents?
 #+description: Procedure for resolving a pair of duplicate org-mode documents: nominate survivor and deletion candidate, merge unique content, delete the duplicate, and relink all references.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :documentation:deduplication:maintenance:recipe:
 #+created: 2026-05-28

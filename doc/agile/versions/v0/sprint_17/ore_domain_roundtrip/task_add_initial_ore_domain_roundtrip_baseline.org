@@ -4,7 +4,6 @@
 #+title: Task: Add initial ORE domain roundtrip baseline (Thing 3, Phase 5)
 #+description: - Fixes `leg_type_from_string` in `swap_instrument_mapper.cpp`: only 6 of 17 `legType` enum values were mapped, causing 
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_domain_roundtrip:sprint_17:v0:
 #+owner: marco

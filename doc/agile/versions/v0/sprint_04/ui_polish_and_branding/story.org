@@ -4,7 +4,6 @@
 #+title: Story: UI polish and branding
 #+description: Splash and gray background, Fluent icons, application icon, About menu, window-management defaults.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :qt:ux:branding:sprint_04:v0:
 #+created: 2025-11-22

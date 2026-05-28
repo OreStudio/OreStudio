@@ -4,7 +4,6 @@
 #+title: Fix country combo box sizing in tenant wizard
 #+description: The country combo box in the tenant wizard expands to fill the entire screen. Constrain its width/height appropriately.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :ui:bug:
 #+created: 2026-05-22

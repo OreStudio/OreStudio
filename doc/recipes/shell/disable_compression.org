@@ -4,7 +4,6 @@
 #+title: Disable Compression
 #+description: Disable Compression
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:shell:compression:
 #+created: 2026-05-21

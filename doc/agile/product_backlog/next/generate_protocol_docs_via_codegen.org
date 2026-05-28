@@ -4,7 +4,6 @@
 #+title: Generate protocol docs via codegen
 #+description: Generate protocol docs via codegen
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

@@ -2,7 +2,6 @@
 :ID: D4D975DB-A525-45E3-B383-581E51AEA8DB
 :END:
 #+title: Instrument-Trade Model Refactor and ORE Portfolio Export
-#+version: 2
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 * Overview

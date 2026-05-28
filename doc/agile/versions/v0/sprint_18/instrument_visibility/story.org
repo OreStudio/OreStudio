@@ -4,7 +4,6 @@
 #+title: Story: Fix instruments not visible in UI
 #+description: Instruments cannot be seen in the UI. Investigate whether they are being imported and surfaced correctly; fix the import or display path.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :ore:instruments:bug:qt:sprint_18:v0:
 #+created: 2026-05-24

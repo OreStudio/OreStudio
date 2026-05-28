@@ -4,7 +4,6 @@
 #+title: Task: Health review 2 — sprint 18 backlog audit and shape check
 #+description: Audit all sprint 18 stories and tasks: close items with incorrect status, verify story/task shapes follow the document contract, and flag anything that needs cleanup.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sprint_health_review:sprint_18:v0:
 #+owner: marco

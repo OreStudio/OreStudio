@@ -4,7 +4,6 @@
 #+title: Task: Enforce root party uniqueness constraints
 #+description: Each tenant has exactly two root parties: one system (auto-created) and one operational (the 'house'). Service-layer validation prevents additional roots.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :party:tenant:validation:service:tenant_provisioning_wizards:sprint_12:v0:
 #+owner: marco

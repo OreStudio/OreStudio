@@ -4,7 +4,6 @@
 #+title: Add Feature Flag
 #+description: Add Feature Flag
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:shell:variability:
 #+created: 2026-05-21

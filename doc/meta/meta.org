@@ -4,7 +4,6 @@
 #+title: Meta
 #+description: Index of the document-contract docs — the rules every document in the graph follows.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :meta:index:knowledge:
 #+created: 2026-05-24

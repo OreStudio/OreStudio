@@ -4,7 +4,6 @@
 #+title: Story: ORE Studio Emacs dashboard
 #+description: Replace per-mode ores.lisp approach with an env-aware Emacs dashboard — one-stop console for all dev commands, grouped by function, bound to the active checkout.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :emacs:lisp:dashboard:sprint_18:v0:
 #+created: 2026-05-24

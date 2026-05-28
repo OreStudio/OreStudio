@@ -4,7 +4,6 @@
 #+title: Story: Database role split and schema consolidation
 #+description: Split the 'god' admin account into RBAC roles; collapse metadata/production schemas back into public; SQL directory + naming cleanup.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :iam:rbac:sql:schema:refactor:sprint_11:v0:
 #+created: 2026-05-19

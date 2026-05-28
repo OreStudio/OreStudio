@@ -4,7 +4,6 @@
 #+title: How do I show a doc by UUID?
 #+description: Given a UUID (or unique prefix), print a document's header, blurb, outgoing links, and incoming links using compass show.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :documentation:docs:search:recipe:
 #+created: 2026-05-21

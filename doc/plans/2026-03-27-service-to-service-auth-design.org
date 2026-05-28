@@ -2,7 +2,6 @@
 :ID: E11C4C56-5722-4A5B-9779-7BE2C658A3EF
 :END:
 #+title: Service-to-Service Authentication Design
-#+version: 2
 #+DATE: 2026-03-27
 #+AUTHOR: ORE Studio Team
 #+STATUS: DRAFT

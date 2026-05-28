@@ -4,7 +4,6 @@
 #+title: Tufte Viz Skill
 #+description: Design and critique data visualisations using Edward Tufte's principles — data-ink ratio, chartjunk elimination, graphical integrity, small multiples, and analytical design.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:design:visualisation:tufte:
 #+created: 2026-05-25

@@ -4,7 +4,6 @@
 #+title: Task: Replace _wfopen with _wfopen_s to fix Windows Clang build
 #+description: Use _wfopen_s instead of deprecated _wfopen in Windows implementation of open_c_file.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :windows:clang:platform:file_io:windows_portability_fixes:sprint_16:v0:
 #+owner: marco

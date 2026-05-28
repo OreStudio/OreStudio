@@ -4,7 +4,6 @@
 #+title: Convert CODE_OF_CONDUCT.md and CONTRIBUTING.md from Markdown…
 #+description: Convert CODE_OF_CONDUCT.md and CONTRIBUTING.md from Markdown to org-mode, and link them from the contributing entry point in the docs.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

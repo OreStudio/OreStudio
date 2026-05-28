@@ -4,7 +4,6 @@
 #+title: Task: Add ORE Import Wizard
 #+description: Seven-page QWizard: directory scan, hierarchy build, trade import. ore_directory_scanner classifies files; ore_hierarchy_builder constructs portfolio + book hierarchies with naming + dedup; ore_import_planner generates the import plan; asynchronous scan; batched trade imports with live progress; accessible from File menu + Portfolio Explorer toolbar.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore:wizard:trade:qt:import:ore_import_wizard:sprint_14:v0:
 #+owner: marco

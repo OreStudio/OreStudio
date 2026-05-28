@@ -4,7 +4,6 @@
 #+title: How do I ask an LLM to spec a new feature?
 #+description: Reusable prompt that drives an interview-style feature specification into the agile backlog.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:llm:prompt:agile:spec:
 #+created: 2026-05-21

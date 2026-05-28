@@ -4,7 +4,6 @@
 #+title: Add support to compass to search stories by folder name
 #+description: Improve compass search to support a common use case which is to search by exact folder name, with underscores.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :inbox:capture:
 #+created: 2026-05-28

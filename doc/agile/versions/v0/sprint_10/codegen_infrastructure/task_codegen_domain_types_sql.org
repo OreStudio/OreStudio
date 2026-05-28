@@ -4,7 +4,6 @@
 #+title: Task: Add code generation support for domain types SQL
 #+description: Generate the SQL for domain types from the central model rather than hand-writing them.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :codegen:sql:domain_types:codegen_infrastructure:sprint_10:v0:
 #+owner: marco

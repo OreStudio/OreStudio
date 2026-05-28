@@ -4,7 +4,6 @@
 #+title: Reduce duplicated Qt code and clean up technical debt
 #+description: Reduce duplicated Qt code and clean up technical debt
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

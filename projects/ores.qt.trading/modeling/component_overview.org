@@ -4,7 +4,6 @@
 #+title: ores.qt.trading
 #+description: Qt plugin for trading UI — portfolios, books, trades with multi-instrument forms, portfolio/org explorers, and ORE import.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :qt:trading:ui:component:
 #+created: 2026-05-20

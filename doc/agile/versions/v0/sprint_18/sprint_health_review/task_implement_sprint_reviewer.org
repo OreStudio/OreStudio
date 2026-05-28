@@ -4,7 +4,6 @@
 #+title: Task: Implement sprint-reviewer skill
 #+description: Write the sprint-reviewer SKILL.org: reads sprint.org + git log + gh API, computes health metrics, and writes a System 2 review section into sprint.org.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compass:tooling:python:agile:sprint:review:sprint_health_review:sprint_18:v0:
 #+owner: marco

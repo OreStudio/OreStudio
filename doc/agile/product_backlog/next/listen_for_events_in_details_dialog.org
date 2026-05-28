@@ -4,7 +4,6 @@
 #+title: Listen for events in details dialog
 #+description: Listen for events in details dialog
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

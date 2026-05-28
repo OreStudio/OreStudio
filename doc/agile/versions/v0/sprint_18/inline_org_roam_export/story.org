@@ -4,7 +4,6 @@
 #+title: Story: Inline org-roam export into ores.lisp
 #+description: Vendor org-roam-export.el so the CI site build no longer depends on a file in /home/runner/.emacs.d/config/.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :site:ci:build:bug_fix:org_roam:sprint_18:v0:
 #+created: 2026-05-22

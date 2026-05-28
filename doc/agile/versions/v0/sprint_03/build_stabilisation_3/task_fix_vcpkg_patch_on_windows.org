@@ -4,7 +4,6 @@
 #+title: Task: Fix vcpkg patch application on Windows
 #+description: Diagnose and work around vcpkg failing to apply a port patch on Windows.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :build:vcpkg:windows:bug_fix:build_stabilisation_3:sprint_03:v0:
 #+owner: marco

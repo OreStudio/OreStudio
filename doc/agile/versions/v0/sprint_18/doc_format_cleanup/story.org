@@ -4,7 +4,6 @@
 #+title: Story: Doc format cleanup: migrate v1 docs and remove v2 branding
 #+description: Audit and migrate remaining documents without v2 frontmatter; rename all v2-branded scripts, templates, and docs to remove the version label.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :documentation:tooling:codegen:sprint_18:v0:
 #+created: 2026-05-28

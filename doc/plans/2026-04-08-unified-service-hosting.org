@@ -2,7 +2,6 @@
 :ID: 1411D94A-24FA-4164-AD75-F3CE7415903B
 :END:
 #+title: Unified Service Hosting
-#+version: 2
 #+DATE: 2026-04-08
 #+AUTHOR: Marco Craveiro
 #+STATUS: IN PROGRESS

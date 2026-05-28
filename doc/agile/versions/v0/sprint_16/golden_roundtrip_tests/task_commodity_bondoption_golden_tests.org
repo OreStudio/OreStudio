@@ -4,7 +4,6 @@
 #+title: Task: Commodity and BondOption golden roundtrip tests
 #+description: Golden file XML roundtrip tests for BondOption + Commodity instruments (Swaps, Forwards, Options, Average Price Options, Option Strips, Swaptions, Variance Swaps) using Catch2.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore:tests:golden:commodity:bond:golden_roundtrip_tests:sprint_16:v0:
 #+owner: marco

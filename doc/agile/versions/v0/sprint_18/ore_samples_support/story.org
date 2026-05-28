@@ -4,7 +4,6 @@
 #+title: Story: Add support for running ORE samples
 #+description: Enable end-to-end execution of ORE sample input files from within a workspace: import, process, and surface results.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :ore:samples:workspace:sprint_18:v0:
 #+created: 2026-05-24

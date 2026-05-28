@@ -4,7 +4,6 @@
 #+title: Initial Setup
 #+description: Conceptual overview of the multi-tenant/multi-party model and step-by-step guide to the provisioning wizards.
 #+type: manual
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:chapter:
 #+created: 2026-05-24

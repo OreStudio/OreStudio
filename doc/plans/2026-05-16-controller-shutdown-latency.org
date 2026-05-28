@@ -2,7 +2,6 @@
 :ID: 45312FEA-BE7D-452E-8432-55E8AD04B3F1
 :END:
 #+title: Controller Startup and Shutdown Latency Fix
-#+version: 2
 #+SUBTITLE: Move blocking DB writes off the io_context thread in process_supervisor
 #+DATE: 2026-05-16
 #+AUTHOR: ORE Studio Team

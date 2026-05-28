@@ -4,7 +4,6 @@
 #+title: Sprint 17 Release Notes
 #+description: Sprint 17 release notes (May 2026).
 #+type: release_notes
-#+version: 2
 #+level: cross
 #+filetags: :release_notes:sprint_17:v0:
 #+created: 2026-05-22

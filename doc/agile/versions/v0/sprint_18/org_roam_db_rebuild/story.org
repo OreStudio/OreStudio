@@ -4,7 +4,6 @@
 #+title: Story: Rebuild org-roam DB independently from CMake
 #+description: Extract org-roam DB sync into .build-org-roam.el and add a standalone cmake target so the DB can be rebuilt without a full site build.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :build:cmake:org-roam:elisp:sprint_18:v0:
 #+created: 2026-05-24

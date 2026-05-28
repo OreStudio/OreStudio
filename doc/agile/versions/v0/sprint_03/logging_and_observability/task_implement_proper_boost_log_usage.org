@@ -4,7 +4,6 @@
 #+title: Task: Implement proper Boost.Log usage
 #+description: Replace ad-hoc logging with the supported Boost.Log idioms (severity channels, attribute scopes, sinks).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :logging:boost:refactor:logging_and_observability:sprint_03:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Several pages are not linked in the org-roam knowledge graph…
 #+description: Several pages are not linked in the org-roam knowledge graph: sprint 17 release notes, MSVC C1202 workaround cleanup, Type definition facet, and several manual pages. Investigate and add missing id-links.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

@@ -4,7 +4,6 @@
 #+title: Task: Add SQLite connections DB entry to dashboard DB card
 #+description: Add an item to the dashboard DB card that opens ~/.local/share/ores.qt/connections.db in sql-sqlite, loading the project sqliterc for ergonomic display.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ores_studio_emacs_dashboard:sprint_18:v0:
 #+owner: marco

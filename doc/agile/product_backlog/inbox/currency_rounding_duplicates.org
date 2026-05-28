@@ -4,7 +4,6 @@
 #+title: currency rounding types are duplicated: every entry shows tw…
 #+description: currency rounding types are duplicated: every entry shows twice, once for IAM user and once for DDL user, both with the same version number
 #+type: capture
-#+version: 2
 #+level: s1
 #+filetags: :bug:refdata:currencies:
 #+created: 2026-05-27

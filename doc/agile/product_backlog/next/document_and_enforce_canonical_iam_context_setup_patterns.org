@@ -4,7 +4,6 @@
 #+title: Document and enforce canonical IAM context setup patterns
 #+description: Document and enforce canonical IAM context setup patterns
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

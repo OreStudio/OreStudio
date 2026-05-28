@@ -4,7 +4,6 @@
 #+title: Remember dialog sizes and positions
 #+description: Remember dialog sizes and positions
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: LLM Instructions
 #+description: Entry point for LLM sessions: the rules and links every AI assistant must load before working on ORE Studio.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :meta:llm:instructions:claude:agents:
 #+created: 2026-05-22
@@ -25,8 +24,8 @@ These apply in every session, with no exceptions:
   See [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]].
 - /Check recipes first/ — before searching for how to do anything, open
   [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] and find the matching topic.
-- /Every new =.org= file must carry =#+version: 2=/ — the CI gate rejects
-  files without it. See [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]].
+- /Every new =.org= file is scaffolded via =compass add= or =generate_doc.sh=/
+  — this ensures correct frontmatter (=:ID:=, =#+type:=, =#+description:=, etc.).
 
 * Orientation
 
@@ -58,11 +57,9 @@ Read these first on a new contact:
 
 * Documentation
 
-- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — frontmatter contract and version tagging.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — frontmatter contract.
 - [[id:6AC06A04-EB95-4925-8488-C7A47C6A451F][How do I validate component documentation before committing?]] —
   =validate_docs.sh= before every push that touches =modeling/=.
-- [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]] — =doc_version_audit.py=
-  for checking and stamping =#+version:= tags.
 
 * Database isolation
 

@@ -4,7 +4,6 @@
 #+title: Multiple ref-data entities are missing event notifications: …
 #+description: Multiple ref-data entities are missing event notifications: currency, rounding types, and monetary nature all lack eventing. Audit all ref-data entities and add missing event emissions systematically.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

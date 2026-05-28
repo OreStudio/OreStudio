@@ -4,7 +4,6 @@
 #+title: Task: Prodigy supports multiple environments
 #+description: Prodigy shows all environments in a single buffer for running multiple claudes / qwens / geminis side-by-side.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :tooling:environments:prodigy:connection_management:sprint_09:v0:
 #+owner: marco

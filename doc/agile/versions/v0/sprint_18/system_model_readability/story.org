@@ -4,7 +4,6 @@
 #+title: Story: System model readability
 #+description: Improve the system model document with layer blurbs and table-based component inventory — text only, no diagram changes.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :architecture:documentation:system_model:sprint_18:v0:
 #+created: 2026-05-26

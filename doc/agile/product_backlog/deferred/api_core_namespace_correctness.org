@@ -4,7 +4,6 @@
 #+title: api and core are not namespaces — fix naming
 #+description: Project component names like ores.qt.api and ores.compute.core use api/core as if they were namespaces, but they are not. Clarify the naming convention or rename accordingly.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:architecture:housekeeping:
 #+created: 2026-05-22

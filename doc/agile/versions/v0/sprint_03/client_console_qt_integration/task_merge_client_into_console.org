@@ -4,7 +4,6 @@
 #+title: Task: Merge client into console
 #+description: Fold the standalone client into the console application so there's one user-facing binary.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :client:console:refactor:client_console_qt_integration:sprint_03:v0:
 #+owner: marco

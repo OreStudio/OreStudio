@@ -4,7 +4,6 @@
 #+title: Story: Currencies end-to-end
 #+description: Bring currency reference data through XML, JSON, the database, and the Qt UI as the first complete data type.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :currencies:reference_data:new_feature:e2e:sprint_01:v0:
 #+created: 2024-06-22

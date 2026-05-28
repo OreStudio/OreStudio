@@ -4,7 +4,6 @@
 #+title: Task: Fix apt-get failures on nightly build
 #+description: Exponential-backoff retry loop in install_debian_packages.sh (5 retries, 5s start); Acquire::Retries=3; --with-valgrind flag for nightly.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ci:nightly:apt:retry:engineering_hygiene:sprint_11:v0:
 #+owner: marco

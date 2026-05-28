@@ -4,7 +4,6 @@
 #+title: Task: Unify asset class modelling
 #+description: Implementation: refdata.v1.asset-classes.list NATS endpoint; new refdata service + repository + protocol; Qt loads asset classes asynchronously; asset_class column added to trades with validation + indexing.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :refdata:trading:nats:qt:validation:asset_class_and_product_type_unification:sprint_16:v0:
 #+owner: marco

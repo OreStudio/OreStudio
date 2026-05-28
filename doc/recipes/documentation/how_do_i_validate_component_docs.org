@@ -4,7 +4,6 @@
 #+title: How do I validate component documentation before committing?
 #+description: Run validate_docs.sh to check every ores.* component has a well-formed component_overview.org before pushing.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :documentation:validation:component:recipe:
 #+created: 2026-05-22
@@ -26,23 +25,17 @@ From the project root:
 ./projects/ores.codegen/validate_docs.sh
 #+end_src
 
-Two checks run in sequence:
-
-1. /Component structure/ — every =projects/ores.*/= has a
-   =modeling/component_overview.org= with the required frontmatter
-   (=:ID:=, =#+type: component=, =#+description:=), required sections, and
-   at least one =.puml= diagram. Exceptions are listed in
-   =projects/ores.codegen/docs_exceptions.txt=.
-2. /Version tagging/ — every =.org= file in the repo carries
-   =#+version: 1= or =#+version: 2= (see
-   [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]]).
+One check runs: /Component structure/ — every =projects/ores.*/= has a
+=modeling/component_overview.org= with the required frontmatter
+(=:ID:=, =#+type: component=, =#+description:=), required sections, and
+at least one =.puml= diagram. Exceptions are listed in
+=projects/ores.codegen/docs_exceptions.txt=.
 
 Fix any reported errors, then re-run until the script exits =0=.
 
 * Script
 
-=projects/ores.codegen/validate_docs.sh= — wraps the component-structure
-checker and =doc_version_audit.py --check= in sequence.
+=projects/ores.codegen/validate_docs.sh= — runs the component-structure checker.
 
 * Tested by
 
@@ -52,5 +45,4 @@ validation workflow and the PR goes red if it exits non-zero.
 * See also
 
 - [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component documentation guide]] — what a correct =component_overview.org= looks like.
-- [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]] — fix missing =#+version:= tags.
 - [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]] — if the check fails in CI.

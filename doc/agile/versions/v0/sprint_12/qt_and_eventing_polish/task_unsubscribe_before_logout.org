@@ -4,7 +4,6 @@
 #+title: Task: Unsubscribe before logout
 #+description: Logout currently produces 'Exception in notification writer: co_await: Operation canceled'. Clean shutdown should unsubscribe first.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :comms:eventing:logout:bug_fix:qt_and_eventing_polish:sprint_12:v0:
 #+owner: marco

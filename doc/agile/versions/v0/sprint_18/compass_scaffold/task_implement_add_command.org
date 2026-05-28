@@ -4,7 +4,6 @@
 #+title: Task: Implement the add command
 #+description: Add a compass add subcommand that calls ores.codegen as a library to create v2 docs.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compass:python:codegen:compass_scaffold:sprint_18:v0:
 #+owner: marco

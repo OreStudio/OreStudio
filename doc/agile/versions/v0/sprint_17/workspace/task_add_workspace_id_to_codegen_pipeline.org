@@ -4,7 +4,6 @@
 #+title: Task: Add workspace_id to codegen pipeline (Phases 1-4)
 #+description: - Phase 4: propagate `workspace_id` through the C++ codegen layer — adds `workspace_id` field to all domain entities fla
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :workspace:sprint_17:v0:
 #+owner: marco

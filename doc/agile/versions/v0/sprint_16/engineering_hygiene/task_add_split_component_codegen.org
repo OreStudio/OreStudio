@@ -4,7 +4,6 @@
 #+title: Task: Add split-component codegen profiles and fix skill docs
 #+description: Codegen workflow supports split-component architectures (api / core / service); automated file placement into project tree; specialised CMake templates; component-specific name derivation.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :codegen:skills:architecture:split:engineering_hygiene:sprint_16:v0:
 #+owner: marco

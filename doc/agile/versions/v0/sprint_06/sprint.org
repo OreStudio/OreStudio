@@ -4,7 +4,6 @@
 #+title: Sprint 06
 #+description: Finish domain-entity follow-ups: session cancellation, feature-flag service, comms robustness; tidy bootstrap and logging.
 #+type: sprint
-#+version: 2
 #+level: s3
 #+filetags: :domain_entities:comms:variability:bootstrap:v0:
 #+created: 2025-12-02

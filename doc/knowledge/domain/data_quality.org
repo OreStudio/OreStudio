@@ -5,7 +5,6 @@
 #+title: Data Quality
 #+description: The DQ-6 dimensions, related industry bodies, and the provenance fields every reference-data entity carries — the conceptual foundation for the ores.dq.* subsystem.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:domain:dq:data_quality:
 #+created: 2024-06-15

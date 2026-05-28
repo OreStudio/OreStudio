@@ -4,7 +4,6 @@
 #+title: ores.qt.workflow
 #+description: Qt plugin for workflow UI — workflow executions and workflow definitions with step-log detail.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :qt:workflow:ui:component:
 #+created: 2026-05-20

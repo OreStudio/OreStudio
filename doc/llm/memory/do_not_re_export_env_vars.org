@@ -5,7 +5,6 @@
 #+description: The user has already exported ORES_* env vars in their shell session — don't prepend them to commands run via the Bash tool.
 #+type: memory
 #+memory_subtype: feedback
-#+version: 2
 #+level: cross
 #+filetags: :memory:feedback:claude_code:bash:
 #+created: 2026-03-13

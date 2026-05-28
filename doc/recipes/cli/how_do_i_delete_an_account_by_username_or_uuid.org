@@ -4,7 +4,6 @@
 #+title: How do I delete an account by username or UUID?
 #+description: Delete an account by username or UUID
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:accounts:
 #+created: 2026-05-21

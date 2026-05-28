@@ -4,7 +4,6 @@
 #+title: History dialogs do not remember their size and position betw…
 #+description: History dialogs do not remember their size and position between opens. Implement geometry persistence for all history dialogs using QSettings, consistent with other dialogs in the application.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

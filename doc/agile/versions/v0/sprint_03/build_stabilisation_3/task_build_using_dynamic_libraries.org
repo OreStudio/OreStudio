@@ -4,7 +4,6 @@
 #+title: Task: Build using dynamic libraries
 #+description: Switch the build to produce dynamic libraries to reduce link times and binary footprint.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :build:cmake:dynamic_libraries:build_stabilisation_3:sprint_03:v0:
 #+owner: marco

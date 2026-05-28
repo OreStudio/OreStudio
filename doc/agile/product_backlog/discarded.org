@@ -4,7 +4,6 @@
 #+title: Product backlog — discarded
 #+description: Index of captures explicitly decided against — not deferred, but deliberately rejected.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :backlog:discarded:capture:index:knowledge:
 #+created: 2026-05-27

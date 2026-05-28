@@ -4,7 +4,6 @@
 #+title: Improve session management and server-side housekeeping
 #+description: Improve session management and server-side housekeeping
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Task: Merge FSM into DQ
 #+description: Rename ores_fsm_* SQL identifiers to ores_dq_fsm_*; relocate FSM SQL files into dq/ subdirectories; update notification channel names; rename internal entity strings ores.fsm.* → ores.dq.fsm.*.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :fsm:dq:sql:refactor:naming:fsm_consolidation_into_dq:sprint_13:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Viable System Model
 #+description: Stafford Beer's Viable System Model: the five systems, the S3* audit channel, and how they organise a viable system.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :meta:cybernetics:vsm:knowledge:
 #+created: 2026-05-28

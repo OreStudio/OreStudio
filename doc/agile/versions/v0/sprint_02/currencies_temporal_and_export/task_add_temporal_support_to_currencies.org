@@ -4,7 +4,6 @@
 #+title: Task: Add temporal support to currencies
 #+description: Add validity-time and transaction-time columns to currencies so changes are tracked over time.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :currencies:temporal:bitemporal:sql:currencies_temporal_and_export:sprint_02:v0:
 #+owner: marco

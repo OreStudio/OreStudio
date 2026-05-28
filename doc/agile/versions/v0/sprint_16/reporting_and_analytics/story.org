@@ -4,7 +4,6 @@
 #+title: Story: Reporting and analytics
 #+description: Source report definitions from DQ artefact table; improved party picker; report execution workflow pipeline; analytics pricing engine configuration; analytics CRUD UI; analytics repository integration tests.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :reporting:analytics:dq:workflow:qt:sprint_16:v0:
 #+created: 2026-05-20

@@ -4,7 +4,6 @@
 #+title: Task: Codegen drift remediation: Categories A and B
 #+description: - Category B (naming/missing): Fixed index naming inconsistencies and added missing `lifecycle_events` SQL that codegen 
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sql_codegen_drift:sprint_17:v0:
 #+owner: marco

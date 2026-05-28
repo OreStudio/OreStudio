@@ -2,7 +2,6 @@
 :ID: BAE3AA18-6027-10A4-965B-2C174C237195
 :END:
 #+title: Multi-Party Architecture
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

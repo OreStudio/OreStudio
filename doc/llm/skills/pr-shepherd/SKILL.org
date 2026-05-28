@@ -4,7 +4,6 @@
 #+title: PR Shepherd Skill
 #+description: After a PR is opened, drive it to green: poll CI, address review comments, fix failing checks, until everything is green and resolved.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:github:pr:ci:
 #+created: 2024-09-01

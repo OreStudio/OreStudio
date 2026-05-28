@@ -4,7 +4,6 @@
 #+title: Story: ores.compass repository compass tool
 #+description: A Python tool that orients you in the repo: where we are in time, semantic doc search, and agile scaffolding.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :compass:tooling:python:agile:docs:sprint_18:v0:
 #+created: 2026-05-24

@@ -2,7 +2,6 @@
 :ID: C57242F9-3D75-43DB-9D09-31EA5F147CC4
 :END:
 #+title: Compute Console UI Refactor
-#+version: 2
 #+DATE: 2026-03-26
 #+AUTHOR: Marco Craveiro
 

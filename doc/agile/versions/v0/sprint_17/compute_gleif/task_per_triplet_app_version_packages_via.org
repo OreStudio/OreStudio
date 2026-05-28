@@ -4,7 +4,6 @@
 #+title: Task: Per-triplet app_version packages via junction table
 #+description: Each app_version now carries one packaged bundle per target triplet rather than a single blob shared across platforms. T
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compute_gleif:sprint_17:v0:
 #+owner: marco

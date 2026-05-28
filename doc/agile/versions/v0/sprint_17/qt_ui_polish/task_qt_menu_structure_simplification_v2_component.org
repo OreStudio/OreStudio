@@ -4,7 +4,6 @@
 #+title: Task: Qt menu structure simplification + V2 component documentation
 #+description: Two cohesive changes on one branch:
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt_ui_polish:sprint_17:v0:
 #+owner: marco

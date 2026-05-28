@@ -4,7 +4,6 @@
 #+title: Task: Audit for uses of raw libpq
 #+description: Sweep the codebase for libpq escapes Claude has snuck in; move all into ores.database; raise tickets on sqlgen for the gaps.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sqlgen:libpq:audit:cleanup:sqlgen_improvements:sprint_11:v0:
 #+owner: marco

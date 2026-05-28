@@ -4,7 +4,6 @@
 #+title: Task: Add party-level currency and country restrictions (framework)
 #+description: ores_refdata_party_currencies_tbl + ores_refdata_party_countries_tbl junction tables to control per-party visibility; full stack via codegen (domain + repo + service + test); currency_service / country_service grow list_currencies_for_party / list_countries_for_party; bitemporal support.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :rls:party:refdata:currency:country:framework:party_level_refdata_restrictions:sprint_13:v0:
 #+owner: marco

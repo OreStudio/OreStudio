@@ -4,7 +4,6 @@
 #+title: Functions
 #+description: Index of named roles — what someone does when they are wearing a given hat, with the skills and pre-reads each role needs.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :functions:index:knowledge:
 #+created: 2026-05-21

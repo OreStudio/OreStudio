@@ -4,7 +4,6 @@
 #+title: Task: deposit_convention: Phase 2 first type
 #+description: Second convention type in the ORE import Phase 2 roll-out (after
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_conventions_import:sprint_17:v0:
 #+owner: marco

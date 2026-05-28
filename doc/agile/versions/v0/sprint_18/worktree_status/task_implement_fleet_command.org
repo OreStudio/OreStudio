@@ -4,7 +4,6 @@
 #+title: Task: Implement the fleet command
 #+description: Add a compass fleet subcommand showing each git worktree's branch, story, task and PR.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compass:worktrees:python:worktree_status:sprint_18:v0:
 #+owner: marco

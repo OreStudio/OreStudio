@@ -4,7 +4,6 @@
 #+title: Clicking on connection in status bar should provide info
 #+description: Clicking on connection in status bar should provide info
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

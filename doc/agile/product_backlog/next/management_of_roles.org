@@ -4,7 +4,6 @@
 #+title: Management of roles
 #+description: Management of roles
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

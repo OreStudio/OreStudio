@@ -2,7 +2,6 @@
 :ID: A4B5C6D7-E8F9-0A1B-2C3D-4E5F6A7B8C9D
 :END:
 #+title: Entity Creator Skills Overhaul: Orchestrator, Template References, Codegen Gaps
-#+version: 2
 #+STATUS: TODO
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil

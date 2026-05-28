@@ -4,7 +4,6 @@
 #+title: How do I get help for the CLI dq change-reasons command?
 #+description: Show available operations under =ores.cli dq change-reasons=
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:change_reasons:
 #+created: 2026-05-21

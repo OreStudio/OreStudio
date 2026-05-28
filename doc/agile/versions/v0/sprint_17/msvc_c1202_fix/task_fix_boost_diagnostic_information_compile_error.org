@@ -4,7 +4,6 @@
 #+title: Task: Fix boost::diagnostic_information compile error in ClientManagerTradeDetail
 #+description: - `ClientManagerTradeDetail.cpp:75` calls `boost::diagnostic_information(e)` which requires `<boost/exception/diagnostic
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :msvc_c1202_fix:sprint_17:v0:
 #+owner: marco

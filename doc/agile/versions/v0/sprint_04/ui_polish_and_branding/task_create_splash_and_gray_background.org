@@ -4,7 +4,6 @@
 #+title: Task: Create a splash screen and gray background
 #+description: Replace the default splash with a project-branded image; give the MDI background a neutral gray.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:ux:branding:splash:ui_polish_and_branding:sprint_04:v0:
 #+owner: marco

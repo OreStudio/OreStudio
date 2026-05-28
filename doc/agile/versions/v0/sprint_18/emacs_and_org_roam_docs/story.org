@@ -4,7 +4,6 @@
 #+title: Story: Add Emacs and org-roam knowledge pages
 #+description: Create knowledge pages for Emacs setup and org-roam usage; expand ores.lisp component overview; update orientation.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :emacs:org_roam:documentation:knowledge:sprint_18:v0:
 #+created: 2026-05-28

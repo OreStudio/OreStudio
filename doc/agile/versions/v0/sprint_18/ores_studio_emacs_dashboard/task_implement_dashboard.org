@@ -4,7 +4,6 @@
 #+title: Task: Implement ores-dashboard.el
 #+description: Create the ores-dashboard.el core: env binding, .env reading, command groups (db, services, compass, build), bookmarks, ORE shell, splash image.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :emacs:lisp:dashboard:ores_studio_emacs_dashboard:sprint_18:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Add self-registration and approval for production tenants
 #+description: Add self-registration and approval for production tenants
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Task: Add roles to account via codes
 #+description: assign_role_by_name_request + revoke_role_by_name_request protocol messages; principal-based (username@hostname) + role-name lookups; shell intelligently detects UUID vs name. Protocol bump 26.2.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :iam:protocol:shell:rbac:qt_and_eventing_polish:sprint_12:v0:
 #+owner: marco

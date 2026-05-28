@@ -4,7 +4,6 @@
 #+title: Story: Wt and HTTP introduction
 #+description: Set up basic ores.wt infrastructure; expose endpoints via HTTP; fix the resulting compilation surface.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :wt:http:web:sprint_07:v0:
 #+created: 2026-05-19

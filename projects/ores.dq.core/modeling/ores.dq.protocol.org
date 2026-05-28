@@ -2,7 +2,6 @@
 :ID: 65D59476-A8DA-4461-9D82-A39B74F72316
 :END:
 #+title: ores.dq Messaging Reference
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: overview

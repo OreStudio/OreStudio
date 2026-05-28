@@ -4,7 +4,6 @@
 #+title: Task: Add a Qt hello world
 #+description: Create a trivial Qt application that exercises the build pipeline end-to-end.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:ux:scaffold:qt_ui_scaffold:sprint_01:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Story: Refactor story task lists to a status table
 #+description: Replace the bullet-list Tasks section in story docs with a table (Task | State | Start | End | Description), then back-fill all sprint 18 stories.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :agile:story:task:refactor:sprint_18:v0:
 #+created: 2026-05-28

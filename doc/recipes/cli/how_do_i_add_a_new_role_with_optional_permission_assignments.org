@@ -4,7 +4,6 @@
 #+title: How do I add a new role with optional permission assignments?
 #+description: Add a new role with optional permission assignments
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:roles:
 #+created: 2026-05-21

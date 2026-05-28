@@ -4,7 +4,6 @@
 #+title: How do I ask an LLM to transcribe handwritten financial notes?
 #+description: Reusable prompt for OCR-to-org-mode transcription of handwritten financial notes.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:llm:prompt:ocr:documentation:
 #+created: 2026-05-21

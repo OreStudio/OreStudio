@@ -4,7 +4,6 @@
 #+title: Runbooks catalogue
 #+description: Index of all runbooks: what a runbook is, how to create one, and the full catalogue with descriptions.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :runbook:index:llm:
 #+created: 2026-05-26

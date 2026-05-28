@@ -4,7 +4,6 @@
 #+title: Task: FX forward import E2E wiring and instrument-bundle API
 #+description: Fixes a defect where FX forward trades imported via the ORE flow rendered with blank instrument economics in the Portfol
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :fx_forward_equity_types:sprint_17:v0:
 #+owner: marco

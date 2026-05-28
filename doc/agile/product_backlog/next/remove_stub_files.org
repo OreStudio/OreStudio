@@ -4,7 +4,6 @@
 #+title: Remove all stub files from the codebase
 #+description: Find all stub.hpp and stub_tests.cpp files. Remove stub.hpp outright; replace stub_tests.cpp only once real tests exist for the component.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:testing:housekeeping:
 #+created: 2026-05-22

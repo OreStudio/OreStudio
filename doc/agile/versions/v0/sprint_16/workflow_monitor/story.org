@@ -4,7 +4,6 @@
 #+title: Story: Workflow monitor + late fixes
 #+description: ores.qt.workflow plugin with workflow monitor; JetStream durability + SIGSEGV fix in engine; trade nullable dates; ORE import workflow improvements.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :workflow:qt:monitor:plugin:fixes:sprint_16:v0:
 #+created: 2026-05-20

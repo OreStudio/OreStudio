@@ -2,7 +2,6 @@
 :ID: 7E3F9A2B-4C81-4D5E-8F2A-1B9C3D4E5F6A
 :END:
 #+title: Compute Grid Telemetry Design
-#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

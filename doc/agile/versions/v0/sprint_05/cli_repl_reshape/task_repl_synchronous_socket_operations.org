@@ -4,7 +4,6 @@
 #+title: Task: REPL needs synchronous socket operations
 #+description: Replace async socket calls in the REPL with synchronous ones to match the interactive command flow.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :shell:repl:sockets:async:cli_repl_reshape:sprint_05:v0:
 #+owner: marco

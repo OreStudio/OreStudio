@@ -5,7 +5,6 @@
 #+title: Role-Based Access Control
 #+description: The RBAC model — roles compose permissions, users are assigned roles — as applied in ORE Studio's IAM subsystem.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:security:iam:rbac:
 #+created: 2024-06-15

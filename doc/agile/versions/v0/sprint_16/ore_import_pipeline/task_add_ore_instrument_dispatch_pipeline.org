@@ -4,7 +4,6 @@
 #+title: Task: Add ORE instrument dispatch pipeline
 #+description: map_instrument std::variant-based dispatch wired into import pipeline; credit instrument mapper + Thing 3 tests; BondOption + BondTRS mapper support.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore:trading:dispatch:credit:bond:ore_import_pipeline:sprint_16:v0:
 #+owner: marco

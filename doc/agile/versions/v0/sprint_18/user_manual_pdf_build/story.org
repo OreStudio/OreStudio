@@ -4,7 +4,6 @@
 #+title: Story: Build and publish user manual PDF via CMake
 #+description: Add a CMake target that compiles user_manual.org to PDF, commits the PDF, and links to it from the documentation.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :doc:manual:cmake:pdf:sprint_18:v0:
 #+created: 2026-05-24

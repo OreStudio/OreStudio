@@ -4,7 +4,6 @@
 #+title: Task: Add compute grid telemetry pipeline
 #+description: Two new TimescaleDB hypertables (ores_compute_grid_samples_tbl + ores_compute_node_samples_tbl, 30-day retention); server-side compute_grid_poller (async Boost.ASIO coroutine, 30s); node-side node_stats_reporter publishing node_sample_message to NATS; unified get_grid_stats NATS request/reply for dashboard.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compute:telemetry:timescale:nats:observability:compute_grid_observability:sprint_15:v0:
 #+owner: marco

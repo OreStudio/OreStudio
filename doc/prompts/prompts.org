@@ -4,7 +4,6 @@
 #+title: Prompts
 #+description: Index of reusable LLM prompts — standalone prompts that don't fit cleanly as a skill.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :prompts:index:knowledge:
 #+created: 2026-05-24

@@ -4,7 +4,6 @@
 #+title: Task: Finish country features in shell
 #+description: Add 'countries get' and 'countries add' commands to ores.comms.shell with formatted table output.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :shell:countries:cli:reference_data_countries:sprint_08:v0:
 #+owner: marco

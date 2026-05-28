@@ -4,7 +4,6 @@
 #+title: How do I list compute apps?
 #+description: List compute apps via =ores.cli=
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:compute_apps:
 #+created: 2026-05-21

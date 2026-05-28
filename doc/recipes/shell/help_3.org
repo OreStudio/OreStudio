@@ -4,7 +4,6 @@
 #+title: Help
 #+description: Help
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:shell:countries:
 #+created: 2026-05-21

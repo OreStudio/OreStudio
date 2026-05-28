@@ -4,7 +4,6 @@
 #+title: How do I get help for the CLI variability feature-flags command?
 #+description: Show available operations under =ores.cli variability feature-flags=
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:feature_flags:
 #+created: 2026-05-21

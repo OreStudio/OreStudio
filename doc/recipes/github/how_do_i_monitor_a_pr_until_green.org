@@ -4,7 +4,6 @@
 #+title: How do I monitor a PR until green?
 #+description: Drive a PR to green CI and zero unresolved review threads — via the pr-watch background script, or by hand with gh pr checks.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :github:pr:ci:gh:recipe:
 #+created: 2026-05-21

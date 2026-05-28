@@ -4,7 +4,6 @@
 #+title: Analytical Design, Sparklines, and Layering
 #+description: Extensions from Envisioning Information, Visual Explanations, and Beautiful Evidence: six principles of analytical design, sparklines, layering and separation, micro/macro, range-frames, causality, and confections.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :skills:design:visualisation:tufte:knowledge:
 #+created: 2026-05-25

@@ -4,7 +4,6 @@
 #+title: Add heat map of user sessions
 #+description: Add heat map of user sessions
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

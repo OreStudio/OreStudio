@@ -4,7 +4,6 @@
 #+title: How do I capture ideas from freeform text?
 #+description: Write a paragraph of unstructured notes and ask the LLM to decompose it into well-structured captures filed in inbox/.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :compass:capture:llm:recipe:
 #+created: 2026-05-27

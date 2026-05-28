@@ -4,7 +4,6 @@
 #+title: Task: Fix: portfolios and books not visible in workspace context
 #+description: Fix the bug where portfolios and books are not visible when a workspace is active.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_samples_support:sprint_18:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Semi-Autonomous Developer
 #+description: Work through a sprint story incrementally — branch, implement, test, commit, PR — with minimal human intervention.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:agile:development:workflow:
 #+created: 2024-09-01

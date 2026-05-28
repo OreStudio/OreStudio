@@ -4,7 +4,6 @@
 #+title: Task: Fix valgrind errors in nightly
 #+description: Eventing tests fail under clang valgrind; one new possible leak on both clang and gcc.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qa:valgrind:nightly:bug_fix:engineering_hygiene:sprint_09:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Two small ref-data UI bugs: (1) market tiers has an icon but…
 #+description: Two small ref-data UI bugs: (1) market tiers has an icon button that does nothing — wire it or remove it; (2) deleting a rounding type does not auto-refresh the list — trigger a refresh on delete.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

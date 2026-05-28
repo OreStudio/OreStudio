@@ -4,7 +4,6 @@
 #+title: Task: Fix codename with sequence-based unique suffix
 #+description: Replace the advisory-lock + NOT-EXISTS loop with a sequence-based suffix: ores_refdata_party_codename_seq + ores_utility_to_base26_fn produce unique lowercase base-26 suffixes appended to whimsical names; simplified trigger; party_repository::write(vector) reinstated as proper batch insert.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :party:codename:sql:sequence:batch_insert:party_codename:sprint_14:v0:
 #+owner: marco

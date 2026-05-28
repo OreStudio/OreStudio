@@ -4,7 +4,6 @@
 #+title: Add new flag to change reasons in Qt UI
 #+description: Change reasons have a new flag in the database but it is not surfaced in the Qt UI. Add the field to the change reason form.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :ui:bug:
 #+created: 2026-05-22

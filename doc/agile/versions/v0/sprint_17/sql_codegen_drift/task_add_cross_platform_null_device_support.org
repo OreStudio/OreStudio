@@ -4,7 +4,6 @@
 #+title: Task: Add cross-platform null device support for psql output redirection
 #+description: Add platform-agnostic null device detection to support database setup on both Unix-like systems and Windows/MINGW enviro
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sql_codegen_drift:sprint_17:v0:
 #+owner: marco

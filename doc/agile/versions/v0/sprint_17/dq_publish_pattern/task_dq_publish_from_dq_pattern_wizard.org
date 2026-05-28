@@ -4,7 +4,6 @@
 #+title: Task: DQ publish-from-dq pattern, wizard UX, IAM logging
 #+description: - Implement DQ publish-from-dq pattern: async workflow-based bundle publication with SQL, C++ and UI
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :dq_publish_pattern:sprint_17:v0:
 #+owner: marco

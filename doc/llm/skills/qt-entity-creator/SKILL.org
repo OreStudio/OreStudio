@@ -4,7 +4,6 @@
 #+title: Qt Entity Creator
 #+description: Create Qt UI components for domain entities including list windows, detail dialogs, history dialogs, and controllers.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:qt:entity:ui:
 #+created: 2024-09-01

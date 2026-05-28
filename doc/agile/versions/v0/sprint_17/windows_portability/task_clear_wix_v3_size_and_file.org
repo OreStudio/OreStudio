@@ -4,7 +4,6 @@
 #+title: Task: Clear WiX v3 size and file-count limits
 #+description: Short-term fixes from the WiX analysis in #710, clearing both remaining \`cpack\` errors on Windows.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :windows_portability:sprint_17:v0:
 #+owner: marco

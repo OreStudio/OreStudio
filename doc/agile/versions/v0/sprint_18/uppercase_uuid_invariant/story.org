@@ -4,7 +4,6 @@
 #+title: Story: Lock down uppercase UUID invariant
 #+description: Enforce uppercase UUIDs everywhere: org documents, codegen templates, and ID-generating Python scripts.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :documentation:codegen:invariant:build_reliability:sprint_18:v0:
 #+created: 2026-05-24

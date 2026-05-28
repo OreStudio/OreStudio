@@ -4,7 +4,6 @@
 #+title: Claude Code
 #+description: Claude Code is Anthropic's CLI for Claude, the AI assistant that is ORE Studio's primary development tool. This page defines the tool and links to its configuration.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :llm:claude_code:tooling:
 #+created: 2026-05-28

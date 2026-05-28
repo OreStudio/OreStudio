@@ -4,7 +4,6 @@
 #+title: Sprint 07 Release Notes
 #+description: Sprint 07 release notes (December 2025).
 #+type: release_notes
-#+version: 2
 #+level: cross
 #+filetags: :release_notes:sprint_07:v0:
 #+created: 2025-12-30

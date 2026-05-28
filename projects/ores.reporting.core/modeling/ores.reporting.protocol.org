@@ -2,7 +2,6 @@
 :ID: B1A5C952-B709-444B-8A63-5FD834D87D52
 :END:
 #+title: ores.reporting Messaging Reference
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: overview

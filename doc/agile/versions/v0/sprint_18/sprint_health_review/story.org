@@ -4,7 +4,6 @@
 #+title: Story: Sprint health review — System 2 analysis
 #+description: Add a sprint-reviewer skill that writes a structured health-check section into sprint.org: goal alignment, load, velocity, focus, and story/task balance.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :compass:tooling:python:agile:sprint:review:sprint_18:v0:
 #+created: 2026-05-25

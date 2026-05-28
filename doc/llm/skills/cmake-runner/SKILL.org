@@ -4,7 +4,6 @@
 #+title: CMake Runner Skill
 #+description: Drive the ORE Studio CMake build — configure, build, test, deploy site, deploy skills, generate diagrams — by selecting the matching recipe.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:cmake:build:
 #+created: 2024-09-01

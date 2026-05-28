@@ -4,7 +4,6 @@
 #+title: Task: Add nightly support with memcheck
 #+description: Add a nightly CI pipeline that runs the tests under memcheck.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ci:nightly:memcheck:build_quality:sprint_01:v0:
 #+owner: marco

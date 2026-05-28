@@ -4,7 +4,6 @@
 #+title: How do I start a new feature branch phase?
 #+description: Transition from a merged feature branch to a fresh one based on the latest main — for multi-phase implementations where each phase is one PR.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :git:branch:phase:recipe:
 #+created: 2026-05-21

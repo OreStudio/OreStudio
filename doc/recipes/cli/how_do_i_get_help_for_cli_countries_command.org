@@ -4,7 +4,6 @@
 #+title: How do I get help for the CLI refdata countries command?
 #+description: Show available operations under =ores.cli refdata countries=
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:countries:
 #+created: 2026-05-21

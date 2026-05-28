@@ -4,7 +4,6 @@
 #+title: Story: Sprint 02 housekeeping
 #+description: Sprint-level sundries — backlog refinement, architecture whiteboarding, dev-environment fixes, Gemini action.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :housekeeping:agile:tooling:sprint_02:v0:
 #+created: 2025-08-01

@@ -4,7 +4,6 @@
 #+title: Sprint themes
 #+description: Definitions of the six sprint themes (Product, Tooling, Agile, LLMs, Documentation, Infrastructure) and the epic convention used to group stories in sprint backlogs.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :agile:sprint:themes:knowledge:
 #+created: 2026-05-28

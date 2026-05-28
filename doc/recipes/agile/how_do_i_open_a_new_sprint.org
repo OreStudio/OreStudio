@@ -4,7 +4,6 @@
 #+title: How do I open a new sprint?
 #+description: Scaffold a new sprint folder under the current version, set its mission, and wire it into the version manifest.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :agile:sprint:codegen:recipe:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Investigate GoldenCheetah for ideas on graph displays
 #+description: Investigate GoldenCheetah for ideas on graph displays
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:far:
 #+created: 2026-05-21

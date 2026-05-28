@@ -4,7 +4,6 @@
 #+title: Add a dashboard for users
 #+description: Add a dashboard for users
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

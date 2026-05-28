@@ -4,7 +4,6 @@
 #+title: Story: UTC-everywhere timestamp policy
 #+description: Canonical UTC API in ores.platform; UTC sessions enforced in DB; ISO 8601 UTC timestamps in wire protocols; db_timestamp alias.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :platform:utc:timestamps:database:policy:sprint_16:v0:
 #+created: 2026-05-20

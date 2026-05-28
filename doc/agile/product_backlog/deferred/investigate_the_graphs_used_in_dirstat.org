@@ -4,7 +4,6 @@
 #+title: Investigate the graphs used in dirstat
 #+description: Investigate the graphs used in dirstat
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:far:
 #+created: 2026-05-21

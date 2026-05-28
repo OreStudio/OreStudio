@@ -4,7 +4,6 @@
 #+title: How do I get help for the CLI iam roles command?
 #+description: Show available operations under =ores.cli iam roles=
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:roles:
 #+created: 2026-05-21

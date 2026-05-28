@@ -4,7 +4,6 @@
 #+title: Task: Add CMake target to build user manual PDF and commit it
 #+description: Follow the existing deploy_site pattern to add a deploy_manual CMake target that runs Emacs/LaTeX to export user_manual.org as PDF. Commit the PDF and add a download link.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :doc:manual:cmake:pdf:latex:user_manual_pdf_build:sprint_18:v0:
 #+owner: marco

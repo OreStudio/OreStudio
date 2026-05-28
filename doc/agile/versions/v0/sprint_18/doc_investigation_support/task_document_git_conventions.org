@@ -4,7 +4,6 @@
 #+title: Task: Document git commit conventions
 #+description: Establish a formal recipe for git commits, including component prefixes and AI attribution.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :git:conventions:doc_investigation_support:sprint_18:v0:
 #+owner: marco

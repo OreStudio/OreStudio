@@ -4,7 +4,6 @@
 #+title: Add currency and country party-visibility junctions
 #+description: Add currency and country party-visibility junctions
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

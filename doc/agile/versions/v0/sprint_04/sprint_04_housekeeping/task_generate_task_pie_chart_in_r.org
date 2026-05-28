@@ -4,7 +4,6 @@
 #+title: Task: Generate a pie chart for tasks in org via R
 #+description: Add an R-based pie chart for sprint resourcing alongside the bar chart.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :agile:reporting:r:sprint_04_housekeeping:sprint_04:v0:
 #+owner: marco

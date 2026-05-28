@@ -4,7 +4,6 @@
 #+title: Task: Latest currencies should have different colour
 #+description: Visually distinguish the currently-active version of a currency in the history dialog (and the list view).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :currencies:qt:ux:history:currencies_history_polish:sprint_07:v0:
 #+owner: marco

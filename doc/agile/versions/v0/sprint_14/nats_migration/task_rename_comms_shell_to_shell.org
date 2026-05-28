@@ -4,7 +4,6 @@
 #+title: Task: Rename ores.comms.shell to ores.shell
 #+description: With NATS replacing the binary comms protocol, the shell no longer needs the .comms namespace; rename completes the cleanup; NATS documentation rewritten across all 10 services with subject-based references.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :shell:rename:refactor:docs:nats:nats_migration:sprint_14:v0:
 #+owner: marco

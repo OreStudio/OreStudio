@@ -4,7 +4,6 @@
 #+title: Task: Improve cybernetics documentation
 #+description: Initial task for: Improve cybernetics documentation
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :cybernetics_docs:sprint_18:v0:
 #+owner: marco

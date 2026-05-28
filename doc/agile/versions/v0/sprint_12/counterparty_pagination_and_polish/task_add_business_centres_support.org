@@ -4,7 +4,6 @@
 #+title: Task: Add support for business centres
 #+description: business_centre domain type end-to-end: database entity, mapper, repository, service, protocol (0x1061-0x1068), data generator, eventing, JSON + table I/O; Qt UI with paginated list + detail dialog + history; country_alpha2_code column with derivation.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :business_centres:refdata:qt:protocol:counterparty_pagination_and_polish:sprint_12:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Agile
 #+description: Index of the agile information architecture — versions, sprints, stories, tasks, captures, and the process that connects them.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :agile:index:knowledge:
 #+created: 2024-06-15

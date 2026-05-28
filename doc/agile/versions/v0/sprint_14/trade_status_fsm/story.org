@@ -4,7 +4,6 @@
 #+title: Story: Trade status FSM and activity type
 #+description: FSM for trade status (new / live / expired / cancelled); activity_type taxonomy replaces lifecycle_events; trade_status_service::resolve_status() enforces transitions.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :trading:fsm:activity_type:domain:sprint_14:v0:
 #+created: 2026-05-20

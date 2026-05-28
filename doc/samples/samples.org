@@ -4,7 +4,6 @@
 #+title: Samples
 #+description: Index of screenshots and product imagery referenced from product identity and visual mockups.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :samples:index:knowledge:
 #+created: 2026-05-24

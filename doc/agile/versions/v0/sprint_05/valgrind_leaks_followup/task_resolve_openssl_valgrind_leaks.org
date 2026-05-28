@@ -4,7 +4,6 @@
 #+title: Task: Resolve all of the OpenSSL leaks in Valgrind
 #+description: Suppress the OpenSSL initialisation leaks (LLM-confirmed as benign) — closes sprint 03's BLOCKED follow-up.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :valgrind:openssl:observability:bug_fix:valgrind_leaks_followup:sprint_05:v0:
 #+owner: marco

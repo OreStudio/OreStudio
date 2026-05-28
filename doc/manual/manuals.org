@@ -4,7 +4,6 @@
 #+title: ORE Studio Manuals
 #+description: Index of all ORE Studio manuals and guides.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:manual:index:
 #+created: 2026-05-24

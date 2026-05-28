@@ -4,7 +4,6 @@
 #+title: CLI recipes
 #+description: Recipes for using =ores.cli= to manage every domain entity from the command line.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:index:knowledge:
 #+created: 2026-05-21

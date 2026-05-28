@@ -4,7 +4,6 @@
 #+title: Use exponential backoff for database problems
 #+description: Use exponential backoff for database problems
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

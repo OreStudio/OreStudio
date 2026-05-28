@@ -2,7 +2,6 @@
 :ID: A3F7C2D1-8E4B-4F9A-B6C3-2D1E8F5A7B9C
 :END:
 #+title: Report Definition to Instance Pipeline
-#+version: 2
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

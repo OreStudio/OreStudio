@@ -4,7 +4,6 @@
 #+title: ORE Studio as an LLM-first system
 #+description: ORE Studio is built and maintained primarily by LLMs under human direction. This page explains the philosophy, the dual human/LLM audience, and how contributions work.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :llm:philosophy:development:knowledge:
 #+created: 2026-05-28

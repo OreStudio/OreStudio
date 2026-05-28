@@ -4,7 +4,6 @@
 #+title: Feature Branch Manager Skill
 #+description: Manage multi-phase feature work — open each phase on a fresh branch from main, transition cleanly between phases, retire old branches.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:git:branch:
 #+created: 2024-09-01

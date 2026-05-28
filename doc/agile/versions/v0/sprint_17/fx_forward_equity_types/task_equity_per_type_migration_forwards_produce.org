@@ -4,7 +4,6 @@
 #+title: Task: Equity per-type migration: forwards produce variants; read-side stub deferred
 #+description: PR #2 of the four-PR instrument per-type migration series (see
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :fx_forward_equity_types:sprint_17:v0:
 #+owner: marco

@@ -5,7 +5,6 @@
 #+description: Always reach for compass (search, list, show, where, goto, capture) before falling back to find/grep/ls. Gaps in compass are captures, not workarounds.
 #+type: memory
 #+memory_subtype: feedback
-#+version: 2
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-05-28

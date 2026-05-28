@@ -4,7 +4,6 @@
 #+title: Task: Implement sprint health charts
 #+description: Write Python data extractor, gnuplot scripts, CMake target, and wire PNGs into sprint page.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sprint:health:charts:gnuplot:metrics:sprint_health_charts:sprint_18:v0:
 #+owner: CodeWhale

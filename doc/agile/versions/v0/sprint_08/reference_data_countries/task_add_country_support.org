@@ -4,7 +4,6 @@
 #+title: Task: Add country support (ISO 3166-1)
 #+description: Domain model, bitemporal repository, country_service in ores.refdata; country_images linkage in ores.assets; Wt list/dialog UI; SQL populate for all 249 ISO countries.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :refdata:countries:iso:wt:reference_data_countries:sprint_08:v0:
 #+owner: marco

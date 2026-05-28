@@ -4,7 +4,6 @@
 #+title: Task: Rework system_model.org: per-component headings, sub-component tables, and key-doc links
 #+description: Restructure system_model.org so each component gets its own heading with a description, a sub-component table (component/sub-component with org-roam links), and a key-documents list; remove comms/legacy references; move DB isolation content to ores.sql; replace General information section with a link to developer.org.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :system_model_readability:sprint_18:v0:
 #+owner: marco

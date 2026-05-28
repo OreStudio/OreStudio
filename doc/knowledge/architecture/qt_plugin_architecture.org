@@ -4,7 +4,6 @@
 #+title: Qt Plugin Architecture
 #+description: IPlugin lifecycle, shared_menus_context, load_order, and the two-phase menu-building sequence in ORE Studio.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :qt:ui:architecture:knowledge:
 #+created: 2026-05-20

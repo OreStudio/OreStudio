@@ -4,7 +4,6 @@
 #+title: Task: Create document deduplication recipe and resolve health review duplicates
 #+description: Initial task for: Document deduplication recipe
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :document_deduplication_recipe:sprint_18:v0:
 #+owner: marco

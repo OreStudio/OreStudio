@@ -4,7 +4,6 @@
 #+title: Consider saving screenshots of bugs directly into the task d…
 #+description: Consider saving screenshots of bugs directly into the task directory and linking them from the task doc, so visual evidence is preserved alongside the work record.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

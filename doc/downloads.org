@@ -4,7 +4,6 @@
 #+title: Downloads
 #+description: Release download index listing every ORE Studio release with binary assets, by platform.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :downloads:
 #+created: 2026-05-25

@@ -4,7 +4,6 @@
 #+title: Task: Per-type FX instrument tables
 #+description: Per-type FX instrument tables for various FX products (barrier options, digital options, variance swaps, accumulators) using std::variant; updated database schemas + repositories + mappers; typed FX instrument services + handlers + dispatch.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :trading:fx:sql:variant:refactor:domain:per_type_instrument_tables:sprint_16:v0:
 #+owner: marco

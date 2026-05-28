@@ -4,7 +4,6 @@
 #+title: Task: Copy domain notes on core concepts
 #+description: Import the seed domain notes from the legacy source into the project's documentation tree.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :documentation:domain:knowledge:documentation_infrastructure:sprint_01:v0:
 #+owner: marco

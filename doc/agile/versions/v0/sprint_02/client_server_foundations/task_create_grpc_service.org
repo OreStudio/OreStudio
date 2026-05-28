@@ -4,7 +4,6 @@
 #+title: Task: Create a GRPC-based service
 #+description: Explore GRPC as the client/server substrate. Abandoned in favour of cobalt.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :client_server:grpc:abandoned:client_server_foundations:sprint_02:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Task: Restore two-phase rfl parse in getTradeDetail to fix MSVC C1202
 #+description: PR #763 merged `getTradeDetail` back into `ClientManagerTrades.cpp` and replaced the two-phase rfl parse with a single `
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :msvc_c1202_fix:sprint_17:v0:
 #+owner: marco

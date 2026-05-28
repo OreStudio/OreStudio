@@ -4,7 +4,6 @@
 #+title: Task: v2 information architecture (sprints 12-16); close v0
 #+description: Completes the v0 → v2 information architecture migration begun in PR #771 + #775. Five sprints (12-16) bring the final 8
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :v2_doc_architecture:sprint_17:v0:
 #+owner: marco

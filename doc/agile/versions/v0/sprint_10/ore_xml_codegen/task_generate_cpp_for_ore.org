@@ -4,7 +4,6 @@
 #+title: Task: Generate C++ code for ORE via xsdcpp
 #+description: xsdcpp integrated; manually-crafted CurrencyConfig/CurrencyElement replaced by generated types; artefact_type domain centralises target_table + populate_function lookup; dq_populate_*_fn naming convention enforced; currency rounding-type values corrected.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore:xsdcpp:codegen:xml:ore_xml_codegen:sprint_10:v0:
 #+owner: marco

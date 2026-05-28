@@ -4,7 +4,6 @@
 #+title: Task: Add scheduler binary protocol
 #+description: Open scheduler subsystem 0x9000-0x9FFF in the comms protocol; four request/response pairs (get_job_definitions / schedule_job / unschedule_job / get_job_history); registrar pattern; rfl::Reflector for cron_expression + job_status placed in ores.scheduler/rfl/reflectors.hpp to avoid circular dep with ores.utility; protocol 45.0 (breaking).
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :scheduler:protocol:comms:refactor:scheduling_subsystem:sprint_13:v0:
 #+owner: marco

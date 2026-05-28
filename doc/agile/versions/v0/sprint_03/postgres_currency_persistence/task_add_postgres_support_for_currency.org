@@ -4,7 +4,6 @@
 #+title: Task: Add Postgres support for currency
 #+description: Persist currency reference data through the Postgres repository layer end-to-end.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :currencies:postgres:repository:postgres_currency_persistence:sprint_03:v0:
 #+owner: marco

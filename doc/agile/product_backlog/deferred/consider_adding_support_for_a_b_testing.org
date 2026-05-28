@@ -4,7 +4,6 @@
 #+title: Consider adding support for A/B testing
 #+description: Consider adding support for A/B testing
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:far:
 #+created: 2026-05-21

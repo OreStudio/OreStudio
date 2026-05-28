@@ -2,7 +2,6 @@
 :ID: F2A4C6E8-B1D3-4E5F-A7B9-2C4D6E8F0A1B
 :END:
 #+title: Symbol Visibility Migration
-#+version: 2
 #+STATUS: COMPLETE
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil

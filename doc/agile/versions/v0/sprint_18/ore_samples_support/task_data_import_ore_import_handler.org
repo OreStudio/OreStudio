@@ -4,7 +4,6 @@
 #+title: Task: Data import: ORE import handler
 #+description: Wire the ORE import handler end-to-end so sample input files are parsed and persisted.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_samples_support:sprint_18:v0:
 #+owner: marco

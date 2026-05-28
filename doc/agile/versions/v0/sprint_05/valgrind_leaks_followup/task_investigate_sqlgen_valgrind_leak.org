@@ -4,7 +4,6 @@
 #+title: Task: Investigate Valgrind leak on sqlgen
 #+description: Triage the remaining sqlgen-flavoured leaks; confirm upstream fixes have landed.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :valgrind:sqlgen:observability:valgrind_leaks_followup:sprint_05:v0:
 #+owner: marco

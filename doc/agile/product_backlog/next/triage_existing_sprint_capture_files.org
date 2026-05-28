@@ -4,7 +4,6 @@
 #+title: Triage existing sprint capture.org files
 #+description: Each sprint currently has a monolithic capture.org. Once the per-file capture workflow is in place, go through existing capture.org files: promote anything still relevant into the new format or into stories, and delete stale or already-implemented items.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :agile:capture:triage:cleanup:
 #+created: 2026-05-27

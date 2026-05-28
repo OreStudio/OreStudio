@@ -4,7 +4,6 @@
 #+title: Task: Consider exposing endpoints via HTTP
 #+description: Add an HTTP entry point on the comms layer so non-Qt clients can talk to the service.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :http:comms:api:wt_and_http_introduction:sprint_07:v0:
 #+owner: marco

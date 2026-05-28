@@ -4,7 +4,6 @@
 #+title: Product backlog — next
 #+description: Index of pre-sprint captures we may pull into the next version.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :backlog:next:capture:index:knowledge:
 #+created: 2026-05-21

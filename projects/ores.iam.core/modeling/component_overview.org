@@ -4,7 +4,6 @@
 #+title: ores.iam.core
 #+description: Identity and access management — account lifecycle, authentication, multi-tenancy, and NATS handlers.
 #+type: component
-#+version: 2
 #+level: cross
 #+filetags: :iam:core:component:
 #+created: 2026-05-19

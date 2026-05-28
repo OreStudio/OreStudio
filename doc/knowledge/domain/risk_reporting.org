@@ -4,7 +4,6 @@
 #+title: Risk Reporting
 #+description: Market risk and trading desk reporting: report definitions, instances, measures, Greek sets, classification taxonomy (cycle/frequency/audience/scope/methodology), full report catalogue, EOD batch set, and report configuration reference.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:domain:finance:reporting:ore:
 #+created: 2026-05-25

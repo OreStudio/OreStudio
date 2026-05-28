@@ -4,7 +4,6 @@
 #+title: Story: ORE sample data
 #+description: Source or generate a representative set of ORE input files covering the key instrument and market-data types needed for integration testing.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :ore:sample_data:sprint_18:v0:
 #+created: 2026-05-24

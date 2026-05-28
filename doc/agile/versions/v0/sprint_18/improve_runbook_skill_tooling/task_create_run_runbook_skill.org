@@ -4,7 +4,6 @@
 #+title: Task: Create run-runbook skill
 #+description: Create a run-runbook skill that reads runbooks.org, matches the user request to the closest runbook, and executes it. If no match is found, lists available runbooks and asks the user to choose.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :improve_runbook_skill_tooling:sprint_18:v0:
 #+owner: marco

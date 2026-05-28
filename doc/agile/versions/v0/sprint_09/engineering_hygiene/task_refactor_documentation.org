@@ -4,7 +4,6 @@
 #+title: Task: Refactor documentation per entity
 #+description: Split recipes per entity; create a top-level domain document per entity that cross-references recipes, component model, entity implementation files (SQL included), and skills. Recipes attach to components rather than being global.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :documentation:refactor:structure:engineering_hygiene:sprint_09:v0:
 #+owner: marco

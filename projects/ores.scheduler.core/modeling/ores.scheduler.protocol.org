@@ -2,7 +2,6 @@
 :ID: 220199A4-5460-491F-AF48-6264D721C25D
 :END:
 #+title: ores.scheduler Messaging Reference
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: overview

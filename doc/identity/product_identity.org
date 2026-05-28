@@ -4,7 +4,6 @@
 #+title: Product Identity
 #+description: The durable statement of what ORE Studio is and is not. Versions (v0, v1.0, ...) come and go; this identity does not.
 #+type: product_identity
-#+version: 2
 #+level: s5
 #+filetags: :identity:vision:
 #+created: 2026-05-21

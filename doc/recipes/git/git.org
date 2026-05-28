@@ -4,7 +4,6 @@
 #+title: Git recipes
 #+description: Inventory of git recipes grouped by category.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipe:git:index:knowledge:
 #+created: 2026-05-21

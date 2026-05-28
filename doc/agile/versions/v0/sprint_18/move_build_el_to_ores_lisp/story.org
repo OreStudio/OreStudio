@@ -4,7 +4,6 @@
 #+title: Story: Move .build-*.el scripts to ores.lisp
 #+description: Relocate .build-*.el files from the project root into projects/ores.lisp/src/, rename to ores- prefix, and update all GitHub workflow and CMake references.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :ores.lisp:build:emacs:sprint_18:v0:
 #+created: 2026-05-28

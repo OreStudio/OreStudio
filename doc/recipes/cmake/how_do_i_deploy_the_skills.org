@@ -4,7 +4,6 @@
 #+title: How do I deploy the skills?
 #+description: Build the Claude Code skills bundle locally with the `deploy_skills` CMake target.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :cmake:build:skills:claude_code:emacs:recipe:
 #+created: 2026-05-18

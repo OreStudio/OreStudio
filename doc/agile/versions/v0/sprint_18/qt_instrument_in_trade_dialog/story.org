@@ -4,7 +4,6 @@
 #+title: Story: Qt: instrument creation in TradeDetailDialog
 #+description: Allow users to create and associate instruments directly from the TradeDetailDialog rather than switching to a separate instrument screen.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :ore:instruments:qt:trades:sprint_18:v0:
 #+created: 2026-05-24

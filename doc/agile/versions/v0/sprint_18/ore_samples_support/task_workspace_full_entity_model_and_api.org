@@ -4,7 +4,6 @@
 #+title: Task: Workspace full entity: model and API
 #+description: Promote workspace to a full standard entity at the model and API layer: history table, generated detail dialog metadata, and API surface.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ore_samples_support:sprint_18:v0:
 #+owner: marco

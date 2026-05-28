@@ -4,7 +4,6 @@
 #+title: Task: Implement Add Emacs and org-roam knowledge pages
 #+description: Initial task for: Add Emacs and org-roam knowledge pages
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :emacs_and_org_roam_docs:sprint_18:v0:
 #+owner: marco

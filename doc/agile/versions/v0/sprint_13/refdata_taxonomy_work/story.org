@@ -4,7 +4,6 @@
 #+title: Story: Refdata taxonomy work
 #+description: Rounding type as a refdata entity; currency taxonomy split into asset_class + market_tier; asset-class naming cleaned up.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :refdata:currency:rounding:protocol:sprint_13:v0:
 #+created: 2026-05-20

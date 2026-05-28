@@ -5,7 +5,6 @@
 #+title: Model Assisted Software Development
 #+description: The MASD methodology and how its logical/facet model maps onto ORE Studio components and codegen profiles.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:masd:methodology:codegen:architecture:
 #+created: 2024-07-01

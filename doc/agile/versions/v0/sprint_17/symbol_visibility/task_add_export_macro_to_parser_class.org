@@ -4,7 +4,6 @@
 #+title: Task: Add export macro to parser class for DLL visibility
 #+description: Add the `ORES_REFDATA_SERVICE_EXPORT` macro to the `parser` class declaration to ensure proper symbol visibility when bu
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :symbol_visibility:sprint_17:v0:
 #+owner: marco

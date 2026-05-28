@@ -4,7 +4,6 @@
 #+title: How do I create a new entity?
 #+description: Steps to add a complete domain entity across all layers using codegen-first approach.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :entity:codegen:recipe:
 #+created: 2026-05-21

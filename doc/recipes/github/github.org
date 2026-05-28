@@ -4,7 +4,6 @@
 #+title: GitHub recipes
 #+description: Inventory of GitHub-specific recipes — the ones that drive gh CLI, GitHub Actions / CI checks, review threads, and PR lifecycle.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipe:github:gh:pr:index:knowledge:
 #+created: 2026-05-21

@@ -4,7 +4,6 @@
 #+title: Unit test conventions
 #+description: Catch2 patterns and file structure ORE Studio unit tests follow — file layout, naming, includes, test-case shapes, generators, database helpers.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:architecture:tests:catch2:
 #+created: 2026-05-21

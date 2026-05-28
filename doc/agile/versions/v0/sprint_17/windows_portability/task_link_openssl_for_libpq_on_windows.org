@@ -4,7 +4,6 @@
 #+title: Task: Link OpenSSL for libpq on Windows
 #+description: Windows clang builds still fail linking \`ores.database.dll\` after #708:
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :windows_portability:sprint_17:v0:
 #+owner: marco

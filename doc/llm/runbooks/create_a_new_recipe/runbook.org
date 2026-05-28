@@ -4,7 +4,6 @@
 #+title: Create a new recipe
 #+description: Scaffold a recipe, fill in the Question/Answer/Script/Tested-by sections, and wire it into the recipes inventory.
 #+type: runbook
-#+version: 2
 #+level: cross
 #+filetags: :runbook:recipe:documentation:
 #+created: 2026-05-26

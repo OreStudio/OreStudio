@@ -4,7 +4,6 @@
 #+title: Task: Update skill-creation recipe to use compass
 #+description: Update the how-do-I-create-a-new-skill recipe so that the scaffold step uses compass add skill rather than calling generate_v2_doc.sh directly.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :improve_runbook_skill_tooling:sprint_18:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: Shell recipes
 #+description: Inventory of shell recipes grouped by category.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipe:shell:index:knowledge:
 #+created: 2026-05-21

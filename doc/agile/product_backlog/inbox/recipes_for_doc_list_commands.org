@@ -4,7 +4,6 @@
 #+title: Add recipes for doc list commands (compass list, search, etc…
 #+description: Add recipes for doc list commands (compass list, search, etc.) and link them to the relevant skills in the skills catalogue.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

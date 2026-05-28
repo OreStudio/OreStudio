@@ -4,7 +4,6 @@
 #+title: Task: Fix entity model profile dispatch and composite natural-key indexes
 #+description: - Add `schema` model type to the `sql` profile in `profiles.json` so plain entity models (`*_entity.json`) are dispatche
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sql_codegen_drift:sprint_17:v0:
 #+owner: marco

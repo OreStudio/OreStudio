@@ -4,7 +4,6 @@
 #+title: Task: Add PlantUML recipe and extend codegen with puml scaffold
 #+description: Initial task for: PlantUML integration: recipe and codegen scaffold
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compass_plantuml:sprint_18:v0:
 #+owner: marco

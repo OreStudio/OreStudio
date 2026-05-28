@@ -4,7 +4,6 @@
 #+title: Task: Fix TOCTOU race in party codename trigger
 #+description: Address the time-of-check-to-time-of-use race in party codename generation by adding pg_advisory_xact_lock inside the BEFORE INSERT trigger; serialises codename generation; fixes intermittent CI duplicate-key failures.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :party:codename:concurrency:sql:bug_fix:party_codename:sprint_14:v0:
 #+owner: marco

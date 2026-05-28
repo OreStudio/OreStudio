@@ -4,7 +4,6 @@
 #+title: Entity lifecycle
 #+description: Layer ordering, type mappings, and service conventions for creating a full-stack entity in ORE Studio.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:architecture:entity:lifecycle:
 #+created: 2026-05-21

@@ -5,7 +5,6 @@
 #+description: Claude may use dangerouslyDisableSandbox when running cmake or make build targets — the compiler toolchain and sccache are not accessible inside the sandbox.
 #+type: memory
 #+memory_subtype: feedback
-#+version: 2
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-05-22

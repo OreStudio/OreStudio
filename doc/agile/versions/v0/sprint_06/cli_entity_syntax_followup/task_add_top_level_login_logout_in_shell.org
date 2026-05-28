@@ -4,7 +4,6 @@
 #+title: Task: Add top-level login and logout commands in shell
 #+description: Make login/logout top-level shell commands so users don't have to enter the IAM entity submenu for them.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :shell:ux:login:cli_entity_syntax_followup:sprint_06:v0:
 #+owner: marco

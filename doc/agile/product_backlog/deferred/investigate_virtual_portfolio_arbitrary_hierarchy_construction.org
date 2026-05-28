@@ -4,7 +4,6 @@
 #+title: Investigate virtual portfolio arbitrary hierarchy construction
 #+description: Investigate virtual portfolio arbitrary hierarchy construction
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :refdata:capture:far:
 #+created: 2026-05-21

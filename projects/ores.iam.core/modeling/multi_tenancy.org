@@ -2,7 +2,6 @@
 :ID: 0FF2B4E7-473D-A754-A893-C4C70E636C76
 :END:
 #+title: Multi-Tenancy Architecture
-#+version: 1
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages

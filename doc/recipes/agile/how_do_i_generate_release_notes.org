@@ -4,7 +4,6 @@
 #+title: How do I generate release notes?
 #+description: Combine merged-PR data with the closing sprint's stories into a one-page release-notes Markdown file, then tag main and open a draft GitHub release.
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :agile:release:notes:github:recipe:
 #+created: 2026-05-21

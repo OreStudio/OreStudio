@@ -4,7 +4,6 @@
 #+title: Recipe Author Skill
 #+description: Add new recipes to ORE Studio — pick the topic, scaffold via codegen, follow the recipe contract (filename = title = question, executable babel blocks).
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:recipes:documentation:
 #+created: 2024-09-01

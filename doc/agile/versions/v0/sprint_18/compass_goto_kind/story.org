@@ -4,7 +4,6 @@
 #+title: Story: compass goto --kind flag
 #+description: Add --kind flag to compass goto to support hotfix/ branches following standard Gitflow conventions.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :compass:tooling:hotfix:sprint_18:v0:
 #+created: 2026-05-28

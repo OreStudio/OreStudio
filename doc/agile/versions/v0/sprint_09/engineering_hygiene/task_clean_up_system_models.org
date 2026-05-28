@@ -4,7 +4,6 @@
 #+title: Task: Clean up system models and component models
 #+description: Refresh system + component models out of sync with recent refactorings; introduce component-model-creator skill; new component docs for ores.logging, ores.http, ores.http.server, ores.wt.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :modeling:components:skills:documentation:engineering_hygiene:sprint_09:v0:
 #+owner: marco

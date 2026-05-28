@@ -4,7 +4,6 @@
 #+title: Add batch editing with staging workflow
 #+description: Add batch editing with staging workflow
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :analysis:capture:near:
 #+created: 2026-05-21

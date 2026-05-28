@@ -4,7 +4,6 @@
 #+title: Developer Links
 #+description: Quick-reference index of developer-facing external resources: GitHub, Doxygen, Discord, CDash, and CI.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :developer:
 #+created: 2026-05-25

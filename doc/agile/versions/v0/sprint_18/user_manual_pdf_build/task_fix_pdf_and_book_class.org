@@ -4,7 +4,6 @@
 #+title: Task: Add site:pdf publish component and switch manual to book LaTeX class
 #+description: Wire site:pdf into .build-site.el; change user_manual.org to book class; regenerate user_manual.pdf.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :site:manual:latex:pdf:user_manual_pdf_build:sprint_18:v0:
 #+owner: marco

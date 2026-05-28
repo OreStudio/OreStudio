@@ -4,7 +4,6 @@
 #+title: How do I get help for the CLI iam accounts command?
 #+description: Show available operations under =ores.cli iam accounts=
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:accounts:
 #+created: 2026-05-21

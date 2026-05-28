@@ -4,7 +4,6 @@
 #+title: How do I list currencies?
 #+description: List currencies via =ores.cli= as JSON or as a table
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:cli:currencies:
 #+created: 2026-05-21

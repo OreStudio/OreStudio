@@ -4,7 +4,6 @@
 #+title: Check Bootstrap Status
 #+description: Check Bootstrap Status
 #+type: recipe
-#+version: 2
 #+level: cross
 #+filetags: :recipe:http:authentication_verb:
 #+created: 2026-05-21

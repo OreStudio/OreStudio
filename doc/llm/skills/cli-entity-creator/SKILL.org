@@ -4,7 +4,6 @@
 #+title: CLI Entity Creator
 #+description: Create CLI commands for domain entities in ores.cli including import, export, list, delete, and add operations.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:cli:entity:
 #+created: 2024-09-01

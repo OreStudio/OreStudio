@@ -4,7 +4,6 @@
 #+title: Task: Bump egor-tensin/setup-clang from 2.2 to 2.3
 #+description: Bumps [egor-tensin/setup-clang](https://github.com/egor-tensin/setup-clang) from 2.2 to 2.3.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :sprint_17_housekeeping:sprint_17:v0:
 #+owner: marco

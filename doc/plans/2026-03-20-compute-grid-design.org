@@ -3,7 +3,6 @@
 :END:
 # -*- mode: org; indent-tabs-mode: nil -*-
 #+title: Compute Grid Design
-#+version: 2
 #+DATE: 2026-03-20
 #+AUTHOR: Marco Craveiro
 #+STATUS: COMPLETED

@@ -4,7 +4,6 @@
 #+title: Story: Tenancy codegen and entity types
 #+description: Update codegen templates for tenant-aware tables; introduce pgTAP; C++ tenant entities; protocol bump 26.1.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :codegen:tenancy:pgtap:protocol:sprint_11:v0:
 #+created: 2026-05-19

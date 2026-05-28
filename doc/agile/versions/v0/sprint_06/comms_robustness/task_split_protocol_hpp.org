@@ -4,7 +4,6 @@
 #+title: Task: Split protocol.hpp into components
 #+description: ores.comms/protocol.hpp had grown to cover every component's message types. Split per-component so each lives next to its handler.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :comms:protocol:refactor:comms_robustness:sprint_06:v0:
 #+owner: marco

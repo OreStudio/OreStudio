@@ -4,7 +4,6 @@
 #+title: Task: Add Valgrind suppressions
 #+description: Suppress known third-party false positives so Valgrind output highlights real issues.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :build:valgrind:ci:bug_fix:build_stabilisation:sprint_02:v0:
 #+owner: marco

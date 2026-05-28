@@ -2,7 +2,6 @@
 :ID: 7BBA5627-F13D-4BFC-9E03-C15B61A11AD5
 :END:
 #+title: PostgreSQL Identifier Length Cleanup
-#+version: 2
 #+SUBTITLE: Eliminate NAMEDATALEN truncation warnings for RLS policies and indexes
 #+DATE: 2026-05-13
 #+AUTHOR: ORE Studio Team

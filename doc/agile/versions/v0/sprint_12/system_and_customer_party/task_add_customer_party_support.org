@@ -4,7 +4,6 @@
 #+title: Task: Add customer party support
 #+description: Optional dataset bundle members; OptionalDatasetsPage in publish-bundle wizard; missing LEI publication dependencies added; SQL publish skips unselected optional datasets; protocol 28.0 → 29.0.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :party:customer:wizard:bundles:protocol:system_and_customer_party:sprint_12:v0:
 #+owner: marco

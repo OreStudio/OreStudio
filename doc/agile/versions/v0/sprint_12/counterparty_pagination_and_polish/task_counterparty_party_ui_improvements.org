@@ -4,7 +4,6 @@
 #+title: Task: Improvements to counterparty and party UI
 #+description: max_cardinality on identifier schemes (BIC dedup); rename 'Business Center' → 'Centre'; merge transliterated names into Name column with non-Latin detection; ResizeToContents standard; centralised window-settings persistence in EntityListMdiWindow.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :qt:party:counterparty:ux:refactor:counterparty_pagination_and_polish:sprint_12:v0:
 #+owner: marco

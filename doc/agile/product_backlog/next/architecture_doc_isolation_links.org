@@ -4,7 +4,6 @@
 #+title: Architecture doc should link to multi-party, multi-company, …
 #+description: Architecture doc should link to multi-party, multi-company, and workspace documents under a dedicated Isolation section, so the top-level architecture narrative connects to the domain-isolation concepts.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

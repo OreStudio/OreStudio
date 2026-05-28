@@ -2,7 +2,6 @@
 :ID: B0D35884-6703-4889-8B47-ED0E279F5E2F
 :END:
 #+title: Unified Trade + Instrument Detail Dialog
-#+version: 2
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+STATUS: DONE
 

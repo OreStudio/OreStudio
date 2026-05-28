@@ -4,7 +4,6 @@
 #+title: Story: Qt UX polish
 #+description: Account management screens, exit confirmation dialog, relative time formatting across the UI.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :qt:ux:sprint_07:v0:
 #+created: 2026-05-19

@@ -4,7 +4,6 @@
 #+title: Documentation recipes
 #+description: Inventory of recipes for navigating, finding, and authoring the documentation graph.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :recipe:documentation:docs:search:index:knowledge:
 #+created: 2026-05-21
@@ -42,8 +41,6 @@ For the codegen scripts that generate /code/ (not docs) see the
 
 - [[id:6AC06A04-EB95-4925-8488-C7A47C6A451F][How do I validate component documentation before committing?]] — run
   =validate_docs.sh= before pushing any component doc change.
-- [[id:23BCAC49-325F-4083-B854-87EA747C2ABE][How do I audit and fix document version tags?]] — check and stamp
-  =#+version:= tags across the repo.
 
 * See also
 

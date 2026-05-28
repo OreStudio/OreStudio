@@ -4,7 +4,6 @@
 #+title: Add validation and ISO compliance flags for reference data
 #+description: Add validation and ISO compliance flags for reference data
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :code:capture:near:
 #+created: 2026-05-21

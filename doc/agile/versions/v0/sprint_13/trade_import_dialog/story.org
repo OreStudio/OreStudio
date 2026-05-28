@@ -4,7 +4,6 @@
 #+title: Story: Trade import mapping dialog (Qt UI)
 #+description: Qt dialog: select ORE XML, preview trades, choose target book, map counterparties, confirm import. Postponed mid-implementation.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :trade:qt:import:ui:ore:sprint_13:v0:
 #+created: 2026-05-20

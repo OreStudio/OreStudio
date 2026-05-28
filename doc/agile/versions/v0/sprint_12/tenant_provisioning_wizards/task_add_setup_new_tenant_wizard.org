@@ -4,7 +4,6 @@
 #+title: Task: Add setup-new-tenant wizard
 #+description: Tenant provisioner UI: GLEIF-based or synthetic party setup; counterparty setup; clear that it's evaluation. Synthetic subsystem in ores.synthetic (organisation_generator_service + organisation_publisher_service); tree_builder utility; protocol range 0x7000-0x7FFF.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :tenants:wizard:qt:synthetic:gleif:tenant_provisioning_wizards:sprint_12:v0:
 #+owner: marco

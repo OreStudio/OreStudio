@@ -4,7 +4,6 @@
 #+title: Component Creator
 #+description: Scaffold a new ORE Studio component (api/core/service) via codegen profiles.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:component:codegen:cmake:
 #+created: 2024-09-01

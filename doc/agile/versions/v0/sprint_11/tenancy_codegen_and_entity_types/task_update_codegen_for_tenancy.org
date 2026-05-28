@@ -4,7 +4,6 @@
 #+title: Task: Update codegen for tenancy
 #+description: Mustache templates (sql_schema_domain_entity_create, sql_schema_table_create) conditionally include tenant_id; PK + exclusion constraints incorporate tenant_id; pgTAP testing skill section; generate_refdata_schema.sh + recreate_entity.sh.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :codegen:mustache:tenancy:pgtap:scripts:tenancy_codegen_and_entity_types:sprint_11:v0:
 #+owner: marco

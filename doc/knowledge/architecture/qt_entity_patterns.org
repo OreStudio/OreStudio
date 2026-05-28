@@ -4,7 +4,6 @@
 #+title: Qt entity patterns
 #+description: ClientModel, list window, detail dialog, history dialog, and async-fetch patterns for ores.qt entity UI components.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:qt:entity:ui:
 #+created: 2026-05-21

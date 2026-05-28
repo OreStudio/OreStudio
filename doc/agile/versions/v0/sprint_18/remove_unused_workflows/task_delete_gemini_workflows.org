@@ -4,7 +4,6 @@
 #+title: Task: Delete the four Gemini workflows
 #+description: Remove the four unused Gemini workflow files; PR review continues via the gemini-code-assist app.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :ci:github:cleanup:remove_unused_workflows:sprint_18:v0:
 #+owner: marco

@@ -4,7 +4,6 @@
 #+title: My Account session history dialog shows no bytes sent/receiv…
 #+description: My Account session history dialog shows no bytes sent/received and sessions are not populated. Either remove the dialog entirely or implement session event recording (at minimum: login and logout events).
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-05-28

@@ -4,7 +4,6 @@
 #+title: Task: Large GLEIF counterparty bundle wiring, tenant reset, upload logging
 #+description: Work from a bug-hunt session on the PartyProvisioningWizard's Large (~15k) counterparty import path.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :compute_gleif:sprint_17:v0:
 #+owner: marco

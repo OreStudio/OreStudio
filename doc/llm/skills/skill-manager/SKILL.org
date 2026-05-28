@@ -4,7 +4,6 @@
 #+title: Skill Manager Skill
 #+description: Create new Claude Code skills or update existing ones; rebuild the shipped skill bundle.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:codegen:
 #+created: 2024-09-01

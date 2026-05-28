@@ -4,7 +4,6 @@
 #+title: Story: Security module
 #+description: Extract shared security primitives into ores.security with RAII OpenSSL contexts.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :security:refactor:component:sprint_09:v0:
 #+created: 2026-05-19

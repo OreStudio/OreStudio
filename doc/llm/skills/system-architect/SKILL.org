@@ -4,7 +4,6 @@
 #+title: System Architect Skill
 #+description: Plan a system-wide change — read the system model, assess cross-component impact, design backwards-compatible migration steps, file as tasks/stories.
 #+type: skill
-#+version: 2
 #+level: cross
 #+filetags: :skills:claude_code:architecture:migration:
 #+created: 2024-09-01

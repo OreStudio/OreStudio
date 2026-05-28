@@ -4,7 +4,6 @@
 #+title: Story: Accounts to IAM
 #+description: Rename ores.accounts to ores.iam; land lock-account, password reset, sign-up workflow, session info persistence.
 #+type: story
-#+version: 2
 #+level: s2
 #+filetags: :iam:accounts:authentication:refactor:sprint_07:v0:
 #+created: 2026-05-19

@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 185845E7-4CF9-416E-A923-894868A757A0
+:END:
+#+title: Story: Hotfix handling
+#+description: Hotfix runbook, branching recipe update, and Hotfixes section in sprint template.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :hotfix:runbook:agile:git:sprint_18:v0:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Provide a standard procedure for diagnosing and patching a broken build
+quickly, without disrupting the current sprint's planned work. Three
+deliverables:
+
+1. A /hotfix runbook/ at =doc/llm/runbooks/hotfix/runbook.org= that
+   guides the LLM through: extracting the error from a user-supplied
+   build, fetching main, creating a =hotfix/= branch, scaffolding a
+   linked story and task with compass, diagnosing and fixing the issue,
+   updating the task with details, committing, pushing, and opening a PR.
+   The runbook should prompt the LLM to ask the user when anything is
+   unclear.
+
+2. An update to the /branching recipe/
+   ([[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]]) documenting the
+   =hotfix/<description>= branch naming convention and when to use it
+   versus =feature/=.
+
+3. A =** Hotfixes= subheading in the sprint template
+   (=v2_doc_sprint.org.mustache=) under =* Stories=, so emergency fixes
+   land in their own clearly-labelled table and are not mixed with
+   planned sprint work.
+
+* Status
+
+| Field         | Value                                                              |
+|---------------+--------------------------------------------------------------------|
+| State         | DONE                                                               |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]            |
+| Now           | Nothing.                                                           |
+| Waiting on    | Nothing.                                                           |
+| Next          | Nothing.                                                           |
+| Last touched  | 2026-05-28                                                         |
+
+* Acceptance
+
+- =doc/llm/runbooks/hotfix/runbook.org= exists and covers all steps from
+  error extraction to merged PR.
+- The runbook instructs the LLM to ask the user when the error source,
+  branch, or fix strategy is unclear.
+- Branching recipe updated: =hotfix/<description>= convention documented,
+  =* Conventions= section distinguishes feature vs. hotfix branches.
+- Sprint template has a =** Hotfixes= section under =* Stories= (after the
+  theme sections), with its own =#+ATTR_HTML= and table scaffold.
+
+* Tasks
+
+| Task                                                                                 | State   | Start      | End | Description                                              |
+|--------------------------------------------------------------------------------------+---------+------------+-----+----------------------------------------------------------|
+| [[id:0916FC48-1A06-496E-9BAF-6EB6A418CFF8][Implement hotfix handling]] | STARTED | 2026-05-28 |     | Write runbook, update branching recipe, update template. |
+
+* Decisions
+
+* Out of scope
+
+- Automating the build error extraction (capturing stderr from =cmake
+  --build= output is sufficient for now; no structured error parser).
+- A =compass hotfix= subcommand — the runbook calls =compass goto= with
+  a =hotfix/= branch slug; no new compass command is needed yet.

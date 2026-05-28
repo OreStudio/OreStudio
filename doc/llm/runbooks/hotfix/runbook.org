@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 0CED1212-6763-4238-B861-9740C62AE499
+:END:
+#+title: Handle a hotfix
+#+description: Diagnose and patch a broken build: extract error, branch hotfix/, scaffold, fix, commit, PR.
+#+type: runbook
+#+version: 2
+#+level: cross
+#+filetags: :hotfix:git:agile:runbook:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
+
+* Goal
+
+Diagnose and patch a broken build or regression quickly, track the fix
+as a =hotfix/= story in the current sprint's =** Hotfixes= section, and
+land it via a PR — without disrupting the planned sprint work.
+
+* Preconditions
+
+- The user has described or supplied a failing build, error output, or
+  broken test. If neither is available, ask: "Can you paste the build
+  output or describe what's failing?"
+- =compass=, =gh=, and =SSH_AUTH_SOCK= are available (see
+  [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Set SSH_AUTH_SOCK for git operations]]).
+- Current sprint exists at =doc/agile/versions/v0/sprint_NN/=.
+
+* Steps
+
+In execution order:
+
+1. /Extract the error./ Ask the user to supply the full build output if
+   not already provided:
+   #+begin_src sh :results verbatim
+   cmake --build --preset <preset> 2>&1 | tee /tmp/build.log
+   #+end_src
+   Read the output and identify: the failing file, line, and error
+   message. If the source is unclear, ask the user before proceeding.
+
+2. /Fetch latest main./ Do not branch off a stale base:
+   #+begin_src sh :results verbatim
+   git fetch origin main
+   #+end_src
+
+3. /Create a hotfix branch and scaffold the story./ Use
+   [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — =compass goto= — with
+   a =hotfix_= slug. The slug should name the broken thing, not the
+   fix:
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh goto \
+     --slug hotfix_<broken_thing> \
+     --title "Hotfix: <broken thing>" \
+     --description "<one sentence: what is broken>." \
+     --tags "hotfix:<component>"
+   #+end_src
+   =compass goto= creates =feature/hotfix-<broken-thing>=, =story.org=,
+   and a linked task. The =feature/hotfix-= prefix is the ORE Studio
+   hotfix branch convention — =compass= always generates =feature/=
+   branches and the =hotfix-= slug prefix identifies the work as a hotfix.
+   See [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]].
+
+4. /Read all generated files./ Before writing any content, read
+   =story.org= and the task file and note their =:ID:= values. Do not
+   write [[id:...]] references from memory.
+
+5. /Fill in the story and task./ In =story.org=: Goal = what is broken
+   and what the fix will restore; Acceptance = build passes / test
+   passes. In the task file: Goal = the specific code change needed;
+   Plan = the diagnosis so far.
+
+6. /Wire the story into the sprint's =** Hotfixes= section./ Open
+   =doc/agile/versions/v0/sprint_NN/sprint.org= and add a row under
+   =** Hotfixes=:
+   #+begin_example
+   | [[id:UUID][Hotfix: broken thing]] | STARTED | date | | One-line description. |
+   #+end_example
+   If the sprint has no =** Hotfixes= section yet, add it at the end of
+   =* Stories=, before =* Health Review=.
+
+7. /Diagnose and fix./ Read the failing file(s). Apply the minimal
+   change that resolves the error. If the root cause is unclear or the
+   fix would touch more than ~5 files, ask the user before proceeding.
+
+8. /Verify./ Build and/or run the affected tests:
+   #+begin_src sh :results verbatim
+   cmake --build --preset <preset> 2>&1 | tail -20
+   #+end_src
+   If the build is still red, return to step 7.
+
+9. /Update the task./ Fill in =* Notes= with the root cause and the fix
+   approach. Update =Now= → =Fix verified locally.=, =Next= → =PR.=,
+   =Last touched= → today.
+
+10. /Commit using ORE Studio conventions./ Follow
+    [[id:EAB80857-3DB3-4A63-8D81-2F0A06B4F6DD][Check git commit conventions before committing]]:
+    #+begin_src sh :results verbatim
+    git add <files>
+    git commit -m "[component] Fix <what was broken>
+
+    Story-ID: <story-UUID>
+    Task-ID: <task-UUID>
+    Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+    #+end_src
+
+11. /Push and open a PR./ Push the branch (ensure =SSH_AUTH_SOCK= is set
+    per the [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][SSH memory]]), then open a PR with a structured body
+    (Summary, Changes, Traceability). Record the PR number in the task's
+    =* PRs= table.
+    #+begin_src sh :results verbatim
+    git push -u origin feature/hotfix-<broken-thing>
+    #+end_src
+
+* Postconditions
+
+- =feature/hotfix-= branch exists on =origin= and a PR is open.
+- Story is =STARTED= in the sprint's =** Hotfixes= table.
+- Task =* Notes= records the root cause and fix.
+- PR number is recorded in the task's =* PRs= table.
+- Build is green locally.
+
+* See also
+
+- [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]] — hotfix branch naming convention.
+- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — full =compass goto= syntax.
+- [[id:EAB80857-3DB3-4A63-8D81-2F0A06B4F6DD][Check git commit conventions before committing]] — commit format.
+- [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] — the normal (non-hotfix) story runbook.

@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 0916FC48-1A06-496E-9BAF-6EB6A418CFF8
+:END:
+#+title: Task: Implement Hotfix handling
+#+description: Write the hotfix runbook, update the branching recipe with hotfix conventions, and add a Hotfixes section to the sprint template.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :hotfix_handling:sprint_18:v0:
+#+owner: marco
+#+branch: feature/hotfix-handling
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+pr: 899
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:185845E7-4CF9-416E-A923-894868A757A0][Hotfix handling]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce three artefacts:
+
+1. =doc/llm/runbooks/hotfix/runbook.org= — a step-by-step hotfix runbook
+   (extract error → fetch main → create =hotfix/= branch → scaffold
+   story/task → diagnose/fix → commit/push/PR). References
+   [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]] for branch mechanics and
+   [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] for scaffolding.
+
+2. Updated [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]] — adds
+   =hotfix/<description>= to the =* Conventions= section and a short
+   note distinguishing hotfix branches from feature branches.
+
+3. Updated =v2_doc_sprint.org.mustache= — adds a =** Hotfixes= section
+   at the end of =* Stories=, before =* Health Review=.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | DONE                                                               |
+| Parent story | [[id:185845E7-4CF9-416E-A923-894868A757A0][Hotfix handling]]     |
+| Now          | Nothing.                                                           |
+| Waiting on   | Nothing.                                                           |
+| Next         | Nothing.                                                           |
+| Last touched | 2026-05-28                                                         |
+
+* Acceptance
+
+- Runbook file exists at =doc/llm/runbooks/hotfix/runbook.org=.
+- Runbook references the branching recipe and compass scaffold recipe by =[[id:UUID]]= link.
+- Branching recipe =* Conventions= section lists =hotfix/<description>=.
+- Sprint template has =** Hotfixes= section with table scaffold.
+
+* Plan
+
+1. Scaffold runbook with =compass add runbook --slug hotfix=.
+2. Fill runbook body with the hotfix procedure steps.
+3. Edit branching recipe to add hotfix convention.
+4. Edit sprint template to add =** Hotfixes= section.
+
+* Notes
+
+* PRs
+
+| PR                                                         | Title                                                    |
+|------------------------------------------------------------+----------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/899][#899]] | [agile] Add hotfix handling runbook and conventions |
+
+* Review
+
+| # | Comment summary                                             | File              | Decision | Notes                                                    |
+|---+-------------------------------------------------------------+-------------------+----------+----------------------------------------------------------|
+| 1 | Hardcoded SSH_AUTH_SOCK in step 2                           | hotfix/runbook.org | Fixed   | Removed; preconditions reference SSH memory              |
+| 2 | Contradiction: hotfix/ convention vs feature/hotfix- output | hotfix/runbook.org | Fixed   | Clarified feature/hotfix- is the convention; recipe updated |
+| 3 | Hardcoded SSH_AUTH_SOCK in step 11; wrong branch name       | hotfix/runbook.org | Fixed   | Removed SSH export; push uses feature/hotfix-<thing>     |
+
+* Result

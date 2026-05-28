@@ -47,7 +47,7 @@ In execution order:
 - [[id:63BF06CF-B61E-4163-A017-0E2D13586510][Task: Write Chapter 1: Login and Connection Manager]] (DONE — PR #811)
 - [[id:4834460E-0799-4379-ADD7-462A4BCF9FDF][Task: Write Chapter 1: System bootstrapping concepts and provisioning wizards]] (DONE — PR #814)
 - [[id:29379454-1B29-4BB5-905D-F129E0AC41FD][Task: Create documentation update skill]] (DONE — PR #814)
-- [[id:27422EEE-9435-49EC-B706-43BD66B2D7A6][Task: Generate all missing screenshots for the manual]] (STARTED)
+- [[id:27422EEE-9435-49EC-B706-43BD66B2D7A6][Task: Generate all missing screenshots for the manual]] (DONE — PRs #853, #866)
 - [[id:8763DD18-EBDD-4921-A5DF-FA667C838379][Task: Add user_manual_site.org and update manuals.org]] (DONE)
 
 * Decisions

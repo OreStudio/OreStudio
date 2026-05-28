@@ -56,7 +56,9 @@ sections are preserved; the new pillar sections are appended as a new
 
 * Acceptance
 
--
+- =projects/ores.compass/modeling/component_overview.org= has a new =* Commands= heading before =* Dependencies=.
+- The =* Commands= section contains subsections for each command pillar (Locate, Search, Navigate, Scaffold, Fleet, Goto, Backlog).
+- Each pillar subsection contains a purpose paragraph, key command forms/flags, and a table of related recipes.
 
 * Plan
 

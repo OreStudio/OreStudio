@@ -52,7 +52,10 @@ columns: Script | Purpose | Notes. Link to any related recipes in
 
 * Acceptance
 
--
+- =projects/ores.sql/modeling/component_overview.org= has a =* Scripts= section.
+- The section is organized into =** Lifecycle scripts= and =** Utility scripts= subsections.
+- Each subsection contains an introductory paragraph and a table with columns: Script | Purpose | Notes.
+- Related recipes in =doc/recipes/sql/= are linked via Org-mode ID links.
 
 * Plan
 

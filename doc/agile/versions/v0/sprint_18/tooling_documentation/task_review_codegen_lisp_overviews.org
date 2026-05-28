@@ -51,7 +51,9 @@ scripts doc or raise a capture.
 
 * Acceptance
 
--
+- =ores.lisp= and =ores.codegen= component overviews are reviewed and updated for completeness.
+- Both overviews are verified to be linked from the =* Tooling= section in =knowledge.org=.
+- Any additional developer tools or project-level scripts are catalogued or captured.
 
 * Plan
 

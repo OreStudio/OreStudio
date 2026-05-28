@@ -47,7 +47,9 @@ The Tooling section in =knowledge.org= must also link to [[id:6F7A122F-BC0F-4F3E
 
 * Acceptance
 
--
+- =doc/knowledge/knowledge.org= contains a =* Tooling= section linking to the developer scripts doc and the component overviews of =ores.compass=, =ores.codegen=, =ores.lisp=, and =ores.sql=.
+- A new =Developer scripts= knowledge doc is created at =doc/knowledge/architecture/developer_scripts.org=.
+- The developer scripts doc catalogues standalone scripts in =scripts/= grouped by purpose with descriptions and links to respective component overviews.
 
 * Plan
 

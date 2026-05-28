@@ -57,9 +57,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                                                                              |
+|-----+--------------------------------------------------------------------------------------------------------------------|
+| 890 | [agile,compass,doc] Drain sprint 18 capture.org; add compass bucket commands; add task-to-story runbook |
 
 * Review
 

@@ -51,15 +51,15 @@ offers an ORE Studio shell, and shows the ORE splash image.
 
 * Tasks
 
-In execution order:
-
-- [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][Audit existing ores.lisp modules and design dashboard architecture]]
-- [[id:696612A2-A9D5-47FE-BC5A-2F90FDCA4E15][Implement ores-dashboard.el]]
-- [[id:7E86CDB4-3FE6-46AD-BCC8-C0E9AD8857D6][Remove superseded ores.lisp modules]]
-- [[id:3C888F53-0522-4A56-A50A-A7AFEA101468][Write the ORE Studio dashboard user manual section]]
-- [[id:3C569365-B253-4BC6-9385-7CAF7B4FB54D][Make compass output paths clickable in dashboard output pane]]
-- [[id:FC26D072-3E4C-488B-BE3A-958F29041D02][Fix DB dashboard operations to use .env database name]]
-- [[id:A1347F1E-C771-4762-9159-88EB624C0CCB][Add SQLite connections DB entry to dashboard DB card]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:962FDC09-8DED-4C60-8725-FDE288E55C00][Audit existing ores.lisp modules and design dashboard architecture]] | DONE | 2026-05-24 | 2026-05-25 | Survey all .el files under projects/ores.lisp, identify what is reusable vs superseded, and produce the design for ores-dashboard.el. |
+| [[id:696612A2-A9D5-47FE-BC5A-2F90FDCA4E15][Implement ores-dashboard.el]] | DONE | 2026-05-24 | 2026-05-26 | Create the ores-dashboard.el core: env binding, .env reading, command groups (db, services, compass, build), bookmarks, ORE shell, splash image. |
+| [[id:7E86CDB4-3FE6-46AD-BCC8-C0E9AD8857D6][Remove superseded ores.lisp modules]] | BACKLOG | 2026-05-24 |  | Delete or gut ores-db.el and other per-mode modules that are superseded by the dashboard; keep reusable helpers (ores-env.el, ores-shell.el). |
+| [[id:3C888F53-0522-4A56-A50A-A7AFEA101468][Write the ORE Studio dashboard user manual section]] | BACKLOG | 2026-05-24 |  | Add a dashboard chapter to the user guide covering: launching the dashboard, each command group, bookmarks, and the ORE Studio shell. |
+| [[id:3C569365-B253-4BC6-9385-7CAF7B4FB54D][Make compass output paths clickable in dashboard output pane]] | DISCOVERED | 2026-05-25 |  | Post-process compass where/list/status output so that org-mode file paths appear as clickable links that open the target file in the dashboard output pane. |
+| [[id:FC26D072-3E4C-488B-BE3A-958F29041D02][Fix DB dashboard operations to use .env database name]] | DONE | 2026-05-25 | 2026-05-25 | Kill connections, Teardown DB and Recreate DB all prompt for a database via completing-read instead of reading ORES_DATABASE_NAME from .env. |
+| [[id:A1347F1E-C771-4762-9159-88EB624C0CCB][Add SQLite connections DB entry to dashboard DB card]] | DONE | 2026-05-25 | 2026-05-25 | Add an item to the dashboard DB card that opens ~/.local/share/ores.qt/connections.db in sql-sqlite, loading the project sqliterc for ergonomic display. |
 
 * Decisions
 

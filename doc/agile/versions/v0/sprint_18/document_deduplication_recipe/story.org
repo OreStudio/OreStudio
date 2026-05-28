@@ -57,9 +57,8 @@ sprint health review runbooks discovered in =doc/llm/runbooks/=.
 
 * Tasks
 
-In execution order:
-
-- [ ] Create document deduplication recipe and resolve health review duplicates.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
 
 * Decisions
 

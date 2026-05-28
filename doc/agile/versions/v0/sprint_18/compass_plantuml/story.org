@@ -48,9 +48,9 @@ consistent from the first line.
 
 * Tasks
 
-In execution order:
-
-- [[id:F44A6D1D-B3F1-4EA3-9C04-B516AD04F0F6][Task: Add PlantUML recipe and extend codegen with puml scaffold]] (BACKLOG)
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F44A6D1D-B3F1-4EA3-9C04-B516AD04F0F6][Task: Add PlantUML recipe and extend codegen with puml scaffold]] | DONE | 2026-05-28 | 2026-05-28 | PlantUML integration: recipe and codegen scaffold |
 
 * Decisions
 

@@ -51,10 +51,10 @@ for forward traceability.
 
 * Tasks
 
-In execution order:
-
-- [[id:63019BF3-5C02-40D5-A5F0-C1879A10F588][Task: Add PRs table to task template and update PR recipe]]
-- [[id:E9C783F7-955C-4317-8847-9972CB0D9C6D][Task: Implement compass where with --prs flag]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:63019BF3-5C02-40D5-A5F0-C1879A10F588][Task: Add PRs table to task template and update PR recipe]] | DONE | 2026-05-24 | 2026-05-24 | Update v2_doc_task.org.mustache to include a * PRs table; update how_do_i_create_a_pr.org to record PRs and embed UUIDs. |
+| [[id:E9C783F7-955C-4317-8847-9972CB0D9C6D][Task: Implement compass where with --prs flag]] | DONE | 2026-05-24 | 2026-05-24 | Add the where subcommand to compass.py: current version/sprint, STARTED items, and --prs flag fetching PR status via gh. |
 
 * Decisions
 

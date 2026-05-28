@@ -34,9 +34,8 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Tasks
 
-In execution order:
-
--
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
 
 * Decisions
 

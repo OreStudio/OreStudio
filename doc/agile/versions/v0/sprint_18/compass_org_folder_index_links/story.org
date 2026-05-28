@@ -44,9 +44,9 @@ needing to know file names.
 
 * Tasks
 
-In execution order:
-
-- [[id:E1D1F6BC-A69F-478A-8A66-9DDBF62C21FD][Task: Add index links to compass.org and create missing index files]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E1D1F6BC-A69F-478A-8A66-9DDBF62C21FD][Task: Add index links to compass.org and create missing index files]] | DONE | 2026-05-24 | 2026-05-24 | Wire each folder entry in doc/compass.org to its org-roam index file; scaffold any missing index docs. |
 
 * Decisions
 

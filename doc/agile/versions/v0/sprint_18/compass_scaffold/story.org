@@ -56,9 +56,9 @@ that new =.org= docs are produced by codegen only — never hand-written.
 
 * Tasks
 
-In execution order:
-
-- [[id:43F78F72-29C2-4853-96C9-B94484563B53][Task: Implement the add command]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:43F78F72-29C2-4853-96C9-B94484563B53][Task: Implement the add command]] | DONE | 2026-05-24 | 2026-05-24 | Add a compass add subcommand that calls ores.codegen as a library to create v2 docs. |
 
 * Decisions
 

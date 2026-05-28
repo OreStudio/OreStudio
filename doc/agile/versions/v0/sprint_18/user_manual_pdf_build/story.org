@@ -40,16 +40,16 @@ build themselves.
 
 * Tasks
 
-In execution order:
-
-- [[id:30AFB759-D3F2-4DD9-A5C7-209735F35B38][Task: User manual restructure]] (DONE — PR #807; prerequisite for PDF build)
-- [[id:001F63B6-C4E8-4DD2-B680-364393B15D51][Task: Add CMake target to build user manual PDF and commit it]] (DONE — PR #810)
-- [[id:63BF06CF-B61E-4163-A017-0E2D13586510][Task: Write Chapter 1: Login and Connection Manager]] (DONE — PR #811)
-- [[id:4834460E-0799-4379-ADD7-462A4BCF9FDF][Task: Write Chapter 1: System bootstrapping concepts and provisioning wizards]] (DONE — PR #814)
-- [[id:29379454-1B29-4BB5-905D-F129E0AC41FD][Task: Create documentation update skill]] (DONE — PR #814)
-- [[id:27422EEE-9435-49EC-B706-43BD66B2D7A6][Task: Generate all missing screenshots for the manual]] (DONE — PRs #853, #866)
-- [[id:8763DD18-EBDD-4921-A5DF-FA667C838379][Task: Add user_manual_site.org and update manuals.org]] (DONE)
-- [[id:20BDCCE7-2B65-4288-87C9-7CDDC2E77D14][Task: Add site:pdf publish component and switch manual to book LaTeX class]] (DONE — PR #841)
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:30AFB759-D3F2-4DD9-A5C7-209735F35B38][Task: User manual restructure]] | DONE | 2026-05-24 | 2026-05-24 | Retrospective record of PR #807: restructured user_manual.org into chaptered layout, wrote the introduction chapter, migrated screenshots to assets/images. |
+| [[id:001F63B6-C4E8-4DD2-B680-364393B15D51][Task: Add CMake target to build user manual PDF and commit it]] | DONE | 2026-05-24 | 2026-05-24 | Follow the existing deploy_site pattern to add a deploy_manual CMake target that runs Emacs/LaTeX to export user_manual.org as PDF. Commit the PDF and add a download link. |
+| [[id:63BF06CF-B61E-4163-A017-0E2D13586510][Task: Write Chapter 1: Login and Connection Manager]] | DONE | 2026-05-24 | 2026-05-28 | Flesh out system_bootstrapping.org with full prose covering the login screen and all Connection Manager functionality, with screenshot placeholders. |
+| [[id:4834460E-0799-4379-ADD7-462A4BCF9FDF][Task: Write Chapter 1: System bootstrapping concepts and provisioning wizards]] | DONE | 2026-05-24 | 2026-05-24 | Explain the multi-tenant/multi-party model and walk through the system, tenant, and party provisioner wizards with screenshot placeholders. |
+| [[id:29379454-1B29-4BB5-905D-F129E0AC41FD][Task: Create documentation update skill]] | DONE | 2026-05-24 | 2026-05-24 | A Claude Code skill that instructs the LLM to update the user manual whenever functionality is added or changed. |
+| [[id:27422EEE-9435-49EC-B706-43BD66B2D7A6][Task: Generate all missing screenshots for the manual]] | DONE | 2026-05-25 | 2026-05-28 | Capture every [SCREENSHOT NEEDED] placeholder image across the user manual chapters and wire them in. |
+| [[id:8763DD18-EBDD-4921-A5DF-FA667C838379][Task: Add user_manual_site.org and update manuals.org]] | DONE | 2026-05-28 | 2026-05-28 | Create a site-friendly HTML entry point for the user manual with a chapter table, and update manuals.org to use a structured manuals table. |
+| [[id:20BDCCE7-2B65-4288-87C9-7CDDC2E77D14][Task: Add site:pdf publish component and switch manual to book LaTeX class]] | DONE | 2026-05-25 | 2026-05-25 | Wire site:pdf into .build-site.el; change user_manual.org to book class; regenerate user_manual.pdf. |
 
 * Decisions
 

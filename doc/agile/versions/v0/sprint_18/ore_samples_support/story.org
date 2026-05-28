@@ -44,18 +44,18 @@ data import session backend and UI, and surface ORE results in the UI.
 
 * Tasks
 
-In execution order:
-
-- [[id:6998DD74-EE19-46DF-B4DC-F1250744FF23][Task: Scaffold ORE samples support]]
-- [[id:C10117BF-4054-4B31-AF2F-158EE8ABE88A][Task: Workspace full entity: model and API]]
-- [[id:71EB9DB0-1F5C-48D0-AA2E-E47A9F487B86][Task: Workspace full entity: C++ core]]
-- [[id:FF7AAAB1-9C6D-4304-A74C-62FA45188D45][Task: Workspace full entity: Qt UI]]
-- [[id:ADF00C8F-0C17-498D-8F35-9BEB672E8672][Task: Complete workspace Phase 4: Data Workshop UI]]
-- [[id:B3B64DD6-88A0-4866-9E47-665B210D4376][Task: Data import: DB schema and FSM]]
-- [[id:37459E42-96A6-4A31-B4E8-96DFE36C77B0][Task: Data import: trading API and Pending Book]]
-- [[id:508554C1-214F-430C-9AB1-3C99C9F497D5][Task: Data import: ORE import handler]]
-- [[id:D10420E1-7447-4F80-B53E-42A20F8D353E][Task: Data import: session window and workflow UI]]
-- [[id:1BFBA7F6-59BF-4814-BECE-C2AB75F78C41][Task: Fix: portfolios and books not visible in workspace context]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6998DD74-EE19-46DF-B4DC-F1250744FF23][Task: Scaffold ORE samples support]] | DONE | 2026-05-25 | 2026-05-25 | Review workspace-full-entity, workspace-design Phase 4 remaining, and data-import-session plans; create task stubs for each phase of work needed to support running ORE samples. |
+| [[id:C10117BF-4054-4B31-AF2F-158EE8ABE88A][Task: Workspace full entity: model and API]] | BACKLOG | 2026-05-25 |  | Promote workspace to a full standard entity at the model and API layer: history table, generated detail dialog metadata, and API surface. |
+| [[id:71EB9DB0-1F5C-48D0-AA2E-E47A9F487B86][Task: Workspace full entity: C++ core]] | DONE | 2026-05-25 | 2026-05-25 | Add read_history to workspace repository and service; route get_workspace_history_request in the handler. |
+| [[id:FF7AAAB1-9C6D-4304-A74C-62FA45188D45][Task: Workspace full entity: Qt UI]] | BACKLOG | 2026-05-25 |  | Wire the generated workspace detail dialog and history view into the Qt client. |
+| [[id:ADF00C8F-0C17-498D-8F35-9BEB672E8672][Task: Complete workspace Phase 4: Data Workshop UI]] | BACKLOG | 2026-05-25 |  | Finish workspace design Phase 4: report definition list and clone action in the Data Workshop UI. |
+| [[id:B3B64DD6-88A0-4866-9E47-665B210D4376][Task: Data import: DB schema and FSM]] | BACKLOG | 2026-05-25 |  | Add the data import session database schema and the finite state machine governing the import lifecycle. |
+| [[id:37459E42-96A6-4A31-B4E8-96DFE36C77B0][Task: Data import: trading API and Pending Book]] | BACKLOG | 2026-05-25 |  | Implement the trading API and Pending Book backing partial-success data import. |
+| [[id:508554C1-214F-430C-9AB1-3C99C9F497D5][Task: Data import: ORE import handler]] | BACKLOG | 2026-05-25 |  | Wire the ORE import handler end-to-end so sample input files are parsed and persisted. |
+| [[id:D10420E1-7447-4F80-B53E-42A20F8D353E][Task: Data import: session window and workflow UI]] | BACKLOG | 2026-05-25 |  | Build the import session window and workflow UI surfacing progress, partial success, and results. |
+| [[id:1BFBA7F6-59BF-4814-BECE-C2AB75F78C41][Task: Fix: portfolios and books not visible in workspace context]] | DONE | 2026-05-25 | 2026-05-28 | Investigate and fix the bug where portfolios and books are not shown when a workspace is active. |
 
 * Decisions
 

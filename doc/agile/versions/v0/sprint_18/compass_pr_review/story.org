@@ -39,9 +39,8 @@ Add three new compass subcommands that wrap the GitHub API for PR review managem
 
 * Tasks
 
-In execution order:
-
--
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
 
 * Decisions
 

@@ -68,12 +68,12 @@ the team is focused — rather than merely summarising status.
 
 * Tasks
 
-In execution order:
-
-- [[id:4B327802-3E59-438F-8726-6984B2BC2BB0][Task: Implement sprint-reviewer skill]]
-- [[id:FA5A76DC-913B-481C-8D65-13F58032D950][Task: Health review 1 — sprint 18 mid-sprint analysis]]
-- [[id:2B20D957-A261-4C65-8F80-656897050CBB][Task: Move health review content from sprint.org into task]]
-- [[id:669DF15D-AD78-4F9A-8A53-49DF0EEC9455][Task: Health review 2 — sprint 18 backlog audit and shape check]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4B327802-3E59-438F-8726-6984B2BC2BB0][Task: Implement sprint-reviewer skill]] | DONE | 2026-05-25 | 2026-05-25 | Write the sprint-reviewer SKILL.org: reads sprint.org + git log + gh API, computes health metrics, and writes a System 2 review section into sprint.org. |
+| [[id:FA5A76DC-913B-481C-8D65-13F58032D950][Task: Health review 1 — sprint 18 mid-sprint analysis]] | DONE | 2026-05-25 | 2026-05-25 | First System 2 health review of sprint 18: goal alignment, load, PR velocity, story/task balance, focus signal, velocity, and overall verdict. |
+| [[id:2B20D957-A261-4C65-8F80-656897050CBB][Task: Move health review content from sprint.org into task]] | DONE | 2026-05-25 | 2026-05-25 | The Health Review section in sprint.org is too verbose; full review content belongs in the task Result section with only a short link left in sprint.org. |
+| [[id:669DF15D-AD78-4F9A-8A53-49DF0EEC9455][Task: Health review 2 — sprint 18 backlog audit and shape check]] | DONE | 2026-05-26 | 2026-05-26 | Audit all sprint 18 stories and tasks: close items with incorrect status, verify story/task shapes follow the document contract, and flag anything that needs cleanup. |
 
 * Decisions
 

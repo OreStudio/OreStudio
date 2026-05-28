@@ -52,10 +52,8 @@ immediately know what it is, where it fits, and how to act on it.
 ** Primary tool: Claude Code
 
 [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]] (Anthropic's CLI for Claude) is the tool used for day-to-day
-development. Project-specific configuration lives in =.claude/=:
-=settings.json= controls tool permissions, =skills/= contains
-task-shaped playbooks, and =CLAUDE.md= is the entry point Claude Code
-reads at session start.
+development. Configuration, permissions, and session behaviour are
+described in [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]] and its associated [[id:2D83251F-0E24-4B97-B736-08F710316634][settings]].
 
 ** Contributing from other LLMs
 

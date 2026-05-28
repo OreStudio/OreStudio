@@ -26,11 +26,11 @@ Add =skill= to the list of types supported by =compass add=. Currently the comma
 
 | Field        | Value                                                                 |
 |--------------+-----------------------------------------------------------------------|
-| State        | BACKLOG                                                               |
+| State        | DONE                                                                  |
 | Parent story | [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]                                |
-| Now          | Not yet started.                                                      |
+| Now          | Complete.                                                             |
 | Waiting on   | Nothing.                                                              |
-| Next         | Locate where compass add types are defined and add skill.             |
+| Next         | Unblocks tasks 487021A2 and 8DC89ACF.                                 |
 | Last touched | 2026-05-28                                                            |
 
 * Acceptance
@@ -45,14 +45,16 @@ Add =skill= to the list of types supported by =compass add=. Currently the comma
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                              |
+|-----+------------------------------------|
+| 881 | Add skill type to compass add      |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                    | File                              | Decision | Notes                      |
+|---+----------------------------------------------------+-----------------------------------+----------+----------------------------|
+| 1 | Now field in DONE task should be exactly Complete. | task_add_skill_type_to_compass.org | Accept  | Fixed in 3134d3c45         |
 
 * Result
+
+Added =skill= to =compass add= help text and default parent-dir logic in =projects/ores.compass/src/compass.py=. When =--parent-dir= is omitted for =skill= type, compass injects =doc/llm/skills= automatically. The change delegates directly to =v2_doc_generate.py= which already handles the skill path convention (=<parent-dir>/<slug>/SKILL.org=). Verified with a test invocation.

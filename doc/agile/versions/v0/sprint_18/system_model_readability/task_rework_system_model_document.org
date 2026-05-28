@@ -109,20 +109,20 @@ Each =**= component section follows this template:
 ** ores.iam
    <1–3 sentence description of purpose and boundaries.>
 
-   | Sub-component          | Role                          | Dependencies                         |
-   |------------------------+-------------------------------+--------------------------------------|
-   | [[id:...][ores.iam.api]]  | Shared types + NATS protocol | —                                    |
-   | [[id:...][ores.iam.core]] | Account lifecycle, RBAC, sessions | [[id:...][ores.database]], [[id:...][ores.security]] |
-   | [[id:...][ores.iam.service]] | Thin NATS entrypoint       | [[id:...][ores.iam.core]]                |
+   | Sub-component        | Role                               | Dependencies                  |
+   |----------------------+------------------------------------+-------------------------------|
+   | ores.iam.api         | Shared types + NATS protocol       | —                             |
+   | ores.iam.core        | Account lifecycle, RBAC, sessions  | ores.database, ores.security  |
+   | ores.iam.service     | Thin NATS entrypoint               | ores.iam.core                 |
 
-   - [[id:...][Multi-party model]] — how parties relate to tenants and accounts.
-   - [[id:...][Multi-tenancy]] — tenant isolation model and provisioning.
-   - [[id:...][Identity and Access Management]] — IAM concepts as applied in ores.iam.core.
-   - [[id:...][Role-Based Access Control]] — RBAC graph and permission assignment.
+   - Multi-party model — how parties relate to tenants and accounts.
+   - Multi-tenancy — tenant isolation model and provisioning.
+   - Identity and Access Management — IAM concepts as applied in ores.iam.core.
+   - Role-Based Access Control — RBAC graph and permission assignment.
 #+end_example
 
 Monolithic components (no =.api=/.core=/.service= split) have a
-single-row table with =[[id:...][ores.X]]= in the Sub-component column.
+single-row table with the component name in the Sub-component column.
 
 ** Removals
 

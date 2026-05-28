@@ -955,9 +955,9 @@ def cmd_add(argv):
     if not argv or argv[0] in ("-h", "--help"):
         print("usage: compass add <type> [generate_v2_doc options]\n"
               "  types: story task sprint version recipe knowledge component\n"
-              "         capture memory investigation product_identity\n"
-              "  --parent-dir defaults to the current sprint (story) or "
-              "version (sprint); required otherwise.\n"
+              "         capture memory investigation product_identity skill\n"
+              "  --parent-dir defaults to the current sprint (story) or\n"
+              "  version (sprint), or doc/llm/skills (skill); required otherwise.\n"
               "  remaining flags are passed through to ores.codegen "
               "(see 'How do I create a new v2 doc?').")
         return 0
@@ -968,11 +968,17 @@ def cmd_add(argv):
     has_parent = any(a == "--parent-dir" or a.startswith("--parent-dir=")
                      for a in rest)
     if not has_parent:
-        default_parent = _default_parent_dir(doc_type)
-        if default_parent:
+        if doc_type == "skill":
+            default_parent = "doc/llm/skills"
             rest += ["--parent-dir", default_parent]
-            print(f"ℹ️  --parent-dir not given; using current "
-                  f"{_DEFAULTABLE_PARENT[doc_type]}: {default_parent}", file=sys.stderr)
+            print(f"ℹ️  --parent-dir not given; using default: {default_parent}",
+                  file=sys.stderr)
+        else:
+            default_parent = _default_parent_dir(doc_type)
+            if default_parent:
+                rest += ["--parent-dir", default_parent]
+                print(f"ℹ️  --parent-dir not given; using current "
+                      f"{_DEFAULTABLE_PARENT[doc_type]}: {default_parent}", file=sys.stderr)
 
     # Lazy, optional import: the generator lives in ores.codegen and needs
     # pystache. Only `add` / `goto` require it; the other commands stay

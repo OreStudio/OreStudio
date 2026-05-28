@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: DF6F1D17-2199-472C-868E-1E50D0887AAD
+:END:
+#+title: Emacs
+#+description: Emacs as used in ORE Studio — editor overview, developer setup, and the build targets that Emacs drives.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :emacs:tooling:documentation:knowledge:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+* Summary
+
+GNU Emacs is the extensible, self-documenting text editor that serves as
+ORE Studio's primary authoring and build environment. All documentation is
+written in [[https://orgmode.org/][Org mode]], Emacs's structured plain-text format, and all build
+targets that produce the website, manuals, skills, and settings are
+implemented as Emacs Lisp scripts run in batch mode via =emacs -Q --script=.
+The interactive developer console ([[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]]) also lives inside Emacs,
+providing a card-based dashboard for every day-to-day operation. No part of
+the production system depends on Emacs; it is strictly a developer and
+documentation toolchain.
+
+* Detail
+
+** Overview of Emacs
+
+GNU Emacs, first released in 1984, is a programmable text editor whose
+central design principle is /self-documentation/: every key binding,
+variable, and function can be inspected, modified, or replaced at runtime
+using Emacs Lisp. This makes it well-suited to a project whose documentation
+and tooling evolve together — a new convention can be enforced immediately
+by adding a short Lisp function, with no external build pipeline required.
+ORE Studio exploits two Emacs subsystems in particular: Org mode (structured
+text, tables, literate programming via Babel, HTML/PDF export) and
+[[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]] (the knowledge graph and id-link resolution layer).
+
+** Our setup
+
+Developers load ORE Studio into Emacs by evaluating =ores-env.el=, which
+reads the checkout-local =.env= file and exposes helper functions for
+finding the project root and per-preset paths. The remaining modules —
+=ores-dashboard=, =ores-db=, =ores-shell=, =ores-babel=, =ores-prodigy=,
+=ores-capture=, and =ores-org-roam-export= — are then loaded on demand or
+as part of the dashboard initialisation. The entry point for interactive
+use is =M-x ores/dashboard=.
+
+The knowledge graph (all =.org= files under =doc/=) is kept as the
+org-roam database at =.org-roam.db= in the repo root. org-roam synchronises
+this database whenever a developer opens or saves a file; the database is
+the authoritative source for id-link resolution both in interactive Emacs
+sessions and during batch site builds.
+
+** Build targets
+
+All Emacs-driven builds are invoked as CMake custom targets using
+=emacs -Q --script=. The =-Q= flag suppresses the user's personal init
+file so builds are reproducible across machines.
+
+| CMake target      | Script                        | What it produces                                                             |
+|-------------------+-------------------------------+------------------------------------------------------------------------------|
+| =deploy_site=     | =ores-build-site.el=          | Full documentation website published to =build/output/site/OreStudio=; includes org → HTML export, org-roam-ui graph, and graph JSON. |
+| =deploy_manual=   | =ores-build-manual.el=        | User manual PDF from =doc/manual/user_guide/user_manual.org= via LaTeX.     |
+| =deploy_skills=   | =ores-build-skills.el=        | Claude Code skills tangled from Org Babel blocks into =.claude/skills/=.    |
+| =deploy_settings= | =ores-build-settings.el=      | Claude Code settings JSON tangled from =doc/llm/claude_code_settings.org= into =.claude/settings.json=. |
+| =deploy_plan=     | =ores-build-plan.el=          | TaskJuggler project plan tangled and exported from the agile docs.           |
+
+The site build is the most involved: it syncs the org-roam database,
+publishes every =.org= file recursively via =ox-publish=, copies the
+pre-built org-roam-ui static bundle from =external/org-roam-ui=, injects
+the site navigation header into the graph page, and exports the graph data
+as JSON from the SQLite database so org-roam-ui can visualise it statically.
+
+* See also
+
+- [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] — the Emacs Lisp component: dashboard, DB browser, shell integration, all source files described.
+- [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]] — how the knowledge graph is built and how id-links work across the site.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the note-taking method that motivates the id-link graph structure.

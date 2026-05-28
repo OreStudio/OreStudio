@@ -129,6 +129,18 @@ Authentication, authorisation, and tenancy.
 - [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — the RBAC model that backs IAM:
   roles compose permissions, the assignment graph.
 
+* Documentation tooling
+
+The tools ORE Studio uses to author, publish, and navigate its documentation.
+
+- [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] — editor overview, our developer setup, and the CMake build
+  targets (=deploy_site=, =deploy_manual=, =deploy_skills=, =deploy_settings=)
+  that Emacs batch scripts drive.
+- [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]] — how the knowledge graph is built, how id-links resolve across
+  the static site, and the non-obvious hacks that make it work in CI.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the atomic-note method that motivates the graph structure
+  and id-link discipline across every =.org= file.
+
 * External reference
 
 Concepts and systems we don't own — captured here so other docs can

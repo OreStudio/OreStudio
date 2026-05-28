@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED
+:END:
+#+title: org-roam
+#+description: How ORE Studio uses org-roam — knowledge graph, id-links, the hacks that make the static site work, and the org-roam-ui integration.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :org_roam:documentation:knowledge:emacs:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+* Summary
+
+[[https://www.orgroam.com/][org-roam]] is an [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] package that implements a [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]]-style
+knowledge graph over plain =.org= files, maintaining a SQLite database of
+nodes, tags, and links. ORE Studio uses org-roam as the backbone of its
+entire documentation system: every =.org= file in the repo is a node in the
+graph, cross-document references use =[[id:UUID][Title]]= links that survive
+file renames, and the graph is published as an interactive visualisation
+alongside the static documentation site. To make this work in a CI/batch
+context (no user home directory, no interactive Emacs), several non-obvious
+workarounds are required; they are described below.
+
+* Detail
+
+** What org-roam does
+
+org-roam indexes every =.org= file under =org-roam-directory= into a SQLite
+database (=.org-roam.db=). Each file that carries a =:ID:= property in its
+=:PROPERTIES:= drawer becomes a /node/ in the graph; headings can also be
+nodes. The database records the UUID, title, tags (from =#+filetags:=),
+and outgoing links of every node. This gives three things:
+
+1. *Id-link navigation* — =[[id:UUID][Title]]= links resolve to the right
+   file and heading regardless of where either file is located in the
+   directory tree.
+2. *Back-links* — org-roam knows which nodes link /to/ a given node,
+   enabling the =org-roam-buffer= to show incoming references for any open
+   file.
+3. *Graph export* — the link and tag tables in the SQLite database can be
+   exported to JSON and rendered as an interactive force-directed graph via
+   [[https://github.com/org-roam/org-roam-ui][org-roam-ui]].
+
+** How we use it
+
+Every document in =doc/= and every component overview in =projects/*/modeling/=
+is an org-roam node. The ORE Studio conventions layer on top of org-roam:
+the =#+type:=, =#+version:=, and =#+level:= frontmatter fields are ORE
+Studio conventions, not org-roam fields, but org-roam indexes them as
+document properties and =compass= queries them via the same SQLite database.
+The full documentation graph is therefore traversable both by an interactive
+Emacs developer (via =org-roam-buffer= and =org-roam-node-find=) and by the
+LLM toolchain (via =compass search/show/list=).
+
+** The knowledge graph "hacks"
+
+Making org-roam work in a reproducible batch build required several departures
+from the standard interactive setup. These are sometimes called "hacks"
+because they bypass assumptions baked into the org-roam ecosystem:
+
+*** Repo-root org-id locations file
+
+Standard org-roam stores the id-to-file mapping in
+=~/.emacs.d/.org-id-locations=. In batch mode (CI runner, colleague's
+machine) that file either does not exist or maps a different checkout path.
+The site build script sets:
+
+#+begin_src emacs-lisp
+(setq org-id-locations-file (expand-file-name "./.org-id-locations-file"))
+(org-id-update-id-locations (directory-files-recursively "." "\\.org$"))
+#+end_src
+
+This writes a fresh =.org-id-locations-file= at the repo root on every
+build, derived entirely from the files in the working tree. The file is
+=.gitignore=d (it's machine-specific absolute paths) but is always
+regenerated before =org-publish-all= so every =[[id:UUID]]= link resolves.
+The recursive scan covers the entire repo root; =build/=, =.git/=, and
+=vcpkg/= directories rarely contain =.org= files so the scan is fast in
+practice. The subsequent =org-roam-db-sync= step applies its own
+=org-roam-file-exclude-regexp= to keep build artefacts out of the database.
+
+*** Advice on =org-html-headline= for id-link anchors
+
+Org's HTML exporter rewrites =[[id:UUID]]= links to =href="#ID-UUID"= in
+the output HTML, but does not automatically add a corresponding
+=id="ID-UUID"= attribute to the target heading. Browsers therefore cannot
+scroll to the target. The site build advises =org-html-headline= to prepend
+an empty anchor to every heading that carries an =:ID:= property:
+
+#+begin_src emacs-lisp
+(defun ores/org-html-headline-id-anchor (orig-fun headline contents info)
+  (let ((rendered (funcall orig-fun headline contents info))
+        (uuid (org-element-property :ID headline)))
+    (if (and rendered uuid)
+        (concat (format "<a id=\"ID-%s\" class=\"id-anchor\"></a>\n" uuid)
+                rendered)
+      rendered)))
+(advice-add 'org-html-headline :around #'ores/org-html-headline-id-anchor)
+#+end_src
+
+The idea for this fix was adapted from community discussion in the org-roam
+forums and the [[https://github.com/cunene/emacs-config][cunene emacs config]].
+
+*** Batch SQLite graph export (no full org-roam load)
+
+The org-roam-ui graph visualisation requires a JSON file (=graphdata.json=)
+describing every node and link in the database. Generating this normally
+requires a fully initialised org-roam session, which is expensive and
+fragile in batch mode. =ores-org-roam-export.el= instead reads the SQLite
+database directly using Emacs 29+'s built-in =sqlite-open= support —
+without loading =org-roam= itself — and emits the JSON in org-roam-ui's
+expected format. This code was originally lifted from the
+[[https://github.com/cunene/emacs-config][cunene emacs config]] and adapted
+to run as a standalone script. The approach works because the database schema
+is stable across org-roam minor versions.
+
+*** Pre-built org-roam-ui static bundle
+
+org-roam-ui is a React application that must be compiled from source.
+Checking a compiled build into =external/org-roam-ui= avoids needing
+Node.js or npm on the CI runner. The site build copies this pre-built bundle
+to the =graph/= subdirectory of the site output (see the =deploy_site= row
+in [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] for the full output path), patches the graph page's =<head>= to
+include the ORE Studio stylesheet and nav bar, and writes the generated
+=graphdata.json= alongside it.
+
+* See also
+
+- [[https://www.orgroam.com/manual.html][org-roam manual]] — full reference for org-roam commands, configuration, and concepts.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the note-taking method that motivates the id-link graph structure.
+- [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] — the editor that hosts org-roam and drives all documentation builds.
+- [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] — the =ores-org-roam-export.el= source and all other Emacs Lisp modules.

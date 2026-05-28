@@ -87,8 +87,29 @@ ergonomics.
 - =prodigy= — service process management.
 - =compilation-mode= (Emacs built-in) — script output buffers.
 
+* Dashboard functionality
+
+The =ORES Dashboard= buffer is divided into cards. Each card groups related
+actions under a short heading and maps them to single-keystroke bindings.
+
+| Card        | Key(s)       | What it does                                                                 |
+|-------------+--------------+------------------------------------------------------------------------------|
+| Environment | =e=          | Display the loaded =.env= values (label, preset, credentials).              |
+| Database    | =d=, =k=, =t=, =r= | Connect to a DB, kill connections, teardown schema, recreate schema.  |
+| Services    | =p=          | Open Prodigy process manager (NATS, HTTP server, domain services).          |
+| Compass     | =c=          | Run a =compass search= query; output appears in the output pane.            |
+| Build       | =b=          | Invoke =cmake --build= for the current preset.                              |
+| Site        | =s=          | Run =deploy_site= (Emacs batch, org → HTML + graph export).                 |
+| Skills      | =S=          | Run =deploy_skills= (tangle Claude Code skills from Org Babel blocks).      |
+| Bookmarks   | =o=          | Jump to a frequently-used file or directory.                                |
+| Links       | =l=          | Open a curated list of project web links (GitHub, site, Doxygen).           |
+| Shell       | =x=          | Launch (or switch to) an =ores.shell= REPL comint buffer.                   |
+| NATS        | =n=          | Send a test NATS message or open the NATS monitoring page.                  |
+
 * See also
 
+- [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] — editor overview and the build targets (=deploy_site=, =deploy_manual=, etc.) that =ores.lisp= scripts drive.
+- [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]] — the knowledge graph layer that =ores-org-roam-export.el= exports.
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — architectural context.
 - [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the REPL that the dashboard launches.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — database scripts invoked by the dashboard.

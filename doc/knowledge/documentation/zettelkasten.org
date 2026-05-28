@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: E3B70401-5142-4ACC-A61F-1BBF19F8470F
+:END:
+#+title: Zettelkasten
+#+description: The Zettelkasten note-taking method — atomic notes, unique identifiers, and emergent structure — as applied to the ORE Studio knowledge graph.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :zettelkasten:documentation:knowledge:org_roam:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+* Summary
+
+Zettelkasten (/German: slip-box/) is a knowledge-management method developed
+by sociologist Niklas Luhmann, who used it to produce an extraordinary volume
+of academic work over several decades. Its two key principles are that each
+note captures exactly one idea (the /atomic note/ discipline) and that every
+note is permanently addressable by a unique identifier, enabling a web of
+typed links to emerge across the collection. ORE Studio uses Zettelkasten as
+the conceptual foundation for its documentation graph: every =.org= file
+carries a UUID =:ID:= property, files link to each other with
+=[[id:UUID][Title]]= references, and [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]] maintains the index and
+back-link database that makes the graph navigable.
+
+* Detail
+
+** The method
+
+Luhmann's physical slip-box contained tens of thousands of index cards, each
+with a unique alphanumeric address. A new note was not filed by subject but
+placed wherever it could be cross-referenced to an existing note; the
+address was written at the top and outgoing references were written inline.
+Over time the collection self-organised into dense clusters of related ideas
+connected by an explicit link graph — something that no hierarchical filing
+system produces automatically.
+
+The digital Zettelkasten community has translated these principles into
+plain-text formats: each note is a single file, the unique identifier is a
+UUID or timestamp, and links between files replace the handwritten references
+on cards. The emergent structure from following links reveals which ideas are
+central (high in-degree) and which are peripheral, without the author ever
+imposing a top-down taxonomy.
+
+** Why ORE Studio uses it
+
+ORE Studio's documentation spans domain concepts (ORE instrument types,
+interest rate curves), architecture decisions (component split, CMake
+conventions), agile artefacts (stories, tasks, sprints), LLM instructions,
+recipes, and manuals. A hierarchical directory structure alone cannot
+represent the cross-cutting links: a concept defined in =doc/knowledge/=
+is referenced from =doc/agile/= tasks, from =doc/recipes/=, and from
+=doc/manual/=. Treating the documentation as a Zettelkasten graph means:
+
+- Any page can link to any other page by UUID — location in the directory
+  tree is not part of the link and files can be moved without breaking
+  references.
+- The knowledge graph visualisation ([[https://github.com/org-roam/org-roam-ui][org-roam-ui]]) immediately reveals
+  which concepts are central to the project and which are peripheral.
+- LLMs can navigate the graph programmatically: =compass show <UUID>= prints
+  a node's outgoing and incoming links, giving instant traversal without
+  reading every file.
+
+** The atomic note discipline
+
+The most important constraint is the one hardest to maintain: each file
+should capture one idea, not a collection of loosely related ones. When a
+file grows, the right response is usually to extract a sub-topic into a new
+file and link to it, not to add another section. ORE Studio enforces this
+weakly — the document types (knowledge, recipe, component overview, task,
+story) are each scoped to a single subject — but within each type the author
+must resist the temptation to include tangential detail.
+
+* See also
+
+- [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]] — the Emacs package that implements Zettelkasten over =.org= files in ORE Studio.
+- [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] — the editor that hosts org-roam and drives all documentation builds.
+- [[https://www.orgroam.com/manual.html#A-Brief-Introduction-to-the-Zettelkasten-Method][org-roam manual: A Brief Introduction to the Zettelkasten Method]] — the method described from the org-roam perspective.

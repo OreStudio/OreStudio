@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: B9934B96-E28F-4431-A504-3E0BA1D4BD14
+:END:
+#+title: Task: Implement Add Emacs and org-roam knowledge pages
+#+description: Initial task for: Add Emacs and org-roam knowledge pages
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :emacs_and_org_roam_docs:sprint_18:v0:
+#+owner: marco
+#+branch: feature/emacs-and-org-roam-docs
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FD317B6C-F50F-4A35-81CC-A3B2BE3493C0][Add Emacs and org-roam knowledge pages]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create three knowledge pages (Emacs, org-roam, Zettelkasten) under
+=doc/knowledge/documentation/=; expand the [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] component overview
+with a dashboard table and links to the new pages; condense the org-roam
+note in [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] to a brief linked paragraph; add a
+=* Documentation tooling= section to the knowledge index.
+
+* Status
+
+| Field        | Value                                                                              |
+|--------------+------------------------------------------------------------------------------------|
+| State        | DONE                                                                               |
+| Parent story | [[id:FD317B6C-F50F-4A35-81CC-A3B2BE3493C0][Add Emacs and org-roam knowledge pages]] |
+| Now          | PR #904 merged.                                                                    |
+| Waiting on   | Nothing.                                                                           |
+| Next         | Done.                                                                              |
+| Last touched | 2026-05-28                                                                         |
+
+* Acceptance
+
+- [ ] =doc/knowledge/documentation/emacs.org= — Emacs overview, setup, builds
+  table, links to [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]], [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]], [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]].
+- [ ] =doc/knowledge/documentation/org_roam.org= — what org-roam does, our
+  usage, three hacks, org-roam-ui integration, links to manual and [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]].
+- [ ] =doc/knowledge/documentation/zettelkasten.org= — method, why we use it,
+  atomic-note discipline, links to org-roam.
+- [ ] [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] component overview: dashboard functionality table; =* See also=
+  links to [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] and [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]].
+- [ ] [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] preamble condensed; links to [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] and [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]].
+- [ ] =doc/knowledge/knowledge.org= — new =* Documentation tooling= section.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/904][#904]] | [doc] Add Emacs, org-roam and Zettelkasten knowledge pages |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =rendered= nil guard missing in org-html-headline advice | =org_roam.org= l.94 | Accepted | Fixed in =cad504f0a= |
+| 2 | Recursive scan covers build/git dirs — note inefficiency | =org_roam.org= l.71 | Accepted | Added clarifying note in =cad504f0a= |
+| 3 | Build output path duplicated across =org_roam.org= and =emacs.org= | =org_roam.org= l.120 | Accepted | Removed from =org_roam.org=; link to =emacs.org= in =cad504f0a= |
+
+* Result

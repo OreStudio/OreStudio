@@ -47,11 +47,11 @@ sections are preserved; the new pillar sections are appended as a new
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] |
-| Now          | Not yet started.                       |
+| Now          | Writing Commands section in component overview. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Open PR.                               |
 | Last touched | 2026-05-28                               |
 
 * Acceptance

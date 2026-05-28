@@ -9,7 +9,7 @@
 #+filetags: :user_manual_pdf_build:sprint_18:v0:
 #+owner: marco
 #+branch: feature/task-split-system-model-layers
-#+pr:
+#+pr: 887
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
@@ -37,9 +37,9 @@ all org-roam cross-references.
 |--------------+----------------------------------------|
 | State        | STARTED                                |
 | Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
-| Now          | Scaffolding layer sub-pages.           |
+| Now          | PR #887 raised; awaiting CI and review. |
 | Waiting on   | Nothing.                               |
-| Next         | Fill sub-page content; rewrite main page; PlantUML diagram; NATS links; story merge. |
+| Next         | Address review comments; merge.        |
 | Last touched | 2026-05-28                             |
 
 * Acceptance
@@ -72,9 +72,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                              | Title                                                                                                      |
+|-----------------------------------------------------------------+------------------------------------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/887][#887]] | [modeling,agile] Split system model into per-layer sub-pages; add PlantUML 4-layer diagram; merge site_pdf_and_manual_book story |
 
 * Review
 

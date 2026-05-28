@@ -33,11 +33,11 @@ Changes required:
 
 | Field        | Value                                                                        |
 |--------------+------------------------------------------------------------------------------|
-| State        | STARTED                                                                      |
+| State        | DONE                                                                         |
 | Parent story | [[id:FFF169EC-0B35-4800-8BEE-1CF7D0DEE8D6][Refactor story task lists to a status table]]                                  |
-| Now          | Locating the story template in ores.codegen.                                 |
+| Now          | Complete.                                                                    |
 | Waiting on   | Nothing.                                                                     |
-| Next         | Update template; verify scaffold output; commit.                             |
+| Next         | Back-fill sprint 18 stories (separate task).                                 |
 | Last touched | 2026-05-28                                                                   |
 
 * Acceptance
@@ -69,3 +69,11 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Updated =projects/ores.codegen/library/templates/v2_doc_story.org.mustache=.
+Replaced =* Tasks= bullet list with the table skeleton:
+
+=| Task | State | Start | End | Description |=
+
+Verified via =generate_v2_doc.sh --type story= — output contains the
+correct table header.

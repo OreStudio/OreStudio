@@ -2,7 +2,7 @@
 :ID: 593CD821-11B6-4667-A5B1-66F131E81765
 :END:
 #+title: Task: Fix broken org-mode links in identifier-length-cleanup plan
-#+description: - Three `[[*Special Cases]]` links in `doc/plans/2026-05-13-identifier-length-cleanup.org` failed to resolve during org-
+#+description: Three [[*Special Cases]] links in doc/plans/2026-05-13-identifier-length-cleanup.org failed to resolve during org-export.
 #+type: task
 #+version: 2
 #+level: s1

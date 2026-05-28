@@ -40,7 +40,7 @@ sprint history.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:30E9701E-FC42-4E9A-B486-980AB3A8FE3C][Task: [agile] Open Sprint 17]] | DONE | 2026-05-22 | 2026-05-22 | - Opens Sprint 17 for development. |
-| [[id:593CD821-11B6-4667-A5B1-66F131E81765][Task: [doc] Fix broken org-mode links in identifier-length-cleanup plan]] | DONE | 2026-05-22 | 2026-05-22 | - Three =[[*Special Cases]]= links in =doc/plans/2026-05-13-identifier-length-cleanup.org= failed to resolve during org- |
+| [[id:593CD821-11B6-4667-A5B1-66F131E81765][Task: [doc] Fix broken org-mode links in identifier-length-cleanup plan]] | DONE | 2026-05-22 | 2026-05-22 | Three =[[*Special Cases]]= links in =doc/plans/2026-05-13-identifier-length-cleanup.org= failed to resolve during org-export. |
 | [[id:B174A3C8-031F-40F1-ADA0-A9CC79983ED8][Task: [doc] v2 cybernetic information architecture (sprints 01-07)]] | DONE | 2026-05-22 | 2026-05-22 | Stands up the v2 information architecture under =doc/v2/= and migrates the first |
 | [[id:5B0C49BF-DBC8-442C-95AA-6FF739928E72][Task: [doc] v2 information architecture (sprints 08-11)]] | DONE | 2026-05-22 | 2026-05-22 | Migrates sprints 08-11 of v0 into the v2 cybernetic information architecture |
 | [[id:0AA8C336-274C-4043-B41F-ECD012D41AE6][Task: [doc] Add :eval never to list-presets sh block to fix site build]] | DONE | 2026-05-22 | 2026-05-22 | - Adds `:eval never` to the `#+begin_src sh` block in `how_do_i_list_available_presets.org` |

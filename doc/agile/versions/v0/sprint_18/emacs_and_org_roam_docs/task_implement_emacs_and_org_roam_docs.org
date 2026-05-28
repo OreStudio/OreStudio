@@ -62,7 +62,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/904][#904]] | [doc] Add Emacs, org-roam and Zettelkasten knowledge pages |
 
 * Review
 

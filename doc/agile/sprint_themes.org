@@ -32,6 +32,15 @@ capability.
 | Documentation  | Knowledge graph, system model, diagrams, site content, user manual.      |
 | Infrastructure | Build system, CI/CD, test infrastructure, database infrastructure, comms substrate, security primitives, compiler/platform work. |
 
+** Hotfixes
+
+A sprint's =* Stories= section also contains a =** Hotfixes= subsection
+after the six theme subsections. It is not a theme — it is a holding area
+for emergency fixes that must land outside the normal planned-work flow.
+A hotfix story is created with =compass goto --slug hotfix_<thing>= and
+lands here rather than under one of the six themes. See
+[[id:0CED1212-6763-4238-B861-9740C62AE499][Handle a hotfix]] for the full procedure.
+
 ** Epics
 
 An epic is an optional =***= sub-subheading inside a theme for a cluster

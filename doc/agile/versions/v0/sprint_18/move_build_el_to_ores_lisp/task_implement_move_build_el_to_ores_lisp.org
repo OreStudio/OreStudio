@@ -51,14 +51,14 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                                              |
+|-----+------------------------------------------------------------------------------------|
+| 891 | [ores.lisp] Move .build-*.el scripts into ores.lisp/src/ with ores- prefix         |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                                        | File                    | Decision | Notes                                                                                 |
+|---+----------------------------------------------------------------------------------------+-------------------------+----------+---------------------------------------------------------------------------------------|
+| 1 | =ores/repo-root=: unconditional =../../../= on =default-directory= walks above repo root | ores-build-manual.el    | Fixed    | Guarded traversal: only apply when =load-file-name= or =buffer-file-name= is non-nil. |
 
 * Result

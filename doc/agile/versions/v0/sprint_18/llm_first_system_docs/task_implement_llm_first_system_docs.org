@@ -31,11 +31,11 @@ contributions from any LLM accepted provided they follow
 
 | Field        | Value                                                             |
 |--------------+-------------------------------------------------------------------|
-| State        | STARTED                                                           |
+| State        | DONE                                                              |
 | Parent story | [[id:AE1E893D-8E5C-4DB7-BB71-492F1A65374D][Document ORE Studio as an LLM-first system]] |
-| Now          | Writing llm_first.org.                                            |
+| Now          | Complete.                                                         |
 | Waiting on   | Nothing.                                                          |
-| Next         | Wire into llm.org; then start Claude Code page task.              |
+| Next         | Nothing.                                                          |
 | Last touched | 2026-05-28                                                        |
 
 * Acceptance

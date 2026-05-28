@@ -19,6 +19,8 @@ when to use it, and where to find it.
 
 | Component    | Grain              | Shape                       | Example                                                   |
 |--------------+--------------------+-----------------------------+-----------------------------------------------------------|
+| [[id:3B7C30A5-A421-4EEF-ADA8-C20D4AB54BB6][LLM-first]]   | Philosophy          | How LLMs drive development  | LLMs execute; humans direct; docs serve both audiences    |
+| [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]]  | Primary tool        | Anthropic CLI for Claude     | Reads =CLAUDE.md=; edits code, opens PRs, runs commands   |
 | [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][Instructions]] | Entry point         | Session-level rules and links | Mandatory first read for every LLM session                |
 | [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][Runbooks]]     | Multi-step procedure | Composition of recipes       | "Start work on a new story" (7 steps, story → PR)         |
 | [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][Recipes]]      | Single operation    | How-to with executable shell | "How do I create a PR?"                                   |
@@ -100,6 +102,8 @@ time.
 
 * See also
 
+- [[id:3B7C30A5-A421-4EEF-ADA8-C20D4AB54BB6][LLM-first system]] — ORE Studio's LLM-first development philosophy.
+- [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]] — the primary development tool and its configuration.
 - [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] — entry point; read before acting.
 - [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level map of =doc/=.
 - [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] — navigation by reader intent.

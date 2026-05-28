@@ -175,6 +175,12 @@ harness.  See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]
   generator.
 - [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — operational recipe for the
   org-document generator.
+- [[id:B6C5D4E3-F2A1-4B0C-8D9E-0F1A2B3C4D5E][How do I create a new entity?]] — end-to-end walkthrough using the
+  codegen profiles to scaffold a new domain entity.
+- [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] — recipe for generating a
+  component overview org document via =generate_v2_doc.sh=.
+- [[id:D8F4E2B1-9A7C-4E8D-8F3B-C2E5B4A6D7E8][How do I add a new document type?]] — recipe for extending the v2
+  document system with a new template and type.
 - =docs/cpp_generation_analysis.md= — deep analysis of the C++
   generation paths.
 - =docs/v2_doc_generator.md= — full CLI reference for

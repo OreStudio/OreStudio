@@ -43,12 +43,12 @@ columns: Script | Purpose | Notes. Link to any related recipes in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                   |
 | Parent story | [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] |
-| Now          | Writing Scripts section in component overview. |
-| Waiting on   | Nothing.                               |
-| Next         | Open PR.                               |
-| Last touched | 2026-05-28                               |
+| Now          | Nothing.                               |
+| Waiting on   | —                                      |
+| Next         | —                                      |
+| Last touched | 2026-05-29                             |
 
 * Acceptance
 

@@ -9,7 +9,7 @@
 #+filetags: :tooling_documentation:sprint_18:v0:
 #+owner: marco
 #+branch: feature/review-codegen-lisp-overviews
-#+pr:
+#+pr: 913
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
@@ -42,12 +42,12 @@ scripts doc or raise a capture.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] |
-| Now          | Not yet started.                       |
+| Now          | Reviewing ores.lisp and ores.codegen overviews for gaps; filling in-place. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-28                               |
+| Next         | Open PR.                               |
+| Last touched | 2026-05-29                             |
 
 * Acceptance
 
@@ -67,12 +67,13 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/913][#913]] | [doc] Review ores.lisp and ores.codegen component overviews |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | DONE task's =Now= field should be =Nothing.= not descriptive prose. | task_add_ores_sql_scripts_section.org | Accept | Fixed in c980b6e7b. |
+| 2 | Empty PRs/Review tables should be omitted from new task docs. | task_standardise_script_naming.org | Decline | Standard template convention — all task docs start with these sections. |
 
 * Result

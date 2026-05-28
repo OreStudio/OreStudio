@@ -10,7 +10,7 @@
 #+owner: marco
 #+branch: feature/improve-runbook-skill-tooling
 #+pr:
-#+blocked_on: EC72C05A-BC4C-47EC-ADF9-324190D9A246
+#+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
 #+updated: 2026-05-28
@@ -26,11 +26,11 @@ Create a =run-runbook= skill at =doc/llm/skills/run-runbook/SKILL.org=, properly
 
 | Field        | Value                                                                 |
 |--------------+-----------------------------------------------------------------------|
-| State        | BACKLOG                                                               |
+| State        | DONE                                                                  |
 | Parent story | [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]                                |
-| Now          | Draft skill exists at doc/llm/skills/run-runbook/SKILL.org.           |
-| Waiting on   | [[id:EC72C05A-BC4C-47EC-ADF9-324190D9A246][Task: Add skill type to compass add]]                                  |
-| Next         | Delete draft, scaffold via compass, fill in skill content.            |
+| Now          | Complete.                                                             |
+| Waiting on   | Nothing.                                                              |
+| Next         | None.                                                                 |
 | Last touched | 2026-05-28                                                            |
 
 * Acceptance
@@ -50,14 +50,17 @@ Draft skill was written manually during sprint 18 before compass skill support e
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                               |
+|-----+---------------------------------------------------------------------|
+| 884 | Replace draft run-runbook with compass-scaffolded run_runbook skill |
 
 * Review
 
-| # | Comment summary                                              | File          | Decision | Notes              |
-|---+--------------------------------------------------------------+---------------+----------+--------------------|
-| 1 | Folder names are snake_case not kebab-case                   | SKILL.org     | Accept   | Fixed in d851ef9df |
+| # | Comment summary                                              | File              | Decision | Notes              |
+|---+--------------------------------------------------------------+-------------------+----------+--------------------|
+| 1 | Folder names are snake_case not kebab-case                   | SKILL.org         | Accept   | Fixed in d851ef9df |
+| 2 | #+filetags: is empty; restore :skills:claude_code:runbook:   | run_runbook/SKILL.org | Accept   | Fixed in 661f858b3 |
 
 * Result
+
+Deleted draft =doc/llm/skills/run-runbook/SKILL.org= (manually written, non-compliant scaffold). Scaffolded replacement via =compass add skill --slug run_runbook=, producing =doc/llm/skills/run_runbook/SKILL.org= with correct v2 frontmatter and markdown export block. Skill directs the LLM to open the [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] to find and match the user's request — it does not embed a runbook list. Registered under Meta-skills in =doc/llm/skills/claude_code_skills.org=.

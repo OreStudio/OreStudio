@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 9DB6FA12-F4FD-423C-881C-69DD527679E9
+:END:
+#+title: Run Runbook
+#+version: 1
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:runbook:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+#+begin_export markdown
+---
+name: run_runbook
+description: Find the runbook closest to the user's request in the runbooks catalogue and execute it end-to-end.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When the user asks to run a named procedure — "run the X runbook",
+"open a new sprint", "handle the PR review" — or any time you need
+to execute a well-defined multi-step workflow end-to-end.
+
+* How to use this skill
+
+1. /Open the [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]]/ (=doc/llm/runbooks/runbooks.org=).
+   Read the title and description of each entry to identify the
+   closest match to the user's request. If no match is clear,
+   show the user the catalogue titles and ask them to choose.
+
+2. /Navigate to the matched runbook file/ via its id-link in the
+   catalogue. Open =runbook.org= inside that folder.
+
+3. /Execute every step in order/, respecting the runbook's
+   preconditions, steps, and postconditions exactly. Do not skip
+   or reorder steps.
+
+4. /Confirm postconditions/ once all steps are complete and report
+   the result to the user.
+
+* Recipes
+
+- [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] — full list of runbooks with titles and
+  descriptions; the canonical source for matching a request to
+  a runbook.
+
+* Reference
+
+- [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][Runbook]] — glossary definition: what a runbook is and its
+  contract (preconditions, steps, postconditions).
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

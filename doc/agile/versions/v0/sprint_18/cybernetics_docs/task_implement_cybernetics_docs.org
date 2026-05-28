@@ -80,5 +80,8 @@ task closes. Plans do not outlive their task.)
 | 1 | Goal section contains template placeholder text | =task_implement_cybernetics_docs.org= l.23 | Accepted | Fixed in =ca391ff52= |
 | 2 | State mismatch: task BACKLOG vs story task table STARTED | =task_implement_cybernetics_docs.org= l.33 | Accepted | Fixed in =ca391ff52= |
 | 3 | Acceptance section empty | =task_implement_cybernetics_docs.org= l.38 | Accepted | Fixed in =ca391ff52= |
+| 4 | Typo: =it's= → =its= in =agile.org= | =agile.org= l.44 | Accepted | Fixed in =5bc43236a= |
+| 5 | Bold formatting: =*S3* as independent audit*= — unmatched asterisk | =cybernetic_levels.org= l.214 | Accepted | Fixed in =5bc43236a= |
+| 6 | Section reference =Connection and limitations= wrong title | =cybernetics.org= l.87 | Accepted | Fixed in =5bc43236a= |
 
 * Result

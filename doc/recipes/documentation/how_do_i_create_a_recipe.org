@@ -27,8 +27,26 @@ that question is.
 
 1. /Pick the topic folder/. Recipes live under =doc/recipes/<topic>/=, one
    folder per area (=cli/=, =sql/=, =cmake/=, =codegen/=, =emacs/=, =git/=,
-   =http/=, =shell/=). Each topic has its own inventory page (e.g.
-   =cli/cli.org=) which lists every recipe in that topic.
+   =http/=, =shell/=, =plantuml/=, …). Each topic has its own inventory page
+   (e.g. =cli/cli.org=) which lists every recipe in that topic.
+
+   If you are creating a /new topic/ (no folder exists yet):
+
+   a. Create the folder: =mkdir doc/recipes/<topic>=
+   b. Scaffold the inventory page with compass:
+      #+begin_src sh :results verbatim
+      projects/ores.compass/compass.sh add knowledge \
+        --slug <topic> \
+        --parent-dir doc/recipes/<topic> \
+        --title "<Topic> recipes" \
+        --description "Recipes for <short description>." \
+        --tags "recipe:<topic>:index:knowledge"
+      #+end_src
+   c. Fill in the inventory body (see =doc/recipes/agile/agile.org= as a
+      template) and add an id-link to the new recipe under an appropriate
+      heading.
+   d. Wire the inventory into [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes index]] (=doc/recipes/recipes.org=):
+      add a bullet under =* Topics= pointing to the new inventory's =:ID:=.
 
 2. /Phrase the question/ as a single =how_do_i_X= sentence. The same question
    becomes /three/ artefacts that must match:
@@ -91,6 +109,9 @@ that question is.
    # See where the inventory lives, then edit it by hand
    ls doc/recipes/cmake/cmake.org
    #+end_src
+
+   If this is a new topic you created in step 1, also wire the
+   inventory into =doc/recipes/recipes.org= (step 1d above).
 
 8. /Verify with the doc tools/:
 

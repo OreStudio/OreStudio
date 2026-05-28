@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: EAB80857-3DB3-4A63-8D81-2F0A06B4F6DD
+:END:
+#+title: Check git commit conventions before committing
+#+description: Before every commit, verify format against the ORE Studio conventions: [component] title, Story-ID/Task-ID trailers, Co-Authored-By.
+#+type: memory
+#+memory_subtype: feedback
+#+version: 2
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+Before committing, check [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][How do I commit to git using ORE Studio
+conventions?]]. The format requires: a =[component]= bracket prefix in
+imperative mood under 72 characters; =Story-ID:= and =Task-ID:= trailers
+(full UUIDs) on every commit that implements agile work; and a
+=Co-Authored-By:= trailer for any LLM-generated commit.
+
+*Why:* Story-ID/Task-ID trailers were being omitted, breaking
+traceability between commits and agile artefacts. The recipe is the
+authoritative reference for all three requirements.
+
+*How to apply:* Every time a commit is about to be made — before
+constructing the commit message — open the recipe or recall the three
+requirements: (1) =[component] Imperative summary= ≤72 chars; (2)
+=Story-ID:= / =Task-ID:= with full UUIDs from the task and story =:ID:=
+properties when the commit is part of a story/task; (3) =Co-Authored-By:
+Claude Sonnet 4.6 <noreply@anthropic.com>= at the end.

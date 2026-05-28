@@ -946,6 +946,74 @@ def cmd_capture(argv):
         return 0
     return rc or 1
 
+_PUML_HEADER_TEMPLATE = """\
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) {year} Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title {title}
+
+@enduml
+"""
+
+
+def cmd_add_diagram(argv):
+    """Scaffold a .puml file with the standard licence header.
+
+    Usage: compass add diagram <slug> [--parent-dir DIR] [--title TITLE]
+    """
+    import argparse as _ap
+    p = _ap.ArgumentParser(prog="compass add diagram")
+    p.add_argument("slug", help="snake_case slug; output will be <slug>.puml")
+    p.add_argument("--parent-dir", default=".", metavar="DIR",
+                   help="Directory to write into (default: current directory)")
+    p.add_argument("--title", default="", metavar="TITLE",
+                   help="Title line inside the diagram (default: derived from slug)")
+    try:
+        args = p.parse_args(argv)
+    except SystemExit as exc:
+        return exc.code or 0
+
+    from datetime import date as _date
+    year = _date.today().year
+
+    parent = Path(args.parent_dir)
+    if not parent.is_dir():
+        print(f"❌ Directory not found: {parent}", file=sys.stderr)
+        return 1
+
+    out = parent / f"{args.slug}.puml"
+    if out.exists():
+        print(f"❌ Refusing to overwrite {out}", file=sys.stderr)
+        return 1
+
+    title = args.title or args.slug.replace("_", " ").replace("-", " ").title()
+    content = _PUML_HEADER_TEMPLATE.format(year=year, title=title)
+    out.write_text(content, encoding="utf-8")
+    try:
+        display = out.relative_to(PROJECT_ROOT)
+    except ValueError:
+        display = out
+    print(f"✅ Diagram scaffolded: {display}")
+    print(f"   Edit {out.name}, then run: plantuml {out.name}")
+    return 0
+
+
 def cmd_add(argv):
     """Create a v2 doc by calling ores.codegen as a library.
 
@@ -956,14 +1024,19 @@ def cmd_add(argv):
         print("usage: compass add <type> [generate_v2_doc options]\n"
               "  types: story task sprint version recipe knowledge component\n"
               "         capture memory investigation product_identity skill\n"
+              "         diagram\n"
               "  --parent-dir defaults to the current sprint (story) or\n"
               "  version (sprint), or doc/llm/skills (skill); required otherwise.\n"
+              "  diagram: scaffolds a .puml file with the standard licence header.\n"
               "  remaining flags are passed through to ores.codegen "
               "(see 'How do I create a new v2 doc?').")
         return 0
 
     doc_type = argv[0]
     rest = list(argv[1:])
+
+    if doc_type == "diagram":
+        return cmd_add_diagram(rest)
 
     has_parent = any(a == "--parent-dir" or a.startswith("--parent-dir=")
                      for a in rest)

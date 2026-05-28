@@ -85,6 +85,7 @@ In execution order.
 | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] | STARTED | 2026-05-27 | | captures/ folder per sprint; compass capture command; wontdo backlog bucket. |
 | [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]                                 | DONE    | 2026-05-28 | 2026-05-28 | Add compass skill type, update skill-creation recipe, create run-runbook skill. |
 | [[id:5D11EB95-8B20-4A11-B9A6-C883C9E4B0CF][Document deduplication recipe]]                                         | DONE    | 2026-05-28 | 2026-05-28 | Generalised recipe for merging duplicate docs; applied to duplicate sprint health review runbooks. |
+| [[id:76F0DB10-084D-4A72-A585-5DE660884677][PlantUML integration: recipe and codegen scaffold]]                     | DONE    | 2026-05-28 | 2026-05-28 | PlantUML how-to recipe; compass add diagram scaffold; standard licence header convention. |
 
 * Health Review
 

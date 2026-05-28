@@ -23,6 +23,8 @@ See [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner]] for the deployment
   duplication, alignment with the codebase.
 - [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch Manager]] — manage feature branches across
   multi-phase implementations with a clean git history.
+- [[id:9DB6FA12-F4FD-423C-881C-69DD527679E9][Run Runbook]] — find the runbook closest to the user's request
+  in the catalogue and execute it end-to-end.
 
 * Documentation
 

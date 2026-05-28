@@ -66,8 +66,8 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                 | File        | Decision | Notes                                                     |
+|---+-----------------------------------------------------------------+-------------+----------+-----------------------------------------------------------|
+| 1 | =_has_standard_puml_header= defined but never used (medium pri) | compass.py  | Fixed    | Function removed; scaffold always writes header, no check needed. |
 
 * Result

@@ -823,10 +823,16 @@ def _inbox_dir():
     """Return the absolute path to the inbox/ backlog bucket."""
     return Path(PROJECT_ROOT) / BACKLOG_ROOT / "inbox"
 
-def cmd_backlog(bucket):
+def cmd_backlog(bucket, extra_args=None):
     """List captures in a product backlog bucket (inbox/next/deferred/discarded)."""
     under = str(BACKLOG_ROOT / bucket)
-    return doc_list.main(["--type", "capture", "--under", under, "--sort", "title"])
+    args = ["--type", "capture", "--under", under, "--sort", "title"]
+    if extra_args:
+        args.extend(extra_args)
+    try:
+        return doc_list.main(args)
+    except SystemExit as e:
+        return e.code
 
 def _backlog_dir(bucket):
     return Path(PROJECT_ROOT) / "doc" / "agile" / "product_backlog" / bucket
@@ -1256,7 +1262,7 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] == "capture":
         sys.exit(cmd_capture(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
-        sys.exit(cmd_backlog(sys.argv[1]))
+        sys.exit(cmd_backlog(sys.argv[1], sys.argv[2:]))
 
     parser = argparse.ArgumentParser(description="Compass: orientation tool for ORE Studio")
     subparsers = parser.add_subparsers(dest="command", required=True)

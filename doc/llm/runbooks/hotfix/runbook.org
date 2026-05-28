@@ -63,7 +63,7 @@ In execution order:
 
 4. /Read all generated files./ Before writing any content, read
    =story.org= and the task file and note their =:ID:= values. Do not
-   write [[id:...]] references from memory.
+   write =[[id:...]]= references from memory.
 
 5. /Fill in the story and task./ In =story.org=: Goal = what is broken
    and what the fix will restore; Acceptance = build passes / test

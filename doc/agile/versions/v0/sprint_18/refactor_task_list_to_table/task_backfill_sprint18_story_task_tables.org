@@ -58,9 +58,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                               |
+|-----+---------------------------------------------------------------------|
+| 895 | [agile] Back-fill all sprint story task sections to status tables |
 
 * Review
 

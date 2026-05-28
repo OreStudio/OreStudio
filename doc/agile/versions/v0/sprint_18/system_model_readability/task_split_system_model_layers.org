@@ -35,11 +35,11 @@ all org-roam cross-references.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                   |
 | Parent story | [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]] |
-| Now          | PR #887 raised; awaiting CI and review. |
+| Now          | Complete.                              |
 | Waiting on   | Nothing.                               |
-| Next         | Address review comments; merge.        |
+| Next         | —                                      |
 | Last touched | 2026-05-28                             |
 
 * Acceptance

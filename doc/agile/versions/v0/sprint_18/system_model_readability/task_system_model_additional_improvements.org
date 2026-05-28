@@ -39,11 +39,11 @@ Two improvements to the system model documents delivered together:
 
 | Field        | Value                                              |
 |--------------+----------------------------------------------------|
-| State        | STARTED                                            |
+| State        | DONE                                               |
 | Parent story | [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]] |
-| Now          | Implementing PlantUML fix and system_model.org simplification. |
+| Now          | Complete.                                          |
 | Waiting on   | Nothing.                                           |
-| Next         | Commit, push, PR.                                  |
+| Next         | —                                                  |
 | Last touched | 2026-05-28                                         |
 
 * Acceptance

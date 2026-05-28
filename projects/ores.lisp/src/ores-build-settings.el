@@ -38,7 +38,7 @@
 
 ;; Load the ORE Studio babel environment, which defines ores/repo-root and
 ;; companions.  The path is relative to the project root (our CWD).
-(load-file (expand-file-name "projects/ores.lisp/ores-babel.el"))
+(load-file (expand-file-name "projects/ores.lisp/src/ores-babel.el"))
 
 ;; Resolve the project root.  ores/repo-root uses project-current; fall back
 ;; to default-directory (which equals CMAKE_SOURCE_DIR) if batch mode leaves

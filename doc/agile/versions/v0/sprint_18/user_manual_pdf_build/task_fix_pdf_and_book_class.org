@@ -6,7 +6,7 @@
 #+type: task
 #+version: 2
 #+level: s1
-#+filetags: :site:manual:latex:pdf:site_pdf_and_manual_book:sprint_18:v0:
+#+filetags: :site:manual:latex:pdf:user_manual_pdf_build:sprint_18:v0:
 #+owner: marco
 #+branch: feature/site-downloads-agile-nav
 #+pr: 841
@@ -16,7 +16,7 @@
 #+updated: 2026-05-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6EBB206D-167F-4A0F-8F50-04D7EB4B7E33][Fix PDF site delivery and switch manual to book LaTeX class]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -37,7 +37,7 @@ Two defects fixed together:
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                                   |
-| Parent story | [[id:6EBB206D-167F-4A0F-8F50-04D7EB4B7E33][Fix PDF site delivery and switch manual to book LaTeX class]] |
+| Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
 | Now          | Complete. PR #841 merged.              |
 | Waiting on   | Nothing.                               |
 | Next         | —                                      |

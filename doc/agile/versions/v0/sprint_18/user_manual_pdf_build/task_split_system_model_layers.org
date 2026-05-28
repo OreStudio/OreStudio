@@ -35,11 +35,11 @@ all org-roam cross-references.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | STARTED                                |
 | Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
-| Now          | Not yet started.                       |
+| Now          | Scaffolding layer sub-pages.           |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Fill sub-page content; rewrite main page; PlantUML diagram; NATS links; story merge. |
 | Last touched | 2026-05-28                             |
 
 * Acceptance

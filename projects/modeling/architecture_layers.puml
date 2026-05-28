@@ -1,0 +1,75 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+!pragma layout smetana
+
+skinparam defaultFontSize 13
+skinparam packageFontSize 14
+skinparam packageBorderThickness 2
+skinparam arrowThickness 2
+skinparam arrowColor #555555
+
+title ORE Studio — Four-Layer Architecture
+
+package "Application Layer" #D6EAF8 {
+    note as AppNote
+      Qt desktop · CLI · HTTP servers
+      Wt web frontend · Compute engine
+      Orchestration controller
+    end note
+}
+
+package "Domain Layer" #D5F5E3 {
+    note as DomainNote
+      IAM · Reference data · Trading
+      Market data · Analytics · Reporting
+      Workflow · Scheduler · DQ · ORE · FpML
+    end note
+}
+
+package "Infrastructure Layer" #FEF9E7 {
+    note as InfraNote
+      ores.nats (messaging backbone)
+      Service runner · Test isolation
+      Event bus · Connection bookmarks
+    end note
+}
+
+package "Foundation Layer" #F5EEF8 {
+    note as FoundNote
+      Utility · Platform · Logging
+      Telemetry · Database · Security
+      Variability · Geo · SQL · Codegen
+    end note
+}
+
+"Application Layer" -[hidden]-> "Domain Layer"
+"Domain Layer" -[hidden]-> "Infrastructure Layer"
+"Infrastructure Layer" -[hidden]-> "Foundation Layer"
+
+"Application Layer" ..> "Domain Layer" : depends on
+"Domain Layer" ..> "Infrastructure Layer" : depends on
+"Infrastructure Layer" ..> "Foundation Layer" : depends on
+
+note bottom of "Foundation Layer"
+  Invariant: a layer may only depend on layers below it.
+end note
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar architecture_layers.puml"
+' End:
+@enduml

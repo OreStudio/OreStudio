@@ -9,7 +9,7 @@
 #+filetags: :tooling_documentation:sprint_18:v0:
 #+owner: marco
 #+branch: feature/add-ores-sql-scripts-section
-#+pr:
+#+pr: 911
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
@@ -67,9 +67,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR | Title                                              |
+|----+----------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/911][#911]] | [doc] Add Scripts section to ores.sql component overview |
 
 * Review
 

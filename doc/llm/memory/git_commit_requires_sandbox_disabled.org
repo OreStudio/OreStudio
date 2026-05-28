@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: 2BC6D5D9-E972-4435-B912-A15D92123276
+:END:
+#+title: Git add and commit require sandbox disabled
+#+description: git add and git commit fail in the sandbox due to worktree index lock path; use dangerouslyDisableSandbox
+#+type: memory
+#+memory_subtype: feedback
+#+version: 2
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+Any =git add= or =git commit= run inside the sandbox produces "fatal: Unable
+to create … index.lock: Read-only file system" and fails. This affects the
+entire staging/commit workflow, not just network operations.
+
+*Why:* The repo is a git worktree. The worktree's git metadata lives at
+=/home/marco/Development/OreStudio/OreStudio.remote/.git/worktrees/OreStudio.local3/=.
+The sandbox treats that path as read-only even though it is listed in the
+write allow-list, apparently because the EROFS response is returned by the
+sandbox before the allow-list check completes for lock-file creation. The
+user confirmed this is a known sandbox limitation (2026-05-28).
+
+*How to apply:* Set =dangerouslyDisableSandbox: true= on every =git add= and
+=git commit= call. This is a standing authorisation — no confirmation needed.
+See also [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Set SSH_AUTH_SOCK for git operations]] for the separate push/fetch issue.

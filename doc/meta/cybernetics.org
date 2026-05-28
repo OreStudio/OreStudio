@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 74C5D8A2-F781-4E23-A6FC-2921AD5879AD
+:END:
+#+title: Cybernetics
+#+description: What cybernetics is, its key ideas (feedback, variety, regulation), Stafford Beer's contribution, and how it informs ORE Studio.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :meta:cybernetics:knowledge:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+* Summary
+
+Cybernetics is the science of regulation and communication in complex
+systems — biological, mechanical, or social. Its central insight is
+that a system can maintain a desired state by observing the gap between
+actual and intended behaviour and feeding that observation back as a
+corrective signal. Stafford Beer extended these ideas to management and
+organisation, producing the [[id:B730ECAB-A0BF-4894-9275-C0F4199272E3][Viable System Model]] — a blueprint for any
+system capable of sustaining independent existence. ORE Studio borrows
+the VSM's five-level structure to separate concerns across time
+horizons, from the agent running one task (S1) to the durable product
+identity (S5).
+
+* Detail
+
+** Origins
+
+Cybernetics was coined by Norbert Wiener in 1948 to describe the study
+of control and communication in animals and machines. The word derives
+from the Greek /kybernetes/ (steersman). Wiener noticed that effective
+regulation — whether in a thermostat, a nervous system, or a factory
+floor — shares the same abstract structure: a goal, a sensor that
+measures the current state, and a feedback loop that closes the gap.
+
+** Key ideas
+
+- *Feedback* — the mechanism by which a system uses information about
+  its own output to correct its future behaviour. Negative feedback
+  (error-reducing) produces stability; positive feedback
+  (error-amplifying) produces growth or collapse.
+
+- *Variety* — W. Ross Ashby's term for the number of distinguishable
+  states a system can be in. Ashby's Law of Requisite Variety states
+  that only variety can absorb variety: a regulator must be at least as
+  complex as the disturbances it is meant to handle.
+
+- *Homeostasis* — the tendency of a viable system to maintain essential
+  variables within tolerable bounds in the face of environmental
+  perturbation.
+
+- *Black box* — the practice of characterising a system purely by its
+  inputs and outputs, without needing to know its internal structure.
+  Useful when the internals are inaccessible or irrelevant to the
+  regulatory task.
+
+** Stafford Beer and management cybernetics
+
+Beer applied Wiener's framework to human organisations in the 1950s–70s.
+His central question was: why do large organisations so frequently fail
+to regulate themselves? His answer: they are not structured to produce
+the variety necessary to absorb the variety of their environments. A
+command-and-control hierarchy collapses information before it reaches
+decision-makers and delays action until it is too late.
+
+Beer's response was the [[id:B730ECAB-A0BF-4894-9275-C0F4199272E3][Viable System Model]] — a recursive, five-level
+architecture whose key property is that every level is itself a viable
+system. The model does not describe a hierarchy of authority; it
+describes a separation of time horizons and concerns.
+
+** How cybernetics informs ORE Studio
+
+ORE Studio uses Beer's VSM as a /lens/, not a blueprint. The five
+systems map onto the roles that LLM agents, sprint planners, and the
+product identity play in the development process. The mapping is
+intentionally loose — the point is not to implement VSM faithfully but
+to borrow its language for separating concerns:
+
+- Concerns that change within hours belong to S1 (task execution).
+- Concerns that change within days belong to S2 (story orchestration).
+- Concerns that change within weeks belong to S3 (sprint management).
+- Concerns that change within months belong to S4 (version planning).
+- Concerns that are durable belong to S5 (product identity).
+
+For where this mapping aligns with and departs from canonical VSM, see
+the /Connection to and divergence from the VSM/ section of [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]].
+
+* See also
+
+- [[id:B730ECAB-A0BF-4894-9275-C0F4199272E3][Viable System Model]] — Beer's five-system model in detail.
+- [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — how ORE Studio maps S1–S5 onto its agile roles.

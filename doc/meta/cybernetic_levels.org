@@ -10,8 +10,8 @@
 #+created: 2026-05-18
 #+updated: 2026-05-21
 
-This page applies ideas from [[https://en.wikipedia.org/wiki/Cybernetics][cybernetics]] — specifically Stafford Beer's Viable
-System Model — to ORE Studio. There are five levels (S1 to S5) that separate
+This page applies ideas from [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][cybernetics]] — specifically Stafford Beer's
+[[id:B730ECAB-A0BF-4894-9275-C0F4199272E3][Viable System Model]] — to ORE Studio. There are five levels (S1 to S5) that separate
 /concerns/ across time horizons: from the agent running one task right now (S1)
 to the durable identity of the product as a whole (S5). In addition there is an
 independent audit channel — written *S3** and pronounced "three-star" to
@@ -196,3 +196,73 @@ operational hierarchy.
 
 #+caption: S3* audit observes all five levels from outside the operational hierarchy.
 [[./information_flow_sideways.png]]
+
+* Connection to and divergence from the VSM
+
+ORE Studio's five-level model is inspired by Beer's [[id:B730ECAB-A0BF-4894-9275-C0F4199272E3][Viable System Model]]
+but is not a faithful implementation of it. This section records where
+the mapping holds, where it diverges, and the known limitations of the
+analogy.
+
+** Where the mapping holds
+
+- *Separation of time horizons* — the core insight carries intact.
+  S1 operates in hours, S2 in days, S3 in weeks, S4 in months, S5 over
+  the product lifetime. This is directly analogous to Beer's intended
+  separation.
+
+- *S3\* as independent audit* — the audit channel is structurally
+  separate from the operational hierarchy in both Beer's model and ORE
+  Studio. In both cases it bypasses the reporting chain to observe S1
+  directly.
+
+- *Recursion in principle* — any sufficiently large task could itself
+  be decomposed into S1–S5 sub-levels. The model is applied at the
+  story/sprint level but the structure would hold at finer granularity.
+
+- *Viability requirement* — removing any level breaks the system. A
+  project with no S4 (version planning) drifts without strategic
+  direction; a project with no S5 (product identity) loses coherence
+  over time.
+
+** Where it diverges
+
+- *S1 is an LLM agent, not a human worker.* Beer's S1 units are
+  autonomous operational teams with their own management structure. In
+  ORE Studio, S1 is a single-session subprocess that executes one task
+  and terminates. It has no internal S2–S5; it is an atom, not a
+  recursive system.
+
+- *S2 is asynchronous documentation, not a live coordination layer.*
+  Beer's S2 is a real-time anti-oscillation mechanism (schedules,
+  shared protocols, inter-unit signals). In ORE Studio, S2 is the
+  orchestrator that decomposes a story into tasks and reviews agent
+  output — a more sequential, supervisory role than Beer intended.
+
+- *S3 and S4 are invoked on demand, not continuously running.* In a
+  true VSM, S3 and S4 are always active. In ORE Studio, they are
+  sessions triggered by the user at sprint open/close or version
+  review. The system is not self-regulating between invocations.
+
+- *No algedonic channel.* Beer's VSM includes an algedonic signal —
+  an emergency bypass that lets S1 alert S5 directly when pain or
+  pleasure is intense enough to require immediate policy attention. ORE
+  Studio has no equivalent; escalation goes through the normal levels.
+
+** Known limitations
+
+- *Single-agent serialisation* — because tasks are executed one at a
+  time in a single worktree, true S2 coordination (preventing collision
+  between concurrent S1 units) rarely applies. The model is aspirational
+  for multi-agent parallelism that is not yet the norm.
+
+- *Human in the loop at every level* — Beer designed the VSM for
+  autonomous organisations. In ORE Studio, the user is present at S3–S5
+  and often participates in S2. This collapses some distinctions the
+  model assumes are structurally enforced.
+
+- *The analogy is a lens, not a specification.* The level labels
+  (=#+level:= tags) are a filing convention, not a runtime
+  enforcement. Nothing prevents an S1 agent from making S4-class
+  decisions; the model relies on convention and review, not
+  architecture.

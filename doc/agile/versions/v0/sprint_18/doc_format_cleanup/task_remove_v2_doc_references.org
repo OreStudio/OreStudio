@@ -9,7 +9,7 @@
 #+filetags: :doc_format_cleanup:sprint_18:v0:
 #+owner: marco
 #+branch: feature/remove-v2-doc-refs
-#+pr:
+#+pr: 912
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
@@ -80,14 +80,14 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                          |
+|-----+----------------------------------------------------------------|
+| 912 | Remove v2 terminology from all active guidance documentation    |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                   | File                                    | Decision | Notes                                              |
+|---+---------------------------------------------------+-----------------------------------------+----------+----------------------------------------------------|
+| 1 | Remove empty * PRs / * Review tables from task doc | task_drop_version_field.org             | Declined | Standard codegen scaffolding present in all tasks  |
 
 * Result

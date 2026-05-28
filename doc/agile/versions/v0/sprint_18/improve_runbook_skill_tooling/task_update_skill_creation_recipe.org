@@ -45,9 +45,9 @@ The skill-creation recipe (referenced by the skill-manager skill) currently dire
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                               |
+|-----+---------------------------------------------------------------------|
+| 883 | Update skill-creation recipe and skill-manager to use compass       |
 
 * Review
 

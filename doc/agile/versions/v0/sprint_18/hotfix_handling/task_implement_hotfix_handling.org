@@ -14,6 +14,7 @@
 #+blocked_since:
 #+created: 2026-05-28
 #+updated: 2026-05-28
+#+pr: 899
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:185845E7-4CF9-416E-A923-894868A757A0][Hotfix handling]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -39,11 +40,11 @@ Produce three artefacts:
 
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
-| State        | STARTED                                                            |
+| State        | DONE                                                               |
 | Parent story | [[id:185845E7-4CF9-416E-A923-894868A757A0][Hotfix handling]]     |
-| Now          | Writing runbook, updating recipe and template.                     |
+| Now          | Nothing.                                                           |
 | Waiting on   | Nothing.                                                           |
-| Next         | PR.                                                                |
+| Next         | Nothing.                                                           |
 | Last touched | 2026-05-28                                                         |
 
 * Acceptance

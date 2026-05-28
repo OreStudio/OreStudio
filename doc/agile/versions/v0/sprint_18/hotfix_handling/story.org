@@ -41,11 +41,11 @@ deliverables:
 
 | Field         | Value                                                              |
 |---------------+--------------------------------------------------------------------|
-| State         | STARTED                                                            |
+| State         | DONE                                                               |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]            |
-| Now           | Writing hotfix runbook, updating branching recipe, sprint template. |
+| Now           | Nothing.                                                           |
 | Waiting on    | Nothing.                                                           |
-| Next          | PR.                                                                |
+| Next          | Nothing.                                                           |
 | Last touched  | 2026-05-28                                                         |
 
 * Acceptance

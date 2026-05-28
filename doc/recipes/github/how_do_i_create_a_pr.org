@@ -57,13 +57,14 @@ EOF
    matches =[COMPONENT] Description=.
 
 4. /Record the PR in the task./ Open the task's =* PRs= table and add
-   a row with the PR number and title. The table carries the canonical
-   record — =compass where --prs= reads it to fetch live status:
+   a row with the PR number (as a URL link) and title. The table carries
+   the canonical record — =compass where --prs= reads it to fetch live
+   status:
 
    #+begin_example
-   | PR  | Title                         |
-   |-----+-------------------------------|
-   | 123 | [component] One-line description |
+   | PR | Title                            |
+   |----+----------------------------------|
+   | [[https://github.com/OreStudio/OreStudio/pull/123][#123]] | [component] One-line description |
    #+end_example
 
 * Conventions

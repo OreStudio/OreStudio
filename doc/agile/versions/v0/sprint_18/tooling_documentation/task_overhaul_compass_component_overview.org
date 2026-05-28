@@ -70,9 +70,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR  | Title                                                          |
-|-----+----------------------------------------------------------------|
-| 909 | [doc] Add Commands section to ores.compass component overview  |
+| PR | Title                                                          |
+|----+----------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/909][#909]] | [doc] Add Commands section to ores.compass component overview  |
 
 * Review
 

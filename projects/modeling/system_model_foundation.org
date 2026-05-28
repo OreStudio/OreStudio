@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: C5F35442-A2C3-415A-80F2-C09CAA0842FF
+:END:
+#+title: System Model: Foundation Layer
+#+description: Component inventory for the Foundation layer: the bedrock utilities, platform abstractions, logging, telemetry, database access, security, and code generation that underpin all other layers.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :modeling:architecture:foundation:system_model:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is part of the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]].
+
+* Summary
+
+Foundation is the bedrock of the system — every component here could in
+principle be extracted as a standalone library because it has no ORE
+Studio domain dependency. The dependency chain is a single path:
+utility → platform → logging → telemetry → database; no component in
+this layer loops back. See [[id:A1C3E5F7-92B4-4D6A-B8C2-3F1D7E9A0B5C][Shared Library Symbol Visibility]] for how
+symbols are exported across Foundation shared libraries.
+
+* Detail
+
+** ores.utility
+
+Primitive helpers with no internal dependencies: UUID v7 generation,
+Base64/Base32 encoding, string conversion, datetime helpers, faker
+utilities, and =rfl= type reflectors. The lowest point in the dependency
+graph — nothing in Foundation depends on anything below it.
+
+| Sub-component  | Role                                     | Dependencies |
+|----------------+------------------------------------------+--------------|
+| [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]]   | Shared primitive helpers and reflectors  | —            |
+
+** ores.platform
+
+Filesystem utilities, environment variables, network info (hostname,
+MAC, machine ID), and cross-platform time utilities. Wraps OS-specific
+behaviour so every component above it can target the same API.
+
+| Sub-component  | Role                                       | Dependencies                |
+|----------------+--------------------------------------------+-----------------------------|
+| [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]]  | OS abstraction — filesystem, env, network  | [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]]                |
+
+** ores.logging
+
+Core Boost.Log infrastructure — the =make_logger()= factory, severity
+levels, and a lifecycle manager for console and file sinks. Extracted
+from ores.telemetry to break the circular dependency that would otherwise
+form between logging and ores.database.
+
+| Sub-component  | Role                                  | Dependencies                |
+|----------------+---------------------------------------+-----------------------------|
+| [[id:1FBCC86B-8E04-4F81-8558-85C0B6C54836][ores.logging]]   | Boost.Log factory, sinks, lifecycle   | [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]]               |
+
+** ores.telemetry
+
+Extends logging with distributed tracing (trace_id, span_id),
+OpenTelemetry integration, JSON Lines log export, and service identity.
+The split into three sub-components reflects the layered dependency:
+.core extends the logger, .database persists spans to PostgreSQL,
+.service manages identity and lifecycle initialisation.
+
+| Sub-component           | Role                                     | Dependencies                                  |
+|-------------------------+------------------------------------------+-----------------------------------------------|
+| [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]]     | Tracing extensions, OTel integration     | [[id:1FBCC86B-8E04-4F81-8558-85C0B6C54836][ores.logging]], [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]]                   |
+| [[id:B73EAF3C-1384-4882-9310-8E9DB594C038][ores.telemetry.database]] | Span persistence to PostgreSQL           | [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]         |
+| [[id:DF0CAAB9-9DDB-4FEA-82D3-71FAC2177EEF][ores.telemetry.service]]  | Service identity, lifecycle manager      | [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]]                           |
+
+** ores.database
+
+PostgreSQL access layer — connection pool, tenant/party context,
+bitemporal CRUD helpers, repository base classes, a health monitor,
+and LISTEN/NOTIFY integration. All domain services build on this
+component to access their isolated tables.
+
+| Sub-component  | Role                                          | Dependencies                |
+|----------------+-----------------------------------------------+-----------------------------|
+| [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]  | PostgreSQL connection pool, bitemporal CRUD   | [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]]         |
+
+** ores.variability
+
+Feature flags and runtime configuration management, published via the
+=variability.v1.= [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] namespace. Consumers read flags without
+polling the database; the service propagates changes so flag updates are
+visible system-wide without a restart.
+
+| Sub-component            | Role                                  | Dependencies                                  |
+|--------------------------+---------------------------------------+-----------------------------------------------|
+| [[id:26218AD6-C63E-44E8-9B92-7FB51C366566][ores.variability.api]]     | Shared flag types and NATS protocol   | —                                             |
+| [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability.core]]    | Flag evaluation and caching           | [[id:26218AD6-C63E-44E8-9B92-7FB51C366566][ores.variability.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]         |
+| [[id:95D9E246-27ED-440F-B14A-481A546B7C4F][ores.variability.service]] | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] flag publisher              | [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]           |
+
+** ores.geo
+
+IP-to-location geolocation using MaxMind GeoLite2-City stored in
+PostgreSQL. Provides country, city, and coordinate lookups that
+ores.iam uses to annotate login sessions.
+
+| Sub-component  | Role                                       | Dependencies                |
+|----------------+--------------------------------------------+-----------------------------|
+| [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C][ores.geo]]       | IP geolocation via MaxMind GeoLite2-City   | [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]               |
+
+** ores.sql
+
+PostgreSQL schema, migration scripts, role provisioning, and database
+lifecycle management for the entire system. Each service role holds DML
+only on its own =ores_<service>_*= tables — cross-service reads inside
+triggers use =SECURITY DEFINER=; cross-service writes go through
+[[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]].
+
+| Sub-component  | Role                                          | Dependencies |
+|----------------+-----------------------------------------------+--------------|
+| [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]]       | Schema, migrations, role provisioning         | —            |
+
+- [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]] — how service-isolated tables are structured and cross-service access is controlled.
+- [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]] — conventions used to diagram the database schema.
+
+** ores.security
+
+Shared cryptographic primitives — scrypt password hashing,
+AES-256-GCM encryption, JWT parsing and validation, OWASP password and
+email validators. Used by ores.iam for credential handling and by
+ores.connections for bookmark encryption.
+
+| Sub-component  | Role                                         | Dependencies                |
+|----------------+----------------------------------------------+-----------------------------|
+| [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]]  | Cryptographic primitives and validators      | [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]]                |
+
+** ores.codegen
+
+Code generation utility for domain types and documentation — driven by
+=ores.codegen.json= stencil files to produce boilerplate C++ and org-mode
+scaffolding. Also the engine behind the =compass= CLI tool.
+
+| Sub-component  | Role                                         | Dependencies                |
+|----------------+----------------------------------------------+-----------------------------|
+| [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]   | Stencil-driven C++ and org-mode code gen     | [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]]                |
+
+* See also
+
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the index page with the four-layer architecture overview.
+- [[id:6FF02DD3-0F3B-4BCB-87CA-3224030D00E8][System Model: Infrastructure Layer]] — the next layer up.
+- [[id:A1C3E5F7-92B4-4D6A-B8C2-3F1D7E9A0B5C][Shared Library Symbol Visibility]] — how symbols are exported across Foundation shared libraries.

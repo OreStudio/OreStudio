@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: C9AD7DA5-D00E-4CA9-A978-E74F776E0F17
+:END:
+#+title: System Model: Application Layer
+#+description: Component inventory for the Application layer: Qt desktop, CLI, HTTP servers, Wt web frontend, compute engine, and orchestration controller.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :modeling:architecture:application:system_model:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is part of the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]].
+
+* Summary
+
+Application is where the system surfaces — the layer that composes
+everything below it into user-facing executables. Qt desktop and Wt web
+are both clients of the same domain services over [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]; the compute
+engine is a long-running service; the CLI is a batch operator. See
+[[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] for how the desktop client is decomposed into
+domain-specific plugins. To generate component diagrams, use the
+[[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]] skill.
+
+* Detail
+
+** ores.qt
+
+Qt6 desktop GUI framework — MDI host application with a plugin
+architecture that loads domain-specific screens at startup. The host
+provides the MDI area, menu/toolbar construction, and an Emacs-like
+transient key-map; each plugin is an independent shared library compiled
+from its own CMake target.
+
+| Sub-component           | Role                                           | Dependencies                |
+|-------------------------+------------------------------------------------+-----------------------------|
+| [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]                 | MDI host, menu/toolbar construction            | All layers                  |
+| [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]             | Plugin API contract, IPlugin lifecycle         | [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]                     |
+| [[id:6DE9A7B8-F7BA-4E93-BB93-2FB10C53F9CA][ores.qt.party]]           | Counterparty list, detail forms, identifiers   | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]                 |
+| [[id:621194C4-D438-4215-AE40-21FBE8FF0D85][ores.qt.refdata]]         | Currency, country, calendar CRUD screens       | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]                 |
+| [[id:3FA355D1-38FD-4E35-9E05-2185882B8AC1][ores.qt.trading]]         | Trade blotter, deal entry, instrument tables   | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]                 |
+| [[id:2E83F9B5-67F4-4A1F-95BC-FE1E7AB7D4C0][ores.qt.mktdata]]         | Curve/surface browser, fixings viewer          | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]                 |
+| [[id:970667D1-8BA8-4B49-B047-0D6D4C4CE498][ores.qt.analytics]]       | Reporting and analytics dashboards             | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]                 |
+| [[id:03EAE018-5E61-4005-AC9A-EFF827A46178][ores.qt.compute]]         | Compute job monitor, results viewer            | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]                 |
+| [[id:4092E7E6-C663-4E5E-B330-63BFECE7CA51][ores.qt.scheduler]]       | Scheduler task browser                         | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]                 |
+| [[id:B7269E9C-83B6-4D6C-80DE-D796AB89B1BD][ores.qt.workflow]]        | Workflow instance tracker                      | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]                 |
+| [[id:31D9C75A-DE71-4B98-9D33-D8ED86000C94][ores.qt.workspace]]       | Workspace management and isolation view        | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]                 |
+| [[id:DB5A4924-8F0A-440C-873E-D823F430043E][ores.qt.admin]]           | User/role management, feature flags            | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]                 |
+| [[id:92492264-B67A-4AC7-8A58-7D706D9F0DAB][ores.qt.data_transfer]]   | Cross-domain entity import/export              | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]                 |
+
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — two-phase plugin loading, IPlugin contract, and MDI host design.
+- [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]] — how the two-phase menu build sequence constructs menus across all plugins.
+
+** ores.cli
+
+Command-line interface — import/export currencies and reference data in
+multiple formats, ORE sample execution, and batch operations. A thin
+[[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] client that drives domain services without a GUI.
+
+| Sub-component  | Role                                          | Dependencies |
+|----------------+-----------------------------------------------+--------------|
+| [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]]       | CLI batch operator and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] client     | All layers   |
+
+** ores.http
+
+Boost.Beast/Asio async HTTP server exposing a REST API for domain
+services. ores.http.api defines the route handler contract;
+ores.http.core provides the async infrastructure; ores.http.server
+wires all handlers and runs the event loop.
+
+| Sub-component       | Role                                         | Dependencies                              |
+|---------------------+----------------------------------------------+-------------------------------------------|
+| [[id:B0C9FDC8-F0B2-48FE-AE37-8FD79E6FD164][ores.http.api]]       | Route handler contract, WSGI-style registry  | Foundation                                |
+| [[id:869526B6-6C82-430E-95E1-776D4A11A56B][ores.http.core]]      | Boost.Beast/Asio async infrastructure        | [[id:B0C9FDC8-F0B2-48FE-AE37-8FD79E6FD164][ores.http.api]], Domain                     |
+| [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]]    | Wires all route handlers, runs event loop    | [[id:869526B6-6C82-430E-95E1-776D4A11A56B][ores.http.core]]                            |
+
+** ores.wt.service
+
+Wt C++ Web Toolkit frontend — account management, currency and country
+views, and feature flags. An alternative to the Qt desktop client,
+served as a web application using the same domain [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] services.
+
+| Sub-component    | Role                                         | Dependencies |
+|------------------+----------------------------------------------+--------------|
+| [[id:FE36240A-7A64-4332-9E82-8D976D458C73][ores.wt.service]]  | Wt web frontend, [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] domain client   | All layers   |
+
+** ores.compute
+
+Compute engine — receives ORE Engine computation requests via
+[[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] (ores.compute.service), executes them by spawning ORE child
+processes (ores.compute.wrapper), and publishes results.
+ores.compute.core holds the domain model for run configurations,
+chunking, and environment lifecycle.
+
+| Sub-component            | Role                                          | Dependencies                                              |
+|--------------------------+-----------------------------------------------+-----------------------------------------------------------|
+| [[id:A59E121A-B8FB-43F0-A5CD-1FA5F426E66A][ores.compute.api]]         | Shared compute types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol    | —                                                         |
+| [[id:3BFFDF5C-86F5-4D57-9D9F-676D0D62B344][ores.compute.core]]        | Run configuration, chunking, env lifecycle    | [[id:A59E121A-B8FB-43F0-A5CD-1FA5F426E66A][ores.compute.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]]         |
+| [[id:F1B19D84-A5C9-4478-BB46-EE6EA62DAFCA][ores.compute.wrapper]]     | ORE Engine process spawner and result reader  | [[id:A59E121A-B8FB-43F0-A5CD-1FA5F426E66A][ores.compute.api]]                                          |
+| [[id:152C4A5E-9947-4EE1-A5D4-893305D235B5][ores.compute.service]]     | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                  | [[id:3BFFDF5C-86F5-4D57-9D9F-676D0D62B344][ores.compute.core]], [[id:F1B19D84-A5C9-4478-BB46-EE6EA62DAFCA][ores.compute.wrapper]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]   |
+
+- [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]] — compute architecture, run lifecycle, and chunking design.
+
+** ores.controller
+
+Orchestration controller — assembles multi-stage compute pipelines from
+scheduler, compute, and reporting steps, sequences their execution, and
+tracks run state end-to-end.
+
+| Sub-component              | Role                                          | Dependencies                                                    |
+|----------------------------+-----------------------------------------------+-----------------------------------------------------------------|
+| [[id:85D20E29-0EBD-41FF-9F32-10F60AF074A8][ores.controller.api]]        | Shared controller types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                                               |
+| [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]]       | Pipeline assembly, stage sequencing, run state | [[id:85D20E29-0EBD-41FF-9F32-10F60AF074A8][ores.controller.api]], [[id:A59E121A-B8FB-43F0-A5CD-1FA5F426E66A][ores.compute.api]], [[id:E5AC5738-0694-494E-823E-0322F4902AD2][ores.reporting.api]]    |
+| [[id:1A4E357C-0B10-44CF-9096-47EE42E6F1A4][ores.controller.service]]    | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                  | [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                               |
+
+** ores.shell
+
+POSIX shell and Emacs Lisp developer tooling — database administration
+scripts, build helpers, and project automation. Not part of the
+production binary; it is the operator toolkit for managing a running
+system.
+
+| Sub-component  | Role                                          | Dependencies |
+|----------------+-----------------------------------------------+--------------|
+| [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]]     | Shell scripts for database admin and builds   | —            |
+
+** ores.lisp
+
+Emacs Lisp developer tooling — per-checkout dashboard (transient menu),
+database browser, shell integration, and org-roam export pipeline. Not
+part of the production system; it automates the developer workflow inside
+Emacs.
+
+| Sub-component  | Role                                          | Dependencies |
+|----------------+-----------------------------------------------+--------------|
+| [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]]      | Emacs Lisp dashboard and developer tooling    | —            |
+
+* See also
+
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the index page with the four-layer architecture overview.
+- [[id:873CD1C6-7636-4F30-B3D4-3BB7FCBF4DBD][System Model: Domain Layer]] — the layer below.
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — two-phase plugin loading, IPlugin contract, and MDI host design.
+- [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]] — compute architecture, run lifecycle, and chunking design.

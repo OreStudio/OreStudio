@@ -10,7 +10,7 @@
 #+owner: marco
 #+branch: feature/improve-runbook-skill-tooling
 #+pr:
-#+blocked_on: EC72C05A-BC4C-47EC-ADF9-324190D9A246
+#+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
 #+updated: 2026-05-28

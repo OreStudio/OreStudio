@@ -39,9 +39,9 @@ Make uppercase UUIDs a hard invariant of the documentation system: every =:ID:= 
 
 * Tasks
 
-In execution order:
-
-- [[id:C86FFED4-AD4E-4330-B542-95B36760ED2F][Task: Enforce uppercase UUID invariant in codegen and audit docs]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C86FFED4-AD4E-4330-B542-95B36760ED2F][Task: Enforce uppercase UUID invariant in codegen and audit docs]] | DONE | 2026-05-24 | 2026-05-24 | Patch v2 doc templates and Python scripts so every generated UUID and link is uppercase; sweep org docs for stragglers. |
 
 * Decisions
 

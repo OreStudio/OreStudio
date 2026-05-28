@@ -34,9 +34,9 @@ Canonical UTC API in ores.platform; UTC sessions enforced in DB; ISO 8601 UTC ti
 
 * Tasks
 
-In execution order:
-
-- [[id:BBC0D0D7-0060-41BF-934D-00AD9452FBD6][Enforce UTC-everywhere timestamp policy]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BBC0D0D7-0060-41BF-934D-00AD9452FBD6][Enforce UTC-everywhere timestamp policy]] | DONE | 2026-05-20 | 2026-04-08 | Canonical UTC API in ores.platform; UTC sessions enforced in DB; ISO 8601 UTC timestamps in wire protocols; clarify display-only formatting; db_timestamp alias; ore_log_parser inline Boost.Log timestamp parsing. |
 
 * Decisions
 

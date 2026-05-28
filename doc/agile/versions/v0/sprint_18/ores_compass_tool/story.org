@@ -50,15 +50,12 @@ application. See the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][component overvi
 
 * Tasks
 
-In execution order:
-
-- [[id:7D1E3657-FFB1-4171-9AFC-E46E7D406776][Task: Define scope and structure for ores.compass]]
-- [[id:158C96A4-7E0F-4223-9756-639ECF9920D6][Task: Consolidate doc-navigation into compass and add usage recipes]]
-
-Follow-up pillars, now sprint-backlog stories in their own right:
-
-- [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][Story: ores.compass Locate — temporal orientation]]
-- [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][Story: ores.compass Scaffold — agile authoring over codegen]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7D1E3657-FFB1-4171-9AFC-E46E7D406776][Task: Define scope and structure for ores.compass]] | DONE | 2026-05-24 | 2026-05-24 | Brainstorm and document the purpose, capabilities, and project structure of ores.compass before implementation. |
+| [[id:158C96A4-7E0F-4223-9756-639ECF9920D6][Task: Consolidate doc-navigation into compass and add usage recipes]] | DONE | 2026-05-24 | 2026-05-24 | Move doc_index/doc_list/doc_show from ores.codegen into ores.compass as compass list/show; delete codegen copies; repoint references; add compass recipes. |
+| [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][Story: ores.compass Locate — temporal orientation]] |  |  |  |  |
+| [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][Story: ores.compass Scaffold — agile authoring over codegen]] |  |  |  |  |
 
 * Decisions
 

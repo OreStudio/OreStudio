@@ -73,13 +73,8 @@ adding four tiers of documentation:
 
 * Tasks
 
-In execution order:
-
-- [ ] Create NATS external knowledge page.
-- [ ] Update external knowledge index with NATS entry.
-- [ ] Add NATS section to system model.
-- [ ] Add =* NATS= sections to service component overviews.
-- [ ] Create NATS recipe topic index and how-to recipes.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
 
 * Decisions
 

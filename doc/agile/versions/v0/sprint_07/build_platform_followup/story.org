@@ -43,11 +43,11 @@ Continued from: [[id:C2E401C5-3F2B-4910-A91A-82DCF1B826E1][Build and packaging]]
 
 * Tasks
 
-In execution order:
-
-- [[id:A7D3E9E1-DFF6-44D1-9AD5-AEFF3C8DB4FE][Setup windows laptop with WSL]]
-- [[id:6146FB9F-24A7-453B-8720-A8CBE63DBA02][Use prebuilt Qt]]
-- [[id:A0B043A7-EFB1-4752-A5D6-DE9AFE29BB43][Windows clang build failures]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A7D3E9E1-DFF6-44D1-9AD5-AEFF3C8DB4FE][Setup windows laptop with WSL]] | DONE | 2026-05-19 | 2025-12-16 | Get a Windows dev laptop ready: WSL, vcpkg, project clone, full build + tests green. |
+| [[id:6146FB9F-24A7-453B-8720-A8CBE63DBA02][Use prebuilt Qt]] | DONE | 2026-05-19 | 2025-12-17 | Switch CI and dev installs to a prebuilt Qt rather than building from vcpkg; saves significant time + disk. |
+| [[id:A0B043A7-EFB1-4752-A5D6-DE9AFE29BB43][Windows clang build failures]] | DONE | 2026-05-19 | 2025-12-18 | Resolve the latest Windows clang build breaks: deprecated APIs, missing DLLs, signed/unsigned warnings. |
 
 * Decisions
 

@@ -43,14 +43,10 @@ Continued from: [[id:7BE09D1C-E25A-4783-A911-C37DEC55CC43][CLI / REPL reshape]].
 
 * Tasks
 
-In execution order:
-
-- [[id:25290CBF-79AC-4841-89B5-1D660D24859D][Entity syntax refactor snags]]
-- [[id:E95678AA-8849-4706-A985-F5D4D31238F1][Add top-level login and logout commands in shell]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Retest all recipes after latest changes.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:25290CBF-79AC-4841-89B5-1D660D24859D][Entity syntax refactor snags]] | DONE | 2025-12-13 | 2025-12-13 | Mop up the snags left by sprint 05's entity-first reshape: argument validation edge cases, help text inconsistencies. |
+| [[id:E95678AA-8849-4706-A985-F5D4D31238F1][Add top-level login and logout commands in shell]] | DONE | 2025-12-13 | 2025-12-13 | Make login/logout top-level shell commands so users don't have to enter the IAM entity submenu for them. |
 
 * Decisions
 

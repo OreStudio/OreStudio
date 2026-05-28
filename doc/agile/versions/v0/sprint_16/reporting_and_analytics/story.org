@@ -39,14 +39,14 @@ Continued from: [[id:84559B48-546B-4724-BDD0-53DBFCA2C24A][Reporting subsystem]]
 
 * Tasks
 
-In execution order:
-
-- [[id:C609652A-0266-4CD7-B748-096924688502][Add Analytics CRUD UI and restructure DQ project layout]]
-- [[id:551BE8AC-5F16-4B9A-B0F3-050053EEE129][Add analytics pricing engine configuration]]
-- [[id:AA89B17B-0CEE-4786-82D9-747B20879F14][Add repository integration tests for all analytics entities]]
-- [[id:81ACEC3A-B462-4521-91D5-ED30E4B5A508][Add report execution workflow pipeline]]
-- [[id:F5996410-16CD-4CEC-B747-3A0AE13F5D4E][Source report definitions from DQ + improve party picker]]
-- [[id:590899C4-D760-4865-A41C-AFAA63F6B018][Source report definitions from DQ artefact table]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C609652A-0266-4CD7-B748-096924688502][Add Analytics CRUD UI and restructure DQ project layout]] | DONE | 2026-05-20 | 2026-04-07 | Analytics module Qt UI for pricing engines + model configurations; refactor Data Quality module; code generator enhanced to support combo box widgets in detail dialogs. |
+| [[id:551BE8AC-5F16-4B9A-B0F3-050053EEE129][Add analytics pricing engine configuration]] | DONE | 2026-05-20 | 2026-04-07 | ores.analytics component (api / core / service); domain entities + repositories + services for managing ORE pricing model configurations, products, parameters; SQL schema + NATS messaging protocols; component-creator skill updated; codegen NATS templates. |
+| [[id:AA89B17B-0CEE-4786-82D9-747B20879F14][Add repository integration tests for all analytics entities]] | DONE | 2026-05-20 | 2026-04-07 | Synthetic data generators + repository tests for pricing engine types, model configurations, products, parameters; real ORE engine type codes; unique config names to fix CI. |
+| [[id:81ACEC3A-B462-4521-91D5-ED30E4B5A508][Add report execution workflow pipeline]] | DONE | 2026-05-20 | 2026-04-07 | Report execution workflow definition + messaging protocol + report_execution_handler; concurrency checks; risk_report_config domain + repository; step handlers including gather market data, assemble bundle, prepare ORE package, submit compute, collect results; MsgPack + object storage for inter-step data; gzip compression. |
+| [[id:F5996410-16CD-4CEC-B747-3A0AE13F5D4E][Source report definitions from DQ + improve party picker]] | DONE | 2026-05-20 | 2026-04-07 | Login + party selection enhanced with business center codes + party categories; PartyPickerDialog refactored with separate system + operational sections, filtering, flag icons via image cache. |
+| [[id:590899C4-D760-4865-A41C-AFAA63F6B018][Source report definitions from DQ artefact table]] | DONE | 2026-05-20 | 2026-04-07 | Replace hardcoded report definitions in party provisioning wizard with dynamic service-driven templates; new report_definition_template domain + NATS protocol + backend service; ores_dq_report_definitions_artefact_tbl + publish function; 28 standard ORE analytics report definitions seeded. |
 
 * Decisions
 

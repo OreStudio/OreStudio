@@ -34,9 +34,9 @@ export_portfolio in ores.ore exporter + Qt Open Instrument + Export to ORE XML a
 
 * Tasks
 
-In execution order:
-
-- [[id:B0AC4E5F-A1DB-401C-88B2-23C5CEFA5950][ORE portfolio export: exporter + Qt Open Instrument + Export XML]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B0AC4E5F-A1DB-401C-88B2-23C5CEFA5950][ORE portfolio export: exporter + Qt Open Instrument + Export XML]] | DONE | 2026-05-20 | 2026-04-01 | export_portfolio method in ores.ore exporter + Qt Open Instrument + Export to ORE XML actions in BookMdiWindow + TradeController; unit tests; review comments addressed (background thread serialisation, instrument data reuse). |
 
 * Decisions
 

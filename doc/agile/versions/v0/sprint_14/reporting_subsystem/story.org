@@ -46,12 +46,12 @@ Continued in: [[id:08D2B499-53CE-4B1C-92CF-A7C26D036EC9][Reporting and analytics
 
 * Tasks
 
-In execution order:
-
-- [[id:53F2D7B0-390B-4E0A-8A68-743BCF8F1D5E][Add reporting component design document]]
-- [[id:1AF41A4B-3281-4E49-941E-98A3BD9A64C4][Add ores.reporting SQL schema]]
-- [[id:8066AD9E-31E5-41FE-A27F-712A7B5038C3][Reporting: domain types, messaging, repository]]
-- [[id:121CD665-1948-4F22-B1F0-432AD0146D04][Reporting UI: cron widget, party codename plan]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:53F2D7B0-390B-4E0A-8A68-743BCF8F1D5E][Add reporting component design document]] | DONE | 2026-05-20 | 2026-03-01 | Design specification for ores.reporting: report_type enum; report_definition (template, lifecycle FSM); report_instance (execution, lifecycle FSM); risk_report_config; scheduler integration via pg_cron at the time; open questions captured. |
+| [[id:1AF41A4B-3281-4E49-941E-98A3BD9A64C4][Add ores.reporting SQL schema]] | DONE | 2026-05-20 | 2026-03-02 | SQL schema for the reporting subsystem: report_definitions + report_instances with FSM lifecycle; concurrency_policies + report_types enum tables; risk_report_configs for NPV / cashflow / XVA / VaR / SIMM with temporal junctions for portfolio + book scoping; NOTIFY triggers; RLS for tenant + party isolation; ores_reporting_ component prefix in the schema validator. |
+| [[id:8066AD9E-31E5-41FE-A27F-712A7B5038C3][Reporting: domain types, messaging, repository]] | DONE | 2026-05-20 | 2026-03-02 | C++ ores.reporting component: report_type / concurrency_policy / report_definition / report_instance domain types; 32 new message types for CRUD + history across the four entities; repository layer; codegen models. |
+| [[id:121CD665-1948-4F22-B1F0-432AD0146D04][Reporting UI: cron widget, party codename plan]] | DONE | 2026-05-20 | 2026-03-03 | Qt UI for report types / concurrency policies / report definitions / instances (MDI windows, detail dialogs, history); CronExpressionWidget + CronEditorDialog; scheduling backend message handlers leveraging pg_cron + pgmq; party codename design plan; tenant provisioning wizard gains initial-report-definition step; new icons (Arrow Trending, Chart Multiple, Tasks App). |
 
 * Decisions
 

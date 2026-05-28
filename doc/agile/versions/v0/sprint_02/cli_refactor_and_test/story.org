@@ -39,17 +39,10 @@ tests to the parser so future changes are caught.
 
 * Tasks
 
-In execution order:
-
-- [[id:E452514E-593C-4A4F-8696-471132E15EC1][Refactor CLI to follow new project structure]]
-- [[id:1DBC88F2-F004-45F8-BCD2-67D6AC646E97][Add tests to CLI parser]]
-
-Additional tasks belonging to this story in v0 but not migrated in
-the drive-test:
-
-- Add logging support for tests.
-- CANCELLED: Add console method to drop schema for a table or all
-  tables.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E452514E-593C-4A4F-8696-471132E15EC1][Refactor CLI to follow new project structure]] | DONE | 2025-10-10 | 2025-10-15 | Move CLI sources under the project's new module layout (=ores.cli=) and resolve commands through the new structure. |
+| [[id:1DBC88F2-F004-45F8-BCD2-67D6AC646E97][Add tests to CLI parser]] | DONE | 2025-10-16 | 2025-10-20 | Add Catch2 tests covering the CLI parser's main flag and command paths. |
 
 * Decisions
 

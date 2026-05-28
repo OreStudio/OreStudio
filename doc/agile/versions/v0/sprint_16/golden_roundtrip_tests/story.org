@@ -34,11 +34,11 @@ Golden file XML roundtrip tests for Commodity + BondOption, Credit + Equity, and
 
 * Tasks
 
-In execution order:
-
-- [[id:F97FE9A7-7363-46FD-96EC-D1B84A54CAB8][Commodity and BondOption golden roundtrip tests]]
-- [[id:BF7E3677-4B74-49D0-8CE9-E05EAE564E8C][Credit and Equity golden roundtrip tests]]
-- [[id:9030EA6E-6231-4A98-84F5-D94E6298F785][Exotic, Hybrid, and Scripted golden roundtrip tests]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F97FE9A7-7363-46FD-96EC-D1B84A54CAB8][Commodity and BondOption golden roundtrip tests]] | DONE | 2026-05-20 | 2026-03-31 | Golden file XML roundtrip tests for BondOption + Commodity instruments (Swaps, Forwards, Options, Average Price Options, Option Strips, Swaptions, Variance Swaps) using Catch2. |
+| [[id:BF7E3677-4B74-49D0-8CE9-E05EAE564E8C][Credit and Equity golden roundtrip tests]] | DONE | 2026-05-20 | 2026-03-31 | Golden file XML roundtrip tests for Credit + Equity instruments (CDS, Equity Options, Risk Participation Agreements, etc.); two new C++ test files. |
+| [[id:9030EA6E-6231-4A98-84F5-D94E6298F785][Exotic, Hybrid, and Scripted golden roundtrip tests]] | DONE | 2026-05-20 | 2026-03-31 | Golden file XML roundtrip tests for exotic + hybrid + scripted instruments; automatic golden file bootstrapping removed in favour of explicit opt-in. |
 
 * Decisions
 

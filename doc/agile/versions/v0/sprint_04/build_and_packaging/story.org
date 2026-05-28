@@ -45,21 +45,11 @@ prebuilt Qt switch, Windows clang build breaks.
 
 * Tasks
 
-In execution order:
-
-- [[id:90E0B641-95EA-4C57-87D6-DCE944CDD2B9][Install Windows package on Windows machine]]
-- [[id:0AF167EE-420C-427C-9EDA-88A41951EDA7][Fix broken Windows build due to local time]]
-- [[id:AC81BC12-B879-441F-B2D6-C27FD9D8A135][Resolve crash on shutdown]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Assets are not being packaged (closed as a rationale-note: assets
-  now interned into Qt resources).
-- Fix the Valgrind leaks reported on sqlgen (a real upstream
-  =getml/sqlgen= leak surfaced and fixed via PR =getml/sqlgen#89=).
-- BLOCKED: Ignore warnings on Windows and OSX (carries forward).
-- BLOCKED: Ensure applications work under OSX using github images
-  (carries forward).
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:90E0B641-95EA-4C57-87D6-DCE944CDD2B9][Install Windows package on Windows machine]] | DONE | 2025-11-20 | 2025-11-20 | Verify the Windows package produced by CI installs and runs end-to-end on a real Windows machine. |
+| [[id:0AF167EE-420C-427C-9EDA-88A41951EDA7][Fix broken Windows build due to local time]] | DONE | 2025-11-20 | 2025-11-20 | Resolve a Windows-only build break triggered by a local-time API mismatch. |
+| [[id:AC81BC12-B879-441F-B2D6-C27FD9D8A135][Resolve crash on shutdown]] | DONE | 2025-11-20 | 2025-11-20 | Diagnose and fix a crash that occurs on application shutdown. |
 
 * Decisions
 

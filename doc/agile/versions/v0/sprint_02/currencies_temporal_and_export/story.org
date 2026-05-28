@@ -40,18 +40,11 @@ example files so they can be loaded as a group.
 
 * Tasks
 
-In execution order:
-
-- [[id:ACB832A6-DA5E-4463-83A8-4BFA06BD607F][Create a containing structure for data]]
-- [[id:665DC710-E8A1-4C1F-9F66-2EE30AA94849][Add temporal support to currencies]]
-- [[id:562ED395-D245-4E05-B8AE-22F8FF689F59][Add command to dump currencies]]
-
-Additional tasks belonging to this story in v0 but not migrated in
-the drive-test:
-
-- Investigate bitemporal support from Postgres 18.
-- CANCELLED: Refactor code for currencies (folded into the temporal
-  task).
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:ACB832A6-DA5E-4463-83A8-4BFA06BD607F][Create a containing structure for data]] | DONE | 2025-08-15 | 2025-08-25 | Introduce a top-level container for ORE example data so groups of related files can be loaded together. |
+| [[id:665DC710-E8A1-4C1F-9F66-2EE30AA94849][Add temporal support to currencies]] | DONE | 2025-08-26 | 2025-09-10 | Add validity-time and transaction-time columns to currencies so changes are tracked over time. |
+| [[id:562ED395-D245-4E05-B8AE-22F8FF689F59][Add command to dump currencies]] | DONE | 2025-09-11 | 2025-09-15 | Add an ORE Studio CLI command that dumps currency reference data to a file in JSON or XML. |
 
 * Decisions
 

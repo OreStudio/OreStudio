@@ -39,9 +39,9 @@ route the actor through =app.current_actor= GUC, validate every
 
 * Tasks
 
-In execution order:
-
-- [[id:F04113FC-16AB-44D2-9545-54CA632C45E9][Fix performed_by and modified_by stamping]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F04113FC-16AB-44D2-9545-54CA632C45E9][Fix performed_by and modified_by stamping]] | DONE | 2026-05-20 | 2026-02-21 | Remove current_user escape hatch from ores_iam_validate_account_username_fn; reorder foundation_populate.sql so IAM service accounts populate first; introduce ores_iam_current_actor_fn reading app.current_actor GUC; use resolved actor in all inserts under ores_iam_provision_tenant_fn; replace silent current_user defaults for assigned_by in image_tags + account_roles. |
 
 * Decisions
 

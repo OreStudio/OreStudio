@@ -47,16 +47,11 @@ real leaks in =ores.comms.tests=.
 
 * Tasks
 
-In execution order:
-
-- [[id:2A55F924-E279-475D-B150-D165029F83C8][Implement proper Boost.Log usage]]
-- [[id:9FE4DA29-F05E-405E-9AD1-8268BA85EFED][Investigate Valgrind leaks]]
-- [[id:7BEC862E-0566-4666-A1B7-035E8D5BBE73][Improve code coverage]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- BLOCKED: Resolve all of the OpenSSL leaks in Valgrind (carry-over
-  to a successor sprint).
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2A55F924-E279-475D-B150-D165029F83C8][Implement proper Boost.Log usage]] | DONE | 2025-12-30 | 2025-12-30 | Replace ad-hoc logging with the supported Boost.Log idioms (severity channels, attribute scopes, sinks). |
+| [[id:9FE4DA29-F05E-405E-9AD1-8268BA85EFED][Investigate Valgrind leaks]] | DONE | 2025-12-30 | 2025-12-30 | Triage the leaks Valgrind reports and fix or suppress them with documented rationale. |
+| [[id:7BEC862E-0566-4666-A1B7-035E8D5BBE73][Improve code coverage]] | DONE | 2025-12-30 | 2025-12-30 | Raise overall code coverage by adding tests for the under-tested modules surfaced by the coverage report. |
 
 * Decisions
 

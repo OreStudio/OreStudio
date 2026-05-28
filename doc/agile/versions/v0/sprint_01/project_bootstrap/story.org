@@ -39,20 +39,11 @@ is the foundation every later story in v0 stands on.
 
 * Tasks
 
-In execution order:
-
-- [[id:F491BA45-287B-46FB-BF80-7DB6F66F59A3][Create GitHub repository]]
-- [[id:0CE4E5FE-8B94-4C05-9D5A-2B5341BC3BE4][Set up vcpkg and CMake]]
-- [[id:47B71A1D-2848-4842-BAD4-9F0C49797FC6][Set up GitHub Actions]]
-
-Additional tasks that belonged to this story in the v0 sprint but were
-not migrated in the drive-test:
-
-- Create and upload a package (=Create and upload a package=)
-- Create a basic project structure (=Create a basic project structure=)
-- Add badges from JKQTPlotter
-- Exclude vcpkg directories from coverage
-- Setup laptop for development
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F491BA45-287B-46FB-BF80-7DB6F66F59A3][Create GitHub repository]] | DONE | 2024-06-15 | 2024-06-15 | Create the OreStudio GitHub organisation and the initial OreStudio repository with vcpkg support. |
+| [[id:0CE4E5FE-8B94-4C05-9D5A-2B5341BC3BE4][Set up vcpkg and CMake]] | DONE | 2024-06-22 | 2024-06-22 | Configure a basic CMake build that resolves its dependencies through vcpkg. |
+| [[id:47B71A1D-2848-4842-BAD4-9F0C49797FC6][Set up GitHub Actions]] | DONE | 2024-06-22 | 2024-06-22 | Add a basic GitHub Actions workflow that builds the project and surfaces results in CDash. |
 
 * Decisions
 

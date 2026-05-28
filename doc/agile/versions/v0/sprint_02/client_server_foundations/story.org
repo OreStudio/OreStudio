@@ -42,19 +42,12 @@ messages between them, and the risk module is the first consumer.
 
 * Tasks
 
-In execution order:
-
-- [[id:396EBDA8-CA0D-4BFC-AC5E-01E61CAE0A6A][Implement a cobalt-based server and client]]
-- [[id:9C9B5954-E01C-495D-94E9-2DE3CB10C75C][Create a comms library]]
-- [[id:3AFA8A40-2B03-4317-8FF0-96EF5E2B9249][Add messaging for risk]]
-- [[id:095140A1-0DD9-41E0-A346-418F1114D259][Create a GRPC-based service]] (ABANDONED — pivoted to cobalt)
-
-Additional tasks belonging to this story in v0 but not migrated in
-the drive-test:
-
-- Implement a 0MQ-based RPC service and client (CANCELLED).
-- Remove GRPC support.
-- Add support for accounts and logins.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:396EBDA8-CA0D-4BFC-AC5E-01E61CAE0A6A][Implement a cobalt-based server and client]] | DONE | 2025-09-15 | 2025-09-21 | Build the runtime split: a Boost.cobalt-based server process and a client embedded in the Qt application. |
+| [[id:9C9B5954-E01C-495D-94E9-2DE3CB10C75C][Create a comms library]] | DONE | 2025-09-22 | 2025-09-25 | Extract a comms library so the messaging types live in one place, separate from client and server domain code. |
+| [[id:3AFA8A40-2B03-4317-8FF0-96EF5E2B9249][Add messaging for risk]] | DONE | 2025-09-26 | 2025-09-30 | Wire the risk module as the first consumer of the comms library — request/response over cobalt. |
+| [[id:095140A1-0DD9-41E0-A346-418F1114D259][Create a GRPC-based service]] | ABANDONED | 2025-09-01 | 2025-09-10 | Explore GRPC as the client/server substrate. Abandoned in favour of cobalt. |
 
 * Decisions
 

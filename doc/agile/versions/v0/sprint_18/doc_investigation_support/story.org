@@ -37,11 +37,11 @@ Enhance the cybernetic documentation system with a formal 'investigation' docume
 
 * Tasks
 
-In execution order:
-
-- [[id:1F001F12-0C8E-46E9-9816-3F2622E0B8BE][Task: Define investigation document type and extend codegen]]
-- [[id:3B399253-D172-4CC7-B0B1-DD7D3204E1E3][Task: Document git commit conventions]]
-- [[id:F85A86D4-801B-4506-83D6-8B61D93DAAD6][Task: Normalize documentation IDs to uppercase]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1F001F12-0C8E-46E9-9816-3F2622E0B8BE][Task: Define investigation document type and extend codegen]] | DONE | 2026-05-23 | 2026-05-23 | Formalize the 'investigation' document type and add automated scaffolding support. |
+| [[id:3B399253-D172-4CC7-B0B1-DD7D3204E1E3][Task: Document git commit conventions]] | DONE | 2026-05-23 | 2026-05-23 | Establish a formal recipe for git commits, including component prefixes and AI attribution. |
+| [[id:F85A86D4-801B-4506-83D6-8B61D93DAAD6][Task: Normalize documentation IDs to uppercase]] | DONE | 2026-05-23 | 2026-05-23 | Ensure all document :ID: properties and links use uppercase UUIDs to fix build failures and maintain consistency. |
 
 * Decisions
 

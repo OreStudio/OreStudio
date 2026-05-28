@@ -39,15 +39,15 @@ Continued from: [[id:FD12BBD4-BD95-454A-A636-5F22C928C4D1][Fix ORE import bugs]]
 
 * Tasks
 
-In execution order:
-
-- [[id:D315148C-5309-4BFA-9B35-11D4AAEF937D][Add commodity, scripted and composite instrument mappers]]
-- [[id:FF5C947A-6339-412B-A0C8-7D70D049BA77][Add equity and FX exotic instrument mappers]]
-- [[id:BEB34249-570E-49F6-A9F0-F515BE8EB89B][Add ORE instrument dispatch pipeline]]
-- [[id:B185EB3A-408E-49F0-BC52-7D6E0B9B5728][Add remaining instrument mappers and roundtrip tests]]
-- [[id:1A8EBDCE-D5E9-44E1-8E17-4FFD64350139][Instrument-trade model refactor and portfolio export]]
-- [[id:5D201168-61A2-44BB-8CC3-960487DD6008][Persist instrument data on ORE trade import]]
-- [[id:298110D0-1D84-4CE2-B637-4483CBAFB2BC][Add server-side ORE import via ores.ore.service]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D315148C-5309-4BFA-9B35-11D4AAEF937D][Add commodity, scripted and composite instrument mappers]] | DONE | 2026-05-20 | 2026-04-04 | Commodity + composite + scripted mappers for ORE XML → ORES; round-trip tests; unified trade mapper updates. |
+| [[id:FF5C947A-6339-412B-A0C8-7D70D049BA77][Add equity and FX exotic instrument mappers]] | DONE | 2026-05-20 | 2026-04-04 | equity_instrument_mapper; FX mapping extended to exotics (barriers, digitals, accumulators); unified trade dispatch updates + round-trip fidelity tests. |
+| [[id:BEB34249-570E-49F6-A9F0-F515BE8EB89B][Add ORE instrument dispatch pipeline]] | DONE | 2026-05-20 | 2026-04-04 | map_instrument std::variant-based dispatch wired into import pipeline; credit instrument mapper + Thing 3 tests; BondOption + BondTRS mapper support. |
+| [[id:B185EB3A-408E-49F0-BC52-7D6E0B9B5728][Add remaining instrument mappers and roundtrip tests]] | DONE | 2026-05-20 | 2026-04-04 | Forward + reverse mapping for BondRepo, TotalReturnSwap, ContractForDifference + various barrier and scripted options; new round-trip test suite; equity mapper edge-case fixes. |
+| [[id:1A8EBDCE-D5E9-44E1-8E17-4FFD64350139][Instrument-trade model refactor and portfolio export]] | DONE | 2026-05-20 | 2026-04-04 | instrument_family discriminator + instrument_id UUIDs link trades to product-specific extension tables; new get_instrument_for_trade + export_portfolio NATS endpoints; thread-safe UUID generation; N+1 query awareness. |
+| [[id:5D201168-61A2-44BB-8CC3-960487DD6008][Persist instrument data on ORE trade import]] | DONE | 2026-05-20 | 2026-04-04 | Update import structure to dispatch type-specific save requests for instrument data alongside trade creation. |
+| [[id:298110D0-1D84-4CE2-B637-4483CBAFB2BC][Add server-side ORE import via ores.ore.service]] | DONE | 2026-05-20 | 2026-04-04 | ores.ore.api + ores.ore.service microservice; NATS orchestration; ores.storage component for file management; storage_transfer + http_client + archiver helpers; path traversal fix. |
 
 * Decisions
 

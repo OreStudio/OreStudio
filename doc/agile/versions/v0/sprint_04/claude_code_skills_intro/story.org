@@ -43,16 +43,11 @@ skills to documentation.
 
 * Tasks
 
-In execution order:
-
-- [[id:05EF8EE3-B5B1-41E2-809D-EDAE9418EDD3][Weaving skills and documentation together]]
-- [[id:5766B918-7741-491A-95B5-707ACE9C4169][Create a skill for PlantUML documentation]]
-- [[id:E24BB8B0-B599-4C16-A4BE-12422F34225A][Add CMake targets for site and skills]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Generalise the skill setup for ORE Studio (meta-skill scaffolding
-  on top of the first skill).
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:05EF8EE3-B5B1-41E2-809D-EDAE9418EDD3][Weaving skills and documentation together]] | DONE | 2025-11-15 | 2025-11-15 | Analyse how skills and project docs should link and overlap; capture the convention. |
+| [[id:5766B918-7741-491A-95B5-707ACE9C4169][Create a skill for PlantUML documentation]] | DONE | 2025-11-15 | 2025-11-15 | First Claude Code skill: how to author and refresh PlantUML diagrams within the project. |
+| [[id:E24BB8B0-B599-4C16-A4BE-12422F34225A][Add CMake targets for site and skills]] | DONE | 2025-11-15 | 2025-11-15 | Add deploy_site and deploy_skills custom CMake targets that invoke emacs in batch mode. |
 
 * Decisions
 

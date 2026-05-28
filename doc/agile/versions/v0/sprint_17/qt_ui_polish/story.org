@@ -38,13 +38,14 @@ simplify the menu structure.
 
 * Tasks
 
-In execution order:
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AC9B906B-7650-4DF3-93B3-DF24DE0F00A9][Task: [http,qt] Require JWT for HTTP URL discovery; fail login on missing URL]] | DONE | 2026-05-22 | 2026-05-22 | - Makes the NATS `http-server.v1.info.get` request require a JWT. Previously the handler was unauthenticated, leaking th |
+| [[id:32991E7A-E3A7-40BB-B381-767E16F1D83A][Task: [qt,trading] Currency combos with flag icons, date pickers, and dialog polish]] | DONE | 2026-05-22 | 2026-05-22 | - OreCurrencyComboBox / OreDateEdit: new global-namespace custom widgets for uic compatibility. `OreDateEdit` shows `yyy |
+| [[id:FDEA8162-00CA-4DE8-B1CC-D901D494C2C4][Task: Add login environment filter and recent parties to party picker]] | DONE | 2026-05-22 | 2026-05-22 | - Label filter on login dialog: when `ORES_CHECKOUT_LABEL` is set (e.g. `local1`), environments whose `subject_prefix` e |
+| [[id:91ACDECB-A296-4B26-A441-AB99BC9B9C08][Task: Fix wt.service crash, trade dialog UI, geometry persistence, and IAM party cache]] | DONE | 2026-05-22 | 2026-05-22 | - [iam] Fix party cache cold-start and bootstrap gaps: warm cache for all active tenants at startup; handle missing entr |
+| [[id:03BFB2E5-5BDD-46EE-9E7E-8A41E130D4B4][Task: Qt menu structure simplification + V2 component documentation]] | DONE | 2026-05-22 | 2026-05-22 | Two cohesive changes on one branch: |
 
-- [[id:AC9B906B-7650-4DF3-93B3-DF24DE0F00A9][Task: [http,qt] Require JWT for HTTP URL discovery; fail login on missing URL]]
-- [[id:32991E7A-E3A7-40BB-B381-767E16F1D83A][Task: [qt,trading] Currency combos with flag icons, date pickers, and dialog polish]]
-- [[id:FDEA8162-00CA-4DE8-B1CC-D901D494C2C4][Task: Add login environment filter and recent parties to party picker]]
-- [[id:91ACDECB-A296-4B26-A441-AB99BC9B9C08][Task: Fix wt.service crash, trade dialog UI, geometry persistence, and IAM party cache]]
-- [[id:03BFB2E5-5BDD-46EE-9E7E-8A41E130D4B4][Task: Qt menu structure simplification + V2 component documentation]]
 * Decisions
 
 - /Menu simplification/ :: the menu hierarchy was analysed and flattened;

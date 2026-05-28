@@ -46,9 +46,9 @@ keep the DB current without triggering the whole publish pipeline.
 
 * Tasks
 
-In execution order:
-
-- [[id:74DD59ED-7A1D-4C09-97EE-F9D59988E1AB][Task: Implement .build-org-roam.el and rebuild_org_roam_db cmake target]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:74DD59ED-7A1D-4C09-97EE-F9D59988E1AB][Task: Implement .build-org-roam.el and rebuild_org_roam_db cmake target]] | BACKLOG | 2026-05-24 |  | Extract org-roam DB sync from .build-site.el into a standalone .build-org-roam.el; add rebuild_org_roam_db cmake target; update deploy_site to depend on it. |
 
 * Decisions
 

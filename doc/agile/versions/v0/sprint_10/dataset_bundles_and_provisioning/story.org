@@ -39,11 +39,11 @@ bundles; build the wizard.
 
 * Tasks
 
-In execution order:
-
-- [[id:1B78D767-89D3-4646-93DB-C8297A66B093][Separate catalog metadata schema from production data]]
-- [[id:03C2977E-CA76-43A1-9CF6-46A5648BE40A][Add dataset bundles]]
-- [[id:8AA7657F-A37F-4AB7-85F0-95868CDFD8F3][Add System Provisioner Wizard to Qt]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1B78D767-89D3-4646-93DB-C8297A66B093][Separate catalog metadata schema from production data]] | DONE | 2026-05-19 | 2026-01-27 | Split the monolithic ores schema into metadata (dq_*, change_control) and production (refdata_*, iam_*, assets_*, geo_*, variability_*, telemetry_*); schema-qualified references; ER generator updated; data-flow documented (unidirectional metadata → production). |
+| [[id:03C2977E-CA76-43A1-9CF6-46A5648BE40A][Add dataset bundles]] | DONE | 2026-05-19 | 2026-01-27 | dq_dataset_bundles_tbl + bundle_members + bundle_publications audit; PL/pgSQL: dq_list_bundles_fn, dq_list_bundle_datasets_fn, dq_preview_bundle_publication_fn, dq_populate_bundle_fn, dq_get_bundle_publication_history_fn; seed solvaris / base / crypto bundles. |
+| [[id:8AA7657F-A37F-4AB7-85F0-95868CDFD8F3][Add System Provisioner Wizard to Qt]] | DONE | 2026-05-19 | 2026-01-27 | Multi-page wizard: admin account, foundation bundle, data-governance bundle, data-catalogues bundle, provisioning execution; replaces the shell-only bootstrap; localhost-only create_initial_admin_request atomically creates admin + exits bootstrap mode. |
 
 * Decisions
 

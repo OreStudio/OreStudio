@@ -45,10 +45,10 @@ blocked.
 
 * Tasks
 
-In execution order:
-
-- [[id:39DFF131-19B6-49F9-AE2E-5879994D1870][Add bound parameters to sqlgen]]
-- [[id:FDC3A5AD-821E-4556-90AD-80FA93F54474][Remove uses of raw libpq]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:39DFF131-19B6-49F9-AE2E-5879994D1870][Add bound parameters to sqlgen]] | BLOCKED | 2026-05-19 |  | Adopt native sqlgen bound-parameter support once vcpkg picks up the release. |
+| [[id:FDC3A5AD-821E-4556-90AD-80FA93F54474][Remove uses of raw libpq]] | BLOCKED | 2026-05-19 |  | Replace remaining raw libpq calls with sqlgen calls once vcpkg picks up the sqlgen release with the new features. |
 
 * Decisions
 

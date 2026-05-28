@@ -37,11 +37,11 @@ out, add a revert action, and add country flags.
 
 * Tasks
 
-In execution order:
-
-- [[id:88F8A3C7-1ED3-43A6-9396-1766896E6586][Latest currencies should have different colour]]
-- [[id:C391ADD5-AF47-49D7-B6BB-720064D41F52][History should have a revert button]]
-- [[id:9D242DEC-6526-4714-8159-04BA03B8214B][Add flags for currencies]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:88F8A3C7-1ED3-43A6-9396-1766896E6586][Latest currencies should have different colour]] | DONE | 2026-05-19 | 2025-12-18 | Visually distinguish the currently-active version of a currency in the history dialog (and the list view). |
+| [[id:C391ADD5-AF47-49D7-B6BB-720064D41F52][History should have a revert button]] | DONE | 2026-05-19 | 2025-12-19 | Add a revert action to the history dialog so a user can roll the currency back to a prior version. |
+| [[id:9D242DEC-6526-4714-8159-04BA03B8214B][Add flags for currencies]] | DONE | 2026-05-19 | 2025-12-20 | Render a country flag alongside each currency in the list and detail views. |
 
 * Decisions
 

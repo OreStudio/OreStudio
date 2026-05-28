@@ -34,13 +34,13 @@ ORE market data file types parser + serializer; market data domain model with DB
 
 * Tasks
 
-In execution order:
-
-- [[id:C0D16E27-CECE-44C2-861E-1754642FFA5A][Add ORE market data file types]]
-- [[id:121A2D90-C196-4587-9F0D-80CC13659417][ORE market data domain model — DB schema and C++ CDM]]
-- [[id:B6B623DB-DE43-4658-BBA6-779177A3675F][Market Data MDI UI]]
-- [[id:B277D89B-EB0D-40B9-828E-2F917828E8F1][Market data service layer]]
-- [[id:084CB4EA-28BB-424D-BB77-26E23ADC39F9][ORE key decomposition and database repository]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C0D16E27-CECE-44C2-861E-1754642FFA5A][Add ORE market data file types]] | DONE | 2026-05-20 | 2026-04-01 | Phase 1: market_datum + fixing structs; parser; serializer; comprehensive round-trip tests; both date formats supported in both file types; date parsing/formatting in ores.platform; comma-delimited file handling. |
+| [[id:121A2D90-C196-4587-9F0D-80CC13659417][ORE market data domain model — DB schema and C++ CDM]] | DONE | 2026-05-20 | 2026-04-01 | Phase 1 + 2: ores.marketdata.api C++ CDM with market series + observations + fixings; PostgreSQL + TimescaleDB schema with bitemporal history + multi-tenancy; soft-delete via BEFORE DELETE triggers replacing rules. |
+| [[id:B6B623DB-DE43-4658-BBA6-779177A3675F][Market Data MDI UI]] | DONE | 2026-05-20 | 2026-04-01 | Phase 6: market data browsing UI — list views for market series + index fixings; detailed time-series views for observations + fixing history; MarketDataController; case-sensitivity fix in asset class filter. |
+| [[id:B277D89B-EB0D-40B9-828E-2F917828E8F1][Market data service layer]] | DONE | 2026-05-20 | 2026-04-01 | Phase 5: ores.marketdata.service component with NATS messaging protocols + handlers + service logic for managing market series, observations, fixings; import service for ORE-formatted data files. |
+| [[id:084CB4EA-28BB-424D-BB77-26E23ADC39F9][ORE key decomposition and database repository]] | DONE | 2026-05-20 | 2026-04-01 | Phase 3 + 4: ores.marketdata.core project with database entities + mappers + repositories; series_key_registry structures ORE keys for lossless reconstruction. |
 
 * Decisions
 

@@ -45,9 +45,9 @@ shape that subsumes some of the goal.
 
 * Tasks
 
-In execution order:
-
-- [[id:7B2DD252-3F02-4C6E-BC9C-3555E5E8C971][Add trade import mapping dialog (carry-over)]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7B2DD252-3F02-4C6E-BC9C-3555E5E8C971][Add trade import mapping dialog (carry-over)]] | BACKLOG | 2026-05-20 |  | Carry-over from sprint 13. Attempted again in sprint 14: 4h39m of work landed but the story was postponed once more in favour of the broader ORE Import Wizard. |
 
 * Decisions
 

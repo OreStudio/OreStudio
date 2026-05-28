@@ -33,11 +33,11 @@ table where available.
 
 | Field        | Value                                                                               |
 |--------------+-------------------------------------------------------------------------------------|
-| State        | BACKLOG                                                                             |
+| State        | DONE                                                                                |
 | Parent story | [[id:FFF169EC-0B35-4800-8BEE-1CF7D0DEE8D6][Refactor story task lists to a status table]]                                         |
-| Now          | Ready to begin back-filling sprint 18 stories.                                      |
+| Now          | Completed 2026-05-28.                                                               |
 | Waiting on   | Nothing.                                                                             |
-| Next         | List all sprint 18 stories; update each Tasks section to table format.              |
+| Next         | None.                                                                                |
 | Last touched | 2026-05-28                                                                          |
 
 * Acceptance
@@ -58,14 +58,23 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                               |
+|-----+---------------------------------------------------------------------|
+| 895 | [agile] Back-fill all sprint story task sections to status tables |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                                  | File                              | Decision | Notes                                                     |
+|---+----------------------------------------------------------------------------------+-----------------------------------+----------+-----------------------------------------------------------|
+| 1 | Regex [^\]]+ silently drops tasks with bracketed titles                          | backfill_story_task_tables.py     | Accept   | Fixed to .*? in commit; 18 sprint_17 stories corrected    |
+| 2 | CI failure: [[url][#NNN]] in table description resolved by org publisher as link | sprint_18/backlog_refinement/story.org | Accept   | Escaped to =[[url][#NNN]]= in c9b82f37e                   |
 
 * Result
+
+Replaced =* Tasks= bullet lists with status tables in all sprint 18
+story docs. Script =scripts/backfill_story_task_tables.py= extracts
+State, Start, End, and Description from each referenced task doc and
+writes =[[id:UUID][Title]]= row links. Regex fix (=.*?= replacing
+=[^\]]+= ) required to handle bracketed task titles. One CI fix
+needed: escaped a literal =[[url][#NNN]]= example in a description
+cell that the org publisher was resolving as a link.

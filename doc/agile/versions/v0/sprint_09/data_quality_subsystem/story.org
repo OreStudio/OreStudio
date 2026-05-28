@@ -52,17 +52,17 @@ the librarian landed here.
 
 * Tasks
 
-In execution order:
-
-- [[id:B03FEE7C-2156-4B80-A2BD-020A9A5B6077][Create Data Quality infrastructure]]
-- [[id:1DC4639C-893D-4CBE-B4AC-A4BC9A04B932][DQ domain types and FpML reference data]]
-- [[id:B1969BED-3C53-42C9-B316-CACC90814CA7][DQ catalog and ER refactor]]
-- [[id:530624EF-E76E-40CE-82BE-3EFC8420D938][Data Librarian UI]]
-- [[id:293A5704-3138-40D4-9903-6D09B67F3456][DQ subject areas management]]
-- [[id:21DFACF9-F1CC-4C99-9E46-586FD8C6B23C][DQ messaging subsystem]]
-- [[id:808DB4F2-2191-4600-983C-F83C7438C11E][Resolve DQ-IAM circular dependency]]
-- [[id:FEE9F73A-16B2-4692-9A22-B6C8B23CA451][Data Librarian publication workflow]]
-- [[id:EFD5093D-5BF0-43F2-A2C6-443405F849E3][Add fake-world dataset]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B03FEE7C-2156-4B80-A2BD-020A9A5B6077][Create Data Quality infrastructure]] | DONE | 2026-05-19 | 2026-01-15 | Stand up ores.dq with domain types backing the user-driven sample-data workflow: dataset, lineage, provenance, classification, temporal context, data passport, granularity options. |
+| [[id:1DC4639C-893D-4CBE-B4AC-A4BC9A04B932][DQ domain types and FpML reference data]] | DONE | 2026-05-19 | 2026-01-15 | 10 DQ domain types (data_domain, subject_area, catalog, coding_scheme_authority_type, coding_scheme, origin_dimension, nature_dimension, treatment_dimension, methodology, dataset) with JSON + table I/O; FpML non-ISO currencies / business centers / business processes integrated; faker-cxx generators; year_month_day reflector. |
+| [[id:B1969BED-3C53-42C9-B316-CACC90814CA7][DQ catalog and ER refactor]] | DONE | 2026-05-19 | 2026-01-15 | dq_catalog_tbl as top-level grouping; ER diagram (ores_schema.puml) standardised to <component>_<entity>_tbl naming and re-packaged by component prefix; missing DQ + telemetry + geo entities integrated. |
+| [[id:530624EF-E76E-40CE-82BE-3EFC8420D938][Data Librarian UI]] | DONE | 2026-05-19 | 2026-01-19 | Three-panel Data Librarian MDI window: dataset browser, accession card details, methodology panel; IP geolocation catalog + iptoasn staging; Visual Assets catalog; TCP_NODELAY for parallel-request latency; menu restructuring (System / Data); Origin 'Source' renamed to 'Primary'. |
+| [[id:293A5704-3138-40D4-9903-6D09B67F3456][DQ subject areas management]] | DONE | 2026-05-19 | 2026-01-19 | SubjectAreaController + Detail + History dialogs; menu integration; version history with revert; read-only versioned view. |
+| [[id:21DFACF9-F1CC-4C99-9E46-586FD8C6B23C][DQ messaging subsystem]] | DONE | 2026-05-19 | 2026-01-19 | New 0x6000-0x6FFF subsystem in the binary protocol; CRUD + history for every DQ entity; change-management messages migrated from IAM (0x2050-0x2061) to DQ (0x6070-0x6081); protocol bump 21.3 -> 22.0. |
+| [[id:808DB4F2-2191-4600-983C-F83C7438C11E][Resolve DQ-IAM circular dependency]] | DONE | 2026-05-19 | 2026-01-19 | Relocate change_reason_constants.hpp to the more foundational ores.database module; system models + CMake deps synchronised; deterministic time values via make_timepoint helper for DQ tests; skill docs updated. |
+| [[id:FEE9F73A-16B2-4692-9A22-B6C8B23CA451][Data Librarian publication workflow]] | DONE | 2026-05-19 | 2026-01-20 | Multi-page publication wizard (upsert / insert_only / replace_all) with dependency resolution via Boost.Graph topological sort; stable dataset codes; publication history dialog; UI rename to 'methodology' and 'data passport'. |
+| [[id:EFD5093D-5BF0-43F2-A2C6-443405F849E3][Add fake-world dataset]] | DONE | 2026-05-19 | 2026-01-20 | Use the previously spec'd 'fake world' dataset to validate the dataset infrastructure end-to-end. |
 
 * Decisions
 

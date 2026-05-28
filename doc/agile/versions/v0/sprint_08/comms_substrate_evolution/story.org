@@ -38,11 +38,11 @@ hardcoded channel list with server-side discovery.
 
 * Tasks
 
-In execution order:
-
-- [[id:FDEB08B4-FD95-46DF-B868-EB57AE4666C6][Refactor options and parser]]
-- [[id:443B546E-357B-4809-8C20-B804E62FA31E][Rename ores.shell to ores.comms.shell]]
-- [[id:410EF5B4-9E13-4357-8B20-D78C63419572][Discover notification channels dynamically]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FDEB08B4-FD95-46DF-B868-EB57AE4666C6][Refactor options and parser]] | DONE | 2026-05-19 | 2026-01-02 | Composable CLI configuration: common, server, client, compression configurations; standardise -h/-v/--verbose across binaries; add --log-include-pid. |
+| [[id:443B546E-357B-4809-8C20-B804E62FA31E][Rename ores.shell to ores.comms.shell]] | DONE | 2026-05-19 | 2026-01-03 | The shell is specific to the binary comms protocol; namespaces, CMake targets, headers, and docs renamed. |
+| [[id:410EF5B4-9E13-4357-8B20-D78C63419572][Discover notification channels dynamically]] | DONE | 2026-05-19 | 2026-01-11 | Server-side event_channel_registry; new list_event_channels protocol messages (0x0015/0x0016); shell 'events channels' and 'events listen *' use discovery. |
 
 * Decisions
 

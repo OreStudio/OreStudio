@@ -40,11 +40,11 @@ Equip every future session with two Claude Code skills and companion recipes —
 
 * Tasks
 
-In execution order:
-
-- [[id:C0A295F9-69B0-45AF-A45C-18A813D649A4][Task: Create backlog-refiner and sprint-planner skills and recipes]]
-- [[id:2F0D0382-2230-470E-A481-7A9D5B7326B4][Task: Set sprint goals and select sprint 18 stories]]
-- [[id:4076E101-814B-4EAF-AD32-06F472C16333][Task: Audit sprint 18 tasks: ensure all PRs have URLs and consistent format]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C0A295F9-69B0-45AF-A45C-18A813D649A4][Task: Create backlog-refiner and sprint-planner skills and recipes]] | DONE | 2026-05-24 | 2026-05-24 | Author the backlog-refiner and sprint-planner Claude Code skills and their companion agile recipes. |
+| [[id:2F0D0382-2230-470E-A481-7A9D5B7326B4][Task: Set sprint goals and select sprint 18 stories]] | DONE | 2026-05-24 | 2026-05-24 | Define sprint 18 mission and use the sprint-planner skill to identify and promote candidate stories from the backlog. |
+| [[id:4076E101-814B-4EAF-AD32-06F472C16333][Task: Audit sprint 18 tasks: ensure all PRs have URLs and consistent format]] | DONE | 2026-05-25 | 2026-05-25 | Check every task in sprint 18 has a PR URL set and that all PR tables use the canonical =[[url][#NNN]]= format. |
 
 * Decisions
 

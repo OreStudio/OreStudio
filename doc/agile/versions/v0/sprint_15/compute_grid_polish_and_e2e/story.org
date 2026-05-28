@@ -44,10 +44,10 @@ forced into the broader codebase.
 
 * Tasks
 
-In execution order:
-
-- [[id:7DAA4131-019B-4191-802D-CB67B22D102F][E2E compute testing fixes and loading lifecycle refactor]]
-- [[id:0761A4EC-66D1-4C3E-B46F-36D18B3D3CFA][End-to-end fixes for grid work]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7DAA4131-019B-4191-802D-CB67B22D102F][E2E compute testing fixes and loading lifecycle refactor]] | DONE | 2026-05-20 | 2026-03-22 | AbstractClientModel base class with dataLoaded() + loadError() signals wired to endLoading() via EntityListMdiWindow::connectModel(); applies_to_new on change reason domain + SQL; centralised change-reason prompting in DetailDialogBase; compute RLS for app + app_versions as system-owned global registries; UUID generation in ORE app seed; ReflectCPP consteval workaround; app_version multi-platform via ores_compute_app_version_platforms_tbl junction; AppVersionDetailDialog + WorkunitDetailDialog combo boxes. |
+| [[id:0761A4EC-66D1-4C3E-B46F-36D18B3D3CFA][End-to-end fixes for grid work]] | DONE | 2026-05-20 | 2026-03-26 | Service dashboard offline threshold raised to 120s; ORES_VERSION macro for accurate version display; status-services.sh node vs service counts; idle heartbeat sender in wrapper for online hosts; ores.platform::datetime for cross-platform timestamps; result_handler::submit uses service context for unauthenticated wrapper requests; outcome code mapping fix; host_id persisted to result; file extension preservation in artifact URIs (.tar.gz, .csv, .xml); double-slash URL fix in AppVersionDetailDialog; SIGSEGV fix; pill badges on Result UI; main window geometry persistence; RAII thread cleanup + terminate() guard in wrapper. |
 
 * Decisions
 

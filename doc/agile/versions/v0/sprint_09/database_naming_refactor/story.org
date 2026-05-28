@@ -39,10 +39,10 @@ to reflect what the component actually does.
 
 * Tasks
 
-In execution order:
-
-- [[id:AA32B9C6-9C05-4F63-BBC5-51704DF4E9B6][Rename ores.risk to ores.refdata]]
-- [[id:6C292F2C-9A0A-479C-9632-59A3F5028DA7][Prefix database entities with component]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AA32B9C6-9C05-4F63-BBC5-51704DF4E9B6][Rename ores.risk to ores.refdata]] | DONE | 2026-05-19 | 2026-01-14 | Pure rename: include paths, namespaces, CMake targets, header guards, HTTP routes file (risk_routes.cpp -> refdata_routes.cpp); diagrams + docs aligned. |
+| [[id:6C292F2C-9A0A-479C-9632-59A3F5028DA7][Prefix database entities with component]] | DONE | 2026-05-19 | 2026-01-14 | All SQL tables/functions/triggers/rules follow {component}_{entity}_{suffix}: iam_, refdata_, assets_, telemetry_, geo_, variability_, utility_; entity suffixes _tbl, _fn, _trg, _rule, _idx, _uniq_idx, _gist_idx. C++ tablename constants updated. |
 
 * Decisions
 

@@ -39,9 +39,9 @@ not three.
 
 * Tasks
 
-In execution order:
-
-- [[id:91C1E06D-5307-4F45-803D-DEA3E841EE84][Create ores.security module]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:91C1E06D-5307-4F45-803D-DEA3E841EE84][Create ores.security module]] | DONE | 2026-05-19 | 2026-01-13 | Extract shared security primitives from ores.iam and ores.connections into a new ores.security component; rename password_manager -> password_hasher, encryption_service -> encryption; apply RAII to OpenSSL cipher contexts. |
 
 * Decisions
 

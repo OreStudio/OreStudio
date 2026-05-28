@@ -47,10 +47,10 @@ is on the longer-term wishlist without opening any files.
 
 * Tasks
 
-In execution order:
-
-- [[id:092931C3-633E-4885-8AA0-31B88E196A65][Task: Implement product backlog next/deferred listing in compass]]
-- [[id:C1EADB9F-633E-4A22-B86C-AB2E1F633F66][Add compass remember command]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:092931C3-633E-4885-8AA0-31B88E196A65][Task: Implement product backlog next/deferred listing in compass]] | DONE | 2026-05-24 | 2026-05-24 | Add compass backlog command to list next and deferred captures with counts and titles, mirroring the sprint in-flight display. |
+| [[id:C1EADB9F-633E-4A22-B86C-AB2E1F633F66][Add compass remember command]] | DISCOVERED | 2026-05-25 |  | Implement compass remember --what X --why Y to scaffold and register a new project memory from the command line. |
 
 * Decisions
 

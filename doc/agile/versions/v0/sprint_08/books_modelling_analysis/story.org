@@ -37,9 +37,9 @@ the next major modelling effort after currencies and countries.
 
 * Tasks
 
-In execution order:
-
-- [[id:60722E51-BEB9-4221-ABB1-95B0E08E9A32][Books entity analysis]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:60722E51-BEB9-4221-ABB1-95B0E08E9A32][Books entity analysis]] | DONE | 2026-05-19 | 2026-01-11 | First-cut model of the entities needed to support books; FPML-anchored, iterated with Gemini and Qwen; ignore items explicitly marked as too complex. |
 
 * Decisions
 

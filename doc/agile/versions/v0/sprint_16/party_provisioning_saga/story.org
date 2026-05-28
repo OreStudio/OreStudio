@@ -34,12 +34,12 @@ provision_parties_workflow executor; per-party Inactive status trigger; correlat
 
 * Tasks
 
-In execution order:
-
-- [[id:F16634AF-A817-4D61-B6E4-E329BC6E7914][Add provision_parties_workflow executor]]
-- [[id:8826F495-5182-47AE-AA74-5475CDB09EC4][Display provision correlation ID on tenant summary]]
-- [[id:7BF2DCBB-6DF5-4626-B732-A4028ABB3033][Per-party status trigger + correlation IDs + PartyProvisionPage]]
-- [[id:0EAD9020-36B6-4421-BAF7-3AB2C341E0DB][Workflow service + correlation IDs + PartyProvisionPage UX fixes]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F16634AF-A817-4D61-B6E4-E329BC6E7914][Add provision_parties_workflow executor]] | DONE | 2026-05-20 | 2026-03-31 | Saga-based workflow for provisioning parties + associated IAM accounts; NATS messaging infrastructure; workflow instance + step tracking; concrete provision_parties_workflow implementation. |
+| [[id:8826F495-5182-47AE-AA74-5475CDB09EC4][Display provision correlation ID on tenant summary]] | DONE | 2026-05-20 | 2026-03-31 | TenantProvisioningWizard summary page shows the provision correlation ID for cross-referencing service logs. |
+| [[id:7BF2DCBB-6DF5-4626-B732-A4028ABB3033][Per-party status trigger + correlation IDs + PartyProvisionPage]] | DONE | 2026-05-20 | 2026-03-31 | Replace global party_setup_mode flag with per-party Inactive status; Nats-Correlation-Id header for distributed tracing; PartyProvisionPage replaces AccountSetupPage in tenant provisioning wizard. |
+| [[id:0EAD9020-36B6-4421-BAF7-3AB2C341E0DB][Workflow service + correlation IDs + PartyProvisionPage UX fixes]] | DONE | 2026-05-20 | 2026-03-31 | ores.workflow.service microservice; standardised correlation ID logging via log_handler_entry; PartyProvisionPage UX improvements; rewrite PartyProvisioningWizard to remove party-creation logic; party-scoped report definition uniqueness. |
 
 * Decisions
 

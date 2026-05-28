@@ -43,9 +43,9 @@ gemini-code-assist PR review are unaffected.
 
 * Tasks
 
-In execution order:
-
-- [[id:15222E31-B0CD-4BAC-93E0-713BADF3CD95][Task: Delete the four Gemini workflows]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:15222E31-B0CD-4BAC-93E0-713BADF3CD95][Task: Delete the four Gemini workflows]] | DONE | 2026-05-24 | 2026-05-24 | Remove the four unused Gemini workflow files; PR review continues via the gemini-code-assist app. |
 
 * Decisions
 

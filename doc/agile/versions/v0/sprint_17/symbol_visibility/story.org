@@ -37,15 +37,16 @@ libraries so they link cleanly on Windows.
 
 * Tasks
 
-In execution order:
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9F2B0585-3C63-4A3E-97A3-FEA97B51727A][Task: [cmake] Symbol visibility migration: -fvisibility=hidden across all shared libraries]] | DONE | 2026-05-22 | 2026-05-22 | - Applies `-fvisibility=hidden` to all 18 shared library targets and removes the `CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS` glob |
+| [[id:D9D3BAB0-BB95-41CE-B68E-655B0C3695B0][Task: Fix missing export symbol definitions in trading.api and trading.core]] | DONE | 2026-05-22 | 2026-05-22 | - PR #738 added `ORES_X_LIBRARY` compile definitions and visibility flags to 43 libraries but missed `ores.trading.api` |
+| [[id:B8298A05-9E0F-48BC-A36A-8A9EF73FCF6B][Task: [qt] Break cross-plugin symbol dependencies (plugin isolation phase 1)]] | DONE | 2026-05-22 | 2026-05-22 | - Add `IBusinessUnitBrowser` abstract interface to `ores.qt.api`; `BusinessUnitController` implements it. `OrgExplorerMd |
+| [[id:79E3C451-97E5-4C2B-820D-0D6F4D4E8BF7][Task: [shell] Build ores.shell.lib as STATIC to fix Windows plugin DLL link]] | DONE | 2026-05-22 | 2026-05-22 | Hotfix for the Windows `Continuous Windows` workflow on `main`, which has been failing all four configurations (msvc/cla |
+| [[id:6371B4A7-62DE-43F3-81BA-A343185B8B6C][Task: [cli] Build ores.cli.lib as a static library]] | DONE | 2026-05-22 | 2026-05-22 | - Fixes Windows link error: `undefined symbol: ores::cli::app::host::execute` |
+| [[id:07DC7000-27DA-459A-AB0D-8245A0FB20A1][Task: [shell] Fix missing ORES_SHELL_EXPORT on host class (Windows linker error)]] | DONE | 2026-05-22 | 2026-05-22 | - `ores::shell::app::host` was missing the `ORES_SHELL_EXPORT` macro, so `host::execute` was not exported from the `ores |
+| [[id:7E4FB046-C920-465D-82A3-0348991C0499][Task: Add export macro to parser class for DLL visibility]] | DONE | 2026-05-22 | 2026-05-22 | Add the `ORES_REFDATA_SERVICE_EXPORT` macro to the `parser` class declaration to ensure proper symbol visibility when bu |
 
-- [[id:9F2B0585-3C63-4A3E-97A3-FEA97B51727A][Task: [cmake] Symbol visibility migration: -fvisibility=hidden across all shared libraries]]
-- [[id:D9D3BAB0-BB95-41CE-B68E-655B0C3695B0][Task: Fix missing export symbol definitions in trading.api and trading.core]]
-- [[id:B8298A05-9E0F-48BC-A36A-8A9EF73FCF6B][Task: [qt] Break cross-plugin symbol dependencies (plugin isolation phase 1)]]
-- [[id:79E3C451-97E5-4C2B-820D-0D6F4D4E8BF7][Task: [shell] Build ores.shell.lib as STATIC to fix Windows plugin DLL link]]
-- [[id:6371B4A7-62DE-43F3-81BA-A343185B8B6C][Task: [cli] Build ores.cli.lib as a static library]]
-- [[id:07DC7000-27DA-459A-AB0D-8245A0FB20A1][Task: [shell] Fix missing ORES_SHELL_EXPORT on host class (Windows linker error)]]
-- [[id:7E4FB046-C920-465D-82A3-0348991C0499][Task: Add export macro to parser class for DLL visibility]]
 * Decisions
 
 - /Static CLI and shell/ :: building =ores.cli.lib= and =ores.shell.lib= as

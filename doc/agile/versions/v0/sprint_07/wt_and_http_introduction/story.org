@@ -44,10 +44,10 @@ Wt application + HTTP service introduced here.
 
 * Tasks
 
-In execution order:
-
-- [[id:05935A3C-FCEE-4157-9BA9-15E37D71CF23][Setup basic Wt infrastructure]]
-- [[id:9BD1200F-241F-4153-B804-6E7095DA56DE][Consider exposing endpoints via HTTP]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:05935A3C-FCEE-4157-9BA9-15E37D71CF23][Setup basic Wt infrastructure]] | DONE | 2026-05-19 | 2025-12-29 | Pull Wt in as a peer-of-Qt UI toolkit so the same service can drive a web frontend. |
+| [[id:9BD1200F-241F-4153-B804-6E7095DA56DE][Consider exposing endpoints via HTTP]] | DONE | 2026-05-19 | 2025-12-30 | Add an HTTP entry point on the comms layer so non-Qt clients can talk to the service. |
 
 * Decisions
 

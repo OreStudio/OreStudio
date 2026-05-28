@@ -34,12 +34,12 @@ clock_cast portability; nodiscard warnings; split-component codegen profiles; me
 
 * Tasks
 
-In execution order:
-
-- [[id:5574EBA4-753B-4E1C-871A-D6CC13C4A99B][Add split-component codegen profiles and fix skill docs]]
-- [[id:1A666F11-C992-4208-8A19-2700ADBB6577][Fix nodiscard warnings in ImportTradeDialog instrument saves]]
-- [[id:7444CF0A-7B32-4690-B0D1-296D93F1EAFF][Move Compute and Market Data menus into MainWindow.ui]]
-- [[id:A59AC77E-321E-4B55-B722-0FD74E0F1697][Replace clock_cast with portable file time conversion]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5574EBA4-753B-4E1C-871A-D6CC13C4A99B][Add split-component codegen profiles and fix skill docs]] | DONE | 2026-05-20 | 2026-04-07 | Codegen workflow supports split-component architectures (api / core / service); automated file placement into project tree; specialised CMake templates; component-specific name derivation. |
+| [[id:1A666F11-C992-4208-8A19-2700ADBB6577][Fix nodiscard warnings in ImportTradeDialog instrument saves]] | DONE | 2026-05-20 | 2026-04-07 | Silence nodiscard warnings (with caveat about silent failures - explicit return-value checks for critical operations recommended). |
+| [[id:7444CF0A-7B32-4690-B0D1-296D93F1EAFF][Move Compute and Market Data menus into MainWindow.ui]] | DONE | 2026-05-20 | 2026-04-07 | Compute + Market Data menu structural definitions + action properties moved from MainWindow.cpp to MainWindow.ui. |
+| [[id:A59AC77E-321E-4B55-B722-0FD74E0F1697][Replace clock_cast with portable file time conversion]] | DONE | 2026-05-20 | 2026-04-07 | Replace std::chrono::clock_cast with manual conversion for executable build time; Apple libc++ portability. |
 
 * Decisions
 

@@ -48,15 +48,15 @@ Replace it with product-level captures in the [[id:D4219199-7B17-4A89-B4BC-60197
 
 * Tasks
 
-In execution order:
-
-- [[id:2365B41D-EB19-42C4-BA76-105B6E82B7C0][Implement per-sprint capture workflow]]
-- [[id:5FBF9C85-5304-4F6D-8C69-0B0CF759191E][Update remaining near/far bucket references across all docs]]
-- [[id:AEC50B97-6789-4E3A-B0F4-A70A01FCB341][Update document_types.org capture entry for inbox/next/deferred/discarded]]
-- [[id:477F1A3A-7090-4519-937B-2A79176CBAF6][Write recipe: bulk capture from freeform text]]
-- [[id:482430DB-BE56-4589-B5A7-B616F7CC27F2][Add org-roam capture template in ores.lisp writing to inbox]]
-- [[id:CD06F3DD-B447-421C-8D61-261226FA4A71][Add Emacs new-story and new-task commands with key bindings to ores.lisp]] /(ABANDONED)/
-- [[id:AC8F7D3E-1D0E-4B09-920F-417DB75F6A42][Apply bulk capture recipe to sprint 18 capture.org]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2365B41D-EB19-42C4-BA76-105B6E82B7C0][Implement per-sprint capture workflow]] | DONE | 2026-05-27 | 2026-05-28 | Per-sprint capture workflow: individual files and compass integration |
+| [[id:5FBF9C85-5304-4F6D-8C69-0B0CF759191E][Update remaining near/far bucket references across all docs]] | DONE | 2026-05-27 | 2026-05-27 | Sweep all .org files for residual near/far bucket terminology and replace with inbox/next/deferred/discarded as appropriate. |
+| [[id:AEC50B97-6789-4E3A-B0F4-A70A01FCB341][Update document_types.org capture entry for inbox/next/deferred/discarded]] | DONE | 2026-05-27 | 2026-05-28 | Revise the capture document-type entry to describe the four-bucket structure (inbox, next, deferred, discarded) and per-file layout. |
+| [[id:477F1A3A-7090-4519-937B-2A79176CBAF6][Write recipe: bulk capture from freeform text]] | DONE | 2026-05-27 | 2026-05-28 | Create a recipe for authoring a paragraph of freeform text and having the LLM decompose it into one or more well-structured captures filed in inbox/. |
+| [[id:482430DB-BE56-4589-B5A7-B616F7CC27F2][Add org-roam capture template in ores.lisp writing to inbox]] | DONE | 2026-05-27 | 2026-05-28 | Implement environment-aware org-capture template in ores.lisp that writes new captures directly to doc/agile/product_backlog/inbox/ of the current environment. |
+| [[id:CD06F3DD-B447-421C-8D61-261226FA4A71][Add Emacs new-story and new-task commands with key bindings to ores.lisp]] | ABANDONED | 2026-05-27 | 2026-05-28 | Implement environment-aware new-story and new-task Emacs commands in ores.lisp, bound to keys. new-story prompts for title/description and scaffolds a story+task in the current sprint via compass. new-task lists current-sprint stories, lets user pick one, then scaffolds a task. Both commit with a well-formed message when the user confirms. |
+| [[id:AC8F7D3E-1D0E-4B09-920F-417DB75F6A42][Apply bulk capture recipe to sprint 18 capture.org]] | DONE | 2026-05-28 | 2026-05-28 | Process sprint 18 capture.org using the bulk capture recipe: decompose entries into well-structured per-file captures filed in the product backlog inbox/next/deferred buckets. |
 
 * Decisions
 

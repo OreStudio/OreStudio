@@ -39,12 +39,12 @@ Transform the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] from a f
 
 * Tasks
 
-In execution order:
-
-- [[id:C059C403-D888-4DB6-86B2-2FAD556DC55C][Rewrite system model with layer blurbs and component tables]] (DONE)
-- [[id:101A4A39-B452-4738-8BAD-2F8BF99686BF][Add component id-links and architectural cross-references to system model]] (DONE)
-- [[id:62B0FE2B-41F8-44E9-B181-EB0F9F3911CD][Split system model into per-layer sub-pages and add architecture diagram]] (STARTED — PR #887)
-- [[id:AFB80D01-1E85-485D-A3D9-766D219324FD][Additional system model improvements]] (STARTED)
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C059C403-D888-4DB6-86B2-2FAD556DC55C][Rewrite system model with layer blurbs and component tables]] | DONE | 2026-05-26 | 2026-05-26 | Add narrative introduction, layer blurbs, and table-based component inventories to system_model.org. |
+| [[id:101A4A39-B452-4738-8BAD-2F8BF99686BF][Add component id-links and architectural cross-references to system model]] | DONE | 2026-05-26 | 2026-05-26 | Wire all unlinked Qt plugin component rows to their component_overview.org via id-links; add cross-references to key architectural docs (workspaces, multi-tenancy, multi-party); consolidate DQ isolation content. |
+| [[id:62B0FE2B-41F8-44E9-B181-EB0F9F3911CD][Split system model into per-layer sub-pages and add architecture diagram]] | DONE | 2026-05-28 | 2026-05-28 | Split each architecture layer in system_model.org into its own sub-page linked via org-roam; add a PlantUML 4-layer architecture diagram; merge site_pdf_and_manual_book story; add NATS org-roam links. |
+| [[id:AFB80D01-1E85-485D-A3D9-766D219324FD][Additional system model improvements]] | DONE | 2026-05-28 | 2026-05-28 | Fix the architecture_layers.puml diagram; simplify system_model.org layer section headings to linked one-liners removing duplicated blurb text. |
 
 * PRs
 

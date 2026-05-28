@@ -40,9 +40,9 @@ sample RTT + bytes per session and plot the history in My Sessions.
 
 * Tasks
 
-In execution order:
-
-- [[id:094C83AC-52A4-4AE5-9E6E-29098D682565][Add plotting of session data]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:094C83AC-52A4-4AE5-9E6E-29098D682565][Add plotting of session data]] | DONE | 2026-05-20 | 2026-02-22 | Sync bytes_sent/received from live connection before logout; RTT in ping payloads; server records session_sample at each heartbeat into ores_iam_session_samples_tbl (TimescaleDB hypertable); get_session_samples_request/response (0x2072/0x2073); dynamic status-bar tooltip; QChartView/QLineSeries panel via qt6-charts vcpkg dep; TimescaleDB skill doc section. |
 
 * Decisions
 

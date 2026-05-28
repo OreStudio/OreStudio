@@ -37,9 +37,9 @@ configuration lives in one place per entity.
 
 * Tasks
 
-In execution order:
-
-- [[id:9D02285A-EF43-4A80-9A10-BA67E75DDD5B][Improve column handling in list widgets]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9D02285A-EF43-4A80-9A10-BA67E75DDD5B][Improve column handling in list widgets]] | DONE | 2026-05-19 | 2026-02-19 | ColumnMetadata struct + helpers; 24 Client*Model headers + 24 *MdiWindow.cpp aligned; column_style enum relocated; initializeTableSettings takes string_view. |
 
 * Decisions
 

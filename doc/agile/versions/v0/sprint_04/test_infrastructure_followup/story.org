@@ -43,7 +43,9 @@ Continued from: [[id:22EFE1E8-427F-488A-94A3-8CA78F180966][Test infrastructure]]
 
 * Tasks
 
-- [[id:BF65A7A2-E271-4275-B0B3-81D6662C2867][CTest shows only one test per test suite]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BF65A7A2-E271-4275-B0B3-81D6662C2867][CTest shows only one test per test suite]] | DONE | 2025-11-20 | 2025-11-20 | Resolve the CTest-only-shows-one-test-per-suite behaviour that was BLOCKED in sprint 03. |
 
 * Decisions
 

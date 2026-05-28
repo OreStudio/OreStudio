@@ -38,14 +38,14 @@ and CLI surfaces.
 
 * Tasks
 
-In execution order:
-
-- [[id:A6AFE796-DCFB-40C1-A9C8-BD7A20091930][Qt entity creator skill]]
-- [[id:0127AA75-DCA4-432E-B892-EDD1CAA334B4][Shell entity creator skill]]
-- [[id:D2CED93A-5642-4374-BD26-0C7D5DC2CA13][HTTP entity creator skill]]
-- [[id:E00E8FD6-82F2-4AB4-9456-C6F44F855129][HTTP recipes skill]]
-- [[id:31A1D475-3941-4429-A7EC-2B52096C07A7][Wt entity creator skill]]
-- [[id:DE76313F-3C9E-441A-AA5E-6212A3841EED][CLI entity creator skill]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A6AFE796-DCFB-40C1-A9C8-BD7A20091930][Qt entity creator skill]] | DONE | 2026-05-19 | 2026-01-11 | Phase-based skill for adding a Qt UI for a domain entity (list window, detail dialog, history dialog, controller). |
+| [[id:0127AA75-DCA4-432E-B892-EDD1CAA334B4][Shell entity creator skill]] | DONE | 2026-05-19 | 2026-01-11 | Skill for adding shell commands for a domain entity: list/add then history; register with REPL; recipe with runnable examples. |
+| [[id:D2CED93A-5642-4374-BD26-0C7D5DC2CA13][HTTP entity creator skill]] | DONE | 2026-05-19 | 2026-01-11 | Skill for adding REST endpoints for a domain entity in ores.http.server; coroutine handlers, OpenAPI metadata, JSON via rfl. |
+| [[id:E00E8FD6-82F2-4AB4-9456-C6F44F855129][HTTP recipes skill]] | DONE | 2026-05-19 | 2026-01-11 | Mirror of the shell/cli recipes skill for HTTP endpoints: Emacs verb-mode requests, route source references. |
+| [[id:31A1D475-3941-4429-A7EC-2B52096C07A7][Wt entity creator skill]] | DONE | 2026-05-19 | 2026-01-11 | Skill for adding Wt list widget + detail dialog + application integration for a domain entity. |
+| [[id:DE76313F-3C9E-441A-AA5E-6212A3841EED][CLI entity creator skill]] | DONE | 2026-05-19 | 2026-01-11 | Skill for adding CLI commands for a domain entity in ores.cli; parsers, options, application logic, recipes. |
 
 * Decisions
 

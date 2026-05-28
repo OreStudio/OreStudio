@@ -40,9 +40,9 @@ application layer (=performed_by=).
 
 * Tasks
 
-In execution order:
-
-- [[id:8125D266-84DF-495F-A344-47D6D0649940][Add system accounts for services]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8125D266-84DF-495F-A344-47D6D0649940][Add system accounts for services]] | DONE | 2026-05-19 | 2026-02-04 | account_type classifications (user / service / algorithm / LLM); session-only authentication for service accounts; performed_by audit field across 42 tables (codegen-driven); telemetry async-sink deadlock fix; tenant_aware_pool fail-fast. |
 
 * Decisions
 

@@ -44,9 +44,9 @@ implemented.
 
 * Tasks
 
-In execution order:
-
-- [[id:992AAD62-C371-4E93-B3D2-311D250AA41A][Party table structure]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:992AAD62-C371-4E93-B3D2-311D250AA41A][Party table structure]] | BACKLOG | 2026-05-19 |  | First-cut SQL table for party (LEI, tenant_id, party_type_id, business_center_id, status, etc.). Foundation for later domain layer + UI. |
 
 * Decisions
 

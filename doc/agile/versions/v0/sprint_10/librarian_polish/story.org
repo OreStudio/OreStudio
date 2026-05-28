@@ -47,9 +47,9 @@ Continued from: [[id:3579AB5E-D5D8-45AE-8CB5-00AD1C58644F][Data Quality subsyste
 
 * Tasks
 
-In execution order:
-
-- [[id:D7653A18-E5B2-4BF4-851D-539F5B827F36][Fix code review comments for librarian]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D7653A18-E5B2-4BF4-851D-539F5B827F36][Fix code review comments for librarian]] | DONE | 2026-05-19 | 2026-01-27 | PR review fixes: domain viewing/editing; dimension nodes in the tree as filters; dependency-message diagram check; country flags load after restart; header colour vs row colour; namespace crypto icons vs country flags (AE clash); publish-failure error visibility (raised as separate story). |
 
 * Decisions
 

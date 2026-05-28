@@ -41,15 +41,11 @@ socket code/ half of the sprint mission.
 
 * Tasks
 
-In execution order:
-
-- [[id:B26FE789-BB30-4E18-B3CB-CA14C57DDEA5][Merge client into console]]
-- [[id:03EF44E6-23E0-41BD-805C-38B3D9D67892][Enable Qt GUI]]
-- [[id:9EB036FA-7C1C-4A61-8491-70C07DF71F2D][Update prodigy to use tags]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Add locking up logic.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B26FE789-BB30-4E18-B3CB-CA14C57DDEA5][Merge client into console]] | DONE | 2025-12-15 | 2025-12-15 | Fold the standalone client into the console application so there's one user-facing binary. |
+| [[id:03EF44E6-23E0-41BD-805C-38B3D9D67892][Enable Qt GUI]] | DONE | 2025-12-15 | 2025-12-15 | Wire the Qt GUI to the cobalt-based client so it runs over the new socket layer. |
+| [[id:9EB036FA-7C1C-4A61-8491-70C07DF71F2D][Update prodigy to use tags]] | DONE | 2025-12-15 | 2025-12-15 | Update the Prodigy launcher integration to discover commands via tags rather than hardcoded names. |
 
 * Decisions
 

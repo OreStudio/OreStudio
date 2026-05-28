@@ -36,10 +36,11 @@ migrate all component_overview.org files to the v2 information architecture.
 
 * Tasks
 
-In execution order:
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:838A254C-E9EE-4A06-8F72-97C4F84E3E75][Task: Add component PlantUML generation script and bulk-refresh all diagrams]] | DONE | 2026-05-22 | 2026-05-22 | - Add `build/scripts/generate_component_puml.py`: a regex-based script that walks each project's `include/` headers and |
+| [[id:0D4A6B08-AB08-4A63-A768-5CBDB692FA18][Task: [modeling] Migrate all component docs to v2 information architecture]] | DONE | 2026-05-22 | 2026-05-22 | - Migrates all component documentation from the legacy stub format to the v2 information architecture (`component_overvi |
 
-- [[id:838A254C-E9EE-4A06-8F72-97C4F84E3E75][Task: Add component PlantUML generation script and bulk-refresh all diagrams]]
-- [[id:0D4A6B08-AB08-4A63-A768-5CBDB692FA18][Task: [modeling] Migrate all component docs to v2 information architecture]]
 * Decisions
 
 - (none)

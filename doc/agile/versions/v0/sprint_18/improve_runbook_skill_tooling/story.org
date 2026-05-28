@@ -38,11 +38,11 @@ Tighten the runbook and skill workflow by closing three gaps discovered during s
 
 * Tasks
 
-In execution order:
-
-1. [[id:EC72C05A-BC4C-47EC-ADF9-324190D9A246][Task: Add skill type to compass add]] — extend compass so =compass add skill= works.
-2. [[id:487021A2-0324-43AE-8150-797B41CA77B9][Task: Update skill-creation recipe to use compass]] — update the recipe so the scaffold step uses =compass add skill=.
-3. [[id:8DC89ACF-3A1A-4417-B4EE-BA031FD3AE00][Task: Create run-runbook skill]] — scaffold and fill the skill that locates and runs runbooks.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:EC72C05A-BC4C-47EC-ADF9-324190D9A246][Task: Add skill type to compass add]] | DONE | 2026-05-28 | 2026-05-28 | Extend compass add to support the skill document type so that LLM sessions can scaffold new skills via compass add skill rather than calling generate_v2_doc.sh directly. |
+| [[id:487021A2-0324-43AE-8150-797B41CA77B9][Task: Update skill-creation recipe to use compass]] | DONE | 2026-05-28 | 2026-05-28 | Update the how-do-I-create-a-new-skill recipe so that the scaffold step uses compass add skill rather than calling generate_v2_doc.sh directly. |
+| [[id:8DC89ACF-3A1A-4417-B4EE-BA031FD3AE00][Task: Create run-runbook skill]] | DONE | 2026-05-28 | 2026-05-28 | Create a run-runbook skill that reads runbooks.org, matches the user request to the closest runbook, and executes it. If no match is found, lists available runbooks and asks the user to choose. |
 
 * Decisions
 

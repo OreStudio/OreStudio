@@ -37,9 +37,9 @@ storage. Postponed within sprint 12.
 
 * Tasks
 
-In execution order:
-
-- [[id:713A4F2A-FC2F-40B3-B82A-94D66E680F10][Analyse caching at dialog level]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:713A4F2A-FC2F-40B3-B82A-94D66E680F10][Analyse caching at dialog level]] | BACKLOG | 2026-05-19 |  | Design sketch for a shared caching component (ores.caching or workspace) using immer immutable data structures; subscription-aware; foreign-key navigation; baobab-style usage viz. |
 
 * Decisions
 

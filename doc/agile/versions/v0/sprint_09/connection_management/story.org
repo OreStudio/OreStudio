@@ -41,13 +41,13 @@ browser, and modernise the login dialog to consume saved connections.
 
 * Tasks
 
-In execution order:
-
-- [[id:D769D4F4-97C9-49D6-93AE-850F6755B6E1][Prodigy supports multiple environments]]
-- [[id:15053700-A572-4AB7-B9F8-9CC2405D60C6][Add ores.connections core]]
-- [[id:581B2714-84AE-43FF-99DB-F77003E4E0CD][Add Connection Browser MDI window]]
-- [[id:DA48504B-2DA4-48AE-895C-B8C5017A22C1][Improvements to connection browser]]
-- [[id:B182B9B1-CB77-4751-B36C-75C380E7237B][Modernise login dialog]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D769D4F4-97C9-49D6-93AE-850F6755B6E1][Prodigy supports multiple environments]] | DONE | 2026-05-19 | 2026-01-13 | Prodigy shows all environments in a single buffer for running multiple claudes / qwens / geminis side-by-side. |
+| [[id:15053700-A572-4AB7-B9F8-9CC2405D60C6][Add ores.connections core]] | DONE | 2026-05-19 | 2026-01-13 | New component for server connection bookmarks: folder + tag + server_environment + environment_tag domain types; SQLite persistence with AES-256-GCM password encryption and PBKDF2 key derivation; connection_manager service. |
+| [[id:581B2714-84AE-43FF-99DB-F77003E4E0CD][Add Connection Browser MDI window]] | DONE | 2026-05-19 | 2026-01-13 | Hierarchical tree view of folders and environments; master-password support; full CRUD for folders and environments; database purge; pre-fill login from saved connection with auto-submit. |
+| [[id:DA48504B-2DA4-48AE-895C-B8C5017A22C1][Improvements to connection browser]] | DONE | 2026-05-19 | 2026-01-15 | Inline rename, drag-reorder folders, password policy validation, test-connection button, expanded start state, tags support, brighter-disabled-state fix, login-dialog integration. |
+| [[id:B182B9B1-CB77-4751-B36C-75C380E7237B][Modernise login dialog]] | DONE | 2026-05-19 | 2026-01-15 | Dark-themed, modeless LoginDialog and SignUpDialog as MDI subwindows; auto-login after sign-up; saved-connections dropdown. |
 
 * Decisions
 

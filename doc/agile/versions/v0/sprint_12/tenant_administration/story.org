@@ -40,13 +40,13 @@ Admin role.
 
 * Tasks
 
-In execution order:
-
-- [[id:74C6A18C-2B7B-4AB2-B1B8-7D3ECD220D5E][Add party types lookup table]]
-- [[id:D64EEE12-9220-4FB6-B544-A6BD96D6549A][Add RLS-aware tenant provisioning for tests]]
-- [[id:E306E003-5323-49C2-94A1-FE87D04588FD][Rename tenant types]]
-- [[id:EB1BBE92-E7FA-44A4-B46F-FE6DA326986D][Add tenant CRUD commands to CLI]]
-- [[id:8B3E7D8A-D3BE-48D1-8FB1-369754C9C95A][Add roles for Super Admin]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:74C6A18C-2B7B-4AB2-B1B8-7D3ECD220D5E][Add party types lookup table]] | DONE | 2026-05-19 | 2026-02-12 | ores_refdata_party_types_tbl with system + operational types; tenant provisioner auto-creates system party for new tenants; party creation validates type. |
+| [[id:D64EEE12-9220-4FB6-B544-A6BD96D6549A][Add RLS-aware tenant provisioning for tests]] | DONE | 2026-05-19 | 2026-02-12 | Tenant repository tests bypass RLS via a privileged tenant_provisioning_helper; 6 SKIP'd tenant tests re-enabled. |
+| [[id:E306E003-5323-49C2-94A1-FE87D04588FD][Rename tenant types]] | DONE | 2026-05-19 | 2026-02-12 | platform → system; organisation → production; test → automation; new evaluation type added. ores_iam_tenant_types_tbl + provisioner + scripts aligned. |
+| [[id:EB1BBE92-E7FA-44A4-B46F-FE6DA326986D][Add tenant CRUD commands to CLI]] | DONE | 2026-05-19 | 2026-02-12 | Add / list / etc commands for tenants via ores.cli. |
+| [[id:8B3E7D8A-D3BE-48D1-8FB1-369754C9C95A][Add roles for Super Admin]] | DONE | 2026-05-19 | 2026-02-12 | Distinguish Super Admin from Tenant Admin via separate roles. |
 
 * Decisions
 

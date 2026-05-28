@@ -94,9 +94,9 @@ choice). Distinct data sources (git worktrees + =gh=) and output from
 
 * Tasks
 
-In execution order:
-
-- [[id:1B355D5E-F0AF-4807-8551-8301F1F50128][Task: Implement the fleet command]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1B355D5E-F0AF-4807-8551-8301F1F50128][Task: Implement the fleet command]] | DONE | 2026-05-25 | 2026-05-25 | Add a compass fleet subcommand showing each git worktree's branch, story, task and PR. |
 
 * Decisions
 

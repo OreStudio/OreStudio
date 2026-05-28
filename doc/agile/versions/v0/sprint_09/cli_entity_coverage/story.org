@@ -38,10 +38,10 @@ boilerplate.
 
 * Tasks
 
-In execution order:
-
-- [[id:3D5F5BB6-056A-4533-9B18-7222D9B9B84F][Add missing entities to CLI]]
-- [[id:61FB71D8-9FD2-4739-A20A-7CADB3F83F4A][Refactor CLI entity parsers with generic helper]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3D5F5BB6-056A-4533-9B18-7222D9B9B84F][Add missing entities to CLI]] | DONE | 2026-05-19 | 2026-01-12 | list + delete commands for roles, permissions, countries, change_reasons, change_reason_categories; JSON and table output; lookup by UUID/code/name as appropriate. |
+| [[id:61FB71D8-9FD2-4739-A20A-7CADB3F83F4A][Refactor CLI entity parsers with generic helper]] | DONE | 2026-05-19 | 2026-01-12 | Introduce simple_entity_config + handle_simple_entity_command in parser_helpers; refactor the five new entity parsers behind it. Net reduction ~314 lines. |
 
 * Decisions
 

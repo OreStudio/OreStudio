@@ -52,9 +52,9 @@ service.
 
 * Tasks
 
-In execution order:
-
-- [[id:AD9AB87A-B9FC-459C-B1CA-60E375ADBE53][Fix ORE import bugs]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AD9AB87A-B9FC-459C-B1CA-60E375ADBE53][Fix ORE import bugs]] | DONE | 2026-05-20 | 2026-03-19 | ORE CurrencyType → DB code mapping (Metal → commodity, Crypto → synthetic, others → fiat) fixes Invalid monetary_nature: Crypto error; AddItemDialog subject_prefix field (editable on environments, read-only on connections); ConnectionBrowserMdiWindow size + splitter restoration fix; trade_status_service::resolve_status called before every trade write to avoid Invalid status_id: nil UUID; trading.v1.activity_types.list NATS endpoint replaces hardcoded lifecycle events in ORE Import Wizard; project version bumped to 0.0.15. |
 
 * Decisions
 

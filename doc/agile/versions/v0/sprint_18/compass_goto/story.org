@@ -56,10 +56,10 @@ remaining by-hand steps. It composes =git= + =compass add= into the
 
 * Tasks
 
-In execution order:
-
-- [[id:4A06DE45-1C09-4A24-88A7-E767CD293B24][Task: Implement the goto command]]
-- [[id:ECEC4B5C-3731-4E53-8282-28FCD41FC5EE][Task: goto: add a task to an existing story]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4A06DE45-1C09-4A24-88A7-E767CD293B24][Task: Implement the goto command]] | DONE | 2026-05-25 | 2026-05-25 | Add a compass goto command: fetch main, create a feature branch, scaffold a linked story+task, print next steps. |
+| [[id:ECEC4B5C-3731-4E53-8282-28FCD41FC5EE][Task: goto: add a task to an existing story]] | DONE | 2026-05-25 | 2026-05-25 | Extend compass goto with an existing-story mode (--story) that branches and adds a task to an existing story instead of creating a new one. |
 
 * Decisions
 

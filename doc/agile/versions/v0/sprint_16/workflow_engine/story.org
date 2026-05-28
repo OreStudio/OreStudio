@@ -34,11 +34,11 @@ ores.workflow component foundation; FSM state UUIDs replace ad-hoc status string
 
 * Tasks
 
-In execution order:
-
-- [[id:2F43F4C3-EEBB-493F-A8C2-BD0215FEFCDB][Generalise workflow engine and migrate existing sagas]]
-- [[id:AF7B9ECE-3CC8-4E6E-A130-9D7223F40E62][Replace ad-hoc status strings with FSM state UUIDs]]
-- [[id:ECE0A01D-EF94-4599-8410-DB8096B46935][Add ores.workflow SQL schema and C++ scaffold]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2F43F4C3-EEBB-493F-A8C2-BD0215FEFCDB][Generalise workflow engine and migrate existing sagas]] | DONE | 2026-05-20 | 2026-04-06 | Event-driven engine with definition registry + startup recovery; provision_parties + ore_import sagas migrated; publish_step_completion helper; ores.workflow.api created with shared messaging types. |
+| [[id:AF7B9ECE-3CC8-4E6E-A130-9D7223F40E62][Replace ad-hoc status strings with FSM state UUIDs]] | DONE | 2026-05-20 | 2026-04-06 | Migrate workflow status management from hardcoded strings to database-driven FSM; NATS protocols + services for querying FSM transitions; workflow instance + step state_id FK; fsm_state_map utility. |
+| [[id:ECE0A01D-EF94-4599-8410-DB8096B46935][Add ores.workflow SQL schema and C++ scaffold]] | DONE | 2026-05-20 | 2026-04-06 | Foundational saga-pattern workflow orchestration component: SQL schema for workflow instances + steps; RLS policies; C++ domain entities + repositories; codegen template fixes for timestamptz handling. |
 
 * Decisions
 

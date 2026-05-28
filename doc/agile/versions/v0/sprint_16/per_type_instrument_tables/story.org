@@ -39,11 +39,11 @@ Continued from: [[id:F8E6374B-AAAF-4D50-98CE-844DA4558172][CDM instrument domain
 
 * Tasks
 
-In execution order:
-
-- [[id:82C51A8D-3D26-45EC-955A-AAE46028A05D][Per-type equity instrument tables]]
-- [[id:A4D00400-84A9-499D-89CB-8CC62F19821B][Per-type FX instrument tables]]
-- [[id:37743EF3-168C-47D3-9B3B-E06E12B9EAA0][Per-type rates instrument tables]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:82C51A8D-3D26-45EC-955A-AAE46028A05D][Per-type equity instrument tables]] | DONE | 2026-05-20 | 2026-04-10 | Per-type equity instrument tables for options, forwards, swaps, positions; SQL schemas + repository layer + NATS handlers; per-type check constraints + typed error reply. |
+| [[id:A4D00400-84A9-499D-89CB-8CC62F19821B][Per-type FX instrument tables]] | DONE | 2026-05-20 | 2026-04-10 | Per-type FX instrument tables for various FX products (barrier options, digital options, variance swaps, accumulators) using std::variant; updated database schemas + repositories + mappers; typed FX instrument services + handlers + dispatch. |
+| [[id:37743EF3-168C-47D3-9B3B-E06E12B9EAA0][Per-type rates instrument tables]] | DONE | 2026-05-20 | 2026-04-10 | Replace generic instrument with per-type rates domain objects: standalone asset-class-specific tables; SQL schema; C++ domain + repository; Qt UI forms; legacy generic instrument infrastructure removed; party_id + RLS. |
 
 * Decisions
 

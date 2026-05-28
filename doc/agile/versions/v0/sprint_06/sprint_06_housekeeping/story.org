@@ -37,11 +37,11 @@ AI-summary skill (built in sprint 05); continue scanning paper notebooks.
 
 * Tasks
 
-In execution order:
-
-- [[id:44C7F43D-38C9-4E5A-B1C3-489BB8A6AB04][Sprint and product backlog refinement]]
-- [[id:7BF0EE19-AB13-4425-89F1-08D476BBD57B][Add AI-generated sprint summary]]
-- [[id:D6568833-3808-4FE6-B58D-E3925A83E238][OCR scan notebooks for this sprint]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:44C7F43D-38C9-4E5A-B1C3-489BB8A6AB04][Sprint and product backlog refinement]] | DONE | 2025-12-15 | 2025-12-15 | Maintain sprint 06 backlog and groom the product backlog as work surfaces new items. |
+| [[id:7BF0EE19-AB13-4425-89F1-08D476BBD57B][Add AI-generated sprint summary]] | DONE | 2025-12-15 | 2025-12-15 | Use the AI-summary skill (built in sprint 05) to produce a human-readable summary of sprint 06. |
+| [[id:D6568833-3808-4FE6-B58D-E3925A83E238][OCR scan notebooks for this sprint]] | DONE | 2025-12-15 | 2025-12-15 | Continue the notebook-scan thread; capture design sketches from sprint 06 design sessions. |
 
 * Decisions
 

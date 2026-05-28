@@ -37,11 +37,11 @@ continue the notebook OCR thread. AI summary was postponed.
 
 * Tasks
 
-In execution order:
-
-- [[id:06C1CB96-B27D-41CD-9B1E-5B450110BC5F][Sprint and product backlog refinement]]
-- [[id:6777DF63-B6F7-4290-9482-D1103749EE7C][OCR scan notebooks for this sprint]]
-- [[id:89D71399-3E8C-4E39-94CF-4F1F173D3FF5][Add AI-generated sprint summary]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:06C1CB96-B27D-41CD-9B1E-5B450110BC5F][Sprint and product backlog refinement]] | DONE | 2026-05-19 | 2026-01-11 | Maintain sprint 08 backlog and groom the product backlog. |
+| [[id:6777DF63-B6F7-4290-9482-D1103749EE7C][OCR scan notebooks for this sprint]] | DONE | 2026-05-19 | 2026-01-11 | Continue the long-running notebook OCR thread for sprint 08. |
+| [[id:89D71399-3E8C-4E39-94CF-4F1F173D3FF5][Add AI-generated sprint summary]] | BACKLOG | 2026-05-19 |  | Produce sprint 08's summary via the AI-summary skill. |
 
 * Decisions
 

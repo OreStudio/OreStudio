@@ -40,10 +40,10 @@ Boost.Log sink that writes telemetry directly to the database.
 
 * Tasks
 
-In execution order:
-
-- [[id:7EDC04F8-907E-4230-BD82-23E9E979FFB1][Add ores.telemetry.database component]]
-- [[id:6888A023-D626-44CE-B6C7-D0D92D31CBE1][Add database logging for tests]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7EDC04F8-907E-4230-BD82-23E9E979FFB1][Add ores.telemetry.database component]] | DONE | 2026-05-19 | 2026-02-03 | Split telemetry repository/mapper/entity into ores.telemetry.database to resolve the ores.telemetry ↔ ores.database circular dependency; Boost.Log database_sink_backend. |
+| [[id:6888A023-D626-44CE-B6C7-D0D92D31CBE1][Add database logging for tests]] | DONE | 2026-05-19 | 2026-02-03 | ORES_TEST_LOG_DATABASE CMake option enables direct DB logging from unit tests; three-tier tenant lifecycle (terminate / deprovision / purge); skip_telemetry_guard prevents recursive logging. |
 
 * Decisions
 

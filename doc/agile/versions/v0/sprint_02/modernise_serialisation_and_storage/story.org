@@ -39,11 +39,11 @@ JSON and XML; sqlgen covers Postgres.
 
 * Tasks
 
-In execution order:
-
-- [[id:DA7F8221-F808-432C-AB7D-CBB2687FD7B1][Add serialisation support for reflect-cpp]]
-- [[id:EB9D73F7-3598-48D2-8629-E0408F103280][Replace XML parsing with reflect-cpp]]
-- [[id:83DCDF42-74FA-4C71-B9C6-A31B4E0CC30C][Use sqlgen for Postgres]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DA7F8221-F808-432C-AB7D-CBB2687FD7B1][Add serialisation support for reflect-cpp]] | DONE | 2025-09-22 | 2025-09-28 | Integrate reflect-cpp into the build and use it to generate JSON serialisers for the existing types. |
+| [[id:EB9D73F7-3598-48D2-8629-E0408F103280][Replace XML parsing with reflect-cpp]] | DONE | 2025-09-29 | 2025-10-05 | Replace the hand-rolled XML parsing path with reflect-cpp's XML codec. |
+| [[id:83DCDF42-74FA-4C71-B9C6-A31B4E0CC30C][Use sqlgen for Postgres]] | DONE | 2025-10-05 | 2025-10-10 | Replace hand-written Postgres CRUD with sqlgen-generated code. |
 
 * Decisions
 

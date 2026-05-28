@@ -34,9 +34,9 @@ Job Instances execution history + Scheduler Monitor live status views; real-time
 
 * Tasks
 
-In execution order:
-
-- [[id:2FBE8A93-696D-447A-B9B9-707C9E500618][Complete Scheduler UI: Job Instances and Monitor]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2FBE8A93-696D-447A-B9B9-707C9E500618][Complete Scheduler UI: Job Instances and Monitor]] | DONE | 2026-05-20 | 2026-04-11 | Job Instances execution history + Scheduler Monitor live status views; new Qt UI components + NATS protocol definitions + backend handlers; real-time job lifecycle events; reactive UI. |
 
 * Decisions
 

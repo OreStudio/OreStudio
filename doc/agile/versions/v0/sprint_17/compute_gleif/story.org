@@ -37,12 +37,13 @@ per-row Retry button).
 
 * Tasks
 
-In execution order:
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E8553690-DD3D-4818-8722-CF614F8BCA4F][Task: [ores.sql/qt.compute] Large GLEIF counterparty bundle wiring, tenant reset, upload logging]] | DONE | 2026-05-22 | 2026-05-22 | Work from a bug-hunt session on the PartyProvisioningWizard's Large (~15k) counterparty import path. |
+| [[id:602EBC68-1A40-4FE8-B578-FD482A56EE12][Task: [compute] Per-triplet app_version packages via junction table]] | DONE | 2026-05-22 | 2026-05-22 | Each app_version now carries one packaged bundle per target triplet rather than a single blob shared across platforms. T |
+| [[id:39D52674-0D37-41A5-8C8A-42402B883FD5][Task: [qt,compute] Per-platform package uploads via Packages tab]] | DONE | 2026-05-22 | 2026-05-22 | Follow-up to #714. That PR moved package_uri to the junction and introduced vcpkg triplets; this one makes the Qt dialog |
+| [[id:44F7C2AF-35CE-4CFF-B09A-E90B6024096F][Task: [qt,compute] Mop-up: autogen leak, URI scheme, per-row Retry]] | DONE | 2026-05-22 | 2026-05-22 | Cleanup follow-ups surfaced during the per-platform package work (#714, #719). Three independent commits, each its own s |
 
-- [[id:E8553690-DD3D-4818-8722-CF614F8BCA4F][Task: [ores.sql/qt.compute] Large GLEIF counterparty bundle wiring, tenant reset, upload logging]]
-- [[id:602EBC68-1A40-4FE8-B578-FD482A56EE12][Task: [compute] Per-triplet app_version packages via junction table]]
-- [[id:39D52674-0D37-41A5-8C8A-42402B883FD5][Task: [qt,compute] Per-platform package uploads via Packages tab]]
-- [[id:44F7C2AF-35CE-4CFF-B09A-E90B6024096F][Task: [qt,compute] Mop-up: autogen leak, URI scheme, per-row Retry]]
 * Decisions
 
 - (none significant)

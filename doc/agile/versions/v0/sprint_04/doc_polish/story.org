@@ -38,14 +38,10 @@ has a clean role, and refresh the Doxygen main page.
 
 * Tasks
 
-In execution order:
-
-- [[id:B5E31CFC-772F-4C07-A019-4D9CFEA615E9][Clean up product website]]
-- [[id:8D6FF09E-2BE2-4600-991C-6C7556EC2484][Update Doxygen main page]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Update readme with UI screenshots.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B5E31CFC-772F-4C07-A019-4D9CFEA615E9][Clean up product website]] | DONE | 2025-11-30 | 2025-11-30 | Tighten the product website: navigation, broken links, stale screenshots. |
+| [[id:8D6FF09E-2BE2-4600-991C-6C7556EC2484][Update Doxygen main page]] | DONE | 2025-11-30 | 2025-11-30 | Refresh the Doxygen main page so it links to the v2 entry points instead of the legacy ones. |
 
 * Decisions
 

@@ -43,9 +43,9 @@ defaults — all from a single committed, well-commented rc file.
 
 * Tasks
 
-In execution order:
-
-- [[id:687B46B5-EF84-4016-A699-391EDC443072][Task: Add a default sqliterc with formatting and ergonomic defaults]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:687B46B5-EF84-4016-A699-391EDC443072][Task: Add a default sqliterc with formatting and ergonomic defaults]] | DONE | 2026-05-24 | 2026-05-24 | Author projects/ores.sql/utility/sqliterc.sql with commented defaults for output formatting, wide non-wrapping columns, and session settings. |
 
 * Decisions
 

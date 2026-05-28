@@ -38,9 +38,9 @@ operations. Single transaction; consolidated response shape.
 
 * Tasks
 
-In execution order:
-
-- [[id:0DAB990A-3FD6-4B8E-950E-3959A5990552][Add batch support for saves and deletes]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0DAB990A-3FD6-4B8E-950E-3959A5990552][Add batch support for saves and deletes]] | DONE | 2026-05-20 | 2026-02-28 | save_*_request takes std::vector<entity>; save_*_response returns {bool success, std::string message}; delete uses SQL WHERE IN for atomicity across 23 entities in dq / refdata / trading / iam; new save_result.hpp (later removed); temporal guard for tenant_type / tenant_status batch deletes; protocol 46.0 (breaking). |
 
 * Decisions
 

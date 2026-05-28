@@ -39,20 +39,11 @@ tests.
 
 * Tasks
 
-In execution order:
-
-- [[id:1352463B-1EBD-40F9-B1EB-3FDB5FFA319C][Add support for windows-msvc-clang-cl]]
-- [[id:AE610608-CFA8-40D4-B8C4-1F3D2B83AB40][Build using dynamic libraries]]
-- [[id:EA9A3802-114C-4250-97DB-A2E172A69E67][Fix vcpkg patch application on Windows]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Fix broken Linux and OSX tests.
-- Fix broken Windows builds.
-- Consider adding a Postgres database to CI.
-- Create a staging directory.
-- CANCELLED: Investigate build warning for qtbase.
-- CANCELLED: Ignore warnings on Windows and OSX.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1352463B-1EBD-40F9-B1EB-3FDB5FFA319C][Add support for windows-msvc-clang-cl]] | DONE | 2025-11-15 | 2025-11-15 | Add a CMake preset and toolchain wiring for clang-cl on Windows alongside MSVC. |
+| [[id:AE610608-CFA8-40D4-B8C4-1F3D2B83AB40][Build using dynamic libraries]] | DONE | 2025-11-15 | 2025-11-15 | Switch the build to produce dynamic libraries to reduce link times and binary footprint. |
+| [[id:EA9A3802-114C-4250-97DB-A2E172A69E67][Fix vcpkg patch application on Windows]] | DONE | 2025-11-15 | 2025-11-15 | Diagnose and work around vcpkg failing to apply a port patch on Windows. |
 
 * Decisions
 

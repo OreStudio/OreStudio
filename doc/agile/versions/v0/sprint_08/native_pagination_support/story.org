@@ -38,9 +38,9 @@ Adopt sqlgen 0.6.0 to land natively what we had hacked around: native
 
 * Tasks
 
-In execution order:
-
-- [[id:422D1B1B-D34C-4AA5-B127-0FF08D627377][Adopt sqlgen 0.6.0 native offset/limit]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:422D1B1B-D34C-4AA5-B127-0FF08D627377][Adopt sqlgen 0.6.0 native offset/limit]] | DONE | 2026-05-19 | 2026-01-07 | Update vcpkg submodule to sqlgen 0.6.0; drop custom overlay ports and the single_connection aggregation hack; expand pagination to feature_flags, role, permission, image, tag, login_info repositories. |
 
 * Decisions
 

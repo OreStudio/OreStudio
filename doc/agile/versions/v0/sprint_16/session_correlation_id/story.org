@@ -34,9 +34,9 @@ Add Nats-Session-Id header for per-session log correlation; sourced from IAM ses
 
 * Tasks
 
-In execution order:
-
-- [[id:88AAACDB-87DB-4C8A-BFDC-B7B08037D0AF][Add Nats-Session-Id header for per-session correlation]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:88AAACDB-87DB-4C8A-BFDC-B7B08037D0AF][Add Nats-Session-Id header for per-session correlation]] | DONE | 2026-05-20 | 2026-04-01 | Session-level trace ID enabling log aggregation across all requests within a session; nats_client supports + propagates session ID; sourced from IAM session record. |
 
 * Decisions
 

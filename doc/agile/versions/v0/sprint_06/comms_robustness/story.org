@@ -41,20 +41,12 @@ with give-up notification to the client.
 
 * Tasks
 
-In execution order:
-
-- [[id:0A5559C6-A726-45F3-9E63-3AEC93D6EA90][Split protocol.hpp into components]]
-- [[id:E7FDA609-024B-4EF1-95D9-6726ED112315][Create handshake service in comms]]
-- [[id:A9A1E81D-9061-43AC-B566-10B40DEE845B][Multi-threaded scenarios with comms]]
-- [[id:7A4CE6B9-06EF-42E2-BDA1-FB69ED082DFE][Add retry algorithm to client]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Add Postgres listener.
-- Notification of server restarts.
-- CANCELLED: Add listen/notify support (folded into the postgres
-  listener + event-bus pair).
-- Retry logic does not notify give-up (fixed inside the retry task).
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0A5559C6-A726-45F3-9E63-3AEC93D6EA90][Split protocol.hpp into components]] | DONE | 2025-12-10 | 2025-12-10 | ores.comms/protocol.hpp had grown to cover every component's message types. Split per-component so each lives next to its handler. |
+| [[id:E7FDA609-024B-4EF1-95D9-6726ED112315][Create handshake service in comms]] | DONE | 2025-12-10 | 2025-12-10 | Move the handshake logic out of session into a dedicated handshake service so failures are reported with structure rather than as opaque read errors. |
+| [[id:A9A1E81D-9061-43AC-B566-10B40DEE845B][Multi-threaded scenarios with comms]] | DONE | 2025-12-10 | 2025-12-10 | Cover the comms stack under multi-threaded use; surface and fix races discovered along the way. |
+| [[id:7A4CE6B9-06EF-42E2-BDA1-FB69ED082DFE][Add retry algorithm to client]] | DONE | 2025-12-10 | 2025-12-10 | Exponential-backoff retry on transient failures; surface a give-up event so the UI can react. |
 
 * Decisions
 

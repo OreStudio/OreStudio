@@ -40,12 +40,12 @@ samples round-trip.
 
 * Tasks
 
-In execution order:
-
-- [[id:27B76A70-DF1D-4C66-89A9-FBA3CB801353][Add ores.ore component for import/export]]
-- [[id:2A497CEB-40E2-47AD-8CF5-CFB40226DFBD][Generate C++ code for ORE via xsdcpp]]
-- [[id:755C3E7E-372B-4014-8698-41F6404255F2][Fix issues with xsdcpp when generating ORE code]]
-- [[id:9C3C142A-92B0-4771-9BB5-725E62A9B870][Fix Windows CI break due to XSD codegen]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:27B76A70-DF1D-4C66-89A9-FBA3CB801353][Add ores.ore component for import/export]] | DONE | 2026-05-19 | 2026-01-25 | Dedicated component for ORE (Open Source Risk Engine) import/export work; directory + CMake + stubs + arch docs updated. |
+| [[id:2A497CEB-40E2-47AD-8CF5-CFB40226DFBD][Generate C++ code for ORE via xsdcpp]] | DONE | 2026-05-19 | 2026-01-25 | xsdcpp integrated; manually-crafted CurrencyConfig/CurrencyElement replaced by generated types; artefact_type domain centralises target_table + populate_function lookup; dq_populate_*_fn naming convention enforced; currency rounding-type values corrected. |
+| [[id:755C3E7E-372B-4014-8698-41F6404255F2][Fix issues with xsdcpp when generating ORE code]] | DONE | 2026-05-19 | 2026-01-27 | xs:group ref expansion (trade data types: SwapData, FxForwardData); xs:choice maxOccurs='unbounded' → xsd::vector<T> (LGM in InterestRateModels); domain regenerated; XML round-trip tests; ore_xsd_schema_gaps.md analysis. |
+| [[id:9C3C142A-92B0-4771-9BB5-725E62A9B870][Fix Windows CI break due to XSD codegen]] | DONE | 2026-05-19 | 2026-01-26 | MSVC C1128 on domain_xsd.hpp; add /bigobj to the ores.ore target for MSVC builds. |
 
 * Decisions
 

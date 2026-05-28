@@ -41,13 +41,13 @@ evaluation tenants.
 
 * Tasks
 
-In execution order:
-
-- [[id:58DCD34B-3EF5-4AA3-B7F2-D531661DB110][Enforce root party uniqueness constraints]]
-- [[id:45641916-C11D-4810-AC9D-1298F5E42AB7][Add setup-new-tenant wizard]]
-- [[id:3023B0EC-B07E-4BB5-B981-064E2F49D31F][Gate party + counterparty wizard steps by tenant type]]
-- [[id:3AF3A647-67A6-450D-ABBF-2777BF967595][Improve tenant provisioning wizard UX]]
-- [[id:8EF061D5-9F21-4610-91B7-610A52DA4C75][Add evaluation-tenant onboarding wizard on first login]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:58DCD34B-3EF5-4AA3-B7F2-D531661DB110][Enforce root party uniqueness constraints]] | DONE | 2026-05-19 | 2026-02-12 | Each tenant has exactly two root parties: one system (auto-created) and one operational (the 'house'). Service-layer validation prevents additional roots. |
+| [[id:45641916-C11D-4810-AC9D-1298F5E42AB7][Add setup-new-tenant wizard]] | DONE | 2026-05-19 | 2026-02-13 | Tenant provisioner UI: GLEIF-based or synthetic party setup; counterparty setup; clear that it's evaluation. Synthetic subsystem in ores.synthetic (organisation_generator_service + organisation_publisher_service); tree_builder utility; protocol range 0x7000-0x7FFF. |
+| [[id:3023B0EC-B07E-4BB5-B981-064E2F49D31F][Gate party + counterparty wizard steps by tenant type]] | DONE | 2026-05-19 | 2026-02-14 | Party / counterparty setup only enabled for evaluation tenants; production tenants see the steps disabled with explanation. |
+| [[id:3AF3A647-67A6-450D-ABBF-2777BF967595][Improve tenant provisioning wizard UX]] | DONE | 2026-05-19 | 2026-02-15 | Rename to evoke 'evaluation tenant provisioning'; move off main menu, access via tenants-dialog icon; capitalise tenant-type values; tenant code column narrower; default to evaluation; system-party name evokes 'tenant system party'; root party defaults to tenant name; password-match indicator. |
+| [[id:8EF061D5-9F21-4610-91B7-610A52DA4C75][Add evaluation-tenant onboarding wizard on first login]] | DONE | 2026-05-19 | 2026-02-16 | First-login wizard offers to install a catalogue + set up the tenant; user can cancel; stops appearing once a root party exists beyond the system party. |
 
 * Decisions
 

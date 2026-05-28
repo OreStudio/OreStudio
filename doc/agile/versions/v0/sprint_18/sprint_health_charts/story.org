@@ -39,9 +39,9 @@ Add a set of sprint health charts that render as PNG images on the sprint page, 
 
 * Tasks
 
-In execution order:
-
-- [[id:8A5F2C71-7924-4520-8548-25C8EE5E4E9A][Implement sprint health charts]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8A5F2C71-7924-4520-8548-25C8EE5E4E9A][Implement sprint health charts]] | DONE | 2026-05-26 | 2026-05-28 | Write Python data extractor, gnuplot scripts, CMake target, and wire PNGs into sprint page. |
 
 * Plan
 

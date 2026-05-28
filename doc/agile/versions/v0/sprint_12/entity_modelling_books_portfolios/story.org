@@ -39,13 +39,13 @@ portfolios; verify country↔currency link.
 
 * Tasks
 
-In execution order:
-
-- [[id:91DD5CFC-F76E-44FD-9381-1565B274E700][Business unit entity]]
-- [[id:40574A33-82D5-4E72-83B4-2048197460FB][Book and Portfolio entities]]
-- [[id:C650130D-55B3-48E3-A75B-A07A70F9F9B3][Add business centre scheme entity]]
-- [[id:513272DD-7ED4-4F96-98FA-DB038A4BAE42][Add portfolio support]]
-- [[id:34BFE3E3-62E7-4E2F-A98E-C39A0AD205A1][Add country link to currencies]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:91DD5CFC-F76E-44FD-9381-1565B274E700][Business unit entity]] | DONE | 2026-05-19 | 2026-02-17 | Internal organisational units (desks, branches): unit_id, party_id, parent_business_unit_id, unit_name, unit_id_code, business_centre. Supports hierarchy. |
+| [[id:40574A33-82D5-4E72-83B4-2048197460FB][Book and Portfolio entities]] | DONE | 2026-05-19 | 2026-02-18 | Portfolio = logical aggregation nodes (never hold trades). Book = operational ledger leaves (hold trades). Strict separation; legal ownership at Book level; trading vs banking book flag; Basel-friendly. Combined hierarchy rules documented. |
+| [[id:C650130D-55B3-48E3-A75B-A07A70F9F9B3][Add business centre scheme entity]] | DONE | 2026-05-19 | 2026-02-18 | FpML business-centre coding scheme (v9-4); 4-char codes (ISO country + location); 500+ entries; FK to country (nullable for index publication calendars). |
+| [[id:513272DD-7ED4-4F96-98FA-DB038A4BAE42][Add portfolio support]] | DONE | 2026-05-19 | 2026-02-19 | Implementation of the portfolio entity based on the modelling analysis; hierarchical-tree storage following the Postgres-tree pattern. |
+| [[id:34BFE3E3-62E7-4E2F-A98E-C39A0AD205A1][Add country link to currencies]] | DONE | 2026-05-19 | 2026-02-19 | Verify the existing country support links cleanly to currencies. |
 
 * Decisions
 

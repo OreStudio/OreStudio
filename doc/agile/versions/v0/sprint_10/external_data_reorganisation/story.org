@@ -39,10 +39,10 @@ other dataset.
 
 * Tasks
 
-In execution order:
-
-- [[id:3038F1E7-97B6-4B5B-BDA0-50FCB71C0810][Tidy up external data storage]]
-- [[id:43667103-8A31-45F3-B1FA-B18AF8297256][Move coding schemes through DQ artefact pipeline]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3038F1E7-97B6-4B5B-BDA0-50FCB71C0810][Tidy up external data storage]] | DONE | 2026-05-19 | 2026-01-23 | Restructure populate/ into domain-specific subdirectories (fpml/, crypto/, flags/, solvaris/); manifest.json files; code generators for flags/crypto/solvaris; relocate external data to external/. |
+| [[id:43667103-8A31-45F3-B1FA-B18AF8297256][Move coding schemes through DQ artefact pipeline]] | DONE | 2026-05-19 | 2026-01-24 | ISO + FpML coding schemes now flow through dq_coding_schemes_artefact_tbl with preview / upsert / insert_only / replace_all modes; party schemes (LEI, BIC, MIC) remain direct inserts. |
 
 * Decisions
 

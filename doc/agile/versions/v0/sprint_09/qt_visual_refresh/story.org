@@ -38,9 +38,9 @@ icon-set or theme changes don't require editing every UI file.
 
 * Tasks
 
-In execution order:
-
-- [[id:41A9CCC5-8A2B-4F0C-A403-8641C2D0318A][Refactor Qt icon implementation]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:41A9CCC5-8A2B-4F0C-A403-8641C2D0318A][Refactor Qt icon implementation]] | DONE | 2026-05-19 | 2026-01-20 | Introduce enum class Icon + enum class IconTheme in IconUtils; centralise iconPath / createRecoloredIcon; standardise icon colours (DefaultIconColor, ConnectedColor, DisconnectedColor); add Solarized Linear + Bold icon set. |
 
 * Decisions
 

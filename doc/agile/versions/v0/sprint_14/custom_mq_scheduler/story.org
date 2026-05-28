@@ -48,9 +48,9 @@ infrastructure.
 
 * Tasks
 
-In execution order:
-
-- [[id:8DB5AAC2-F451-465D-BFB7-143F88427848][Replace pgmq + pg_cron with custom tables and scheduler]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8DB5AAC2-F451-465D-BFB7-143F88427848][Replace pgmq + pg_cron with custom tables and scheduler]] | DONE | 2026-05-20 | 2026-03-04 | Remove pgmq + pg_cron extensions; custom ores_mq_* tables (party / tenant / system scope; task / channel queue types; native RLS); in-process scheduler_loop using boost::asio::steady_timer with sql_action_handler + mq_action_handler; ores_scheduler_job_instances_tbl TimescaleDB hypertable replaces cron.job_run_details; mq_service facade; protocol 48.0 (breaking). |
 
 * Decisions
 

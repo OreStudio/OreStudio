@@ -54,9 +54,8 @@ loss and surface a clear /connection lost/ state.
 
 * Tasks
 
-In execution order:
-
--
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
 
 * Decisions
 

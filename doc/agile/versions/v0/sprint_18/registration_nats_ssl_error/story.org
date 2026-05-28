@@ -47,9 +47,8 @@ disabled).
 
 * Tasks
 
-In execution order:
-
--
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
 
 * Decisions
 

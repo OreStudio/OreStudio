@@ -37,9 +37,9 @@ tree scales as entities multiply.
 
 * Tasks
 
-In execution order:
-
-- [[id:544B0C6E-B1D2-426C-88EA-8302634101EE][Add domain sub-menu layer to CLI]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:544B0C6E-B1D2-426C-88EA-8302634101EE][Add domain sub-menu layer to CLI]] | DONE | 2026-05-20 | 2026-03-03 | Four top-level domains: refdata / iam / dq / variability; command syntax becomes ores.cli <domain> <entity> <op>; core parser refactored with domain-specific parsers; documentation + tests + entity parsers updated. |
 
 * Decisions
 

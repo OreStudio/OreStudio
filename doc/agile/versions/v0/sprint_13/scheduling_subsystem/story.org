@@ -46,11 +46,11 @@ custom MQ tables.
 
 * Tasks
 
-In execution order:
-
-- [[id:B74604D3-2A48-4BA9-A4DD-C2F554F7EB29][Add scheduler binary protocol]]
-- [[id:94EA7333-2B7D-412E-BBC6-4E502A3979BE][Add scheduling support]]
-- [[id:4A704351-6959-4806-B164-EF8554724AC5][Add a message queue]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B74604D3-2A48-4BA9-A4DD-C2F554F7EB29][Add scheduler binary protocol]] | DONE | 2026-05-20 | 2026-02-26 | Open scheduler subsystem 0x9000-0x9FFF in the comms protocol; four request/response pairs (get_job_definitions / schedule_job / unschedule_job / get_job_history); registrar pattern; rfl::Reflector for cron_expression + job_status placed in ores.scheduler/rfl/reflectors.hpp to avoid circular dep with ores.utility; protocol 45.0 (breaking). |
+| [[id:94EA7333-2B7D-412E-BBC6-4E502A3979BE][Add scheduling support]] | DONE | 2026-05-20 | 2026-02-27 | ores.scheduler library wraps pg_cron via Quartz.NET-style fluent API: job_definition / job_instance / job_definition_builder / cron_scheduler. Hand-crafted ores_scheduler_job_definitions_tbl linked to cron.job via cron_job_id; reads from cron.job_run_details directly. croncpp for cron_expression with std::expected error handling; utility::uuid::tenant_id for tenant isolation. |
+| [[id:4A704351-6959-4806-B164-EF8554724AC5][Add a message queue]] | DONE | 2026-05-20 | 2026-02-27 | Basic queue infrastructure for asynchronous processing — sets up the foundation that the scheduling subsystem and future trade-import paths will both consume. |
 
 * Decisions
 

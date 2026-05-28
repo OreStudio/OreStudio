@@ -48,9 +48,9 @@ The site header gains two new nav entries:
 
 * Tasks
 
-In execution order:
-
-- [[id:D77474B1-D0CB-4124-86AD-10C873EE6132][Task: Create downloads.org and wire Downloads + Agile into site nav]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D77474B1-D0CB-4124-86AD-10C873EE6132][Task: Create downloads.org and wire Downloads + Agile into site nav]] | DONE | 2026-05-25 | 2026-05-25 | Write doc/downloads.org with the full release/binary table; add Downloads and Agile href entries to site-html-preamble in .build-site.el. |
 
 * Decisions
 

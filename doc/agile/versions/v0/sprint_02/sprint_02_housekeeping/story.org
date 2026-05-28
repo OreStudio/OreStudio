@@ -42,20 +42,11 @@ action.
 
 * Tasks
 
-In execution order:
-
-- [[id:5D22ECF9-0A43-43A7-A93D-BEE7E09DC7D6][Sprint and product backlog refinement]]
-- [[id:C2E5852D-6E8D-40B5-976D-6E2687B01B19][White-boarding for new architecture]]
-- [[id:14D86F4F-3FE2-4F3A-BCF1-B91CF9D7AC35][Add Gemini action]]
-
-Additional tasks belonging to this story in v0 but not migrated in
-the drive-test:
-
-- Fix misspell fixer errors.
-- Remove URL support from prog mode in emacs.
-- Completions in emacs org mode are incorrect.
-- Clean up REPL code.
-- POSTPONED: Fix Gemini CLI action.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5D22ECF9-0A43-43A7-A93D-BEE7E09DC7D6][Sprint and product backlog refinement]] | DONE | 2025-08-01 | 2025-10-23 | Curate sprint 02 backlog and groom the product backlog as work progresses. |
+| [[id:C2E5852D-6E8D-40B5-976D-6E2687B01B19][White-boarding for new architecture]] | DONE | 2025-09-01 | 2025-09-15 | Whiteboard the client/server architecture that the cobalt and comms work will implement. |
+| [[id:14D86F4F-3FE2-4F3A-BCF1-B91CF9D7AC35][Add Gemini action]] | DONE | 2025-09-05 | 2025-09-10 | Wire a Gemini-based PR review action into GitHub Actions. |
 
 * Decisions
 

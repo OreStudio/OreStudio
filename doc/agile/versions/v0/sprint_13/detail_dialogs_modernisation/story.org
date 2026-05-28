@@ -38,10 +38,10 @@ in-dialog toolbars in favour of plain buttons.
 
 * Tasks
 
-In execution order:
-
-- [[id:BA771EA9-FBF1-420E-B708-E12A3276758F][Make all detail dialogs tabbed]]
-- [[id:6B0D2950-4144-4C15-B4FA-356B6EC0770B][Remove toolbars from detail dialogs]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BA771EA9-FBF1-420E-B708-E12A3276758F][Make all detail dialogs tabbed]] | DONE | 2026-05-20 | 2026-02-20 | Tabbed layout standardised; Provenance tab consolidated; Country detail moves flag to General; Currency detail relocates icon button into General; Methodology + Treatment + Catalog + others have read-only change_commentary in Provenance; Methodology Implementation grew to 300px; My Sessions + My Account converted to MDI subwindows; business-centre flag label next to combo box. |
+| [[id:6B0D2950-4144-4C15-B4FA-356B6EC0770B][Remove toolbars from detail dialogs]] | DONE | 2026-05-20 | 2026-02-25 | Detail dialogs use plain buttons (delete, cancel, save) instead of in-dialog toolbars. |
 
 * Decisions
 

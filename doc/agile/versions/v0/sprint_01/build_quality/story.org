@@ -40,19 +40,11 @@ applied consistently, vcpkg warnings suppressed.
 
 * Tasks
 
-In execution order:
-
-- [[id:125319DD-7A6E-4DF9-A3F7-0458F4C11256][Add nightly support with memcheck]]
-- [[id:ED38A636-D4C7-4069-9A49-B19C71903EAD][Fix Valgrind failing to run unit tests]]
-- [[id:326556B2-F83D-4E55-9E20-63D8EF83CE8E][Update C++ standard]]
-
-Additional tasks belonging to this story in v0 but not migrated in
-the drive-test:
-
-- Ignore vcpkg warnings.
-- Unit tests show up twice in nightlies.
-- Add badges from JKQTPlotter.
-- Setup code quality actions (postponed).
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:125319DD-7A6E-4DF9-A3F7-0458F4C11256][Add nightly support with memcheck]] | DONE | 2024-07-05 | 2024-07-08 | Add a nightly CI pipeline that runs the tests under memcheck. |
+| [[id:ED38A636-D4C7-4069-9A49-B19C71903EAD][Fix Valgrind failing to run unit tests]] | DONE | 2024-07-08 | 2024-07-09 | Diagnose and fix the cause of Valgrind crashing during the unit-test run. |
+| [[id:326556B2-F83D-4E55-9E20-63D8EF83CE8E][Update C++ standard]] | DONE | 2024-07-15 | 2024-07-15 | Bump the C++ standard used across the build to the project's chosen target. |
 
 * Decisions
 

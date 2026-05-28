@@ -52,9 +52,9 @@ alongside the skill.
 
 * Tasks
 
-In execution order:
-
-- [[id:9F6635A3-A770-44F2-BC85-B5324A0E65EA][Task: Reformat and install the tufte-viz skill and reference docs]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9F6635A3-A770-44F2-BC85-B5324A0E65EA][Task: Reformat and install the tufte-viz skill and reference docs]] | DONE | 2026-05-25 | 2026-05-25 | Convert SKILL.md and the two Tufte reference Markdown files to org-mode; place them under doc/llm/skills/tufte-viz/; catalogue the skill in claude_code_skills.org. |
 
 * Decisions
 

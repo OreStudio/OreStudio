@@ -51,9 +51,9 @@ Convert nine personal domain notes from =/home/marco/Development/Notebooks/summa
 
 * Tasks
 
-In execution order:
-
-- [[id:FBB4FEE3-5DB0-4404-893E-6FE298E22088][Task: Survey notes and create initial knowledge documents]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FBB4FEE3-5DB0-4404-893E-6FE298E22088][Task: Survey notes and create initial knowledge documents]] | DONE | 2026-05-25 | 2026-05-25 | Read all nine source notes, decide on document split, create v2 knowledge documents under doc/knowledge/domain/, align terminology with ORE Studio. |
 
 * Decisions
 

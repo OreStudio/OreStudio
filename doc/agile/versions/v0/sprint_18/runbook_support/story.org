@@ -40,10 +40,10 @@ Introduce a =runbook= as a new document type in the v2 information architecture.
 
 * Tasks
 
-In execution order:
-
-- [[id:4D2107C8-9253-4F5A-957D-CC909E440279][Implement runbook document type]]
-- [[id:A1F16312-4CFE-4D2D-B968-90C05AE15B88][Implement runbook support]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4D2107C8-9253-4F5A-957D-CC909E440279][Implement runbook document type]] | DONE | 2026-05-26 | 2026-05-26 | Add #+type: runbook to codegen, compass, glossary, and document types contract. |
+| [[id:A1F16312-4CFE-4D2D-B968-90C05AE15B88][Implement runbook support]] | DONE | 2026-05-26 | 2026-05-28 | Add runbook document type to codegen, compass, glossary, and document types; write concrete runbook. |
 
 * PRs
 

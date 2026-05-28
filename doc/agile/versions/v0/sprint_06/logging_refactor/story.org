@@ -37,11 +37,11 @@ clean up the regressions and Valgrind leaks the change introduced.
 
 * Tasks
 
-In execution order:
-
-- [[id:90FB8B88-EEED-4F9C-A5EE-631A1D2BAAC6][Use std::string_view for loggers]]
-- [[id:F315D65F-872F-421E-A22E-6D12CD9F6F88][Fix issues with logging after string_view change]]
-- [[id:D80A0088-D6B5-4A7D-A2B2-695D1CCD1193][Fix valgrind leaks after string view changes to logging]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:90FB8B88-EEED-4F9C-A5EE-631A1D2BAAC6][Use std::string_view for loggers]] | DONE | 2025-12-12 | 2025-12-12 | Take std::string_view rather than std::string in the logging API so call sites avoid an allocation per log line. |
+| [[id:F315D65F-872F-421E-A22E-6D12CD9F6F88][Fix issues with logging after string_view change]] | DONE | 2025-12-12 | 2025-12-12 | Repair call sites and tests that broke under the string_view migration. |
+| [[id:D80A0088-D6B5-4A7D-A2B2-695D1CCD1193][Fix valgrind leaks after string view changes to logging]] | DONE | 2025-12-12 | 2025-12-12 | The string_view change introduced dangling-view leaks at log emission; fix the lifetime issues. |
 
 * Decisions
 

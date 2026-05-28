@@ -34,28 +34,28 @@ Long sweep of cross-platform fixes surfaced by Windows builds: MSYS2 path mangli
 
 * Tasks
 
-In execution order:
-
-- [[id:BE980896-4EBD-4E12-BE42-0563E3145B3C][Add /FS to serialise MSVC PDB writes under parallel Ninja builds]]
-- [[id:95C585AD-1936-465B-85A3-A0F1BCD0E777][Add shutdown_signals abstraction; fix Windows SIGQUIT build]]
-- [[id:5AA0AD33-A601-4AAE-902C-E128F97C9329][Build as static library on Windows to avoid DLL export limit]]
-- [[id:76BCFE06-F8C2-4C26-9722-CDEBB8BC2E87][Fix uninitialised member UB and GLib dl-init suppression]]
-- [[id:DD59ED70-ACF3-4A18-9C43-9739CB3A563B][Fix Windows build error in http_client path conversion]]
-- [[id:0E9BC778-BCF0-48FE-8D87-029F06D42FA2][Fix Windows MOC dllimport conflict on AddItemDialog and TagSelectorWidget]]
-- [[id:B735153C-70D0-42D5-A549-211F3E3E25B7][Fix MSYS2 path mangling of openssl -subj on Windows]]
-- [[id:FEC5735E-857F-487D-86A2-9F039DBF4E0D][Fix NATS cert SAN generation on Windows]]
-- [[id:AB7A5AD7-017D-43F6-83E6-811396C93BA0][Fix NATS cert generation on Windows]]
-- [[id:1D237BFB-0F48-4B06-A12C-6A9C3005E6FE][Fix Windows linker error on PasswordMatchIndicator]]
-- [[id:7E0D1DEF-0FFF-4C95-9C3C-C7CD5D5475FD][Fix Windows Clang build: replace SIGQUIT with platform shutdown_signals]]
-- [[id:30F41686-071E-414A-ABB1-29A404D826D8][Windows: Fix stack flag syntax for Clang and WiX 2GB lib limit]]
-- [[id:82B6A4E4-BA27-4B03-B7E9-EF91ED8C066C][Windows: replace strptime with portable std::get_time]]
-- [[id:EF04D207-BFED-47E2-B620-D481C6A9CFBE][Remove unused unistd.h include breaking Windows builds]]
-- [[id:815E19B3-9CC8-483B-B4AC-E88D8F19DE4E][Replace _wfopen with _wfopen_s to fix Windows Clang build]]
-- [[id:1A878166-C60F-46DA-AACD-9E30A4666733][Fix Windows CI packaging and stack overflow failures]]
-- [[id:7ACBFE8A-E60A-4F0C-AFB6-2C9019295144][Fix xsd::vector to use alias for non-bool to support incomplete types]]
-- [[id:1FD5F2D0-65BF-4249-BDB4-592B71059402][Move PasswordMatchIndicator::connectFields out of header]]
-- [[id:1A1AD7FE-4D09-4876-A5A4-C1734DB1D183][Split registrar.cpp to fix MSVC C1202 constexpr depth limit]]
-- [[id:11694C94-3AFF-4759-A51C-7B0450D0E2B9][cmake: Switch MSVC debug info to Embedded (/Z7)]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BE980896-4EBD-4E12-BE42-0563E3145B3C][Add /FS to serialise MSVC PDB writes under parallel Ninja builds]] | DONE | 2026-05-20 | 2026-04-11 | Add /FS compiler option to Windows build configuration to prevent C1041 errors during parallel builds with Ninja. |
+| [[id:95C585AD-1936-465B-85A3-A0F1BCD0E777][Add shutdown_signals abstraction; fix Windows SIGQUIT build]] | DONE | 2026-05-20 | 2026-04-11 | signals.hpp defines platform-specific shutdown signals (excludes SIGQUIT on Windows); domain_service_runner_impl.hpp uses centralised list. |
+| [[id:5AA0AD33-A601-4AAE-902C-E128F97C9329][Build as static library on Windows to avoid DLL export limit]] | DONE | 2026-05-20 | 2026-04-11 | Build trading.core as static library on Windows to address 65535 symbol DLL limit; update installation command for static archives. |
+| [[id:76BCFE06-F8C2-4C26-9722-CDEBB8BC2E87][Fix uninitialised member UB and GLib dl-init suppression]] | DONE | 2026-05-20 | 2026-04-11 | Broaden Valgrind suppression rule for call_init to allow intermediate stack frames; xsdcpp bool serialisation suppressions; regenerate domain files. |
+| [[id:DD59ED70-ACF3-4A18-9C43-9739CB3A563B][Fix Windows build error in http_client path conversion]] | DONE | 2026-05-20 | 2026-04-11 | Use path::string().c_str() instead of path::c_str() in http_client.cpp. |
+| [[id:0E9BC778-BCF0-48FE-8D87-029F06D42FA2][Fix Windows MOC dllimport conflict on AddItemDialog and TagSelectorWidget]] | DONE | 2026-05-20 | 2026-04-11 | Remove ORES_QT_API export macro from AddItemDialog + TagSelectorWidget classes + their header includes. |
+| [[id:B735153C-70D0-42D5-A549-211F3E3E25B7][Fix MSYS2 path mangling of openssl -subj on Windows]] | DONE | 2026-05-20 | 2026-04-11 | Export MSYS_NO_PATHCONV + MSYS2_ARG_CONV_EXCL to prevent path conversion in generate_nats_certs.sh on Windows / Git Bash. |
+| [[id:FEC5735E-857F-487D-86A2-9F039DBF4E0D][Fix NATS cert SAN generation on Windows]] | DONE | 2026-05-20 | 2026-04-11 | Replace process substitution with temporary file for OpenSSL SAN extension; ensure compatibility with MSYS2/Git Bash; cleanup on openssl failure. |
+| [[id:AB7A5AD7-017D-43F6-83E6-811396C93BA0][Fix NATS cert generation on Windows]] | DONE | 2026-05-20 | 2026-04-11 | Use double-slash prefix for OpenSSL subject strings on MSYS2; later replaced with MSYS2_ARG_CONV_EXCL. |
+| [[id:1D237BFB-0F48-4B06-A12C-6A9C3005E6FE][Fix Windows linker error on PasswordMatchIndicator]] | DONE | 2026-05-20 | 2026-04-11 | Remove ORES_QT_API export macro + associated ores.qt/export.hpp include from PasswordMatchIndicator. |
+| [[id:7E0D1DEF-0FFF-4C95-9C3C-C7CD5D5475FD][Fix Windows Clang build: replace SIGQUIT with platform shutdown_signals]] | DONE | 2026-05-20 | 2026-04-11 | Use centralised ores::platform::process::shutdown_signals list in domain_service_runner_impl.hpp + signing_service_runner_impl.hpp. |
+| [[id:30F41686-071E-414A-ABB1-29A404D826D8][Windows: Fix stack flag syntax for Clang and WiX 2GB lib limit]] | DONE | 2026-05-20 | 2026-04-11 | Update CMake configurations to handle linker stack sizes across compiler drivers; restrict installation of internal static library to non-Windows to avoid 2GB size limitations. |
+| [[id:82B6A4E4-BA27-4B03-B7E9-EF91ED8C066C][Windows: replace strptime with portable std::get_time]] | DONE | 2026-05-20 | 2026-04-11 | Replace POSIX-specific strptime with portable parse_time helper using std::get_time; explicit C locale + REQUIRE check. |
+| [[id:EF04D207-BFED-47E2-B620-D481C6A9CFBE][Remove unused unistd.h include breaking Windows builds]] | DONE | 2026-05-20 | 2026-04-11 | Remove unused #include <unistd.h> from process_supervisor.cpp. |
+| [[id:815E19B3-9CC8-483B-B4AC-E88D8F19DE4E][Replace _wfopen with _wfopen_s to fix Windows Clang build]] | DONE | 2026-05-20 | 2026-04-11 | Use _wfopen_s instead of deprecated _wfopen in Windows implementation of open_c_file. |
+| [[id:1A878166-C60F-46DA-AACD-9E30A4666733][Fix Windows CI packaging and stack overflow failures]] | DONE | 2026-05-20 | 2026-04-11 | Handle large cabinet files in WiX; increase stack size for test executables to 8MB to prevent stack overflows during deep XML parsing recursion. |
+| [[id:7ACBFE8A-E60A-4F0C-AFB6-2C9019295144][Fix xsd::vector to use alias for non-bool to support incomplete types]] | DONE | 2026-05-20 | 2026-04-11 | Replace previous xsd::vector<T> wrapper class with template alias + type trait selector; std::vector<T> for most types, custom char-backed bool_vector for bool. |
+| [[id:1FD5F2D0-65BF-4249-BDB4-592B71059402][Move PasswordMatchIndicator::connectFields out of header]] | DONE | 2026-05-20 | 2026-04-11 | Move connectFields implementation from header to source file; add ORES_QT_API macro to struct definition. |
+| [[id:1A1AD7FE-4D09-4876-A5A4-C1734DB1D183][Split registrar.cpp to fix MSVC C1202 constexpr depth limit]] | DONE | 2026-05-20 | 2026-04-11 | Split NATS handler registration logic into multiple translation units to prevent MSVC C1202 caused by excessive template instantiations. |
+| [[id:11694C94-3AFF-4759-A51C-7B0450D0E2B9][cmake: Switch MSVC debug info to Embedded (/Z7)]] | DONE | 2026-05-20 | 2026-04-11 | Switch MSVC debug information format from external PDB to embedded; /FS flag removed in consequence. |
 
 * Decisions
 

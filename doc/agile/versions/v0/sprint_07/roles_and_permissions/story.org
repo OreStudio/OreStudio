@@ -37,11 +37,11 @@ enforcement at the handler layer, and a Qt UI for management.
 
 * Tasks
 
-In execution order:
-
-- [[id:28EC17EB-B2AA-4E72-BF8C-7AA0B63EA2E0][Add core infrastructure for roles and permissions]]
-- [[id:4D1FD802-EBC4-413D-AF97-BBADD0C6467C][Implement RBAC enforcement]]
-- [[id:552649C1-2541-4DFC-98E6-BCF59994F6D2][Add UI for roles and permission management]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:28EC17EB-B2AA-4E72-BF8C-7AA0B63EA2E0][Add core infrastructure for roles and permissions]] | DONE | 2026-05-19 | 2025-12-26 | Domain model (role, permission, role-permission, user-role), repositories, sqlgen schemas. |
+| [[id:4D1FD802-EBC4-413D-AF97-BBADD0C6467C][Implement RBAC enforcement]] | DONE | 2026-05-19 | 2025-12-27 | Enforce role-based access at the message handler layer: reject requests the calling session lacks permission for. |
+| [[id:552649C1-2541-4DFC-98E6-BCF59994F6D2][Add UI for roles and permission management]] | DONE | 2026-05-19 | 2025-12-28 | Qt UI for listing roles, listing permissions, assigning roles to users, and granting permissions to roles. |
 
 * Decisions
 

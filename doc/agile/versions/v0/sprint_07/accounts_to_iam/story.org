@@ -39,12 +39,12 @@ leave the component ready for RBAC to land on top.
 
 * Tasks
 
-In execution order:
-
-- [[id:F98AD7F0-2034-4982-9F1B-EFC48E8150C9][Rename accounts to iam]]
-- [[id:C4F2B895-852B-4F29-B04F-D78F674609C1][Add lock account request]]
-- [[id:87AB0C65-F079-4988-BD25-4CF378950482][Add password reset functionality to accounts]]
-- [[id:7851DAC6-9048-4C2B-B6BB-3167D55412F6][Add sign-up workflow]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F98AD7F0-2034-4982-9F1B-EFC48E8150C9][Rename accounts to iam]] | DONE | 2026-05-19 | 2025-12-25 | Rename ores.accounts to ores.iam to reflect the broader identity-and-access concern; pure rename PR. |
+| [[id:C4F2B895-852B-4F29-B04F-D78F674609C1][Add lock account request]] | DONE | 2026-05-19 | 2025-12-22 | Add a protocol message + service handler to lock an account (administrative action, separate from auto-lock on failed logins). |
+| [[id:87AB0C65-F079-4988-BD25-4CF378950482][Add password reset functionality to accounts]] | DONE | 2026-05-19 | 2025-12-23 | User-initiated password reset: protocol message, server-side reset flow, CLI/Qt entry points. |
+| [[id:7851DAC6-9048-4C2B-B6BB-3167D55412F6][Add sign-up workflow]] | DONE | 2026-05-19 | 2025-12-24 | End-to-end sign-up: collect user details, validate, create account, route to first-login. |
 
 * Decisions
 

@@ -38,9 +38,9 @@ Full export/import implementation is postponed.
 
 * Tasks
 
-In execution order:
-
-- [[id:B7C0605A-7B13-440B-8099-E628FF5BB0E9][Create ores.fpml component]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B7C0605A-7B13-440B-8099-E628FF5BB0E9][Create ores.fpml component]] | BACKLOG | 2026-05-19 |  | Scaffold the ores.fpml component to host shared FPML infrastructure (XSD validation via libxml2, reporting-view schema set, partial-validation wrappers); export and import implementations carry forward to a later sprint. |
 
 * Decisions
 

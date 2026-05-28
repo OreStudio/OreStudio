@@ -1028,7 +1028,7 @@ def cmd_add_diagram(argv):
 
 
 def cmd_add(argv):
-    """Create a v2 doc by calling ores.codegen as a library.
+    """Create a doc by calling ores.codegen as a library.
 
     argv is [<type>, <generate_doc flags...>]. When --parent-dir is
     omitted, default it from the current sprint (story) or version (sprint).

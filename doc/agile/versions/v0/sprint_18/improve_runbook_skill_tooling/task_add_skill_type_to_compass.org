@@ -51,9 +51,9 @@ Add =skill= to the list of types supported by =compass add=. Currently the comma
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                    | File                              | Decision | Notes                      |
+|---+----------------------------------------------------+-----------------------------------+----------+----------------------------|
+| 1 | Now field in DONE task should be exactly Complete. | task_add_skill_type_to_compass.org | Accept  | Fixed in 3134d3c45         |
 
 * Result
 

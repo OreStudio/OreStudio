@@ -65,3 +65,6 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+PR #906 merged. =doc/llm/claude_code.org= written and wired into =llm.org=
+component table and =* See also=.

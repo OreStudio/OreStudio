@@ -20,22 +20,43 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Deliver three bundled documentation improvements to the cybernetics
+meta-layer:
+
+1. Create a standalone *cybernetics summary page*
+   (=doc/meta/cybernetics.org=) that explains what cybernetics is and
+   replaces bare Wikipedia links currently used across the repo.
+2. Expand [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] (=doc/meta/cybernetic_levels.org=) with a
+   section on how ORE Studio's approach connects to and diverges from
+   Beer's VSM, including known limitations.
+3. Create a new *Viable System Model knowledge page*
+   (=doc/meta/viable_system_model.org=) introducing Beer's five systems
+   and linking to Cybernetic Levels.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | STARTED                                                                       |
 | Parent story | [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Improve cybernetics documentation]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-28                               |
+| Now          | In progress.                                                                  |
+| Waiting on   | Nothing.                                                                      |
+| Next         | Implement documentation changes.                                              |
+| Last touched | 2026-05-28                                                                    |
 
 * Acceptance
 
--
+- [ ] =doc/meta/cybernetics.org= created as a v2 knowledge doc; covers
+  what cybernetics is, key ideas (feedback, regulation, variety),
+  Stafford Beer's contribution, and how it informs ORE Studio.
+- [ ] =doc/meta/viable_system_model.org= created as a v2 knowledge doc;
+  introduces the five VSM systems and the 3* audit channel; links to
+  [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]].
+- [ ] =doc/meta/cybernetic_levels.org= expanded: new section on where
+  ORE Studio's mapping aligns with and departs from canonical VSM,
+  including known limitations.
+- [ ] Existing Wikipedia cybernetics links replaced with in-repo id-links.
+- [ ] =doc/meta/meta.org= index updated to list both new pages.
 
 * Plan
 

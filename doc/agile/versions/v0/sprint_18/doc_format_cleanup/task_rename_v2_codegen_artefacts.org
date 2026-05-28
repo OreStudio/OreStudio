@@ -20,22 +20,30 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Remove the =v2= prefix from every codegen artefact:
+- =projects/ores.codegen/generate_v2_doc.sh= → =generate_doc.sh=
+- =projects/ores.codegen/src/v2_doc_generate.py= → =doc_generate.py=
+- All =projects/ores.codegen/library/templates/v2_doc_*.org.mustache= → =doc_*.org.mustache=
+- Update every caller: =compass.py=, =CMakeLists.txt=, CI workflows, and any
+  shell scripts that invoke =generate_v2_doc.sh= directly.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                      |
 | Parent story | [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-28                               |
+| Now          | Not yet started.                                                             |
+| Waiting on   | Nothing.                                                                     |
+| Next         | Begin implementation.                                                        |
+| Last touched | 2026-05-28                                                                   |
 
 * Acceptance
 
--
+- No file under =projects/ores.codegen/= has =v2= in its name.
+- =compass goto= and =compass add= still scaffold documents correctly after the rename.
+- CI build passes (no broken script references).
+- =generate_doc.sh --help= works; =generate_v2_doc.sh= no longer exists.
 
 * Plan
 

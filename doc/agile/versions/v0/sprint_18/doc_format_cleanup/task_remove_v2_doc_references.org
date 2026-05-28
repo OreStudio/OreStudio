@@ -20,22 +20,34 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Remove "v2" from documentation titles, filenames, and body text where it
+refers to the old format label rather than a meaningful version number:
+- Rename =doc/recipes/codegen/how_do_i_create_a_new_v2_doc.org= (title and
+  file) — drop "v2" from both.
+- Update =doc/llm/memory/use_codegen_for_v2_docs.org= — rename and rewrite
+  to refer to the tool by its new name.
+- Retire =doc/llm/runbooks/port_v1_doc_to_v2/runbook.org= — archive or delete
+  since v1 migration is complete.
+- Update every =[[id:...]]= back-link and prose reference in recipes, memories,
+  and skills that pointed to the renamed/deleted docs.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                      |
 | Parent story | [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-28                               |
+| Now          | Not yet started.                                                             |
+| Waiting on   | [[id:F35BD43B-B8A6-45E0-B414-891C030C168C][Rename codegen task]] — script names must be settled first. |
+| Next         | Begin once rename task is merged.                                            |
+| Last touched | 2026-05-28                                                                   |
 
 * Acceptance
 
--
+- =doc/recipes/codegen/how_do_i_create_a_new_v2_doc.org= no longer exists; replacement has no "v2" in filename or title.
+- =doc/llm/memory/use_codegen_for_v2_docs.org= renamed/updated; =compass search= returns the new name.
+- =doc/llm/runbooks/port_v1_doc_to_v2/= retired.
+- No recipe, memory, or skill body text refers to the old filenames.
 
 * Plan
 

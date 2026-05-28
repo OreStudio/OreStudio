@@ -64,9 +64,9 @@ Produce three artefacts:
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                         | Title                                                    |
+|------------------------------------------------------------+----------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/899][#899]] | [agile] Add hotfix handling runbook and conventions |
 
 * Review
 

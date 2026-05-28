@@ -45,7 +45,7 @@ columns: Script | Purpose | Notes. Link to any related recipes in
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] |
-| Now          | Done. PR #911 merged.                  |
+| Now          | Nothing.                               |
 | Waiting on   | —                                      |
 | Next         | —                                      |
 | Last touched | 2026-05-29                             |

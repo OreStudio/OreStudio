@@ -61,9 +61,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                         | Title                                                                          |
+|------------------------------------------------------------+--------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/894][#894]] | [agile] Introduce sprint theme grouping and Achievements across all sprints |
 
 * Review
 

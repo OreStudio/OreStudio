@@ -9,7 +9,7 @@
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco
 #+branch: feature/bulk-capture-recipe
-#+pr:
+#+pr: 876
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-27

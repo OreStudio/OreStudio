@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: AC8F7D3E-1D0E-4B09-920F-417DB75F6A42
+:END:
+#+title: Task: Apply bulk capture recipe to sprint 18 capture.org
+#+description: Process sprint 18 capture.org using the bulk capture recipe: decompose entries into well-structured per-file captures filed in the product backlog inbox/next/deferred buckets.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :per_sprint_capture_files:sprint_18:v0:
+#+owner: marco
+#+branch: feature/apply-bulk-capture-to-sprint18-capture
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run the bulk capture recipe against the sprint 18 =capture.org= file.
+For each entry, decide whether it belongs in =inbox/= (new idea worth
+tracking), =next/= (imminent candidate), =deferred/= (long-horizon
+idea), or =discarded/= (no longer relevant). Scaffold the surviving
+entries as individual captures via =compass capture --note=, so the
+sprint capture file can be archived or emptied with confidence.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | STARTED                                                                  |
+| Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]]    |
+| Now          | Working through capture.org entries.                                     |
+| Waiting on   | Nothing.                                                                 |
+| Next         | Process all sections; commit captures; mark DONE.                        |
+| Last touched | 2026-05-28                                                               |
+
+* Acceptance
+
+- Every entry in =doc/agile/versions/v0/sprint_18/capture.org= has been
+  triaged: filed as a per-file capture in the appropriate backlog bucket,
+  or explicitly discarded.
+- Each filed capture was scaffolded via =compass capture --note= and lands
+  in the correct bucket under =doc/agile/product_backlog/=.
+- The sprint 18 =capture.org= is noted as drained in its header.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

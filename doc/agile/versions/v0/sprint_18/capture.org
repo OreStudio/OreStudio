@@ -293,3 +293,7 @@ Provide a clean, modern C++ (Qt 6 preferred, but Qt 5 compatible) implementation
 
 Please provide well-commented, production-ready code for both parts.
 #+end_src
+
+* Settings
+
+- add all compass calls to claude settings.

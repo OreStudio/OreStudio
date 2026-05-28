@@ -38,11 +38,11 @@ binary caching after the =x-gha= backend was silently removed upstream.
 
 * Tasks
 
-In execution order:
-
-- [[id:12F3D5ED-FB2B-41E6-8CC5-15392522C2C0][Address past review comments]]
-- [[id:1F64C879-3CCA-42DA-B16C-9F0194346964][Fix apt-get failures on nightly build]]
-- [[id:760FA2B8-3005-494C-ACED-53C2D605351D][Fix vcpkg caching (x-gha removed upstream)]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:12F3D5ED-FB2B-41E6-8CC5-15392522C2C0][Address past review comments]] | DONE | 2026-05-19 | 2026-01-29 | Clear backlog of review comments from PRs #389 and #387: header-state restoration, DataLibrarianWindow optimisation, bundle validation messages, dataset_protocol helpers extracted, ORE CMake dependency cleanup, doc pruning. |
+| [[id:1F64C879-3CCA-42DA-B16C-9F0194346964][Fix apt-get failures on nightly build]] | DONE | 2026-05-19 | 2026-02-05 | Exponential-backoff retry loop in install_debian_packages.sh (5 retries, 5s start); Acquire::Retries=3; --with-valgrind flag for nightly. |
+| [[id:760FA2B8-3005-494C-ACED-53C2D605351D][Fix vcpkg caching (x-gha removed upstream)]] | DONE | 2026-05-19 | 2026-02-06 | Replace the silently-removed x-gha vcpkg binary-cache backend with the files provider backed by actions/cache@v4 across 5 workflow files; saves ~21 min per build. |
 
 * Decisions
 

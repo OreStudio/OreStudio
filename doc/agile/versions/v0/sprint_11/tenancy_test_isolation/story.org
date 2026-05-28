@@ -41,9 +41,9 @@ system actually runs in production.
 
 * Tasks
 
-In execution order:
-
-- [[id:9E2E5CA9-31A7-4527-BB9B-3B767DDAC0AB][Use tenancy to isolate tests]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9E2E5CA9-31A7-4527-BB9B-3B767DDAC0AB][Use tenancy to isolate tests]] | DONE | 2026-05-19 | 2026-02-01 | tenant_context C++ service in ores.database; per-test tenant provision + deprovision; RLS policies allow system tenant; --tenant CLI flag + ORES_TENANT env; psqlrc tenant prompt; ores_iam_provision_tenant_fn + ores_iam_deprovision_tenant_fn. |
 
 * Decisions
 

@@ -42,10 +42,10 @@ commands, protocol bump.
 
 * Tasks
 
-In execution order:
-
-- [[id:4BEC02DC-52C4-4D2D-B2CB-6142DFD4FF70][Update codegen for tenancy]]
-- [[id:EEC6CEA6-4F37-4F23-B88A-1F505EB9CBC0][Add entity types for tenants]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4BEC02DC-52C4-4D2D-B2CB-6142DFD4FF70][Update codegen for tenancy]] | DONE | 2026-05-19 | 2026-02-02 | Mustache templates (sql_schema_domain_entity_create, sql_schema_table_create) conditionally include tenant_id; PK + exclusion constraints incorporate tenant_id; pgTAP testing skill section; generate_refdata_schema.sh + recreate_entity.sh. |
+| [[id:EEC6CEA6-4F37-4F23-B88A-1F505EB9CBC0][Add entity types for tenants]] | DONE | 2026-05-19 | 2026-02-03 | C++ tenant + tenant_status + tenant_type + currency + rounding_type entities tenant-aware; primary key types handled (UUID / text); protocol bump 26.1; shell tenants command + bootstrap/login tenant awareness; principal parsing username@hostname. |
 
 * Decisions
 

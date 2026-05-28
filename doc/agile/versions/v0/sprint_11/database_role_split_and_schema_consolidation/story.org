@@ -38,11 +38,11 @@ Principle-of-Least-Privilege RBAC roles, a single =public= schema
 
 * Tasks
 
-In execution order:
-
-- [[id:41C5A11E-0633-4112-9335-EC7ED684682F][Split god admin account into RBAC roles]]
-- [[id:18D627FB-9EEA-4E3B-BD84-744EF0D8EF2E][Move all database entities back to public schema]]
-- [[id:2ACCC003-A494-4687-BC9B-446653511658][Check SQL directory structure]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:41C5A11E-0633-4112-9335-EC7ED684682F][Split god admin account into RBAC roles]] | DONE | 2026-05-19 | 2026-01-31 | Introduce ores_owner / ores_rw / ores_ro group roles + LOGIN service users (ores_http_user, etc.); ALTER DEFAULT PRIVILEGES; schema ownership held by the DDL user. Postgres passwords removed from GitHub workflows as part of this. |
+| [[id:18D627FB-9EEA-4E3B-BD84-744EF0D8EF2E][Move all database entities back to public schema]] | DONE | 2026-05-19 | 2026-01-31 | Reverse the metadata/production split landed in sprint 10; adopt Odoo-style ores_<component>_<entity> prefix in a single public schema. /We traded the illusion of cleanliness for the reality of speed./ |
+| [[id:2ACCC003-A494-4687-BC9B-446653511658][Check SQL directory structure]] | DONE | 2026-05-19 | 2026-01-31 | Standardise SQL file names to [name]_[purpose].sql; consolidate change_control/ into dq/; remove ~45 orphaned refdata SQL files. |
 
 * Decisions
 

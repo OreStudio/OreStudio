@@ -44,11 +44,11 @@ blocked there.
 
 * Tasks
 
-In execution order:
-
-- [[id:F0C71FE7-1920-44AA-B98F-9147AAA00032][Audit for uses of raw libpq]]
-- [[id:DB4461DD-A98E-4847-9B16-A76CFD1AFCBE][Add NOTICE logging support to sqlgen]]
-- [[id:A6D63825-D592-47BB-A1C6-B6E9564FD55C][Add bound parameters to sqlgen]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F0C71FE7-1920-44AA-B98F-9147AAA00032][Audit for uses of raw libpq]] | DONE | 2026-05-19 | 2026-02-01 | Sweep the codebase for libpq escapes Claude has snuck in; move all into ores.database; raise tickets on sqlgen for the gaps. |
+| [[id:DB4461DD-A98E-4847-9B16-A76CFD1AFCBE][Add NOTICE logging support to sqlgen]] | DONE | 2026-05-19 | 2026-02-01 | Upstream PR getml/sqlgen#120 + proposal #118 — Postgres notice processor hook. |
+| [[id:A6D63825-D592-47BB-A1C6-B6E9564FD55C][Add bound parameters to sqlgen]] | BLOCKED | 2026-05-19 |  | Replace remaining libpq escapes for SQL-injection-safe queries with native sqlgen bound parameters. |
 
 * Decisions
 

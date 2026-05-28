@@ -40,10 +40,10 @@ not at construction time.
 
 * Tasks
 
-In execution order:
-
-- [[id:DB80603B-EB19-4C36-BF8C-E997C250766B][Refactor tenant lookup functions to accept const context]]
-- [[id:F4793F16-278E-4274-8727-B33C7062E1A6][Refactor message handlers for per-request tenant context]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DB80603B-EB19-4C36-BF8C-E997C250766B][Refactor tenant lookup functions to accept const context]] | DONE | 2026-05-19 | 2026-02-05 | resolve_tenant_id, lookup_by_code, lookup_by_hostname take const context& (they're read-only); eliminates unnecessary mutable copies. |
+| [[id:F4793F16-278E-4274-8727-B33C7062E1A6][Refactor message handlers for per-request tenant context]] | DONE | 2026-05-19 | 2026-02-06 | tenant_aware_handler base class; per-request database contexts from session.tenant_id; type-safe utility::uuid::tenant_id wrapper; system tenant changes from nil UUID to max UUID (RFC 9562); fixes cross-tenant data leakage. |
 
 * Decisions
 

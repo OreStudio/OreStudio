@@ -40,11 +40,11 @@ trigger machinery that lets existing C++ code 'just work'.
 
 * Tasks
 
-In execution order:
-
-- [[id:59582D45-B4F4-47B9-8CF2-06E597F9651C][Initial tenant setup (schema)]]
-- [[id:27AEB340-B98C-4B6D-AA92-D4DA2DC5C629][Tenancy and seeding]]
-- [[id:73A005DE-626E-4B62-8FED-F385AECDF02A][Tenancy, login and tests]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:59582D45-B4F4-47B9-8CF2-06E597F9651C][Initial tenant setup (schema)]] | DONE | 2026-05-19 | 2026-02-01 | ores_iam_tenant_types_tbl + tenant_statuses + tenants (bitemporal); tenant_id on ~70 entity tables; unique indexes + tenant_id-indexes; ores_iam_validate_tenant_fn on all relevant INSERT triggers; SuperAdmin + TenantAdmin roles; system tenant UUID; session.tenant_id lookup. |
+| [[id:27AEB340-B98C-4B6D-AA92-D4DA2DC5C629][Tenancy and seeding]] | DONE | 2026-05-19 | 2026-02-01 | All populate scripts pass ores_iam_system_tenant_id_fn() as the first upsert parameter so foundational data is scoped to the system tenant. |
+| [[id:73A005DE-626E-4B62-8FED-F385AECDF02A][Tenancy, login and tests]] | DONE | 2026-05-19 | 2026-02-01 | BEFORE INSERT triggers populate tenant_id from session variable; ores_iam_validate_tenant_fn coalesces with current session tenant; ores_test_ddl/dml_user default tenant set to system tenant; database_helper::set_system_tenant_context(). |
 
 * Decisions
 

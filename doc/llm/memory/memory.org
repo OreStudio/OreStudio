@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :memory:index:knowledge:
 #+created: 2024-06-15
-#+updated: 2026-05-21
+#+updated: 2026-05-28
 
 Project-scope persistent memory for LLM sessions. /This is where any
 LLM working on ORE Studio should write things that future sessions
@@ -77,6 +77,8 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:C6735DF2-B905-4A85-BAAA-B7F5CBBEC92D][Prefer compass over Unix tools for repo navigation]] — use compass
   search/list/show/where/goto/capture before =find= / =grep= / =ls=;
   gaps in compass are captures, not workarounds.
+- [[id:09B8AA56-2F85-47EA-949C-0CBFD36BCD1B][#+version: field is schema version, not a content revision counter]] —
+  always =#+version: 2= for v2 docs; never increment it when editing content.
 
 ** User
 

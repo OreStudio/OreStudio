@@ -1,6 +1,6 @@
 # v2 document generator
 
-`generate_v2_doc.sh` creates a new v2 information-architecture document
+`generate_doc.sh` creates a new v2 information-architecture document
 (task, story, sprint, or version) from a Mustache template, producing a
 file that already follows the contract in
 `doc/meta/document_types.org`.
@@ -28,7 +28,7 @@ type's default TODO state, and skeleton sections.
 ## Usage
 
 ```sh
-projects/ores.codegen/generate_v2_doc.sh \
+projects/ores.codegen/generate_doc.sh \
   [--type <task|story|sprint|version|component|recipe|knowledge|skill>] \
   [--slug <snake_case_slug>] \
   [--parent-dir <path-where-the-new-doc-is-created>] \
@@ -69,7 +69,7 @@ the existing UUID via `--id`. The generator uses it verbatim instead of
 minting a fresh one. This keeps all org-roam backlinks intact.
 
 ```sh
-projects/ores.codegen/generate_v2_doc.sh \
+projects/ores.codegen/generate_doc.sh \
   --type component --slug component_overview \
   --parent-dir projects/ores.trading.core/modeling \
   --title "ores.trading" \
@@ -89,7 +89,7 @@ cause a clear error rather than hanging.
 So the shortest interactive invocation is:
 
 ```sh
-projects/ores.codegen/generate_v2_doc.sh
+projects/ores.codegen/generate_doc.sh
 ```
 
 — and the script walks you through type, slug, parent dir, title,
@@ -98,7 +98,7 @@ description, and tags.
 ## Example — add a recipe
 
 ```sh
-projects/ores.codegen/generate_v2_doc.sh \
+projects/ores.codegen/generate_doc.sh \
   --type recipe --slug how_do_i_clear_the_cache \
   --parent-dir doc/recipes/cmake \
   --title "How do I clear the cache?" \
@@ -109,7 +109,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 ## Example — add a knowledge document
 
 ```sh
-projects/ores.codegen/generate_v2_doc.sh \
+projects/ores.codegen/generate_doc.sh \
   --type knowledge --slug build_system_decisions \
   --parent-dir doc/knowledge/architecture \
   --title "Build system decisions" \
@@ -120,7 +120,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 ## Example — add a skill
 
 ```sh
-projects/ores.codegen/generate_v2_doc.sh \
+projects/ores.codegen/generate_doc.sh \
   --type skill --slug my-new-skill \
   --parent-dir doc/skills \
   --title "My New Skill" \
@@ -135,7 +135,7 @@ in the Claude Code markdown frontmatter.
 ## Example — add a component model doc
 
 ```sh
-projects/ores.codegen/generate_v2_doc.sh \
+projects/ores.codegen/generate_doc.sh \
   --type component --slug ores.example \
   --parent-dir projects/ores.example/modeling \
   --title "ores.example" \
@@ -149,7 +149,7 @@ Components have no parent in the composition tree, so `--parent-id`,
 ## Example — start a new sprint
 
 ```sh
-projects/ores.codegen/generate_v2_doc.sh \
+projects/ores.codegen/generate_doc.sh \
   --type sprint --slug sprint_17 \
   --parent-dir doc/agile/versions/v0 \
   --title "Sprint 17" \
@@ -163,7 +163,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 ## Example — add a story to the current sprint
 
 ```sh
-projects/ores.codegen/generate_v2_doc.sh \
+projects/ores.codegen/generate_doc.sh \
   --type story --slug improve_audit_signals \
   --parent-dir doc/agile/versions/v0/sprint_17 \
   --title "Improve audit signals" \
@@ -177,7 +177,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 ## Example — continue a cross-sprint story
 
 ```sh
-projects/ores.codegen/generate_v2_doc.sh \
+projects/ores.codegen/generate_doc.sh \
   --type story --slug currencies_temporal_continued \
   --parent-dir doc/agile/versions/v0/sprint_17 \
   --title "Currencies temporal (continued)" \
@@ -200,10 +200,10 @@ no automated way to do this yet; do it by hand or extend the script.
 The Mustache sources live under
 `projects/ores.codegen/library/templates/`:
 
-- `v2_doc_task.org.mustache`
-- `v2_doc_story.org.mustache`
-- `v2_doc_sprint.org.mustache`
-- `v2_doc_version.org.mustache`
+- `doc_task.org.mustache`
+- `doc_story.org.mustache`
+- `doc_sprint.org.mustache`
+- `doc_version.org.mustache`
 
 Edit these to change the skeleton sections or default placeholders.
 Variables available to all templates: `id`, `title`, `description`,
@@ -222,5 +222,5 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-(System pystache also works if you invoke `src/v2_doc_generate.py`
+(System pystache also works if you invoke `src/doc_generate.py`
 directly with `python3`.)

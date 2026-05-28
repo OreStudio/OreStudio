@@ -16,6 +16,24 @@ contact; come back to it any time you need to remember where something lives.
 The =meta/= subdirectory defines the /contract/ every document follows; this
 file explains the layout that contract sits inside.
 
+#+begin_note
+*A note on the compass tool*
+
+The word "Compass" names both this document and a Python CLI tool,
+[[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]], that lives in =projects/ores.compass/=. Both share the
+same intent — orientation inside the repository — but operate
+differently: this document is a static map a human reads; the tool
+computes orientation on demand against the live org-roam graph and
+offers quality-of-life shortcuts for both humans and LLMs. A human
+uses it to search docs (=compass find "query"=), inspect what is in
+flight (=compass where=), or start a unit of work without manually
+creating branches and files (=compass goto=). An LLM uses it to
+resolve doc references without hallucinating paths, discover recipes
+before generating one from scratch, and scaffold agile artefacts with
+correct frontmatter. Where this document tells you /where things are/,
+the tool /gets you there/.
+#+end_note
+
 * Folder layout
 
 #+begin_example

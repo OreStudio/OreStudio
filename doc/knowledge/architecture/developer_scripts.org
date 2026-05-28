@@ -27,8 +27,8 @@ produce reports and charts used in sprint health reviews.
 | Script | Purpose | Notes |
 |--------+---------+-------|
 | =sprint_metrics.py= | Extracts per-sprint metrics from git history and agile doc state changes; outputs CSV files consumed by gnuplot chart scripts. | Companion gnuplot scripts: =sprint_line_churn.gnuplot=, =sprint_pr_cycle.gnuplot=, =sprint_prs_commits.gnuplot=, =sprint_stories_done.gnuplot=. |
-| =parse_test_results.py= | Parses Catch2 XML test-result files; extracts per-suite statistics and failure details. | Python; shell wrapper: =parse-test-results.sh=. Used by the [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] recipe. |
-| =parse-test-results.sh= | Shell wrapper for =parse_test_results.py=; runs the parser from the repo root with standard arguments. | Delegates to =parse_test_results.py=. |
+| =parse_test_results.py= | Parses Catch2 XML test-result files; extracts per-suite statistics and failure details. | Python; shell wrapper: =parse_test_results.sh=. Used by the [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] recipe. |
+| =parse_test_results.sh= | Shell wrapper for =parse_test_results.py=; runs the parser from the repo root with standard arguments. | Delegates to =parse_test_results.py=. |
 
 * Validation and quality
 
@@ -54,7 +54,7 @@ General-purpose helper scripts not tied to a specific workflow.
 
 | Script | Purpose | Notes |
 |--------+---------+-------|
-| =convert-to-unix.sh= | Converts text files in a given project root from DOS to Unix line endings using =dos2unix=. | Accepts an optional path argument; defaults to =.=. Excludes =vcpkg/= and =output/=. |
+| =convert_to_unix.sh= | Converts text files in a given project root from DOS to Unix line endings using =dos2unix=. | Accepts an optional path argument; defaults to =.=. Excludes =vcpkg/= and =output/=. |
 
 * See also
 

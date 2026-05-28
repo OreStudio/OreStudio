@@ -145,20 +145,20 @@ build/output/linux-clang-debug/publish/log/ores.iam.tests/[domain]/test_name.log
 
 * Analyzing Test Results
 
-** parse-test-results.sh Script
+** parse_test_results.sh Script
 
-The =scripts/parse-test-results.sh= script parses Catch2 XML output and correlates
+The =scripts/parse_test_results.sh= script parses Catch2 XML output and correlates
 failures with log files:
 
 #+begin_src bash
 # Default preset (linux-clang-debug)
-./scripts/parse-test-results.sh
+./scripts/parse_test_results.sh
 
 # Specific preset
-./scripts/parse-test-results.sh linux-clang-release
+./scripts/parse_test_results.sh linux-clang-release
 
 # Specific directory
-./scripts/parse-test-results.sh -d /path/to/bin
+./scripts/parse_test_results.sh -d /path/to/bin
 #+end_src
 
 ** Script Output

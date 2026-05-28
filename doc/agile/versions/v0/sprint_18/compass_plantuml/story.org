@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 76F0DB10-084D-4A72-A585-5DE660884677
+:END:
+#+title: Story: PlantUML integration: recipe and codegen scaffold
+#+description: Add a how-do-I recipe for embedding PlantUML diagrams in org-mode documents; extend ores.codegen/compass to scaffold .puml skeletons with licence header and standard structure.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :plantuml:diagram:codegen:compass:recipe:documentation:sprint_18:v0:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make PlantUML diagrams a first-class citizen of ORE Studio's documentation
+workflow. A how-to recipe explains how to write and embed a =.puml= diagram
+in any org-mode document; a new =compass add diagram= sub-command scaffolds
+a =.puml= file with the standard licence header, =@startuml= / =@enduml=
+delimiters, and the project skin/style preamble so every diagram is
+consistent from the first line.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                                |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                              |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Begin implementation.                  |
+| Last touched  | 2026-05-28                             |
+
+* Acceptance
+
+- =doc/recipes/plantuml/how_do_i_add_a_plantuml_diagram.org= exists and
+  explains: install/verify PlantUML, write the =.puml= source, run
+  =plantuml= to export the PNG, and embed it in org-mode with an
+  =#+attr_html:= / =#+attr_latex:= figure block.
+- =compass add diagram <slug>= (or equivalent sub-command) scaffolds
+  =<slug>.puml= with the standard AGPL licence header, =@startuml= /
+  =@enduml=, and the shared skin preamble; the generated file matches the
+  convention of existing diagrams in the repo.
+- Existing =.puml= files are audited; any that lack the standard header are
+  updated.
+
+* Tasks
+
+In execution order:
+
+- [[id:F44A6D1D-B3F1-4EA3-9C04-B516AD04F0F6][Task: Add PlantUML recipe and extend codegen with puml scaffold]] (BACKLOG)
+
+* Decisions
+
+* Out of scope
+
+- Automating PNG regeneration in CI (diagrams are regenerated manually when
+  the source changes).
+- Switching to SVG output — PNG is the current convention.

@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: F44A6D1D-B3F1-4EA3-9C04-B516AD04F0F6
+:END:
+#+title: Task: Add PlantUML recipe and extend codegen with puml scaffold
+#+description: Initial task for: PlantUML integration: recipe and codegen scaffold
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compass_plantuml:sprint_18:v0:
+#+owner: marco
+#+branch: feature/compass-plantuml
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:76F0DB10-084D-4A72-A585-5DE660884677][PlantUML integration: recipe and codegen scaffold]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two deliverables: (1) a recipe doc that walks a developer through adding a
+PlantUML diagram to any org-mode document — from writing the =.puml= source
+to exporting the PNG and embedding it in org-mode with correct figure
+metadata; (2) a =compass add diagram <slug>= sub-command that scaffolds a
+=.puml= file with the standard AGPL licence header, =@startuml= /
+=@enduml=, and the shared skin/style preamble, matching the convention of
+existing =.puml= files in the repository. Existing diagrams without the
+standard header are updated.
+
+* Status
+
+| Field        | Value                                                             |
+|--------------+-------------------------------------------------------------------|
+| State        | BACKLOG                                                           |
+| Parent story | [[id:76F0DB10-084D-4A72-A585-5DE660884677][PlantUML integration: recipe and codegen scaffold]]                 |
+| Now          | Not yet started.                                                  |
+| Waiting on   | Nothing.                                                          |
+| Next         | Audit existing .puml files; write recipe; implement compass sub-command. |
+| Last touched | 2026-05-28                                                        |
+
+* Acceptance
+
+- =doc/recipes/plantuml/how_do_i_add_a_plantuml_diagram.org= exists (org-roam
+  ID, v2 frontmatter) and covers: prerequisites, writing =.puml= source,
+  running =plantuml= to export PNG, embedding via =#+attr_html:= /
+  =#+attr_latex:= / =#+caption:= in an org-mode file.
+- =compass add diagram <slug>= scaffolds =<slug>.puml= with the standard
+  header; the skeleton compiles without errors under =plantuml=.
+- All existing =.puml= files in the repo have the standard licence header.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

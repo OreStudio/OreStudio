@@ -54,7 +54,7 @@ In execution order.
 | [[id:0A2CB5BD-67B8-4096-BAC4-8E110333893A][SQLite CLI quality-of-life setup]]         | DONE    | 2026-05-24 | 2026-05-24 | Committed, commented =.sqliterc= for readable, non-wrapping =sqlite3= shell output.          |
 | [[id:BAF1DEAE-59DF-49AB-BFCD-E6D09496DA43][Lock down uppercase UUID invariant]]      | DONE    | 2026-05-24 | 2026-05-24 | Close the remaining code paths that can emit lowercase UUIDs into the doc graph.             |
 | [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]]              | DONE    | 2026-05-24 | 2026-05-24 | Build backlog-refiner and sprint-planner skills/recipes; set sprint 18 mission.              |
-| [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] | DONE    | 2026-05-24 | 2026-05-28 | =deploy_manual= target builds =user_manual.org= to PDF; commit and link the result.         |
+| [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] | STARTED | 2026-05-24 |            | =deploy_manual= target builds =user_manual.org= to PDF; commit and link the result.         |
 | [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][ores.compass repository compass tool]]   | DONE    | 2026-05-24 | 2026-05-24 | Python repository compass: temporal orientation, semantic doc search, agile scaffolding.        |
 | [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][ores.compass Locate — temporal orientation]] | DONE | 2026-05-24 | 2026-05-24 | =where=/=status=: report current version, sprint, and in-flight stories and tasks from the graph. |
 | [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][ores.compass Scaffold — agile authoring]] | DONE    | 2026-05-24 | 2026-05-24 | =add story/task/sprint/recipe=: create agile artefacts from the CLI by calling ores.codegen as a library. |
@@ -86,6 +86,7 @@ In execution order.
 | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] | STARTED | 2026-05-27 | | captures/ folder per sprint; compass capture command; wontdo backlog bucket. |
 | [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]                                 | DONE    | 2026-05-28 | 2026-05-28 | Add compass skill type, update skill-creation recipe, create run-runbook skill. |
 | [[id:5D11EB95-8B20-4A11-B9A6-C883C9E4B0CF][Document deduplication recipe]]                                         | DONE    | 2026-05-28 | 2026-05-28 | Generalised recipe for merging duplicate docs; applied to duplicate sprint health review runbooks. |
+| [[id:76F0DB10-084D-4A72-A585-5DE660884677][PlantUML integration: recipe and codegen scaffold]]                     | DONE    | 2026-05-28 | 2026-05-28 | PlantUML how-to recipe; compass add diagram scaffold; standard licence header convention. |
 
 * Health Review
 

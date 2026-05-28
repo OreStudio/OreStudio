@@ -31,11 +31,11 @@ table, and back-fill every in-flight sprint 18 story.
 
 | Field         | Value                                                               |
 |---------------+---------------------------------------------------------------------|
-| State         | STARTED                                                             |
+| State         | DONE                                                                |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                                           |
-| Now           | Template updated. Back-fill task ready to start.                    |
+| Now           | Completed 2026-05-28.                                               |
 | Waiting on    | Nothing.                                                            |
-| Next          | Run back-fill task across all sprint 18 stories.                    |
+| Next          | None.                                                               |
 | Last touched  | 2026-05-28                                                          |
 
 * Acceptance
@@ -52,7 +52,7 @@ table, and back-fill every in-flight sprint 18 story.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:22C0724C-75A7-4060-8F1D-000E62BE8352][Update story codegen template to task table]] | DONE | 2026-05-28 | 2026-05-28 | Update scaffold to generate task table |
-| [[id:3F5D9276-12DB-4A6B-A355-95E26AFA1CBD][Back-fill all sprint 18 story task lists]] | BACKLOG | | | Replace bullet lists with tables in all sprint 18 stories |
+| [[id:3F5D9276-12DB-4A6B-A355-95E26AFA1CBD][Back-fill all sprint 18 story task lists]] | DONE | 2026-05-28 | 2026-05-28 | Replace bullet lists with tables in all sprint 18 stories |
 
 * Decisions
 

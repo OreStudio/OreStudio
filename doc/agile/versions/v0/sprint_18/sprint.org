@@ -110,6 +110,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:A388F0C8-0804-420F-A542-2C929CFCEC92][Document NATS: technology overview, system integration, and recipes]] | DONE | 2026-05-26 | 2026-05-26 | NATS knowledge page, system model section, per-component subject tables, and NATS recipes. |
 | [[id:C3B6F514-559F-4038-A1D7-947BC9F7F398][Add Downloads and Agile nav entries to the site]]  | BACKLOG | 2026-05-25 |            | =doc/downloads.org= with release table; =Downloads= and =Agile= links in site nav.                |
 | [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Improve cybernetics documentation]]                | STARTED | 2026-05-28 |            | Add VSM overview page, expand Cybernetic Levels with context and limitations, link compass.        |
+| [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]]                            | STARTED | 2026-05-28 |            | Add Tooling section to knowledge.org; developer scripts doc; overhaul compass, sql, lisp, codegen overviews. |
 
 ** Infrastructure
 

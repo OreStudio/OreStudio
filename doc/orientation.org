@@ -87,6 +87,14 @@ Before generating any document, read the contract:
 4. [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — load it into context so the terms you encounter
    later resolve.
 
+The [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] tool (=./projects/ores.compass/compass.sh=) is your
+primary quality-of-life aid inside this repository. It was designed
+explicitly for both human contributors and LLM agents: humans use it
+to avoid manual branch/file creation; LLMs use it to resolve doc
+references, discover existing recipes, and scaffold artefacts with
+correct frontmatter instead of guessing paths or UUIDs. When in doubt,
+reach for =compass= before reaching for =grep= or =find=.
+
 When you need to /find/ something in the doc graph:
 
 - [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — =compass list= over

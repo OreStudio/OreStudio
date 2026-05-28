@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: A728AED1-6DFF-4167-B72D-EEEF2A55E8EE
+:END:
+#+title: Task: Review and link ores.lisp and ores.codegen overviews
+#+description: Review ores.lisp and ores.codegen component overviews for completeness, fill gaps, and ensure both are linked from the new Tooling section in knowledge.org.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :tooling_documentation:sprint_18:v0:
+#+owner: marco
+#+branch: feature/review-codegen-lisp-overviews
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Review [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] and [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] component overviews and ensure they
+are complete, accurate, and reachable from the new =* Tooling= section
+in [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+For each component:
+1. Read the existing overview and check for gaps against the source
+   (missing commands, outdated entry points, absent recipe links).
+2. Fill any gaps in-place — no structural rewrites unless the content
+   is fundamentally wrong.
+3. Confirm the component is linked from =knowledge.org= =* Tooling=
+   (T1 adds those links; this task verifies and plugs any that T1
+   missed).
+
+Additionally: check whether any other developer tool in the repo
+(e.g. =build/scripts/=, any project-level scripts not covered by T1
+or T3) should be catalogued. If found, add them to the developer
+scripts doc or raise a capture.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-28                               |
+
+* Acceptance
+
+- =ores.lisp= and =ores.codegen= component overviews are reviewed and updated for completeness.
+- Both overviews are verified to be linked from the =* Tooling= section in =knowledge.org=.
+- Any additional developer tools or project-level scripts are catalogued or captured.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 74DA0C54-ED8C-4CF5-B0C1-93799B15C174
+:END:
+#+title: Task: Overhaul ores.compass component overview
+#+description: Extend the ores.compass component overview with a section per command pillar (Locate, Search, Scaffold, Fleet, Goto, Backlog), each with a prose description and a recipe table.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :tooling_documentation:sprint_18:v0:
+#+owner: marco
+#+branch: feature/overhaul-compass-component-overview
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extend [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] component overview
+(=projects/ores.compass/modeling/component_overview.org=) with a
+dedicated section for each command pillar:
+
+| Pillar   | Commands                          |
+|----------+-----------------------------------|
+| Locate   | =where=, =status=                 |
+| Search   | =find= / =search=, =index=        |
+| Navigate | =list=, =show=                    |
+| Scaffold | =add=                             |
+| Fleet    | =fleet=                           |
+| Goto     | =goto=                            |
+| Backlog  | =inbox=, =next=, =deferred=, =discarded= |
+
+Each section should contain:
+- A paragraph describing the pillar's purpose and behaviour.
+- Key command forms and flags (as a small table or code block).
+- A table of related recipes linking via =[[id:UUID][Title]]=.
+
+The existing Summary/Capabilities/Inputs/Outputs/Dependencies/Structure
+sections are preserved; the new pillar sections are appended as a new
+=* Commands= heading before =* Dependencies=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-28                               |
+
+* Acceptance
+
+- =projects/ores.compass/modeling/component_overview.org= has a new =* Commands= heading before =* Dependencies=.
+- The =* Commands= section contains subsections for each command pillar (Locate, Search, Navigate, Scaffold, Fleet, Goto, Backlog).
+- Each pillar subsection contains a purpose paragraph, key command forms/flags, and a table of related recipes.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

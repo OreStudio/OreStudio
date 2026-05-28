@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 546C6CDA-6A59-445B-8385-1BD3C5AFC871
+:END:
+#+title: Task: Add Tooling section to knowledge.org and developer scripts doc
+#+description: Add a * Tooling section to knowledge.org and write a Developer scripts knowledge doc cataloguing scripts/ and linking to tool component overviews.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :tooling_documentation:sprint_18:v0:
+#+owner: marco
+#+branch: feature/tooling-documentation
+#+pr: 903
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a =* Tooling= section to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] (=doc/knowledge/knowledge.org=)
+alongside the existing Domain and Architecture sections. Write a new
+=Developer scripts= knowledge doc at
+=doc/knowledge/architecture/developer_scripts.org= that:
+
+- Catalogues every standalone script in =scripts/= grouped by purpose
+  (metrics/reporting, validation, CI support, agile tooling).
+- Provides a one-paragraph description per script and notes the
+  corresponding Python script where a shell wrapper exists.
+- Links to [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] and [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] for their respective script families.
+
+The Tooling section in =knowledge.org= must also link to [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]],
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]], [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]], and [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] component overviews directly.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-28                               |
+
+* Acceptance
+
+- =doc/knowledge/knowledge.org= contains a =* Tooling= section linking to the developer scripts doc and the component overviews of =ores.compass=, =ores.codegen=, =ores.lisp=, and =ores.sql=.
+- A new =Developer scripts= knowledge doc is created at =doc/knowledge/architecture/developer_scripts.org=.
+- The developer scripts doc catalogues standalone scripts in =scripts/= grouped by purpose with descriptions and links to respective component overviews.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR  | Title                                                 |
+|-----+-------------------------------------------------------|
+| 903 | [agile] Scaffold tooling documentation story (sprint 18) |
+
+* Review
+
+| # | Comment summary                               | File                                     | Decision | Notes                      |
+|---+-----------------------------------------------+------------------------------------------+----------+----------------------------|
+| 1 | Acceptance criteria section empty (all 4 tasks) | task_implement_tooling_documentation.org | Accept   | Fixed in 8ef145efe          |
+
+* Result

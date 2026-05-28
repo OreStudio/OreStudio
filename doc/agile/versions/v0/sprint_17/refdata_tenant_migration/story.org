@@ -36,9 +36,9 @@ at service boundaries.
 
 * Tasks
 
-In execution order:
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
 
-- [[id:7A34C5A4-ABD4-4103-B82B-A25F2AEF7DA3][Task: [refdata] Migrate 11 party domain types to utility::uuid::tenant_id strong type]]
 * Decisions
 
 - /Strong type everywhere/ :: utility::uuid::tenant_id was already used in

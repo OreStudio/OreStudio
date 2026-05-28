@@ -36,12 +36,10 @@ convention types, and add the CLI conventions import handler (Phase 3).
 
 * Tasks
 
-In execution order:
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8ABED069-682B-4C7D-BB6D-192392305495][Task: Add full codegen stack for seven ORE convention types]] | DONE | 2026-05-22 | 2026-05-22 | - Expands ORE import convention coverage from 2 (zero, deposit) to all 9 types: swap, ois, fra, ibor_index, overnight_in |
 
-- [[id:B923672F-7056-41E1-982D-2D7730E02AAE][Task: [refdata] ORE import analysis and zero_convention pilot]]
-- [[id:CDB7EC88-03CC-4456-90AE-6CE6C9BDC9F8][Task: [refdata] deposit_convention: Phase 2 first type]]
-- [[id:8ABED069-682B-4C7D-BB6D-192392305495][Task: Add full codegen stack for seven ORE convention types]]
-- [[id:D3F0D24E-D687-42F0-A5B8-CD16E2AD4DE1][Task: [cli] Add conventions import handler (Phase 3)]]
 * Decisions
 
 - /zero_convention as pilot/ :: used zero_convention as the first type to

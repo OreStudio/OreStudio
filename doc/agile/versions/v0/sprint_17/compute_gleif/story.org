@@ -37,12 +37,9 @@ per-row Retry button).
 
 * Tasks
 
-In execution order:
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
 
-- [[id:E8553690-DD3D-4818-8722-CF614F8BCA4F][Task: [ores.sql/qt.compute] Large GLEIF counterparty bundle wiring, tenant reset, upload logging]]
-- [[id:602EBC68-1A40-4FE8-B578-FD482A56EE12][Task: [compute] Per-triplet app_version packages via junction table]]
-- [[id:39D52674-0D37-41A5-8C8A-42402B883FD5][Task: [qt,compute] Per-platform package uploads via Packages tab]]
-- [[id:44F7C2AF-35CE-4CFF-B09A-E90B6024096F][Task: [qt,compute] Mop-up: autogen leak, URI scheme, per-row Retry]]
 * Decisions
 
 - (none significant)

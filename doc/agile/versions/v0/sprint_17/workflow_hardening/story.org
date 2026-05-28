@@ -37,12 +37,11 @@ latency by offloading DB writes to a thread pool.
 
 * Tasks
 
-In execution order:
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A4BC5AB1-4F4E-4BFC-A8A8-152379E6CE7E][Task: Workflow engine hardening + package renames]] | DONE | 2026-05-22 | 2026-05-22 | - Item 1: Dynamic step lists — `workflow_instance` gains `step_count` and `materialised_steps_json` so the step sequence |
+| [[id:24B4AE53-AD80-455C-8A6D-6D4D5C7793A8][Task: Fix pg_notify pipeline, badge RLS, and system reset]] | DONE | 2026-05-22 | 2026-05-22 | - pg_notify timestamp format: All 143 notify triggers now emit ISO 8601 UTC (`YYYY-MM-DDThh:mm:ssZ`); `datetime::from_is |
 
-- [[id:A4BC5AB1-4F4E-4BFC-A8A8-152379E6CE7E][Task: Workflow engine hardening + package renames]]
-- [[id:526F6418-B4F0-4D7A-A29B-7CC67FE10A0E][Task: [workflow] ORE import error reporting, step log, and service isolation]]
-- [[id:2018F6E5-95F7-443B-9406-9D941CE3934A][Task: [controller] Fix shutdown latency: offload DB writes to thread pool]]
-- [[id:24B4AE53-AD80-455C-8A6D-6D4D5C7793A8][Task: Fix pg_notify pipeline, badge RLS, and system reset]]
 * Decisions
 
 - /Thread pool for DB writes/ :: offloading DB writes on shutdown removes the

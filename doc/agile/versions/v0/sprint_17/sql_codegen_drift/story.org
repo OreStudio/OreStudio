@@ -38,13 +38,10 @@ device support for psql output redirection.
 
 * Tasks
 
-In execution order:
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6822F0A2-BB7E-4979-8D4C-AF01C1A7CE75][Task: Add cross-platform null device support for psql output redirection]] | DONE | 2026-05-22 | 2026-05-22 | Add platform-agnostic null device detection to support database setup on both Unix-like systems and Windows/MINGW enviro |
 
-- [[id:6822F0A2-BB7E-4979-8D4C-AF01C1A7CE75][Task: Add cross-platform null device support for psql output redirection]]
-- [[id:79DFD8CE-1EFF-4FE5-82E2-9A93AFB4B0ED][Task: [sql] Codegen drift remediation: Categories A and B]]
-- [[id:73DC3A27-295D-4834-97BF-A8D6F0E1E4CA][Task: [sql] Codegen drift remediation: template fixes + report_definitions]]
-- [[id:CF4B8DA3-0B8F-41F9-A5F4-198EFAFDD1FF][Task: [sql] Replace 4 remaining hand-crafted SQL files with codegen]]
-- [[id:DC845B65-C7C0-4156-AFFF-EC968079CFCE][Task: [codegen] Fix entity model profile dispatch and composite natural-key indexes]]
 * Decisions
 
 - /Zero tolerance/ :: every SQL file with an existing codegen model must be

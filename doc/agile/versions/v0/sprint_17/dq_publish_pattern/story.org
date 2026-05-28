@@ -37,10 +37,10 @@ flow.
 
 * Tasks
 
-In execution order:
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7B174D52-E5BA-4A95-AD5D-DD44C59DD808][Task: DQ publish-from-dq pattern, wizard UX, IAM logging]] | DONE | 2026-05-22 | 2026-05-22 | - Implement DQ publish-from-dq pattern: async workflow-based bundle publication with SQL, C++ and UI |
 
-- [[id:7B174D52-E5BA-4A95-AD5D-DD44C59DD808][Task: DQ publish-from-dq pattern, wizard UX, IAM logging]]
-- [[id:61EA68C3-E750-431F-8552-FE6E58A567EF][Task: [dq] Complete DQ publish pattern: async PublishDatasetsDialog with WorkflowStepsWidget]]
 * Decisions
 
 - /Async dialog/ :: the PublishDatasetsDialog polls the workflow engine via

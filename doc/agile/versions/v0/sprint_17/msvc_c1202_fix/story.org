@@ -38,22 +38,9 @@ now-redundant workaround pragmas.
 
 * Tasks
 
-In execution order:
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
 
-- [[id:FAD9F9AB-9BCF-4B63-9C4F-2031FCFD42FD][Task: [cmake] Raise MSVC constexpr limits to fix C1202 on rfl-reflected structs]]
-- [[id:04E58F17-F772-4864-A2B9-514261355DDE][Task: [cmake] Raise MSVC constexpr depth to 2048 for rfl trading types]]
-- [[id:DB362C3C-D961-49C7-BEE9-C10D35E8A669][Task: [cmake] Fix CI: export conversion_error and raise MSVC constexpr depth]]
-- [[id:41F6BBF2-FF6B-4892-A9BA-AC9BB4AEA115][Task: [qt] Fix MSVC C1202 by splitting ClientManager into focused TUs]]
-- [[id:DFB3687C-D6D2-4C29-B345-8878EABFD206][Task: [hotfix] Fix Windows build: C1202 TU split and workflow.api export]]
-- [[id:7959C3C0-9846-400B-8D8F-104CF2F2E5C0][Task: [hotfix] Fix boost::diagnostic_information compile error in ClientManagerTradeDetail]]
-- [[id:CAEA4E7D-A6DB-4716-83E5-6F47ADD7819D][Task: [trading] Decompose trade into rfl::Flatten sub-structs to fix MSVC C1202]]
-- [[id:3FA52C3E-E92F-4909-A88F-50B4498B86D8][Task: [qt] Undo ClientManager TU split now that trade is decomposed]]
-- [[id:970E36F2-DC20-45E4-B1B7-186F86F46650][Task: [hotfix] Restore two-phase rfl parse in getTradeDetail to fix MSVC C1202]]
-- [[id:CEE398AA-CC55-40F8-B264-0B721EB48719][Task: [qt] Raise MSVC constexpr limits for ores.qt.api to fix C1202]]
-- [[id:ED4F59B7-7DBB-46E5-B4C5-4A9052539D27][Task: [trading] Raise MSVC /constexpr:depth to 100000 to fix C1202 in ores.qt.api]]
-- [[id:C3AEEEE1-F1FC-4BCE-A851-C322DBD2EEC5][Task: [windows] Fix MSVC linker error and C1202 in trade variant]]
-- [[id:13CCE605-589E-4C28-92AA-C213CBAE9CDD][Task: [msvc] Remove MSVC C1202 workaround file splits]]
-- [[id:3306BEB8-6459-4819-8405-997BF7F5B442][Task: [qt] Remove non-existent MSVC constexpr pragmas]]
 * Decisions
 
 - /rfl::Flatten as root-cause fix/ :: decomposing =trade= into =rfl::Flatten=

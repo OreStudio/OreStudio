@@ -36,10 +36,10 @@ bond/credit/commodity/scripted instruments in typed export_result structs.
 
 * Tasks
 
-In execution order:
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:13255AAF-C142-4A65-A56A-065D456BA952][Task: Import/export cleanup: composite legs, pure parser, batch fetches, trade list split]] | DONE | 2026-05-22 | 2026-05-22 | - Phase 1: Unify instrument variant hierarchy — introduce `Instrument` concept, `with_legs<T,Leg>`, `trade_instrument` v |
 
-- [[id:81432FFF-48A3-4749-BDBC-34FF88C0362C][Task: [trading,ore,qt] Wrap bond/credit/commodity/scripted in *_export_result structs]]
-- [[id:13255AAF-C142-4A65-A56A-065D456BA952][Task: Import/export cleanup: composite legs, pure parser, batch fetches, trade list split]]
 * Decisions
 
 - /export_result structs/ :: wrapping all instrument types in typed

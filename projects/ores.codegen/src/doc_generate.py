@@ -1,5 +1,5 @@
 """
-Generate a v2 information-architecture document (task, story, sprint,
+Generate an information-architecture document (task, story, sprint,
 version, or component) from a Mustache template.
 
 The script renders one of the templates under =library/templates/= and
@@ -32,20 +32,20 @@ import pystache
 TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "library" / "templates"
 
 TYPE_TO_TEMPLATE = {
-    "task": "v2_doc_task.org.mustache",
-    "story": "v2_doc_story.org.mustache",
-    "sprint": "v2_doc_sprint.org.mustache",
-    "version": "v2_doc_version.org.mustache",
-    "component": "v2_doc_component.org.mustache",
-    "recipe": "v2_doc_recipe.org.mustache",
-    "knowledge": "v2_doc_knowledge.org.mustache",
-    "skill": "v2_doc_skill.org.mustache",
-    "product_identity": "v2_doc_product_identity.org.mustache",
-    "capture": "v2_doc_capture.org.mustache",
-    "memory": "v2_doc_memory.org.mustache",
-    "release_notes": "v2_doc_release_notes.org.mustache",
-    "investigation": "v2_doc_investigation.org.mustache",
-    "runbook": "v2_doc_runbook.org.mustache",
+    "task": "doc_task.org.mustache",
+    "story": "doc_story.org.mustache",
+    "sprint": "doc_sprint.org.mustache",
+    "version": "doc_version.org.mustache",
+    "component": "doc_component.org.mustache",
+    "recipe": "doc_recipe.org.mustache",
+    "knowledge": "doc_knowledge.org.mustache",
+    "skill": "doc_skill.org.mustache",
+    "product_identity": "doc_product_identity.org.mustache",
+    "capture": "doc_capture.org.mustache",
+    "memory": "doc_memory.org.mustache",
+    "release_notes": "doc_release_notes.org.mustache",
+    "investigation": "doc_investigation.org.mustache",
+    "runbook": "doc_runbook.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {

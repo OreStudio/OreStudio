@@ -41,13 +41,12 @@ In execution order:
 
 2. /Fetch latest main./ Do not branch off a stale base:
    #+begin_src sh :results verbatim
-   export SSH_AUTH_SOCK=/home/marco/.ssh/agent/s.qEp3u81YnU.agent.P4RgmsqyMr
    git fetch origin main
    #+end_src
 
 3. /Create a hotfix branch and scaffold the story./ Use
    [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — =compass goto= — with
-   a =hotfix/= slug. The slug should name the broken thing, not the
+   a =hotfix_= slug. The slug should name the broken thing, not the
    fix:
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh goto \
@@ -56,9 +55,11 @@ In execution order:
      --description "<one sentence: what is broken>." \
      --tags "hotfix:<component>"
    #+end_src
-   compass creates =feature/hotfix-<broken-thing>=, =story.org=, and a
-   linked task. The branching convention for hotfixes is documented in
-   [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]].
+   =compass goto= creates =feature/hotfix-<broken-thing>=, =story.org=,
+   and a linked task. The =feature/hotfix-= prefix is the ORE Studio
+   hotfix branch convention — =compass= always generates =feature/=
+   branches and the =hotfix-= slug prefix identifies the work as a hotfix.
+   See [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]].
 
 4. /Read all generated files./ Before writing any content, read
    =story.org= and the task file and note their =:ID:= values. Do not
@@ -103,17 +104,17 @@ In execution order:
     Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
     #+end_src
 
-11. /Push and open a PR./ Push the branch, then open a PR with a
-    structured body (Summary, Changes, Traceability). Record the PR
-    number in the task's =* PRs= table.
+11. /Push and open a PR./ Push the branch (ensure =SSH_AUTH_SOCK= is set
+    per the [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][SSH memory]]), then open a PR with a structured body
+    (Summary, Changes, Traceability). Record the PR number in the task's
+    =* PRs= table.
     #+begin_src sh :results verbatim
-    export SSH_AUTH_SOCK=/home/marco/.ssh/agent/s.qEp3u81YnU.agent.P4RgmsqyMr
     git push -u origin feature/hotfix-<broken-thing>
     #+end_src
 
 * Postconditions
 
-- =hotfix/= branch exists on =origin= and a PR is open.
+- =feature/hotfix-= branch exists on =origin= and a PR is open.
 - Story is =STARTED= in the sprint's =** Hotfixes= table.
 - Task =* Notes= records the root cause and fix.
 - PR number is recorded in the task's =* PRs= table.

@@ -35,7 +35,7 @@ the system belongs to exactly one of these layers:
 #+caption: ORE Studio four-layer architecture
 [[file:architecture_layers.png][file:architecture_layers.png]]
 
-- [[id:C9AD7DA5-D00E-4CA9-A978-E74F776E0F17][Application Layer]]: the bedrock. No ORE Studio dependency anywhere in this
+- [[id:C5F35442-A2C3-415A-80F2-C09CAA0842FF][Foundation Layer]]: the bedrock. No ORE Studio dependency anywhere in this
   layer. Utilities, platform abstractions, logging, database access,
   cryptography, and code generation live here. If it existed before ORE Studio
   had a domain model, it belongs here.
@@ -45,7 +45,7 @@ the system belongs to exactly one of these layers:
 - [[id:873CD1C6-7636-4F30-B3D4-3BB7FCBF4DBD][Domain Layer]]: the business. Depends on Foundation + Infrastructure but never
   on Application. Reference data, IAM, trading, market data, reporting, data
   quality — the financial domain model that justifies the system's existence.
-- [[id:C5F35442-A2C3-415A-80F2-C09CAA0842FF][Foundation Layer]]: the surfaces. Depends on every layer below. Qt desktop, CLI,
+- [[id:C9AD7DA5-D00E-4CA9-A978-E74F776E0F17][Application Layer]]: the surfaces. Depends on every layer below. Qt desktop, CLI,
   HTTP servers, Wt web frontend, and the compute engine. If a user touches it,
   it lives here.
 

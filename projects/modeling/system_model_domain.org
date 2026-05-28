@@ -102,7 +102,7 @@ Related documents:
 | [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]]    | ORE XML parsing, domain type conversion | [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]] |
 | [[id:EF8FD20D-0B9C-4379-8BBD-B4FCF2F5F0C7][ores.ore.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint               | [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]               |
 
-ORE XML import/export — converts between [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine]] XML qformat and
+ORE XML import/export — converts between [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine]] XML format and
 ORE Studio domain types. The bridge between the ORE Engine computation layer and
 ORE Studio's domain model.
 
@@ -169,7 +169,7 @@ requiring real market feeds.
 | [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets.core]]    | Asset CRUD, tagging, hierarchical storage | [[id:34DDEE6A-915F-404B-8721-01376903D3E4][ores.assets.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
 | [[id:6D1AA78F-F37B-4030-B32C-B8B5EB4B0EEE][ores.assets.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                 | [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]    |
 
-Binary asset storage with hierarchical tagging and CRUD management. Stqores
+Binary asset storage with hierarchical tagging and CRUD management. Stores
 images, attachments, and other binary content associated with domain entities.
 
 ** ores.storage

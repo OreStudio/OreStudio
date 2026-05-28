@@ -53,12 +53,26 @@ The largest v0 sprint to date (157h, 89 tasks across 22 stories).
 
 * Stories
 
+** Infrastructure
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                 | State | Start      | End        | Theme                                                                                           |
+|---------------------------------------------------------------------------------------+-------+------------+------------+-------------------------------------------------------------------------------------------------|
+| [[id:2FAF5366-2FED-4FBE-99F2-8CB46CA84AEB][Party isolation RLS policies]]             | DONE  |            | 2026-04-09 | close the gaps. Continues from sprint 13 party_isolation_books_portfolios_trades.               |
+| [[id:7399693E-F61B-4E3D-B37C-F53F3CE5A197][Generic object storage API]]               | DONE  |            | 2026-04-03 | ores.storage + compute grid migration.                                                          |
+| [[id:014352D4-AAA5-48E7-903D-C06B5B4F7D62][Service lifecycle controller]]             | DONE  |            | 2026-04-08 | ores.controller + unified NATS heartbeat. Continues from sprint 15 compute_grid_ observability. |
+| [[id:38C972E1-2DD2-41AE-A770-800FEE90D1E6][Qt plugin architecture]]                   | DONE  |            | 2026-04-09 | ores.qt.api + 7 domain plugins.                                                                 |
+| [[id:BA5268AF-DF0E-4338-A6CE-1D5F84E1166D][Nats-Session-Id]]                          | DONE  |            | 2026-04-01 | session-level correlation.                                                                      |
+| [[id:1997CCEF-3E2F-44C9-AB1C-9435A646BD61][UTC-everywhere timestamp policy]]          | DONE  |            | 2026-04-08 | canonical UTC API.                                                                              |
+| [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]]                | DONE  |            | 2026-04-11 | ~20 fixes surfaced by Windows builds.                                                           |
+| [[id:2C3A9E28-68DC-4BF1-8EB7-5C4379E5C248][Engineering hygiene]]                      | DONE  |            | 2026-04-07 | clock_cast, nodiscard, codegen profiles, menu repositioning.                                    |
+
+** Product
+
 #+ATTR_HTML: :class hug-leading
 | Story                                                                                 | State | Start      | End        | Theme                                                                                                                 |
 |---------------------------------------------------------------------------------------+-------+------------+------------+-----------------------------------------------------------------------------------------------------------------------|
-| [[id:C1DB4C7A-16D7-4289-A457-A6C6CE5C8B5C][Sprint 16 housekeeping]]                   | DONE  |            | 2026-04-17 | backlog refinement.                                                                                                   |
 | [[id:FFC60DB1-B82A-4C8A-961E-2C6720379508][Asset class and product_type unification]] | DONE  |            | 2026-04-03 | rename + analysis + implementation.                                                                                   |
-| [[id:2FAF5366-2FED-4FBE-99F2-8CB46CA84AEB][Party isolation RLS policies]]             | DONE  |            | 2026-04-09 | close the gaps. Continues from sprint 13 party_isolation_books_portfolios_trades.                                     |
 | [[id:4FCD03AC-51AD-47AD-8203-FAEFAA4211B9][Workflow engine]]                          | DONE  |            | 2026-04-06 | scaffold + FSM state UUIDs + generalised event-driven engine.                                                         |
 | [[id:C0ED556B-57A4-4BCE-9196-70BCF4FD0D63][Party provisioning saga]]                  | DONE  |            | 2026-03-31 | first concrete saga + UX.                                                                                             |
 | [[id:87599263-BD70-42CF-B653-0803E12F4D0B][Workflow monitor]]                         | DONE  |            | 2026-04-11 | Qt plugin + late fixes.                                                                                               |
@@ -67,17 +81,17 @@ The largest v0 sprint to date (157h, 89 tasks across 22 stories).
 | [[id:43F68B11-1870-46DB-BFC3-C5FBC83FE6CF][ORE golden roundtrip tests]]               | DONE  |            | 2026-03-31 | three test PRs.                                                                                                       |
 | [[id:FB0471F1-6BD2-4955-AC39-15D7800BB973][ORE portfolio export]]                     | DONE  |            | 2026-04-01 | exporter + Qt actions.                                                                                                |
 | [[id:47CE4C06-2C59-4B8B-89B3-232D04B2DA23][Market data subsystem]]                    | DONE  |            | 2026-04-01 | parser + schema + repo + service + Qt UI.                                                                             |
-| [[id:7399693E-F61B-4E3D-B37C-F53F3CE5A197][Generic object storage API]]               | DONE  |            | 2026-04-03 | ores.storage + compute grid migration.                                                                                |
 | [[id:08D2B499-53CE-4B1C-92CF-A7C26D036EC9][Reporting and analytics]]                  | DONE  |            | 2026-04-07 | DQ-sourced report defs + execution workflow + analytics pricing engine. Continues from sprint 14 reporting_subsystem. |
 | [[id:1490E130-08F9-4D43-8F80-D7E0F5022FBD][Trade detail dialog unification]]          | DONE  |            | 2026-04-07 | six instrument family merges + IInstrumentForm registry.                                                              |
 | [[id:CE26E56B-944F-4C89-B5A9-E0DABF521908][Per-type instrument tables]]               | DONE  |            | 2026-04-10 | rates / FX / equity. Continues from sprint 15 cdm_instruments.                                                        |
-| [[id:014352D4-AAA5-48E7-903D-C06B5B4F7D62][Service lifecycle controller]]             | DONE  |            | 2026-04-08 | ores.controller + unified NATS heartbeat. Continues from sprint 15 compute_grid_ observability.                       |
-| [[id:38C972E1-2DD2-41AE-A770-800FEE90D1E6][Qt plugin architecture]]                   | DONE  |            | 2026-04-09 | ores.qt.api + 7 domain plugins.                                                                                       |
 | [[id:2D496A77-5238-4B5B-8CC6-C61FC59FA9C1][Scheduler UI complete]]                    | DONE  |            | 2026-04-11 | Job Instances + Monitor.                                                                                              |
-| [[id:BA5268AF-DF0E-4338-A6CE-1D5F84E1166D][Nats-Session-Id]]                          | DONE  |            | 2026-04-01 | session-level correlation.                                                                                            |
-| [[id:1997CCEF-3E2F-44C9-AB1C-9435A646BD61][UTC-everywhere timestamp policy]]          | DONE  |            | 2026-04-08 | canonical UTC API.                                                                                                    |
-| [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]]                | DONE  |            | 2026-04-11 | ~20 fixes surfaced by Windows builds.                                                                                 |
-| [[id:2C3A9E28-68DC-4BF1-8EB7-5C4379E5C248][Engineering hygiene]]                      | DONE  |            | 2026-04-07 | clock_cast, nodiscard, codegen profiles, menu repositioning.                                                          |
+
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                 | State | Start      | End        | Theme               |
+|---------------------------------------------------------------------------------------+-------+------------+------------+---------------------|
+| [[id:C1DB4C7A-16D7-4289-A457-A6C6CE5C8B5C][Sprint 16 housekeeping]]                   | DONE  |            | 2026-04-17 | backlog refinement. |
 
 * Charts
 

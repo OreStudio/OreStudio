@@ -43,29 +43,49 @@ out the largest v0 sprint to date.
 
 * Stories
 
+** Infrastructure
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                            | State   | Start      | End        | Theme                                                                              |
+|--------------------------------------------------------------------------------------------------+---------+------------+------------+------------------------------------------------------------------------------------|
+| [[id:4CE5CC79-DC9B-491F-A8F7-F635DE33D55A][Test coverage and FK-aware generators]]               | DONE    |            | 2026-02-11 | back over 50% coverage; KVP-context proposal sown.                                 |
+| [[id:74A0B830-2F12-406F-9550-961098C11DC6][Infrastructure cleanup]]                              | DONE    |            | 2026-02-12 | merge databases away; OSX CI back.                                                 |
+| [[id:C431B464-A3BC-4D9C-B33A-7C5B247EBEA4][Party-level RLS isolation]]                           | DONE    |            | 2026-02-15 | second RLS layer; visible party set; party_counterparties as first scoped junction. |
+| [[id:2901CE42-268C-4ADE-A3E4-CF6E01B8668E][Audit trail and system account]]                      | DONE    |            | 2026-02-17 | modified_by vs performed_by; system account; KVP generation context.               |
+| [[id:C8C45097-7420-438D-9026-6BEC0285CD66][Caching analysis]]                                    | BACKLOG |            |            | POSTPONED.                                                                         |
+
+** Product
+
 #+ATTR_HTML: :class hug-leading
 | Story                                                                                            | State   | Start      | End        | Theme                                                                                                                      |
 |--------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------------------------------------------------|
-| [[id:8F521A37-BEC0-469E-AF32-87DF684DE3B2][Sprint 12 housekeeping]]                              | DONE    |            | 2026-02-20 | backlog + OCR.                                                                                                             |
-| [[id:E8004B20-AE81-4D48-A677-CDE07A300E92][sqlgen follow-up]]                                    | ?       |            |            | BLOCKED on vcpkg.                                                                                                          |
 | [[id:5B48D17B-F510-4458-8FB9-95832F9782C2][Qt and eventing polish]]                              | DONE    |            | 2026-02-10 | shell widget; name-based roles; several small fixes.                                                                       |
-| [[id:4CE5CC79-DC9B-491F-A8F7-F635DE33D55A][Test coverage and FK-aware generators]]               | DONE    |            | 2026-02-11 | back over 50% coverage; KVP-context proposal sown.                                                                         |
-| [[id:74A0B830-2F12-406F-9550-961098C11DC6][Infrastructure cleanup]]                              | DONE    |            | 2026-02-12 | merge databases away; OSX CI back.                                                                                         |
 | [[id:76D84778-4544-4EE6-A17A-033019DBACB0][Party database and domain]]                           | DONE    |            | 2026-02-09 | implement party + counterparty + identifier + contact-info end-to-end. Continues from sprint 09 party_database_groundwork. |
 | [[id:253CE971-C0F3-43C3-980C-276233250B86][GLEIF data integration]]                              | DONE    |            | 2026-02-13 | datasets, central banks, LEI-to-BIC. Continues from sprint 10 party_schemes_and_fpml_data.                                 |
 | [[id:D0E2FB0D-24F0-4FA4-A403-872E01E60FB6][Multi-party brainstorm and short codes]]              | DONE    |            | 2026-02-14 | design + pagination + mnemonic short codes + identifier split.                                                             |
 | [[id:AF7112BA-BF04-4B6B-AE2F-8FB1C7B362FE][Counterparty pagination and polish]]                  | DONE    |            | 2026-02-14 | pagination, business centres, identifier cardinality.                                                                      |
 | [[id:D40D5971-C864-4449-91AD-CA8AB949A4A6][System and customer party]]                           | DONE    |            | 2026-02-11 | Internal type + WRLD BC; optional dataset members.                                                                         |
 | [[id:00E6E192-A255-4C94-8FCC-15826F7E33AE][Tenant administration]]                               | DONE    |            | 2026-02-12 | party_types lookup; RLS-aware test provisioning; tenant-type rename; CLI; Super Admin.                                     |
-| [[id:C431B464-A3BC-4D9C-B33A-7C5B247EBEA4][Party-level RLS isolation]]                           | DONE    |            | 2026-02-15 | second RLS layer; visible party set; party_counterparties as first scoped junction.                                        |
-| [[id:2901CE42-268C-4ADE-A3E4-CF6E01B8668E][Audit trail and system account]]                      | DONE    |            | 2026-02-17 | modified_by vs performed_by; system account; KVP generation context.                                                       |
 | [[id:EAF03BE3-D1EC-4EC4-B18B-4F1C6F35926A][Tenant provisioning wizards]]                         | DONE    |            | 2026-02-16 | root-party invariant; GLEIF + synthetic; gating; UX polish; first-login onboarding.                                        |
 | [[id:3AFC713A-754E-42DC-AE10-022AC1DFDABA][Entity modelling: books, portfolios, business units]] | DONE    |            | 2026-02-19 | modelling pass; business-centre coding scheme; portfolio impl.                                                             |
 | [[id:5886FFA7-170F-471C-A9DB-37996E650CB6][GLEIF evaluation wizard and party hierarchy]]         | DONE    |            | 2026-02-19 | wizard + graph viz.                                                                                                        |
 | [[id:84545FFF-58E6-4C97-821C-0D3BB0375F08][Advanced counterparty dialog]]                        | DONE    |            | 2026-02-19 | five-tab layout + strategy-pattern refactor.                                                                               |
 | [[id:6AAEA401-96A8-4027-8887-375B978771B3][Qt column handling centralisation]]                   | DONE    |            | 2026-02-19 | ColumnMetadata pattern across 24 list windows.                                                                             |
-| [[id:C8C45097-7420-438D-9026-6BEC0285CD66][Caching analysis]]                                    | BACKLOG |            |            | POSTPONED.                                                                                                                 |
 | [[id:BD4110C2-FDF7-47B0-A726-F4CD83DED8E5][FSM and trade support]]                               | DONE    |            | 2026-02-20 | generic Postgres FSM + trade envelope; ores.trade → ores.trading rename.                                                   |
+
+** Tooling
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                            | State   | Start      | End        | Theme                     |
+|--------------------------------------------------------------------------------------------------+---------+------------+------------+---------------------------|
+| [[id:E8004B20-AE81-4D48-A677-CDE07A300E92][sqlgen follow-up]]                                    | ?       |            |            | BLOCKED on vcpkg.         |
+
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                            | State   | Start      | End        | Theme           |
+|--------------------------------------------------------------------------------------------------+---------+------------+------------+-----------------|
+| [[id:8F521A37-BEC0-469E-AF32-87DF684DE3B2][Sprint 12 housekeeping]]                              | DONE    |            | 2026-02-20 | backlog + OCR.  |
 
 * Charts
 

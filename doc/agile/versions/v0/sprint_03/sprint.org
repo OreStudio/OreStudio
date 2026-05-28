@@ -42,16 +42,30 @@ code/ + /finish login related functionality/.)
 
 * Stories
 
+** Infrastructure
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                             | State | Start      | End        | Theme                                                                             |
+|-----------------------------------------------------------------------------------+-------+------------+------------+-----------------------------------------------------------------------------------|
+| [[id:D246FFBE-11EE-4FF9-9309-2A693E2476EF][Build stabilisation 3]]                | DONE  |            | 2025-11-15 | Windows clang-cl, dynamic libraries, vcpkg patches on Windows, Postgres on CI.    |
+| [[id:22EFE1E8-427F-488A-94A3-8CA78F180966][Test infrastructure]]                  | DONE  |            | 2025-12-01 | separate test DB, split test code, ctest suite-level tests, test data generators. |
+| [[id:3F819EE3-0834-4522-8B01-DF4A7D09E77F][Postgres-backed currency persistence]] | DONE  |            | 2025-11-25 | currency repository write path, service command-line DB args.                     |
+| [[id:1A411B50-2C3A-4248-9AE7-59A835EF6774][Logging and observability]]            | DONE  |            | 2025-12-30 | proper Boost.Log usage, Valgrind/leak investigations, code-coverage uplift.       |
+
+** Product
+
 #+ATTR_HTML: :class hug-leading
 | Story                                                                             | State | Start      | End        | Theme                                                                                    |
 |-----------------------------------------------------------------------------------+-------+------------+------------+------------------------------------------------------------------------------------------|
-| [[id:BCEF2C68-65FE-4848-95BA-6DDB01B2AB9F][Sprint 03 housekeeping]]               | DONE  |            | 2025-12-31 | sprint sundries, backlog refinement, postponed work tracking.                            |
-| [[id:D246FFBE-11EE-4FF9-9309-2A693E2476EF][Build stabilisation 3]]                | DONE  |            | 2025-11-15 | Windows clang-cl, dynamic libraries, vcpkg patches on Windows, Postgres on CI.           |
-| [[id:22EFE1E8-427F-488A-94A3-8CA78F180966][Test infrastructure]]                  | DONE  |            | 2025-12-01 | separate test DB, split test code, ctest suite-level tests, test data generators.        |
 | [[id:EDA3D069-F3C1-43B5-93FB-E5705A8F9ADC][Client console and Qt integration]]    | DONE  |            | 2025-12-15 | merge client into console, enable Qt GUI on the new socket layer, locking, Prodigy tags. |
 | [[id:B09E0D06-0314-4424-AD57-2DA31A335D99][Login and sessions]]                   | DONE  |            | 2025-12-20 | account and session domain types end-to-end.                                             |
-| [[id:3F819EE3-0834-4522-8B01-DF4A7D09E77F][Postgres-backed currency persistence]] | DONE  |            | 2025-11-25 | currency repository write path, service command-line DB args.                            |
-| [[id:1A411B50-2C3A-4248-9AE7-59A835EF6774][Logging and observability]]            | DONE  |            | 2025-12-30 | proper Boost.Log usage, Valgrind/leak investigations, code-coverage uplift.              |
+
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                             | State | Start      | End        | Theme                                                         |
+|-----------------------------------------------------------------------------------+-------+------------+------------+---------------------------------------------------------------|
+| [[id:BCEF2C68-65FE-4848-95BA-6DDB01B2AB9F][Sprint 03 housekeeping]]               | DONE  |            | 2025-12-31 | sprint sundries, backlog refinement, postponed work tracking. |
 
 * Charts
 

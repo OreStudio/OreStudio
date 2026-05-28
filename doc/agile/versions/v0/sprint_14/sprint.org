@@ -45,22 +45,42 @@ ORE Import Wizard, CMake preset suffixes.
 
 * Stories
 
+** Infrastructure
+
 #+ATTR_HTML: :class hug-leading
 | Story                                                                                     | State   | Start      | End        | Theme                                                                                          |
 |-------------------------------------------------------------------------------------------+---------+------------+------------+------------------------------------------------------------------------------------------------|
-| [[id:7DCF008E-33A5-4493-8FF2-ABE1E7D78053][Sprint 14 housekeeping]]                       | DONE    |            | 2026-03-12 | backlog refinement.                                                                            |
-| [[id:F80BAD05-2E66-458D-9223-1DB0A83EF694][ORE import wizard]]                            | DONE    |            | 2026-03-01 | seven-page directory-scan wizard. Continues from sprint 13 trade_import_analysis.              |
-| [[id:84559B48-546B-4724-BDD0-53DBFCA2C24A][Reporting subsystem]]                          | DONE    |            | 2026-03-03 | design + schema + domain + messaging + repo + Qt UI with cron widget.                          |
-| [[id:86927EBE-880C-42E4-8C94-E4705C4A622A][Trade status FSM]]                             | DONE    |            | 2026-03-02 | status FSM + activity_type taxonomy.                                                           |
-| [[id:4D9869DA-72CE-4B92-BB19-91C274CA7A2B][CLI domain layer]]                             | DONE    |            | 2026-03-03 | domain sub-menu in CLI syntax.                                                                 |
 | [[id:7B45BE68-3970-4657-B2A3-F24151156AC7][pgmq queue management and messaging UI]]       | DONE    |            | 2026-03-03 | first MQ UI.                                                                                   |
 | [[id:ED082D5A-4AFB-4BF9-81DB-8712F881DDE3][Custom MQ tables and in-process scheduler]]    | DONE    |            | 2026-03-04 | replace external extensions. Continues from sprint 13 scheduling_subsystem.                    |
-| [[id:9C57D467-3F17-469A-A245-5F57E6B20784][Party codename]]                               | DONE    |            | 2026-03-12 | adjective_noun + two race-condition fixes.                                                     |
 | [[id:1DE357FF-7139-49FD-BC97-B30CD095EF53][JWT RS256 in ores.security]]                   | DONE    |            | 2026-03-04 | centralised JWT with RS256.                                                                    |
 | [[id:55BF0070-33C2-4F1D-986F-A787138942F6][NNG message broker attempt]]                   | DONE    |            | 2026-03-12 | partially built; hook-up cancelled in favour of NATS.                                          |
 | [[id:05CBD9FA-B1F2-4B53-8F83-2952A892C94D][CMake preset build-tool suffixes]]             | DONE    |            | 2026-03-10 | explicit Ninja / Make naming.                                                                  |
 | [[id:23D1F2BB-D2D3-423A-8167-657098E30542][NATS migration]]                               | DONE    |            | 2026-03-18 | the pivot. Binary protocol replaced with NATS request/reply + JetStream; 10 services migrated. |
-| [[id:05CFEF69-F80B-437F-AEEE-3881E4FE96F1][Trade import mapping dialog (second attempt)]] | BACKLOG |            |            | BACKLOG; postponed again. Continues from sprint 13 trade_import_dialog.                        |
+
+** Product
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                     | State   | Start      | End        | Theme                                                                             |
+|-------------------------------------------------------------------------------------------+---------+------------+------------+-----------------------------------------------------------------------------------|
+| [[id:F80BAD05-2E66-458D-9223-1DB0A83EF694][ORE import wizard]]                            | DONE    |            | 2026-03-01 | seven-page directory-scan wizard. Continues from sprint 13 trade_import_analysis. |
+| [[id:84559B48-546B-4724-BDD0-53DBFCA2C24A][Reporting subsystem]]                          | DONE    |            | 2026-03-03 | design + schema + domain + messaging + repo + Qt UI with cron widget.             |
+| [[id:86927EBE-880C-42E4-8C94-E4705C4A622A][Trade status FSM]]                             | DONE    |            | 2026-03-02 | status FSM + activity_type taxonomy.                                              |
+| [[id:9C57D467-3F17-469A-A245-5F57E6B20784][Party codename]]                               | DONE    |            | 2026-03-12 | adjective_noun + two race-condition fixes.                                        |
+| [[id:05CFEF69-F80B-437F-AEEE-3881E4FE96F1][Trade import mapping dialog (second attempt)]] | BACKLOG |            |            | BACKLOG; postponed again. Continues from sprint 13 trade_import_dialog.           |
+
+** Tooling
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                     | State   | Start      | End        | Theme                              |
+|-------------------------------------------------------------------------------------------+---------+------------+------------+------------------------------------|
+| [[id:4D9869DA-72CE-4B92-BB19-91C274CA7A2B][CLI domain layer]]                             | DONE    |            | 2026-03-03 | domain sub-menu in CLI syntax.     |
+
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                     | State   | Start      | End        | Theme               |
+|-------------------------------------------------------------------------------------------+---------+------------+------------+---------------------|
+| [[id:7DCF008E-33A5-4493-8FF2-ABE1E7D78053][Sprint 14 housekeeping]]                       | DONE    |            | 2026-03-12 | backlog refinement. |
 
 * Charts
 

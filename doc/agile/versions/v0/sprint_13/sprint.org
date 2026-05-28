@@ -44,18 +44,25 @@ portfolios / trades.
 
 * Stories
 
+** Infrastructure
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                        | State   | Start      | End        | Theme                                                             |
+|----------------------------------------------------------------------------------------------+---------+------------+------------+-------------------------------------------------------------------|
+| [[id:7B926ACE-57F6-414D-8F3E-568175041F87][Provenance and actor]]                            | DONE    |            | 2026-02-21 | performed_by / modified_by stamping tightened; current_actor GUC. |
+| [[id:6F799AF2-9844-4CB6-9E9C-A57C06ECBF23][Session telemetry plotting]]                      | DONE    |            | 2026-02-22 | RTT + bytes hypertable + QChartView.                              |
+| [[id:DF3B299E-7FED-4411-B257-125ED35C3A9E][Party isolation for books / portfolios / trades]] | DONE    |            | 2026-02-24 | RLS extended.                                                     |
+
+** Product
+
 #+ATTR_HTML: :class hug-leading
 | Story                                                                                        | State   | Start      | End        | Theme                                                                         |
 |----------------------------------------------------------------------------------------------+---------+------------+------------+-------------------------------------------------------------------------------|
-| [[id:90161BF2-67F0-4542-899C-5D844A3F6F95][Sprint 13 housekeeping]]                          | DONE    |            | 2026-02-24 | backlog + two-step release notes.                                             |
 | [[id:6AC2981B-BA0A-4916-A2C1-6B5A816A9148][FSM consolidation into DQ]]                       | DONE    |            | 2026-02-20 | moves FSM under DQ. Continues from sprint 12 fsm_and_trade_support.           |
 | [[id:EC6D8E8D-4421-412A-9331-9BBA5B542D54][Detail dialogs modernisation]]                    | DONE    |            | 2026-02-25 | tabbed dialogs + toolbar removal.                                             |
-| [[id:7B926ACE-57F6-414D-8F3E-568175041F87][Provenance and actor]]                            | DONE    |            | 2026-02-21 | performed_by / modified_by stamping tightened; current_actor GUC.             |
-| [[id:6F799AF2-9844-4CB6-9E9C-A57C06ECBF23][Session telemetry plotting]]                      | DONE    |            | 2026-02-22 | RTT + bytes hypertable + QChartView.                                          |
 | [[id:956FCD0E-41C3-46E4-9895-B64B4C143E6D][Account-party management and login]]              | DONE    |            | 2026-02-23 | multi-party login picker. Continues from sprint 12 party_level_rls_isolation. |
 | [[id:7AE49D47-624C-41C6-8C07-CDBEB71D85EC][Refdata taxonomy work]]                           | DONE    |            | 2026-02-24 | rounding type, currency taxonomy split, asset-class naming.                   |
 | [[id:19EE14C8-952D-42D6-9AE1-ECEA45A5EFCF][Business centre polish]]                          | DONE    |            | 2026-02-22 | city_name + flag fixes.                                                       |
-| [[id:DF3B299E-7FED-4411-B257-125ED35C3A9E][Party isolation for books / portfolios / trades]] | DONE    |            | 2026-02-24 | RLS extended.                                                                 |
 | [[id:EE315A6F-8933-4738-AE3F-E63CBBF57F03][Connection browser environments]]                 | DONE    |            | 2026-02-24 | environment + connection split.                                               |
 | [[id:8A04DE16-6BDD-4696-9F04-122C92692D59][Portfolio explorer]]                              | DONE    |            | 2026-02-25 | combined tree + trade table.                                                  |
 | [[id:68C577A4-B33E-47CB-953F-F3D90A4440D6][Trade import mapping analysis]]                   | DONE    |            | 2026-02-25 | design pass.                                                                  |
@@ -63,6 +70,13 @@ portfolios / trades.
 | [[id:A0B6C877-2FAD-457A-B0C2-000D3F707A5B][Scheduling subsystem]]                            | DONE    |            | 2026-02-27 | protocol + lib + queue.                                                       |
 | [[id:0251593A-0D85-49C4-AEE1-7AAC673978B7][Batch operations]]                                | DONE    |            | 2026-02-28 | atomic save + delete.                                                         |
 | [[id:241A6DE6-8978-4DAF-A052-7E1CF06A8FC8][Party-level refdata restrictions]]                | BACKLOG |            |            | BACKLOG framework only.                                                       |
+
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                                        | State   | Start      | End        | Theme                             |
+|----------------------------------------------------------------------------------------------+---------+------------+------------+-----------------------------------|
+| [[id:90161BF2-67F0-4542-899C-5D844A3F6F95][Sprint 13 housekeeping]]                          | DONE    |            | 2026-02-24 | backlog + two-step release notes. |
 
 * Charts
 

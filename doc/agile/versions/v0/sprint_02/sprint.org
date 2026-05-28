@@ -40,16 +40,36 @@ explicitly.)
 
 * Stories
 
+** Infrastructure
+
 #+ATTR_HTML: :class hug-leading
 | Story                                                                            | State | Start      | End        | Theme                                                                                                                                        |
 |----------------------------------------------------------------------------------+-------+------------+------------+----------------------------------------------------------------------------------------------------------------------------------------------|
-| [[id:0FE2033D-180F-4195-A314-998917D570BE][Sprint 02 housekeeping]]              | DONE  |            | 2025-10-23 | sprint refinement, whiteboarding for the new architecture, dev-environment fixes, Gemini action.                                             |
 | [[id:AC14558D-A526-4BE2-ADB6-81BCFE0E7292][Build stabilisation]]                 | DONE  |            | 2025-10-23 | Windows/macOS builds, vcpkg caching, Valgrind suppressions, broken-build firefighting.                                                       |
 | [[id:145ADEDE-C3DD-4B51-AD3B-D6B5506C6C37][Client/server foundations]]           | DONE  |            | 2025-10-15 | cobalt-based server and client, =comms= library, messaging for risk. Records the GRPC and 0MQ experiments that were abandoned along the way. |
 | [[id:1F9F213C-6BEA-45FB-B0E0-AA5A7A9B7A23][Modernise serialisation and storage]] | DONE  |            | 2025-10-10 | adopt reflect-cpp for JSON, replace XML parsing with reflect-cpp, use sqlgen for Postgres.                                                   |
-| [[id:ED5BC735-FB54-4CE0-9A08-6DAB88C242D0][Currencies temporal and export]]      | DONE  |            | 2025-09-30 | temporal support for currencies, CLI dump command, a containing structure for ORE example data.                                              |
-| [[id:6C63D2B2-7065-4AFC-AE54-86220C427B20][Risk module extraction]]              | DONE  |            | 2025-10-05 | rename =core= to =risk= and refactor the contents accordingly.                                                                               |
-| [[id:CF13FFB1-4D84-4965-AD65-C38B1D4849AB][CLI refactor and test]]               | DONE  |            | 2025-10-10 | restructure the CLI to follow the new project layout and add tests to the CLI parser.                                                        |
+
+** Product
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                            | State | Start      | End        | Theme                                                                                           |
+|----------------------------------------------------------------------------------+-------+------------+------------+-------------------------------------------------------------------------------------------------|
+| [[id:ED5BC735-FB54-4CE0-9A08-6DAB88C242D0][Currencies temporal and export]]      | DONE  |            | 2025-09-30 | temporal support for currencies, CLI dump command, a containing structure for ORE example data. |
+| [[id:6C63D2B2-7065-4AFC-AE54-86220C427B20][Risk module extraction]]              | DONE  |            | 2025-10-05 | rename =core= to =risk= and refactor the contents accordingly.                                  |
+
+** Tooling
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                            | State | Start      | End        | Theme                                                                                 |
+|----------------------------------------------------------------------------------+-------+------------+------------+---------------------------------------------------------------------------------------|
+| [[id:CF13FFB1-4D84-4965-AD65-C38B1D4849AB][CLI refactor and test]]               | DONE  |            | 2025-10-10 | restructure the CLI to follow the new project layout and add tests to the CLI parser. |
+
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                            | State | Start      | End        | Theme                                                                                            |
+|----------------------------------------------------------------------------------+-------+------------+------------+--------------------------------------------------------------------------------------------------|
+| [[id:0FE2033D-180F-4195-A314-998917D570BE][Sprint 02 housekeeping]]              | DONE  |            | 2025-10-23 | sprint refinement, whiteboarding for the new architecture, dev-environment fixes, Gemini action. |
 
 * Charts
 

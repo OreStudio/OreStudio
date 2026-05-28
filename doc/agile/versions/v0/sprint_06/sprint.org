@@ -44,17 +44,37 @@ later sprints with the codegen-driven approach.)
 
 * Stories
 
+** Infrastructure
+
 #+ATTR_HTML: :class hug-leading
 | Story                                                                            | State | Start      | End        | Theme                                                                                                      |
 |----------------------------------------------------------------------------------+-------+------------+------------+------------------------------------------------------------------------------------------------------------|
-| [[id:193A779F-A313-414C-9236-D075B84A2F67][Sprint 06 housekeeping]]              | DONE  |            | 2025-12-15 | backlog, AI summary via the skill, OCR.                                                                    |
 | [[id:4B50A7E5-D862-47A6-AEBE-353CAD55B058][Session lifecycle follow-up]]         | DONE  |            | 2025-12-04 | successor of sprint 05's authentication bootstrap; lands session cancellation + logout + client heartbeat. |
 | [[id:88971AFE-E0B4-4E54-B0D7-B1C627C2F239][Comms robustness]]                    | DONE  |            | 2025-12-10 | split protocol, handshake service, multi-thread coverage, retry-with-give-up.                              |
-| [[id:55C35962-46A0-4353-93AD-FC15BF847C7E][Variability service]]                 | DONE  |            | 2025-12-08 | feature-flag service end-to-end.                                                                           |
 | [[id:D9C5FCEF-DA11-45DA-B7FB-2A7B62C8AA0B][Logging refactor (std::string_view)]] | DONE  |            | 2025-12-12 | migration + fallout.                                                                                       |
-| [[id:50BB2ACB-5687-4BAD-B03A-12AF606E8EAB][Bootstrap polish]]                    | DONE  |            | 2025-12-13 | context to DB, drop bootstrap flag, manifest password-validation knob.                                     |
-| [[id:06C56CA2-9846-4DC9-B2F3-271BF4F084CE][CLI entity syntax follow-up]]         | DONE  |            | 2025-12-13 | successor of sprint 05's CLI/REPL reshape; mops up snags and adds top-level shell login/logout.            |
 | [[id:DBB7EEAB-C8E3-4AF9-B04F-E54FABD34A8F][Infrastructure features]]             | DONE  |            | 2025-12-15 | event bus, system tray, past-timepoint faker.                                                              |
+
+** Product
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                            | State | Start      | End        | Theme                                                              |
+|----------------------------------------------------------------------------------+-------+------------+------------+--------------------------------------------------------------------|
+| [[id:55C35962-46A0-4353-93AD-FC15BF847C7E][Variability service]]                 | DONE  |            | 2025-12-08 | feature-flag service end-to-end.                                   |
+| [[id:50BB2ACB-5687-4BAD-B03A-12AF606E8EAB][Bootstrap polish]]                    | DONE  |            | 2025-12-13 | context to DB, drop bootstrap flag, manifest password-validation knob. |
+
+** Tooling
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                            | State | Start      | End        | Theme                                                                                           |
+|----------------------------------------------------------------------------------+-------+------------+------------+-------------------------------------------------------------------------------------------------|
+| [[id:06C56CA2-9846-4DC9-B2F3-271BF4F084CE][CLI entity syntax follow-up]]         | DONE  |            | 2025-12-13 | successor of sprint 05's CLI/REPL reshape; mops up snags and adds top-level shell login/logout. |
+
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                            | State | Start      | End        | Theme                                   |
+|----------------------------------------------------------------------------------+-------+------------+------------+-----------------------------------------|
+| [[id:193A779F-A313-414C-9236-D075B84A2F67][Sprint 06 housekeeping]]              | DONE  |            | 2025-12-15 | backlog, AI summary via the skill, OCR. |
 
 * Charts
 

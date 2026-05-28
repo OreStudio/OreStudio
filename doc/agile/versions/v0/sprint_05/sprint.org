@@ -39,17 +39,49 @@ skills layer.
 
 * Stories
 
+** Infrastructure
+
 #+ATTR_HTML: :class hug-leading
-| Story                                                                           | State | Start      | End        | Theme                                                                                                   |
-|---------------------------------------------------------------------------------+-------+------------+------------+---------------------------------------------------------------------------------------------------------|
-| [[id:DE3EEE9F-331E-440C-B62C-ABDEFE1D87E2][Sprint 05 housekeeping]]             | DONE  |            | 2025-12-01 | backlog, AI sprint summary, OCR notebooks.                                                              |
-| [[id:656EABB7-C9D1-4FDD-8CAC-0AB77ADCD9B2][Claude Code skills expansion]]       | DONE  |            | 2025-11-17 | new-sprint skill, release-notes skill, project-planning support.                                        |
-| [[id:69C49095-A91F-41D9-9D7E-0E9478143E93][Valgrind leaks follow-up]]           | DONE  |            | 2025-11-25 | successor of sprint 03's OpenSSL BLOCKED item; sweeps up sqlgen residuals and comms-test leaks.         |
+| Story                                                                           | State | Start      | End        | Theme                                                                                           |
+|---------------------------------------------------------------------------------+-------+------------+------------+-------------------------------------------------------------------------------------------------|
+| [[id:69C49095-A91F-41D9-9D7E-0E9478143E93][Valgrind leaks follow-up]]           | DONE  |            | 2025-11-25 | successor of sprint 03's OpenSSL BLOCKED item; sweeps up sqlgen residuals and comms-test leaks. |
 | [[id:A465D630-5972-484B-A2E8-AD1F91657103][Authentication bootstrap follow-up]] | DONE  |            | 2025-11-22 | successor of sprint 03's POSTPONED bootstrap workflow; adds delete-account and the feature-flags split. |
-| [[id:645DF0B4-51B5-40BC-BE07-0AB986111653][Infrastructure features]]            | DONE  |            | 2025-11-20 | detached-mode default; database configuration unified across console and Qt.                            |
-| [[id:7BE09D1C-E25A-4783-A911-C37DEC55CC43][CLI / REPL reshape]]                 | DONE  |            | 2025-11-25 | entity-first command syntax across CLI and REPL; synchronous REPL sockets.                              |
-| [[id:9836E113-DEA9-4605-AE1B-9B0C955B6B73][Currencies UI polish]]               | DONE  |            | 2025-11-28 | JSON parsing, merged save_currency message, XML-import dialog.                                          |
-| [[id:3A763AFB-22F3-4E9A-B121-A71997221C3F][Documentation and diagrams]]         | DONE  |            | 2025-12-01 | UML refresh after the reshape; per-component diagram links.                                             |
+| [[id:645DF0B4-51B5-40BC-BE07-0AB986111653][Infrastructure features]]            | DONE  |            | 2025-11-20 | detached-mode default; database configuration unified across console and Qt.                    |
+
+** Product
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                           | State | Start      | End        | Theme                                                                 |
+|---------------------------------------------------------------------------------+-------+------------+------------+-----------------------------------------------------------------------|
+| [[id:9836E113-DEA9-4605-AE1B-9B0C955B6B73][Currencies UI polish]]               | DONE  |            | 2025-11-28 | JSON parsing, merged save_currency message, XML-import dialog.        |
+
+** Tooling
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                           | State | Start      | End        | Theme                                                                      |
+|---------------------------------------------------------------------------------+-------+------------+------------+----------------------------------------------------------------------------|
+| [[id:7BE09D1C-E25A-4783-A911-C37DEC55CC43][CLI / REPL reshape]]                 | DONE  |            | 2025-11-25 | entity-first command syntax across CLI and REPL; synchronous REPL sockets. |
+
+** LLMs
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                           | State | Start      | End        | Theme                                                            |
+|---------------------------------------------------------------------------------+-------+------------+------------+------------------------------------------------------------------|
+| [[id:656EABB7-C9D1-4FDD-8CAC-0AB77ADCD9B2][Claude Code skills expansion]]       | DONE  |            | 2025-11-17 | new-sprint skill, release-notes skill, project-planning support. |
+
+** Documentation
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                           | State | Start      | End        | Theme                                                      |
+|---------------------------------------------------------------------------------+-------+------------+------------+------------------------------------------------------------|
+| [[id:3A763AFB-22F3-4E9A-B121-A71997221C3F][Documentation and diagrams]]         | DONE  |            | 2025-12-01 | UML refresh after the reshape; per-component diagram links. |
+
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story                                                                           | State | Start      | End        | Theme                                      |
+|---------------------------------------------------------------------------------+-------+------------+------------+--------------------------------------------|
+| [[id:DE3EEE9F-331E-440C-B62C-ABDEFE1D87E2][Sprint 05 housekeeping]]             | DONE  |            | 2025-12-01 | backlog, AI sprint summary, OCR notebooks. |
 
 * Charts
 

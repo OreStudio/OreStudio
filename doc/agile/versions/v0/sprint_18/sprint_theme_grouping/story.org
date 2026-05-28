@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 03EC9465-AE25-4404-9B7E-B0C25A3CBE28
+:END:
+#+title: Story: Sprint theme grouping
+#+description: Introduce theme subheadings into sprint.org to group stories by area and surface emerging patterns in the backlog.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :agile:sprint:readability:sprint_18:v0:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The =* Stories= table in each =sprint.org= is a single flat list with no
+structural grouping. As sprints grow, it becomes impossible to answer "what
+themes are we working on?" without reading every row. This story introduces
+theme subheadings: each =* Stories= section is split into =**= sub-sections,
+one per theme, each containing its own table. Themes are agreed once and
+applied uniformly to all sprint backlog files.
+
+The proposal is six themes:
+
+- *ORE / Product* — end-user features: ORE types, samples, imports, UI.
+- *Compass / Tooling* — =ores.compass= CLI commands and developer tooling.
+- *Agile Process* — sprint management, health tracking, captures, planning.
+- *LLM / Skills* — runbooks, skills, recipes, LLM-facing tooling.
+- *Knowledge / Documentation* — knowledge graph, system model, docs, site.
+- *Build / Infrastructure* — build system, CI/CD, tooling hygiene.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                                |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
+| Now           | Theme proposal agreed; applying to sprint backlogs. |
+| Waiting on    | Nothing.                               |
+| Next          | Apply theme subheadings to all sprint.org files.   |
+| Last touched  | 2026-05-28                             |
+
+* Acceptance
+
+- Six theme subheadings defined and agreed.
+- =sprint_18/sprint.org= =* Stories= section restructured with =**= theme
+  subheadings, each containing the relevant table rows.
+- All other sprint =sprint.org= files (sprints 01–17) updated the same way.
+- =compass where= and =compass where --prs= continue to read correctly after
+  the structural change.
+
+* Tasks
+
+In execution order:
+
+- [[id:DF939E90-497C-4332-A30E-B528049D6F71][Implement sprint theme grouping]]
+
+* Decisions
+
+* Out of scope
+
+- Introducing formal "epics" as separate doc-graph nodes — themes are
+  subheadings only; no new document type is needed.
+- Changing the column schema of the story table rows.

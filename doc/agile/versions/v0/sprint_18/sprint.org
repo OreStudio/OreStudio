@@ -89,6 +89,7 @@ In execution order.
 | [[id:FFF169EC-0B35-4800-8BEE-1CF7D0DEE8D6][Refactor story task lists to a status table]]                           | STARTED | 2026-05-28 |            | Replace bullet-list Tasks section in story docs with a Task/State/Start/End/Description table. |
 | [[id:AD6B59E1-A267-4927-A3FF-D624BB123658][Move .build-*.el scripts to ores.lisp]]                                 | DONE    | 2026-05-28 | 2026-05-28 | Relocate build scripts from repo root into ores.lisp/src/ with ores- naming. |
 | [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Improve cybernetics documentation]]                                      | STARTED | 2026-05-28 |            | Add VSM overview page, expand Cybernetic Levels with context and limitations, link compass. |
+| [[id:03EC9465-AE25-4404-9B7E-B0C25A3CBE28][Sprint theme grouping]]                                                 | STARTED | 2026-05-28 |            | Introduce theme subheadings into sprint.org to group stories by area. |
 
 * Health Review
 

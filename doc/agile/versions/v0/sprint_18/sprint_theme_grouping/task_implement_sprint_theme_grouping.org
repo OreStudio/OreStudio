@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: DF939E90-497C-4332-A30E-B528049D6F71
+:END:
+#+title: Task: Implement Sprint theme grouping
+#+description: Initial task for: Sprint theme grouping
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sprint_theme_grouping:sprint_18:v0:
+#+owner: marco
+#+branch: feature/sprint-theme-grouping
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:03EC9465-AE25-4404-9B7E-B0C25A3CBE28][Sprint theme grouping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Apply theme subheadings to =sprint.org= files so each sprint's =* Stories=
+section is split into =**= sub-sections — one per agreed theme — each
+containing its own table. Agreed themes:
+
+1. *ORE / Product* — end-user features: ORE types, samples, imports, UI.
+2. *Compass / Tooling* — =ores.compass= CLI commands and developer tooling.
+3. *Agile Process* — sprint management, health tracking, captures, planning.
+4. *LLM / Skills* — runbooks, skills, recipes, LLM-facing tooling.
+5. *Knowledge / Documentation* — knowledge graph, system model, docs, site.
+6. *Build / Infrastructure* — build system, CI/CD, tooling hygiene.
+
+Apply to current sprint first; then back-fill all prior sprint files.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                                |
+| Parent story | [[id:03EC9465-AE25-4404-9B7E-B0C25A3CBE28][Sprint theme grouping]] |
+| Now          | Themes agreed; applying to sprint 18.  |
+| Waiting on   | Nothing.                               |
+| Next         | Apply to sprints 01–17.                |
+| Last touched | 2026-05-28                             |
+
+* Acceptance
+
+- All agreed themes documented in the parent story =* Goal=.
+- =sprint_18/sprint.org= =* Stories= uses =**= theme subheadings.
+- All prior sprint files (sprints 01–17) updated the same way.
+- "In execution order" prose retained under each sub-heading where applicable.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

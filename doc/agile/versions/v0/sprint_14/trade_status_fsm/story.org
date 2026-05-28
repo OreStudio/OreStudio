@@ -39,9 +39,9 @@ enforced + auditable.
 
 * Tasks
 
-In execution order:
-
-- [[id:DA8FF70F-4D9E-4231-9998-377AEB8D9DFA][Implement trade status state machine]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DA8FF70F-4D9E-4231-9998-377AEB8D9DFA][Implement trade status state machine]] | DONE | 2026-05-20 | 2026-03-02 | Trade status FSM (new / live / expired / cancelled) inside ores.dq integrated into ores.trading; activity_type taxonomy replaces lifecycle_events (categories: new activity, lifecycle event, misbooking, valuation change, cancellation; FpML + FSM mapping); ores_trading_trades_tbl grows activity_type_code + status_id; trade_status_service::resolve_status() enforces transitions; reflectcpp portfile bson fix; ores.refdata cross-tenant leak fix. |
 
 * Decisions
 

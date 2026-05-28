@@ -42,12 +42,12 @@ migrated; ores.comms.shell renamed; pgmq-based ores.mq removed.
 
 * Tasks
 
-In execution order:
-
-- [[id:84365A4E-5921-4921-AB81-E8EA15C17EAF][Implement NATS support]]
-- [[id:6D8987A6-7F0B-40CB-8334-E149EA44B44B][Rename ores.comms.shell to ores.shell]]
-- [[id:4776490D-D9B5-4465-9BD0-21AFAC83CA60][Add NATS telemetry sampling]]
-- [[id:D900CDCC-3D94-46F4-B54E-94212902FE77][Remaining NATS changes]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:84365A4E-5921-4921-AB81-E8EA15C17EAF][Implement NATS support]] | DONE | 2026-05-20 | 2026-03-15 | Replace the entire binary protocol stack (SSL/ASIO transport + NNG broker) with cnats request/reply: ~107k lines removed, ~20k lines added; new ores.nats component with nats::service::client interface; 10 domain services wired to NATS (iam, variability, refdata, assets, trading, dq, reporting, scheduler, synthetic, telemetry); ores.comms.shell + ores.http.server + ores.qt all migrated; subject prefix ores.{tier}.{instance} for environment isolation; _INBOX.* reply-subject prefix bug fixed; ores.mq removed in favour of JetStream via jetstream_admin. |
+| [[id:6D8987A6-7F0B-40CB-8334-E149EA44B44B][Rename ores.comms.shell to ores.shell]] | DONE | 2026-05-20 | 2026-03-15 | With NATS replacing the binary comms protocol, the shell no longer needs the .comms namespace; rename completes the cleanup; NATS documentation rewritten across all 10 services with subject-based references. |
+| [[id:4776490D-D9B5-4465-9BD0-21AFAC83CA60][Add NATS telemetry sampling]] | DONE | 2026-05-20 | 2026-03-16 | nats.service that stores NATS samples for observability; question of renaming to messaging-service or moving to telemetry left open. |
+| [[id:D900CDCC-3D94-46F4-B54E-94212902FE77][Remaining NATS changes]] | DONE | 2026-05-20 | 2026-03-18 | Tenant provisioning auto-creates system party + seeds bootstrap-mode flag; server-side UUID generation in tenant_handler::save(); account_handler uses make_request_context for tenant scoping; lei_entity_handler::summary() implementation calling new SQL functions; PQsetNoticeProcessor routes PL/pgSQL through Boost.Log; provisioning wizard parity restored (depth + contact + seed); performed_by audit field attributed to service account; ores.wt.service startup fix. |
 
 * Decisions
 

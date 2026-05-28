@@ -35,9 +35,9 @@ Recurring per-sprint housekeeping.
 
 * Tasks
 
-In execution order:
-
-- [[id:27F234F3-87E2-4E79-84A2-6CAE0366044A][Sprint and product backlog refinement]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:27F234F3-87E2-4E79-84A2-6CAE0366044A][Sprint and product backlog refinement]] | DONE | 2026-05-20 | 2026-03-12 | Maintain sprint 14 backlog and groom the product backlog. |
 
 * Decisions
 

@@ -38,9 +38,9 @@ monitoring UI.
 
 * Tasks
 
-In execution order:
-
-- [[id:48E29288-2B7B-4C13-A037-195BDB4F3C0E][Add pgmq queue management and messaging UI]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:48E29288-2B7B-4C13-A037-195BDB4F3C0E][Add pgmq queue management and messaging UI]] | DONE | 2026-05-20 | 2026-03-03 | MQ subsystem on top of pgmq: protocol 0xB000-0xB013 messages; ores_mq_metrics_samples_tbl time-series; ores_mq_scrape_metrics_fn pg_cron job; Qt monitor UI (ClientQueueModel + QueueMonitorMdiWindow + QueueDetailDialog + QueueChartWindow); protocol 46.3. |
 
 * Decisions
 

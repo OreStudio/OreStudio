@@ -50,9 +50,9 @@ up there.
 
 * Tasks
 
-In execution order:
-
-- [[id:75254029-D708-45BD-A333-16D4ADE44755][Add ORE Import Wizard]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:75254029-D708-45BD-A333-16D4ADE44755][Add ORE Import Wizard]] | DONE | 2026-05-20 | 2026-03-01 | Seven-page QWizard: directory scan, hierarchy build, trade import. ore_directory_scanner classifies files; ore_hierarchy_builder constructs portfolio + book hierarchies with naming + dedup; ore_import_planner generates the import plan; asynchronous scan; batched trade imports with live progress; accessible from File menu + Portfolio Explorer toolbar. |
 
 * Decisions
 

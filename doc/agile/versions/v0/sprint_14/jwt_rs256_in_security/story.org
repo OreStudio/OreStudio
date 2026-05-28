@@ -46,9 +46,9 @@ refresh, configurable lifetimes, and TimescaleDB-backed auth telemetry.
 
 * Tasks
 
-In execution order:
-
-- [[id:C9104347-9FB4-4B9A-AC78-8747F7E84060][Migrate JWT to ores.security with RS256]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C9104347-9FB4-4B9A-AC78-8747F7E84060][Migrate JWT to ores.security with RS256]] | DONE | 2026-05-20 | 2026-03-04 | Move JWT infrastructure from ores.http to ores.security; RS256 asymmetric signing (IAM mints with private key; services verify with public key); jwt_claims extended with tenant_id + party_id; ores.iam.service mints + returns JWT in login_response; protocol 49.0 (breaking). |
 
 * Decisions
 

@@ -39,9 +39,9 @@ Ninja or Make explicitly.
 
 * Tasks
 
-In execution order:
-
-- [[id:A77A88D5-737A-4136-85FA-F89E013D4908][Add build-tool suffix to CMake presets]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A77A88D5-737A-4136-85FA-F89E013D4908][Add build-tool suffix to CMake presets]] | DONE | 2026-05-20 | 2026-03-10 | Every preset names its build tool ({platform}-{compiler}-{buildtype}-{tool}); hidden ninja + make presets centralise generator settings (incl. disabling coloured Make output); Linux + macOS support both Ninja + Make; Windows on Ninja only; parallel-build auto-detection removed in favour of env / tool default; docs + skill files updated. |
 
 * Decisions
 

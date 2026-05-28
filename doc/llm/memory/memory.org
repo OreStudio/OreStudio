@@ -56,7 +56,7 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:F9B796DF-2C06-42EF-AACF-D69E53621FF9][Do not re-export ORES_* env vars in Bash tool calls]].
 - [[id:46F83AC1-F41F-4878-9A1D-2E49742E1BFE][Always use codegen to create new documents]] — never write =.org= files
   directly; use =generate_doc.sh= to scaffold them.
-- [[id:19570253-D852-4D14-A72B-B13FDF0651B7][New captures go to the inbox bucket]] — use the inbox bucket for new captures and triage to near/far separately.
+- [[id:19570253-D852-4D14-A72B-B13FDF0651B7][New captures go to the inbox bucket]] — triage to near/far separately.
 - [[id:7F176058-4FF7-4731-920B-26FE318E338F][Always use compass to create agile artefacts]] — never write task/story files
   manually; always scaffold with =compass add=.
 - [[id:387016AD-42CF-4830-B504-F255F6A7D1AB][Check recipes before searching for how to do something]] — =doc/recipes/=

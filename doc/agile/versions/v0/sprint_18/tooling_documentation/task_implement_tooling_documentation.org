@@ -70,6 +70,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary                               | File                                     | Decision | Notes                      |
 |---+-----------------------------------------------+------------------------------------------+----------+----------------------------|
-| 1 | Acceptance criteria section empty (all 4 tasks) | task_implement_tooling_documentation.org | Accept   | Fixed in 8ef145efe          |
+| 1 | Acceptance criteria section empty (all 4 tasks)              | task_implement_tooling_documentation.org | Accept  | Fixed in 8ef145efe           |
+| 2 | Inconsistent script naming (hyphens vs underscores)           | developer_scripts.org                    | Decline | Doc reflects actual filenames; rename is a separate task. |
 
 * Result

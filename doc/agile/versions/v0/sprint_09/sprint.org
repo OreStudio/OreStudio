@@ -42,6 +42,15 @@ coverage of the entities that landed in earlier sprints.
 | Release Notes  | [[id:B366C8FE-240E-493D-8D18-747BE840870A][Release notes]]                                                                                                                                                          |
 | Last touched   | 2026-01-20                                                                                                                                                 |
 
+** Achievements
+
+- Data Quality subsystem and Data Librarian established as flagship features.
+- ores.security module introduced with RAII OpenSSL.
+- Connection management (ores.connections) live with Connection Browser MDI.
+- Database renamed ores.risk → ores.refdata; consistent component_entity naming enforced.
+- CLI list/delete coverage extended to five entities.
+- Qt icon-enum and theme refactored for consistent visual identity.
+
 * Stories
 
 For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].

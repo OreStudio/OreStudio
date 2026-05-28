@@ -41,6 +41,15 @@ out the largest v0 sprint to date.
 | Release Notes  | [[id:79707B34-5D13-49AC-89B3-A993C96779C8][Release notes]]                                                                                                                                                                                               |
 | Last touched   | 2026-02-20                                                                                                                                                                                      |
 
+** Achievements
+
+- Party and counterparty domain established end-to-end with RLS isolation.
+- GLEIF data integrated: datasets, central banks, LEI-to-BIC, provisioning wizards, and hierarchy graph.
+- FSM and trade envelope landed; component renamed ores.trade → ores.trading.
+- Books, portfolios, and business units modelled.
+- Five-tab advanced counterparty dialog and Qt column handling centralised across 24 list windows.
+- Multi-tenant provisioning wizards with root-party invariant and GLEIF/synthetic paths.
+
 * Stories
 
 For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].

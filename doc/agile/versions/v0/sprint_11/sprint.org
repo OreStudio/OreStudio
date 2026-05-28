@@ -41,6 +41,15 @@ metadata, eventing).
 | Release Notes  | [[id:B0269759-8AB2-4856-8EAD-B1E57C0AB7FB][Release notes]]                                                                                                                             |
 | Last touched   | 2026-02-06                                                                                                                    |
 
+** Achievements
+
+- Multi-tenant architecture established end-to-end: schema, seeding, RLS, and per-request context.
+- Each test isolated in its own tenant via tenancy-based test isolation.
+- Telemetry database sink introduced (ores.telemetry.database).
+- Service accounts and audit trail with performed_by stamping across all mutations.
+- sqlgen improved with libpq audit and upstream bound-params work.
+- Tenancy validated and enforced across shell, librarian, DQ, and eventing surfaces.
+
 * Stories
 
 For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].

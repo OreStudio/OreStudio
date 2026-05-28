@@ -39,6 +39,15 @@ skills to make the next entity cheaper.
 | Release Notes  | [[id:67E62E6F-F85E-48E1-8099-4E6AE3E0872B][Release notes]]                                                                                                        |
 | Last touched   | 2026-01-11                                                                                               |
 
+** Achievements
+
+- Countries landed as the first proper reference-data entity end-to-end.
+- Database schema and seeding overhauled; TimescaleDB tier detection in place.
+- Native pagination adopted across list views (sqlgen 0.6.0).
+- Change management infrastructure landed: reason codes with UI.
+- Entity-creator skills suite extended to Qt, shell, HTTP, Wt, and CLI surfaces.
+- Wt/HTTP validated and documented as the second presentation tier.
+
 * Stories
 
 For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].

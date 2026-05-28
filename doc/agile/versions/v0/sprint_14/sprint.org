@@ -43,6 +43,15 @@ ORE Import Wizard, CMake preset suffixes.
 | Release Notes  | [[id:0875ADA0-D41A-4A2E-94A3-9E51CB78FD96][Release notes]]                                                                                                                                                                                            |
 | Last touched   | 2026-03-19                                                                                                                                                                                   |
 
+** Achievements
+
+- NATS adopted as the messaging substrate; 10 services migrated from binary protocol.
+- ORE Import Wizard landed: seven-page directory-scan wizard.
+- Reporting subsystem complete: schema, domain, messaging, repo, and Qt UI.
+- JWT RS256 centralised in ores.security.
+- Trade status FSM and activity_type taxonomy established.
+- CLI domain layer introduced.
+
 * Stories
 
 For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].

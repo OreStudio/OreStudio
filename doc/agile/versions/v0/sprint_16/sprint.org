@@ -51,6 +51,16 @@ The largest v0 sprint to date (157h, 89 tasks across 22 stories).
 | Release Notes  | [[id:88484BF4-AC03-4058-98DF-2D769C0D6223][Release notes]]                                                      |
 | Last touched   | 2026-04-17                                             |
 
+** Achievements
+
+- ORE import pipeline complete: dispatch pipeline, mappers for every instrument family, supporting files, and golden roundtrip tests.
+- Workflow engine established with generalised event-driven FSM and party provisioning saga.
+- Market data subsystem end-to-end: parser, schema, repo, service, and Qt UI.
+- Qt plugin architecture introduced with 7 domain plugins split from the monolith.
+- Service lifecycle controller with unified NATS heartbeat landed.
+- Reporting and analytics: DQ-sourced report definitions and pricing engine.
+- ~20 Windows portability fixes landed.
+
 * Stories
 
 For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].

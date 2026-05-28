@@ -42,6 +42,15 @@ FX, bond, credit).
 | Release Notes  | [[id:39CDAA48-85B3-4E2E-9519-3BD44C3B7AEB][Release notes]]                                                             |
 | Last touched   | 2026-03-30                                                    |
 
+** Achievements
+
+- Compute grid (BOINC-inspired) implemented, observed, and polished end-to-end.
+- API/core architecture split: 10 service libraries refactored into =*.api= + =*.core=.
+- CDM instrument domain models for rates, FX, credit, and bond.
+- ORE import bugs fixed under real-data conditions.
+- PostgreSQL roles environment-isolated with prefixes.
+- =feature_flags= replaced by unified =system_settings=.
+
 * Stories
 
 For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].

@@ -42,6 +42,15 @@ portfolios / trades.
 | Release Notes  | [[id:0B0A8BDA-2DB1-4222-825E-493B1D5A68F0][Release notes]]                                                                                                                                                                   |
 | Last touched   | 2026-02-28                                                                                                                                                          |
 
+** Achievements
+
+- Scheduling subsystem landed: protocol, library, and queue.
+- Multi-party login picker and account-party management live.
+- FSM consolidated into DQ; portfolio explorer combining tree and trade table.
+- Tabbed dialog pattern adopted across all detail dialogs.
+- RLS extended to books, portfolios, and trades.
+- Batch operations (atomic save and delete) and session telemetry plotting established.
+
 * Stories
 
 For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].

@@ -40,6 +40,16 @@ history to the v2 cybernetic information architecture.
 | Capture        | [[id:14606A1B-2742-DE34-F813-B4E3B736AEF1][capture.org]]   |
 | Last touched   | 2026-05-21                                                 |
 
+** Achievements
+
+- Workspace feature landed: bitemporal schema, service, UI, codegen propagation, and Data Workshop.
+- ORE conventions import: seven convention types via codegen; CLI import Phase 3 complete.
+- ORE domain roundtrip command with baseline and all four ORE XML document types.
+- Symbol visibility migrated project-wide (=-fvisibility=hidden=, export macros, plugin isolation).
+- MSVC C1202 constexpr depth resolved; Windows portability completed.
+- All hand-crafted SQL replaced by codegen; SQL codegen drift closed.
+- v2 documentation architecture: sprints 01–16 ported; site theme and GitHub Pages live.
+
 * Stories
 
 For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].

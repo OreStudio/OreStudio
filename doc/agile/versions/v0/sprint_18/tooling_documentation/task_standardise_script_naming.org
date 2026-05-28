@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: FF5FEF54-E937-4879-B66C-1C1AB22E4316
+:END:
+#+title: Task: Standardise script naming to snake_case
+#+description: Rename parse-test-results.sh and convert-to-unix.sh in scripts/ to snake_case to match all other scripts in the directory.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :tooling_documentation:sprint_18:v0:
+#+owner: marco
+#+branch: feature/standardise-script-naming
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two scripts in =scripts/= use hyphens in their names, deviating from
+the snake_case convention used by all other scripts:
+
+- =parse-test-results.sh= → =parse_test_results.sh=
+- =convert-to-unix.sh= → =convert_to_unix.sh=
+
+Rename both scripts and update every reference site. Known references:
+
+- =projects/ores.testing/modeling/database_integration.org=
+- =doc/knowledge/architecture/developer_scripts.org=
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-29                             |
+
+* Acceptance
+
+- =scripts/parse-test-results.sh= is renamed to =scripts/parse_test_results.sh=.
+- =scripts/convert-to-unix.sh= is renamed to =scripts/convert_to_unix.sh=.
+- All references in =projects/ores.testing/modeling/database_integration.org= and =doc/knowledge/architecture/developer_scripts.org= are updated.
+- No other files reference the old hyphenated names.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+Raised after a review comment on PR #907 flagged inconsistent script
+naming. Renaming deferred to a separate task to keep T1 focused.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -43,6 +43,13 @@ ergonomics.
 - Compilation buffers for build, site, services, and DB scripts.
 - Org-roam HTML export artefacts (via =ores-org-roam-export=).
 
+* Entry points
+
+- =M-x ores/dashboard= — primary developer console; opens the =ORES Dashboard= card layout.
+- =M-x ores-db/list-databases= — tabulated database browser; list, connect, kill, teardown, and recreate.
+- =M-x ores-shell= — launch (or switch to) an =ores.shell= REPL comint buffer.
+- =M-x ores/capture= — capture a product-backlog note via =compass.sh capture --note= (CLI-driven; for interactive Org Capture use yasnippet trigger =cap= in an =.org= buffer).
+
 * Source files
 
 - =ores-env.el= — parses the checkout =.env= file into an alist and exposes

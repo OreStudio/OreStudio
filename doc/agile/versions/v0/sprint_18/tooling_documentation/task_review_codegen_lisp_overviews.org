@@ -42,12 +42,12 @@ scripts doc or raise a capture.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] |
-| Now          | Not yet started.                       |
+| Now          | Reviewing ores.lisp and ores.codegen overviews for gaps; filling in-place. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-28                               |
+| Next         | Open PR.                               |
+| Last touched | 2026-05-29                             |
 
 * Acceptance
 

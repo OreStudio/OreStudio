@@ -64,8 +64,8 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                    | File                            | Decision | Notes                                        |
+|---+--------------------------------------------------------------------+---------------------------------+----------+----------------------------------------------|
+| 1 | Regex [^\]]+ silently drops tasks with bracketed titles            | backfill_story_task_tables.py   | Accept   | Fixed to .*? in commit; 18 sprint_17 stories corrected |
 
 * Result

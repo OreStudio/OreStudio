@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: AFB80D01-1E85-485D-A3D9-766D219324FD
+:END:
+#+title: Task: Additional system model improvements
+#+description: Fix the architecture_layers.puml diagram; simplify system_model.org layer section headings to linked one-liners removing duplicated blurb text.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :system_model_readability:sprint_18:v0:
+#+owner: marco
+#+branch: feature/split-system-model-layers
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two improvements to the system model documents delivered together:
+
+1. =architecture_layers.puml= uses floating =note as= elements inside
+   packages, which renders incorrectly. Replace with =rectangle=
+   elements so the component text is properly contained and the
+   diagram renders cleanly. Regenerate =architecture_layers.png=.
+
+2. =system_model.org= has each layer heading followed by a paragraph
+   that duplicates the bullet text already in =* System Architecture=
+   and then appends a "See [[link]] for inventory" sentence. Replace
+   each layer section body with a single linked heading title:
+   e.g. =* [[id:UUID][Foundation Layer]] — the bedrock.= The
+   =* System Architecture= bullet list is the canonical layer
+   description and must not be changed.
+
+* Status
+
+| Field        | Value                                              |
+|--------------+----------------------------------------------------|
+| State        | STARTED                                            |
+| Parent story | [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]] |
+| Now          | Implementing PlantUML fix and system_model.org simplification. |
+| Waiting on   | Nothing.                                           |
+| Next         | Commit, push, PR.                                  |
+| Last touched | 2026-05-28                                         |
+
+* Acceptance
+
+- =architecture_layers.puml= uses =rectangle= elements; no =note as=
+  inside packages; regenerated =architecture_layers.png= renders
+  cleanly with four labelled coloured rectangles and dependency
+  arrows.
+- In =system_model.org=, each layer heading (=* Foundation Layer=,
+  etc.) carries an org-roam link to its sub-page and a one-line
+  tagline; no body paragraph follows the heading.
+- The =* System Architecture= bullet list is unchanged.
+
+* Plan
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

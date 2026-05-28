@@ -53,33 +53,12 @@ the system belongs to exactly one of these layers:
 See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] for how CMake targets enforce these layer
 boundaries, and [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] for how the build is organised.
 
-* Foundation Layer
+* [[id:C9AD7DA5-D00E-4CA9-A978-E74F776E0F17][Application Layer]] — the surfaces.
 
-Utilities, platform abstractions, logging, telemetry, PostgreSQL
-access, feature flags, geolocation, schema management, cryptography,
-and code generation — the bedrock every other layer depends on. See
-[[id:C5F35442-A2C3-415A-80F2-C09CAA0842FF][System Model: Foundation Layer]] for the full component inventory.
+* [[id:873CD1C6-7636-4F30-B3D4-3BB7FCBF4DBD][Domain Layer]] — the business.
 
-* Infrastructure Layer
+* [[id:6FF02DD3-0F3B-4BCB-87CA-3224030D00E8][Infrastructure Layer]] — communication and testing.
 
-[[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] messaging backbone, service runner, test isolation,
-in-process event bus, connection bookmarks, and file storage — the
-transport and testing contracts that every domain component depends on.
-See [[id:6FF02DD3-0F3B-4BCB-87CA-3224030D00E8][System Model: Infrastructure Layer]] for the full component inventory.
-
-* Domain Layer
-
-Reference data, IAM, data quality, FpML, ORE import/export, trading,
-market data, synthetic data, asset storage, scheduling, reporting,
-analytics, and workflow — the financial domain model that justifies the
-system's existence. See [[id:873CD1C6-7636-4F30-B3D4-3BB7FCBF4DBD][System Model: Domain Layer]] for the full
-component inventory.
-
-* Application Layer
-
-Qt desktop, CLI, HTTP servers, Wt web frontend, compute engine,
-orchestration controller, and developer tooling — the surfaces that
-compose every layer below into user-facing executables. See
-[[id:C9AD7DA5-D00E-4CA9-A978-E74F776E0F17][System Model: Application Layer]] for the full component inventory.
+* [[id:C5F35442-A2C3-415A-80F2-C09CAA0842FF][Foundation Layer]] — the bedrock.
 
 For GitHub, Doxygen, Discord, and CDash see [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]].

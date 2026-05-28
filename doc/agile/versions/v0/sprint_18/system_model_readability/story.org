@@ -22,12 +22,12 @@ Transform the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] from a f
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                                         |
+| State         | STARTED                                      |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                    |
-| Now           | Complete.                                    |
+| Now           | Additional improvements: PlantUML fix and system_model.org simplification. |
 | Waiting on    | Nothing.                                     |
-| Next          | None.                                        |
-| Last touched  | 2026-05-28                               |
+| Next          | Complete task_system_model_additional_improvements; merge. |
+| Last touched  | 2026-05-28                                   |
 
 * Acceptance
 
@@ -41,8 +41,10 @@ Transform the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] from a f
 
 In execution order:
 
-- [[id:C059C403-D888-4DB6-86B2-2FAD556DC55C][Rewrite system model with layer blurbs and component tables]]
-- [[id:101A4A39-B452-4738-8BAD-2F8BF99686BF][Add component id-links and architectural cross-references to system model]]
+- [[id:C059C403-D888-4DB6-86B2-2FAD556DC55C][Rewrite system model with layer blurbs and component tables]] (DONE)
+- [[id:101A4A39-B452-4738-8BAD-2F8BF99686BF][Add component id-links and architectural cross-references to system model]] (DONE)
+- [[id:62B0FE2B-41F8-44E9-B181-EB0F9F3911CD][Split system model into per-layer sub-pages and add architecture diagram]] (STARTED — PR #887)
+- [[id:AFB80D01-1E85-485D-A3D9-766D219324FD][Additional system model improvements]] (STARTED)
 
 * PRs
 

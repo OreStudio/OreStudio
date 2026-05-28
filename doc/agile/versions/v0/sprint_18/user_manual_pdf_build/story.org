@@ -50,7 +50,6 @@ In execution order:
 - [[id:27422EEE-9435-49EC-B706-43BD66B2D7A6][Task: Generate all missing screenshots for the manual]] (DONE — PRs #853, #866)
 - [[id:8763DD18-EBDD-4921-A5DF-FA667C838379][Task: Add user_manual_site.org and update manuals.org]] (DONE)
 - [[id:20BDCCE7-2B65-4288-87C9-7CDDC2E77D14][Task: Add site:pdf publish component and switch manual to book LaTeX class]] (DONE — PR #841)
-- [[id:62B0FE2B-41F8-44E9-B181-EB0F9F3911CD][Task: Split system model layers into sub-pages and add architecture diagram]] (STARTED)
 
 * Decisions
 

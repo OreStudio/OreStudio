@@ -92,7 +92,7 @@ of these exclusions, push back: the right home is somewhere else.
 
 ** Reference
 
-(none yet)
+- [[id:28F78E07-834D-4755-BB03-89BD7C17B01E][Compass basic command syntax]] — =search=, =list=, =show=, =where=, =goto=, =add= with required flags.
 
 * See also
 

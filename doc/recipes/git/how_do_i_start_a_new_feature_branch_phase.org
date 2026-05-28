@@ -97,6 +97,12 @@ post-merge main, and removes the old branch locally and remotely.
 - /Never rebase + force-push/ — confuses reviewers and can break
   protected-branch policy.
 - /Delete after merge/ — keeps both ends of the remote clean.
+- /Hotfix branches/ — emergency fixes that must land outside the normal
+  sprint flow use =hotfix/<description>= rather than =feature/=. They are
+  still branched from fresh =main= and follow the same PR process. A
+  hotfix branch is scaffolded with =compass goto --slug hotfix_<thing>=;
+  the story lands in the sprint's =** Hotfixes= section. See
+  [[id:0CED1212-6763-4238-B861-9740C62AE499][Handle a hotfix]] for the full procedure.
 
 * Script
 

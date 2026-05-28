@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 28F78E07-834D-4755-BB03-89BD7C17B01E
+:END:
+#+title: Compass basic command syntax
+#+description: Syntax reference for the most-used compass commands: search, show, list, add, where, goto.
+#+type: memory
+#+memory_subtype: reference
+#+version: 2
+#+level: cross
+#+filetags: :memory:reference:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+The =compass.sh= wrapper lives at =./projects/ores.compass/compass.sh=.
+Core commands:
+
+- *Search* (find docs by topic):
+  =compass.sh search "how do I create a runbook"=
+
+- *List* (all docs of a type):
+  =compass.sh list --type runbook=
+  =compass.sh list --type recipe=
+
+- *Show* (read a doc by title or UUID prefix):
+  =compass.sh show "How do I create a memory?"=
+
+- *Where* (current sprint/story/task context):
+  =compass.sh where=
+
+- *Goto* (start a new story+branch in one step):
+  =compass.sh goto --slug my_slug --title "Title" --description "..." --tags "tag1:tag2"=
+
+- *Add* (scaffold a new artefact — always requires =--slug=, =--title=,
+  =--description=, =--tags=; types =memory= and =runbook= also require
+  =--parent-dir=; type =memory= also requires =--memory-subtype=):
+  =compass.sh add runbook --slug hotfix --parent-dir doc/llm/runbooks --title "..." --description "..." --tags "..."=
+  =compass.sh add memory --slug my_rule --parent-dir doc/llm/memory --title "..." --description "..." --memory-subtype feedback=
+  =compass.sh add recipe --slug how_do_i_... --title "..." --description "..." --tags "..."=
+
+*Why:* Every session rediscovers the required flags by trial and error
+(missing =--parent-dir=, missing =--memory-subtype=, etc.), wasting turns
+and triggering user interruptions.
+
+*How to apply:* Before calling any =compass add= command, check this memory
+for the required flags. Do not guess — wrong flags fail silently or with
+unhelpful errors.

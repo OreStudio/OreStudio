@@ -86,6 +86,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:8BD3D28A-C5A1-4F8D-A685-1BC6EBF5C812][Sprint health charts]]                             | DONE    | 2026-05-26 | 2026-05-26 | Generate daily charts of PRs, commits, story completions, and line churn using gnuplot.           |
 | [[id:FFF169EC-0B35-4800-8BEE-1CF7D0DEE8D6][Refactor story task lists to a status table]]      | STARTED | 2026-05-28 |            | Replace bullet-list Tasks section in story docs with a Task/State/Start/End/Description table.    |
 | [[id:03EC9465-AE25-4404-9B7E-B0C25A3CBE28][Sprint theme grouping]]                            | STARTED | 2026-05-28 |            | Introduce theme subheadings into sprint.org to group stories by area.                             |
+| [[id:185845E7-4CF9-416E-A923-894868A757A0][Hotfix handling]]                                  | STARTED | 2026-05-28 |            | Hotfix runbook, branching recipe update, and Hotfixes section in sprint template.                 |
 
 ** LLMs
 

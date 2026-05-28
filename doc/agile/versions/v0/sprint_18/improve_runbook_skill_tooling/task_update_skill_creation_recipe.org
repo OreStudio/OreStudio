@@ -26,11 +26,11 @@ The skill-creation recipe (referenced by the skill-manager skill) currently dire
 
 | Field        | Value                                                                 |
 |--------------+-----------------------------------------------------------------------|
-| State        | BACKLOG                                                               |
+| State        | DONE                                                                  |
 | Parent story | [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]                                |
-| Now          | Not yet started.                                                      |
-| Waiting on   | [[id:EC72C05A-BC4C-47EC-ADF9-324190D9A246][Task: Add skill type to compass add]]                                  |
-| Next         | Locate the skill-creation recipe and skill-manager SKILL.org.         |
+| Now          | Complete.                                                             |
+| Waiting on   | Nothing.                                                              |
+| Next         | None.                                                                 |
 | Last touched | 2026-05-28                                                            |
 
 * Acceptance
@@ -56,3 +56,5 @@ The skill-creation recipe (referenced by the skill-manager skill) currently dire
 |   |                 |      |          |       |
 
 * Result
+
+Updated =doc/recipes/codegen/how_do_i_create_a_new_v2_doc.org=: the "New Claude Code skill" section now shows =compass add skill= with a snake_case slug, and the compass-preferred types note at the top now includes =skill=. Updated =doc/llm/skills/skill-manager/SKILL.org= step 3 to reference =compass add skill= and snake_case slugs.

@@ -40,17 +40,11 @@ later reference-data story.
 
 * Tasks
 
-In execution order:
-
-- [[id:FCB09DD7-4F7A-42FF-A82C-423AC15779AD][Add database support for currency]]
-- [[id:33FBFDA3-D79B-46CE-8FC8-64786DA70A7E][Add XML parsing support for currency]]
-- [[id:CB12DDA8-4B02-44A2-95A2-C27090AA53CC][Add basic widgets to display currencies]]
-
-Additional tasks belonging to this story in v0 but not migrated in the
-drive-test:
-
-- Add JSON support for currency.
-- Use Qt SQL classes (cancelled in v0).
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FCB09DD7-4F7A-42FF-A82C-423AC15779AD][Add database support for currency]] | DONE | 2024-07-11 | 2024-07-12 | Create the first project database table and write currency reference data to it. |
+| [[id:33FBFDA3-D79B-46CE-8FC8-64786DA70A7E][Add XML parsing support for currency]] | DONE | 2024-06-23 | 2024-07-11 | Read and write currencies from ORE's XML format, using the ORE examples as the import corpus. |
+| [[id:CB12DDA8-4B02-44A2-95A2-C27090AA53CC][Add basic widgets to display currencies]] | DONE | 2024-06-26 | 2024-07-13 | Display currency reference data in the Qt UI via a model/view tree + list widget. |
 
 * Decisions
 

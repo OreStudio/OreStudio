@@ -43,19 +43,11 @@ on.
 
 * Tasks
 
-In execution order:
-
-- [[id:7C6151B0-3A3B-4562-83FE-E0EC2459AEAE][Add basic site]]
-- [[id:6030CCED-00FD-4375-8798-FED75D2385CD][Generate Doxygen documentation and add it to the site]]
-- [[id:C098D15A-156B-4195-A1EF-575289D89770][Copy domain notes on core concepts]]
-
-Additional tasks belonging to this story in v0 but not migrated in
-the drive-test:
-
-- Fix code syntax highlighting in site.
-- Merge index with README.
-- Add project objective to README.
-- Convert PlantUML diagrams to org-babel (postponed).
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7C6151B0-3A3B-4562-83FE-E0EC2459AEAE][Add basic site]] | DONE | 2024-06-23 | 2024-06-23 | Stand up a basic project site, generated from the org-mode sources. |
+| [[id:6030CCED-00FD-4375-8798-FED75D2385CD][Generate Doxygen documentation and add it to the site]] | DONE | 2024-07-01 | 2024-07-01 | Wire Doxygen into the build and publish its output as part of the project site. |
+| [[id:C098D15A-156B-4195-A1EF-575289D89770][Copy domain notes on core concepts]] | DONE | 2024-06-25 | 2024-07-05 | Import the seed domain notes from the legacy source into the project's documentation tree. |
 
 * Decisions
 

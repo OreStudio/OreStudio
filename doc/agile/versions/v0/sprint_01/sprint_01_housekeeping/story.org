@@ -46,17 +46,11 @@ story keeps the composition invariant (task → story → sprint) intact.
 
 * Tasks
 
-In execution order:
-
-- [[id:237D992B-9901-4003-9D39-1ACF13C2F1DE][Use a bar chart for sprint resourcing cost]]
-- [[id:617AD8A3-2903-465B-BEDA-ABB7128613A2][Classify stories by type]]
-- [[id:DB9F5667-7716-4F99-86F2-EED09A79DE61][Setup laptop for development]]
-
-Additional tasks belonging to this story in v0 but not migrated in
-the drive-test:
-
-- Sprint and product backlog refinement.
-- Setup a Discord channel for the project.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:237D992B-9901-4003-9D39-1ACF13C2F1DE][Use a bar chart for sprint resourcing cost]] | DONE | 2024-07-15 | 2024-07-21 | Produce a per-story resourcing bar chart from the sprint's clocktable for the sprint report. |
+| [[id:617AD8A3-2903-465B-BEDA-ABB7128613A2][Classify stories by type]] | DONE | 2024-07-22 | 2024-07-22 | Apply consistent tag classification to every story in the sprint and reflect the classification in the sprint report. |
+| [[id:DB9F5667-7716-4F99-86F2-EED09A79DE61][Setup laptop for development]] | DONE | 2024-07-09 | 2024-07-15 | Install all required toolchains, libraries, and editor configuration on the dev laptop. |
 
 * Decisions
 

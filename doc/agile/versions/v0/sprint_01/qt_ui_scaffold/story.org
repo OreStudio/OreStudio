@@ -39,17 +39,11 @@ a sensible layout, and a coherent icon set.
 
 * Tasks
 
-In execution order:
-
-- [[id:66F76398-519D-4EE1-AAAD-AE7E0F6C6161][Add a Qt hello world]]
-- [[id:F8642ABC-E5B4-48C2-B3E9-9C6028B3CAB1][Add a splash screen to the application]]
-- [[id:742F2310-4678-4A9E-BBA9-D73D9DD6B42A][Refactor Qt UI]]
-
-Additional tasks belonging to this story in v0 but not migrated in the
-drive-test:
-
-- Investigate other Qt applications with similar UIs.
-- Use icons from new icon set.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:66F76398-519D-4EE1-AAAD-AE7E0F6C6161][Add a Qt hello world]] | DONE | 2024-06-22 | 2024-06-23 | Create a trivial Qt application that exercises the build pipeline end-to-end. |
+| [[id:F8642ABC-E5B4-48C2-B3E9-9C6028B3CAB1][Add a splash screen to the application]] | DONE | 2024-06-23 | 2024-06-23 | Show a brief splash with the project logo during application startup. |
+| [[id:742F2310-4678-4A9E-BBA9-D73D9DD6B42A][Refactor Qt UI]] | DONE | 2024-07-13 | 2024-07-23 | Tidy the Qt UI — launcher, logging, column names, row sizes, tab opening, table sizing — before more widgets are added. |
 
 * Decisions
 

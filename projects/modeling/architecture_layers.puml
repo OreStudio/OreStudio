@@ -38,10 +38,6 @@ APP ..> DOM : depends on
 DOM ..> INFRA : depends on
 INFRA ..> FOUND : depends on
 
-note bottom of FOUND
-  Invariant: a layer may only depend on layers below it.
-end note
-
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar architecture_layers.puml"
 ' End:

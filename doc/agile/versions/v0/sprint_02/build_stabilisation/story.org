@@ -39,23 +39,11 @@ warnings, and the ImGui experiment that had bit-rotted.
 
 * Tasks
 
-In execution order:
-
-- [[id:5D48FEC0-D23F-4B22-82C6-EF3353D15F1C][Fix Windows and macOS builds]]
-- [[id:494EB23E-8D38-4372-BF1B-7D23FF07473A][Fix vcpkg binary caching]]
-- [[id:13B90143-AAFD-4381-9E9D-3BCCB88B8D3B][Add Valgrind suppressions]]
-
-Additional tasks belonging to this story in v0 but not migrated in
-the drive-test:
-
-- Fix ImGui broken build.
-- Remove ImGui support.
-- Restore Qt setup.
-- Windows builds have CMake errors.
-- Fix broken builds.
-- Update vcpkg to latest.
-- Investigate build warning for vcpkg binary caching.
-- POSTPONED: Investigate build warning for qtbase.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5D48FEC0-D23F-4B22-82C6-EF3353D15F1C][Fix Windows and macOS builds]] | DONE | 2025-09-15 | 2025-09-25 | Restore green Windows and macOS CI by fixing CMake errors and platform-specific build issues. |
+| [[id:494EB23E-8D38-4372-BF1B-7D23FF07473A][Fix vcpkg binary caching]] | DONE | 2025-10-01 | 2025-10-08 | Get vcpkg binary caching working so CI doesn't rebuild every dependency on every push. |
+| [[id:13B90143-AAFD-4381-9E9D-3BCCB88B8D3B][Add Valgrind suppressions]] | DONE | 2025-10-10 | 2025-10-15 | Suppress known third-party false positives so Valgrind output highlights real issues. |
 
 * Decisions
 

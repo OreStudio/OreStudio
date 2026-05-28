@@ -40,10 +40,10 @@ This is the first explicit domain module; later sprints add more.
 
 * Tasks
 
-In execution order:
-
-- [[id:5016B990-BB38-4386-A6D8-082A524F5359][Rename =core= to =risk=]]
-- [[id:F0501E7E-B681-4C25-A5E8-E350855308AC][Refactor =core= into =risk=]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5016B990-BB38-4386-A6D8-082A524F5359][Rename =core= to =risk=]] | DONE | 2025-10-01 | 2025-10-02 | Pure rename of the =core= module to =risk= — no semantic changes. |
+| [[id:F0501E7E-B681-4C25-A5E8-E350855308AC][Refactor =core= into =risk=]] | DONE | 2025-10-03 | 2025-10-05 | Refactor the contents of the renamed =risk= module so the structure reflects the new name. |
 
 * Decisions
 

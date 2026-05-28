@@ -971,13 +971,6 @@ title {title}
 @enduml
 """
 
-def _has_standard_puml_header(path):
-    """Return True if path starts with the mode-line comment."""
-    try:
-        first = Path(path).read_text(encoding="utf-8").lstrip()
-        return first.startswith("' -*- mode: plantuml")
-    except OSError:
-        return False
 
 def cmd_add_diagram(argv):
     """Scaffold a .puml file with the standard licence header.

@@ -63,9 +63,9 @@ Two improvements to the system model documents delivered together:
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                              | Title                                                                                                                                |
+|-----------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/892][#892]] | [modeling,agile] Split system model into per-layer sub-pages; add PlantUML 4-layer diagram; close system_model_readability |
 
 * Review
 

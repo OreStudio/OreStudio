@@ -74,7 +74,8 @@ task closes. Plans do not outlive their task.)
 
 | PR                                                              | Title                                                                                                      |
 |-----------------------------------------------------------------+------------------------------------------------------------------------------------------------------------|
-| [[https://github.com/OreStudio/OreStudio/pull/887][#887]] | [modeling,agile] Split system model into per-layer sub-pages; add PlantUML 4-layer diagram; merge site_pdf_and_manual_book story |
+| [[https://github.com/OreStudio/OreStudio/pull/887][#887]] | [modeling,agile] Split system model into per-layer sub-pages; add PlantUML 4-layer diagram; merge site_pdf_and_manual_book story (superseded) |
+| [[https://github.com/OreStudio/OreStudio/pull/892][#892]] | [modeling,agile] Split system model into per-layer sub-pages; add PlantUML 4-layer diagram; close system_model_readability |
 
 * Review
 

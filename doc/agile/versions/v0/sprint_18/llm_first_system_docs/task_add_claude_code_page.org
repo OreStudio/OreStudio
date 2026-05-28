@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 1F23819A-7B4F-4409-9880-DC01C9A3C231
+:END:
+#+title: Task: Add Claude Code knowledge page
+#+description: Two-paragraph knowledge doc defining Claude Code (the Anthropic CLI), linking to settings; wire into llm.org.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :llm_first_system_docs:sprint_18:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AE1E893D-8E5C-4DB7-BB71-492F1A65374D][Document ORE Studio as an LLM-first system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write =doc/llm/claude_code.org= — a short knowledge page (two to three
+paragraphs) that defines Claude Code as a tool: what it is (the
+Anthropic CLI for Claude, the AI assistant powering ORE Studio's
+primary development workflow), how it is used here, and where to find
+its configuration. Link to =claude_code_settings.org= and wire the
+page into =llm.org=.
+
+* Status
+
+| Field        | Value                                                             |
+|--------------+-------------------------------------------------------------------|
+| State        | DONE                                                              |
+| Parent story | [[id:AE1E893D-8E5C-4DB7-BB71-492F1A65374D][Document ORE Studio as an LLM-first system]] |
+| Now          | Complete.                                                         |
+| Waiting on   | Nothing.                                                          |
+| Next         | Nothing.                                                          |
+| Last touched | 2026-05-28                                                        |
+
+* Acceptance
+
+- =doc/llm/claude_code.org= exists with v2 frontmatter and org-roam ID.
+- Defines Claude Code in 2-3 paragraphs; links to =claude_code_settings.org=.
+- =llm.org= component table and =* See also= reference both new pages.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR  | Title                                                  |
+|-----+--------------------------------------------------------|
+| 906 | [docs] Document ORE Studio as an LLM-first system      |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+PR #906 merged. =doc/llm/claude_code.org= written and wired into =llm.org=
+component table and =* See also=.

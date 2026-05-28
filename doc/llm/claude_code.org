@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 9AE40093-3BBF-44F7-818D-C8CA7C8D7F83
+:END:
+#+title: Claude Code
+#+description: Claude Code is Anthropic's CLI for Claude, the AI assistant that is ORE Studio's primary development tool. This page defines the tool and links to its configuration.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :llm:claude_code:tooling:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+* Summary
+
+Claude Code is Anthropic's official CLI for Claude — the AI assistant
+that drives ORE Studio's day-to-day development. It runs inside the
+repository, reads =CLAUDE.md= at session start, and has access to a
+curated set of tools and permissions defined in
+[[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]]. Project-specific configuration lives under
+=.claude/=; skills, runbooks, and recipes give Claude Code the
+context it needs to act without hand-holding at each step.
+
+* Detail
+
+** What Claude Code is
+
+Claude Code (=claude= CLI) is Anthropic's interactive agent for
+software engineering tasks. Unlike a plain chat interface, Claude Code
+operates directly on the filesystem — it reads files, edits code, runs
+shell commands, and opens pull requests. It is invoked from the
+repository root; =CLAUDE.md= is the mandatory entry point it reads at
+the start of every session.
+
+** How it is used in ORE Studio
+
+ORE Studio uses Claude Code as its primary development tool. Humans
+set goals, review work, and make architectural decisions; Claude Code
+executes — writing code, authoring documentation, opening PRs, and
+responding to review comments. The agile process (sprint → story →
+task → PR) is the handoff boundary: a human approves a story's
+acceptance criteria, and Claude Code implements and delivers it.
+
+Session configuration is layered: =.claude/settings.json= controls
+the tool permission allow-list and sandbox overrides; =.claude/skills/=
+contains task-shaped playbooks; =doc/llm/runbooks/= contains
+multi-step procedures; and =doc/recipes/= holds individual how-tos
+with executable shell blocks. Claude Code reads these as needed to
+orient itself and act correctly.
+
+** Configuration
+
+The permission allow-list and sandbox overrides are maintained as a
+literate org document and generated via org-babel tangle. Never edit
+=.claude/settings.json= directly; regenerate it with the
+=deploy_settings= CMake target. Full details in
+[[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]].
+
+* See also
+
+- [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — permission allow-list and sandbox configuration.
+- [[id:3B7C30A5-A421-4EEF-ADA8-C20D4AB54BB6][LLM-first system]] — the philosophy behind LLM-driven development.
+- [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] — mandatory first read for every Claude Code session.
+- [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]] — full LLM support stack.

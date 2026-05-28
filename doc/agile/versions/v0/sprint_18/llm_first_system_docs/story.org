@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: AE1E893D-8E5C-4DB7-BB71-492F1A65374D
+:END:
+#+title: Story: Document ORE Studio as an LLM-first system
+#+description: Add LLM-first philosophy page and Claude Code tool page to doc/llm/; update llm.org index to surface both.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :llm:documentation:claude_code:sprint_18:v0:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make explicit that ORE Studio is an LLM-first system: primary
+development is done by LLMs working under human direction; docs are
+written to be equally useful to human readers and AI agents; Claude
+Code is the primary tool but contributions from any LLM following the
+project instructions are accepted. Two new knowledge pages capture
+this, and =llm.org= is updated to surface them.
+
+* Status
+
+| Field         | Value                                                     |
+|---------------+-----------------------------------------------------------|
+| State         | DONE                                                      |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]    |
+| Now           | Complete.                                                 |
+| Waiting on    | Nothing.                                                  |
+| Next          | Nothing.                                                  |
+| Last touched  | 2026-05-28                                                |
+
+* Acceptance
+
+- =doc/llm/llm_first.org= exists: explains LLM-first development
+  philosophy, dual human/LLM audience, Claude as primary tool, open
+  to any compliant LLM.
+- =doc/llm/claude_code.org= exists: two paragraphs defining Claude
+  Code (the Anthropic CLI), links to =claude_code_settings.org=.
+- =llm.org= component overview table and =* See also= updated to
+  reference both new pages.
+
+* Tasks
+
+| Task                                                                                                | State   | Start      | End        | Description                                                         |
+|-----------------------------------------------------------------------------------------------------+---------+------------+------------+---------------------------------------------------------------------|
+| [[id:EA2E3D00-DD80-4D98-8700-3C801E7A4978][Task: Write LLM-first system philosophy page]]    | DONE    | 2026-05-28 | 2026-05-28 | =doc/llm/llm_first.org= covering philosophy, audience, and tooling. |
+| [[id:1F23819A-7B4F-4409-9880-DC01C9A3C231][Task: Add Claude Code knowledge page]]            | DONE    | 2026-05-28 | 2026-05-28 | =doc/llm/claude_code.org=; wire into llm.org.                       |
+
+* Decisions
+
+* Out of scope
+
+- Per-LLM onboarding guides (Gemini, GPT, etc.) — covered by the
+  existing =llm_instructions.org= which any LLM must follow.

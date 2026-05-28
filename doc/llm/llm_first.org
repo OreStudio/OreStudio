@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 3B7C30A5-A421-4EEF-ADA8-C20D4AB54BB6
+:END:
+#+title: ORE Studio as an LLM-first system
+#+description: ORE Studio is built and maintained primarily by LLMs under human direction. This page explains the philosophy, the dual human/LLM audience, and how contributions work.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :llm:philosophy:development:knowledge:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+* Summary
+
+ORE Studio is an /LLM-first/ system: large language models are the
+primary means of development, working under human direction. All
+documentation is written to be equally useful to human readers and AI
+agents. [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]] is the primary tool, but any LLM that can follow the
+project's [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] is welcome to contribute.
+
+* Detail
+
+** What LLM-first means
+
+ORE Studio does not treat LLMs as a convenience layer bolted on top of
+a human workflow. The project is /designed/ so that an LLM session
+starting from scratch can orient itself, pick up work, implement it,
+and raise a PR without human hand-holding at each step. The
+[[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] are the mandatory entry point; the
+[[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]] provides live orientation; [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]],
+[[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbooks]], and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] encode every repeatable operation.
+
+** Human direction, LLM execution
+
+Humans set goals, review work, and make architectural decisions.
+LLMs execute: they write code, author documentation, open PRs, respond
+to review comments, and close stories. The agile process
+([[id:1737C00C-699A-475A-BC94-743C6CDA1001][sprint]], story, task, PR) is the handoff boundary — a human approves a
+story's goal and acceptance criteria; an LLM implements and delivers
+it.
+
+** Documentation for two audiences
+
+Every document in ORE Studio is written to serve both readers. For
+humans: clear prose, navigable headings, worked examples. For LLMs:
+consistent =#+type:= and =#+description:= frontmatter, org-roam
+=:ID:= properties on every node, =[[id:UUID][Title]]= cross-references
+that can be resolved by the doc graph, and executable =#+begin_src sh=
+blocks in recipes. The structured format lets an LLM load a page and
+immediately know what it is, where it fits, and how to act on it.
+
+** Primary tool: Claude Code
+
+[[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]] (Anthropic's CLI for Claude) is the tool used for day-to-day
+development. Configuration, permissions, and session behaviour are
+described in [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]] and its associated [[id:2D83251F-0E24-4B97-B736-08F710316634][settings]].
+
+** Contributing from other LLMs
+
+ORE Studio accepts contributions from any LLM, not just Claude. The
+only requirement is that the LLM reads and follows
+[[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] before acting. Commit trailers identify the
+contributing model (=Co-Authored-By:= with the model name and
+=noreply@anthropic.com= / =noreply@google.com= etc.); see
+[[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]] for the exact format.
+
+* See also
+
+- [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] — mandatory first read for every LLM session.
+- [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]] — the primary development tool.
+- [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]] — the full LLM support stack.
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][Compass]] — orientation and navigation tool for LLM sessions.

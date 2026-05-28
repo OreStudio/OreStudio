@@ -72,6 +72,8 @@ of these exclusions, push back: the right home is somewhere else.
   export =SSH_AUTH_SOCK= before =git push= / =fetch= / =pull=.
 - [[id:1636E66B-03C7-4182-A46D-A02888336CEE][PR tables belong in task docs, not story docs]] — =* PRs= sections go
   in task =.org= files; story docs do not carry them.
+- [[id:EAB80857-3DB3-4A63-8D81-2F0A06B4F6DD][Check git commit conventions before committing]] — =[component]=
+  title, =Story-ID= / =Task-ID= trailers, =Co-Authored-By= every time.
 
 ** User
 

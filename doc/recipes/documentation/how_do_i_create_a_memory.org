@@ -37,11 +37,11 @@ frontmatter.
 2. /Pick a slug/. Snake-case, short, descriptive of the rule rather
    than the topic — e.g. =do_not_re_export_env_vars=, not =bash=.
 
-3. /Scaffold the file/:
+3. /Scaffold the file/ using =compass add memory=:
 
    #+begin_src sh :results verbatim
-   projects/ores.codegen/generate_v2_doc.sh \
-     --type memory --slug do_not_re_export_env_vars \
+   projects/ores.compass/compass.sh add memory \
+     --slug do_not_re_export_env_vars \
      --parent-dir doc/llm/memory \
      --title "Do not re-export ORES_* env vars in Bash tool calls" \
      --description "The user has already exported ORES_* env vars in their shell session — don't prepend them." \
@@ -86,10 +86,10 @@ frontmatter.
 
 * Script
 
-The wrapper is =projects/ores.codegen/generate_v2_doc.sh=. The
-memory-specific machinery (template, =--memory-subtype= flag, tag
-injection) lives in =projects/ores.codegen/src/v2_doc_generate.py=
-and the template at
+=projects/ores.compass/compass.sh add memory= — the compass wrapper
+delegates to =ores.codegen=. The memory-specific machinery (template,
+=--memory-subtype= flag, tag injection) lives in
+=projects/ores.codegen/src/v2_doc_generate.py= and the template at
 =projects/ores.codegen/library/templates/v2_doc_memory.org.mustache=.
 
 * Tested by

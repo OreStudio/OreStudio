@@ -9,7 +9,7 @@
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-05-26
-#+updated: 2026-05-26
+#+updated: 2026-05-28
 
 The sandboxed shell environment does not inherit the user's SSH agent
 socket. Any =git push=, =git fetch=, or =git pull= will hang waiting
@@ -28,6 +28,8 @@ prefix the command with:
 export SSH_AUTH_SOCK=/home/marco/.ssh/agent/s.qEp3u81YnU.agent.P4RgmsqyMr
 #+end_src
 
-If the =SSH_AUTH_SOCK= value changes (the agent restarts), ask the
-user to run =echo $SSH_AUTH_SOCK= in their terminal and use the
-fresh value.
+If that fails (agent restarted, socket path changed), *ask the user*
+to run =echo $SSH_AUTH_SOCK= in their terminal and use the value they
+report. Do *not* probe candidate paths — do not look at =/run/user/*/gnupg/=
+or other sockets. The GPG agent SSH emulation socket (=S.gpg-agent.ssh=)
+is a different thing and must not be touched.

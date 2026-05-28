@@ -70,8 +70,10 @@ Produce three artefacts:
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                             | File              | Decision | Notes                                                    |
+|---+-------------------------------------------------------------+-------------------+----------+----------------------------------------------------------|
+| 1 | Hardcoded SSH_AUTH_SOCK in step 2                           | hotfix/runbook.org | Fixed   | Removed; preconditions reference SSH memory              |
+| 2 | Contradiction: hotfix/ convention vs feature/hotfix- output | hotfix/runbook.org | Fixed   | Clarified feature/hotfix- is the convention; recipe updated |
+| 3 | Hardcoded SSH_AUTH_SOCK in step 11; wrong branch name       | hotfix/runbook.org | Fixed   | Removed SSH export; push uses feature/hotfix-<thing>     |
 
 * Result

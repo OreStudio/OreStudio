@@ -67,7 +67,7 @@ task closes. Plans do not outlive their task.)
 | # | Comment summary                                                                  | File                              | Decision | Notes                                                     |
 |---+----------------------------------------------------------------------------------+-----------------------------------+----------+-----------------------------------------------------------|
 | 1 | Regex [^\]]+ silently drops tasks with bracketed titles                          | backfill_story_task_tables.py     | Accept   | Fixed to .*? in commit; 18 sprint_17 stories corrected    |
-| 2 | CI failure: [[url][#NNN]] in table description resolved by org publisher as link | sprint_18/backlog_refinement/story.org | Accept   | Escaped to =[[url][#NNN]]= in c9b82f37e                   |
+| 2 | CI failure: =[[url][#NNN]]= in table description resolved by org publisher as link | sprint_18/backlog_refinement/story.org | Accept   | Escaped to =[[url][#NNN]]= in c9b82f37e                   |
 
 * Result
 

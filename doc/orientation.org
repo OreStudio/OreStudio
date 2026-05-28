@@ -115,7 +115,5 @@ Skim [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] for orientation if you
 
 * See also
 
-External documentation generated from the codebase:
-
-- [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][Doxygen]] — low-level C++ API reference, regenerated on every
-  release.
+- [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]] — external resources: GitHub, Doxygen, Discord, CDash, and CI.
+- [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level map of =doc/=.

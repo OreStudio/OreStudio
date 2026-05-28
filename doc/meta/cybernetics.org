@@ -27,7 +27,7 @@ identity (S5).
 
 ** Origins
 
-Cybernetics was coined by Norbert Wiener in 1948 to describe the study
+Cybernetics was coined by [[https://en.wikipedia.org/wiki/Norbert_Wiener][Norbert Wiener]] in 1948 to describe the study
 of control and communication in animals and machines. The word derives
 from the Greek /kybernetes/ (steersman). Wiener noticed that effective
 regulation — whether in a thermostat, a nervous system, or a factory
@@ -57,7 +57,7 @@ measures the current state, and a feedback loop that closes the gap.
 
 ** Stafford Beer and management cybernetics
 
-Beer applied Wiener's framework to human organisations in the 1950s–70s.
+[[https://en.wikipedia.org/wiki/Stafford_Beer][Stafford Beer]] applied Wiener's framework to human organisations in the 1950s–70s.
 His central question was: why do large organisations so frequently fail
 to regulate themselves? His answer: they are not structured to produce
 the variety necessary to absorb the variety of their environments. A
@@ -77,11 +77,11 @@ product identity play in the development process. The mapping is
 intentionally loose — the point is not to implement VSM faithfully but
 to borrow its language for separating concerns:
 
-- Concerns that change within hours belong to S1 (task execution).
-- Concerns that change within days belong to S2 (story orchestration).
-- Concerns that change within weeks belong to S3 (sprint management).
-- Concerns that change within months belong to S4 (version planning).
-- Concerns that are durable belong to S5 (product identity).
+- Concerns that change within hours belong to [[id:B544713A-BA23-4D5A-9CEE-084212D7C8BA][S1 Agent]] (task execution).
+- Concerns that change within days belong to [[id:EECA6981-3240-44D9-ADA7-4B8C64A76B44][S2 Orchestrator]] (story orchestration).
+- Concerns that change within weeks belong to [[id:F1D99662-C6B1-4839-92E1-D061CCF6B83F][S3 Sprint Planner]] (sprint management).
+- Concerns that change within months belong to [[id:66EB6824-52B8-4603-B302-F805DA9EC443][S4 Version Planner]] (version planning).
+- Concerns that are durable belong to [[id:5CAD21DA-21FB-460B-9286-8998B4C6EF52][S5 Identity Steward]] (product identity).
 
 For where this mapping aligns with and departs from canonical VSM, see
 the /Connection to and divergence from the VSM/ section of [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]].
@@ -90,3 +90,5 @@ the /Connection to and divergence from the VSM/ section of [[id:926B916E-A57E-49
 
 - [[id:B730ECAB-A0BF-4894-9275-C0F4199272E3][Viable System Model]] — Beer's five-system model in detail.
 - [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — how ORE Studio maps S1–S5 onto its agile roles.
+- [[https://en.wikipedia.org/wiki/Norbert_Wiener][Norbert Wiener (Wikipedia)]] — founder of cybernetics.
+- [[https://en.wikipedia.org/wiki/Stafford_Beer][Stafford Beer (Wikipedia)]] — developer of management cybernetics and the VSM.

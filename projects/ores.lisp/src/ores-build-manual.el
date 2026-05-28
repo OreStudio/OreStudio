@@ -50,8 +50,10 @@
 ;; are optional in the regexps, so begin/end can never mismatch and
 ;; option-less images are still matched.
 (defvar ores/repo-root
-  (expand-file-name "../../../"
-                    (file-name-directory (or load-file-name buffer-file-name default-directory)))
+  (if (or load-file-name buffer-file-name)
+      (expand-file-name "../../../"
+                        (file-name-directory (or load-file-name buffer-file-name)))
+    default-directory)
   "Repository root, captured when this script is loaded.")
 (defvar ores/margin-max-w 510)
 (defvar ores/margin-max-h 320)

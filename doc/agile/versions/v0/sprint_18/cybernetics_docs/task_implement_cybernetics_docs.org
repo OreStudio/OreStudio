@@ -9,7 +9,7 @@
 #+filetags: :cybernetics_docs:sprint_18:v0:
 #+owner: marco
 #+branch: feature/cybernetics-docs
-#+pr:
+#+pr: 896
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
@@ -49,7 +49,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/896][#896]] | [agile] Promote cybernetics docs capture to story; add capture promotion spike |
 
 * Review
 

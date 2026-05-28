@@ -85,6 +85,7 @@ In execution order.
 | [[id:A388F0C8-0804-420F-A542-2C929CFCEC92][Document NATS: technology overview, system integration, and recipes]] | DONE    | 2026-05-26 | 2026-05-26 | NATS knowledge page, system model section, per-component subject tables, and NATS recipes. |
 | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] | STARTED | 2026-05-27 | | captures/ folder per sprint; compass capture command; wontdo backlog bucket. |
 | [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]                                 | DONE    | 2026-05-28 | 2026-05-28 | Add compass skill type, update skill-creation recipe, create run-runbook skill. |
+| [[id:5D11EB95-8B20-4A11-B9A6-C883C9E4B0CF][Document deduplication recipe]]                                         | DONE    | 2026-05-28 | 2026-05-28 | Generalised recipe for merging duplicate docs; applied to duplicate sprint health review runbooks. |
 
 * Health Review
 

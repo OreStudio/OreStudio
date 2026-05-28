@@ -27,6 +27,8 @@ merged PR.
 - The sprint has a =sprint_health_review/= subdirectory containing
   =story.org=.
 - =gh= is authenticated; =compass.sh= is available.
+- =python3=, =gnuplot= are available on =PATH= (required for chart
+  regeneration at sprint close).
 
 * Steps
 
@@ -38,7 +40,24 @@ In execution order:
    git fetch origin && git checkout -b feature/sprint-<N>-health-review-<number> origin/main
    #+end_src
 
-2. /Determine the review number./ Count existing
+2. /Regenerate sprint charts (sprint-close reviews only)./ Skip for
+   mid-sprint check-ins. At sprint close, rebuild the four chart PNGs
+   so the review references fresh data:
+
+   #+begin_src sh :results verbatim
+   cmake --build build/output/linux-clang-debug-ninja \
+     --target sprint_charts -DSPRINT=<N>
+   #+end_src
+
+   See [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][How do I generate sprint health charts?]] for details.
+
+   Verify the charts rendered — check =doc/agile/versions/v0/sprint_<N>/=
+   for =prs_commits.png=, =line_churn.png=, =pr_cycle.png=, and
+   =stories_done.png=. A flat-line =stories_done.png= when the
+   Stories table has several DONE entries is a data bug worth
+   investigating before proceeding.
+
+3. /Determine the review number./ Count existing
    =task_health_review_*.org= files in the sprint's
    =sprint_health_review/= directory and increment.
 
@@ -46,7 +65,7 @@ In execution order:
    ls doc/agile/versions/v0/sprint_<N>/sprint_health_review/task_health_review_*.org 2>/dev/null | wc -l
    #+end_src
 
-3. /Scaffold the health review task via compass./
+4. /Scaffold the health review task via compass./
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh add task \
@@ -59,7 +78,7 @@ In execution order:
    Set =#+branch:= to the feature branch. Wire the task into
    =sprint_health_review/story.org= =* Tasks=.
 
-4. /Run the [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][sprint-reviewer]] skill./ Load the skill and follow its steps
+5. /Run the [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][sprint-reviewer]] skill./ Load the skill and follow its steps
    (Steps 1–3 of the skill: activate System 2, gather data, analyse).
    The skill's data-gathering commands:
 
@@ -71,19 +90,19 @@ In execution order:
    find doc/agile/versions/v0/sprint_<N> -name "story.org" | sort
    #+end_src
 
-5. /Write the full review into the task's =* Result=./ Follow skill
+6. /Write the full review into the task's =* Result=./ Follow skill
    Step 4b: all six sub-sections (goal alignment, sprint load, PR
    velocity, story and task balance, focus signal, overall verdict)
    go under =* Result= in the task file, not in =sprint.org=.
 
-6. /Add a summary row to =sprint.org=./ Follow skill Step 4c: append
+7. /Add a summary row to =sprint.org=./ Follow skill Step 4c: append
    one row to the =* Health Review= table using the task's =:ID:=:
 
    #+begin_example
    | <number> | <date> | day <N> | <OVERALL> | [[id:<task-uuid>][Health review <number> — sprint <N> analysis]] |
    #+end_example
 
-7. /Perform shape completeness fixes./ For every DONE task in the
+8. /Perform shape completeness fixes./ For every DONE task in the
    sprint, verify the three required shape fields and fill any that
    are missing:
 
@@ -107,30 +126,40 @@ In execution order:
      --include="task_*.org"
    #+end_src
 
-   Apply fixes in the same commit as the review (step 10) or in a
+   Apply fixes in the same commit as the review (step 12) or in a
    follow-up commit on the same branch.
 
-8. /Mark the task DONE./ Set =State: DONE= and =Now: Complete.= in
-   the task's =* Status= table.
+9. /Deduplicate stories./ Scan the sprint's =* Stories= table for
+   duplicate or near-duplicate entries — two stories with the same or
+   very similar titles, overlapping descriptions, or goals that would
+   naturally be one story. If any are found, apply
+   [[id:A99F288C-9E89-45C9-9AA9-085E2A585392][How do I deduplicate two documents?]] before closing the sprint:
+   nominate the richer story as survivor, merge any unique acceptance
+   criteria or tasks into it, delete the weaker story, and update all
+   id-links. Note deduplication decisions in the health review task's
+   =* Result= under a "Duplicates resolved" sub-heading.
 
-9. /Update the story if all tasks are DONE./ If every task in
-   =sprint_health_review/story.org= is DONE, set the story to DONE.
+10. /Mark the task DONE./ Set =State: DONE= and =Now: Complete.= in
+    the task's =* Status= table.
 
-10. /Commit./
+11. /Update the story if all tasks are DONE./ If every task in
+    =sprint_health_review/story.org= is DONE, set the story to DONE.
+
+12. /Commit./
 
     #+begin_src sh :results verbatim
     git add doc/agile/versions/v0/sprint_<N>/
     git commit -m "[agile] Sprint <N> health review <number> — <overall-verdict>"
     #+end_src
 
-11. /Push and raise a PR/ targeting =main=.
+13. /Push and raise a PR/ targeting =main=.
 
     #+begin_src sh :results verbatim
     git push -u origin feature/sprint-<N>-health-review-<number>
     gh pr create --title "[agile] Sprint <N> health review <number>" --body "..."
     #+end_src
 
-12. /Handle review comments/ per the [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]] runbook.
+14. /Handle review comments/ per the [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]] runbook.
 
 * Postconditions
 
@@ -144,7 +173,9 @@ In execution order:
 
 * See also
 
-- [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][Sprint Reviewer]] — the skill that drives steps 4–6.
-- [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]] — step 11.
+- [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][Sprint Reviewer]] — the skill that drives steps 5–7.
+- [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][How do I generate sprint health charts?]] — cmake recipe for step 2.
+- [[id:A99F288C-9E89-45C9-9AA9-085E2A585392][How do I deduplicate two documents?]] — step 9; resolves duplicate or near-duplicate stories.
+- [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]] — step 14.
 - [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] — all runbooks.
 - [[id:47032D2E-4922-4A43-B594-AD76F0213E10][Open a new sprint]] — the runbook that follows at sprint close.

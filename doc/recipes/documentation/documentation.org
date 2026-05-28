@@ -33,6 +33,11 @@ For the codegen scripts that generate /code/ (not docs) see the
 - [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] — component scaffold
   flow; physically under =recipes/codegen/=.
 
+* Maintenance
+
+- [[id:A99F288C-9E89-45C9-9AA9-085E2A585392][How do I deduplicate two documents?]] — nominate survivor, merge
+  unique content, delete duplicate, relink all UUID references.
+
 * Validation
 
 - [[id:6AC06A04-EB95-4925-8488-C7A47C6A451F][How do I validate component documentation before committing?]] — run

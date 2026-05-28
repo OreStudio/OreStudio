@@ -1182,7 +1182,7 @@ def main():
     index_parser = subparsers.add_parser("index", help="Index or update notes from org-roam.db")
     index_parser.add_argument("--rebuild", action="store_true", help="Rebuild the entire index from scratch")
 
-    search_parser = subparsers.add_parser("search", help="Search your notes")
+    search_parser = subparsers.add_parser("search", aliases=["find"], help="Search your notes")
     search_parser.add_argument("query", type=str, help="The search query")
     search_parser.add_argument("-l", "--limit", type=int, default=10, help="Max results (default 10)")
     search_parser.add_argument("-f", "--format", choices=["pretty", "line", "json"], default="pretty",
@@ -1218,12 +1218,12 @@ def main():
 
     # Only the org-roam-backed commands need org-roam.db; the agile/doc-graph
     # commands read the working tree directly.
-    if args.command in ("index", "search", "debug"):
+    if args.command in ("index", "search", "find", "debug"):
         validate_paths(args.command)
 
     if args.command == "index":
         cmd_index(args)
-    elif args.command == "search":
+    elif args.command in ("search", "find"):
         cmd_search(args)
     elif args.command == "debug":
         cmd_debug(args)

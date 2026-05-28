@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 09396C3A-449F-4A6B-8696-E371E063355E
+:END:
+#+title: Task: Create document deduplication recipe and resolve health review duplicates
+#+description: Initial task for: Document deduplication recipe
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :document_deduplication_recipe:sprint_18:v0:
+#+owner: marco
+#+branch: feature/document-deduplication-recipe
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5D11EB95-8B20-4A11-B9A6-C883C9E4B0CF][Document deduplication recipe]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold =doc/recipes/documentation/how_do_i_deduplicate_two_documents.org=,
+fill it with the four-step deduplication procedure, wire it into the
+[[id:95FF6AF4-2320-4CB6-A007-B016B7DA16ED][Documentation recipes]] index, and apply the procedure to the two
+duplicate sprint health review runbooks as the worked example.
+
+* Status
+
+| Field        | Value                                               |
+|--------------+-----------------------------------------------------|
+| State        | DONE                                                |
+| Parent story | [[id:5D11EB95-8B20-4A11-B9A6-C883C9E4B0CF][Document deduplication recipe]]                       |
+| Now          | Complete.                                           |
+| Waiting on   | Nothing.                                            |
+| Next         | None.                                               |
+| Last touched | 2026-05-28                                          |
+
+* Acceptance
+
+- [X] Recipe scaffolded via =generate_v2_doc.sh=, =#+version: 2=.
+- [X] Four steps present: nominate, merge, delete, relink.
+- [X] Wired into [[id:95FF6AF4-2320-4CB6-A007-B016B7DA16ED][Documentation recipes]] index.
+- [X] Chart-regeneration content from =run_a_sprint_health_review=
+  merged into =run_sprint_health_review= (survivor =30FE3C0F=).
+- [X] =run_a_sprint_health_review/= folder deleted via =git rm=.
+- [X] =runbooks.org= catalogue row updated to survivor UUID.
+
+* Plan
+
+Two runbooks covering the same ground:
+
+| | Folder | ID | Steps | Verdict |
+|-+--------+----+-------+---------|
+| Survivor | =run_sprint_health_review/= | =30FE3C0F= | 12 | Full lifecycle; task scaffolding; shape fixes |
+| Delete | =run_a_sprint_health_review/= | =124E48B7= | 7 | Adds chart cmake step + chart verification |
+
+Unique content to merge from the deletion candidate into the survivor:
+- Step 2 (chart regeneration cmake command) — insert after survivor
+  step 1 (branch creation), before data gathering.
+- Step 3 (chart verification — check PNG filenames, sanity check) —
+  insert immediately after chart regeneration step.
+- The =gnuplot= and =python3= precondition.
+- The link to =How do I generate sprint health charts?= in See also.
+
+After merge: =git rm= the deletion candidate folder; update the
+=runbooks.org= catalogue row from =124E48B7= to =30FE3C0F=.
+
+* Notes
+
+* PRs
+
+| PR                                                          | Title                                                                 | State | Round |
+|-------------------------------------------------------------+-----------------------------------------------------------------------+-------+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/885][#885]] | [doc] Document deduplication recipe; resolve health review runbook duplicate | OPEN  |     1 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Grep regex too broad — add =-oE= and exact UUID pattern =[a-fA-F0-9]{8}-...-[a-fA-F0-9]{12}= | =how_do_i_deduplicate_two_documents.org= l.57 | Accepted | Fixed in =6c1f0895b= |
+| 2 | Use =perl -pi -e= instead of =sed -i= (cross-platform); use =<UUID-D>=/=<UUID-S>= placeholders | =how_do_i_deduplicate_two_documents.org= l.88 | Accepted | Fixed in =6c1f0895b= |
+| 3 | Verification grep uses raw UUID instead of =<UUID-D>= placeholder — inconsistent with step 4 | =how_do_i_deduplicate_two_documents.org= l.94 | Accepted | Fixed in =6c1f0895b= |
+
+* Result

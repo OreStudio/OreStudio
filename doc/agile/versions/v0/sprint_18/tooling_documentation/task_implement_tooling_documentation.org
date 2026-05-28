@@ -38,11 +38,11 @@ The Tooling section in =knowledge.org= must also link to [[id:6F7A122F-BC0F-4F3E
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] |
-| Now          | Not yet started.                       |
+| Now          | Implementing Tooling section and developer scripts doc. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Open PR.                               |
 | Last touched | 2026-05-28                               |
 
 * Acceptance

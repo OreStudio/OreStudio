@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :knowledge:index:
 #+created: 2024-06-15
-#+updated: 2026-05-21
+#+updated: 2026-05-28
 
 Durable, cross-cutting knowledge that outlives any sprint. Each entry
 is a single-topic page — a definition, a convention, an explanation of
@@ -89,6 +89,27 @@ How the codebase is put together.
   and system class diagrams.
 - [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]] — styling for the SQL schema
   ER diagram.
+
+* Tooling
+
+Developer tools, scripts, and automation that support the build, test, and
+documentation workflows. These are not user-facing features — they are the
+instruments contributors reach for to get work done.
+
+- [[id:BA6F2BF1-E16E-4E80-A3D0-CACC30FA04DB][Developer scripts]] — inventory of the standalone scripts in =scripts/=,
+  grouped by purpose (metrics/reporting, validation, documentation
+  generation, utilities), with a description of each script and notes on
+  companion Python/shell pairs.
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the Python repository compass: temporal orientation,
+  semantic doc search, and agile scaffolding over the org-roam graph.
+  Primary quality-of-life aid for both human contributors and LLM agents.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — Python + Mustache code generator producing SQL, C++, and
+  v2 org documents from JSON models.
+- [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] — Emacs Lisp developer tooling: dashboard, database browser,
+  shell integration, and org-roam export pipeline.
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — PostgreSQL schema, migration scripts, role provisioning, and
+  database lifecycle management. See the =* Scripts= section in the
+  component overview for the full script inventory.
 
 * UI
 

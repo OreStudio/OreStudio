@@ -40,10 +40,10 @@ schema.
 
 * Tasks
 
-In execution order:
-
-- [[id:27768A0E-D9DC-4958-9731-ADEF4385F23E][Rerun SQL scripts from scratch]]
-- [[id:2D4C153B-1AA9-4EB3-B6DE-69C409401499][Remove code seeders; seed from SQL populate scripts]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:27768A0E-D9DC-4958-9731-ADEF4385F23E][Rerun SQL scripts from scratch]] | DONE | 2026-05-19 | 2025-12-31 | Validate schema bring-up from a clean slate; add TimescaleDB license-tier detection and per-database extension install; document the schema. |
+| [[id:2D4C153B-1AA9-4EB3-B6DE-69C409401499][Remove code seeders; seed from SQL populate scripts]] | DONE | 2026-05-19 | 2025-12-31 | Replace C++ rbac_seeder and system_flags_seeder with SQL populate scripts; rename sql/data/ to sql/populate/; adapt tests to a pre-seeded database. |
 
 * Decisions
 

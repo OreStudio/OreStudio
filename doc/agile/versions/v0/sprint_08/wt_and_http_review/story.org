@@ -44,10 +44,10 @@ put the scaffolding in place; this one validates and documents it.
 
 * Tasks
 
-In execution order:
-
-- [[id:331BAC68-CF7F-4FC3-97C6-FB7B7A993724][Check functionality in ores.wt]]
-- [[id:A6C3F702-EC89-41DB-B662-79AC971D30A9][Review HTTP service]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:331BAC68-CF7F-4FC3-97C6-FB7B7A993724][Check functionality in ores.wt]] | DONE | 2026-05-19 | 2026-01-02 | Validate the Wt application end-to-end; raise bugs (theming, hard-coded currencies, password in log, dialog sizing, site logo). |
+| [[id:A6C3F702-EC89-41DB-B662-79AC971D30A9][Review HTTP service]] | DONE | 2026-05-19 | 2026-01-06 | Validate swagger; write recipes covering the HTTP surface; document the OpenAPI generator. |
 
 * Decisions
 

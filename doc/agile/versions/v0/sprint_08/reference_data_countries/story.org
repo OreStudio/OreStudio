@@ -39,10 +39,10 @@ The implementation sets the template the rest of refdata will follow.
 
 * Tasks
 
-In execution order:
-
-- [[id:00590C50-F119-4E2B-BC43-6FA2BAE8543C][Add country support (ISO 3166-1)]]
-- [[id:125B746D-D625-4764-8D1E-EA9D4623880C][Finish country features in shell]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:00590C50-F119-4E2B-BC43-6FA2BAE8543C][Add country support (ISO 3166-1)]] | DONE | 2026-05-19 | 2026-01-08 | Domain model, bitemporal repository, country_service in ores.refdata; country_images linkage in ores.assets; Wt list/dialog UI; SQL populate for all 249 ISO countries. |
+| [[id:125B746D-D625-4764-8D1E-EA9D4623880C][Finish country features in shell]] | DONE | 2026-05-19 | 2026-01-11 | Add 'countries get' and 'countries add' commands to ores.comms.shell with formatted table output. |
 
 * Decisions
 

@@ -39,10 +39,10 @@ preserved historically and visible in the UI.
 
 * Tasks
 
-In execution order:
-
-- [[id:FB3A1834-F76A-4229-8F04-49830A9039CD][Amend and delete reasons base infrastructure]]
-- [[id:6B514406-2FBD-4697-8026-B0CB98A3B93D][Change reasons UI fixes]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FB3A1834-F76A-4229-8F04-49830A9039CD][Amend and delete reasons base infrastructure]] | DONE | 2026-05-19 | 2026-01-09 | Domain + temporal tables for reason_categories, amendment_reasons, entity_reason_categories; populate scripts; Qt UI scaffolding. |
+| [[id:6B514406-2FBD-4697-8026-B0CB98A3B93D][Change reasons UI fixes]] | DONE | 2026-05-19 | 2026-01-11 | Polish the change-reason Qt dialogs based on first-pass review: mandatory reason selection, history visibility, save-dialog refactor, protocol bump to 21.1. |
 
 * Decisions
 

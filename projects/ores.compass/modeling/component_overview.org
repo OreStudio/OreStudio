@@ -158,7 +158,7 @@ requires =org-roam.db= or the FTS5 cache.
 
 ** Scaffold
 
-Creates new v2 documents by calling [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] as a library. Two
+Creates new documents by calling [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] as a library. Two
 subcommands: =add= scaffolds any doc type from a template; =capture=
 creates and files captures into the product backlog inbox.
 

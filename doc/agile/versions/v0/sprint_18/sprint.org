@@ -99,6 +99,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]            | DONE    | 2026-05-28 | 2026-05-28 | Add compass skill type, update skill-creation recipe, create run-runbook skill.                    |
 | [[id:5D11EB95-8B20-4A11-B9A6-C883C9E4B0CF][Document deduplication recipe]]                    | DONE    | 2026-05-28 | 2026-05-28 | Generalised recipe for merging duplicate docs; applied to duplicate sprint health review runbooks. |
 | [[id:76F0DB10-084D-4A72-A585-5DE660884677][PlantUML integration: recipe and codegen scaffold]] | DONE   | 2026-05-28 | 2026-05-28 | PlantUML how-to recipe; compass add diagram scaffold; standard licence header convention.          |
+| [[id:AE1E893D-8E5C-4DB7-BB71-492F1A65374D][Document ORE Studio as an LLM-first system]]       | STARTED | 2026-05-28 |            | LLM-first philosophy page and Claude Code tool page; update llm.org index.                        |
 
 ** Documentation
 

@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: C6735DF2-B905-4A85-BAAA-B7F5CBBEC92D
+:END:
+#+title: Prefer compass over Unix tools for repo navigation
+#+description: Always reach for compass (search, list, show, where, goto, capture) before falling back to find/grep/ls. Gaps in compass are captures, not workarounds.
+#+type: memory
+#+memory_subtype: feedback
+#+version: 2
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+Always use compass to navigate, query, and modify the repo before reaching
+for Unix tools. Use =compass search= / =find= to locate docs, =compass list=
+to enumerate by type or path, =compass show= to inspect a doc, =compass where=
+for orientation, =compass goto= to start work, and =compass capture= for the
+backlog. If a task cannot be done with compass, capture it as a compass
+limitation rather than silently working around it with =find= / =grep= / =ls=.
+
+*Why:* The user explicitly asked for this. Compass is the canonical interface
+to the repo's information architecture; Unix tools bypass it and produce
+untracked, non-reproducible ad-hoc queries that compass should eventually
+replace.
+
+*How to apply:* Any time you would reach for =find=, =grep=, =ls= on doc
+paths, or =git log= to navigate story/task state — try compass first. If
+compass can't do it, file a capture (e.g. =compass capture --note "compass
+list needs a --fields flag"=) before falling back.

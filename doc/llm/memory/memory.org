@@ -74,6 +74,9 @@ of these exclusions, push back: the right home is somewhere else.
   in task =.org= files; story docs do not carry them.
 - [[id:EAB80857-3DB3-4A63-8D81-2F0A06B4F6DD][Check git commit conventions before committing]] — =[component]=
   title, =Story-ID= / =Task-ID= trailers, =Co-Authored-By= every time.
+- [[id:C6735DF2-B905-4A85-BAAA-B7F5CBBEC92D][Prefer compass over Unix tools for repo navigation]] — use compass
+  search/list/show/where/goto/capture before =find= / =grep= / =ls=;
+  gaps in compass are captures, not workarounds.
 
 ** User
 

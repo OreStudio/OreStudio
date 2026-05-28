@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 6AD0E8A2-9335-4F40-BBB1-A73DF3D805CA
+:END:
+#+title: UML class diagrams are missing relationships between classes…
+#+description: UML class diagrams are missing relationships between classes, and namespace/class descriptions are absent. Add them according to crowding-avoidance rules (not every relationship, only architecturally significant ones).
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

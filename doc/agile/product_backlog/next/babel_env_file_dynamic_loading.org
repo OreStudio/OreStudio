@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: C0553E54-B1F4-425A-B2F2-ECB159F0F768
+:END:
+#+title: Babel source blocks that run ORE Studio commands should quer…
+#+description: Babel source blocks that run ORE Studio commands should query the active .env file dynamically for paths and presets, so they work correctly when switching between environments without needing a manual reload.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

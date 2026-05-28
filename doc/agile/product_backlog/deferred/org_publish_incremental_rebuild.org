@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: C71C152D-58CE-4CBA-946E-6B163900DFC0
+:END:
+#+title: Investigate whether org-publish can detect unchanged files a…
+#+description: Investigate whether org-publish can detect unchanged files and skip re-exporting them, to speed up site rebuilds which currently re-process the entire doc graph on every run.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

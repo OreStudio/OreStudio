@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: FF3F3BD1-7F2A-472F-95A3-536EFB162337
+:END:
+#+title: The org-roam knowledge graph no longer exposes options to co…
+#+description: The org-roam knowledge graph no longer exposes options to configure or hide the right-hand sidebar — these settings seem to have been removed in a recent version. Investigate and restore sidebar control.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

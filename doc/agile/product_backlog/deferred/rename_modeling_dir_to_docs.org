@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: A759E29B-28B5-45C1-94B0-E27E1B6DBE5E
+:END:
+#+title: Rename the modeling/ directory to docs/ in all components. T…
+#+description: Rename the modeling/ directory to docs/ in all components. The name 'modeling' misleads contributors into thinking it is UML-only.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

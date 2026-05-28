@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: FB4258E3-8807-498D-81BC-DF88A5976F4D
+:END:
+#+title: The site build leaves legacy output alongside the new site. …
+#+description: The site build leaves legacy output alongside the new site. The build pipeline should always rm -rf site/ before recompiling so stale pages are never served.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

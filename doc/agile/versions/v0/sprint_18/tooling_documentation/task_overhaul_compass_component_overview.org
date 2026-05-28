@@ -76,8 +76,10 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                            | File                   | Decision | Notes                                           |
+|---+--------------------------------------------+------------------------+----------+-------------------------------------------------|
+| 1 | "v2 documents" branding in Scaffold pillar | component_overview.org | Accept   | Fixed in 2c3498e44                              |
+| 2 | Navigate missing recipe table              | component_overview.org | Decline  | No Navigate recipes exist yet; omit is correct. |
+| 3 | Backlog missing recipe table               | component_overview.org | Decline  | Same — no Backlog recipes exist yet.            |
 
 * Result

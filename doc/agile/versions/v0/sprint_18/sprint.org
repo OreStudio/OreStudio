@@ -32,8 +32,8 @@ Enable end-to-end [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] imports into 
 | Field          | Value                                                     |
 |----------------+-----------------------------------------------------------|
 | State          | STARTED                                                   |
-| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]    |
-| Previous       | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]    |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                 |
+| Previous       | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]                                                 |
 | Start          | 2026-05-22                                                |
 | End (expected) | 2026-05-28                                                |
 | Now            | Sprint in flight.                                         |
@@ -63,77 +63,78 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 ** Tooling
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                                | State   | Start      | End        | Description |
-|------------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------------------------|
-| [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][ores.compass repository compass tool]]             | DONE    | 2026-05-24 | 2026-05-24 | Python repository compass: temporal orientation, semantic doc search, agile scaffolding.           |
-| [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][ores.compass Locate — temporal orientation]]       | DONE    | 2026-05-24 | 2026-05-24 | =where=/=status=: report current version, sprint, and in-flight stories and tasks from the graph. |
-| [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][ores.compass Scaffold — agile authoring]]          | DONE    | 2026-05-24 | 2026-05-24 | =add story/task/sprint/recipe=: create agile artefacts from the CLI by calling ores.codegen as a library. |
-| [[id:7EF64A67-EB1C-4F79-9FF2-1C59DD6146AB][Track PRs per task and surface in compass where]]  | DONE    | 2026-05-24 | 2026-05-24 | PRs table in task docs; =compass where --prs= fetches live PR status via =gh=.                    |
-| [[id:026AA423-68A1-43A1-8F2A-D9D3D6379E6C][Add org-roam index links to compass.org folder entries]] | DONE    | 2026-05-24 | 2026-05-24 | Each folder in compass.org links to its index file; missing index files created.             |
-| [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — next and deferred listing]] | BACKLOG | 2026-05-24 |       | =compass backlog= lists next/deferred captures with counts, mirroring =where= in-flight display.  |
-| [[id:CB368AF8-3144-4CFF-B782-05CDF87366A6][compass cross-worktree status (global where)]]     | DONE    | 2026-05-25 | 2026-05-25 | Show what every git worktree is doing (branch/story/task/PR) so parallel agents don't collide.    |
-| [[id:C0B87858-4EDA-40F3-B4DF-1CDEA5CC712E][compass goto: start a unit of work in one command]] | DONE   | 2026-05-25 | 2026-05-25 | One command: fetch main, branch, scaffold linked story+task, print next steps.                    |
-| [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Compass PR review management]]                     | BACKLOG | 2026-05-26 |            | Add compass review list/reply/resolve subcommands wrapping gh API.                                |
-| [[id:47FD2F81-2143-4C35-9AC1-5A3A9D4AF975][compass goto --kind flag]]                         | DONE    | 2026-05-28 | 2026-05-28 | Add --kind hotfix to compass goto for hotfix/ branches; update runbook, recipe, docs.             |
-| [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] | STARTED | 2026-05-27 | | captures/ folder per sprint; compass capture command; wontdo backlog bucket.           |
+| Story                                                                 | State   |      Start |        End | Description                                                                                               |
+|-----------------------------------------------------------------------+---------+------------+------------+-----------------------------------------------------------------------------------------------------------|
+| [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][ores.compass repository compass tool]]                                  | DONE    | 2026-05-24 | 2026-05-24 | Python repository compass: temporal orientation, semantic doc search, agile scaffolding.                  |
+| [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][ores.compass Locate — temporal orientation]]                            | DONE    | 2026-05-24 | 2026-05-24 | =where=/=status=: report current version, sprint, and in-flight stories and tasks from the graph.         |
+| [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][ores.compass Scaffold — agile authoring]]                               | DONE    | 2026-05-24 | 2026-05-24 | =add story/task/sprint/recipe=: create agile artefacts from the CLI by calling ores.codegen as a library. |
+| [[id:7EF64A67-EB1C-4F79-9FF2-1C59DD6146AB][Track PRs per task and surface in compass where]]                       | DONE    | 2026-05-24 | 2026-05-24 | PRs table in task docs; =compass where --prs= fetches live PR status via =gh=.                            |
+| [[id:026AA423-68A1-43A1-8F2A-D9D3D6379E6C][Add org-roam index links to compass.org folder entries]]                | DONE    | 2026-05-24 | 2026-05-24 | Each folder in compass.org links to its index file; missing index files created.                          |
+| [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — next and deferred listing]]              | BACKLOG | 2026-05-24 |            | =compass backlog= lists next/deferred captures with counts, mirroring =where= in-flight display.          |
+| [[id:CB368AF8-3144-4CFF-B782-05CDF87366A6][compass cross-worktree status (global where)]]                          | DONE    | 2026-05-25 | 2026-05-25 | Show what every git worktree is doing (branch/story/task/PR) so parallel agents don't collide.            |
+| [[id:C0B87858-4EDA-40F3-B4DF-1CDEA5CC712E][compass goto: start a unit of work in one command]]                     | DONE    | 2026-05-25 | 2026-05-25 | One command: fetch main, branch, scaffold linked story+task, print next steps.                            |
+| [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Compass PR review management]]                                          | BACKLOG | 2026-05-26 |            | Add compass review list/reply/resolve subcommands wrapping gh API.                                        |
+| [[id:47FD2F81-2143-4C35-9AC1-5A3A9D4AF975][compass goto --kind flag]]                                              | DONE    | 2026-05-28 | 2026-05-28 | Add --kind hotfix to compass goto for hotfix/ branches; update runbook, recipe, docs.                     |
+| [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] | STARTED | 2026-05-27 |            | captures/ folder per sprint; compass capture command; wontdo backlog bucket.                              |
 
 ** Agile
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                                | State   | Start      | End        | Description |
-|------------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------------------------|
-| [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]]                       | DONE    | 2026-05-24 | 2026-05-24 | Build backlog-refiner and sprint-planner skills/recipes; set sprint 18 mission.                    |
-| [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]]         | DONE    | 2026-05-25 | 2026-05-26 | =sprint-reviewer= skill writes a structured health-check section into =sprint.org=.               |
-| [[id:8BD3D28A-C5A1-4F8D-A685-1BC6EBF5C812][Sprint health charts]]                             | DONE    | 2026-05-26 | 2026-05-26 | Generate daily charts of PRs, commits, story completions, and line churn using gnuplot.           |
-| [[id:FFF169EC-0B35-4800-8BEE-1CF7D0DEE8D6][Refactor story task lists to a status table]]      | STARTED | 2026-05-28 |            | Replace bullet-list Tasks section in story docs with a Task/State/Start/End/Description table.    |
-| [[id:03EC9465-AE25-4404-9B7E-B0C25A3CBE28][Sprint theme grouping]]                            | STARTED | 2026-05-28 |            | Introduce theme subheadings into sprint.org to group stories by area.                             |
-| [[id:185845E7-4CF9-416E-A923-894868A757A0][Hotfix handling]]                                  | DONE    | 2026-05-28 | 2026-05-28 | Hotfix runbook, branching recipe update, and Hotfixes section in sprint template.                 |
+| Story                                       | State   |      Start |        End | Description                                                                                    |
+|---------------------------------------------+---------+------------+------------+------------------------------------------------------------------------------------------------|
+| [[id:22AA37FA-23A0-406E-B05B-B11BB3E83874][Product backlog refinement]]                  | DONE    | 2026-05-24 | 2026-05-24 | Build backlog-refiner and sprint-planner skills/recipes; set sprint 18 mission.                |
+| [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]]    | DONE    | 2026-05-25 | 2026-05-26 | =sprint-reviewer= skill writes a structured health-check section into =sprint.org=.            |
+| [[id:8BD3D28A-C5A1-4F8D-A685-1BC6EBF5C812][Sprint health charts]]                        | DONE    | 2026-05-26 | 2026-05-26 | Generate daily charts of PRs, commits, story completions, and line churn using gnuplot.        |
+| [[id:FFF169EC-0B35-4800-8BEE-1CF7D0DEE8D6][Refactor story task lists to a status table]] | STARTED | 2026-05-28 |            | Replace bullet-list Tasks section in story docs with a Task/State/Start/End/Description table. |
+| [[id:03EC9465-AE25-4404-9B7E-B0C25A3CBE28][Sprint theme grouping]]                       | STARTED | 2026-05-28 |            | Introduce theme subheadings into sprint.org to group stories by area.                          |
+| [[id:185845E7-4CF9-416E-A923-894868A757A0][Hotfix handling]]                             | DONE    | 2026-05-28 | 2026-05-28 | Hotfix runbook, branching recipe update, and Hotfixes section in sprint template.              |
 
 ** LLMs
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                                | State   | Start      | End        | Description |
-|------------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------------------------|
-| [[id:7225526E-DCDB-4DC6-A95D-22C7117E5EAA][Port Tufte visualisation skill into ORE Studio]]   | DONE    | 2026-05-25 | 2026-05-25 | Convert =tufte-viz= SKILL and two Tufte reference docs to org-mode; install and catalogue.        |
-| [[id:3D1935DC-562C-4AA3-A352-AC1BC037DFDD][Runbook support]]                                  | DONE    | 2026-05-26 | 2026-05-26 | Add runbook document type: named composition of recipes for repeatable multi-step operations.      |
-| [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]            | DONE    | 2026-05-28 | 2026-05-28 | Add compass skill type, update skill-creation recipe, create run-runbook skill.                    |
-| [[id:5D11EB95-8B20-4A11-B9A6-C883C9E4B0CF][Document deduplication recipe]]                    | DONE    | 2026-05-28 | 2026-05-28 | Generalised recipe for merging duplicate docs; applied to duplicate sprint health review runbooks. |
-| [[id:76F0DB10-084D-4A72-A585-5DE660884677][PlantUML integration: recipe and codegen scaffold]] | DONE   | 2026-05-28 | 2026-05-28 | PlantUML how-to recipe; compass add diagram scaffold; standard licence header convention.          |
-| [[id:AE1E893D-8E5C-4DB7-BB71-492F1A65374D][Document ORE Studio as an LLM-first system]]       | DONE    | 2026-05-28 | 2026-05-28 | LLM-first philosophy page and Claude Code tool page; update llm.org index.                        |
+| Story                                             | State |      Start |        End | Description                                                                                        |
+|---------------------------------------------------+-------+------------+------------+----------------------------------------------------------------------------------------------------|
+| [[id:7225526E-DCDB-4DC6-A95D-22C7117E5EAA][Port Tufte visualisation skill into ORE Studio]]    | DONE  | 2026-05-25 | 2026-05-25 | Convert =tufte-viz= SKILL and two Tufte reference docs to org-mode; install and catalogue.         |
+| [[id:3D1935DC-562C-4AA3-A352-AC1BC037DFDD][Runbook support]]                                   | DONE  | 2026-05-26 | 2026-05-26 | Add runbook document type: named composition of recipes for repeatable multi-step operations.      |
+| [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]             | DONE  | 2026-05-28 | 2026-05-28 | Add compass skill type, update skill-creation recipe, create run-runbook skill.                    |
+| [[id:5D11EB95-8B20-4A11-B9A6-C883C9E4B0CF][Document deduplication recipe]]                     | DONE  | 2026-05-28 | 2026-05-28 | Generalised recipe for merging duplicate docs; applied to duplicate sprint health review runbooks. |
+| [[id:76F0DB10-084D-4A72-A585-5DE660884677][PlantUML integration: recipe and codegen scaffold]] | DONE  | 2026-05-28 | 2026-05-28 | PlantUML how-to recipe; compass add diagram scaffold; standard licence header convention.          |
+| [[id:AE1E893D-8E5C-4DB7-BB71-492F1A65374D][Document ORE Studio as an LLM-first system]]        | DONE  | 2026-05-28 | 2026-05-28 | LLM-first philosophy page and Claude Code tool page; update llm.org index.                         |
 
 ** Documentation
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                                | State   | Start      | End        | Description |
-|------------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------------------------|
-| [[id:4E375DD6-E300-4A0A-BD20-3D06AC8ED7A1][Port domain concept notes to knowledge documents]] | STARTED | 2026-05-25 |            | Tidy personal finance/ORE domain notes into v2 knowledge docs; align with ORE Studio terms.       |
-| [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] | STARTED | 2026-05-28 | | Audit active docs lacking frontmatter; rename all v2-branded scripts, templates, and docs. |
-| [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]]                         | DONE    | 2026-05-26 | 2026-05-28 | Add layer blurbs and table-based component inventory to the system model.                          |
-| [[id:A388F0C8-0804-420F-A542-2C929CFCEC92][Document NATS: technology overview, system integration, and recipes]] | DONE | 2026-05-26 | 2026-05-26 | NATS knowledge page, system model section, per-component subject tables, and NATS recipes. |
-| [[id:C3B6F514-559F-4038-A1D7-947BC9F7F398][Add Downloads and Agile nav entries to the site]]  | BACKLOG | 2026-05-25 |            | =doc/downloads.org= with release table; =Downloads= and =Agile= links in site nav.                |
-| [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Improve cybernetics documentation]]                | STARTED | 2026-05-28 |            | Add VSM overview page, expand Cybernetic Levels with context and limitations, link compass.        |
-| [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]]                            | STARTED | 2026-05-28 |            | Add Tooling section to knowledge.org; developer scripts doc; overhaul compass, sql, lisp, codegen overviews. |
-| [[id:FD317B6C-F50F-4A35-81CC-A3B2BE3493C0][Add Emacs and org-roam knowledge pages]]           | DONE    | 2026-05-28 | 2026-05-28 | Create Emacs, org-roam, and Zettelkasten knowledge pages; expand ores.lisp; update orientation.    |
+| Story                                                               | State   |      Start |        End | Description                                                                                                  |
+|---------------------------------------------------------------------+---------+------------+------------+--------------------------------------------------------------------------------------------------------------|
+| [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]]                         | STARTED | 2026-05-24 |            | =deploy_manual= target builds =user_manual.org= to PDF; commit and link the result.                          |
+| [[id:4E375DD6-E300-4A0A-BD20-3D06AC8ED7A1][Port domain concept notes to knowledge documents]]                    | STARTED | 2026-05-25 |            | Tidy personal finance/ORE domain notes into v2 knowledge docs; align with ORE Studio terms.                  |
+| [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]]          | STARTED | 2026-05-28 |            | Audit active docs lacking frontmatter; rename all v2-branded scripts, templates, and docs.                   |
+| [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]]                                            | DONE    | 2026-05-26 | 2026-05-28 | Add layer blurbs and table-based component inventory to the system model.                                    |
+| [[id:A388F0C8-0804-420F-A542-2C929CFCEC92][Document NATS: technology overview, system integration, and recipes]] | DONE    | 2026-05-26 | 2026-05-26 | NATS knowledge page, system model section, per-component subject tables, and NATS recipes.                   |
+| [[id:C3B6F514-559F-4038-A1D7-947BC9F7F398][Add Downloads and Agile nav entries to the site]]                     | BACKLOG | 2026-05-25 |            | =doc/downloads.org= with release table; =Downloads= and =Agile= links in site nav.                           |
+| [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Improve cybernetics documentation]]                                   | STARTED | 2026-05-28 |            | Add VSM overview page, expand Cybernetic Levels with context and limitations, link compass.                  |
+| [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]]                                               | STARTED | 2026-05-28 |            | Add Tooling section to knowledge.org; developer scripts doc; overhaul compass, sql, lisp, codegen overviews. |
+| [[id:FD317B6C-F50F-4A35-81CC-A3B2BE3493C0][Add Emacs and org-roam knowledge pages]]                              | DONE    | 2026-05-28 | 2026-05-28 | Create Emacs, org-roam, and Zettelkasten knowledge pages; expand ores.lisp; update orientation.              |
 
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                                | State   | Start      | End        | Description |
-|------------------------------------------------------------------------------------------------------+---------+------------+------------+----------------------------------------------------------------------------------------------------|
-| [[id:A4BEF88C-1372-46CE-864B-C30AC3BE95EB][Inline org-roam export into ores.lisp]]            | DONE    | 2026-05-22 | 2026-05-22 | Vendor =org-roam-export.el= into =ores.lisp= so the CI site build is self-contained.              |
-| [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]]                    | DONE    | 2026-05-23 | 2026-05-24 | Permanently resolve MSVC C1202 and Clang expression nesting limits via structural isolation.       |
-| [[id:0A2CB5BD-67B8-4096-BAC4-8E110333893A][SQLite CLI quality-of-life setup]]                 | DONE    | 2026-05-24 | 2026-05-24 | Committed, commented =.sqliterc= for readable, non-wrapping =sqlite3= shell output.               |
-| [[id:BAF1DEAE-59DF-49AB-BFCD-E6D09496DA43][Lock down uppercase UUID invariant]]               | DONE    | 2026-05-24 | 2026-05-24 | Close the remaining code paths that can emit lowercase UUIDs into the doc graph.                   |
-| [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                       | DONE    | 2026-05-24 | 2026-05-25 | Replace broken per-mode ores.lisp with an env-aware emacs-dashboard console for all dev commands. |
-| [[id:A2B3BFD0-F44C-48F3-BB01-6BAECB851356][Remove unused GitHub Actions workflows]]           | DONE    | 2026-05-24 | 2026-05-24 | Delete the four dormant Gemini workflows; PR review stays via the gemini-code-assist app.         |
-| [[id:8D295781-33E7-4812-AAC6-134BD7CD0DDC][Rebuild org-roam DB independently from CMake]]     | BACKLOG | 2026-05-24 |            | Extract org-roam sync into =.build-org-roam.el=; add =rebuild_org_roam_db= cmake target.         |
-| [[id:AD6B59E1-A267-4927-A3FF-D624BB123658][Move .build-*.el scripts to ores.lisp]]            | DONE    | 2026-05-28 | 2026-05-28 | Relocate build scripts from repo root into ores.lisp/src/ with ores- naming.                      |
+| Story                                        | State   |      Start |        End | Description                                                                                       |
+|----------------------------------------------+---------+------------+------------+---------------------------------------------------------------------------------------------------|
+| [[id:A4BEF88C-1372-46CE-864B-C30AC3BE95EB][Inline org-roam export into ores.lisp]]        | DONE    | 2026-05-22 | 2026-05-22 | Vendor =org-roam-export.el= into =ores.lisp= so the CI site build is self-contained.              |
+| [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]]                | DONE    | 2026-05-23 | 2026-05-24 | Permanently resolve MSVC C1202 and Clang expression nesting limits via structural isolation.      |
+| [[id:0A2CB5BD-67B8-4096-BAC4-8E110333893A][SQLite CLI quality-of-life setup]]             | DONE    | 2026-05-24 | 2026-05-24 | Committed, commented =.sqliterc= for readable, non-wrapping =sqlite3= shell output.               |
+| [[id:BAF1DEAE-59DF-49AB-BFCD-E6D09496DA43][Lock down uppercase UUID invariant]]           | DONE    | 2026-05-24 | 2026-05-24 | Close the remaining code paths that can emit lowercase UUIDs into the doc graph.                  |
+| [[id:8E5543CD-AD7C-41B5-A7EA-F2DC534F5248][ORE Studio Emacs dashboard]]                   | DONE    | 2026-05-24 | 2026-05-25 | Replace broken per-mode ores.lisp with an env-aware emacs-dashboard console for all dev commands. |
+| [[id:A2B3BFD0-F44C-48F3-BB01-6BAECB851356][Remove unused GitHub Actions workflows]]       | DONE    | 2026-05-24 | 2026-05-24 | Delete the four dormant Gemini workflows; PR review stays via the gemini-code-assist app.         |
+| [[id:8D295781-33E7-4812-AAC6-134BD7CD0DDC][Rebuild org-roam DB independently from CMake]] | BACKLOG | 2026-05-24 |            | Extract org-roam sync into =.build-org-roam.el=; add =rebuild_org_roam_db= cmake target.          |
+| [[id:AD6B59E1-A267-4927-A3FF-D624BB123658][Move .build-*.el scripts to ores.lisp]]        | DONE    | 2026-05-28 | 2026-05-28 | Relocate build scripts from repo root into ores.lisp/src/ with ores- naming.                      |
 
 * Health Review
 
-| # | Date       | Day   | Overall | Task                                                                    |
-|---+------------+-------+---------+-------------------------------------------------------------------------|
-| 1 | 2026-05-25 | day 4 | AMBER   | [[id:FA5A76DC-913B-481C-8D65-13F58032D950][Health review 1 — sprint 18 mid-sprint analysis]]          |
+| # |       Date | Day   | Overall | Task                                                      |
+|---+------------+-------+---------+-----------------------------------------------------------|
+| 1 | 2026-05-25 | day 4 | AMBER   | [[id:FA5A76DC-913B-481C-8D65-13F58032D950][Health review 1 — sprint 18 mid-sprint analysis]]           |
 | 2 | 2026-05-26 | day 5 | AMBER   | [[id:669DF15D-AD78-4F9A-8A53-49DF0EEC9455][Health review 2 — sprint 18 backlog audit and shape check]] |
 
 

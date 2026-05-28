@@ -9,7 +9,7 @@
 #+filetags: :tooling_documentation:sprint_18:v0:
 #+owner: marco
 #+branch: feature/overhaul-compass-component-overview
-#+pr:
+#+pr: 909
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
@@ -47,11 +47,11 @@ sections are preserved; the new pillar sections are appended as a new
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] |
-| Now          | Not yet started.                       |
+| Now          | Writing Commands section in component overview. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Open PR.                               |
 | Last touched | 2026-05-28                               |
 
 * Acceptance
@@ -70,14 +70,16 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR | Title                                                          |
+|----+----------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/909][#909]] | [doc] Add Commands section to ores.compass component overview  |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                            | File                   | Decision | Notes                                           |
+|---+--------------------------------------------+------------------------+----------+-------------------------------------------------|
+| 1 | "v2 documents" branding in Scaffold pillar | component_overview.org | Accept   | Fixed in 2c3498e44                              |
+| 2 | Navigate missing recipe table              | component_overview.org | Decline  | No Navigate recipes exist yet; omit is correct. |
+| 3 | Backlog missing recipe table               | component_overview.org | Decline  | Same — no Backlog recipes exist yet.            |
 
 * Result

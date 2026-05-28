@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :compass:tooling:python:docs:agile:
 #+created: 2026-05-24
-#+updated: 2026-05-24
+#+updated: 2026-05-28
 
 * Diagram
 
@@ -94,6 +94,135 @@ Pillars (the first three drawn from the Sprint 18 capture =* Tools=):
   =add <type> [flags]= (Scaffold); =fleet [-f pretty|json]= (Fleet); and
   =goto= (Goto) — new story (=--slug/--title/--description=) or existing
   story (=--story <id-or-slug> --task-slug --task=); =--dry-run= for both.
+
+* Commands
+
+Each command pillar groups the subcommands that share a purpose. The shell
+entry point for all commands is =projects/ores.compass/compass.sh=; run it
+from the repository root.
+
+** Locate
+
+Reports temporal position: which version, which sprint, and which stories
+and tasks are currently in flight (=State: STARTED=). Reads the agile tree
+directly — no database or =org-roam= sync needed.
+
+| Form | Description |
+|------+-------------|
+| =compass where= | Print current version, sprint, and all STARTED stories and tasks (human-readable). |
+| =compass status -f json= | Same output as structured JSON for tooling or LLM consumption. |
+
+| Recipe | Description |
+|--------+-------------|
+| [[id:41E5F9A8-1C2B-4ECA-8EA0-1ABBAB0B6A31][How do I see where we are?]] | Full walkthrough of =where= and =status=. |
+
+** Search
+
+Full-text search over the org-roam documentation graph via a local SQLite
+FTS5 cache (=.compass.db=). The cache must be built with =index= before the
+first search, and refreshed whenever docs change. =find= is an alias for
+=search=.
+
+| Form | Description |
+|------+-------------|
+| =compass search "query"= | Return the top matching docs (default: 10, pretty format). |
+| =compass search "query" -l 5= | Cap results at 5. |
+| =compass search "query" -f line= | Machine-readable output: one =UUID "path" "match"= per line. |
+| =compass search "query" -f json= | Structured JSON array (uuid, path, title, olp, tags, snippet). |
+| =compass index= | Build or incrementally refresh the FTS5 cache from =org-roam.db=. |
+| =compass index --rebuild= | Discard the cache and rebuild from scratch. |
+| =compass debug= | Inspect the raw cache contents. |
+| =compass debug -f glossary= | Show cache in glossary format. |
+
+| Recipe | Description |
+|--------+-------------|
+| [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][How do I search docs with compass?]] | Query syntax, output formats, and FTS5 tips. |
+| [[id:DEAC11AE-3753-49FA-994A-98594162A605][How do I index notes for compass?]] | When and how to run =index= and =index --rebuild=. |
+
+** Navigate
+
+Inspect and filter the live documentation graph without a search query.
+=list= filters by metadata; =show= dives into one document. Neither
+requires =org-roam.db= or the FTS5 cache.
+
+| Form | Description |
+|------+-------------|
+| =compass list= | List every addressable doc (UUID, type, title, path). |
+| =compass list --type recipe= | Filter by =#+type:=. |
+| =compass list --tag sprint_18= | Filter by filetag. |
+| =compass list --regex "sql"= | Filter by regex against title or description. |
+| =compass list --under doc/recipes= | Restrict to docs under a path prefix. |
+| =compass list --sort updated= | Sort by =#+updated:= date. |
+| =compass list --paths= | One path per line — useful for piping into =grep= / =xargs=. |
+| =compass show <uuid-or-prefix>= | Print one doc: metadata, blurb, outgoing links, incoming links. |
+
+** Scaffold
+
+Creates new documents by calling [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] as a library. Two
+subcommands: =add= scaffolds any doc type from a template; =capture=
+creates and files captures into the product backlog inbox.
+
+| Form | Description |
+|------+-------------|
+| =compass add story --slug S --title "T" --description "D"= | Scaffold a story in the current sprint. |
+| =compass add task --parent-dir <story-dir> --slug S --title "T"= | Scaffold a task under an existing story. |
+| =compass add sprint --slug sprint_NN --title "Sprint NN"= | Scaffold a new sprint. |
+| =compass add recipe --slug how_do_i_x --title "How do I X?"= | Scaffold a recipe doc. |
+| =compass capture --note "..."= | Parse freeform text and create a structured capture in =inbox/=. |
+| =compass capture file <slug> next= | Move a capture from =inbox/= to =next/=. |
+| =compass capture file <slug> deferred= | Move a capture to =deferred/=. |
+| =compass capture file <slug> discarded= | Move a capture to =discarded/=. |
+
+| Recipe | Description |
+|--------+-------------|
+| [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] | Scaffold stories, tasks, sprints, and recipes via =add=. |
+| [[id:7072D39C-9607-48F9-8EE6-50E8647DB8ED][How do I capture ideas from freeform text?]] | Parse raw notes into filed captures via =capture=. |
+
+** Fleet
+
+Gives a cross-worktree status snapshot: for each git worktree, shows the
+current branch, the story and task it maps to (via =#+branch:= in the task
+doc), and the open PR with its live CI state. Useful for coordinating
+parallel work across multiple checkouts or LLM agents.
+
+| Form | Description |
+|------+-------------|
+| =compass fleet= | Human-readable worktree status table. |
+| =compass fleet -f json= | Structured JSON array for tooling consumption. |
+
+| Recipe | Description |
+|--------+-------------|
+| [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][How do I see what every worktree is doing?]] | Walkthrough of =fleet= output and when to use it. |
+
+** Goto
+
+Starts a unit of work in one command: fetches =main=, creates a feature
+branch, scaffolds the linked story and task (via Scaffold/codegen), and
+prints the remaining manual steps. Two modes: new story, or add a task to
+an existing story.
+
+| Form | Description |
+|------+-------------|
+| =compass goto --slug S --title "T" --description "D" --tags "t"= | New story mode: create story + task, branch, and print next steps. |
+| =compass goto --story <id-or-slug> --task-slug S --task "T"= | Add-task mode: add a task to an existing story and branch. |
+| =compass goto ... --dry-run= | Preview all actions without making changes. |
+| =compass goto ... --base <ref>= | Override the base branch (default: =origin/main=). |
+
+| Recipe | Description |
+|--------+-------------|
+| [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] | Full walkthrough of both =goto= modes. |
+
+** Backlog
+
+Lists captures from the product backlog buckets. Read-only views — use
+=capture file= (Scaffold pillar) to move entries between buckets.
+
+| Form | Description |
+|------+-------------|
+| =compass inbox= | List captures in =product_backlog/inbox/=. |
+| =compass next= | List captures in =product_backlog/next/=. |
+| =compass deferred= | List captures in =product_backlog/deferred/=. |
+| =compass discarded= | List captures in =product_backlog/discarded/=. |
 
 * Dependencies
 

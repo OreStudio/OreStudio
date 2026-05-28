@@ -61,10 +61,10 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR  | Title                                                 |
-|-----+-------------------------------------------------------|
-| 903 | [agile] Scaffold tooling documentation story (sprint 18)           |
-| 907 | [doc] Add Tooling section to knowledge.org and developer scripts doc |
+| PR | Title                                                                |
+|----+----------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/903][#903]] | [agile] Scaffold tooling documentation story (sprint 18)             |
+| [[https://github.com/OreStudio/OreStudio/pull/907][#907]] | [doc] Add Tooling section to knowledge.org and developer scripts doc |
 
 * Review
 

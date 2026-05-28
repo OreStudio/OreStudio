@@ -87,5 +87,6 @@ Tasks 3 (rename codegen) and 4 (remove doc refs) are the main work.
 | # | Comment summary                                        | File                       | Decision | Notes                                       |
 |---+--------------------------------------------------------+----------------------------+----------+---------------------------------------------|
 | 1 | Goal/Acceptance placeholders unfilled in 3 task files  | task_migrate/rename/remove | Fixed    | All three tasks filled in; commit 0648f3daf |
+| 2 | Now field should be "Complete." not "Nothing." for DONE | task_audit_v1_documents    | Declined | Project convention is Nothing.; matches all other DONE tasks in sprint 18 |
 
 * Result

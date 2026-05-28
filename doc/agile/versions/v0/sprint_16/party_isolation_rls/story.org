@@ -39,10 +39,10 @@ Continued from: [[id:DF3B299E-7FED-4411-B257-125ED35C3A9E][Party isolation for b
 
 * Tasks
 
-In execution order:
-
-- [[id:77B2DCE3-AA7E-4AC6-BCED-1251E14FF066][Add missing party isolation RLS policies (initial)]]
-- [[id:6435D59A-108B-450D-860E-BF8CE795D3F2][SQL: Add missing party isolation RLS policies]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:77B2DCE3-AA7E-4AC6-BCED-1251E14FF066][Add missing party isolation RLS policies (initial)]] | DONE | 2026-05-20 | 2026-04-09 | RLS_002 validation surfaced several tables with party_id + tenant RLS but missing AS RESTRICTIVE party policy. Add the policies in iam / refdata / scheduler RLS files; harden trading instrument subtables to enable RLS + tenant isolation. |
+| [[id:6435D59A-108B-450D-860E-BF8CE795D3F2][SQL: Add missing party isolation RLS policies]] | DONE | 2026-05-20 | 2026-04-09 | Final landing: missing RLS party isolation policies across IAM, Refdata, Scheduler, Trading modules; party context service in ores.database + ores.testing; validation_ignore.txt updated. |
 
 * Decisions
 

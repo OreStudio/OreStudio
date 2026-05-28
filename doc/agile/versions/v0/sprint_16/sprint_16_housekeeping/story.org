@@ -34,9 +34,9 @@ Sprint backlog refinement.
 
 * Tasks
 
-In execution order:
-
-- [[id:C615C202-68B9-4C2D-A7E7-472B0D112D23][Sprint and product backlog refinement]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C615C202-68B9-4C2D-A7E7-472B0D112D23][Sprint and product backlog refinement]] | DONE | 2026-05-20 | 2026-04-17 | Maintain sprint 16 backlog and groom the product backlog. |
 
 * Decisions
 

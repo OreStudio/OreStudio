@@ -39,13 +39,13 @@ Continued from: [[id:679DA033-934A-4330-951F-5016675CC8AF][Compute grid observab
 
 * Tasks
 
-In execution order:
-
-- [[id:CE070F4D-04F6-4B35-B46D-EE6D744C2D7F][Add service lifecycle controller and dashboard enhancements]]
-- [[id:50A448ED-01F9-49B9-AFBE-02204FAF8FF2][Fix startup races, terminal bleed, analytics service setup]]
-- [[id:D1E2865B-03DF-4652-B495-5464F874F213][Normalise all services to NATS-based hosting with unified heartbeat]]
-- [[id:B479F64E-385C-468D-A72E-264D22B3F115][Service dashboard, shutdown fixes and DB timezone]]
-- [[id:CC2094D9-9394-4490-88BF-BF7F9C6EBD58][Service lifecycle, menu restructure, GCC 15 fix, Qt plugin split]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CE070F4D-04F6-4B35-B46D-EE6D744C2D7F][Add service lifecycle controller and dashboard enhancements]] | DONE | 2026-05-20 | 2026-04-08 | ores.controller component for managing service definitions + instances + lifecycle events; process supervisor with dependency-ordered service launch; cert management; HTTP/Wt/wrapper definitions; service dashboard UX overhaul with badge status + Stop/Restart controls; graceful shutdown of child processes. |
+| [[id:50A448ED-01F9-49B9-AFBE-02204FAF8FF2][Fix startup races, terminal bleed, analytics service setup]] | DONE | 2026-05-20 | 2026-04-08 | ores.analytics.service launch; multi-phase process shutdown sequence (SIGTERM / SIGQUIT / SIGKILL); enhanced log monitoring in process supervisor; exponential backoff for service authentication; TLS certificate validation for NATS connections. |
+| [[id:D1E2865B-03DF-4652-B495-5464F874F213][Normalise all services to NATS-based hosting with unified heartbeat]] | DONE | 2026-05-20 | 2026-04-08 | IAM + HTTP + Wt + compute wrapper migrated to ores.service unified infrastructure; signing_service_runner + wt_service_runner; on_shutdown callbacks; standard NATS telemetry heartbeats; service dashboard sole-source-of-truth from heartbeats; IAM roles + service accounts for http / wt / compute. |
+| [[id:B479F64E-385C-468D-A72E-264D22B3F115][Service dashboard, shutdown fixes and DB timezone]] | DONE | 2026-05-20 | 2026-04-08 | Standardised exit codes; last 20 lines of logs captured on failure; PID files for supervised services; TimeZone=UTC on raw libpq connections; double-disconnect crash fix; Last Error column in dashboard; PluginRegistry lifecycle fix. |
+| [[id:CC2094D9-9394-4490-88BF-BF7F9C6EBD58][Service lifecycle, menu restructure, GCC 15 fix, Qt plugin split]] | DONE | 2026-05-20 | 2026-04-08 | Service diagnostics improvements; analytics plugin added; menu restructure (Identity / Pricing / Scheduler / Data Transfer top-level menus); GCC 15 incomplete-type errors fixed; xsd::vector copy assignment fix; service detail panel; report definitions list fills wizard page. |
 
 * Decisions
 

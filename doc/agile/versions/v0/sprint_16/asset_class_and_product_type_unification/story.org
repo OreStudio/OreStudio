@@ -34,11 +34,11 @@ Rename instrument_family → product_type; separate asset_class (risk taxonomy) 
 
 * Tasks
 
-In execution order:
-
-- [[id:BAC9030F-A95D-4BA4-A78E-426FC7439894][Analyse asset class modelling]]
-- [[id:C28C799E-ECD8-4907-B48B-C7462521503B][Rename instrument_family to product_type]]
-- [[id:446FBBB7-69B8-4C85-B039-E119335F2268][Unify asset class modelling]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BAC9030F-A95D-4BA4-A78E-426FC7439894][Analyse asset class modelling]] | DONE | 2026-05-20 | 2026-04-03 | Full reconciliation audit: trading instrument_family_t, marketdata asset_class C++ enum, refdata bitemporal table, Qt hardcoded labels. Conclude that asset_class (risk taxonomy) + product_type (structural discriminator) are orthogonal and must coexist with shared refdata source of truth. |
+| [[id:C28C799E-ECD8-4907-B48B-C7462521503B][Rename instrument_family to product_type]] | DONE | 2026-05-20 | 2026-04-03 | Pure rename of the DB routing discriminator field across SQL DDL, PG enum type (instrument_family_t → product_type_t), C++ domain structs, NATS message types, repository mapper, Qt trade window. Aligns with FpML productType + ISDA CDM language. |
+| [[id:446FBBB7-69B8-4C85-B039-E119335F2268][Unify asset class modelling]] | DONE | 2026-05-20 | 2026-04-03 | Implementation: refdata.v1.asset-classes.list NATS endpoint; new refdata service + repository + protocol; Qt loads asset classes asynchronously; asset_class column added to trades with validation + indexing. |
 
 * Decisions
 

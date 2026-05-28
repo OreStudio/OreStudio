@@ -34,13 +34,13 @@ Extract ores.qt.api shared framework library; extract domain-specific plugins (a
 
 * Tasks
 
-In execution order:
-
-- [[id:27E66A7C-BA13-40EC-9A0F-2D89A459D3E9][Extract domain-specific plugin libraries]]
-- [[id:6F5DDF6D-95AB-4C17-A4AE-9ED43C51B3F7][Extract ores.qt.api as shared framework library]]
-- [[id:3F1C1CF9-1DF9-40D3-885F-7481AD3B512A][Move App/AppVersion/ClientApp/ClientHost classes to compute]]
-- [[id:B6C2FB2C-18EA-4AC9-B7C9-CCBBD5970E41][Move DataLibrarianWindow and publish dialogs from mktdata to refdata]]
-- [[id:2808E19F-D16D-456D-BF16-9DE26203A72E][Move OreImport* from compute to trading plugin]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:27E66A7C-BA13-40EC-9A0F-2D89A459D3E9][Extract domain-specific plugin libraries]] | DONE | 2026-05-20 | 2026-04-09 | Steps 2-8: IPlugin + PluginRegistry + plugin_context + LegacyPlugin; extract ores.qt.admin / compute / refdata / party / mktdata / trading plugins; migrate to QPluginLoader shared libraries; restore menus + toolbar via setup_menus(). |
+| [[id:6F5DDF6D-95AB-4C17-A4AE-9ED43C51B3F7][Extract ores.qt.api as shared framework library]] | DONE | 2026-05-20 | 2026-04-09 | Step 1: refactor ores.qt monolith into plugin-based architecture; extract core framework components into ores.qt.api; cross-platform visibility macros via boost/config.hpp; project reorganisation + CMake updates. |
+| [[id:3F1C1CF9-1DF9-40D3-885F-7481AD3B512A][Move App/AppVersion/ClientApp/ClientHost classes to compute]] | DONE | 2026-05-20 | 2026-04-09 | Remove dependency on ores.qt.admin library from ores.qt.compute project; classes relocated to compute plugin. |
+| [[id:B6C2FB2C-18EA-4AC9-B7C9-CCBBD5970E41][Move DataLibrarianWindow and publish dialogs from mktdata to refdata]] | DONE | 2026-05-20 | 2026-04-09 | Data Librarian moves from Mktdata plugin to Refdata plugin: window management, menu actions, lifecycle cleanup. |
+| [[id:2808E19F-D16D-456D-BF16-9DE26203A72E][Move OreImport* from compute to trading plugin]] | DONE | 2026-05-20 | 2026-04-09 | ores.qt.trading build configuration updated to depend on ores.ore.api.lib; OreImport classes moved from compute to trading plugin. |
 
 * Decisions
 

@@ -34,9 +34,9 @@ ores.qt.workflow plugin with workflow monitor; JetStream durability + SIGSEGV fi
 
 * Tasks
 
-In execution order:
-
-- [[id:735C8FBE-DAB6-44B5-9442-9D4EEAC86106][Add workflow monitor + late fixes]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:735C8FBE-DAB6-44B5-9442-9D4EEAC86106][Add workflow monitor + late fixes]] | DONE | 2026-05-20 | 2026-04-11 | ores.qt.workflow plugin with workflow monitor; JetStream durability + SIGSEGV fix in engine; trade nullable dates; compute fixes; ORE import workflow + correlation IDs selectable/copyable; master-detail layout. |
 
 * Decisions
 

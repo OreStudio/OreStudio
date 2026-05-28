@@ -34,17 +34,17 @@ Data-driven trade type metadata; merge all six instrument families (FX, swap/rat
 
 * Tasks
 
-In execution order:
-
-- [[id:8FA0E222-979B-4196-AD1D-753145547D7A][Data-driven trade type metadata]]
-- [[id:12A0C4C2-AE7B-40AD-9098-C7F193A8F932][Form map + trade type flags + create-mode instrument]]
-- [[id:1D5182FE-8007-49E9-A86C-C414E03FD753][IInstrumentForm registry + per-family form widgets]]
-- [[id:6DEB9EAC-1269-4E84-8DFC-F54D78B5C816][Merge bond + credit instruments into TradeDetailDialog]]
-- [[id:8B41DB08-0203-4FAC-ABC4-26A34655365E][Merge composite instrument family into TradeDetailDialog]]
-- [[id:6E6DD2DB-E421-41B4-BAD8-1FEDBE788BE9][Merge equity + commodity instruments into TradeDetailDialog]]
-- [[id:232B4373-D5C1-45DB-AE20-37F03989B47D][Merge FX instrument into TradeDetailDialog]]
-- [[id:05F8DEC5-1293-4EF7-84EB-479137C170C0][Merge scripted instrument family into TradeDetailDialog]]
-- [[id:0E0E3E4B-E418-4168-A98D-C509EE2BF49D][Merge swap/rates instrument into TradeDetailDialog]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8FA0E222-979B-4196-AD1D-753145547D7A][Data-driven trade type metadata]] | DONE | 2026-05-20 | 2026-04-07 | Phase 1-3: schema updates to the trade types table; NATS protocol for trade types; product_type codified as a C++ enum; replace silent defaults with unknown sentinel. |
+| [[id:12A0C4C2-AE7B-40AD-9098-C7F193A8F932][Form map + trade type flags + create-mode instrument]] | DONE | 2026-05-20 | 2026-04-07 | Phase 5 + 6: trade type cache; activateForm helper; instrument form visibility during trade creation; thread-safety + magic numbers + error handling improvements. |
+| [[id:1D5182FE-8007-49E9-A86C-C414E03FD753][IInstrumentForm registry + per-family form widgets]] | DONE | 2026-05-20 | 2026-04-07 | Phase 4: IInstrumentForm interface + InstrumentFormRegistry; family-specific UI tabs replaced with dynamic registry-based approach; one form per family (FX, Swap, Bond, Credit, Equity, Commodity, Composite, Scripted). |
+| [[id:6DEB9EAC-1269-4E84-8DFC-F54D78B5C816][Merge bond + credit instruments into TradeDetailDialog]] | DONE | 2026-05-20 | 2026-04-07 | PR 3 of 6: standalone bond + credit controllers removed; functionality integrated into TradeDetailDialog; review highlighted regressions for new trade creation + CDO zero values. |
+| [[id:8B41DB08-0203-4FAC-ABC4-26A34655365E][Merge composite instrument family into TradeDetailDialog]] | DONE | 2026-05-20 | 2026-04-07 | PR 5 of 6: CompositeInstrumentController + associated windows removed; composite instrument viewing + editing of details + legs within the trade interface; trim trade type code; instrument-loaded guard. |
+| [[id:6E6DD2DB-E421-41B4-BAD8-1FEDBE788BE9][Merge equity + commodity instruments into TradeDetailDialog]] | DONE | 2026-05-20 | 2026-04-07 | PR 4 of 6: equity + commodity standalone components removed; integrated into TradeDetailDialog; instrument_id linkage fix; tab visibility logic fix; reactive widget reads; sentinel value caveat. |
+| [[id:232B4373-D5C1-45DB-AE20-37F03989B47D][Merge FX instrument into TradeDetailDialog]] | DONE | 2026-05-20 | 2026-04-07 | PR 1 of 6: instrument-trade model refactor establishing independent identities; FX instrument tabs integrated into TradeDetailDialog; standalone FX UI components removed; OreImportWizard redesigned to target books. |
+| [[id:05F8DEC5-1293-4EF7-84EB-479137C170C0][Merge scripted instrument family into TradeDetailDialog]] | DONE | 2026-05-20 | 2026-04-07 | PR 6 of 6: standalone scripted controllers + MDI windows removed; integrated into TradeDetailDialog with UI tabs for script definition + body; error visibility for load failures; QLineEdit for trade type code. |
+| [[id:0E0E3E4B-E418-4168-A98D-C509EE2BF49D][Merge swap/rates instrument into TradeDetailDialog]] | DONE | 2026-05-20 | 2026-04-07 | PR 2 of 6: standalone instrument management components removed; swap + rates instrument support integrated into TradeDetailDialog; new UI tabs for swap core + rates extensions; thread-safety fix in background lambdas. |
 
 * Decisions
 

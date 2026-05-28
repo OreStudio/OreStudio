@@ -34,10 +34,10 @@ ores.storage component with S3-like PUT / GET / DELETE; migrate compute grid to 
 
 * Tasks
 
-In execution order:
-
-- [[id:9024C57F-EE5F-4F9B-9A53-E72687AEA90F][Add generic object storage API + HTTP routes]]
-- [[id:FA020FEA-2B75-41BA-8333-90E9469DA1E9][Migrate compute grid to generic storage API]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9024C57F-EE5F-4F9B-9A53-E72687AEA90F][Add generic object storage API + HTTP routes]] | DONE | 2026-05-20 | 2026-04-03 | ores.storage component with S3-like PUT / GET / DELETE; replaces compute-specific storage endpoints; path traversal vulnerability fix in resolve_path. |
+| [[id:FA020FEA-2B75-41BA-8333-90E9469DA1E9][Migrate compute grid to generic storage API]] | DONE | 2026-05-20 | 2026-04-03 | compute_storage helper class manages bucket names + keys for compute artifacts; messaging + Qt UI use new storage path structure; HTTP upload from POST to PUT. |
 
 * Decisions
 

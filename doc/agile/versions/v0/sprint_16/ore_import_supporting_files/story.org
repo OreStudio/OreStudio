@@ -34,10 +34,10 @@ Import market.txt + fixings.txt alongside trade XML; calendar adjustments + mark
 
 * Tasks
 
-In execution order:
-
-- [[id:295762F7-DB67-4CE4-A79C-5C3E90950106][Add calendar adjustment and market convention imports]]
-- [[id:324A9C16-ADD5-4889-BE0C-48A7186883BB][Import market.txt and fixings.txt in ORE import]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:295762F7-DB67-4CE4-A79C-5C3E90950106][Add calendar adjustment and market convention imports]] | DONE | 2026-05-20 | 2026-04-03 | Mappers + domain models to import ORE XML calendar adjustments + financial conventions (Zero / Deposit / Swap / OIS / FRA / IBOR / Overnight / FX / CDS) into ORES refdata; normalisation for business day conventions, day counters, frequencies. |
+| [[id:324A9C16-ADD5-4889-BE0C-48A7186883BB][Import market.txt and fixings.txt in ORE import]] | DONE | 2026-05-20 | 2026-04-03 | TradeController reads market.txt + fixings.txt alongside trade XML; ImportTradeDialog handles market data import in background thread before trade import. |
 
 * Decisions
 

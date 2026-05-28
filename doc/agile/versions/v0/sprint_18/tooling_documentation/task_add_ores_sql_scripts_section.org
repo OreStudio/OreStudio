@@ -9,7 +9,7 @@
 #+filetags: :tooling_documentation:sprint_18:v0:
 #+owner: marco
 #+branch: feature/add-ores-sql-scripts-section
-#+pr:
+#+pr: 911
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
@@ -43,11 +43,11 @@ columns: Script | Purpose | Notes. Link to any related recipes in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] |
-| Now          | Not yet started.                       |
+| Now          | Writing Scripts section in component overview. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Open PR.                               |
 | Last touched | 2026-05-28                               |
 
 * Acceptance
@@ -67,14 +67,14 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR | Title                                              |
+|----+----------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/911][#911]] | [doc] Add Scripts section to ores.sql component overview |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =drop_database.sh= purpose/notes inconsistency: purpose said "terminating connections" but notes cited =check_db_connections.sh= (which only reports). | component_overview.org | Accept | Fixed in 201538ccb: updated purpose and notes to reflect actual behaviour (check + refuse, or =--kill= to terminate). |
 
 * Result

@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :sql:database:schema:component:
 #+created: 2026-05-20
-#+updated: 2026-05-20
+#+updated: 2026-05-29
 
 * Diagram
 
@@ -45,6 +45,47 @@ database creation, reset, teardown, migration, and SQL execution.
 - =run_sql.sh= — execute a SQL file against the ORE database.
 - =migrate/= — incremental schema migration scripts.
 - =utility/validate_schemas.sh= — validate schema consistency before push.
+
+* Scripts
+
+All scripts live in =projects/ores.sql/= and read credentials from =.env=
+at the repository root (or from exported CI environment variables). Run them
+from the repository root. =service_vars.sh= is auto-generated and not listed
+here.
+
+** Lifecycle scripts
+
+Scripts that manage the full database lifecycle: creation, teardown,
+recreation, reset, and SQL execution. Used during development setup, CI
+provisioning, and environment refresh.
+
+| Script | Purpose | Notes |
+|--------+---------+-------|
+| =recreate_database.sh= | Drop and fully recreate the database from scratch: roles, DDL, RLS, seed data. | Primary setup script; safe to re-run. Reads =.env= or CI env vars. |
+| =setup_database.sh= | Create roles and apply DDL without dropping the database first. | Use when the database already exists but roles or schema need updating. |
+| =teardown_database.sh= | Tear down a named database — remove tables, revoke grants, drop roles. | Accepts =DATABASE_NAME= as argument. Checks for active connections before dropping. |
+| =drop_database.sh= | Drop a named database, refusing if active connections are present unless =--kill= is passed. | Sources =utility/check_db_connections.sh= to check connections; calls =utility/kill_db_connections.sh= when =--kill= is passed. |
+| =run_sql.sh= | Execute a SQL file or command against the development database. | Reads host/credentials from =.env=; individual env vars can override. |
+| =reset_system.sh= | Reset all system-level data (IAM, roles, permissions) without dropping the schema. | Non-destructive; preserves tenant data. |
+| =reset_tenant.sh= | Reset all tenant-level data for the current environment. | Non-destructive; preserves system data. |
+| =recreate_env.sh= | Tear down and recreate the current environment's database end-to-end. | Combines teardown + recreate for a named environment. Reads =.env=. |
+| =teardown_env.sh= | Tear down the current environment's database without recreating it. | Use when decommissioning a local or CI environment. Reads =.env=. |
+
+** Utility scripts
+
+Scripts under =utility/= for inspection, validation, and targeted
+maintenance operations. Safe to run against a live database.
+
+| Script | Purpose | Notes |
+|--------+---------+-------|
+| =utility/validate_schemas.sh= | Validate SQL schema naming and convention invariants before pushing. | Requires Python 3. Run before committing schema changes. |
+| =utility/validate_env_version.sh= | Verify the =.env= file's version is compatible with the current codebase. | Guards against running stale env configs after schema migrations. |
+| =utility/dump_database_version.sh= | Print the schema version currently recorded in the database. | Quick sanity check after a migration. |
+| =utility/check_db_connections.sh= | Report active connections to a database. | Sourced (not executed) by =drop_database.sh=; can also be run standalone. |
+| =utility/kill_db_connections.sh= | Terminate all active connections to a named database. | Required before a =DROP DATABASE= when connections are open. |
+| =utility/list_databases.sh= | List all ORE Studio databases visible on the PostgreSQL server. | Useful for auditing environments. |
+| =utility/show_roles.sh= | Show all database roles provisioned for ORE Studio. | Useful for verifying role provisioning after setup. |
+| =utility/recreate_entity.sh= | Re-run create/populate scripts for a single entity. | Accepts =<component>_<entity>= argument; useful during entity development. |
 
 * Dependencies
 

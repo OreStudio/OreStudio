@@ -78,6 +78,8 @@ After merge: =git rm= the deletion candidate folder; update the
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Grep regex too broad — add =-oE= and exact UUID pattern =[a-fA-F0-9]{8}-...-[a-fA-F0-9]{12}= | =how_do_i_deduplicate_two_documents.org= l.57 | Accepted | Fixed in =6c1f0895b= |
+| 2 | Use =perl -pi -e= instead of =sed -i= (cross-platform); use =<UUID-D>=/=<UUID-S>= placeholders | =how_do_i_deduplicate_two_documents.org= l.88 | Accepted | Fixed in =6c1f0895b= |
+| 3 | Verification grep uses raw UUID instead of =<UUID-D>= placeholder — inconsistent with step 4 | =how_do_i_deduplicate_two_documents.org= l.94 | Accepted | Fixed in =6c1f0895b= |
 
 * Result

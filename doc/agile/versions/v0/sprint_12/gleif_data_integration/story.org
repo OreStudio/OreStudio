@@ -45,11 +45,11 @@ turns the resulting CSVs into proper datasets + populate scripts.
 
 * Tasks
 
-In execution order:
-
-- [[id:3C36EFBE-694B-429B-91E6-02082B95F3EF][Add GLEIF data to datasets]]
-- [[id:8A51EB28-5527-46AF-8188-0CC511ADD15B][Add central-bank-related LEIs]]
-- [[id:1075B79E-FE84-4A88-8045-0DCD57DDD6C8][Add LEI-to-BIC dataset]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3C36EFBE-694B-429B-91E6-02082B95F3EF][Add GLEIF data to datasets]] | DONE | 2026-05-19 | 2026-02-09 | Codegen for lei_entities + lei_relationships artefact tables; Python lei_generate_metadata_sql.py + shell wrapper; GLEIF catalog + methodology + 4 datasets; methodology.txt updated. |
+| [[id:8A51EB28-5527-46AF-8188-0CC511ADD15B][Add central-bank-related LEIs]] | DONE | 2026-05-19 | 2026-02-11 | ~93 GLEIF-verified LEIs (33 sovereign issuers, 51 central banks, 9 supranationals); CENTRAL_BANK sector keyword detection with multilingual support; 3x financial-priority sampling. |
+| [[id:1075B79E-FE84-4A88-8045-0DCD57DDD6C8][Add LEI-to-BIC dataset]] | DONE | 2026-05-19 | 2026-02-13 | Mapping dataset for BIC settlements; CSV in external/, dataset + populate scripts + publisher; download from GLEIF mapping site. |
 
 * Decisions
 

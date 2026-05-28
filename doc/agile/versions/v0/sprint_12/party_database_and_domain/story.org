@@ -47,11 +47,11 @@ identifier + contact-information end-to-end.
 
 * Tasks
 
-In execution order:
-
-- [[id:E4771CE3-B53A-4644-9520-89E1A8F1412E][Implement party-related entities at the database layer]]
-- [[id:0220FFB8-E3E6-4B8D-A882-98C4C4F74024][Add party-related support at the domain level]]
-- [[id:882143C2-E9AF-46BF-AB5E-B5DA7637DB48][Add party-related support to Qt]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E4771CE3-B53A-4644-9520-89E1A8F1412E][Implement party-related entities at the database layer]] | DONE | 2026-05-19 | 2026-02-07 | Core tables for parties, counterparties, identifiers, contact info, account-party associations; four lookup tables (party_types, party_statuses, party_id_schemes, contact_types); codegen template support for validations + indexes; FK to DQ coding schemes. |
+| [[id:0220FFB8-E3E6-4B8D-A882-98C4C4F74024][Add party-related support at the domain level]] | DONE | 2026-05-19 | 2026-02-08 | 11 new C++ domain types in ores.refdata + ores.iam; account_party junction; full stack (JSON + table I/O, generators, repository, service, protocol); 40 new message types. |
+| [[id:882143C2-E9AF-46BF-AB5E-B5DA7637DB48][Add party-related support to Qt]] | DONE | 2026-05-19 | 2026-02-09 | Comprehensive Party UI: detail dialog, history dialog, MDI window, controller, client model. Configurable detail_fields in codegen; key-field handling for short_code. Existing party / counterparty / tenant screens regenerated. |
 
 * Decisions
 

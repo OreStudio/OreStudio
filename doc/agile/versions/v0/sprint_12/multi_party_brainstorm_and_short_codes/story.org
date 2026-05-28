@@ -39,12 +39,12 @@ short codes, separate identifiers into a junction, polish list UI.
 
 * Tasks
 
-In execution order:
-
-- [[id:3EC1360A-FA8D-4EF3-B545-1BEE0FAD4BAB][Brainstorm multi-party support]]
-- [[id:BC07172B-D362-413F-BD9E-D00531425EA2][Polish party and counterparty list UI]]
-- [[id:23BA1502-D6A9-422A-9DDF-32D13ACFB30D][Add proper party short codes]]
-- [[id:0FB53451-A686-4479-98BF-433C69A15932][Separate party identifiers into a dedicated table]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3EC1360A-FA8D-4EF3-B545-1BEE0FAD4BAB][Brainstorm multi-party support]] | DONE | 2026-05-19 | 2026-02-10 | Party pagination implementation; party-level RLS isolation design; multi-party architecture document (companion to multi-tenancy doc); product-backlog updates for four-eyes / KYC / librarian lockdown. |
+| [[id:BC07172B-D362-413F-BD9E-D00531425EA2][Polish party and counterparty list UI]] | DONE | 2026-05-19 | 2026-02-13 | Capitalise party-category values (Operational / System / Internal); country flag icon column (from business centre); business-centre input as combo box not free text. |
+| [[id:23BA1502-D6A9-422A-9DDF-32D13ACFB30D][Add proper party short codes]] | DONE | 2026-05-19 | 2026-02-13 | ores_utility_strip_corporate_suffix_fn + ores_utility_generate_short_code_fn for 4-8 char mnemonic codes; transliterated_name column across the stack; Qt models standardise on PaginationWidget + process_authenticated_request. Protocol bump to 32. |
+| [[id:0FB53451-A686-4479-98BF-433C69A15932][Separate party identifiers into a dedicated table]] | DONE | 2026-05-19 | 2026-02-14 | LEI not the primary code for parties; LEI + BIC + other schemes live in party_identifiers junction; party + counterparty detail dialogs gain identifier tabs. |
 
 * Decisions
 

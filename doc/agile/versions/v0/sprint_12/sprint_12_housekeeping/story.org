@@ -35,10 +35,10 @@ Recurring per-sprint housekeeping.
 
 * Tasks
 
-In execution order:
-
-- [[id:B9D1CD9F-7A38-4B15-99DC-FC481E66D719][Sprint and product backlog refinement]]
-- [[id:EB1EECD6-1705-4BEC-9491-B3A7ACC5B6F2][OCR scan notebooks for this sprint]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B9D1CD9F-7A38-4B15-99DC-FC481E66D719][Sprint and product backlog refinement]] | DONE | 2026-05-19 | 2026-02-20 | Maintain sprint 12 backlog and groom the product backlog. |
+| [[id:EB1EECD6-1705-4BEC-9491-B3A7ACC5B6F2][OCR scan notebooks for this sprint]] | DONE | 2026-05-19 | 2026-02-20 | Continue notebook OCR thread. |
 
 * Decisions
 

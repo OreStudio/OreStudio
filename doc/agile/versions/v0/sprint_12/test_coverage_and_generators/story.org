@@ -40,13 +40,13 @@ xsdcpp-generated ORE types, and fix the accounts-dialog off-by-one.
 
 * Tasks
 
-In execution order:
-
-- [[id:59EAB06A-FB3A-44FD-9109-78947B30797D][Improve code coverage]]
-- [[id:5213A729-EF10-4292-8B38-C5D73219F1DF][Improve generators with FK-aware test data]]
-- [[id:8A3058DB-F08E-4FBF-B8E4-65910C66F69B][Enable all skipped tests]]
-- [[id:F8BB67A5-8975-4967-9751-0CA9550E237F][Expand unit test coverage for ORE codegened types]]
-- [[id:A3F4549F-3E40-47F3-BCF2-397205129C00][Fix off-by-one in accounts dialog]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:59EAB06A-FB3A-44FD-9109-78947B30797D][Improve code coverage]] | DONE | 2026-05-19 | 2026-02-10 | Coverage dipped below 50%; add ~110 new test cases (~1900 lines) across CLI parsers, DQ generators, IAM authorization, refdata generators, synthetic data, logging utilities. |
+| [[id:5213A729-EF10-4292-8B38-C5D73219F1DF][Improve generators with FK-aware test data]] | DONE | 2026-05-19 | 2026-02-11 | Generators for entities with FK UUID columns no longer produce dangling references; KVP-based generation context proposed. |
+| [[id:8A3058DB-F08E-4FBF-B8E4-65910C66F69B][Enable all skipped tests]] | DONE | 2026-05-19 | 2026-02-11 | 19 previously skipped tests now active across DQ + IAM; skip count from 25 to 6 (only tenant RLS tests remain). |
+| [[id:F8BB67A5-8975-4967-9751-0CA9550E237F][Expand unit test coverage for ORE codegened types]] | DONE | 2026-05-19 | 2026-02-11 | XML round-trip tests for 9 ORE domain types; file I/O round-trip tests; xsdcpp substitution-group support landed. Adds read_system_party path. |
+| [[id:A3F4549F-3E40-47F3-BCF2-397205129C00][Fix off-by-one in accounts dialog]] | DONE | 2026-05-19 | 2026-02-10 | Account list view off-by-one after AccountType column added; public Column enum + delegate refactor; documented in qt-entity-creator skill. |
 
 * Decisions
 

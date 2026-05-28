@@ -37,10 +37,10 @@ from tenant provisioning) and a party-hierarchy graph visualisation.
 
 * Tasks
 
-In execution order:
-
-- [[id:0AD52060-DDDC-43DD-B0A8-4FBBF42C7670][Add GLEIF-based evaluation tenant onboarding wizard]]
-- [[id:7CA00FF6-4D43-4663-AAAE-3B074CE127DC][Add party hierarchy graph visualisation]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0AD52060-DDDC-43DD-B0A8-4FBBF42C7670][Add GLEIF-based evaluation tenant onboarding wizard]] | DONE | 2026-05-19 | 2026-02-19 | Wizard available only for evaluation tenants; user picks root LEI entity; root party + descendants imported with hierarchy; identifiers stored in junction table. |
+| [[id:7CA00FF6-4D43-4663-AAAE-3B074CE127DC][Add party hierarchy graph visualisation]] | DONE | 2026-05-19 | 2026-02-19 | Visual tree of party hierarchy for a tenant: parent-child, party types, business centres. |
 
 * Decisions
 

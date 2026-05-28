@@ -46,10 +46,10 @@ framework into the DQ layer where it conceptually belongs.
 
 * Tasks
 
-In execution order:
-
-- [[id:196729EF-6042-4B3D-8C91-96CFE6C67A5C][Add FSM support to Postgres]]
-- [[id:78C1BEC5-D1F6-49EC-89F5-8B485CE8FB96][Add trade support]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:196729EF-6042-4B3D-8C91-96CFE6C67A5C][Add FSM support to Postgres]] | DONE | 2026-05-19 | 2026-02-20 | Generic FSM framework in Postgres (machines / states / transitions); notification triggers; RLS policies. Foundation for trade lifecycles and authorisation. |
+| [[id:78C1BEC5-D1F6-49EC-89F5-8B485CE8FB96][Add trade support]] | DONE | 2026-05-19 | 2026-02-20 | Trade envelope schema: 4 reference-data tables (trade types, lifecycle events, party role types, trade ID types) + core trade-envelope tables (trades, identifiers, party_roles) with soft-FK + RLS; ores_trade_ore_envelope_vw flattens to ORE structure. Convention drift fixes across 40 SQL files. Component renamed ores.trade → ores.trading. |
 
 * Decisions
 

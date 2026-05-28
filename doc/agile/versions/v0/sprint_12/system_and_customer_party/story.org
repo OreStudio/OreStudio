@@ -36,10 +36,10 @@ LEI and similar via optional dataset bundle members.
 
 * Tasks
 
-In execution order:
-
-- [[id:C769C040-4ED8-4C3D-AA44-FBDD27DCCCA1][Add system party support]]
-- [[id:61F94DA2-5C29-442A-9AB8-1C4066B7D45B][Add customer party support]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C769C040-4ED8-4C3D-AA44-FBDD27DCCCA1][Add system party support]] | DONE | 2026-05-19 | 2026-02-11 | System-party design lands: 'Internal' party type + 'WRLD' business centre; system tenant renamed 'Root Tenant'; system party renamed 'System Party'; tenant provisioner aligned; system parties excluded from operational root-party uniqueness. |
+| [[id:61F94DA2-5C29-442A-9AB8-1C4066B7D45B][Add customer party support]] | DONE | 2026-05-19 | 2026-02-11 | Optional dataset bundle members; OptionalDatasetsPage in publish-bundle wizard; missing LEI publication dependencies added; SQL publish skips unselected optional datasets; protocol 28.0 → 29.0. |
 
 * Decisions
 

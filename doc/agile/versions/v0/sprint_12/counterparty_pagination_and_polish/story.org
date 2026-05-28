@@ -38,11 +38,11 @@ identifier-cardinality + non-Latin issues.
 
 * Tasks
 
-In execution order:
-
-- [[id:D4C30C00-84C1-45A0-89E3-28C9CAEE144A][Add pagination to counterparty]]
-- [[id:A6FA8C90-24D1-422E-A1C2-03595BB9E14C][Add support for business centres]]
-- [[id:8D524A42-38B4-421C-B910-D367E768A0D7][Improvements to counterparty and party UI]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D4C30C00-84C1-45A0-89E3-28C9CAEE144A][Add pagination to counterparty]] | DONE | 2026-05-19 | 2026-02-12 | offset/limit on get_counterparties_request; total_available_count on response; ClientCounterpartyModel with load_page + fetchMore + set_page_size; PaginationWidget in CounterpartyMdiWindow; protocol bump 31.0. |
+| [[id:A6FA8C90-24D1-422E-A1C2-03595BB9E14C][Add support for business centres]] | DONE | 2026-05-19 | 2026-02-12 | business_centre domain type end-to-end: database entity, mapper, repository, service, protocol (0x1061-0x1068), data generator, eventing, JSON + table I/O; Qt UI with paginated list + detail dialog + history; country_alpha2_code column with derivation. |
+| [[id:8D524A42-38B4-421C-B910-D367E768A0D7][Improvements to counterparty and party UI]] | DONE | 2026-05-19 | 2026-02-14 | max_cardinality on identifier schemes (BIC dedup); rename 'Business Center' → 'Centre'; merge transliterated names into Name column with non-Latin detection; ResizeToContents standard; centralised window-settings persistence in EntityListMdiWindow. |
 
 * Decisions
 

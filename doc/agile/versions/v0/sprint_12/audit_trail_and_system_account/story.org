@@ -41,13 +41,13 @@ context so generators can read audit fields from environment.
 
 * Tasks
 
-In execution order:
-
-- [[id:F991419C-3C22-4545-980B-CF4B3EF6693F][Fix audit trail metadata for recorded_by and modified_by]]
-- [[id:F9FFC44E-5937-42B6-925C-9C45D3C4576E][Investigate how performed by is being set]]
-- [[id:36C998EE-1171-468C-943F-80EEFC88A8F4][Add system account]]
-- [[id:1665E72D-672C-4A3D-9C66-D98FB3E5A2D3][Add-entity messages should not set modified_by]]
-- [[id:1088E4B4-FB61-4047-AEBB-B35D913E4C43][Add generation context with KVP for audit trail fields]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F991419C-3C22-4545-980B-CF4B3EF6693F][Fix audit trail metadata for recorded_by and modified_by]] | DONE | 2026-05-19 | 2026-02-16 | modified_by + performed_by soft FK to accounts; super-admin no longer 'modified by bootstrap'; tenant admin no longer 'recorded by onboarding'; performed_by visible in UI; terminology standardised. |
+| [[id:F9FFC44E-5937-42B6-925C-9C45D3C4576E][Investigate how performed by is being set]] | DONE | 2026-05-19 | 2026-02-16 | Audit the source of performed_by; should be the database account. |
+| [[id:36C998EE-1171-468C-943F-80EEFC88A8F4][Add system account]] | DONE | 2026-05-19 | 2026-02-16 | Non-login system account used for all initial population; publication uses the new admin account, not the system account. |
+| [[id:1665E72D-672C-4A3D-9C66-D98FB3E5A2D3][Add-entity messages should not set modified_by]] | DONE | 2026-05-19 | 2026-02-16 | modified_by must come from the session (logged-in user); reject any client-supplied modified_by in protocol messages. |
+| [[id:1088E4B4-FB61-4047-AEBB-B35D913E4C43][Add generation context with KVP for audit trail fields]] | DONE | 2026-05-19 | 2026-02-17 | generation_context decomposed into generation_engine + generation_environment + composing context; ~36 generators migrated to accept generation_context&; modified_by lookup via environment; strict ores_iam_validate_account_username_fn re-enabled; make_generation_context() factory in ores.testing. |
 
 * Decisions
 

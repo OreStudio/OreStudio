@@ -38,15 +38,15 @@ comms + accounts.
 
 * Tasks
 
-In execution order:
-
-- [[id:1EC31677-32DC-44D8-AD89-3A6CEE3FB31A][Add shell widget to ores.qt]]
-- [[id:B058BA4F-4F33-47AF-A3AE-BF90D476BCF3][Add roles to account via codes]]
-- [[id:8FBED264-99F8-4F9A-A991-CCA4CBE26D7F][Fix save on connections causes exit]]
-- [[id:1B67FDBB-E039-4F61-92D9-4DE117379F34][Make icon theme configurable]]
-- [[id:B70593D8-65C2-4334-81EE-228C7911E067][Tests logging to stdout in github]]
-- [[id:CC057564-B85E-4872-BEA2-B4A9730BD0CA][Unsubscribe before logout]]
-- [[id:104D17EA-B2A7-42F9-865A-0488DB9CCA81][Use events in comms and accounts]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1EC31677-32DC-44D8-AD89-3A6CEE3FB31A][Add shell widget to ores.qt]] | DONE | 2026-05-19 | 2026-02-07 | REPL widget inside Qt so super-admin can do bulk setup (tenants, accounts) without leaving the application. |
+| [[id:B058BA4F-4F33-47AF-A3AE-BF90D476BCF3][Add roles to account via codes]] | DONE | 2026-05-19 | 2026-02-07 | assign_role_by_name_request + revoke_role_by_name_request protocol messages; principal-based (username@hostname) + role-name lookups; shell intelligently detects UUID vs name. Protocol bump 26.2. |
+| [[id:8FBED264-99F8-4F9A-A991-CCA4CBE26D7F][Fix save on connections causes exit]] | DONE | 2026-05-19 | 2026-02-10 | Clicking Save asked the user to exit the application; saving repeatedly created duplicate folders. |
+| [[id:1B67FDBB-E039-4F61-92D9-4DE117379F34][Make icon theme configurable]] | DONE | 2026-05-19 | 2026-02-10 | Allow switching the icon theme without rebuilding; ideally without restarting. |
+| [[id:B70593D8-65C2-4334-81EE-228C7911E067][Tests logging to stdout in github]] | DONE | 2026-05-19 | 2026-02-10 | Excessive stdout output in CDash; investigated and resolved (logging disabled or routed correctly now). |
+| [[id:CC057564-B85E-4872-BEA2-B4A9730BD0CA][Unsubscribe before logout]] | DONE | 2026-05-19 | 2026-02-10 | Logout currently produces 'Exception in notification writer: co_await: Operation canceled'. Clean shutdown should unsubscribe first. |
+| [[id:104D17EA-B2A7-42F9-865A-0488DB9CCA81][Use events in comms and accounts]] | DONE | 2026-05-19 | 2026-02-10 | Emit events for connect, disconnect, retry, login, logout via the new event bus. |
 
 * Decisions
 

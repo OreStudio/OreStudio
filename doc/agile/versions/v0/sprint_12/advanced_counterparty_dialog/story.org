@@ -39,10 +39,10 @@ party + counterparty dialogs behind a strategy pattern.
 
 * Tasks
 
-In execution order:
-
-- [[id:BC6A1B9E-253A-4727-BADF-324D86A98313][Counterparty dialog: 5-tab layout]]
-- [[id:1B51B5E2-B0E2-4839-A911-50C1069300B4][Refactor party + counterparty dialogs]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BC6A1B9E-253A-4727-BADF-324D86A98313][Counterparty dialog: 5-tab layout]] | DONE | 2026-05-19 | 2026-02-18 | Tabs: General Info / Identifiers / Contacts / Hierarchy / Metadata. Inline sub-entity management; counterparty hierarchy tree; change-reason dialog on amend; eventing for counterparty + identifier + contact info; tenant_id fix on save handlers; reconnect crash fix. |
+| [[id:1B51B5E2-B0E2-4839-A911-50C1069300B4][Refactor party + counterparty dialogs]] | DONE | 2026-05-19 | 2026-02-19 | Strategy pattern: entity_detail_operations abstract interface; unified generic EntityDetailDialog; PartyDetailDialog deleted; PartyController + CounterpartyController instantiate the generic dialog with appropriate strategy. |
 
 * Decisions
 

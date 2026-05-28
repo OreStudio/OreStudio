@@ -39,6 +39,11 @@ telemetry as first-class components, and tidy the build platform.
 
 ** Achievements
 
+- Accounts broadened into a proper IAM component with RBAC.
+- Roles and permissions layer live end-to-end.
+- Currencies history view polished; Qt UX improved across the board.
+- Wt and HTTP stack introduced as the web presentation tier.
+- Observability and telemetry established as first-class components.
 
 * Stories
 

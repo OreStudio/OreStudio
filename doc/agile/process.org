@@ -149,17 +149,23 @@ Closure is more than transitioning to =DONE=. The sequence is:
 1. *Resolve every story.* Every story in the sprint is =DONE=,
    =ABANDONED=, or has been explicitly carried to a successor (see
    /Cross-sprint continuations/).
-2. *Generate the release notes* if a release is being cut. The notes
+2. *Write the Achievements.* Add a =** Achievements= sub-heading
+   inside =* Status=, after the Status table. Write 4–6 bullet points
+   capturing what the sprint actually delivered — specific outcomes,
+   not story titles. Clear the =Now= field to =Nothing.= at the same
+   time. Achievements are only written at sprint close; the heading
+   does not appear in in-flight sprints.
+3. *Generate the release notes* if a release is being cut. The notes
    are produced from the closed tasks' =* Result= sections and the
    PRs that landed.
-3. *Cut the release* (tag, build, publish artefacts) when the version
+4. *Cut the release* (tag, build, publish artefacts) when the version
    warrants it. Not every sprint produces a release; many sprints
    land mid-version. See [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] for what the release tag means in
    terms of CMake major/minor.
-4. *Run the post-mortem.* Fill the sprint's =* Retrospective= section
+5. *Run the post-mortem.* Fill the sprint's =* Retrospective= section
    — what went well, what hurt, what changed. Past sprints under
    =doc/agile/versions/v0/sprint_*/= are the template.
-5. *Transition the sprint* itself to =DONE= and update =Last touched=
+6. *Transition the sprint* itself to =DONE= and update =Last touched=
    on the Status row.
 
 Sprint closure ends when all five steps are complete; the next

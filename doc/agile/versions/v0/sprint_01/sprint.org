@@ -35,7 +35,10 @@ the stack.
 
 ** Achievements
 
-- All stories merged.
+- Project bootstrapped: build, packaging, and CI in place.
+- Qt UI scaffold established as the desktop surface.
+- Currencies working end-to-end as the first live domain feature.
+- Documentation infrastructure laid down.
 
 * Stories
 

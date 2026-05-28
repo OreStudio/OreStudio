@@ -50,9 +50,9 @@ Draft skill was written manually during sprint 18 before compass skill support e
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                               |
+|-----+---------------------------------------------------------------------|
+| 884 | Replace draft run-runbook with compass-scaffolded run_runbook skill |
 
 * Review
 

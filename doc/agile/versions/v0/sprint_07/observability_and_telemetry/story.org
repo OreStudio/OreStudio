@@ -45,11 +45,11 @@ forward.
 
 * Tasks
 
-In execution order:
-
-- [[id:AF82E4CF-125D-4C32-B52A-CC1CD4AC5246][Create the observability component]]
-- [[id:345E5202-CB02-42DF-A355-9D872A53ED29][Incorporate new telemetry component]]
-- [[id:EFC673D9-F2F2-4A4D-978D-521DCF61E46C][Replace MaxMind implementation]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AF82E4CF-125D-4C32-B52A-CC1CD4AC5246][Create the observability component]] | DONE | 2026-05-19 | 2025-12-26 | Stand up ores.observability as a peer of ores.logging: structured event capture, retention, query surface. |
+| [[id:345E5202-CB02-42DF-A355-9D872A53ED29][Incorporate new telemetry component]] | DONE | 2026-05-19 | 2025-12-27 | Wire the new ores.telemetry component into the existing logging path: trace IDs, span IDs, OpenTelemetry export. |
+| [[id:EFC673D9-F2F2-4A4D-978D-521DCF61E46C][Replace MaxMind implementation]] | DONE | 2026-05-19 | 2025-12-28 | Replace the MaxMind-licensed GeoIP backend with a permissively-licensed alternative for the geo lookups used in session tracking. |
 
 * Decisions
 

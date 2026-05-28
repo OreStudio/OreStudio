@@ -38,11 +38,11 @@ thread for the sprint window.
 
 * Tasks
 
-In execution order:
-
-- [[id:25C4D7E5-D2C2-40C5-93E8-6F2FD00E0DD8][Sprint and product backlog refinement]]
-- [[id:E10AD67B-FB97-4A39-AF79-37C087094157][Add AI-generated sprint summary]]
-- [[id:83F5E109-11F7-4E9D-9261-294FBAE0B506][OCR scan notebooks for this sprint]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:25C4D7E5-D2C2-40C5-93E8-6F2FD00E0DD8][Sprint and product backlog refinement]] | DONE | 2026-05-19 | 2025-12-30 | Maintain sprint 07 backlog and groom the product backlog as work surfaces new items. |
+| [[id:E10AD67B-FB97-4A39-AF79-37C087094157][Add AI-generated sprint summary]] | DONE | 2026-05-19 | 2025-12-30 | Produce sprint 07's summary via the AI-summary skill. |
+| [[id:83F5E109-11F7-4E9D-9261-294FBAE0B506][OCR scan notebooks for this sprint]] | DONE | 2026-05-19 | 2025-12-30 | Continue the notebook digitisation thread for sprint 07. |
 
 * Decisions
 

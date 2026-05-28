@@ -38,11 +38,11 @@ classification.
 
 * Tasks
 
-In execution order:
-
-- [[id:FB1BEDBC-243B-4BDC-9C87-D2386516E002][Consider compressing payload]]
-- [[id:297D7314-9875-4707-9561-EF4E21AD74FA][Add listen/notify to shell]]
-- [[id:52BCA570-DFE6-475D-90D9-86E3DB7D241D][Define type traits for message grouping]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FB1BEDBC-243B-4BDC-9C87-D2386516E002][Consider compressing payload]] | DONE | 2026-05-19 | 2025-12-23 | Add optional zstd compression to comms payloads; benchmark against representative messages and decide thresholds. |
+| [[id:297D7314-9875-4707-9561-EF4E21AD74FA][Add listen/notify to shell]] | DONE | 2026-05-19 | 2025-12-24 | Route Postgres LISTEN/NOTIFY events through the comms substrate to the shell so users see live state updates. |
+| [[id:52BCA570-DFE6-475D-90D9-86E3DB7D241D][Define type traits for message grouping]] | DONE | 2026-05-19 | 2025-12-25 | Add type traits to group messages by component and concern; basis for cleaner dispatch tables. |
 
 * Decisions
 

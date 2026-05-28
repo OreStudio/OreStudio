@@ -37,11 +37,11 @@ relative-time formatting in audit views.
 
 * Tasks
 
-In execution order:
-
-- [[id:BA994ED5-8729-4005-A4ED-99F46293C7A2][Add account management support to qt]]
-- [[id:0D8FF34D-DFD1-4E4A-BFB9-E88CE41FF581][Add exit confirmation dialog]]
-- [[id:ECAA9C44-D03E-49B2-8CC9-B6ACA86E5825][Add support for relative time formatting]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BA994ED5-8729-4005-A4ED-99F46293C7A2][Add account management support to qt]] | DONE | 2026-05-19 | 2025-12-21 | Qt UI for listing accounts, viewing account details, performing lock / reset actions. |
+| [[id:0D8FF34D-DFD1-4E4A-BFB9-E88CE41FF581][Add exit confirmation dialog]] | DONE | 2026-05-19 | 2025-12-22 | Prompt the user before quitting the application; avoid accidental data loss. |
+| [[id:ECAA9C44-D03E-49B2-8CC9-B6ACA86E5825][Add support for relative time formatting]] | DONE | 2026-05-19 | 2025-12-22 | Render timestamps as relative time ("3 minutes ago") with a tooltip showing the absolute time. |
 
 * Decisions
 

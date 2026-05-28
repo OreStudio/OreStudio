@@ -26,12 +26,12 @@ Replace the monolithic per-sprint capture.org with per-file product backlog capt
 
 | Field        | Value                                                                    |
 |--------------+--------------------------------------------------------------------------|
-| State        | STARTED                                                                  |
+| State        | DONE                                                                     |
 | Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]]     |
-| Now          | PR #874 open; review round 1 addressed.                                  |
-| Waiting on   | PR merge.                                                                |
-| Next         | Merge; mark DONE.                                                        |
-| Last touched | 2026-05-27                                                               |
+| Now          | Complete.                                                                |
+| Waiting on   | Nothing.                                                                 |
+| Next         | None.                                                                    |
+| Last touched | 2026-05-28                                                               |
 
 * Acceptance
 
@@ -61,3 +61,5 @@ Replace the monolithic per-sprint capture.org with per-file product backlog capt
 | 6 | process.org line 28: "captures from near"                  | doc/agile/process.org                               | Accept   | Fixed in 08be55b                                         |
 
 * Result
+
+Replaced monolithic capture.org with per-file product backlog captures in four buckets (inbox/next/deferred/discarded). Renamed near→next and far→deferred across the doc graph. Added =compass capture= command. Merged in PR #874.

@@ -21,12 +21,12 @@ Add a set of sprint health charts that render as PNG images on the sprint page, 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
-| Now           | Designing chart set and data pipeline. |
+| Now           | Complete.                              |
 | Waiting on    | Nothing.                               |
-| Next          | Write Python data extractor script.    |
-| Last touched  | 2026-05-26                               |
+| Next          | None.                                  |
+| Last touched  | 2026-05-28                               |
 
 * Acceptance
 

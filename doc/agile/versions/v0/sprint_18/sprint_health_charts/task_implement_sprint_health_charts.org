@@ -26,12 +26,12 @@ Build the end-to-end sprint metrics pipeline: Python data extractor, gnuplot ren
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:8BD3D28A-C5A1-4F8D-A685-1BC6EBF5C812][Sprint health charts]] |
-| Now          | Story design complete; implementation pending. |
+| Now          | Complete.                              |
 | Waiting on   | Nothing.                               |
-| Next         | Write sprint_metrics.py skeleton.      |
-| Last touched | 2026-05-26                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-28                               |
 
 * Acceptance
 

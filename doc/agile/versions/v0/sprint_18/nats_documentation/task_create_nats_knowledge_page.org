@@ -9,7 +9,7 @@
 #+filetags: :nats_documentation:sprint_18:v0:
 #+owner: marco
 #+branch: feature/create-nats-knowledge-page
-#+pr:
+#+pr: 872
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-26

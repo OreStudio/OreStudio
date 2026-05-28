@@ -22,12 +22,12 @@ Introduce a =runbook= as a new document type in the v2 information architecture.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
-| Now           | Designing runbook document type contract and scaffolding story. |
+| Now           | Complete.                              |
 | Waiting on    | Nothing.                               |
-| Next          | Define the runbook document type contract in [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]. |
-| Last touched  | 2026-05-26                               |
+| Next          | None.                                  |
+| Last touched  | 2026-05-28                               |
 
 * Acceptance
 

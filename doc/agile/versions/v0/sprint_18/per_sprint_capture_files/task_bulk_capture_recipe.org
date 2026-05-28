@@ -26,12 +26,12 @@ Write a recipe that lets a user paste a paragraph of freeform notes into Claude 
 
 | Field        | Value                                                                    |
 |--------------+--------------------------------------------------------------------------|
-| State        | STARTED                                                                  |
+| State        | DONE                                                                     |
 | Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]]    |
-| Now          | Implementing recipe and updating PR/commit convention docs.              |
+| Now          | Complete.                                                                |
 | Waiting on   | Nothing.                                                                 |
-| Next         | PR.                                                                      |
-| Last touched | 2026-05-27                                                               |
+| Next         | None.                                                                    |
+| Last touched | 2026-05-28                                                               |
 
 * Acceptance
 
@@ -59,3 +59,5 @@ Write a recipe that lets a user paste a paragraph of freeform notes into Claude 
 | 1 | EOF delimiter indented — shell syntax error on copy-paste | how_do_i_create_a_pr.org:53 | Accept   | Fixed in 2d2158c |
 
 * Result
+
+Created =doc/recipes/compass/how_do_i_bulk_capture_from_freeform_text.org= with workflow, example, and post-capture guidance. Updated =how_do_i_create_a_pr.org= and =how_do_i_commit_to_git_using_ore_studio_conventions.org= with Story-ID/Task-ID conventions. Merged in PR #876.

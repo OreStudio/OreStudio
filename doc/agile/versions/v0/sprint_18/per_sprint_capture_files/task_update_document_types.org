@@ -26,12 +26,12 @@ Fully document the four-bucket capture structure in [[id:8B29A8D8-E004-4E87-B81D
 
 | Field        | Value                                                                    |
 |--------------+--------------------------------------------------------------------------|
-| State        | STARTED                                                                  |
+| State        | DONE                                                                     |
 | Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]]     |
-| Now          | Implementing.                                                            |
+| Now          | Complete.                                                                |
 | Waiting on   | Nothing.                                                                 |
-| Next         | PR.                                                                      |
-| Last touched | 2026-05-27                                                               |
+| Next         | None.                                                                    |
+| Last touched | 2026-05-28                                                               |
 
 * Acceptance
 
@@ -56,3 +56,5 @@ Fully document the four-bucket capture structure in [[id:8B29A8D8-E004-4E87-B81D
 |   |                 |      |          |       |
 
 * Result
+
+Updated capture entry in document_types.org with four-bucket structure (inbox/next/deferred/discarded), lifecycle description, and =compass capture= interaction. Merged in PR #875.

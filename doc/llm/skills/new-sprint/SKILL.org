@@ -65,7 +65,7 @@ do at the same time, before, or after.
   housekeeping.
 - [[id:2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5][How do I update submodules to latest?]] — paired build-side
   housekeeping for the =vcpkg= submodule.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New sprint" — the underlying
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] §"New sprint" — the underlying
   codegen invocation.
 
 * Reference

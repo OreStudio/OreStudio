@@ -29,7 +29,7 @@ Bounded by a concrete size limit as per [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B9
 | Field           | Value                         |
 |-----------------+-------------------------------|
 | Owner           | [[id:DBFD530B-4B56-48D1-9F03-3A0D0DA16552][System 1]]                      |
-| How to generate | [[id:B7FA729C-2D42-408A-9424-B6AA90EB16B4][New task]] in the v2-doc recipe |
+| How to generate | [[id:B7FA729C-2D42-408A-9424-B6AA90EB16B4][New task]] in the codegen recipe |
 | Example         | [[id:326556B2-F83D-4E55-9E20-63D8EF83CE8E][Update C++ standard]]           |
 
 * Story
@@ -44,7 +44,7 @@ sprint planning.
 | Field           | Value                          |
 |-----------------+--------------------------------|
 | Owner           | [[id:BF4F183F-BB33-44F2-A53F-D9BD602E9BE8][System 2]]                       |
-| How to generate | [[id:6D6DDB4B-A0AA-42E6-A294-0F9B35CC0752][New story]] in the v2-doc recipe |
+| How to generate | [[id:6D6DDB4B-A0AA-42E6-A294-0F9B35CC0752][New story]] in the codegen recipe |
 | Example         | [[id:1D334356-F123-43B5-A98E-317EBAD2848A][Build quality]] (from Sprint 01) |
 
 * Sprint
@@ -59,7 +59,7 @@ mission]]. Closes with a [[id:FABB50E5-518C-42D6-901E-848644E56CA2][release]].
 | Field           | Value                           |
 |-----------------+---------------------------------|
 | Owner           | [[id:8F13BA75-EDAA-46CC-9BE2-E356D60BF4F4][System 3]]                        |
-| How to generate | [[id:F56FBA9B-A3C4-4C7C-8A15-BC9C3CC98A12][New sprint]] in the v2-doc recipe |
+| How to generate | [[id:F56FBA9B-A3C4-4C7C-8A15-BC9C3CC98A12][New sprint]] in the codegen recipe |
 | Example         | [[id:2CF90D10-890D-4CB0-A71B-5E8C3261BC54][Sprint 01]]                       |
 
 * Sprint mission
@@ -105,7 +105,7 @@ A major release target (e.g. 1.0). A coherent set of sprints.
 | Field           | Value                            |
 |-----------------+----------------------------------|
 | Owner           | [[id:6CA8B181-BD81-4EF4-AF27-64F5491D62F0][System 4]]                         |
-| How to generate | [[id:8FC15EA1-AB30-47BE-993F-ED624A57F761][New version]] in the v2-doc recipe |
+| How to generate | [[id:8FC15EA1-AB30-47BE-993F-ED624A57F761][New version]] in the codegen recipe |
 | Example         | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                        |
 | Inventory       | [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]]                         |
 
@@ -135,7 +135,7 @@ versions, far captures, and feature requests.
 | Field           | Value                                     |
 |-----------------+-------------------------------------------|
 | Owner           | [[id:6DF00A64-7CC3-40A7-950B-55D2B05A31C7][System 5]]                                  |
-| How to generate | [[id:F1311596-B8ED-43AD-8C46-76C58C0194C7][New product identity]] in the v2-doc recipe |
+| How to generate | [[id:F1311596-B8ED-43AD-8C46-76C58C0194C7][New product identity]] in the codegen recipe |
 | Example         | [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][ORE Studio product identity]]               |
 
 * Function
@@ -173,7 +173,7 @@ someone does, listing the skills that role draws on.
 | Field           | Value                                      |
 |-----------------+--------------------------------------------|
 | Owner           | cross-cutting                              |
-| How to generate | [[id:6054CC20-5F41-482F-A587-759512577B1D][New Claude Code skill]] in the v2-doc recipe |
+| How to generate | [[id:6054CC20-5F41-482F-A587-759512577B1D][New Claude Code skill]] in the codegen recipe |
 | Example         | [[id:06BDB43A-EA9D-D474-68DB-198696A2B758][semi-autonomous-developer]]                  |
 | Inventory       | [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]]                                     |
 
@@ -189,7 +189,7 @@ where applicable. Tested by CI.
 | Field           | Value                           |
 |-----------------+---------------------------------|
 | Owner           | cross-cutting                   |
-| How to generate | [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][New recipe]] in the v2-doc recipe |
+| How to generate | [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][New recipe]] in the codegen recipe |
 | Example         | [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]         |
 | Inventory       | [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]]                         |
 
@@ -222,7 +222,7 @@ state, not process — just facts that outlive any sprint.
 | Field           | Value                                       |
 |-----------------+---------------------------------------------|
 | Owner           | cross-cutting                               |
-| How to generate | [[id:F497AA0A-F604-436A-8555-C17B14302C99][New knowledge document]] in the v2-doc recipe |
+| How to generate | [[id:F497AA0A-F604-436A-8555-C17B14302C99][New knowledge document]] in the codegen recipe |
 | Example         | [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]]               |
 | Inventory       | [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]]                                   |
 
@@ -291,7 +291,7 @@ preserved* so existing links keep working.
 | Field           | Value                                                                                               |
 |-----------------+-----------------------------------------------------------------------------------------------------|
 | Owner           | cross-cutting: filed by [[id:BF4F183F-BB33-44F2-A53F-D9BD602E9BE8][System 2]]; identity-fit reviewed by [[id:6DF00A64-7CC3-40A7-950B-55D2B05A31C7][System 5]]; horizon by [[id:6CA8B181-BD81-4EF4-AF27-64F5491D62F0][System 4]] / [[id:8F13BA75-EDAA-46CC-9BE2-E356D60BF4F4][System 3]] |
-| How to generate | [[id:978E0A8F-197C-48DA-A405-457E0AEE91D9][New capture]] in the v2-doc recipe                                                                    |
+| How to generate | [[id:978E0A8F-197C-48DA-A405-457E0AEE91D9][New capture]] in the codegen recipe                                                                    |
 | Example         | [[id:CEBAB022-2039-47A4-AAB2-BB2FFBA5507C][Add a dashboard for users]] (in the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] bucket)                                                      |
 | Inventory       | [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] (browse via [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] / [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]])                                                             |
 
@@ -312,7 +312,7 @@ facts and architecture belong in [[id:BD1F3458-F991-46BE-ABEB-5F06C2633375][know
 | Field           | Value                                                            |
 |-----------------+------------------------------------------------------------------|
 | Owner           | cross-cutting (any LLM session may write, with user approval)    |
-| How to generate | [[id:3B7156CD-3A8D-49E5-BF89-A5F6F2486596][New memory]] in the v2-doc recipe; [[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]] |
+| How to generate | [[id:3B7156CD-3A8D-49E5-BF89-A5F6F2486596][New memory]] in the codegen recipe; [[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]] |
 |                 | for the full conventions                                         |
 | Example         | [[id:F9B796DF-2C06-42EF-AACF-D69E53621FF9][Do not re-export ORES_* env vars]]                                 |
 | Inventory       | [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]]                                                   |
@@ -331,7 +331,7 @@ sessions. See [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] for th
 | Field           | Value                                           |
 |-----------------+-------------------------------------------------|
 | Owner           | cross-cutting                                   |
-| How to generate | [[id:75F4921B-43D1-4E78-99AB-62A47F761D1D][New investigation report]] in the v2-doc recipe |
+| How to generate | [[id:75F4921B-43D1-4E78-99AB-62A47F761D1D][New investigation report]] in the codegen recipe |
 
 * TODO state
 :PROPERTIES:

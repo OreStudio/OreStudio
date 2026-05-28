@@ -73,6 +73,6 @@ is committed and CI builds the result.
 
 * See also
 
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — uses the same codegen
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — uses the same codegen
   infrastructure for org-mode document generation.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — what the generator is and what it generates.

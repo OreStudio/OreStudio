@@ -59,7 +59,7 @@ overrides the branch base (default =origin/main=).
 
 =projects/ores.compass/compass.sh goto= → =src/compass.py= (=cmd_goto=),
 which calls =git fetch= / =git switch -c= and =ores.codegen='s
-=v2_doc_generate= (via the shared =_import_generator=, same as =add=).
+=doc_generate= (via the shared =_import_generator=, same as =add=).
 
 * Tested by
 

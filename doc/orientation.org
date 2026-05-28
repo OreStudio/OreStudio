@@ -108,7 +108,7 @@ When you need to /find/ something in the doc graph:
 
 When you need to /create/ a doc:
 
-- See [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] to scaffold every new document
+- See [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] to scaffold every new document
   — never hand-write frontmatter. The codegen mints the =:ID:=,
   applies the per-type prefix on the title, fills in dates, and
   produces the required skeleton.

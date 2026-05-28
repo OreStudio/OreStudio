@@ -2,7 +2,7 @@
 :ID: 2DF8ADAF-20C9-4757-9399-798EEC6DF828
 :END:
 #+title: Agile Product Owner
-#+description: Pick up product-owner activities — adding captures, promoting them into stories, prioritising the backlog, opening sprints — all through the v2 agile tree.
+#+description: Pick up product-owner activities — adding captures, promoting them into stories, prioritising the backlog, opening sprints — all through the agile tree.
 #+type: skill
 #+version: 2
 #+level: cross
@@ -54,11 +54,11 @@ When you need to act as the product owner of ORE Studio:
    - /A new sprint or version/ → scaffold a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] or [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]].
 
 3. /Scaffold the doc/. Always via the codegen — never hand-written.
-   See [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] for the per-type invocations.
+   See [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] for the per-type invocations.
 
 4. /Promote a capture to a story/. The =:ID:= is preserved so links
    keep working. Move the file into the appropriate sprint folder,
-   flip =#+type:= from =capture= to =story=, and follow the v2
+   flip =#+type:= from =capture= to =story=, and follow the
    story contract from [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] (Goal / Status / Acceptance
    / Tasks / Decisions / Out of scope).
 
@@ -80,7 +80,7 @@ When you need to act as the product owner of ORE Studio:
 
 * Recipes
 
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — story / sprint / version /
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — story / sprint / version /
   capture scaffolds.
 - [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — locate the current
   sprint, near/deferred buckets, in-flight stories.

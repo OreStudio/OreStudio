@@ -53,7 +53,7 @@ Org files outside =build/=, =.packages/=, =vcpkg/=, =external/=:
 - =CLAUDE.md= codifies the touch-it-to-port-it rule and points at the
   audit script.
 - All scaffolds (v2-doc-author skill, mustache templates,
-  =v2_doc_generator.md=) inject =#+version: 2= and reference the new
+  =doc_generator.md=) inject =#+version: 2= and reference the new
   doc paths.
 
 * Phase 1: Tracking script and bulk =#+version:= stamp
@@ -148,7 +148,7 @@ Then remove the now-empty =doc/v2/=.
   =/OreStudio/doc/v2/compass.html= → =/OreStudio/doc/compass.html=
 - =readme.org= line 277: text =doc/v2/recipes/cmake/= →
   =doc/recipes/cmake/=
-- =projects/ores.codegen/docs/v2_doc_generator.md=: six
+- =projects/ores.codegen/docs/doc_generator.md=: six
   =--parent-dir doc/v2/...= examples (lines 6, 58, 101, 112, 152, 166)
   rewritten to =doc/...=
 
@@ -179,8 +179,8 @@ the move.
 
 - *Scaffolds inject =#+version: 2=*:
   - =doc/llm/skills/v2-doc-author/SKILL.org= (and any sub-templates)
-  - =projects/ores.codegen/library/templates/v2_doc_skill.org.mustache=
-  - =projects/ores.codegen/docs/v2_doc_generator.md= (update example
+  - =projects/ores.codegen/library/templates/doc_skill.org.mustache=
+  - =projects/ores.codegen/docs/doc_generator.md= (update example
     outputs to show the new header)
 
 - Re-run =python projects/ores.codegen/scripts/doc_version_audit.py --check=
@@ -216,8 +216,8 @@ the move.
 - =index.org= (gets =#+version: 1=)
 - =CLAUDE.md= (touch-to-port rule)
 - =doc/llm/skills/v2-doc-author/SKILL.org=
-- =projects/ores.codegen/library/templates/v2_doc_skill.org.mustache=
-- =projects/ores.codegen/docs/v2_doc_generator.md=
+- =projects/ores.codegen/library/templates/doc_skill.org.mustache=
+- =projects/ores.codegen/docs/doc_generator.md=
 
 Plus mass-stamping ~1000 =.org= files across the repo (via the script
 in Phase 1).

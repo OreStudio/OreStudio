@@ -11,18 +11,18 @@
 #+updated: 2026-05-21
 
 Recipes related to *codegen* — the model-driven C++ generator and the
-v2 documentation scaffold. Some entries below appear in both this
+documentation scaffold. Some entries below appear in both this
 inventory and [[id:95FF6AF4-2320-4CB6-A007-B016B7DA16ED][Documentation recipes]] because they operate on docs
 /through/ codegen; the file's path tells you where it physically
 lives.
 
 * Scaffolding documents (via codegen)
 
-These recipes drive =generate_v2_doc.sh= — the codegen-side wrapper
-that produces v2 documents. They also appear in [[id:95FF6AF4-2320-4CB6-A007-B016B7DA16ED][Documentation
+These recipes drive =generate_doc.sh= — the codegen-side wrapper
+that produces documents. They also appear in [[id:95FF6AF4-2320-4CB6-A007-B016B7DA16ED][Documentation
 recipes]] under "Authoring documents".
 
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — generic flow for every doctype.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — generic flow for every doctype.
 - [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] — component-specific flow.
 - [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]] — recipe-specific conventions and
   inventory wiring; physically under =recipes/documentation/=.

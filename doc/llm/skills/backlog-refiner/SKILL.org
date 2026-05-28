@@ -81,7 +81,7 @@ come up.
 
 - [[id:7870BDC8-839B-4E46-9E32-F0EA9F7D5936][How do I refine the backlog?]] — the human-readable checklist for
   this skill's procedure.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — codegen invocations for new
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — codegen invocations for new
   captures.
 
 * Reference

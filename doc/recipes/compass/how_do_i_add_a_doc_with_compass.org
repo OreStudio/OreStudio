@@ -2,7 +2,7 @@
 :ID: 5B670808-D28B-4818-A2FA-EA5220D35E8D
 :END:
 #+title: How do I add a doc with compass?
-#+description: Use compass add to create a v2 doc (story/task/sprint/recipe/...) via ores.codegen, with parent-dir defaulted from where we are.
+#+description: Use compass add to create a doc (story/task/sprint/recipe/...) via ores.codegen, with parent-dir defaulted from where we are.
 #+type: recipe
 #+version: 2
 #+level: cross
@@ -12,7 +12,7 @@
 
 The /Scaffold/ pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]]. =add= is a thin front-end
 over [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]'s generator (called as a library) — for the full set
-of flags per document type, see [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]].
+of flags per document type, see [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]].
 
 #+begin_note
 *Prefer =goto= for starting work.* =compass goto= creates both a story
@@ -25,7 +25,7 @@ side-effects.
 
 * Question
 
-How do I create a new v2 document (story, task, sprint, recipe, …) from
+How do I create a new document (story, task, sprint, recipe, …) from
 the compass CLI, without remembering the codegen invocation or the
 parent directory?
 
@@ -67,8 +67,8 @@ the parent).
 * Script
 
 =projects/ores.compass/compass.sh add= → =src/compass.py= (=cmd_add=),
-which imports =ores.codegen='s =v2_doc_generate= and calls
-=v2_doc_generate.main(["--type", <type>, …])=. Needs =pystache= (in
+which imports =ores.codegen='s =doc_generate= and calls
+=doc_generate.main(["--type", <type>, …])=. Needs =pystache= (in
 =requirements.txt=); only =add= does.
 
 * Tested by
@@ -77,6 +77,6 @@ Manual smoke test (=add story= into the current sprint; cleaned up).
 
 * See also
 
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — every flag, per document type.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — every flag, per document type.
 - [[id:41E5F9A8-1C2B-4ECA-8EA0-1ABBAB0B6A31][How do I see where we are?]] — the orientation that drives the
   =--parent-dir= defaults.

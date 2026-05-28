@@ -35,11 +35,11 @@ types and are defined in the sections that precede it.
 Never hand-write frontmatter or IDs. Use the generator:
 
 #+begin_src sh
-projects/ores.codegen/generate_v2_doc.sh --type <type> --slug <slug> \
+projects/ores.codegen/generate_doc.sh --type <type> --slug <slug> \
   --parent-dir <dir> --title "..." --description "..." --tags "..."
 #+end_src
 
-See [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] for copy-pasteable invocations per
+See [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] for copy-pasteable invocations per
 type. The contract each generated file follows is described below.
 
 * Standard frontmatter
@@ -82,7 +82,7 @@ writing "yesterday" or "next week", convert it.
   Every document needs one; generate with =uuidgen=. Paths can change;
   IDs do not. /Every UUID — both the =:ID:= property and every
   =[[id:UUID]]= link — is uppercase hex./ The codegen enforces this for
-  new documents (=v2_doc_generate.py= uppercases the freshly minted
+  new documents (=doc_generate.py= uppercases the freshly minted
   ID, the templates carry uppercase concept-link UUIDs, and
   =--parent-id= / =--predecessor-id= are uppercased defensively); any
   hand-edited or copy-pasted UUID must follow the same rule. The
@@ -165,7 +165,7 @@ action.
 
 * Linking between documents
 
-Every link between v2 documents uses org-roam's id: form:
+Every link between documents uses org-roam's id: form:
 
 #+begin_src org
 [[id:<UUID-of-target>][human-readable description]]
@@ -263,7 +263,7 @@ grep -lR ":currencies_end_to_end:" doc/agile/versions/
 grep -lR ":v0:" doc/agile/versions/
 #+end_src
 
-The generator at =projects/ores.codegen/generate_v2_doc.sh= derives
+The generator at =projects/ores.codegen/generate_doc.sh= derives
 the ancestor slugs from the =--parent-dir= path (following the
 =versions/<version>/<sprint>/<story>/= layout) and adds them all to
 =#+filetags= automatically, on top of any =--tags= the user supplies.
@@ -305,16 +305,8 @@ Rules:
 
 * Version tagging
 
-Every =.org= file in the repo carries one of:
-
-- =#+version: 1= — legacy v1 document, still in its original form.
-- =#+version: 2= — current cybernetic v2 document (also has =#+type:=,
-  =#+description:=, =#+filetags:=, etc. per this spec).
-
-*Rule: touch-it-to-port-it.* When you edit a v1 doc for /any/ reason —
-even a one-line fix — rewrite it fully to v2, satisfying the frontmatter
-contract in =* Standard frontmatter= above. Small fixes still trigger the
-rewrite. This is intentional pressure to clear the v1 backlog.
+Every =.org= file in the repo carries =#+version: 2= (the current format,
+with =#+type:=, =#+description:=, =#+filetags:=, etc. per this spec).
 
 The audit script enforces this:
 
@@ -346,7 +338,7 @@ for the combined pre-commit check.
   (screenshots, attached data), promote that single task to a folder
   ahead of time (=<task_slug>/<task_slug>.org= plus the supporting
   files). The default remains the flat file.
-- How to create :: see [[id:B7FA729C-2D42-408A-9424-B6AA90EB16B4][New task]] in the v2-doc recipe.
+- How to create :: see [[id:B7FA729C-2D42-408A-9424-B6AA90EB16B4][New task]] in the codegen recipe.
 
 *** Task frontmatter (additions on top of the standard set)
 
@@ -425,7 +417,7 @@ has gone stale.
 - Level :: =s2=
 - TODO vocabulary :: =BACKLOG STARTED | DONE ABANDONED= (no DISCOVERED or
   BLOCKED at story level).
-- How to create :: see [[id:6D6DDB4B-A0AA-42E6-A294-0F9B35CC0752][New story]] in the v2-doc recipe.
+- How to create :: see [[id:6D6DDB4B-A0AA-42E6-A294-0F9B35CC0752][New story]] in the codegen recipe.
 - Required sections (in this order) ::
   - /Blurb/ — opens with =This page documents a
     [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in
@@ -493,7 +485,7 @@ above). It is required on every story created from sprint 18 onward.
 - TODO vocabulary :: =STARTED | DONE= (sprints don't go through BACKLOG;
   they exist when they exist, and lexicographic order tells you which
   is current).
-- How to create :: see [[id:F56FBA9B-A3C4-4C7C-8A15-BC9C3CC98A12][New sprint]] in the v2-doc recipe.
+- How to create :: see [[id:F56FBA9B-A3C4-4C7C-8A15-BC9C3CC98A12][New sprint]] in the codegen recipe.
 - Required sections (in this order) ::
   - /Blurb/ — opens with =This page documents a
     [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint NN*) of
@@ -519,7 +511,7 @@ discovery (see [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]]).
 - Level :: =s4=
 - TODO vocabulary :: =STARTED | RELEASED= (one in flight at a time;
   the rest are released).
-- How to create :: see [[id:8FC15EA1-AB30-47BE-993F-ED624A57F761][New version]] in the v2-doc recipe.
+- How to create :: see [[id:8FC15EA1-AB30-47BE-993F-ED624A57F761][New version]] in the codegen recipe.
 - Required sections (in this order) ::
   - /Blurb/ — opens with =This page documents the
     [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]] *Version N* of
@@ -580,7 +572,7 @@ compass capture promote <slug>
 
 *** How to create
 
-See [[id:978E0A8F-197C-48DA-A405-457E0AEE91D9][New capture]] in the v2-doc recipe for direct scaffolding via codegen.
+See [[id:978E0A8F-197C-48DA-A405-457E0AEE91D9][New capture]] in the codegen recipe for direct scaffolding via codegen.
 
 *** Required sections (in this order)
 
@@ -609,7 +601,7 @@ of future sessions — see [[id:32B3A055-63FA-4EDF-8DCC-901E9D883F22][Memory]] i
   (facts about the work in flight), =reference= (pointer to an
   external system). Same four-way taxonomy as Claude Code's
   auto-memory.
-- How to create :: see [[id:3B7156CD-3A8D-49E5-BF89-A5F6F2486596][New memory]] in the v2-doc recipe.
+- How to create :: see [[id:3B7156CD-3A8D-49E5-BF89-A5F6F2486596][New memory]] in the codegen recipe.
 - Required structure ::
   - /Blurb/ — one short paragraph stating the rule, fact, or
     insight.
@@ -628,7 +620,7 @@ of future sessions — see [[id:32B3A055-63FA-4EDF-8DCC-901E9D883F22][Memory]] i
   scope=). The vision and out-of-scope are sections of the identity,
   not separate documents.
 - Not stateful — no TODO. These documents are durable.
-- How to create :: see [[id:F1311596-B8ED-43AD-8C46-76C58C0194C7][New product identity]] in the v2-doc recipe.
+- How to create :: see [[id:F1311596-B8ED-43AD-8C46-76C58C0194C7][New product identity]] in the codegen recipe.
 - Required sections ::
   - =* What this is= — the durable statement.
   - =* What this is not= — explicit boundaries.
@@ -647,7 +639,7 @@ below, which is /task-shaped/.
 - Folder :: =doc/functions/=
 - Level :: =cross= or a specific level.
 - How to create :: function codegen is not yet wired into
-  [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][generate_v2_doc.sh]] (no =--type function= yet); for now, copy an
+  [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][generate_doc.sh]] (no =--type function= yet); for now, copy an
   existing function under =doc/functions/= and adjust the frontmatter
   and sections.
 - Not stateful — no TODO.
@@ -671,7 +663,7 @@ below, which is /task-shaped/.
 - Filename :: starts with =how_do_i_= or similar NLP question phrasing.
 - Not stateful by TODO, but audit may set a =:stale:= tag when the
   script fails.
-- How to create :: see [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][New recipe]] in the v2-doc recipe.
+- How to create :: see [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][New recipe]] in the codegen recipe.
 - Required sections ::
   - =* Question= — the NLP question.
   - =* Answer= — the steps. Shell commands inside an =* Answer= belong
@@ -691,7 +683,7 @@ below, which is /task-shaped/.
   =story.org=, =task_*.org=).
 - Not stateful — runbooks are durable reference. No TODO.
 - How to create :: =compass add runbook= or
-  =projects/ores.codegen/generate_v2_doc.sh --type runbook=.
+  =projects/ores.codegen/generate_doc.sh --type runbook=.
 - Required sections ::
   - =* Goal= — what this runbook achieves, in one sentence.
   - =* Preconditions= — what must be true before starting (branch state,
@@ -740,10 +732,10 @@ identity.
 - Folder :: =doc/llm/skills/<slug>/SKILL.org= (the filename is fixed
   uppercase by Claude Code convention).
 - Level :: =cross=.
-- Slug :: =kebab-case= (matches existing =cmake-runner=, =v2-doc-author=).
+- Slug :: =kebab-case= (matches existing =cmake-runner=, =recipe-author=).
   The slug doubles as the Claude Code skill =name:=.
 - Not stateful — no TODO.
-- How to create :: see [[id:6054CC20-5F41-482F-A587-759512577B1D][New Claude Code skill]] in the v2-doc recipe.
+- How to create :: see [[id:6054CC20-5F41-482F-A587-759512577B1D][New Claude Code skill]] in the codegen recipe.
 - Required sections ::
   - A =#+begin_export markdown ... #+end_export= block with
     =name:= / =description:= / =license:= (Claude Code metadata).
@@ -767,7 +759,7 @@ identity.
     component's code) lives co-located at =projects/<comp>/docs/=.
 - Level :: =cross=
 - Not stateful — no TODO. Audit may flag stale facts via a tag.
-- How to create :: see [[id:F497AA0A-F604-436A-8555-C17B14302C99][New knowledge document]] in the v2-doc recipe.
+- How to create :: see [[id:F497AA0A-F604-436A-8555-C17B14302C99][New knowledge document]] in the codegen recipe.
 
 *** Index pages (knowledge / meta variant)
 
@@ -838,7 +830,7 @@ it is a normal knowledge document — no extra obligations.
 - Level :: =cross=.
 - Not stateful — no TODO, no =* Status= table. An investigation
   report is a point-in-time record.
-- How to create :: see [[id:75F4921B-43D1-4E78-99AB-62A47F761D1D][New investigation report]] in the v2-doc recipe.
+- How to create :: see [[id:75F4921B-43D1-4E78-99AB-62A47F761D1D][New investigation report]] in the codegen recipe.
 - Required sections ::
   - =* Context= — one or two paragraphs: what was the original
     problem or research question.

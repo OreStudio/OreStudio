@@ -2,7 +2,7 @@
 :ID: 28AAF9A6-B1E4-402A-83BB-289090990FB8
 :END:
 #+title: Recipe Author Skill
-#+description: Add new recipes to ORE Studio — pick the topic, scaffold via codegen, follow the v2 recipe contract (filename = title = question, executable babel blocks).
+#+description: Add new recipes to ORE Studio — pick the topic, scaffold via codegen, follow the recipe contract (filename = title = question, executable babel blocks).
 #+type: skill
 #+version: 2
 #+level: cross
@@ -13,7 +13,7 @@
 #+begin_export markdown
 ---
 name: recipe-author
-description: Add new how-do-I recipes to ORE Studio under doc/recipes/<topic>/. Pick the right topic, scaffold via the codegen, follow the v2 contract (filename = title = question, executable babel blocks, no embedded inventories).
+description: Add new how-do-I recipes to ORE Studio under doc/recipes/<topic>/. Pick the right topic, scaffold via the codegen, follow the doc contract (filename = title = question, executable babel blocks, no embedded inventories).
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -59,7 +59,7 @@ invoke.
 * Recipes
 
 - [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]] — the canonical procedure.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New recipe" — the codegen
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] §"New recipe" — the codegen
   invocation.
 - [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — survey what already
   exists before adding a duplicate.

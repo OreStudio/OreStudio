@@ -74,7 +74,7 @@ sprint-selection goal, use [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][backlog-re
       capture's =:ID:=:
 
       #+begin_src sh :results verbatim
-      projects/ores.codegen/generate_v2_doc.sh \
+      projects/ores.codegen/generate_doc.sh \
         --type story --slug <slug> \
         --id <capture-uuid> \
         --parent-dir doc/agile/versions/v0/sprint_NN \
@@ -107,7 +107,7 @@ sprint-selection goal, use [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][backlog-re
 
 - [[id:2C2E794B-7565-4FD8-BD26-E7949C874E43][How do I plan a sprint?]] — the human-readable checklist for this
   skill's procedure.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — codegen invocations for story
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — codegen invocations for story
   scaffolding.
 - [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] — once planning is done, this
   recipe covers BACKLOG → STARTED transition.

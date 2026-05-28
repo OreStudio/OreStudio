@@ -83,7 +83,7 @@ this becomes a frequent operation, fold it into a script under
 
 * Tested by
 
-Used during the v2 information-architecture rollout to populate the
+Used during the information-architecture rollout to populate the
 =#+RESULTS:= snapshot in [[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How do I list available presets?]]. Not yet
 exercised in CI.
 

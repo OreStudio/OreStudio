@@ -147,7 +147,7 @@ Common invocations:
 ** Code generation
 
 Three codegen scripts live under =projects/ores.codegen/=:
-=generate_v2_doc.sh= scaffolds new v2 org documents; =run_generator.sh=
+=generate_doc.sh= scaffolds new org documents; =run_generator.sh=
 drives the C++ code generator (Dogen); =plantuml_er_generate.sh=
 produces PlantUML ER diagrams. All three accept flags and arguments
 that vary per invocation.
@@ -157,12 +157,12 @@ as SQL: a directory wildcard would permit running arbitrary scripts in
 a large codegen tree.
 
 Common invocations:
-- =projects/ores.codegen/generate_v2_doc.sh --type memory --slug foo --parent-dir doc/llm/memory ...=
+- =projects/ores.codegen/generate_doc.sh --type memory --slug foo --parent-dir doc/llm/memory ...=
 - =projects/ores.codegen/run_generator.sh=
 - =projects/ores.codegen/plantuml_er_generate.sh -i doc/plans/foo.org=
 
 #+begin_src json :tangle no :noweb-ref perm-codegen
-      "Bash(projects/ores.codegen/generate_v2_doc.sh *)",
+      "Bash(projects/ores.codegen/generate_doc.sh *)",
       "Bash(projects/ores.codegen/run_generator.sh *)",
       "Bash(projects/ores.codegen/plantuml_er_generate.sh *)"
 #+end_src
@@ -245,13 +245,13 @@ POSIX tool; none can write files (output is captured, not redirected
 from within the permission string).
 
 =python3 *= is required for ad-hoc analysis scripts and codegen
-helpers (=src/v2_doc_generate.py=, etc.). =java *= is required for
+helpers (=src/doc_generate.py=, etc.). =java *= is required for
 PlantUML, which is invoked as a JAR.
 
 Common invocations:
 - =find . -name "*.org" -newer doc/foo.org=
 - =grep -r "workspace_id" projects/ores.workspace/=
-- =python3 projects/ores.codegen/src/v2_doc_generate.py --help=
+- =python3 projects/ores.codegen/src/doc_generate.py --help=
 - =java -jar /usr/share/plantuml/plantuml.jar -checkonly foo.puml=
 - =wc -l build/output/linux-clang-debug-make/publish/bin/ores.utility.tests=
 

@@ -69,7 +69,7 @@ location changes.
 
 5. /Apply changes/, one at a time:
 
-   - New recipe → scaffold via [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New
+   - New recipe → scaffold via [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] §"New
      recipe", then write the body per [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]].
      The filename, =#+title:=, and =* Question= must all agree as
      the same NLP question.
@@ -90,7 +90,7 @@ location changes.
 
 * Recipes
 
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — scaffold a new recipe file.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — scaffold a new recipe file.
 - [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]] — body conventions, question form,
   executable babel blocks.
 - [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — enumerate the recipes

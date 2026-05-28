@@ -8,7 +8,7 @@
 #+level: s1
 #+filetags: :doc_format_cleanup:sprint_18:v0:
 #+owner: marco
-#+branch: feature/doc-format-cleanup
+#+branch: feature/doc-format-audit
 #+pr:
 #+blocked_on: none
 #+blocked_since:
@@ -30,11 +30,11 @@ task drives the scope of tasks 2–4.
 
 | Field        | Value                                                                        |
 |--------------+------------------------------------------------------------------------------|
-| State        | BACKLOG                                                                      |
+| State        | DONE                                                                         |
 | Parent story | [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] |
-| Now          | Not yet started.                                                             |
+| Now          | Nothing.                                                                     |
 | Waiting on   | Nothing.                                                                     |
-| Next         | Run audit; record findings in * Notes.                                       |
+| Next         | Nothing.                                                                     |
 | Last touched | 2026-05-28                                                                   |
 
 * Acceptance
@@ -52,6 +52,29 @@ task drives the scope of tasks 2–4.
 4. Record the B and C lists in =* Notes=.
 
 * Notes
+
+Note: the earlier audit grep used =^#\+version:= (BRE quantifier — matches
+=#version:= not =#+version:=). Re-run with the correct pattern =^#[+]version:=
+reduced scope dramatically.
+
+*Bucket A — leave as-is (historical, 54 files):*
+All story/task docs under =doc/agile/versions/v0/sprint_0[1-9]/= and
+=sprint_1[0-7]/= (sprints 01–17). These pre-date the current format and are
+closed records. Cost of migration outweighs benefit.
+
+*Bucket B — migrate (add =#+version: 2=, 1 file):*
+- =doc/recipes/codegen/how_do_i_create_a_new_entity.org= — has =#+type:=,
+  =#+level:=, and =#+filetags:= but is missing =#+version: 2=. Single-line fix.
+
+*Bucket C — delete (0 files):*
+Nothing to delete.
+
+*Out of scope (1 plans file):*
+- =doc/plans/2026-05-21-workspace-full-entity.org= — plans are transient
+  artefacts, out of scope per the story Decisions section.
+
+*Conclusion:* The migrate task (task 2) is trivial — one file, one line.
+Tasks 3 (rename codegen) and 4 (remove doc refs) are the main work.
 
 * PRs
 

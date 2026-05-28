@@ -51,9 +51,9 @@ The skill-creation recipe (referenced by the skill-manager skill) currently dire
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                         | File                              | Decision | Notes                |
+|---+---------------------------------------------------------+-----------------------------------+----------+----------------------|
+| 1 | Orphaned em-dash before "use" should be a comma         | how_do_i_create_a_new_v2_doc.org  | Accept   | Fixed in 67b9e0131   |
 
 * Result
 

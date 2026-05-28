@@ -76,6 +76,8 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Goal section contains template placeholder text | =task_implement_cybernetics_docs.org= l.23 | Accepted | Fixed in =ca391ff52= |
+| 2 | State mismatch: task BACKLOG vs story task table STARTED | =task_implement_cybernetics_docs.org= l.33 | Accepted | Fixed in =ca391ff52= |
+| 3 | Acceptance section empty | =task_implement_cybernetics_docs.org= l.38 | Accepted | Fixed in =ca391ff52= |
 
 * Result

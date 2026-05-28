@@ -75,6 +75,6 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =drop_database.sh= purpose/notes inconsistency: purpose said "terminating connections" but notes cited =check_db_connections.sh= (which only reports). | component_overview.org | Accept | Fixed in 201538ccb: updated purpose and notes to reflect actual behaviour (check + refuse, or =--kill= to terminate). |
 
 * Result

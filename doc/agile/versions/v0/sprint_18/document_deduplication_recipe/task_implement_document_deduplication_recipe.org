@@ -70,9 +70,9 @@ After merge: =git rm= the deletion candidate folder; update the
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                          | Title                                                                 | State | Round |
+|-------------------------------------------------------------+-----------------------------------------------------------------------+-------+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/885][#885]] | [doc] Document deduplication recipe; resolve health review runbook duplicate | OPEN  |     1 |
 
 * Review
 

@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 28D38DB8-0310-4E46-9946-3EE285E1624B
+:END:
+#+title: Story: Doc format cleanup: migrate v1 docs and remove v2 branding
+#+description: Audit and migrate remaining documents without v2 frontmatter; rename all v2-branded scripts, templates, and docs to remove the version label.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :documentation:tooling:codegen:sprint_18:v0:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Eliminate all "v2" branding from the document toolchain and the doc graph.
+This means: (1) auditing which non-sprint documents still lack current-format
+frontmatter and migrating the active ones; (2) renaming the codegen script,
+Python module, and every Mustache template so none carries the =v2_= prefix;
+(3) updating or retiring every recipe, memory, and runbook that still
+references the old names. After this story the word "v2" should not appear
+in script names, template names, or doc titles — the current format is just
+/the/ format.
+
+* Status
+
+| Field         | Value                                                                        |
+|---------------+------------------------------------------------------------------------------|
+| State         | STARTED                                                                      |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                    |
+| Now           | Tasks scaffolded; audit task is first.                                       |
+| Waiting on    | Nothing.                                                                     |
+| Next          | Run audit task, then migrate and rename in parallel.                         |
+| Last touched  | 2026-05-28                                                                   |
+
+* Acceptance
+
+- No file under =projects/ores.codegen/= has =v2= in its name.
+- No Mustache template filename begins with =v2_doc_=.
+- =doc/recipes/codegen/how_do_i_create_a_new_v2_doc.org= is renamed (no =v2= in filename or title).
+- =doc/llm/memory/use_codegen_for_v2_docs.org= is updated/renamed.
+- =doc/llm/runbooks/port_v1_doc_to_v2/= is retired or removed.
+- Active non-historical docs that lacked =#+version:= now carry current frontmatter.
+- Historical sprint 01–17 story/task docs are explicitly out of scope.
+
+* Tasks
+
+| Task                                                                                                 | State   | Start      | End | Description                                                    |
+|------------------------------------------------------------------------------------------------------+---------+------------+-----+----------------------------------------------------------------|
+| [[id:3DA3AC61-58A0-48B3-B399-3625508680E2][Audit documents lacking v2 frontmatter]]      | BACKLOG | 2026-05-28 |     | Categorise: historical (leave), active (migrate), obsolete (delete). |
+| [[id:C89CEA6F-E264-438C-AD38-39B381B4C632][Migrate active v1 docs to current format]]    | BACKLOG | 2026-05-28 |     | Add frontmatter to plans, skill docs, active index files.      |
+| [[id:F35BD43B-B8A6-45E0-B414-891C030C168C][Rename v2-branded codegen scripts and templates]] | BACKLOG | 2026-05-28 | | Rename generate_v2_doc.sh, v2_doc_generate.py, all templates. |
+| [[id:58290C08-1D11-4E11-BBB5-C0B6C2EFC844][Remove v2 terminology from documentation]]    | BACKLOG | 2026-05-28 |     | Rename recipe, update memory, retire port_v1_doc_to_v2 runbook.|
+
+* Decisions
+
+- Historical sprint 01–17 story/task docs are left as-is — they are closed records and migration cost outweighs benefit.
+- Backlog captures (=product_backlog/deferred/=, =next/=, =inbox/=) are out of scope for frontmatter migration — they are ephemeral and will be replaced when promoted.
+- Task ordering: audit → migrate → rename codegen → update docs. Rename and doc-update can overlap once audit is done.
+
+* Out of scope
+
+- Sprint 01–17 story/task files (~1400 historical records).
+- Backlog capture files (~331 files in deferred/next/inbox).
+- The =#+version:= field value itself — it remains =2= as the schema version number; only the external "v2" branding on filenames and titles is removed.

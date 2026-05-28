@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 3DA3AC61-58A0-48B3-B399-3625508680E2
+:END:
+#+title: Task: Audit documents lacking v2 frontmatter
+#+description: Categorise all .org files without #+version: into: historical sprint records (leave), active docs needing migration, and obsolete docs to delete.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :doc_format_cleanup:sprint_18:v0:
+#+owner: marco
+#+branch: feature/doc-format-cleanup
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a categorised list of all =.org= files that lack =#+version:=
+frontmatter, split into three buckets: (A) historical sprint 01–17
+records — leave as-is; (B) active docs that should carry frontmatter —
+migrate in the next task; (C) obsolete docs — delete. The output of this
+task drives the scope of tasks 2–4.
+
+* Status
+
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                      |
+| Parent story | [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] |
+| Now          | Not yet started.                                                             |
+| Waiting on   | Nothing.                                                                     |
+| Next         | Run audit; record findings in * Notes.                                       |
+| Last touched | 2026-05-28                                                                   |
+
+* Acceptance
+
+- Every =.org= file without =#+version:= is assigned to bucket A, B, or C.
+- Bucket B list is small enough to migrate in a single task.
+- Bucket C list is confirmed with the user before deletion.
+- Findings recorded in =* Notes= of this task.
+
+* Plan
+
+1. Run: =find doc/ -name "*.org" | xargs grep -rL "^#\+version:" | sort=
+2. Exclude known-out-of-scope: =doc/agile/versions/v0/sprint_0[1-9]/=, =sprint_1[0-7]/=, all =product_backlog/= subtrees.
+3. Inspect remaining files; assign each to A/B/C.
+4. Record the B and C lists in =* Notes=.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

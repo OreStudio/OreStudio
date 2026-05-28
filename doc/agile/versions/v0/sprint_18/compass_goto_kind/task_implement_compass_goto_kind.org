@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: F54948C6-CB8A-432F-B0E7-99089B3F0E1D
+:END:
+#+title: Task: Implement compass goto --kind flag
+#+description: Add --kind argument to cmd_goto, update hotfix runbook, branching recipe, compass memory, and sprint_themes.org.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compass_goto_kind:sprint_18:v0:
+#+owner: marco
+#+branch: feature/compass-goto-kind
+#+pr: 902
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47FD2F81-2143-4C35-9AC1-5A3A9D4AF975][compass goto --kind flag]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =--kind= argument to =cmd_goto= in =compass.py= with values =feature=
+(default) and =hotfix=; derive the branch prefix from =args.kind= in both
+new-story and existing-story modes. Update the hotfix runbook, branching
+recipe, compass commands memory, and =sprint_themes.org= to use =hotfix/<slug>=
+and =--kind hotfix= throughout.
+
+* Status
+
+| Field        | Value                                                                        |
+|--------------+------------------------------------------------------------------------------|
+| State        | DONE                                                                         |
+| Parent story | [[id:47FD2F81-2143-4C35-9AC1-5A3A9D4AF975][compass goto --kind flag]]    |
+| Now          | Nothing.                                                                     |
+| Waiting on   | Nothing.                                                                     |
+| Next         | Nothing.                                                                     |
+| Last touched | 2026-05-28                                                                   |
+
+* Acceptance
+
+- =compass goto --kind hotfix --slug thing ...= produces =hotfix/thing=.
+- Default (no =--kind=) still produces =feature/<slug>=.
+- Invalid =--kind= value rejected by argparse choices validation.
+- All docs updated: runbook, branching recipe, memory, =sprint_themes.org=.
+
+* Plan
+
+* Notes
+
+* PRs
+
+| PR                                                          | Title                                                     |
+|-------------------------------------------------------------+-----------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/902][#902]] | [tooling] Add --kind flag to compass goto for hotfix branches |
+
+* Review
+
+| # | Comment summary                                              | File        | Decision | Notes                                                          |
+|---+--------------------------------------------------------------+-------------+----------+----------------------------------------------------------------|
+| 1 | 7 comments: revert to feature/hotfix- convention            | various      | Declined | Deliberate design change to standard Gitflow hotfix/ prefix    |
+
+* Result

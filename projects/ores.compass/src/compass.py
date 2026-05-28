@@ -795,7 +795,7 @@ def cmd_fleet(args):
 # --- Scaffold pillar: create agile/doc artefacts ---
 #
 # Generation belongs to ores.codegen, not compass: `add` calls codegen's
-# v2_doc_generate *as a library* (no shelling out, no copied generator). For
+# doc_generate *as a library* (no shelling out, no copied generator). For
 # the unambiguous cases it fills --parent-dir from the current sprint/version
 # via Locate, so `compass add story --title ...` lands in the open sprint.
 
@@ -1030,11 +1030,11 @@ def cmd_add_diagram(argv):
 def cmd_add(argv):
     """Create a v2 doc by calling ores.codegen as a library.
 
-    argv is [<type>, <generate_v2_doc flags...>]. When --parent-dir is
+    argv is [<type>, <generate_doc flags...>]. When --parent-dir is
     omitted, default it from the current sprint (story) or version (sprint).
     """
     if not argv or argv[0] in ("-h", "--help"):
-        print("usage: compass add <type> [generate_v2_doc options]\n"
+        print("usage: compass add <type> [generate_doc options]\n"
               "  types: story task sprint version recipe knowledge component\n"
               "         capture memory investigation product_identity skill\n"
               "         diagram\n"
@@ -1069,13 +1069,13 @@ def cmd_add(argv):
     # Lazy, optional import: the generator lives in ores.codegen and needs
     # pystache. Only `add` / `goto` require it; the other commands stay
     # dependency-free.
-    v2_doc_generate = _import_generator()
+    doc_generate = _import_generator()
 
-    # v2_doc_generate.main returns 0 on success but may sys.exit on error;
+    # doc_generate.main returns 0 on success but may sys.exit on error;
     # catch SystemExit so the reminder prints only on success and the
     # generator's own error message/code is preserved.
     try:
-        rc = v2_doc_generate.main(["--type", doc_type, *rest])
+        rc = doc_generate.main(["--type", doc_type, *rest])
     except SystemExit as exc:
         rc = exc.code
     if rc in (None, 0):
@@ -1088,11 +1088,11 @@ def cmd_add(argv):
     return rc
 
 def _import_generator():
-    """Import ores.codegen's v2_doc_generate (needs pystache). Exit on failure."""
+    """Import ores.codegen's doc_generate (needs pystache). Exit on failure."""
     sys.path.insert(0, str(PROJECT_ROOT / "projects" / "ores.codegen" / "src"))
     try:
-        import v2_doc_generate
-        return v2_doc_generate
+        import doc_generate
+        return doc_generate
     except ImportError as exc:
         print(f"❌ This needs ores.codegen's generator ({exc}). Install its "
               f"dependency into the compass venv: pip install pystache",

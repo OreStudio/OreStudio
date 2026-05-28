@@ -29,7 +29,7 @@ Two improvements to the system model documents delivered together:
 
 2. =system_model.org= has each layer heading followed by a paragraph
    that duplicates the bullet text already in =* System Architecture=
-   and then appends a "See [[link]] for inventory" sentence. Replace
+   and then appends a "See /link/ for inventory" sentence. Replace
    each layer section body with a single linked heading title:
    e.g. =* [[id:UUID][Foundation Layer]] — the bedrock.= The
    =* System Architecture= bullet list is the canonical layer

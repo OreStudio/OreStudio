@@ -30,11 +30,11 @@ note in [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] to a brief link
 
 | Field        | Value                                                                              |
 |--------------+------------------------------------------------------------------------------------|
-| State        | STARTED                                                                            |
+| State        | DONE                                                                               |
 | Parent story | [[id:FD317B6C-F50F-4A35-81CC-A3B2BE3493C0][Add Emacs and org-roam knowledge pages]] |
-| Now          | In progress.                                                                       |
+| Now          | PR #904 merged.                                                                    |
 | Waiting on   | Nothing.                                                                           |
-| Next         | Raise PR.                                                                          |
+| Next         | Done.                                                                              |
 | Last touched | 2026-05-28                                                                         |
 
 * Acceptance
@@ -68,6 +68,8 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =rendered= nil guard missing in org-html-headline advice | =org_roam.org= l.94 | Accepted | Fixed in =cad504f0a= |
+| 2 | Recursive scan covers build/git dirs — note inefficiency | =org_roam.org= l.71 | Accepted | Added clarifying note in =cad504f0a= |
+| 3 | Build output path duplicated across =org_roam.org= and =emacs.org= | =org_roam.org= l.120 | Accepted | Removed from =org_roam.org=; link to =emacs.org= in =cad504f0a= |
 
 * Result

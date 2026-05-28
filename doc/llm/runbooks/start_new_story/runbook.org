@@ -4,11 +4,11 @@
 #+title: Start work on a new story
 #+description: Complete procedure from story scaffold to PR creation.
 #+type: runbook
-#+version: 3
+#+version: 4
 #+level: cross
 #+filetags: :runbook:agile:story:git:pr:compass:
 #+created: 2026-05-26
-#+updated: 2026-05-27
+#+updated: 2026-05-28
 
 This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
 
@@ -45,7 +45,9 @@ In execution order:
 
    This fetches =main=, creates =feature/my-feature=, and writes =story.org= + a linked task into the current sprint. To add a task to an /existing/ story instead, see [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][the recipe]] for the =--story= form.
 
-3. /Fill in the story content./ Open =story.org= and complete the =* Goal=, =* Acceptance=, =* Tasks=, and =* Out of scope= sections. Use [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] as the entry-point skill. Every internal-doc reference uses an =[[id:UUID]]= link, never a relative path.
+2a. /Read all generated files before writing anything./ Immediately after scaffold, read every file compass created and note the =:ID:= property of each. Do this before writing any content to =story.org= or the task file. Failure to read first causes placeholder UUIDs to be written and then silently corrected — an error-prone pattern that breaks org-roam links.
+
+3. /Fill in the story content./ Open =story.org= and complete the =* Goal=, =* Acceptance=, =* Tasks=, and =* Out of scope= sections. Use the actual UUIDs from step 2a for any =[[id:UUID]]= references to compass-generated tasks. Use [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] as the entry-point skill. Every internal-doc reference uses an =[[id:UUID]]= link, never a relative path.
 
 4. /Mark the story STARTED./ Update the =* Status= table: state → =STARTED=, fill =Now= and =Next=, set =#+owner:=, refresh =#+updated:=. Follow [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] step 3.
 

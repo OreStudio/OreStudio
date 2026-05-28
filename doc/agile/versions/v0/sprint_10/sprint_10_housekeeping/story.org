@@ -37,11 +37,11 @@ external data brought to a head.
 
 * Tasks
 
-In execution order:
-
-- [[id:F752C290-2A7A-4BF7-A615-4CDC2A3E0DE6][Sprint and product backlog refinement]]
-- [[id:09918430-9725-4129-96FD-52AFF4C52ECE][OCR scan notebooks for this sprint]]
-- [[id:EDE64638-DDC0-45B3-A1DB-185D48A68114][Fix issues with misspell action]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F752C290-2A7A-4BF7-A615-4CDC2A3E0DE6][Sprint and product backlog refinement]] | DONE | 2026-05-19 | 2026-01-27 | Maintain sprint 10 backlog and groom the product backlog. |
+| [[id:09918430-9725-4129-96FD-52AFF4C52ECE][OCR scan notebooks for this sprint]] | DONE | 2026-05-19 | 2026-01-26 | Continue notebook OCR thread. |
+| [[id:EDE64638-DDC0-45B3-A1DB-185D48A68114][Fix issues with misspell action]] | DONE | 2026-05-19 | 2026-01-23 | FPML and GLEIF data break the misspell action; configure folder ignores. |
 
 * Decisions
 

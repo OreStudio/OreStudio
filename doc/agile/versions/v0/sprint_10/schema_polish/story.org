@@ -39,12 +39,12 @@ icons, and route the mapping data through the artefact pipeline.
 
 * Tasks
 
-In execution order:
-
-- [[id:F2062027-B1FA-4B51-84E8-F589F4E14849][Clean up data layers]]
-- [[id:850E10F2-D84C-4A25-B30B-0328EDB33AE8][Add rounding type table]]
-- [[id:47BF0F41-5E6B-4DA9-B99D-E73AD80686A5][Add labels (CSV/ORE/FPML) to import/export icons]]
-- [[id:BD7F39D4-46B1-41CE-992B-7FEEDF0CC59D][Add mapping artefact to population functions]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F2062027-B1FA-4B51-84E8-F589F4E14849][Clean up data layers]] | DONE | 2026-05-19 | 2026-01-26 | Restructure data population around explicit layers (Foundation, Data Governance, Data Catalogues, Production). |
+| [[id:850E10F2-D84C-4A25-B30B-0328EDB33AE8][Add rounding type table]] | DONE | 2026-05-19 | 2026-01-26 | Rounding values aligned with FpML RoundingDirectionEnum: Up, Down, Closest, Floor, Ceiling. Currency validates against this table. |
+| [[id:47BF0F41-5E6B-4DA9-B99D-E73AD80686A5][Add labels (CSV/ORE/FPML) to import/export icons]] | DONE | 2026-05-19 | 2026-01-24 | Two well-defined import/export icons get textual badges (CSV, ORE, FPML) so the toolbar is readable. |
+| [[id:BD7F39D4-46B1-41CE-992B-7FEEDF0CC59D][Add mapping artefact to population functions]] | DONE | 2026-05-19 | 2026-01-25 | Hard-coded mapping moved into the artefact pipeline. |
 
 * Decisions
 

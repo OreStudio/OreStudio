@@ -38,11 +38,11 @@ highest-leverage workloads: domain-types SQL, and the ER diagram
 
 * Tasks
 
-In execution order:
-
-- [[id:C6879B22-210B-43B3-8463-C84D44105C93][Create a simple code generator]]
-- [[id:8D7BE70D-AEEF-443E-8A8E-4F078FEFF833][Add code generation support for domain types SQL]]
-- [[id:3B04427D-B956-4BD0-97E8-B68F445BD5AE][Code-generate ER diagram from SQL]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C6879B22-210B-43B3-8463-C84D44105C93][Create a simple code generator]] | DONE | 2026-05-19 | 2026-01-21 | Stand up basic codegen infrastructure to save Claude Code tokens; generate scaffolds locally and use Claude only to fix issues. |
+| [[id:8D7BE70D-AEEF-443E-8A8E-4F078FEFF833][Add code generation support for domain types SQL]] | DONE | 2026-05-19 | 2026-01-22 | Generate the SQL for domain types from the central model rather than hand-writing them. |
+| [[id:3B04427D-B956-4BD0-97E8-B68F445BD5AE][Code-generate ER diagram from SQL]] | DONE | 2026-05-19 | 2026-01-24 | Python SQL parser produces PlantUML ER diagrams; convention-validation engine; Mustache template; orchestration script. |
 
 * Decisions
 

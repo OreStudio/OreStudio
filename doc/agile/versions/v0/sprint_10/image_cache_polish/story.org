@@ -38,10 +38,10 @@ new datasets, and a full reload was expensive.
 
 * Tasks
 
-In execution order:
-
-- [[id:8153E98E-839F-4C19-9517-8FD41AC7052B][Image cache reloads on new datasets]]
-- [[id:F8794373-3E9C-4EE2-912A-43F7BF33A446][Incremental image cache loading with modified_since]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8153E98E-839F-4C19-9517-8FD41AC7052B][Image cache reloads on new datasets]] | DONE | 2026-05-19 | 2026-01-22 | When publishing images the image cache must reload; current behaviour leaves it stale. |
+| [[id:F8794373-3E9C-4EE2-912A-43F7BF33A446][Incremental image cache loading with modified_since]] | DONE | 2026-05-19 | 2026-01-22 | Protocol: add optional modified_since to list_images_request and recorded_at to image_info; client tracks last_load_time and only fetches changed images. |
 
 * Decisions
 

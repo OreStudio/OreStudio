@@ -40,11 +40,11 @@ deprecated files.
 
 * Tasks
 
-In execution order:
-
-- [[id:68A57F63-81A6-4C75-B05B-46979FFD9981][Restructure SQL create/, drop/, teardown]]
-- [[id:5A5507A2-F855-4825-B91A-99FB957C7D51][Refactor drop/ and populate/ directory structure]]
-- [[id:37E6DBD7-8117-4CD9-A31A-527BC006E0C4][Refactor coding schemes and clean up ores.sql]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:68A57F63-81A6-4C75-B05B-46979FFD9981][Restructure SQL create/, drop/, teardown]] | DONE | 2026-05-19 | 2026-01-24 | create/ reorganised into component-based subdirectories with master scripts; safer teardown (admin_teardown_instances_generate.sql for production); ER diagram updated with the new tables. |
+| [[id:5A5507A2-F855-4825-B91A-99FB957C7D51][Refactor drop/ and populate/ directory structure]] | DONE | 2026-05-19 | 2026-01-24 | 56 files relocated into component subdirectories with git-history preserved; consistent naming (drop_COMPONENT.sql, populate_COMPONENT.sql); monolithic seed_upsert_functions split per component. |
+| [[id:37E6DBD7-8117-4CD9-A31A-527BC006E0C4][Refactor coding schemes and clean up ores.sql]] | DONE | 2026-05-19 | 2026-01-24 | Schema/ renamed to create/; deprecated files removed; admin objects follow admin_*_fn/admin_*_view convention; database_name_service updated to the new function names. |
 
 * Decisions
 

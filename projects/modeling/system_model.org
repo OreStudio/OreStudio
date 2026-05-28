@@ -31,55 +31,27 @@ system testable in isolation, replaceable one layer at a time, and
 understandable without reading the whole codebase. Every component in
 the system belongs to exactly one of these layers:
 
-- *Foundation Layer* — the bedrock. No ORE Studio dependency anywhere
-  in this layer. Utilities, platform abstractions, logging, database
-  access, cryptography, and code generation live here. If it existed
-  before ORE Studio had a domain model, it belongs here.
-- *Infrastructure Layer* — communication and testing. Depends only on
-  Foundation. [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] messaging, the service runner, and the Catch2
-  integration that isolates every test into its own PostgreSQL schema.
-- *Domain Layer* — the business. Depends on Foundation + Infrastructure
-  but never on Application. Reference data, IAM, trading, market data,
-  reporting, data quality — the financial domain model that justifies
-  the system's existence.
-- *Application Layer* — the surfaces. Depends on every layer below.
-  Qt desktop, CLI, HTTP servers, Wt web frontend, and the compute
-  engine. If a user touches it, it lives here.
-
 #+attr_html: :width 80% :alt ORE Studio four-layer architecture
 #+caption: ORE Studio four-layer architecture
 [[file:architecture_layers.png][file:architecture_layers.png]]
 
-See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] for how CMake targets enforce these layer
-boundaries, and [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] for how the build is organised.
+- [[id:C5F35442-A2C3-415A-80F2-C09CAA0842FF][Foundation Layer]]: the bedrock. No ORE Studio dependency anywhere in this
+  layer. Utilities, platform abstractions, logging, database access,
+  cryptography, and code generation live here. If it existed before ORE Studio
+  had a domain model, it belongs here.
+- [[id:6FF02DD3-0F3B-4BCB-87CA-3224030D00E8][Infrastructure Layer]]: communication and testing. Depends only on Foundation.
+  [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] messaging, the service runner, and the Catch2 integration that
+  isolates every test into its own PostgreSQL schema.
+- [[id:873CD1C6-7636-4F30-B3D4-3BB7FCBF4DBD][Domain Layer]]: the business. Depends on Foundation + Infrastructure but never
+  on Application. Reference data, IAM, trading, market data, reporting, data
+  quality — the financial domain model that justifies the system's existence.
+- [[id:C9AD7DA5-D00E-4CA9-A978-E74F776E0F17][Application Layer]]: the surfaces. Depends on every layer below. Qt desktop, CLI,
+  HTTP servers, Wt web frontend, and the compute engine. If a user touches it,
+  it lives here.
 
-* Foundation Layer
+* See Also
 
-Utilities, platform abstractions, logging, telemetry, PostgreSQL
-access, feature flags, geolocation, schema management, cryptography,
-and code generation — the bedrock every other layer depends on. See
-[[id:C5F35442-A2C3-415A-80F2-C09CAA0842FF][System Model: Foundation Layer]] for the full component inventory.
-
-* Infrastructure Layer
-
-[[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] messaging backbone, service runner, test isolation,
-in-process event bus, connection bookmarks, and file storage — the
-transport and testing contracts that every domain component depends on.
-See [[id:6FF02DD3-0F3B-4BCB-87CA-3224030D00E8][System Model: Infrastructure Layer]] for the full component inventory.
-
-* Domain Layer
-
-Reference data, IAM, data quality, FpML, ORE import/export, trading,
-market data, synthetic data, asset storage, scheduling, reporting,
-analytics, and workflow — the financial domain model that justifies the
-system's existence. See [[id:873CD1C6-7636-4F30-B3D4-3BB7FCBF4DBD][System Model: Domain Layer]] for the full
-component inventory.
-
-* Application Layer
-
-Qt desktop, CLI, HTTP servers, Wt web frontend, compute engine,
-orchestration controller, and developer tooling — the surfaces that
-compose every layer below into user-facing executables. See
-[[id:C9AD7DA5-D00E-4CA9-A978-E74F776E0F17][System Model: Application Layer]] for the full component inventory.
-
-For GitHub, Doxygen, Discord, and CDash see [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]].
+- For GitHub, Doxygen, Discord, and CDash see [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]].
+- See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] for how CMake targets enforce these layer
+  boundaries.
+- See [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] for how the build is organised.

@@ -18,56 +18,25 @@
 !pragma layout smetana
 
 skinparam defaultFontSize 13
-skinparam packageFontSize 14
-skinparam packageBorderThickness 2
 skinparam arrowThickness 2
 skinparam arrowColor #555555
+skinparam rectangleBorderThickness 2
+skinparam rectangleFontSize 13
 
 title ORE Studio — Four-Layer Architecture
 
-package "Application Layer" #D6EAF8 {
-    note as AppNote
-      Qt desktop · CLI · HTTP servers
-      Wt web frontend · Compute engine
-      Orchestration controller
-    end note
-}
+rectangle "**Application Layer**\n\nQt desktop · CLI · HTTP servers\nWt web frontend · Compute engine\nOrchestration controller" as APP #D6EAF8
+rectangle "**Domain Layer**\n\nIAM · Reference data · Trading\nMarket data · Analytics · Reporting\nWorkflow · Scheduler · DQ · ORE · FpML" as DOM #D5F5E3
+rectangle "**Infrastructure Layer**\n\nores.nats (messaging backbone)\nService runner · Test isolation\nEvent bus · Connection bookmarks" as INFRA #FEF9E7
+rectangle "**Foundation Layer**\n\nUtility · Platform · Logging\nTelemetry · Database · Security\nVariability · Geo · SQL · Codegen" as FOUND #F5EEF8
 
-package "Domain Layer" #D5F5E3 {
-    note as DomainNote
-      IAM · Reference data · Trading
-      Market data · Analytics · Reporting
-      Workflow · Scheduler · DQ · ORE · FpML
-    end note
-}
+APP -[hidden]-> DOM
+DOM -[hidden]-> INFRA
+INFRA -[hidden]-> FOUND
 
-package "Infrastructure Layer" #FEF9E7 {
-    note as InfraNote
-      ores.nats (messaging backbone)
-      Service runner · Test isolation
-      Event bus · Connection bookmarks
-    end note
-}
-
-package "Foundation Layer" #F5EEF8 {
-    note as FoundNote
-      Utility · Platform · Logging
-      Telemetry · Database · Security
-      Variability · Geo · SQL · Codegen
-    end note
-}
-
-"Application Layer" -[hidden]-> "Domain Layer"
-"Domain Layer" -[hidden]-> "Infrastructure Layer"
-"Infrastructure Layer" -[hidden]-> "Foundation Layer"
-
-"Application Layer" ..> "Domain Layer" : depends on
-"Domain Layer" ..> "Infrastructure Layer" : depends on
-"Infrastructure Layer" ..> "Foundation Layer" : depends on
-
-note bottom of "Foundation Layer"
-  Invariant: a layer may only depend on layers below it.
-end note
+APP ..> DOM : depends on
+DOM ..> INFRA : depends on
+INFRA ..> FOUND : depends on
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar architecture_layers.puml"

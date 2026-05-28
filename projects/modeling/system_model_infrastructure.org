@@ -10,71 +10,70 @@
 #+created: 2026-05-28
 #+updated: 2026-05-28
 
-This page is part of the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]].
-
-* Summary
-
-Infrastructure owns the transport and testing contracts. Everything
-above this layer speaks [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]; this layer provides the client, the
-service runner, the event bus, and the test fixture that wires them
-together. See [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] for how [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entities flow across
-request/reply pairs.
+This page is part of the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]]. Infrastructure owns the transport and
+testing contracts. Everything above this layer speaks [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]; this layer
+provides the client, the service runner, the event bus, and the test fixture
+that wires them together. See [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] for how [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entities flow
+across request/reply pairs.
 
 * Detail
 
 ** ores.nats
 
 [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] messaging backbone — client connection management, subject naming
-conventions, queue groups, and JetStream configuration and lifecycle.
-The primary inter-service transport used by every domain and application
-component. See [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] for the technology overview.
+conventions, queue groups, and JetStream configuration and lifecycle. The
+primary inter-service transport used by every domain and application component.
+See [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] for the technology overview.
 
-| Sub-component  | Role                                                    | Dependencies                |
-|----------------+---------------------------------------------------------+-----------------------------|
-| [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]      | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] client, subject conventions, JetStream        | [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]]               |
+| Sub-component | Role                                             | Dependencies  |
+|---------------+--------------------------------------------------+---------------|
+| [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]     | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] client, subject conventions, JetStream | [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]] |
 
 ** ores.service
 
 Shared [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] domain service runner — the =domain_service_runner= template
-that gives every service a standard request/reply lifecycle: connect,
-subscribe, handle, reply, reconnect on failure.
+that gives every service a standard request/reply lifecycle: connect, subscribe,
+handle, reply, reconnect on failure.
 
-| Sub-component  | Role                                          | Dependencies                |
-|----------------+-----------------------------------------------+-----------------------------|
-| [[id:9CFAC175-C28F-4C03-9655-1CDC6E8C3EE0][ores.service]]   | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] service runner template             | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                   |
+| Sub-component | Role                              | Dependencies |
+|---------------+-----------------------------------+--------------|
+| [[id:9CFAC175-C28F-4C03-9655-1CDC6E8C3EE0][ores.service]]  | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] service runner template | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]    |
 
 ** ores.testing
 
-Catch2 integration that isolates every test into its own PostgreSQL
-schema. Each test process creates a unique schema, wires up a
-preconfigured logger, and tears down cleanly — making tests safe to run
-in parallel without touching production data.
+Catch2 integration that isolates every test into its own PostgreSQL schema. Each
+test process creates a unique schema, wires up a preconfigured logger, and tears
+down cleanly — making tests safe to run in parallel without touching production
+data.
 
-| Sub-component  | Role                                         | Dependencies                              |
-|----------------+----------------------------------------------+-------------------------------------------|
-| [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]]   | Per-test schema isolation for Catch2         | [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:1FBCC86B-8E04-4F81-8558-85C0B6C54836][ores.logging]]             |
+| Sub-component | Role                                 | Dependencies                |
+|---------------+--------------------------------------+-----------------------------|
+| [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]]  | Per-test schema isolation for Catch2 | [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:1FBCC86B-8E04-4F81-8558-85C0B6C54836][ores.logging]] |
 
-- [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] — how tests are structured, fixtures are named, and schemas are isolated.
+Related documents:
+
+- [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] — how tests are structured, fixtures are named, and
+  schemas are isolated.
 
 ** ores.eventing
 
-In-process publish/subscribe event bus with PostgreSQL-backed delivery
-and optional [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] integration. Decouples components within the same
-process from the [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] transport layer.
+In-process publish/subscribe event bus with PostgreSQL-backed delivery and
+optional [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] integration. Decouples components within the same process
+from the [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] transport layer.
 
-| Sub-component  | Role                                            | Dependencies                              |
-|----------------+-------------------------------------------------+-------------------------------------------|
-| [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]]  | In-process event bus with PostgreSQL backing    | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]             |
+| Sub-component | Role                                         | Dependencies             |
+|---------------+----------------------------------------------+--------------------------|
+| [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] | In-process event bus with PostgreSQL backing | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
 
 ** ores.connections
 
-Client-side server connection bookmarks with hierarchical organisation
-and credential management. Stores [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] connection parameters — host,
-port, credentials — in an encrypted local SQLite database.
+Client-side server connection bookmarks with hierarchical organisation and
+credential management. Stores [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] connection parameters — host, port,
+credentials — in an encrypted local SQLite database.
 
-| Sub-component    | Role                                             | Dependencies                |
-|------------------+--------------------------------------------------+-----------------------------|
-| [[id:E75DE282-4FDE-4B18-B23B-692A2F783B61][ores.connections]] | Encrypted [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] connection bookmark store | [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]]               |
+| Sub-component    | Role                                          | Dependencies  |
+|------------------+-----------------------------------------------+---------------|
+| [[id:E75DE282-4FDE-4B18-B23B-692A2F783B61][ores.connections]] | Encrypted [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] connection bookmark store | [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]] |
 
 * See also
 

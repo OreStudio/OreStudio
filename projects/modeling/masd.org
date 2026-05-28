@@ -60,7 +60,7 @@ Each profile corresponds to one or more facets:
 
 | Facet | Codegen profile |
 |---|---|
-| Class definition (struct, JSON I/O, table I/O) | =--profile domain= |
+| [[id:429AE3F5-A825-8834-0353-9B98F235AE84][Type definition facet]] (struct, JSON I/O, table I/O) | =--profile domain= |
 | Test data generator | =--profile generator= |
 | Repository entity and mapper | =--profile repository= |
 | Repository CRUD operations | =--profile repository= |

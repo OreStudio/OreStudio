@@ -55,14 +55,14 @@ task drives the scope of tasks 2–4.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                          | Title                                                                     |
+|-------------------------------------------------------------+---------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/905][#905]] | [agile] Doc format cleanup: migrate v1 docs and remove v2 branding |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                        | File                       | Decision | Notes                                       |
+|---+--------------------------------------------------------+----------------------------+----------+---------------------------------------------|
+| 1 | Goal/Acceptance placeholders unfilled in 3 task files  | task_migrate/rename/remove | Fixed    | All three tasks filled in; commit 0648f3daf |
 
 * Result

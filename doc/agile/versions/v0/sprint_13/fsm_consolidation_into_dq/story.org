@@ -44,9 +44,9 @@ accordingly.
 
 * Tasks
 
-In execution order:
-
-- [[id:7398EDFC-9C13-4AA2-9DC2-C6676ABDE22F][Merge FSM into DQ]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7398EDFC-9C13-4AA2-9DC2-C6676ABDE22F][Merge FSM into DQ]] | DONE | 2026-05-20 | 2026-02-20 | Rename ores_fsm_* SQL identifiers to ores_dq_fsm_*; relocate FSM SQL files into dq/ subdirectories; update notification channel names; rename internal entity strings ores.fsm.* → ores.dq.fsm.*. |
 
 * Decisions
 

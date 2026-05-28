@@ -41,9 +41,9 @@ duplication.
 
 * Tasks
 
-In execution order:
-
-- [[id:1284CD48-5B99-48B2-8925-CE7E7C0AAC1E][Refactor connection browser with environments]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1284CD48-5B99-48B2-8925-CE7E7C0AAC1E][Refactor connection browser with environments]] | DONE | 2026-05-20 | 2026-02-24 | Split server_environment into environment (host + port) and connection (credentials, optionally linked to environment); migrate existing connections automatically; unified tree (folders + environments + connections); Duplicate action; environment-linked connections show inherited tags + resolved host/port; login dialog gets unified quick-connect combo (Manual / Environments / Connections headers); new Keyboard + Copy icons. |
 
 * Decisions
 

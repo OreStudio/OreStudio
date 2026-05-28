@@ -39,11 +39,11 @@ trading-domain overload.
 
 * Tasks
 
-In execution order:
-
-- [[id:48715DE8-2882-45A0-B45F-208603A1DD23][Add rounding type entity]]
-- [[id:36FF8E82-A350-4AE1-A96A-0C644A5E5045][Enhance currency taxonomy]]
-- [[id:7EFD1DCF-2729-4E98-BD2D-712F55BDD83D][Rename currency asset classes]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:48715DE8-2882-45A0-B45F-208603A1DD23][Add rounding type entity]] | DONE | 2026-05-20 | 2026-02-23 | rounding_type domain entity end-to-end: JSON model, repository, protocol, service, Qt UI (model + MDI + detail + history); CurrencyDetailDialog replaces free-text with combo box (server-populated, tooltips); Data menu restructured (top-level Currencies/Countries; Auxiliary Data submenu); Rounding Types toolbar entry from CurrencyDetail; description SQL enriched with 2-dp examples. |
+| [[id:36FF8E82-A350-4AE1-A96A-0C644A5E5045][Enhance currency taxonomy]] | DONE | 2026-05-20 | 2026-02-24 | Replace currency_type free-text with structured asset_class (fiat / crypto / commodity / synthetic / supranational) + market_tier (g10 / emerging / exotic / frontier / historical); two new refdata entities currency_asset_class + currency_market_tier (SQL + domain + repo + service + messaging + Qt + Wt + CLI); protocol 41.0 (breaking). |
+| [[id:7EFD1DCF-2729-4E98-BD2D-712F55BDD83D][Rename currency asset classes]] | DONE | 2026-05-20 | 2026-02-24 | Avoid 'asset classes' for values that aren't usual asset classes; pick clearer naming. |
 
 * Decisions
 

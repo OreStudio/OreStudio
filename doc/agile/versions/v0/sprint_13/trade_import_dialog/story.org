@@ -44,9 +44,9 @@ Wizard ([[id:F80BAD05-2E66-458D-9223-1DB0A83EF694][ore_import_wizard]]) covers a
 
 * Tasks
 
-In execution order:
-
-- [[id:63515C34-A1EA-4368-86C9-C2063EA2302C][Add trade import mapping dialog]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:63515C34-A1EA-4368-86C9-C2063EA2302C][Add trade import mapping dialog]] | BACKLOG | 2026-05-20 |  | Qt dialog accessible from book list toolbar: pick ORE XML, preview trades (count, types, counterparties), choose target ORES book, map counterparty names (or auto-create), review + confirm; ImportTradeDialog wired through BookController. |
 
 * Decisions
 

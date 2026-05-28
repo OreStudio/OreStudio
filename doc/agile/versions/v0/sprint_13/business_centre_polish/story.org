@@ -39,9 +39,9 @@ sprint-12 CRUD landing surfaced the rough edges.
 
 * Tasks
 
-In execution order:
-
-- [[id:A1673D39-4165-4607-BF65-93C78C436297][Polish business centre UI and data quality]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A1673D39-4165-4607-BF65-93C78C436297][Polish business centre UI and data quality]] | DONE | 2026-05-20 | 2026-02-22 | city_name column derived from descriptions; hard-code US for NYFD/NYSE; WRLD = UN flag + Internal source; default columns: Code, Country (with flag), City; Description + Coding Scheme hidden by default; recorded_at narrower; country combo non-editable; protocol bump to 38.0. |
 
 * Decisions
 

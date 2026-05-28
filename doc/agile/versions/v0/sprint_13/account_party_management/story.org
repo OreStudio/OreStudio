@@ -48,9 +48,9 @@ multi-party login picker was a future story; this is that story.
 
 * Tasks
 
-In execution order:
-
-- [[id:AD223E7D-033F-4162-B376-560A07C70C61][Add account-party management and login support]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AD223E7D-033F-4162-B376-560A07C70C61][Add account-party management and login support]] | DONE | 2026-05-20 | 2026-02-23 | Multi-party login: select_party_request/response messages; login_response carries available parties; AccountDetailDialog Parties tab + AccountPartiesWidget; server-side get_account_parties_by_account / save_account_party / delete_account_party handlers; ores_iam_account_parties_system_party_id_fn auto-assigns system party to initial admin; protocol 37 → 38 (breaking); multi_party.org doc. |
 
 * Decisions
 

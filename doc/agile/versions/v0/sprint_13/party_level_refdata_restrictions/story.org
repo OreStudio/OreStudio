@@ -38,9 +38,9 @@ junction tables in place but full enforcement deferred.
 
 * Tasks
 
-In execution order:
-
-- [[id:F5ED48D0-31D1-409C-9BB7-672A16208B53][Add party-level currency and country restrictions (framework)]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F5ED48D0-31D1-409C-9BB7-672A16208B53][Add party-level currency and country restrictions (framework)]] | BACKLOG | 2026-05-20 |  | ores_refdata_party_currencies_tbl + ores_refdata_party_countries_tbl junction tables to control per-party visibility; full stack via codegen (domain + repo + service + test); currency_service / country_service grow list_currencies_for_party / list_countries_for_party; bitemporal support. |
 
 * Decisions
 

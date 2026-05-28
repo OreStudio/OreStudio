@@ -45,9 +45,9 @@ wizard implements that.
 
 * Tasks
 
-In execution order:
-
-- [[id:9C80F9DF-31B6-4BB8-8972-CE5569541EDA][Analyse ORE trade import mapping requirements]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9C80F9DF-31B6-4BB8-8972-CE5569541EDA][Analyse ORE trade import mapping requirements]] | DONE | 2026-05-20 | 2026-02-25 | Document how ORE XML trade references (CounterParty string, NettingSetId, PortfolioIds) map to ORES UUID-keyed entities. Decide: auto-create vs mapping dialog vs config file for counterparties; how to assign books (no ORE equivalent); whether to map PortfolioIds or ignore; batch import configurations. |
 
 * Decisions
 

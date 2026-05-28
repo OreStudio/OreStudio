@@ -37,10 +37,10 @@ prompt window.
 
 * Tasks
 
-In execution order:
-
-- [[id:F58A9A29-FA89-43AF-BD4D-864448CFBB33][Sprint and product backlog refinement]]
-- [[id:34B26C5F-205A-4261-B1E7-5676DFE0C5ED][Generate release notes for previous sprint]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F58A9A29-FA89-43AF-BD4D-864448CFBB33][Sprint and product backlog refinement]] | DONE | 2026-05-20 | 2026-02-24 | Maintain sprint 13 backlog and groom the product backlog. |
+| [[id:34B26C5F-205A-4261-B1E7-5676DFE0C5ED][Generate release notes for previous sprint]] | DONE | 2026-05-20 | 2026-02-20 | Two-step release-notes generation now that the sprint backlog bursts the LLM prompt window: summarise first, then write release notes from the summary. |
 
 * Decisions
 

@@ -56,7 +56,7 @@ in script names, template names, or doc titles — the current format is just
 
 * Decisions
 
-- Historical sprint 01–17 story/task docs are left as-is — they are closed records and migration cost outweighs benefit.
+- Sprint 01–17 story/task docs already carry =#+version: 2= — the earlier "54 missing" count was a BRE regex bug (=^#\+version:= matches =#version:=, not =#+version:=). No migration needed.
 - Backlog captures (=product_backlog/deferred/=, =next/=, =inbox/=) are out of scope for frontmatter migration — they are ephemeral and will be replaced when promoted.
 - Task ordering: audit → migrate → rename codegen → update docs. Rename and doc-update can overlap once audit is done.
 

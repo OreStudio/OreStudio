@@ -67,8 +67,8 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                               | File                                     | Decision | Notes                      |
+|---+-----------------------------------------------+------------------------------------------+----------+----------------------------|
+| 1 | Acceptance criteria section empty (all 4 tasks) | task_implement_tooling_documentation.org | Accept   | Fixed in 8ef145efe          |
 
 * Result

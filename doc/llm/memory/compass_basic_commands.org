@@ -29,6 +29,8 @@ Core commands:
 
 - *Goto* (start a new story+branch in one step):
   =compass.sh goto --slug my_slug --title "Title" --description "..." --tags "tag1:tag2"=
+  For a hotfix branch (=hotfix/<slug>= instead of =feature/<slug>=):
+  =compass.sh goto --slug broken_thing --kind hotfix --title "Hotfix: ..." --description "..." --tags "hotfix:..."=
 
 - *Add* (scaffold a new artefact — always requires =--slug=, =--title=,
   =--description=, =--tags=; types =memory= and =runbook= also require

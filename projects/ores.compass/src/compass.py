@@ -1138,12 +1138,15 @@ def resolve_story(ident):
 def cmd_goto(argv):
     """Start a unit of work in one command. Two modes:
 
-      new story:      --slug --title --description [--tags] [--task]
-      existing story: --story <id-or-slug> --task-slug --task [--description]
+      new story:      --slug --title --description [--tags] [--task] [--kind]
+      existing story: --story <id-or-slug> --task-slug --task [--description] [--kind]
 
-    Both fetch main, create a feature branch, scaffold the task (and the
-    story, in new-story mode) via codegen, set the task #+branch, and print
-    the remaining manual steps."""
+    Both fetch main, create a branch, scaffold the task (and the story, in
+    new-story mode) via codegen, set the task #+branch, and print the
+    remaining manual steps.
+
+    --kind controls the branch prefix: feature (default) → feature/<slug>,
+    hotfix → hotfix/<slug>."""
     ap = argparse.ArgumentParser(prog="compass goto",
                                  description="Fetch main, branch, scaffold a story/task, print next steps.")
     ap.add_argument("--story", default="", help="existing story (UUID/prefix or folder slug) — existing-story mode")
@@ -1154,6 +1157,8 @@ def cmd_goto(argv):
     ap.add_argument("--task", default="", help="task title (default in new mode: 'Implement <title>')")
     ap.add_argument("--task-slug", default="", help="existing-story mode: task slug (drives the branch)")
     ap.add_argument("--base", default="origin/main", help="branch base (default: origin/main)")
+    ap.add_argument("--kind", default="feature", choices=["feature", "hotfix"],
+                    help="branch kind: feature (default) or hotfix — sets the branch prefix")
     ap.add_argument("--dry-run", action="store_true", help="print the plan without executing")
     args = ap.parse_args(argv)
 
@@ -1178,7 +1183,7 @@ def cmd_goto(argv):
         new_story = None
         task_slug, task_title = args.task_slug, args.task
         task_desc = args.description or f"Task for: {story_title}"
-        branch = "feature/" + task_slug.replace("_", "-")
+        branch = args.kind + "/" + task_slug.replace("_", "-")
     else:
         # --- new-story mode ---
         if not (args.slug and args.title and args.description):
@@ -1191,7 +1196,7 @@ def cmd_goto(argv):
         task_slug = "implement_" + args.slug
         task_title = args.task or f"Implement {args.title}"
         task_desc = f"Initial task for: {args.title}"
-        branch = "feature/" + args.slug.replace("_", "-")
+        branch = args.kind + "/" + args.slug.replace("_", "-")
 
     task_path = Path(PROJECT_ROOT) / story_dir / f"task_{task_slug}.org"
 

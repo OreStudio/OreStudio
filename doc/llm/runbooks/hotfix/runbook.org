@@ -46,20 +46,18 @@ In execution order:
 
 3. /Create a hotfix branch and scaffold the story./ Use
    [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — =compass goto= — with
-   a =hotfix_= slug. The slug should name the broken thing, not the
-   fix:
+   =--kind hotfix=. The slug names the broken thing, not the fix:
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh goto \
-     --slug hotfix_<broken_thing> \
+     --slug <broken_thing> \
+     --kind hotfix \
      --title "Hotfix: <broken thing>" \
      --description "<one sentence: what is broken>." \
      --tags "hotfix:<component>"
    #+end_src
-   =compass goto= creates =feature/hotfix-<broken-thing>=, =story.org=,
-   and a linked task. The =feature/hotfix-= prefix is the ORE Studio
-   hotfix branch convention — =compass= always generates =feature/=
-   branches and the =hotfix-= slug prefix identifies the work as a hotfix.
-   See [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]].
+   =compass goto --kind hotfix= creates =hotfix/<broken-thing>=,
+   =story.org=, and a linked task. See
+   [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]].
 
 4. /Read all generated files./ Before writing any content, read
    =story.org= and the task file and note their =:ID:= values. Do not
@@ -109,12 +107,12 @@ In execution order:
     (Summary, Changes, Traceability). Record the PR number in the task's
     =* PRs= table.
     #+begin_src sh :results verbatim
-    git push -u origin feature/hotfix-<broken-thing>
+    git push -u origin hotfix/<broken-thing>
     #+end_src
 
 * Postconditions
 
-- =feature/hotfix-= branch exists on =origin= and a PR is open.
+- =hotfix/= branch exists on =origin= and a PR is open.
 - Story is =STARTED= in the sprint's =** Hotfixes= table.
 - Task =* Notes= records the root cause and fix.
 - PR number is recorded in the task's =* PRs= table.

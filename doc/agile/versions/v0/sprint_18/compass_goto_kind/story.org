@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 47FD2F81-2143-4C35-9AC1-5A3A9D4AF975
+:END:
+#+title: Story: compass goto --kind flag
+#+description: Add --kind flag to compass goto to support hotfix/ branches following standard Gitflow conventions.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :compass:tooling:hotfix:sprint_18:v0:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Enable =compass goto= to create =hotfix/<slug>= branches (standard
+Gitflow convention) in addition to the default =feature/<slug>=, via a
+=--kind= flag. Removes the previous =feature/hotfix-= workaround.
+
+* Status
+
+| Field         | Value                                                                        |
+|---------------+------------------------------------------------------------------------------|
+| State         | DONE                                                                         |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                    |
+| Now           | Nothing.                                                                     |
+| Waiting on    | Nothing.                                                                     |
+| Next          | Nothing.                                                                     |
+| Last touched  | 2026-05-28                                                                   |
+
+* Acceptance
+
+- =compass goto --kind hotfix --slug <thing> ...= creates =hotfix/<thing>=.
+- =compass goto= without =--kind= still creates =feature/<slug>= (no regression).
+- =--kind invalid= is rejected with a choices error.
+- Hotfix runbook, branching recipe, compass memory, and =sprint_themes.org= all reference =hotfix/<thing>= and =--kind hotfix=.
+
+* Tasks
+
+| Task                                                                                              | State | Start      | End        | Description                                        |
+|---------------------------------------------------------------------------------------------------+-------+------------+------------+----------------------------------------------------|
+| [[id:F54948C6-CB8A-432F-B0E7-99089B3F0E1D][Implement compass goto --kind flag]] | DONE  | 2026-05-28 | 2026-05-28 | Add --kind to cmd_goto and update all docs.        |
+
+* Decisions
+
+- =hotfix/= prefix chosen over =feature/hotfix-= to follow standard Gitflow conventions; a hotfix is not a feature.
+- =--kind= chosen over =--prefix= (mechanical) or =--branch-type= (verbose) as it is short and semantic.
+
+* Out of scope
+
+- Additional kinds (e.g. =release/=, =bugfix/=) — can be added to the =choices= list later.

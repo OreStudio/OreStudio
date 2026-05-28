@@ -77,14 +77,14 @@ In execution order.
 | [[id:6EBB206D-167F-4A0F-8F50-04D7EB4B7E33][Fix PDF site delivery and switch manual to book class]] | DONE    | 2026-05-25 | 2026-05-28 | Add =site:pdf= publish component; switch manual to =book= LaTeX class; regenerate PDF.     |
 | [[id:4E375DD6-E300-4A0A-BD20-3D06AC8ED7A1][Port domain concept notes to knowledge documents]]      | STARTED | 2026-05-25 | | Tidy personal finance/ORE domain notes into v2 knowledge docs; align with ORE Studio terms. |
 | [[id:9AE5466D-E627-4587-BBEB-6D89E732ACE2][System model readability]]                         | STARTED | 2026-05-26 |            | Add layer blurbs and table-based component inventory to the system model. |
-| [[id:3D1935DC-562C-4AA3-A352-AC1BC037DFDD][Runbook support]]                                  | STARTED | 2026-05-26 |            | Add runbook document type: named composition of recipes for repeatable multi-step operations. |
+| [[id:3D1935DC-562C-4AA3-A352-AC1BC037DFDD][Runbook support]]                                  | DONE    | 2026-05-26 | 2026-05-26 | Add runbook document type: named composition of recipes for repeatable multi-step operations. |
 | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Compass PR review management]]                      | BACKLOG | 2026-05-26 |            | Add compass review list/reply/resolve subcommands wrapping gh API. |
 | [[id:CC7CEDA1-A3F1-4E4E-BDE9-5DAF0D5BCD23][Detect and report NATS disconnection]] | BACKLOG | 2026-05-26 | | Client should detect when NATS or backend services drop mid-session and show a connection-lost state with reconnect. |
 | [[id:5B7C4B18-3CF2-4546-A73E-95F46228DBD2][Fix account registration NATS SSL error]] | BACKLOG | 2026-05-26 | | Registration fails with "NATS connect failed: SSL Error"; fix the registration path's NATS/TLS config. |
 | [[id:8BD3D28A-C5A1-4F8D-A685-1BC6EBF5C812][Sprint health charts]]                            | STARTED | 2026-05-26 |            | Generate daily charts of PRs, commits, story completions, and line churn using gnuplot. |
 | [[id:A388F0C8-0804-420F-A542-2C929CFCEC92][Document NATS: technology overview, system integration, and recipes]] | STARTED | 2026-05-26 | | NATS knowledge page, system model section, per-component subject tables, and NATS recipes. |
 | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] | STARTED | 2026-05-27 | | captures/ folder per sprint; compass capture command; wontdo backlog bucket. |
-| [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]                                 | STARTED | 2026-05-28 | | Add compass skill type, update skill-creation recipe, create run-runbook skill. |
+| [[id:E3C798C8-87E9-47E1-88F5-1BE6C8532BBE][Improve LLM runbook and skill tooling]]                                 | DONE    | 2026-05-28 | 2026-05-28 | Add compass skill type, update skill-creation recipe, create run-runbook skill. |
 
 * Health Review
 

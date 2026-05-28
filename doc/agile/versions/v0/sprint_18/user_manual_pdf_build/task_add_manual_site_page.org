@@ -73,8 +73,8 @@ description to be more informative.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                              | File         | Decision | Notes                                                                      |
+|---+--------------------------------------------------------------+--------------+----------+----------------------------------------------------------------------------|
+| 1 | Screenshots task still marked (STARTED) in story task list  | story.org    | Applied  | Updated to (DONE — PRs #853, #866) in e113febad; two duplicate comments, both resolved. |
 
 * Result

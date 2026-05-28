@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 62B0FE2B-41F8-44E9-B181-EB0F9F3911CD
+:END:
+#+title: Task: Split system model layers into sub-pages and add architecture diagram
+#+description: Split each architecture layer in system_model.org into its own sub-page linked via org-roam; add a PlantUML 4-layer architecture diagram; merge site_pdf_and_manual_book story; add NATS org-roam links.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :user_manual_pdf_build:sprint_18:v0:
+#+owner: marco
+#+branch: feature/task-split-system-model-layers
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=projects/modeling/system_model.org= has grown large: it contains the full
+sub-component tables for all four architecture layers in one file. This task
+splits each layer into its own dedicated org-mode document, linked back from
+the main page via org-roam ID links. It also adds a PlantUML diagram
+illustrating the four-layer architecture (Foundation → Infrastructure →
+Domain → Application) and wires in org-roam links wherever [[id:BCA8C543-6EC6-49BD-9A94-8AC4DFF0E2FB][ores.nats]] is
+mentioned as a plain-text "NATS" reference. Finally it merges the
+now-superseded =site_pdf_and_manual_book= story into =user_manual_pdf_build=
+by moving its task file here, deleting the old story directory, and updating
+all org-roam cross-references.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-05-28                             |
+
+* Acceptance
+
+- Four layer sub-pages exist under =projects/modeling/=:
+  =system_model_foundation.org=, =system_model_infrastructure.org=,
+  =system_model_domain.org=, =system_model_application.org=. Each is
+  scaffolded by compass and contains the sub-component table from the
+  original =system_model.org=.
+- =system_model.org= retains only the layer headings, each replaced by a
+  one-line description and an org-roam link to the corresponding sub-page.
+- A PlantUML =architecture_layers.puml= diagram illustrating the four layers
+  (boxes/packages with representative components) is committed under
+  =projects/modeling/assets/= and embedded in =system_model.org= following
+  the existing diagram convention.
+- All plain-text "NATS" references in =system_model.org= and its sub-pages
+  are replaced with =[[id:BCA8C543-6EC6-49BD-9A94-8AC4DFF0E2FB][ores.nats]]=.
+- =site_pdf_and_manual_book= story is merged: its task file is moved to
+  =user_manual_pdf_build/=, the old story directory is deleted, and every
+  org-roam link pointing at =6EBB206D-167F-4A0F-8F50-04D7EB4B7E33= is
+  updated to =C42C3563-671F-4721-8CE8-5EE05925255F=.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 3F5D9276-12DB-4A6B-A355-95E26AFA1CBD
+:END:
+#+title: Task: Back-fill sprint 18 story task lists to tables
+#+description: Replace the bullet-list Tasks section in every sprint 18 story doc with the new task status table format.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :refactor_task_list_to_table:sprint_18:v0:
+#+owner: marco
+#+branch: feature/backfill-sprint18-story-task-tables
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFF169EC-0B35-4800-8BEE-1CF7D0DEE8D6][Refactor story task lists to a status table]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+For every story doc in sprint 18, replace the =* Tasks= bullet list
+with the new task status table:
+
+| Task | State | Start | End | Description |
+
+Each row should link to the task doc via =[[id:UUID][Title]]=. State,
+Start, and End should be filled from the task doc's own =* Status=
+table where available.
+
+* Status
+
+| Field        | Value                                                                               |
+|--------------+-------------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                             |
+| Parent story | [[id:FFF169EC-0B35-4800-8BEE-1CF7D0DEE8D6][Refactor story task lists to a status table]]                                         |
+| Now          | Waiting on template update task to complete first.                                  |
+| Waiting on   | [[id:22C0724C-75A7-4060-8F1D-000E62BE8352][Update story codegen template to task table]]                                         |
+| Next         | List all sprint 18 stories; update each Tasks section to table format.              |
+| Last touched | 2026-05-28                                                                          |
+
+* Acceptance
+
+- Every story doc under =doc/agile/versions/v0/sprint_18/= has its
+  =* Tasks= section replaced with the status table format.
+- Each task row links to the task doc via =[[id:UUID][Title]]=.
+- State, Start, and End columns are populated where the task doc
+  provides that information.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

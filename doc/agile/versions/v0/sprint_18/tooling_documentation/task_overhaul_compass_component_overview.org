@@ -9,7 +9,7 @@
 #+filetags: :tooling_documentation:sprint_18:v0:
 #+owner: marco
 #+branch: feature/overhaul-compass-component-overview
-#+pr:
+#+pr: 909
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
@@ -70,9 +70,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                          |
+|-----+----------------------------------------------------------------|
+| 909 | [doc] Add Commands section to ores.compass component overview  |
 
 * Review
 

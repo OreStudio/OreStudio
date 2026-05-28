@@ -80,9 +80,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR  | Title                                                          | URL                                                  |
-|-----+----------------------------------------------------------------+------------------------------------------------------|
-| 912 | Remove v2 terminology from all active guidance documentation    | https://github.com/OreStudio/OreStudio/pull/912      |
+| PR                                                           | Title                                                         |
+|--------------------------------------------------------------+---------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/912][#912]] | Remove v2 terminology from all active guidance documentation   |
 
 * Review
 

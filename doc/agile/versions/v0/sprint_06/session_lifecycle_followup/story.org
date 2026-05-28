@@ -46,17 +46,11 @@ Continued from: [[id:A465D630-5972-484B-A2E8-AD1F91657103][Authentication bootst
 
 * Tasks
 
-In execution order:
-
-- [[id:61986CA2-C815-4CEA-B029-26AB503379F5][Implement session cancellation]]
-- [[id:3BB7644C-3061-4925-99DB-65D86A3B9C02][Add a logout message]]
-- [[id:B5AA3934-C955-4DCC-AD98-3E0B7153753C][Implement client heartbeat for disconnect detection]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Disconnect closes currencies window.
-- Pressing disconnect crashes client.
-- Notification of server restarts.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:61986CA2-C815-4CEA-B029-26AB503379F5][Implement session cancellation]] | DONE | 2025-12-04 | 2025-12-04 | Cancel all active sessions when the server stops, so it can shut down cleanly under SIGINT or programmatic shutdown. |
+| [[id:3BB7644C-3061-4925-99DB-65D86A3B9C02][Add a logout message]] | DONE | 2025-12-04 | 2025-12-04 | Add a logout message type so the client can cleanly end its session, mirroring the existing login flow. |
+| [[id:B5AA3934-C955-4DCC-AD98-3E0B7153753C][Implement client heartbeat for disconnect detection]] | DONE | 2025-12-04 | 2025-12-04 | Client sends periodic heartbeats so it (and the server) detect dropped connections rather than waiting on a stalled read. |
 
 * Decisions
 

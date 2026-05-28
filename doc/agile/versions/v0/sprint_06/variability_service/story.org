@@ -39,15 +39,10 @@ thread that started as POSTPONED in sprint 03.
 
 * Tasks
 
-In execution order:
-
-- [[id:69A4006A-5C35-4F74-9250-6F75194B6E80][Create a variability service for feature flags]]
-- [[id:BEB4FD46-B362-4C2D-B7CF-F385539B783E][Add messaging to variability]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Add support for feature flags (folded into the service creation).
-- Add a version attribute to entities.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:69A4006A-5C35-4F74-9250-6F75194B6E80][Create a variability service for feature flags]] | DONE | 2025-12-08 | 2025-12-08 | Stand up ores.variability service: feature-flag domain model + repository + messaging. |
+| [[id:BEB4FD46-B362-4C2D-B7CF-F385539B783E][Add messaging to variability]] | DONE | 2025-12-08 | 2025-12-08 | Wire the variability service onto the comms layer so clients can list / toggle feature flags. |
 
 * Decisions
 

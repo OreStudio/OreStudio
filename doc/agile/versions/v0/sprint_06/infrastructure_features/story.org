@@ -40,20 +40,11 @@ tests.
 
 * Tasks
 
-In execution order:
-
-- [[id:4E142DF7-D208-453D-BC44-25F92F6D5934][Implement the event bus]]
-- [[id:38DAE511-4DD6-429D-BFC9-557CD3C57D0B][Add system tray support]]
-- [[id:B9327231-19FB-4DE1-9D14-5F77A8389619][Create faker for past timepoint]]
-
-Additional v0 entries belonging here, not migrated as full tasks:
-
-- Add tests for messaging handler.
-- Saving a new currency should close window.
-- Red build after account lock PR.
-- Valgrind is detecting issues with comms tests (separate, intermittent).
-- Add tests to diagrams.
-- Create a component creator skill.
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4E142DF7-D208-453D-BC44-25F92F6D5934][Implement the event bus]] | DONE | 2025-12-15 | 2025-12-15 | Add an in-process event bus so components can publish/subscribe without coupling — basis for the upcoming Postgres-listener-driven notifications. |
+| [[id:38DAE511-4DD6-429D-BFC9-557CD3C57D0B][Add system tray support]] | DONE | 2025-12-15 | 2025-12-15 | Show ORE Studio in the system tray with minimise-to-tray behaviour for long-running sessions. |
+| [[id:B9327231-19FB-4DE1-9D14-5F77A8389619][Create faker for past timepoint]] | DONE | 2025-12-15 | 2025-12-15 | Add a faker generator for past timepoints so tests can produce realistic bitemporal history without hand-rolling dates. |
 
 * Decisions
 

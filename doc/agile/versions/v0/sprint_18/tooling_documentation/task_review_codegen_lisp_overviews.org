@@ -9,7 +9,7 @@
 #+filetags: :tooling_documentation:sprint_18:v0:
 #+owner: marco
 #+branch: feature/review-codegen-lisp-overviews
-#+pr:
+#+pr: 913
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
@@ -67,7 +67,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/913][#913]] | [doc] Review ores.lisp and ores.codegen component overviews |
 
 * Review
 

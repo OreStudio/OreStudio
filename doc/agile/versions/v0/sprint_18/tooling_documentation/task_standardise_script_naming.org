@@ -9,7 +9,7 @@
 #+filetags: :tooling_documentation:sprint_18:v0:
 #+owner: marco
 #+branch: feature/standardise-script-naming
-#+pr:
+#+pr: 915
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29
@@ -64,7 +64,7 @@ naming. Renaming deferred to a separate task to keep T1 focused.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/915][#915]] | [scripts] Rename hyphenated scripts to snake_case |
 
 * Review
 

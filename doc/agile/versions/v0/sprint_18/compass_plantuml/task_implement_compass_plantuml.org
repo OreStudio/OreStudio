@@ -9,7 +9,7 @@
 #+filetags: :compass_plantuml:sprint_18:v0:
 #+owner: marco
 #+branch: feature/compass-plantuml
-#+pr:
+#+pr: 888
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
@@ -60,9 +60,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                                        |
+|-----+------------------------------------------------------------------------------|
+| 888 | [doc,compass] PlantUML recipe, compass add diagram sub-command, and topic inventory |
 
 * Review
 

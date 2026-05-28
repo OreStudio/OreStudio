@@ -43,9 +43,9 @@ build scripts live alongside the other Emacs Lisp in the project.
 
 * Tasks
 
-In execution order:
-
-- [[id:674D3887-A2FE-4D6C-B856-8665BFC84E0B][Task: Implement Move .build-*.el scripts to ores.lisp]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:674D3887-A2FE-4D6C-B856-8665BFC84E0B][Task: Implement Move .build-*.el scripts to ores.lisp]] | DONE | 2026-05-28 | 2026-05-28 | Move .build-*.el scripts to ores.lisp |
 
 * Decisions
 

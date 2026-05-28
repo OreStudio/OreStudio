@@ -2,294 +2,88 @@
 :ID: 14606A1B-2742-DE34-F813-B4E3B736AEF1
 :END:
 #+title: Sprint 18 Capture
-#+description: Assorted notes taken during Sprint which have not yet been filled but we do not want to forget.
+#+description: Assorted notes taken during Sprint which have not yet been filled but we do not want to forget. DRAINED 2026-05-28 — all entries triaged into product backlog via bulk capture recipe.
 #+type: capture
 #+version: 2
 #+level: s3
 #+filetags: :ore:workflow:marketdata:controller:plugins:trading:reporting:windows:sprint_16:v0:
 #+created: 2026-05-23
-#+updated: 2026-05-23
+#+updated: 2026-05-28
 #+todo: STARTED | DONE
 
 This page is the short-lived [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] document for [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] of ORE Studio. At
 the end of the sprint, short-lived captures will migrate to their next
 destination ([[id:1737C00C-699A-475A-BC94-743C6CDA1001][sprint backlog]] or [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]]).
 
-* Agile
+All entries drained 2026-05-28 — filed into product backlog via bulk capture recipe.
 
-- add a memory for the tmp directory. actually add a memory for the meaning of
-  some directories, samples, tmp etc.
-- add recipes to do doc commands (list etc). Link it to skills.
-- add a skill which drains capture buffer: for each entry decides to either file
-  it as a task or a story in current sprint, or into product backlog.
-- we seem to be missing a plan.org to link into all plans.
+* New
 
-* Docs
+(empty — all entries have been drained)
 
-- added tufte docs to TMP
-- add new document type: manual.
-- rename claude code skills to large_language_model_skills. Add a LLM page to
-  knowledge. Explain we use mainly claude code.
-- architecture should link to multi party, multi company and workspace documents
-  under a section of isolation.
-- components, instead of Summary should just start straight away with the blurb.
-- file and directory links in docs should use =proj:= so that they link to
-  github.
-- split out component inventory from system model. Component inventory should
-  have tables for each component grouping.
-- system architecture should have a detailed description of the system and link
-  to top-level concepts such as multi-party etc.
-- rename =modeling= dir to =docs=. Modeling is confusing.
-- create a summary page of the cybernetics approach instead of linking to
-  wikipedia.
-- in Cybernetic Levels explain how our approach connects and does not connect to
-  cybernetics. Explain limitations.
-- in compass: cybernetic information architecture - add a link.
-- add knowledge pages for CMake: what is it, how we use it. Link to build pages.
-- add knowledge page for vcpkg: what is it, how we use it. link to submodule
-  updates.
-- add "Definition of done" to the glossary. Link it from where we use it.
-- recipes: make topics a table.
-- "How do I set up a development environment?" is linux only. Maybe rename it.
-- memory catalogue should be a table.
-- skills catalogue should be a table.
+* Drained
 
-* UML
+Entries triaged 2026-05-28 via bulk capture recipe. Each row links to the filed capture.
 
-- missing relationships on all diagrams. Script should capture these but
-  according to some rules to avoid overcrowding.
-- missing notes on namespace descriptions and class descriptions.
+** Next
 
-* LLMs
+| Capture | Description |
+|---------+-------------|
+| [[id:965094BF-34BE-407E-9FA8-A9F678A49F0F][Architecture doc isolation links]] | Architecture doc should link to multi-party, multi-company, workspace isolation docs |
+| [[id:16658195-56DC-4A93-9F6F-B01DED87E6BC][Component doc template improvements]] | Remove summary section; use proj: links for file/dir references |
+| [[id:22967702-376F-4E62-9778-ACCE777D6FF9][Definition of done glossary entry]] | Add Definition of Done to glossary and link from all usage sites |
+| [[id:7E9E53D9-1716-4BC3-903A-0165ADEE9D6C][Catalogues and recipes as tables]] | Convert skills, memory, and recipes catalogues from bullet lists to tables |
+| [[id:DB48E1D9-348F-453C-AA23-374E892EEF7F][Dev environment recipe platform scope]] | Clarify that the dev environment recipe is Linux-only or broaden scope |
+| [[id:17C3FE61-9E04-4D43-9869-7595D9070EFB][Entity sync audit (CLI/HTTP/shell)]] | Document which entities are missing CLI, HTTP, or shell coverage |
+| [[id:6AD0E8A2-9335-4F40-BBB1-A73DF3D805CA][UML relationships and namespace descriptions]] | Add relationships and namespace/class descriptions to all UML diagrams |
+| [[id:FAF8F00A-6A8D-4DBD-86D7-393ADF19155F][Document tmp dir LLM guidance]] | LLM guidance doc: all temporary data goes under project tmp/ |
+| [[id:F64A3ABD-766C-4122-8542-5CFF550BF0E4][Test babel recipe types]] | Load org-babel and test all recipe types (SQL, CLI, etc.) in use |
+| [[id:C0553E54-B1F4-425A-B2F2-ECB159F0F768][Babel env file dynamic loading]] | Babel source blocks should query .env file dynamically for paths/ports |
+| [[id:4A99CD28-9F24-4EE0-9ED4-B03D3752767D][Environment port consistency]] | All env ports should derive from a single base port, going up by 1 |
+| [[id:FF073DA6-7D40-49F1-BCDD-3B6EABDBAC14][Environment variables documentation and validation]] | Document all ORES_* env vars; add script to validate init-env |
+| [[id:FB4258E3-8807-498D-81BC-DF88A5976F4D][Site cleanup legacy on recompile]] | Always rm -rf site on recompile to remove legacy output |
+| [[id:5C22A0EA-891B-4EB8-B46A-EB0156EB5B0E][Fix site links after UUID upcase]] | Local site links resolve to absolute paths after UUID upcase migration |
+| [[id:FF3F3BD1-7F2A-472F-95A3-536EFB162337][Knowledge graph sidebar config]] | org-roam knowledge graph no longer exposes sidebar/properties config |
+| [[id:F5F97646-0E3F-4F50-8A0C-F2922950E912][Fix session token auto-renewal]] | Client session is not automatically renewing its authentication token |
+| [[id:8E10AC52-DB01-46D0-8544-D7F4F614D928][Fix connection manager saved details override]] | Cannot override saved connection details in connection manager |
+| [[id:33F09157-72DB-44A0-9686-BD9143053284][Implement Qt help system integration]] | Integrate org-mode user manual into Qt's native help system (QHelpEngine) |
+| [[id:0A03AE8C-6C02-4EDE-B540-C00EBA654295][Fix My Account session history dialog]] | Session history shows no bytes; dialog may need removal or fix |
+| [[id:DCC5853D-1B41-4EB0-8A85-07E2A8FABC07][Refdata entity event logging gaps]] | Multiple ref-data entities missing event notifications and history |
+| [[id:1D24F897-527E-48AC-9C77-79029C06CFBF][Fix history dialog geometry persistence]] | History dialogs do not remember size/position between sessions |
+| [[id:3A0BADDD-3E23-42FB-B8E3-058D0EC4CBDD][Knowledge graph missing links]] | Several pages not linked in the org-roam knowledge graph |
+| [[id:A1BE55B3-AE99-47C8-919D-DD0658CB75D7][Agile doc polish (PRs, tasks, manuals, nav)]] | Bundle: PR refs as links, tasks as tables, manuals nav, sprint/task IDs in commits |
+| [[id:60918833-3B12-4148-AC1C-1D637ACF92B2][ORE Studio manuals table and sections]] | Manuals page: table format, section links, remove stale Emacs version note |
+| [[id:08850964-F6C7-414F-8EB2-0F0474E06EA1][Skill: drain capture buffer]] | Skill that processes a capture buffer entry by entry, filing each to inbox/next/deferred |
 
-- add document on how all temporary data should be under project dir tmp.
-- consider adding screenshots of bugs during tasks to the task itself and link
-  it there for posterity. But then screenshot must be saved under task dir.
+** Deferred
 
-* Code
+| Capture | Description |
+|---------+-------------|
+| [[id:A759E29B-28B5-45C1-94B0-E27E1B6DBE5E][Rename modeling dir to docs]] | Rename modeling/ to docs/ across all components |
+| [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Cybernetics documentation suite]] | Standalone cybernetics summary; explain VSM connection and limitations |
+| [[id:833B4DAA-CF4A-4B90-8070-16395ED8890D][CMake and vcpkg knowledge pages]] | Knowledge pages for CMake and vcpkg: what they are and how we use them |
+| [[id:15FB60D6-344F-4DCA-B3A0-F4E765D8B1CF][Emacs plots for ORE Studio]] | Use Emacs chart library for lightweight ORE Studio functionality plots |
+| [[id:2F466FCB-63A0-4DA0-B04B-0DD35C579CFC][Extend Emacs dashboard with HTTP entity views]] | Extend dashboard with HTTP-backed entity views (users, etc.) |
+| [[id:17619D15-F13F-4AB5-8BD4-6B18A06BC5F1][Screenshot policy for bug tasks]] | Save screenshots of bugs into task directories for posterity |
+| [[id:C71C152D-58CE-4CBA-946E-6B163900DFC0][Org publish incremental rebuild]] | Investigate whether org-publish can skip unchanged files |
+| [[id:06EFC714-A0F8-4898-9DD0-04631D428150][LLM-first system documentation]] | Document that ORE Studio is an LLM-first system; explain MASD/Zettelkasten/Cybernetics mix |
+| [[id:A1E08C28-2906-4B8E-A3D0-FDED89FED20A][Convert contributing docs to org]] | Convert CODE_OF_CONDUCT.md and CONTRIBUTING.md to org-mode |
+| [[id:3CFCA9CD-50D7-482F-847B-60676A801CAB][Knowledge graph menu rename to Knowledge]] | Rename Knowledge Graph menu item to Knowledge; add knowledge graph sub-section |
 
-- CLI is direct DB access, shell simulates a client.
-- need to create a document stating what entities are out of sync (e.g. missing
-  cli, http etc) and start working through those. Must add recipes as we go
-  along.
+** Inbox
 
-* Tools
+| Capture | Description |
+|---------+-------------|
+| [[id:3DD10722-9E5C-4C2B-BDD6-11C7F89B3A88][Fix account password change show password]] | My Account password change dialog missing show/hide password toggle |
+| [[id:82A24629-DBD4-454E-8EF1-2E3C0728ECC9][Fix refdata UI minor bugs]] | Market tiers icon does nothing; rounding type delete doesn't refresh |
+| [[id:D87F645D-857B-4894-B4A6-0DA2E35F26D3][Knowledge graph org options not visible]] | Org-mode properties/options don't appear in knowledge graph view |
+| [[id:1D286AC1-D951-4062-87D9-C7C9E3B55874][Add Claude settings link to docs]] | Add link to Claude Code settings page in LLM documentation section |
+| [[id:32172CAF-FE28-4C7B-87CD-4992A894D8A8][Add compass calls to Claude settings]] | Register key compass commands in Claude Code settings as shell shortcuts |
+| [[id:D2A77801-5AE5-4077-B48E-731E790B0ED0][Memory for project directory meanings]] | Add memory for meaning of key project directories (tmp, samples, etc.) |
+| [[id:285A8782-E934-4F17-B989-5739115D40A4][Recipes for doc list commands]] | Add recipes for compass list/search/etc.; link to skills catalogue |
 
-- create a tool called compass which tells you:
-  - where we are in time: what version, what sprint, what tasks are currently
-    executing.
-  - given a NLP query, gives you relevant docs. Uses cached data.
-  - add story to sprint, add task to story, add sprint, add recipe, etc.
+** Discarded
 
-* Emacs
-
-- load babel and test all recipe types (SQL, cli etc).
-- add a capture command which gets latest capture buffer (e.g. latest version,
-  latest sprint, locate capture.org).
-- instead of having a DB buffer for all envs, we should just have a ORES env
-  buffer. This will have all the common commands for that env (init env etc).
-  Actually what we need is a ORES Studio console in emacs which wraps all of the
-  available scripts and also provides some blurb as to what the scripts do.
-  Functionality is in groups: for example, all of the start/stop scripts in a
-  group etc. Each console is relative to an environment. The console reads .env
-  and makes it clear what the key settings are (env version, ports, etc). Should
-  also have bookmarks for log directory, bin directory, etc.
-- when running commands (babel) we should use the .env file (preset, etc).
-  However the issue is we need to reload as we move envs. Or ideally the babel
-  functions should query the .env file dynamically to determine paths.
-- integrate captures with emacs capture: [[https://www.gnu.org/software/emacs/manual/html_mono/org.html#Setting-up-capture][Setting up capture]].
-- we could use emacs dashboard: https://github.com/emacs-dashboard/dashboard. We
-  could provide a way to edit the environment manually if required.
-- we could even provide plots for some ORE Studio functionality.
-  https://francismurillo.github.io/2017-04-15-Exploring-Emacs-chart-Library/
-- the dashboard should link up to recipes and user manual. We should have a
-  manual for the dashboard itself.
-- in the future we could extend the dashboard to provide some of the screens we
-  have in the UI via HTTP: list users, etc. This would just be another facet via
-  codegen. We could make a "standard" table like proced: [[https://laurencewarne.github.io/emacs/programming/2022/12/26/exploring-proced.html][Exploring Proced]].
-  Dashboard should have a login screen integrated with emacs. However, we should
-  be careful to distinguish the three modes of operation:
-  - running local scripts.
-  - remote login operations via HTTP. A true client.
-  - integration with CLI. Direct database access.
-- emacs capture: https://www.gnu.org/software/emacs/manual/html_mono/org.html#Setting-up-capture
-
-* Environment
-
-- Ensure port consistency for the different kinds of ports we have on an
-  environment:
-
-#+begin_src sh
-ORES_HTTP_PORT=51000
-ORES_CONTROLLER_SERVICE_HTTP_PORT=51000
-ORES_CONTROLLER_SERVICE_WT_PORT=51002
-ORES_SITE_PORT=8001
-ORES_NATS_PORT=42221
-ORES_NATS_URL=nats://localhost:42221
-ORES_NATS_MONITOR_PORT=8221
-ORES_NATS_MONITOR_URL=http://localhost:8221
-#+end_src
-
-  This should just be a set of ports starting at "base environment port" and then
-  going up by 1. Also what is the difference between =ORES_HTTP_PORT= and
-  =ORES_CONTROLLER_SERVICE_HTTP_PORT=
-
-- We need a way to know what the valid environment variables are and what they
-  do. This should be in a document. We also need a script that checks init env
-  and makes sure we only define valid variables. Its fine to error and show
-  error to user.
-
-* Site
-
-- Problem is we had legacy site as well as new site. We need to always =rm -rf
-  site= on recompile.
-- can org publish detect unchanged files? to speed up site rebuild.
-- links no longer work in local site, after UUID upcase changes? Links look
-  strange:
-
-: http://0.0.0.0:8001/mnt/development/Development/OreStudio/OreStudio.local1/doc/meta/glossary.html#ID-47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05
-
-  Should be relative to the site, not local drive.
-- can't configure org-roam knowledge graph properties or remove sidebar. seem to
-  have been removed.
-- add a download button for the releases. Make sure the page states a disclaimer
-  that these are alpha versions. Ask user to report problems on discord.
-- add a note saying packages are zipped.
-- consider adding screenshots with functionality like qwen. ask LLM if its
-  possible to jazz up the screenshots. https://qwen.ai/qwencode
-
-* Entity test results
-
-** Account
-
-- My Account still has session history but we are no longer recording bytes sent
-  or received. we probably should remove this dialog.
-- My Account password change dialog does not have show password.
-- My sessions are no longer populated. however, we should at least record login
-  and logout even if no bytes sent / received.
-
-** Ref data
-
-- currency details has rounding, monetary natures, market tiers.
-- currency: no eventing.
-- currency history recorded at says 56 years ago.
-- adding new rounding type results in a very strange order of -658...
-- no eventing in rounding types.
-- every rounding type is duplicated: Up twice etc. one for IAM user, other for
-  DDL user. Every entry has two versions with the same version number.
-- history dialog does not remember geometry.
-- monetary nature: no eventing,
-- history dialog does not remember geometry.
-- market tiers: we have icon but does nothing.
-- rounding types: deleting does auto refresh.
-
-* Knowledge Graph
-
-We are not loading images correctly:
-
-#+begin_quote
-http://localhost:35901/img/%252FOreStudio%252Fassets%252Fimages%252Fstatus_bar_connected.png net::ERR_CONNECTION_REFUSEDUnderstand this error
-%2FOreStudio%2Fassets%2Fimages%2Fstatus_bar_disconnected.png:1  GET http://localhost:35901/img/%252FOreStudio%252Fassets%252Fimages%252Fstatus_bar_disconnected.png net::ERR_CONNECTION_REFUSEDUnderstand this error
-%2FOreStudio%2Fassets%2Fimages%2Fmain_window_instance_colour.png:1  GET http://localhost:35901/img/%252FOreStudio%252Fassets%252Fimages%252Fmain_window_instance_colour.png net::ERR_CONNECTION_REFUSEDUnderstand this error
-%2FOreStudio%2Fassets%2Fimages%2Ftitle_bar_version.png:1  GET http://localhost:35901/img/%252FOreStudio%252Fassets%252Fimages%252Ftitle_bar_version.png net::ERR_CONNECTION_REFUSEDUnderstand this error
-%2FOreStudio%2Fassets%2Fimages%2Fsplash_screen_version.png:1  GET http://localhost:35901/img/%252FOreStudio%252Fassets%252Fimages%252Fsplash_screen_version.png net::ERR_CONNECTION_REFUSEDUnderstand this error
-%2FOreStudio%2Fassets%2Fimages%2Flogin_dialog_version_registration.png:1  GET http://localhost:35901/img/%252FOreStudio%252Fassets%252Fimages%252Flogin_dialog_version_registration.png net::ERR_CONNECTION_REFUSEDUnderstand this error
-%2FOreStudio%2Fassets%2Fimages%2Fapplication_system_tray.png:1  GET http://localhost:35901/img/%252FOreStudio%252Fassets%252Fimages%252Fapplication_system_tray.png net::ERR_CONNECTION_REFUSED
-#+end_quote
-
-- sprint 17 release notes not linked.
-- MSVC C1202 Workaround Cleanup not linked.
-- Type definition facet not linked
-- Page Not Found not linked
-- manual Introduction not linked, however not clear how this would work. We are
-  using org-mode includes. Same with Connecting to ORE Studio.
-- options we see in org-mode on the right don't show up in our knowledge graph.
-- Add Knowledge to the menus, remove knowledge graph. Then add section in
-  knowledge about knowledge graph and explain
-
-* LLM
-
-- Add a section saying this is an LLM first system. Also explain the mix of:
-  - MASD
-  - Zettletasken
-  - Cybernetics
-- add link to claude settings page.
-- add a general page on cybernetics and Stafford Beer's Viable System Model.
-  Link it to Cybernetic Levels.
-
-* Component Docs
-
-- rename modeling directory to docs.
-- move summary to top, remove summary title. update templates.
-- links to files become proj: links.
-
-* Agile
-
-- add link for Manuals index page and site nav link (PR #818).
-- PRs should be links.
-- add task and sprint ID to all commits.
-- make tasks a table. remove any commentary.
-
-* ORE Studio Manuals
-
-- make the manuals a table. Formats are just HTML, PDF.
-- however, we also need a "manuals as sections" so we can link to pages.
-- page has Emacs 29.1 (Org mode 9.6.6)
-
-* General
-
-- convert CODE_OF_CONDUCT.md and CONTRIBUTING.md to org. Link to it in
-  contributing.
-- add page on DeepWiki. https://deepwiki.com/OreStudio/OreStudio
-
-* System Model
-
-- ask LLM to check the docs generated by Devin and see if it can be used to
-  improve system docs. https://deepwiki.com/OreStudio/OreStudio/1-overview
-
-* Login
-
-- session is not automatically renewing token
-- cannot override saved connection details in connection manager.
-- select party if you click on party, should automatically select operational
-  party.
-
-* Help System
-
-#+begin_src markdown
-
-I have a user manual written in Emacs Org-mode that exports to HTML files (e.g.,
-index.html, intro.html, advanced.html, along with a CSS file and an images/
-folder).
-
-I want to use the Qt Help Framework (QHelpEngine) to consume this documentation
-natively inside my Qt C++ application.
-
-Please act as a Senior C++ and Automation Engineer and implement the following
-User Story.
-
----
-
-### User Story
-As a Developer,
-I want to automate the compilation of my exported HTML documentation into a Qt Compressed Help (.qch) file and display it inside my Qt application,
-So that users have a native help system with a Table of Contents and a text browser.
-
-### Technical Requirements
-
-#### Part 1: Automation Script (Python)
-Write a Python script (e.g., generate_help.py) that:
-1. Scans a directory of exported HTML files.
-2. Automatically generates the required Qt Help Project (.qhp) XML file.
-   - It should dynamically populate the <files> section with all .html, .css, and image files it finds.
-   - For the Table of Contents (<toc>), it can either parse the HTML titles or accept a simple hardcoded structure I can edit later.
-3. Automatically executes the system command `qhelpgenerator manual.qhp -o manual.qch` to compile the final binary.
-
-#### Part 2: Qt C++ Implementation
-Provide a clean, modern C++ (Qt 6 preferred, but Qt 5 compatible) implementation showing how to load this `manual.qch` file. Please provide:
-1. The necessary initialization code for `QHelpEngine`.
-2. How to extract and display the Table of Contents (`QHelpContentWidget`) in a sidebar (like a QDockWidget or QTreeView).
-3. How to connect that sidebar to a `QTextBrowser` so that clicking a topic opens the correct HTML page.
-
-Please provide well-commented, production-ready code for both parts.
-#+end_src
+| Capture | Reason |
+|---------+--------|
+| [[id:79AA755E-59AD-43D2-9AF9-72886063BFFC][Missing plans index document]] | plans.org already exists |

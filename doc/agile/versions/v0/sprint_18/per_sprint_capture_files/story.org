@@ -25,10 +25,10 @@ Replace it with product-level captures in the [[id:D4219199-7B17-4A89-B4BC-60197
 |---------------+--------------------------------------------------------------------------|
 | State         | STARTED                                                                  |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                                                |
-| Now           | Buckets renamed; compass capture implemented; commit recipe updated.     |
-| Waiting on    | Nothing.                                                                 |
-| Next          | Update document_types.org; bulk capture recipe; Emacs story/task cmds.  |
-| Last touched  | 2026-05-27                                                               |
+| Now           | All tasks complete; PR pending.                                          |
+| Waiting on    | PR merge.                                                                |
+| Next          | Merge PR and close story.                                                |
+| Last touched  | 2026-05-28                                                               |
 
 * Acceptance
 
@@ -43,8 +43,8 @@ Replace it with product-level captures in the [[id:D4219199-7B17-4A89-B4BC-60197
 - The [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] runbook links to the correct compass recipe and the product backlog doc.
 - An org-roam capture template in =ores.lisp= writes new captures to the inbox of the active environment.
 - A recipe documents how to write a freeform paragraph and have the LLM decompose it into well-structured captures in =inbox/=.
-- Emacs commands =ores/new-story= and =ores/new-task= in =ores.lisp= scaffold artefacts in the current sprint via compass, bound to keys, and offer to commit with a well-formed message.
 - All =near= / =far= bucket references across the doc graph have been updated to =next= / =deferred=.
+- Every entry in =sprint 18/capture.org= has been triaged into the appropriate product backlog bucket or discarded.
 
 * Tasks
 
@@ -55,7 +55,8 @@ In execution order:
 - [[id:AEC50B97-6789-4E3A-B0F4-A70A01FCB341][Update document_types.org capture entry for inbox/next/deferred/discarded]]
 - [[id:477F1A3A-7090-4519-937B-2A79176CBAF6][Write recipe: bulk capture from freeform text]]
 - [[id:482430DB-BE56-4589-B5A7-B616F7CC27F2][Add org-roam capture template in ores.lisp writing to inbox]]
-- [[id:CD06F3DD-B447-421C-8D61-261226FA4A71][Add Emacs new-story and new-task commands with key bindings to ores.lisp]]
+- [[id:CD06F3DD-B447-421C-8D61-261226FA4A71][Add Emacs new-story and new-task commands with key bindings to ores.lisp]] /(ABANDONED)/
+- [[id:AC8F7D3E-1D0E-4B09-920F-417DB75F6A42][Apply bulk capture recipe to sprint 18 capture.org]]
 
 * Decisions
 

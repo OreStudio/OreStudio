@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 17619D15-F13F-4AB5-8BD4-6B18A06BC5F1
+:END:
+#+title: Consider saving screenshots of bugs directly into the task d…
+#+description: Consider saving screenshots of bugs directly into the task directory and linking them from the task doc, so visual evidence is preserved alongside the work record.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

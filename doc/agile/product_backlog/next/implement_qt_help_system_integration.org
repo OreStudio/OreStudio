@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 33F09157-72DB-44A0-9686-BD9143053284
+:END:
+#+title: Integrate the org-mode user manual into Qt's native help sys…
+#+description: Integrate the org-mode user manual into Qt's native help system: a Python script compiles the exported HTML into a .qch file via qhelpgenerator, and the Qt application loads it via QHelpEngine with a ToC sidebar connected to a QTextBrowser.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

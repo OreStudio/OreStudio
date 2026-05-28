@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 3CFCA9CD-50D7-482F-847B-60676A801CAB
+:END:
+#+title: Rename the Knowledge Graph menu item to Knowledge, remove th…
+#+description: Rename the Knowledge Graph menu item to Knowledge, remove the graph viewer from the nav, and add a section within the Knowledge page explaining the org-roam graph and how to use it.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: A1BE55B3-AE99-47C8-919D-DD0658CB75D7
+:END:
+#+title: Bundle of agile doc polish: (1) PR references in story/task …
+#+description: Bundle of agile doc polish: (1) PR references in story/task docs should be hyperlinks not plain text; (2) task lists should be formatted as tables; (3) the manuals index page and site nav link need wiring (PR #818 follow-up).
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

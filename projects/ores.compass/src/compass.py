@@ -817,9 +817,22 @@ def _default_parent_dir(doc_type):
 BACKLOG_BUCKETS = ("next", "deferred", "discarded")
 BACKLOG_ROOT = Path("doc") / "agile" / "product_backlog"
 
+ALL_BUCKETS = ("inbox", *BACKLOG_BUCKETS)
+
 def _inbox_dir():
     """Return the absolute path to the inbox/ backlog bucket."""
     return Path(PROJECT_ROOT) / BACKLOG_ROOT / "inbox"
+
+def cmd_backlog(bucket, extra_args=None):
+    """List captures in a product backlog bucket (inbox/next/deferred/discarded)."""
+    under = str(BACKLOG_ROOT / bucket)
+    args = ["--type", "capture", "--under", under, "--sort", "title"]
+    if extra_args:
+        args.extend(extra_args)
+    try:
+        return doc_list.main(args)
+    except SystemExit as e:
+        return e.code
 
 def _backlog_dir(bucket):
     return Path(PROJECT_ROOT) / "doc" / "agile" / "product_backlog" / bucket
@@ -1248,6 +1261,8 @@ def main():
         sys.exit(cmd_goto(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "capture":
         sys.exit(cmd_capture(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
+        sys.exit(cmd_backlog(sys.argv[1], sys.argv[2:]))
 
     parser = argparse.ArgumentParser(description="Compass: orientation tool for ORE Studio")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -1286,6 +1301,10 @@ def main():
                           help="Create a v2 doc via ores.codegen (story/task/sprint/...); 'add --help' for usage")
     subparsers.add_parser("goto",
                           help="Start work: fetch main, branch, scaffold story+task, print next steps ('goto --help')")
+    subparsers.add_parser("inbox",     help="List captures in the product backlog inbox/")
+    subparsers.add_parser("next",      help="List captures in the product backlog next/")
+    subparsers.add_parser("deferred",  help="List captures in the product backlog deferred/")
+    subparsers.add_parser("discarded", help="List captures in the product backlog discarded/")
 
     args = parser.parse_args()
 

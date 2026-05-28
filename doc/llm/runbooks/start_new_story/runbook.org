@@ -65,6 +65,7 @@ In execution order:
 
 * See also
 
+- [[id:5AE311D8-36A8-4892-AAB4-DB3A13B00B6F][Add a task to an existing story]] — use this instead when the story already exists and you only need a new task.
 - [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — full =compass goto= syntax (new story and add-task-to-existing forms, =--dry-run= flag).
 - [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — where captures live before becoming stories; the =next=, =deferred=, and =discarded= buckets; how to promote a capture into a sprint.
 - [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] — what comes after the PR is open.

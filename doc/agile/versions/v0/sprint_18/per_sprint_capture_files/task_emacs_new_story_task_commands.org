@@ -26,12 +26,14 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-27                               |
+| State        | ABANDONED                                                                |
+| Parent story | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]]    |
+| Now          | Abandoned — org-roam capture template (PR #878) covers new captures;    |
+|              | compass scaffold covers story/task creation. Manual Emacs commands       |
+|              | add no value that the existing tooling does not already provide.         |
+| Waiting on   | Nothing.                                                                 |
+| Next         | None.                                                                    |
+| Last touched | 2026-05-28                                                               |
 
 * Acceptance
 

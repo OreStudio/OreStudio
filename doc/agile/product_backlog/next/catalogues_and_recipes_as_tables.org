@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 7E9E53D9-1716-4BC3-903A-0165ADEE9D6C
+:END:
+#+title: Convert three catalogues from bullet lists to tables: skills…
+#+description: Convert three catalogues from bullet lists to tables: skills catalogue, memory catalogue, and recipes topics — improving scannability and alignment with the table-based style used elsewhere.
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

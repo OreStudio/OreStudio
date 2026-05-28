@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: FD317B6C-F50F-4A35-81CC-A3B2BE3493C0
+:END:
+#+title: Story: Add Emacs and org-roam knowledge pages
+#+description: Create knowledge pages for Emacs setup and org-roam usage; expand ores.lisp component overview; update orientation.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :emacs:org_roam:documentation:knowledge:sprint_18:v0:
+#+created: 2026-05-28
+#+updated: 2026-05-28
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Create standalone knowledge pages for [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]], [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]], and
+[[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] so that contributors and LLMs have a durable, in-repo
+reference for the documentation toolchain. Expand the
+[[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] component overview with a dashboard functionality table and
+links to the new pages. Replace the verbose org-roam preamble in
+[[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] with concise links to the new pages.
+
+* Status
+
+| Field         | Value                                                                             |
+|---------------+-----------------------------------------------------------------------------------|
+| State         | STARTED                                                                           |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                          |
+| Now           | In progress.                                                                      |
+| Waiting on    | Nothing.                                                                          |
+| Next          | Implement documentation changes.                                                  |
+| Last touched  | 2026-05-28                                                                        |
+
+* Acceptance
+
+- [ ] =doc/knowledge/documentation/emacs.org= created: one-paragraph Emacs
+  overview, ORE Studio developer setup, builds table (=deploy_site=,
+  =deploy_manual=, =deploy_skills=, =deploy_settings=, =deploy_plan=), link
+  to [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]].
+- [ ] =doc/knowledge/documentation/org_roam.org= created: what org-roam does,
+  how we use it, the three knowledge-graph hacks (id-locations, headline
+  anchor advice, batch SQLite export), org-roam-ui integration; links to
+  [[https://www.orgroam.com/manual.html][org-roam manual]] and [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]].
+- [ ] =doc/knowledge/documentation/zettelkasten.org= created: method
+  description, why ORE Studio uses it, atomic-note discipline; links to
+  org-roam and org-roam manual.
+- [ ] [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] component overview expanded: dashboard functionality table,
+  links to [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] and [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]] in =* See also=.
+- [ ] [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] preamble note condensed to a brief paragraph linking to
+  [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] and [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]].
+- [ ] =doc/knowledge/knowledge.org= index updated with a new
+  =* Documentation tooling= section listing all three pages.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B9934B96-E28F-4431-A504-3E0BA1D4BD14][Implement Add Emacs and org-roam knowledge pages]] | STARTED | 2026-05-28 | | Create three knowledge pages, expand ores.lisp component, update orientation. |
+
+* Decisions
+
+* Out of scope
+
+- Documentation on how to /install/ Emacs or org-roam — link to upstream
+  docs instead.
+- Interactive org-roam features (=org-roam-node-find=, capture templates,
+  dailies) — covered by the org-roam manual.

@@ -16,14 +16,14 @@ every convention is described there. The journeys below tell you /where to go
 after that/, depending on what you came here to do.
 
 #+begin_note
-*Preamble: A note on org-roam*
+*Preamble: Emacs and org-roam*
 
-Before we proceed, a note on [[https://www.orgroam.com/manual.html][org-roam]] as we use it *extensively* in ORE Studio.
-You should be able to browse the HTML documentation without even knowing about
-org-roam; but i you want to access the full power of the documentation system,
-I'm afraid you need to be on Emacs and have org-roam installed. Sadly, I cannot
-spend time explaining org-roam since it only makes sense to Emacs users but
-think of it as [[https://www.orgroam.com/manual.html#A-Brief-Introduction-to-the-Zettelkasten-Method][Zettletasken]] over the org-mode markup format.
+ORE Studio is authored in [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] and the entire documentation graph is managed
+by [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]]. You can browse the HTML site without installing either, but to
+navigate the graph interactively, follow back-links, or run the build targets
+you will need Emacs with org-roam. Read the linked pages for a full account
+of our setup, the build targets Emacs drives, and how the org-roam knowledge
+graph works.
 #+end_note
 
 * I am new to this project

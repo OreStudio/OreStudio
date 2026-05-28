@@ -23,11 +23,12 @@ frontmatter?
 
 * Answer
 
-For *stories, tasks, and sprints* — the most common agile operations — use
+For *stories, tasks, sprints, and skills*, use
 [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][compass add]] instead. It defaults =--parent-dir= from where you are (current
-sprint for stories, current version for sprints) so you rarely need to type
-a path. This recipe remains the authoritative reference for all other doc
-types and for edge cases (explicit =--id=, non-current parents, etc.).
+sprint for stories/tasks, current version for sprints, =doc/llm/skills= for
+skills) so you rarely need to type a path. This recipe remains the
+authoritative reference for all other doc types and for edge cases (explicit
+=--id=, non-current parents, etc.).
 
 Call =projects/ores.codegen/generate_v2_doc.sh= with the type, slug, parent
 directory, and the document's title and description. The script fills in a fresh
@@ -189,20 +190,18 @@ projects/ores.codegen/generate_v2_doc.sh \
 :ID: 6054CC20-5F41-482F-A587-759512577B1D
 :END:
 
-Use kebab-case for the slug (matches existing =cmake-runner=,
-=v2-doc-author=). The slug becomes both the folder name and the
-=name:= field in the skill's markdown frontmatter:
+Use =compass add skill=. The slug must be snake_case; it becomes the
+folder name and the =name:= field in the skill's markdown frontmatter.
+=--parent-dir= defaults to =doc/llm/skills= and can be omitted:
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_v2_doc.sh \
-  --type skill --slug my-new-skill \
-  --parent-dir doc/llm/skills \
+./projects/ores.compass/compass.sh add skill \
+  --slug my_new_skill \
   --title "My New Skill" \
-  --description "When and how to use the new skill." \
-  --tags "skill"
+  --description "When and how to use the new skill."
 #+end_src
 
-Output: =doc/llm/skills/my-new-skill/SKILL.org=.
+Output: =doc/llm/skills/my_new_skill/SKILL.org=.
 
 ** New product identity
 :PROPERTIES:

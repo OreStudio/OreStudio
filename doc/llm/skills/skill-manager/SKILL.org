@@ -37,9 +37,9 @@ shipped bundle so the skill changes propagate to Claude Code.
    needed recipe doesn't exist yet, create it first via
    [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]].
 
-3. /Scaffold the skill/ via the codegen. Use kebab-case for the
-   slug; it doubles as the Claude Code =name:= field and the
-   folder name (=doc/llm/skills/<slug>/SKILL.org=). See
+3. /Scaffold the skill/ via =compass add skill=. Use snake_case for
+   the slug; it becomes the folder name and the Claude Code =name:=
+   field (=doc/llm/skills/<slug>/SKILL.org=). See
    [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] §"New Claude Code skill" for
    the exact invocation.
 

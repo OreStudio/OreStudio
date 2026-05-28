@@ -9,7 +9,7 @@
 #+filetags: :tooling_documentation:sprint_18:v0:
 #+owner: marco
 #+branch: feature/tooling-documentation
-#+pr:
+#+pr: 903
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
@@ -59,9 +59,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                 |
+|-----+-------------------------------------------------------|
+| 903 | [agile] Scaffold tooling documentation story (sprint 18) |
 
 * Review
 

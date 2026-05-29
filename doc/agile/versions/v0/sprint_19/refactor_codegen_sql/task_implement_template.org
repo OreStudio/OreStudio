@@ -54,7 +54,7 @@ current SQL files in =projects/ores.sql/create/refdata/=.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/936][#936]] | [codegen] Implement unified SQL template |
 
 * Review
 

@@ -37,17 +37,31 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 
 ** Product
 
-*** Epic: ores.refdata Entity Health Review
+*** Epic: ores.refdata Commissioning
 
-Verify, document, and fix all =ores.refdata= entities following the NATS microservices
-migration. The review covers Qt UI (load, edit, save, events, history) and shell usage; each
-entity chapter in the manual is written hand-in-hand with verification. A generalised entity
-evaluation process doc is produced for reuse across other components in future sprints.
+Commission all =ores.refdata= entities across every access layer: verify Qt UI end-to-end
+post-NATS migration (list window, detail window, history, delete, eventing), implement or
+verify shell and CLI commands (list, add, remove), document each entity in the user manual,
+and file backlog captures for Wt and HTTP gaps. One story per entity.
 
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:66F5046D-CF6D-4F7D-94A8-5A5BC69F7068][ores.refdata entity health review]] | BACKLOG | | | Verify all ores.refdata Qt entities post-NATS; fix regressions; produce evaluation process doc. |
+| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | BACKLOG | | | Verify Qt + shell + CLI (existing); manual; Wt/HTTP captures. |
+| [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] | BACKLOG | | | Verify Qt + shell + CLI (existing); manual; Wt/HTTP captures. |
+| [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:835EEB1A-DEE8-4E3F-A852-9FFF0FF3AA6C][Commission: party_id_scheme]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:3567664E-70D5-4492-946E-B9AC63339651][Commission: rounding_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 
 ** Tooling
 

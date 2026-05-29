@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 7F9C0F29-4268-4B62-A1BB-2153ECF0A858
+:END:
+#+title: Story: Commission: currency
+#+description: Commission currency across all layers: verify Qt UI post-NATS (list, detail, history, delete, eventing), verify shell commands (already implemented), fix regressions, add manual chapter.
+#+type: story
+#+level: s2
+#+filetags: :product:refdata:commissioning:currency:sprint_19:v0:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Commission =currency= across all access layers: verify the Qt UI end-to-end post-NATS
+migration, verify existing shell and CLI commands, fix any regressions found, and add the
+entity chapter to the user manual. File backlog captures for Wt and HTTP support.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-05-29                               |
+
+* Acceptance
+
+- Qt list window (MDI): loads and displays records correctly.
+- Qt detail window: edit and save round-trips without error.
+- Qt history window: shows change history for the entity.
+- Qt delete command: removes the record; history is preserved.
+- Qt eventing: a change made in one connected session appears in a second session without manual refresh.
+- Shell list command: verified working post-NATS.
+- Shell add command: verified working post-NATS.
+- Shell remove command: verified working post-NATS.
+- CLI list command: verified working post-NATS.
+- CLI add command: verified working post-NATS.
+- CLI remove command: verified working post-NATS.
+- Manual: entity chapter documents all Qt windows, shell, and CLI commands.
+- Backlog captures filed for Wt and HTTP support.
+- All regressions found are fixed inline or filed as captures.
+- Site builds cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |

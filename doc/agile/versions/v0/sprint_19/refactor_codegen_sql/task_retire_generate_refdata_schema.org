@@ -46,7 +46,7 @@ document the replacement command.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/938][#938]] | [codegen] Retire generate_refdata_schema.sh |
 
 * Review
 

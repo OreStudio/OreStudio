@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 5C955A5E-0130-40D7-B77F-B41F4F526B79
+:END:
+#+title: Task: Refactor IInstrumentForm to type-specific populate methods
+#+description: Replace the IInstrumentForm::populate_from_instrument(const trade_instrument&) virtual interface with type-specific populate overloads on each concrete form. Remove the trade_instrument variant from the Qt UI boundary; dispatch at the call site using the product_type and trade_type already known from the parse result.
+#+type: task
+#+level: s1
+#+filetags: :fix_rfl_complexity:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: F9E5967D-77E7-49E3-9806-74AF22D26191
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The current =IInstrumentForm::populate_from_instrument(const trade_instrument&)= interface
+is architecturally incorrect: each concrete form already knows its instrument type (it is,
+for example, =BondInstrumentForm=), yet it receives the full 9-alternative =trade_instrument=
+variant and immediately discards 8 alternatives via =std::get_if=. The runtime check can
+never legitimately fail — if it does, it is a programming error that the current interface
+silently swallows.
+
+This task removes the fake generality:
+
+1. Replace the virtual =populate_from_instrument(const trade_instrument&)= in
+   =IInstrumentForm= with type-specific =populate= overloads (non-virtual) on each concrete
+   form. The base class retains all other shared lifecycle methods (=show=, =hide=, =save=,
+   validation, etc.).
+2. Move the dispatch to the call sites (=TradeController=, =TradeDetailDialog=), which
+   already know =(product_type, trade_type)= from the =trade_export_item= produced by
+   task 2. The call site calls the right form's =populate= directly.
+3. Remove =trade_instrument= and the sub-variant =std::get_if= calls from every form
+   implementation file.
+
+* Status
+
+| Field        | Value                                                                               |
+|--------------+-------------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                             |
+| Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
+| Now          | —                                                                                   |
+| Waiting on   | Task 3 merged ([[id:F9E5967D-77E7-49E3-9806-74AF22D26191][tests]]).               |
+| Next         | Begin once tests PR is green.                                                       |
+| Last touched | 2026-05-29                                                                          |
+
+* Acceptance
+
+- =IInstrumentForm= has no =populate_from_instrument(const trade_instrument&)= method.
+- Each concrete form has a typed =populate= method (or constructor argument) for its
+  specific instrument type(s).
+- No form implementation file uses =std::get_if<trade_instrument>= or
+  =std::get_if<fx_instrument_variant>= or =std::get_if<equity_instrument_variant>=.
+- =IInstrumentForm.hpp= does not include =trade_instrument.hpp=.
+- Call sites (=TradeController=, =TradeDetailDialog=) dispatch explicitly using
+  =(product_type, trade_type)= and call the correct form's =populate= directly.
+- All existing behaviour preserved; no UI regression.
+- The change does not introduce any new rfl usage.
+
+* Plan
+
+(Transient.)
+
+** Affected files
+
+=IInstrumentForm.hpp= and every subclass:
+
+- =FxInstrumentForm= (and all 6 other FX form subclasses)
+- =SwapInstrumentForm=
+- =BondInstrumentForm=
+- =CreditInstrumentForm=
+- =CommodityInstrumentForm=
+- =CompositeInstrumentForm=
+- =ScriptedInstrumentForm=
+- =EquityInstrumentForm= (and relevant equity sub-forms)
+
+Call sites:
+
+- =TradeController.cpp= — receives =trade_export_item= from =getTradeInstrument=; dispatch here.
+- =TradeDetailDialog.cpp= — receives =trade_export_item=; dispatch here.
+
+** Design
+
+=IInstrumentForm= base: remove =populate_from_instrument= from the virtual interface. Add a
+non-virtual helper to the base if any shared pre-population setup is needed.
+
+Each concrete form: add the typed method, e.g.:
+
+#+begin_src cpp
+// BondInstrumentForm.hpp
+void populate(const trading::domain::bond_instrument& instr);
+
+// FxForwardInstrumentForm.hpp (or FxInstrumentForm for all FX forwards)
+void populate(const trading::domain::fx_forward_instrument& instr);
+#+end_src
+
+Call site dispatch (in =TradeController=):
+
+#+begin_src cpp
+// form_ is already the right concrete form, created by the factory
+switch (bundle.trade.classification.product_type) {
+case product_type::bond:
+    static_cast<BondInstrumentForm*>(form_)->populate(
+        std::get<bond_instrument>(bundle.instrument));
+    break;
+// … etc.
+}
+#+end_src
+
+Or, since the call site has the concrete form pointer via the factory, it can use
+=std::visit= on =bundle.instrument= with a typed visitor — keeping the dispatch logic in
+one place.
+
+** Note on FX and equity sub-variants
+
+=FxInstrumentForm= currently dispatches internally on =fx_instrument_variant=. After this
+refactor, the call site receives the =fx_instrument_variant= alternative from the
+=trade_instrument= variant and can either:
+
+- Pass the =fx_instrument_variant= directly to a shared =FxInstrumentForm::populate(const fx_instrument_variant&)= (the form then dispatches internally to its sub-panels), OR
+- Dispatch at the call site to type-specific sub-forms.
+
+The simpler option (variant passed to the form) is acceptable for =fx_instrument_variant=
+and =equity_instrument_variant= since those sub-variants do not interact with rfl. Decision
+deferred to implementation.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

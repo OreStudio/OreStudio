@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: F9E5967D-77E7-49E3-9806-74AF22D26191
+:END:
+#+title: Task: Write round-trip tests for instrument parse dispatch
+#+description: For each instrument family and representative leaf types, serialize a get_trade_instrument_response server-side (with rfl::AddTagsToVariants as the server does), feed the JSON through the new client dispatch logic, and assert the assembled trade_export_item holds the expected instrument with correct field values.
+#+type: task
+#+level: s1
+#+filetags: :fix_rfl_complexity:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 06C98C06-F950-483A-997B-89AED70D1238
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Validate the new instrument parse dispatch with round-trip tests that exercise the full
+server → client JSON path. Tests must compile and pass on Linux, Windows (MSVC), and macOS
+(Clang) — their compilation on MSVC/Clang is itself evidence that =AddTagsToVariants= has
+been successfully eliminated from the client parse path.
+
+* Status
+
+| Field        | Value                                                                               |
+|--------------+-------------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                             |
+| Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
+| Now          | —                                                                                   |
+| Waiting on   | Task 2 merged ([[id:06C98C06-F950-483A-997B-89AED70D1238][rename + rewrite]]). |
+| Next         | Begin once task 2 PR is green.                                                      |
+| Last touched | 2026-05-29                                                                          |
+
+* Acceptance
+
+- At least one test per instrument family: bond, credit, commodity, scripted, composite,
+  FX (at least 2 leaf types: forward + one option), rates/swap (at least 2 leaf types:
+  FRA + vanilla swap), equity (at least 2 leaf types: option + forward).
+- Each test serializes a fully-populated response struct using
+  =rfl::json::write<rfl::AddTagsToVariants>= (matching server behaviour), then calls the
+  new client parse function, and asserts:
+  - =trade_export_item.instrument= holds the expected =std::variant= alternative.
+  - Key instrument fields round-trip correctly (instrument_id, a family-specific field).
+  - =trade_export_item.trade.classification.product_type= matches.
+- A test for an unknown =(product_type, trade_type)= combination asserts the instrument is
+  =std::monostate= and that a =warn= log was emitted.
+- A test for a malformed instrument JSON asserts the call returns =std::nullopt= and that
+  an =error= log was emitted.
+- All tests compile with MSVC (no =C1202=) and Clang (no fold-expression error).
+
+* Plan
+
+(Transient.)
+
+** Test structure
+
+One test fixture (or test file) per family is sufficient. Tests live in the
+=ores.qt.api= test target alongside existing tests.
+
+Pattern per test:
+
+#+begin_src cpp
+// 1. Build a response the way the server does
+messaging::get_trade_instrument_response resp{
+    .success = true,
+    .trade   = make_test_trade(product_type::fx, "FxForward"),
+    .instrument = fx_instrument_variant{make_fx_forward()}
+};
+
+// 2. Serialize as the server does
+const auto json = rfl::json::write<rfl::AddTagsToVariants>(resp);
+
+// 3. Run client parse
+auto result = parse_trade_instrument(json);  // the new function under test
+
+// 4. Assert
+ASSERT_TRUE(result.has_value());
+auto* fx_fwd = std::get_if<fx_instrument_variant>(&result->instrument);
+ASSERT_NE(fx_fwd, nullptr);
+auto* fwd = std::get_if<fx_forward_instrument>(fx_fwd);
+ASSERT_NE(fwd, nullptr);
+EXPECT_EQ(fwd->currency_pair, "EURUSD");
+#+end_src
+
+** Leaf types to cover
+
+| Family   | Leaf types to test                       |
+|----------+------------------------------------------|
+| Bond     | =bond_instrument=                        |
+| Credit   | =credit_instrument=                      |
+| Commodity| =commodity_instrument=                   |
+| Scripted | =scripted_instrument=                    |
+| Composite| =composite_instrument_data= (with legs)  |
+| FX       | =fx_forward_instrument=, =fx_vanilla_option_instrument= |
+| Rates    | =fra_instrument=, =vanilla_swap_instrument= (with legs) |
+| Equity   | =equity_option_instrument=, =equity_forward_instrument= |
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -58,9 +58,17 @@ current SQL files in =projects/ores.sql/create/refdata/=.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                             | File            | Decision | Notes                                         |
+|---+-------------------------------------------------------------+-----------------+----------+-----------------------------------------------|
+| 1 | Guard empty-string check on primary_key.is_text             | template        | Accept   | Kept quoted identifiers for consistency       |
+| 2 | Missing scope_tenant validation block                       | template        | Accept   | Full block added                              |
+| 3 | Missing scope_tenant header comment                         | template        | Accept   | Added                                         |
+| 4 | Default order_by to PK column; drop tenant_scope fallback   | generator.py    | Accept   | Added default; removed .get() fallback        |
+| 5 | Add has_any_coding_scheme; drop coding_scheme fallback      | generator.py    | Accept   | Added flag; removed .get() fallback           |
+| 6 | Use has_any_coding_scheme to unify coding-scheme block      | template        | Accept   | Two duplicate blocks merged into one          |
+| 7 | Conditionally quote default value based on is_text          | template        | Accept   | Added is_text/^is_text branches               |
+
+Round 1 addressed in commit d32ea690a.
 
 * Result
 

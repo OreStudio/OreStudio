@@ -143,29 +143,57 @@ struct response_envelope {
 #+end_src
 
 Phase 2 — concrete dispatch (no =AddTagsToVariants=, no variant, direct populator call).
-Mirrors =populate_instruments_for_trades= in =trade_handler.hpp=:
+Mirrors =populate_instruments_for_trades= in =trade_handler.hpp=.
+
+Named wrapper structs are defined in an anonymous namespace at the top of the TU (types
+cannot be defined inline inside a template argument list in C++):
+
+#+begin_src cpp
+namespace {
+// Flat types
+struct bond_wrapper      { domain::bond_instrument instrument; };
+struct credit_wrapper    { domain::credit_instrument instrument; };
+struct commodity_wrapper { domain::commodity_instrument instrument; };
+struct scripted_wrapper  { domain::scripted_instrument instrument; };
+
+// with_legs types
+struct composite_wrapper {
+    domain::composite_instrument instrument;
+    std::vector<domain::composite_leg> legs;
+};
+struct fra_wrapper           { domain::fra_instrument instrument;
+                               std::vector<domain::swap_leg> legs; };
+struct vanilla_swap_wrapper  { domain::vanilla_swap_instrument instrument;
+                               std::vector<domain::swap_leg> legs; };
+// … one wrapper per rates leaf type
+
+struct fx_forward_wrapper         { domain::fx_forward_instrument instrument; };
+struct fx_vanilla_option_wrapper  { domain::fx_vanilla_option_instrument instrument; };
+// … one wrapper per FX leaf type
+
+struct equity_option_wrapper  { domain::equity_option_instrument instrument; };
+// … one wrapper per equity leaf type
+} // namespace
+#+end_src
+
+Dispatch:
 
 #+begin_src
 switch product_type:
-  bond      → rfl::json::read<struct { bond_instrument instrument; }>(raw)
-              → populator.populate(w->instrument)
-  credit    → rfl::json::read<struct { credit_instrument instrument; }>(raw)
-              → populator.populate(w->instrument)
-  commodity → … same pattern
-  scripted  → … same pattern
-  composite → rfl::json::read<struct { composite_instrument instrument;
-                                        vector<composite_leg> legs; }>(raw)
-              → populator.populate(w->instrument, std::move(w->legs))
+  bond      → rfl::json::read<bond_wrapper>(raw)      → populator.populate(w->instrument)
+  credit    → rfl::json::read<credit_wrapper>(raw)    → populator.populate(w->instrument)
+  commodity → rfl::json::read<commodity_wrapper>(raw) → populator.populate(w->instrument)
+  scripted  → rfl::json::read<scripted_wrapper>(raw)  → populator.populate(w->instrument)
+  composite → rfl::json::read<composite_wrapper>(raw) → populator.populate(w->instrument, std::move(w->legs))
   fx        → switch trade_type
-              → rfl::json::read<struct { fx_forward_instrument instrument; }>(raw)
-              → populator.populate(w->instrument)
-              (7 FX leaf types, one branch each)
-  equity    → switch trade_type → … (9 equity leaf types)
+              → rfl::json::read<fx_forward_wrapper>(raw)        → populator.populate(w->instrument)
+              → rfl::json::read<fx_vanilla_option_wrapper>(raw) → populator.populate(w->instrument)
+              … (7 FX leaf types, one branch each)
+  equity    → switch trade_type → … (9 equity leaf types, same pattern)
   swap      → switch trade_type
-              → rfl::json::read<struct { ConcreteRatesType instrument;
-                                         vector<swap_leg> legs; }>(raw)
-              → populator.populate(w->instrument, std::move(w->legs))
-              (9 rates leaf types)
+              → rfl::json::read<fra_wrapper>(raw)          → populator.populate(w->instrument, std::move(w->legs))
+              → rfl::json::read<vanilla_swap_wrapper>(raw) → populator.populate(w->instrument, std::move(w->legs))
+              … (9 rates leaf types)
   unknown   → log warn; return nullopt
 #+end_src
 

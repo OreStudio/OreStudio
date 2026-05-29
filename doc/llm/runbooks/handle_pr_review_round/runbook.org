@@ -33,7 +33,9 @@ In execution order:
    gh pr checks <N>
    #+end_src
 
-   If any check is failing, identify and fix the root cause first — as a separate commit — before looking at review comments. A CI failure may explain or supersede some review comments. If CI is green or only pending, proceed; pending checks will be re-verified after the push.
+   - If any check is *failing*, identify and fix the root cause first — as a separate commit — before looking at review comments. A CI failure may explain or supersede some review comments.
+   - If checks are *pending / running*, notify the user and proceed to step 3; CI will be re-verified after fixes are pushed (step 7).
+   - If CI is *green*, proceed immediately.
 
 3. /Read the comments./ Follow [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] step 1: =gh pr view <N> --comments= and =gh api .../comments=.
 

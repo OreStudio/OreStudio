@@ -19,7 +19,7 @@
  */
 /*
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_table_create.mustache
+ * Template: sql_schema_create.mustache
  * To modify, update the template and regenerate.
  */
 
@@ -151,8 +151,9 @@ do instead
 
 -- =============================================================================
 -- Validation function for currency
--- Validates that a iso_code exists in the currencies table for the given tenant.
--- Returns the validated value, or raises if not found.
+-- Validates that a iso_code exists in the currencies table.
+-- Returns the validated value, or default if null/empty.
+-- Validates against both the tenant's own data and the system tenant's canonical set.
 -- =============================================================================
 create or replace function ores_refdata_validate_currency_fn(
     p_tenant_id uuid,
@@ -166,9 +167,7 @@ begin
     end if;
 
     -- Allow pass-through if neither this tenant nor the system tenant has
-    -- published any currencies yet (e.g. a freshly provisioned automation
-    -- tenant).  A global empty-table check breaks when other tenants have
-    -- currencies but this one does not.
+    -- seeded currencies yet (freshly provisioned tenant).
     if not exists (
         select 1 from ores_refdata_currencies_tbl
         where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
@@ -177,9 +176,7 @@ begin
         return p_value;
     end if;
 
-    -- Validate against the tenant's currencies and the system tenant's currencies.
-    -- System-tenant currencies are the standard reference set (published once);
-    -- tenant-specific currencies extend them after bundle publish.
+    -- Validate against this tenant's values and the system tenant's canonical set.
     if not exists (
         select 1 from ores_refdata_currencies_tbl
         where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())

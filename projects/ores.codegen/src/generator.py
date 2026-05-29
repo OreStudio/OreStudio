@@ -310,6 +310,23 @@ def is_field_group_model(model_filename):
     return model_filename.endswith("_field_group.json")
 
 
+def is_table_model(model_filename):
+    """
+    Check if a model file is a unified table model.
+
+    Table models use the unified 'table' root key and are rendered by
+    sql_schema_create.mustache via the 'sql' profile.  They replace the
+    older '_entity.json' / sql_schema_table_create.mustache pipeline.
+
+    Args:
+        model_filename (str): The model filename
+
+    Returns:
+        bool: True if this is a table model
+    """
+    return model_filename.endswith("_table.json")
+
+
 def get_model_type(model_filename):
     """
     Determine the model type from the filename.
@@ -319,7 +336,7 @@ def get_model_type(model_filename):
 
     Returns:
         str: The model type ('domain_entity', 'junction', 'enum', 'schema', 'data',
-             'component', 'field_group', 'service_registry', or 'unknown')
+             'table', 'component', 'field_group', 'service_registry', or 'unknown')
     """
     if is_domain_entity_model(model_filename):
         return 'domain_entity'
@@ -327,6 +344,8 @@ def get_model_type(model_filename):
         return 'junction'
     elif is_field_group_model(model_filename):
         return 'field_group'
+    elif is_table_model(model_filename):
+        return 'table'
     elif is_service_registry_model(model_filename):
         return 'service_registry'
     elif is_component_model(model_filename):
@@ -445,6 +464,18 @@ def resolve_output_path(output_pattern, model_data, model_type):
 
         result = result.replace('{component}', name)
         result = result.replace('{component_full}', full_name)
+
+    elif model_type == 'table' and 'table' in model_data:
+        table = model_data['table']
+        component = table.get('component', 'unknown')
+        entity_singular = table.get('entity_singular', 'unknown')
+        entity_plural = table.get('entity_plural', entity_singular + 's')
+        entity_pascal = snake_to_pascal(entity_singular)
+
+        result = result.replace('{component}', component)
+        result = result.replace('{entity}', entity_singular)
+        result = result.replace('{entity_plural}', entity_plural)
+        result = result.replace('{EntityPascal}', entity_pascal)
 
     elif model_type == 'service_registry':
         # Service registry output paths are fixed — no placeholder substitution needed.
@@ -990,6 +1021,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     is_component = is_component_model(model_filename)
     is_service_registry = is_service_registry_model(model_filename)
     is_field_group = is_field_group_model(model_filename)
+    is_table = is_table_model(model_filename)
 
     # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
     generate_cpp = target_template and target_template.startswith('cpp_') and not target_template.startswith('cpp_qt_')
@@ -1028,6 +1060,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             templates_to_process = [target_template]
         else:
             print(f"Service registry model '{model_filename}' requires --profile service-registry")
+            return
+    elif is_table:
+        # Table models must be used via a profile (e.g. --profile sql)
+        if target_template:
+            templates_to_process = [target_template]
+        else:
+            print(f"Table model '{model_filename}' requires --profile sql")
             return
     elif is_schema_model:
         # Entity schema models use a different template set
@@ -1229,6 +1268,41 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             for item in svc.get('select_prefixes', []):
                 item['psql_var'] = psql_var
         data['service_registry'] = service_registry
+
+    # Special processing for unified table models
+    if is_table and isinstance(model, dict) and 'table' in model:
+        table = model['table']
+        if 'columns' in table:
+            _mark_last_item(table['columns'])
+        if 'indexes' in table:
+            _mark_last_item(table['indexes'])
+        if 'check_constraints' in table:
+            _mark_last_item(table['check_constraints'])
+        if 'insert_trigger' in table and 'validations' in table['insert_trigger']:
+            _mark_last_item(table['insert_trigger']['validations'])
+        # Precompute coding_scheme boolean flags
+        coding_scheme = table.get('coding_scheme', 'none')
+        table['has_coding_scheme'] = (coding_scheme == 'required')
+        table['has_nullable_coding_scheme'] = (coding_scheme == 'nullable')
+        table['has_image_id'] = bool(table.get('image_id', False))
+        table['has_tenant_id'] = bool(table.get('has_tenant_id', True))
+        # Pre-render check constraints as a single string to avoid Mustache
+        # whitespace issues when inserting them after the standard checks.
+        raw_checks = table.get('check_constraints', [])
+        if raw_checks:
+            table['has_check_constraints'] = True
+            lines = [f'    check ({c["expression"]})' for c in raw_checks]
+            table['sql_check_constraints'] = ',\n'.join(lines)
+        else:
+            table['has_check_constraints'] = False
+            table['sql_check_constraints'] = ''
+        # Precompute tenant-scope flags for the validation function
+        if 'validation_fn' in table:
+            scope = table['validation_fn'].get('tenant_scope', '')
+            table['validation_fn']['scope_system'] = (scope == 'system')
+            table['validation_fn']['scope_both'] = (scope == 'both')
+            table['validation_fn']['scope_tenant'] = (scope == 'tenant')
+        data['table'] = table
 
     # Special processing for entity schema models
     if is_schema_model and isinstance(model, dict) and 'entity' in model:

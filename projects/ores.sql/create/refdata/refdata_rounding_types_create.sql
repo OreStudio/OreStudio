@@ -19,7 +19,7 @@
  */
 /*
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_table_create.mustache
+ * Template: sql_schema_create.mustache
  * To modify, update the template and regenerate.
  */
 
@@ -123,9 +123,9 @@ do instead
 
 -- =============================================================================
 -- Validation function for rounding_type
--- Validates that a code exists in the rounding_types table for the given
--- tenant or the system tenant (which holds the canonical value set).
+-- Validates that a code exists in the rounding_types table.
 -- Returns the validated value, or default if null/empty.
+-- Validates against both the tenant's own data and the system tenant's canonical set.
 -- =============================================================================
 create or replace function ores_refdata_validate_rounding_type_fn(
     p_tenant_id uuid,
@@ -138,7 +138,7 @@ begin
     end if;
 
     -- Allow pass-through if neither this tenant nor the system tenant has
-    -- seeded rounding types yet (freshly provisioned tenant).
+    -- seeded rounding_types yet (freshly provisioned tenant).
     if not exists (
         select 1 from ores_refdata_rounding_types_tbl
         where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())

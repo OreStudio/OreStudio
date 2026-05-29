@@ -19,7 +19,7 @@
  */
 /*
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_table_create.mustache
+ * Template: sql_schema_create.mustache
  * To modify, update the template and regenerate.
  */
 

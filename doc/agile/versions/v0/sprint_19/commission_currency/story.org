@@ -28,7 +28,7 @@ same checklist applies.
 |---------------+----------------------------------------|
 | State         | BLOCKED                              |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Nothing.                               |
+| Now           | Blocked on codegen refactoring; SQL and CLI verified. |
 | Waiting on    | [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] |
 | Next          | Resume once codegen story is complete; pick up shell and Qt tasks. |
 | Last touched  | 2026-05-29                               |

@@ -1,0 +1,183 @@
+:PROPERTIES:
+:ID: C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D
+:END:
+#+title: Story: Refactor ores.codegen SQL generation
+#+description: Unify the two SQL mustache templates into one; define a single entity model format for SQL; replace all generate_*_schema.sh bash scripts with an idiomatic Python CLI (codegen.py).
+#+type: story
+#+level: s2
+#+filetags: :tooling:codegen:sprint_19:v0:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The ores.codegen SQL generation system has accumulated two parallel pipelines that do the
+same job with different templates, different model formats, and different invocation
+conventions:
+
+- =sql_schema_table_create.mustache= (283 lines) — for =_entity.json= models;
+  generates the production-grade SQL with full trigger logic and a per-entity
+  =validate_ENTITY_fn()=.
+- =sql_schema_domain_entity_create.mustache= (377 lines) — for =_domain_entity.json=
+  models; used by =--profile sql= and =--profile all=; generates SQL for domain entities
+  (party, book, etc.) but does not produce a validation function.
+
+On top of this, 14 bash scripts each hard-code which glob patterns to pass and which
+profiles to run. There is no safe "regenerate everything" command. The =--profile all=
+footgun silently overwrites production SQL with the wrong template when run against an
+entity that has both model files.
+
+This story unifies the SQL half of ores.codegen. Scope is SQL only; C++ templates and
+the =_domain_entity.json= C++ generation path are unchanged.
+
+** What we want
+
+*1. A single Python CLI: =codegen.py=*
+
+Replaces =run_generator.sh= and all 14 =generate_*.sh= bash scripts. Structured as an
+idiomatic Python application: proper =argparse= subcommands, entry point declaration,
+logging, and a clean internal package layout. The exact subcommand names (generate vs.
+regen, run vs. regenerate, etc.) are an open design decision to be resolved in the first
+task; they must be unambiguous and follow Python CLI conventions (see [[https://docs.python.org/3/library/argparse.html#sub-commands][argparse subcommands]]).
+
+Required capabilities:
+- Generate SQL from a single model file.
+- Regenerate all SQL for a named component (=refdata=, =trade=, =dq=, =iam=, ...).
+- Regenerate SQL for all components in one command.
+- Dry-run mode: print the paths that would be written without writing them.
+- Diff mode: show what would change in the output files without writing.
+- List mode: enumerate models, components, or profiles.
+
+*2. A unified SQL model format*
+
+One root key — =table= — that subsumes both =entity= and the SQL-relevant fields of
+=domain_entity=. A single model file is the source of truth for the SQL schema of one
+table. The model encodes all variability via flags; the template reads them without
+needing to know the origin of the model.
+
+Variability axes identified from the existing SQL (both templates and all generated
+output files):
+
+| Flag | Values | Description |
+|------+--------+-------------|
+| =tenant= | =required= / =system= / =nullable= / =none= | How tenant_id behaves in the table and trigger |
+| =coding_scheme= | =none= / =required= / =nullable= | Coding scheme FK column |
+| =image_id= | true / false | Optional image FK column |
+| =workspace_id= | true / false | Workspace FK column (soft FK + index) |
+| =natural_keys= | list | Columns that get their own unique index |
+| =validation_fn= | present / absent | Whether to emit =ores_PRODUCT_COMPONENT_validate_ENTITY_fn()= |
+| =validation_fn.default= | value / absent | Return value when input is null/empty |
+| =validation_fn.tenant_scope= | =system= / =tenant= / =both= | Which tenants to search in the validation fn |
+| =validation_fn.order_by= | column name | Column to order the valid-values list in the error message |
+| =insert_trigger.validations= | list | Call existing validation fns per column |
+| =insert_trigger.soft_fk_validations= | list | UUID-FK existence checks |
+| =insert_trigger.fk_copy_validations= | list | FK checks that also copy denormalised columns |
+| =insert_trigger.text_code_validations= | list | Text-code FK checks (no UUID) |
+| =security_definer= | true / false | SECURITY DEFINER on the trigger function |
+
+The =validation_fn.tenant_scope= flag captures a key variation found in the existing
+SQL that the current template does not express correctly: auxiliary types
+(=rounding_type=, =monetary_nature=, =currency_market_tier=) validate against
+=tenant_id in (p_tenant_id, system_tenant)=, while the current template only supports
+=system= or =tenant= (never both). The currency validation function has yet another
+variant — it also validates against both. All three variants must be expressible.
+
+*3. A single SQL template: =sql_schema_create.mustache=*
+
+Replaces both existing templates. All variability is controlled by the flags above. The
+template must reproduce, byte-for-byte (ignoring cosmetic whitespace), the SQL that the
+current templates produce for every entity in =projects/ores.sql/create/=. Logical
+fidelity is required; whitespace normalisation is acceptable.
+
+** What is NOT in scope
+
+- C++ templates (domain, repository, service, protocol, Qt) — unchanged.
+- The =_domain_entity.json= → =sql_schema_domain_entity_create.mustache= path for
+  domain entities (party, book, counterparty, conventions, etc.) — unchanged; those SQL
+  files are owned by that template.
+- Merging =_entity.json= and =_domain_entity.json= into a single file — this touches the
+  C++ generation path and is deferred.
+- DQ, trade, workspace, and other component schemas — refdata is the pilot; roll out
+  to other components once refdata parity is confirmed.
+- Reference data seed SQL (=generate_crypto_refdata.sh=, =generate_fpml_refdata.sh=,
+  etc.) — those are data generation scripts, not schema generation; out of scope.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Pick up when unblocked; start with the survey task. |
+| Last touched  | 2026-05-29                               |
+
+* Acceptance
+
+- =codegen.py= exists as a proper Python CLI; all subcommand names are unambiguous and
+  documented.
+- A single =sql_schema_create.mustache= template replaces both existing SQL templates.
+- All refdata =_entity.json= models have been migrated to the new =table= format.
+- Running =codegen.py= for all refdata entities produces zero logical diff against the
+  current SQL files in =projects/ores.sql/create/refdata/=.
+- =generate_refdata_schema.sh= has been retired (deleted or archived).
+- The =--dry-run= flag prints output paths without writing; =--diff= shows file diffs.
+- All new code passes the project's linting and formatting checks.
+- Site builds cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| Survey SQL variation and define unified model format | BACKLOG | | | Audit all generated SQL files; enumerate every variation; define the =table= model schema and CLI interface. |
+| Implement =codegen.py= CLI scaffold | BACKLOG | | | Argparse structure, entry point, package layout, logging; subcommand stubs; venv wiring. |
+| Implement unified SQL template | BACKLOG | | | Write =sql_schema_create.mustache=; add =table= model-type support in generator; verify parity for all refdata entities. |
+| Migrate refdata entity models to new format | BACKLOG | | | Convert all =_entity.json= models; run parity check (zero logical diff); update =codegen.py= component manifest. |
+| Retire =generate_refdata_schema.sh= | BACKLOG | | | Delete script; update any CI or Makefile references; document replacement in =README.md=. |
+
+* Notes
+
+** Why two templates exist
+
+=sql_schema_table_create.mustache= was created for the simpler =_entity.json= models
+(auxiliary types, lookup tables). =sql_schema_domain_entity_create.mustache= was created
+later to handle the richer =_domain_entity.json= models. Neither was refactored to absorb
+the other because they serve different entry points. The result is that =--profile all=
+became dangerous for entities that have both model files.
+
+** Template discrepancy discovered during analysis
+
+The current =sql_schema_table_create.mustache= validation function only supports two
+tenant modes: =system= (validate against =ores_utility_system_tenant_id_fn()=) or =tenant=
+(validate against =p_tenant_id=). But the *actual* generated SQL for =rounding_type=,
+=monetary_nature=, and =currency_market_tier= uses =tenant_id in (p_tenant_id, system_tenant)=
+— a third mode that the template cannot currently reproduce cleanly. The source SQL files
+are the ground truth; the template must be fixed to match. The unified model's
+=validation_fn.tenant_scope = "both"= flag covers this case.
+
+** Component naming mismatch discovered during analysis
+
+Running =all-cpp= on the auxiliary type domain_entity models (=rounding_type=,
+=monetary_nature=, =currency_market_tier=) wrote C++ files to a new
+=projects/ores.refdata/= directory rather than to =projects/ores.refdata.api/= and
+=projects/ores.refdata.core/= where the actual production code lives. The models have
+=component: "refdata"= but the project structure uses a two-project split (=.api= for
+headers, =.core= for implementations). The generated files were untracked (and therefore
+reported as "zero git diff" — misleading). The spurious directory was deleted as cleanup.
+
+This means the reported parity for the three auxiliaries was incorrect: the C++ parity
+verification task must be redone once the codegen story resolves the component naming
+issue (=component_include= / =component_core= fields in the models).
+
+** The =--profile all= footgun
+
+The =all= profile runs =sql + all-cpp=. For entities that have both =_entity.json= (production
+SQL) and =_domain_entity.json= (C++), running =--profile all= on the domain entity model
+silently overwrites the production SQL with the simpler domain_entity SQL template. This
+was triggered during the currency commissioning story. =codegen.py= must make this
+impossible, either by refusing to run SQL generation when a corresponding =_entity.json=
+exists, or by deprecating =--profile all= entirely.

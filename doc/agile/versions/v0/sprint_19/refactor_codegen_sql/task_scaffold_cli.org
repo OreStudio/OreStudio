@@ -60,8 +60,8 @@ is a working CLI that can replace =generate_refdata_schema.sh= for day-to-day us
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | Hardcoded =venv/bin/python3= not cross-platform; suggest dynamic resolution | codegen.py | Not changed. Python tooling is Linux-only; consistent with compass.sh convention. | PR #934 round 1 |
-| 2 | Use =python -m pip= instead of invoking =pip= binary directly | codegen.py | Fixed | More robust; follows Python best practice. PR #934 round 1 |
+| 1 | Hardcoded =venv/bin/python3= not cross-platform; suggest dynamic resolution | codegen.py | Fixed | Moved all venv logic out of Python into =codegen.sh= wrapper (compass.sh pattern); =codegen.py= is now a pure entry point with no platform-specific paths. PR #934 round 1 |
+| 2 | Use =python -m pip= instead of invoking =pip= binary directly | codegen.py | Fixed | Moved to =codegen.sh=; no longer relevant in Python. PR #934 round 1 |
 
 * Result
 
@@ -69,7 +69,8 @@ Implemented. Package layout:
 
 #+begin_example
 projects/ores.codegen/
-  codegen.py                  top-level entry point; bootstraps venv, cds to repo root
+  codegen.sh                  shell wrapper; bootstraps venv, activates it, cds to repo root
+  codegen.py                  pure Python entry point; no venv logic
   src/
     codegen/
       __init__.py
@@ -86,5 +87,5 @@ Key behaviours:
 - =--profile all= is rejected for =_entity.json= (schema) models to prevent the footgun.
 - =--dry-run= resolves and prints output paths without writing.
 - =diff= returns a clear error referencing the unified template task.
-- Venv bootstrapped via =os.execv= re-exec on first run.
+- Venv managed by =codegen.sh= (following =compass.sh= pattern); =codegen.py= contains no platform-specific paths.
 

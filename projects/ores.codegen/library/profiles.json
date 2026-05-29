@@ -2,7 +2,7 @@
   "profiles": {
     "sql": {
       "description": "SQL schema creation scripts",
-      "model_types": ["domain_entity", "junction", "schema"],
+      "model_types": ["domain_entity", "junction", "schema", "table"],
       "templates": [
         {
           "template": "sql_schema_domain_entity_create.mustache",
@@ -33,6 +33,11 @@
           "template": "sql_schema_table_create.mustache",
           "output": "projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql",
           "model_types": ["schema"]
+        },
+        {
+          "template": "sql_schema_create.mustache",
+          "output": "projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql",
+          "model_types": ["table"]
         }
       ]
     },

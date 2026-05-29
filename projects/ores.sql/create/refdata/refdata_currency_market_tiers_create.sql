@@ -19,7 +19,7 @@
  */
 /*
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_table_create.mustache
+ * Template: sql_schema_create.mustache
  * To modify, update the template and regenerate.
  */
 
@@ -125,7 +125,7 @@ do instead
 -- Validation function for currency_market_tier
 -- Validates that a code exists in the currency_market_tiers table.
 -- Returns the validated value, or default if null/empty.
--- Uses current tenant data.
+-- Validates against both the tenant's own data and the system tenant's canonical set.
 -- =============================================================================
 create or replace function ores_refdata_validate_currency_market_tier_fn(
     p_tenant_id uuid,
@@ -138,7 +138,7 @@ begin
     end if;
 
     -- Allow pass-through if neither this tenant nor the system tenant has
-    -- seeded market tiers yet (freshly provisioned tenant).
+    -- seeded currency_market_tiers yet (freshly provisioned tenant).
     if not exists (
         select 1 from ores_refdata_currency_market_tiers_tbl
         where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())

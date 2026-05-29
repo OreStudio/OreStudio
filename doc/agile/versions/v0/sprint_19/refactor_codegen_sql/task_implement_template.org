@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: ADBAD96B-264D-4850-B812-E4ADF544AD81
+:END:
+#+title: Task: Implement unified SQL template
+#+description: Write sql_schema_create.mustache; add table model-type support in generator.py; create 10 refdata _table.json models; verify zero logical diff against current SQL files.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_sql:sprint_19:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-sql
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create =sql_schema_create.mustache= as the unified SQL template that replaces both
+=sql_schema_table_create.mustache= and the SQL portion of
+=sql_schema_domain_entity_create.mustache=. Add =table= model-type support to
+=generator.py= and =profiles.json=. Define 10 =_table.json= models for all refdata
+entities in the new format. Verify that running =codegen.sh regenerate
+--component refdata-table --profile sql= produces zero logical diff against the
+current SQL files in =projects/ores.sql/create/refdata/=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] |
+| Now          | Implementation complete; awaiting PR review. |
+| Waiting on   | Nothing.                                     |
+| Next         | Migrate refdata entity models to new format. |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- =sql_schema_create.mustache= exists at =projects/ores.codegen/library/templates/=.
+- =generator.py= recognises =*_table.json= files as model type =table=.
+- =profiles.json= maps =sql= profile to =sql_schema_create.mustache= for =table= model type.
+- 10 =*_table.json= model files exist in =projects/ores.codegen/models/refdata/=.
+- =codegen.sh regenerate --component refdata-table --profile sql --dry-run= prints all 10 output paths.
+- Running the actual regeneration produces zero logical diff (only template name comment changes) against the current repo SQL files.
+- All four =both= tenant-scope entities (currency, currency_market_tier, monetary_nature, rounding_type) generate =IN (p_tenant_id, ores_utility_system_tenant_id_fn())= validation logic.
+- =party_id_scheme= generates the =check ("max_cardinality" is null or "max_cardinality" > 0)= constraint correctly.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/936][#936]] | [codegen] Implement unified SQL template |
+
+* Review
+
+| # | Comment summary                                             | File            | Decision | Notes                                         |
+|---+-------------------------------------------------------------+-----------------+----------+-----------------------------------------------|
+| 1 | Guard empty-string check on primary_key.is_text             | template        | Accept   | Kept quoted identifiers for consistency       |
+| 2 | Missing scope_tenant validation block                       | template        | Accept   | Full block added                              |
+| 3 | Missing scope_tenant header comment                         | template        | Accept   | Added                                         |
+| 4 | Default order_by to PK column; drop tenant_scope fallback   | generator.py    | Accept   | Added default; removed .get() fallback        |
+| 5 | Add has_any_coding_scheme; drop coding_scheme fallback      | generator.py    | Accept   | Added flag; removed .get() fallback           |
+| 6 | Use has_any_coding_scheme to unify coding-scheme block      | template        | Accept   | Two duplicate blocks merged into one          |
+| 7 | Conditionally quote default value based on is_text          | template        | Accept   | Added is_text/^is_text branches               |
+
+Round 1 addressed in commit d32ea690a.
+
+* Result
+
+Implementation complete. Files created/modified:
+
+#+begin_example
+projects/ores.codegen/
+  library/
+    templates/
+      sql_schema_create.mustache           new unified template
+    profiles.json                          added "table" to sql profile
+  models/refdata/
+    book_status_table.json                 new (system scope, display_order)
+    contact_type_table.json                new (system scope, display_order)
+    currency_table.json                    new (both scope, nullable coding_scheme, image_id)
+    currency_market_tier_table.json        new (both scope, default=g10)
+    monetary_nature_table.json             new (both scope, default=fiat)
+    party_id_scheme_table.json             new (system scope, check_constraints)
+    party_status_table.json                new (system scope, display_order)
+    party_type_table.json                  new (system scope, display_order)
+    purpose_type_table.json                new (system scope, display_order)
+    rounding_type_table.json               new (both scope, default=Closest)
+  src/
+    codegen/
+      generate.py                          added "table" to --profile all safety check
+      manifest.py                          added refdata-table component
+    generator.py                           is_table_model(), get_model_type(), resolve_output_path(),
+                                           table special processing, sql_check_constraints pre-render
+#+end_example
+
+Key design decisions:
+
+- =_table.json= suffix convention analogous to =_entity.json=, =_domain_entity.json=, etc.
+- Three-way tenant scope (=system= / =both= / =tenant=) replaces the binary =system_tenant_validation= flag; pre-computed as boolean flags in generator preprocessing for Mustache consumption.
+- Check constraints pre-rendered as a single string (=sql_check_constraints=) in generator preprocessing to avoid pystache whitespace issues with adjacent section tags.
+- =refdata-table= component added to manifest for parity verification; replaces =refdata= once Task 4 (migration) is complete.
+- Notify triggers for =table= model types are NOT generated by =sql_schema_create.mustache= — they continue to be generated by the existing =sql_schema_notify_trigger.mustache= from domain entity models.
+
+Parity result: all 10 entities produce zero logical diff. Only cosmetic differences:
+- Template name in the =AUTO-GENERATED= comment header (=sql_schema_table_create.mustache= → =sql_schema_create.mustache=).
+- Validation function comment wording (explanatory text, not SQL logic).

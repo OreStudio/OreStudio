@@ -46,11 +46,11 @@ This story makes the tooling reachable and useful:
 
 | Field         | Value                                                                    |
 |---------------+--------------------------------------------------------------------------|
-| State         | STARTED                                                                  |
+| State         | DONE                                                                     |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                                                |
-| Now           | T5 in progress — renaming hyphenated scripts to snake_case.              |
-| Waiting on    | Nothing.                                                                 |
-| Next          | Complete T5 and open PR.                                                 |
+| Now           | Nothing.                                                                 |
+| Waiting on    | —                                                                        |
+| Next          | —                                                                        |
 | Last touched  | 2026-05-29                                                               |
 
 * Acceptance
@@ -77,7 +77,7 @@ This story makes the tooling reachable and useful:
 | [[id:74DA0C54-ED8C-4CF5-B0C1-93799B15C174][Task: Overhaul ores.compass component overview]] | DONE | | | Extend the component overview with a section per command pillar (Locate, Search, Scaffold, Fleet, Goto, Backlog), each with a prose description and a recipe table. |
 | [[id:35B4022E-5025-4F8A-BE00-1A13EF0DAD55][Task: Add scripts section to ores.sql component overview]] | DONE | | | Add * Scripts section with a subsection per lifecycle and utility script, purpose paragraph, and recipe table where applicable. |
 | [[id:A728AED1-6DFF-4167-B72D-EEEF2A55E8EE][Task: Review and link ores.lisp and ores.codegen overviews]] | DONE | | | Review both overviews for gaps, wire into the new Tooling section in knowledge.org, and confirm all tools are navigable from the architecture pages. |
-| [[id:FF5FEF54-E937-4879-B66C-1C1AB22E4316][Task: Standardise script naming to snake_case]] | STARTED | | | Rename parse-test-results.sh and convert-to-unix.sh to snake_case to match all other scripts in scripts/. |
+| [[id:FF5FEF54-E937-4879-B66C-1C1AB22E4316][Task: Standardise script naming to snake_case]] | DONE | | | Rename parse-test-results.sh and convert-to-unix.sh to snake_case to match all other scripts in scripts/. |
 
 * Decisions
 

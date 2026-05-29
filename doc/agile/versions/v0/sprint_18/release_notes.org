@@ -157,7 +157,7 @@ Steady upward slope is healthy; plateauing signals a stall.
 * 📊 Time Summary
 
 - *Total effort*: not tracked
-- *PRs merged*: 117 (since v0.0.17, 2026-05-22 to 2026-05-29)
+- *PRs merged*: 117 (since v0.0.17)
 - *Sprint duration*: 2026-05-22 → 2026-05-29
 
 -----

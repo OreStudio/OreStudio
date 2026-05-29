@@ -1281,9 +1281,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'insert_trigger' in table and 'validations' in table['insert_trigger']:
             _mark_last_item(table['insert_trigger']['validations'])
         # Precompute coding_scheme boolean flags
-        coding_scheme = table.get('coding_scheme', 'none')
+        coding_scheme = table['coding_scheme']
         table['has_coding_scheme'] = (coding_scheme == 'required')
         table['has_nullable_coding_scheme'] = (coding_scheme == 'nullable')
+        table['has_any_coding_scheme'] = coding_scheme in ('required', 'nullable')
         table['has_image_id'] = bool(table.get('image_id', False))
         table['has_tenant_id'] = bool(table.get('has_tenant_id', True))
         # Pre-render check constraints as a single string to avoid Mustache
@@ -1298,10 +1299,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             table['sql_check_constraints'] = ''
         # Precompute tenant-scope flags for the validation function
         if 'validation_fn' in table:
-            scope = table['validation_fn'].get('tenant_scope', '')
+            scope = table['validation_fn']['tenant_scope']
             table['validation_fn']['scope_system'] = (scope == 'system')
             table['validation_fn']['scope_both'] = (scope == 'both')
             table['validation_fn']['scope_tenant'] = (scope == 'tenant')
+            if 'order_by' not in table['validation_fn']:
+                table['validation_fn']['order_by'] = table['primary_key']['column']
         data['table'] = table
 
     # Special processing for entity schema models

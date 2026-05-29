@@ -70,8 +70,8 @@ create table if not exists "{{table.product}}_{{table.component}}_{{table.entity
     ),
 {{/table.has_tenant_id}}
 {{/table.has_coding_scheme}}
-    check ("valid_from" < "valid_to"),
-    check ("{{table.primary_key.column}}" <> ''){{#table.has_check_constraints}},
+    check ("valid_from" < "valid_to"){{#table.primary_key.is_text}},
+    check ("{{table.primary_key.column}}" <> ''){{/table.primary_key.is_text}}{{#table.has_check_constraints}},
 {{{table.sql_check_constraints}}}{{/table.has_check_constraints}}
 );
 
@@ -134,7 +134,7 @@ begin
     new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
 
 {{/table.has_tenant_id}}
-{{#table.has_coding_scheme}}
+{{#table.has_any_coding_scheme}}
     -- Validate foreign key references
     if NEW.coding_scheme_code is not null and not exists (
         select 1 from ores_dq_coding_schemes_tbl
@@ -145,19 +145,7 @@ begin
         using errcode = '23503';
     end if;
 
-{{/table.has_coding_scheme}}
-{{#table.has_nullable_coding_scheme}}
-    -- Validate foreign key references
-    if NEW.coding_scheme_code is not null and not exists (
-        select 1 from ores_dq_coding_schemes_tbl
-        where code = NEW.coding_scheme_code
-        and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
-        using errcode = '23503';
-    end if;
-
-{{/table.has_nullable_coding_scheme}}
+{{/table.has_any_coding_scheme}}
 {{#table.insert_trigger.validations}}
     -- Validate {{column}}
     new.{{column}} := {{validation_function}}({{#table.has_tenant_id}}new.tenant_id, {{/table.has_tenant_id}}new.{{column}});
@@ -232,6 +220,9 @@ do instead
 {{#table.validation_fn.scope_both}}
 -- Validates against both the tenant's own data and the system tenant's canonical set.
 {{/table.validation_fn.scope_both}}
+{{#table.validation_fn.scope_tenant}}
+-- Validates against the tenant's own data only.
+{{/table.validation_fn.scope_tenant}}
 -- =============================================================================
 create or replace function {{table.product}}_{{table.component}}_validate_{{table.entity_singular}}_fn(
     p_tenant_id uuid,
@@ -241,7 +232,12 @@ begin
     -- Return default if null or empty
     if p_value is null{{#table.primary_key.is_text}} or p_value = ''{{/table.primary_key.is_text}} then
 {{#table.validation_fn.default}}
+{{#table.primary_key.is_text}}
         return '{{table.validation_fn.default}}';
+{{/table.primary_key.is_text}}
+{{^table.primary_key.is_text}}
+        return {{table.validation_fn.default}};
+{{/table.primary_key.is_text}}
 {{/table.validation_fn.default}}
 {{^table.validation_fn.default}}
         raise exception 'Invalid {{table.entity_singular}}: value cannot be null{{#table.primary_key.is_text}} or empty{{/table.primary_key.is_text}}'
@@ -296,6 +292,31 @@ begin
         ) using errcode = '23503';
     end if;
 {{/table.validation_fn.scope_both}}
+{{#table.validation_fn.scope_tenant}}
+    -- Allow pass-through if this tenant has no seeded {{table.entity_plural}} yet.
+    if not exists (
+        select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
+        where tenant_id = p_tenant_id
+        limit 1
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against this tenant's values.
+    if not exists (
+        select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
+        where tenant_id = p_tenant_id
+          and {{table.primary_key.column}} = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid {{table.entity_singular}}: %. Must be one of: %', p_value, (
+            select string_agg({{table.primary_key.column}}::text, ', ' order by {{table.validation_fn.order_by}})
+            from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
+            where tenant_id = p_tenant_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+{{/table.validation_fn.scope_tenant}}
 
     return p_value;
 end;

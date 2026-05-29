@@ -6,6 +6,7 @@
 #+type: story
 #+level: s2
 #+filetags: :tooling:codegen:sprint_19:v0:
+#+branch: feature/refactor-codegen-sql
 #+created: 2026-05-29
 #+updated: 2026-05-29
 #+todo: BACKLOG STARTED | DONE ABANDONED
@@ -111,9 +112,9 @@ fidelity is required; whitespace normalisation is acceptable.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Story scaffolded; analysis complete; ready to begin implementation tasks. |
+| Now           | Survey complete; unified model format and CLI interface defined. |
 | Waiting on    | Nothing.                               |
-| Next          | Create branch; start survey task (SQL variability audit + model format design). |
+| Next          | Implement =codegen.py= CLI scaffold.   |
 | Last touched  | 2026-05-29                               |
 
 * Acceptance
@@ -133,7 +134,7 @@ fidelity is required; whitespace normalisation is acceptable.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| Survey SQL variation and define unified model format | BACKLOG | | | Audit all generated SQL files; enumerate every variation; define the =table= model schema and CLI interface. |
+| [[id:49584C75-48E5-41E3-8C5F-B413E9443A72][Survey SQL variation and define unified model format]] | DONE | 2026-05-29 | 2026-05-29 | Audit all generated SQL files; enumerate every variation; define the =table= model schema and CLI interface. |
 | Implement =codegen.py= CLI scaffold | BACKLOG | | | Argparse structure, entry point, package layout, logging; subcommand stubs; venv wiring. |
 | Implement unified SQL template | BACKLOG | | | Write =sql_schema_create.mustache=; add =table= model-type support in generator; verify parity for all refdata entities. |
 | Migrate refdata entity models to new format | BACKLOG | | | Convert all =_entity.json= models; run parity check (zero logical diff); update =codegen.py= component manifest. |

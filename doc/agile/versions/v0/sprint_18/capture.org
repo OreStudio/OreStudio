@@ -2,12 +2,12 @@
 :ID: 14606A1B-2742-DE34-F813-B4E3B736AEF1
 :END:
 #+title: Sprint 18 Capture
-#+description: Assorted notes taken during Sprint which have not yet been filled but we do not want to forget. DRAINED 2026-05-28 — all entries triaged into product backlog via bulk capture recipe.
+#+description: Assorted notes taken during Sprint which have not yet been filled but we do not want to forget. DRAINED 2026-05-28 and 2026-05-29 — all entries triaged into product backlog.
 #+type: capture
 #+level: s3
 #+filetags: :ore:workflow:marketdata:controller:plugins:trading:reporting:windows:sprint_16:v0:
 #+created: 2026-05-23
-#+updated: 2026-05-28
+#+updated: 2026-05-29
 #+todo: STARTED | DONE
 
 This page is the short-lived [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] document for [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] of ORE Studio. At
@@ -18,15 +18,9 @@ All entries drained 2026-05-28 — filed into product backlog via bulk capture r
 
 * New
 
-
-
-- add a recipe: how do i build the site locally to mirror how do i serve the
-  site locally. cross reference them.
-- org-timestamps need to be written into the build directory.
-
 * Drained
 
-Entries triaged 2026-05-28 via bulk capture recipe. Each row links to the filed capture.
+Entries triaged 2026-05-28 via bulk capture recipe (first drain) and 2026-05-29 (second drain). Each row links to the filed capture.
 
 ** Next
 
@@ -83,6 +77,8 @@ Entries triaged 2026-05-28 via bulk capture recipe. Each row links to the filed 
 | [[id:32172CAF-FE28-4C7B-87CD-4992A894D8A8][Add compass calls to Claude settings]] | Register key compass commands in Claude Code settings as shell shortcuts |
 | [[id:D2A77801-5AE5-4077-B48E-731E790B0ED0][Memory for project directory meanings]] | Add memory for meaning of key project directories (tmp, samples, etc.) |
 | [[id:285A8782-E934-4F17-B989-5739115D40A4][Recipes for doc list commands]] | Add recipes for compass list/search/etc.; link to skills catalogue |
+| [[id:6F689F0C-3D74-4F78-9E03-C86BD3950867][Recipe: how do I build the site locally?]] | Add build-site recipe mirroring the serve recipe; cross-reference both |
+| [[id:1CB75099-4522-493B-90BD-63FDD25261E8][Write org-timestamps to the build output directory]] | Set org-publish-timestamp-directory to build output dir for clean-build semantics |
 
 ** Discarded
 

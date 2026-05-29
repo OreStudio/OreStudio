@@ -30,7 +30,7 @@ system testable in isolation, replaceable one layer at a time, and
 understandable without reading the whole codebase. Every component in
 the system belongs to exactly one of these layers:
 
-#+attr_html: :width 80% :alt ORE Studio four-layer architecture
+#+attr_html: :alt ORE Studio four-layer architecture
 #+caption: ORE Studio four-layer architecture
 [[file:architecture_layers.png][file:architecture_layers.png]]
 

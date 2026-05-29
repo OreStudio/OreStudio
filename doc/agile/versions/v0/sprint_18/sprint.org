@@ -30,16 +30,16 @@ Enable end-to-end [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] imports into 
 
 | Field          | Value                                                     |
 |----------------+-----------------------------------------------------------|
-| State          | STARTED                                                   |
+| State          | DONE                                                      |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                 |
 | Previous       | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]                                                 |
 | Start          | 2026-05-22                                                |
-| End (expected) | 2026-05-28                                                |
-| Now            | Sprint in flight.                                         |
-| Waiting on     | Nothing.                                                  |
-| Next           | ORE imports and types; finish user manual; RFL isolation. |
+| End (actual)   | 2026-05-29                                                |
+| Now            | Sprint closed.                                            |
+| Waiting on     | —                                                         |
+| Next           | Open sprint 19.                                           |
 | Release Notes  | Added at end of sprint.                                   |
-| Last touched   | 2026-05-24                                                |
+| Last touched   | 2026-05-29                                                |
 
 * Stories
 
@@ -135,6 +135,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 |---+------------+-------+---------+-----------------------------------------------------------|
 | 1 | 2026-05-25 | day 4 | AMBER   | [[id:FA5A76DC-913B-481C-8D65-13F58032D950][Health review 1 — sprint 18 mid-sprint analysis]]           |
 | 2 | 2026-05-26 | day 5 | AMBER   | [[id:669DF15D-AD78-4F9A-8A53-49DF0EEC9455][Health review 2 — sprint 18 backlog audit and shape check]] |
+| 3 | 2026-05-29 | day 8 | RED     | [[id:7C65ACEC-6DAD-4046-8E5D-7E9150293399][Health review 3 — sprint 18 close analysis]]                |
 
 
 * Charts

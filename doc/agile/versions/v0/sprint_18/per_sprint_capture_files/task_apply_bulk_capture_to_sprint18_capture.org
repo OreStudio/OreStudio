@@ -8,7 +8,7 @@
 #+filetags: :per_sprint_capture_files:sprint_18:v0:
 #+owner: marco
 #+branch: feature/apply-bulk-capture-to-sprint18-capture
-#+pr:
+#+pr: 890
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28

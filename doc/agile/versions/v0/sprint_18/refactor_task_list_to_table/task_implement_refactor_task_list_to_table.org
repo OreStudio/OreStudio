@@ -8,7 +8,7 @@
 #+filetags: :refactor_task_list_to_table:sprint_18:v0:
 #+owner: marco
 #+branch: feature/refactor-task-list-to-table
-#+pr:
+#+pr: 893
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28

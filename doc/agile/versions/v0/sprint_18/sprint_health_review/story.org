@@ -73,6 +73,7 @@ the team is focused — rather than merely summarising status.
 | [[id:FA5A76DC-913B-481C-8D65-13F58032D950][Task: Health review 1 — sprint 18 mid-sprint analysis]] | DONE | 2026-05-25 | 2026-05-25 | First System 2 health review of sprint 18: goal alignment, load, PR velocity, story/task balance, focus signal, velocity, and overall verdict. |
 | [[id:2B20D957-A261-4C65-8F80-656897050CBB][Task: Move health review content from sprint.org into task]] | DONE | 2026-05-25 | 2026-05-25 | The Health Review section in sprint.org is too verbose; full review content belongs in the task Result section with only a short link left in sprint.org. |
 | [[id:669DF15D-AD78-4F9A-8A53-49DF0EEC9455][Task: Health review 2 — sprint 18 backlog audit and shape check]] | DONE | 2026-05-26 | 2026-05-26 | Audit all sprint 18 stories and tasks: close items with incorrect status, verify story/task shapes follow the document contract, and flag anything that needs cleanup. |
+| [[id:7C65ACEC-6DAD-4046-8E5D-7E9150293399][Task: Health review 3 — sprint 18 close analysis]] | DONE | 2026-05-29 | 2026-05-29 | Final System 2 health review at sprint close: goal achievement assessment, shape completeness fixes, sprint verdict. |
 
 * Decisions
 

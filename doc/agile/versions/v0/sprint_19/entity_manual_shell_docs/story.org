@@ -44,5 +44,5 @@ regardless of which access layer they prefer.
 
 * See also
 
-- [[id:66F5046D-CF6D-4F7D-94A8-5A5BC69F7068][ores.refdata entity health review]] — verification pass done in parallel with documentation.
+- [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] — ores.refdata Commissioning epic stories are worked in parallel with documentation.
 - [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] — identifies which entities have shell support.

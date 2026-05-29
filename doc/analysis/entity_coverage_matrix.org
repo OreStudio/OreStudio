@@ -48,6 +48,8 @@ Reference data entities representing the ORE domain model.
 | counterparty_identifier         | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
 | country                         | Y   | Y      | Y      | Y       | Y  | N    | Y   | Y     | Y  |
 | currency                        | Y   | Y      | Y      | Y       | Y  | Y    | Y   | Y     | Y  |
+| currency_market_tier            | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| monetary_nature                 | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
 | party                           | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
 | party_contact_information       | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
 | party_counterparty              | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
@@ -146,8 +148,8 @@ layers, to guide future sprint planning.
 Entities that have full domain/persistence support but no Qt desktop UI:
 
 - =ores.refdata=: =account_type=, =counterparty_contact_information=,
-  =counterparty_identifier=, =party_contact_information=,
-  =party_counterparty=, =party_identifier=
+  =counterparty_identifier=, =currency_market_tier=, =monetary_nature=,
+  =party_contact_information=, =party_counterparty=, =party_identifier=
 - =ores.iam=: =account_party=, =login_info=, =permission=, =session=,
   =tenant_status=
 - =ores.dq=: =artefact_type=, =dataset_bundle_member=, =dataset_dependency=
@@ -196,3 +198,7 @@ Entities that have domain/persistence support but no Wt web UI component:
 - All entities except =ores.iam/account=, =ores.refdata/country=, and
   =ores.refdata/currency=. Wt coverage is minimal and concentrated on
   the most frequently accessed reference data types.
+
+* See also
+
+- [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] — per-layer commissioning criteria (DB through manual) for any domain entity; Domain/Aux columns show what applies to each meta-type

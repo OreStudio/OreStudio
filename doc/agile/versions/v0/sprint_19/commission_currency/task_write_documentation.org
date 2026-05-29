@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: B3788A76-208E-4422-B277-17DF8FF3A78C
+:END:
+#+title: Task: Write currency documentation (manual chapter, recipes, NATS reference)
+#+description: Write the currency manual chapter (Qt windows + shell usage), CLI recipes, shell recipes, and a NATS message reference documenting the subjects and message types for the entity.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_19:v0:
+#+owner: marco
+#+branch: feature/commission-currency
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce all missing documentation for the =currency= entity:
+
+1. *Manual chapter* (=doc/manual/user_guide/=) — what currencies are, Qt MDI list window, detail dialog (fields and validation), history dialog, delete, shell commands, CLI commands.
+2. *CLI recipe* (=doc/recipes/cli/=) — update or create the currency CLI recipe to reflect post-NATS commands.
+3. *Shell recipe* (=doc/recipes/shell/=) — create a shell recipe covering the interactive currency submenu commands.
+4. *NATS message reference* — document the NATS subjects and message types used by the currency entity (request/reply and event subjects), either as a dedicated recipe file or a section in the manual chapter.
+
+The manual chapter is the highest-priority item; it is entirely absent.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Qt and shell verification tasks (for accurate screenshots / command output). |
+| Next         | Draft manual chapter from existing source knowledge. |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- Manual chapter exists in =doc/manual/user_guide/= and covers: entity description, Qt list window, detail dialog (all fields), history dialog, delete, shell commands, CLI commands.
+- CLI recipe created or updated in =doc/recipes/cli/=; reflects post-NATS usage.
+- Shell recipe created in =doc/recipes/=; covers list, add, remove, history commands.
+- NATS message reference documents: request subjects (list, count, get, save, delete, history), event subjects (saved, deleted), and the message type for each.
+- Manual chapter referenced from the manual index.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: E276A541-93EA-46EC-8CD8-D40803FEE587
+:END:
+#+title: Task: Verify currency Qt UI end-to-end post-NATS
+#+description: Manually test all Qt windows for currency (MDI list, detail dialog, history dialog, delete command, NATS eventing) against a live service post-NATS migration; fix any regressions.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_19:v0:
+#+owner: marco
+#+branch: feature/commission-currency
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run the Qt application against a live service and manually verify all five currency UI
+acceptance criteria: list window loads, detail dialog round-trips, history dialog shows
+history, delete preserves history, and a mutation in one connected session appears in a
+second session via NATS eventing. Fix any regressions found inline or file as captures.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Start service; open Qt app; run through checklist. |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- MDI list window loads and displays currency records.
+- Detail dialog: edit a field, save, reload — change is persisted.
+- History dialog: shows at least one historical version after an edit.
+- Delete command: record removed from list; history dialog still accessible.
+- Eventing: add or edit in client A appears in client B without manual refresh.
+- Any regressions found are fixed or filed as captures.
+- Findings recorded in =* Result= section.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

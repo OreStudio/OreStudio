@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: E8890097-FAE9-40F8-B823-FCE23BAFD6C5
+:END:
+#+title: Task: Verify and fix codegen for currency and auxiliaries
+#+description: Run ores.codegen for currency, rounding_type, monetary_nature, and currency_market_tier; diff the output against the repo; fix the missing currency_domain_entity.json and address any unexpected diffs.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_19:v0:
+#+owner: marco
+#+branch: feature/commission-currency
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run the code generator for all four entities (=currency=, =rounding_type=, =monetary_nature=,
+=currency_market_tier=) and validate that the generated output matches what is currently in
+the repository. Address any diffs: fix the model if the generated code is wrong, or update
+the repo files if the model is the authoritative source.
+
+The SQL verification task found that =currency= is missing =currency_domain_entity.json= in
+=projects/ores.codegen/models/refdata/=. The three auxiliary types have both model files and
+should regenerate cleanly. The primary goal is to close the currency codegen gap and confirm
+no drift has accumulated across the other three entities.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Run codegen; diff output; fix gaps.    |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- =currency_domain_entity.json= created or confirmed unnecessary (with justification).
+- Codegen run for all four entities produces no unexpected diffs against the repo.
+- Any diffs found are either fixed (model updated, repo files regenerated) or filed as captures with justification for deliberate divergence.
+- Findings recorded in =* Result= section.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -108,15 +108,26 @@ C++ polymorphic holders (=IInstrumentForm= virtual interface, all form subclasse
 =ores.ore.service= importer. Those uses are correct C++ =std::variant= use with no rfl
 involvement, and the types remain as domain types.
 
-** IInstrumentForm variant interface is a functional hack
+** Variant use: import/export vs. display
 
-Each concrete form (e.g. =BondInstrumentForm=) is a concrete type that handles exactly one
-instrument family. Yet =IInstrumentForm::populate_from_instrument= takes
-=const trade_instrument&=, forcing every form to do a runtime =std::get_if= check that
-should never fail. The caller already knows the concrete type (it chose which form to
-create); passing the full variant is fake generality that creates unnecessary coupling and
-keeps the variant in the call path. The correct design gives each form a typed =populate=
-method and moves the dispatch to the call site. Tracked in task 4.
+=trade_instrument= and the sub-variants are correct for *import and export*: bulk processing
+of heterogeneous instruments where the type is genuinely unknown at the processing site.
+They remain for that use.
+
+For the *display* path, the type is known from Phase 1 (=product_type= + =trade_type=)
+before the instrument is even read. Packaging the result into a =trade_instrument= variant
+just to immediately unpack it is unnecessary indirection. The display path is redesigned
+to eliminate the variant entirely:
+
+- =getTradeInstrument= takes an =IInstrumentFormPopulator&= and returns
+  =std::optional<domain::trade>=. It never constructs a =trade_instrument= value.
+- =IInstrumentFormPopulator= is a pure-abstract interface with one =populate= overload per
+  concrete leaf instrument type (~28 overloads; default no-ops).
+- Each form implements its relevant overload(s). Forms never receive a variant.
+- =TradeController= creates the right form via the factory, then passes it as the
+  populator to =getTradeInstrument=. The call site never dispatches on the instrument type.
+
+Tracked in tasks 2 and 4.
 
 ** Logging requirement
 

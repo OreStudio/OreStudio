@@ -35,6 +35,14 @@ Replace the Sprint 18 two-phase-parse workaround with a correct architectural fi
    and reads the specific concrete leaf struct directly — no =AddTagsToVariants=, no
    variant in the parse path.
 
+The key architectural principle for the display path: *the type is known by the time the
+instrument is read*, so the instrument must never be packaged into a =trade_instrument=
+variant. The =getTradeInstrument= return type must not include a =trade_instrument= field.
+The concrete instrument is delivered directly to whoever needs it.
+
+This is in contrast to import/export, where many heterogeneous instruments are processed
+without a known type at the processing site — that path correctly retains the variant.
+
 * Status
 
 | Field        | Value                                                                               |
@@ -58,6 +66,9 @@ Replace the Sprint 18 two-phase-parse workaround with a correct architectural fi
 - =TradeController.cpp=: calls =getTradeInstrument=.
 - =CMakeLists.txt=: source list updated.
 - =ClientManagerTradeInstrument.cpp= contains zero =AddTagsToVariants= references.
+- =ClientManagerTradeInstrument.cpp= constructs zero =trade_instrument= values.
+- =getTradeInstrument= return type is =std::optional<trading::domain::trade>=; no variant.
+- =IInstrumentFormPopulator= interface exists with one overload per leaf instrument type.
 - Linux CI green after the change.
 - Logging: =debug= on entry to Phase 1 and Phase 2 (including resolved type strings);
   =warn= for unknown =(product_type, trade_type)= (monostate result);
@@ -79,6 +90,43 @@ Replace the Sprint 18 two-phase-parse workaround with a correct architectural fi
 | =ores.qt.api/CMakeLists.txt=                                                | Updated source list.                                    |
 | =ores.qt.trading/src/TradeController.cpp=                                   | Update call site.                                       |
 
+** Return type design
+
+=getTradeInstrument= must not return =trade_export_item= — that struct contains
+=trade_instrument instrument= (a variant) which would immediately reintroduce the variant
+into the display path.
+
+Instead, =getTradeInstrument= takes an =IInstrumentFormPopulator&= (defined below) and
+returns only the trade:
+
+#+begin_src cpp
+// ClientManager.hpp
+std::optional<trading::domain::trade>
+getTradeInstrument(const std::string& trade_id,
+                   IInstrumentFormPopulator& populator);
+#+end_src
+
+=IInstrumentFormPopulator= is a pure abstract interface (defined in =ores.qt.api=) with one
+overload per concrete leaf instrument type. Default implementations do nothing — a concrete
+form only overrides the overload(s) it handles:
+
+#+begin_src cpp
+// ores.qt.api/include/ores.qt/IInstrumentFormPopulator.hpp
+struct IInstrumentFormPopulator {
+    virtual ~IInstrumentFormPopulator() = default;
+    virtual void populate(const trading::domain::fx_forward_instrument&)          {}
+    virtual void populate(const trading::domain::fx_vanilla_option_instrument&)   {}
+    // … one overload per leaf type (~28 total)
+    virtual void populate(const trading::domain::bond_instrument&)                {}
+    virtual void populate(const trading::domain::vanilla_swap_instrument&,
+                          std::vector<trading::domain::swap_leg> legs)            {}
+    // legs passed alongside for with_legs types
+};
+#+end_src
+
+Each concrete form (or its controller) implements the relevant overload. No form ever sees
+=trade_instrument= or any sub-variant.
+
 ** Parse path design
 
 Phase 1 — envelope (file-local struct, no instrument field):
@@ -94,39 +142,35 @@ struct response_envelope {
 } // namespace
 #+end_src
 
-Phase 2 — concrete dispatch (no =AddTagsToVariants=, no variant in the parse path).
+Phase 2 — concrete dispatch (no =AddTagsToVariants=, no variant, direct populator call).
 Mirrors =populate_instruments_for_trades= in =trade_handler.hpp=:
 
 #+begin_src
 switch product_type:
   bond      → rfl::json::read<struct { bond_instrument instrument; }>(raw)
+              → populator.populate(w->instrument)
   credit    → rfl::json::read<struct { credit_instrument instrument; }>(raw)
-  commodity → rfl::json::read<struct { commodity_instrument instrument; }>(raw)
-  scripted  → rfl::json::read<struct { scripted_instrument instrument; }>(raw)
+              → populator.populate(w->instrument)
+  commodity → … same pattern
+  scripted  → … same pattern
   composite → rfl::json::read<struct { composite_instrument instrument;
                                         vector<composite_leg> legs; }>(raw)
-  fx        → switch trade_type → rfl::json::read<struct { fx_forward_instrument instrument; }>(raw)
-                                  rfl::json::read<struct { fx_vanilla_option_instrument instrument; }>(raw)
-                                  … (7 FX leaf types)
+              → populator.populate(w->instrument, std::move(w->legs))
+  fx        → switch trade_type
+              → rfl::json::read<struct { fx_forward_instrument instrument; }>(raw)
+              → populator.populate(w->instrument)
+              (7 FX leaf types, one branch each)
   equity    → switch trade_type → … (9 equity leaf types)
-  swap      → switch trade_type → rfl::json::read<struct { ConcreteRatesType instrument;
-                                                            vector<swap_leg> legs; }>(raw)
-                                  … (9 rates leaf types)
-  unknown   → log warn; return monostate
+  swap      → switch trade_type
+              → rfl::json::read<struct { ConcreteRatesType instrument;
+                                         vector<swap_leg> legs; }>(raw)
+              → populator.populate(w->instrument, std::move(w->legs))
+              (9 rates leaf types)
+  unknown   → log warn; return nullopt
 #+end_src
 
-Assemble the =trade_instrument= variant from the concrete result:
-#+begin_src cpp
-// e.g. for FX forward:
-trade_instrument ti = fx_instrument_variant{std::move(w->instrument)};
-// e.g. for vanilla swap:
-trade_instrument ti = swap_instrument_data{
-    .instrument = rates_instrument_variant{std::move(w->instrument)},
-    .legs       = std::move(w->legs)
-};
-#+end_src
-
-Return =trade_export_item{.trade = std::move(base.trade), .instrument = std::move(ti)}=.
+No =trade_instrument= variant is ever constructed. The concrete value is read and dispatched
+directly to the populator in the same switch branch. Return =base.trade=.
 
 ** Logging specification
 

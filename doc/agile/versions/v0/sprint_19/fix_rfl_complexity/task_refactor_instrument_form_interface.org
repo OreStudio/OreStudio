@@ -20,23 +20,28 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 The current =IInstrumentForm::populate_from_instrument(const trade_instrument&)= interface
-is architecturally incorrect: each concrete form already knows its instrument type (it is,
-for example, =BondInstrumentForm=), yet it receives the full 9-alternative =trade_instrument=
-variant and immediately discards 8 alternatives via =std::get_if=. The runtime check can
-never legitimately fail — if it does, it is a programming error that the current interface
-silently swallows.
+is architecturally incorrect: each concrete form already knows its instrument type, yet it
+receives a 9-alternative variant and discards 8 of them via =std::get_if=. The check can
+never legitimately fail — if it does, it is a programming error the interface silently
+swallows.
 
-This task removes the fake generality:
+Task 2 eliminates the variant from the parse path by introducing =IInstrumentFormPopulator=
+— a pure-abstract interface with one =populate= overload per concrete leaf instrument type.
+This task wires the forms to that interface, completing the removal of the variant from the
+entire display path:
 
-1. Replace the virtual =populate_from_instrument(const trade_instrument&)= in
-   =IInstrumentForm= with type-specific =populate= overloads (non-virtual) on each concrete
-   form. The base class retains all other shared lifecycle methods (=show=, =hide=, =save=,
-   validation, etc.).
-2. Move the dispatch to the call sites (=TradeController=, =TradeDetailDialog=), which
-   already know =(product_type, trade_type)= from the =trade_export_item= produced by
-   task 2. The call site calls the right form's =populate= directly.
-3. Remove =trade_instrument= and the sub-variant =std::get_if= calls from every form
-   implementation file.
+1. Each concrete form (or a thin controller wrapper) implements the relevant
+   =IInstrumentFormPopulator::populate= overload(s) for its type.
+2. Remove the old =populate_from_instrument(const trade_instrument&)= virtual method from
+   =IInstrumentForm= and every subclass.
+3. Remove all =std::get_if<trade_instrument>=, =std::get_if<fx_instrument_variant>=, and
+   =std::get_if<equity_instrument_variant>= calls from form implementation files.
+4. Update =TradeController= and =TradeDetailDialog= to pass the form as an
+   =IInstrumentFormPopulator&= to =getTradeInstrument=, replacing the old populate call.
+
+After this task: no form header or implementation file includes =trade_instrument.hpp= or
+any sub-variant header for the purpose of population. The variant exists only in
+import/export paths where the type is genuinely unknown at the processing site.
 
 * Status
 
@@ -52,15 +57,14 @@ This task removes the fake generality:
 * Acceptance
 
 - =IInstrumentForm= has no =populate_from_instrument(const trade_instrument&)= method.
-- Each concrete form has a typed =populate= method (or constructor argument) for its
-  specific instrument type(s).
-- No form implementation file uses =std::get_if<trade_instrument>= or
-  =std::get_if<fx_instrument_variant>= or =std::get_if<equity_instrument_variant>=.
-- =IInstrumentForm.hpp= does not include =trade_instrument.hpp=.
-- Call sites (=TradeController=, =TradeDetailDialog=) dispatch explicitly using
-  =(product_type, trade_type)= and call the correct form's =populate= directly.
-- All existing behaviour preserved; no UI regression.
-- The change does not introduce any new rfl usage.
+- Each concrete form implements the relevant =IInstrumentFormPopulator= overload(s).
+- No form =.hpp= or =.cpp= file calls =std::get_if= on =trade_instrument=,
+  =fx_instrument_variant=, or =equity_instrument_variant=.
+- =IInstrumentForm.hpp= does not include =trade_instrument.hpp= or any sub-variant header.
+- =TradeController= and =TradeDetailDialog= pass =*this= (or a wrapper) as an
+  =IInstrumentFormPopulator&= to =getTradeInstrument=; no separate populate call needed.
+- All existing UI behaviour preserved; no regression.
+- No new rfl usage introduced.
 
 * Plan
 
@@ -86,48 +90,42 @@ Call sites:
 
 ** Design
 
-=IInstrumentForm= base: remove =populate_from_instrument= from the virtual interface. Add a
-non-virtual helper to the base if any shared pre-population setup is needed.
+=IInstrumentFormPopulator= (introduced in task 2, lives in =ores.qt.api=): pure-abstract
+interface with one =populate= overload per concrete leaf type. Default implementations are
+no-ops so only relevant overloads need to be defined.
 
-Each concrete form: add the typed method, e.g.:
-
-#+begin_src cpp
-// BondInstrumentForm.hpp
-void populate(const trading::domain::bond_instrument& instr);
-
-// FxForwardInstrumentForm.hpp (or FxInstrumentForm for all FX forwards)
-void populate(const trading::domain::fx_forward_instrument& instr);
-#+end_src
-
-Call site dispatch (in =TradeController=):
+Each concrete form implements the relevant overload(s). Example:
 
 #+begin_src cpp
-// form_ is already the right concrete form, created by the factory
-switch (bundle.trade.classification.product_type) {
-case product_type::bond:
-    static_cast<BondInstrumentForm*>(form_)->populate(
-        std::get<bond_instrument>(bundle.instrument));
-    break;
-// … etc.
-}
+// BondInstrumentForm.hpp — inherits IInstrumentForm AND IInstrumentFormPopulator
+void populate(const trading::domain::bond_instrument& instr) override;
+
+// FxInstrumentForm.hpp — handles all FX leaf types via separate overloads
+void populate(const trading::domain::fx_forward_instrument& instr) override;
+void populate(const trading::domain::fx_vanilla_option_instrument& instr) override;
+// … etc. for all 7 FX leaf types
 #+end_src
 
-Or, since the call site has the concrete form pointer via the factory, it can use
-=std::visit= on =bundle.instrument= with a typed visitor — keeping the dispatch logic in
-one place.
+Call site (=TradeController=, =TradeDetailDialog=): create the right form as before via
+the factory, then pass it directly as the populator:
+
+#+begin_src cpp
+// factory already creates the concrete form from product_type / trade_type
+auto* form = form_factory_.create(product_type, trade_type);
+auto trade_opt = clientManager_->getTradeInstrument(trade_id, *form);
+// form is now populated; no variant, no dispatch at the call site
+#+end_src
+
+=getTradeInstrument= calls the right =populate= overload inside its dispatch switch.
+The call site never sees the instrument type — it just gets the trade back and the form
+is already populated.
 
 ** Note on FX and equity sub-variants
 
-=FxInstrumentForm= currently dispatches internally on =fx_instrument_variant=. After this
-refactor, the call site receives the =fx_instrument_variant= alternative from the
-=trade_instrument= variant and can either:
-
-- Pass the =fx_instrument_variant= directly to a shared =FxInstrumentForm::populate(const fx_instrument_variant&)= (the form then dispatches internally to its sub-panels), OR
-- Dispatch at the call site to type-specific sub-forms.
-
-The simpler option (variant passed to the form) is acceptable for =fx_instrument_variant=
-and =equity_instrument_variant= since those sub-variants do not interact with rfl. Decision
-deferred to implementation.
+Because =IInstrumentFormPopulator= has one overload per leaf type (e.g.
+=fx_forward_instrument=, =fx_vanilla_option_instrument=, …), =FxInstrumentForm= overrides
+each FX leaf overload individually. There is no need to pass an =fx_instrument_variant= to
+the form at all — each leaf type is dispatched directly. Same for equity and rates.
 
 * Notes
 

@@ -51,6 +51,10 @@ to match the renamed directories.
 
 - =near.org= and =far.org= are deleted outright — they are stale duplicates of =next.org= / =deferred.org= (same UUID, wrong filename).
 - The single file in =near/= (=extend_validate_docs_frontmatter.org=) is moved to =next/= as part of the rename cleanup.
+- This story exists because [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow]] renamed the directories
+  (=near/= → =next/=, =far/= → =deferred/=) and created the new index files, but did not
+  update =regenerate_backlog_indexes.py=, =compass.py=, or the =:near:= / =:far:= filetags
+  in existing captures. The script was left pointing at the old filenames.
 
 * Out of scope
 

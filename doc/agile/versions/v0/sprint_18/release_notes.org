@@ -8,6 +8,7 @@
 #+filetags: :release_notes:sprint_18:v0:
 #+created: 2026-05-29
 #+updated: 2026-05-29
+#+startup: inlineimages
 
 /May 2026/
 

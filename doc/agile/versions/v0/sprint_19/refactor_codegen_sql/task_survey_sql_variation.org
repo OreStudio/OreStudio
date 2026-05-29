@@ -63,7 +63,7 @@ subsequent tasks in the story.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =--diff= flag on =regenerate= is redundant; dedicated =diff= subcommand exists | task_survey_sql_variation.org | Fixed | Removed =--diff= from =regenerate= interface; removed from flags list. PR #933 round 1. |
 
 * Result
 
@@ -200,8 +200,8 @@ aliases, but the canonical name is the long form.
 
 #+begin_example
 codegen.py generate --model PATH [--profile PROFILE] [--dry-run]
-codegen.py regenerate --component COMPONENT [--profile PROFILE] [--dry-run] [--diff]
-codegen.py regenerate --all [--profile PROFILE] [--dry-run] [--diff]
+codegen.py regenerate --component COMPONENT [--profile PROFILE] [--dry-run]
+codegen.py regenerate --all [--profile PROFILE] [--dry-run]
 codegen.py list models [--component COMPONENT]
 codegen.py list components
 codegen.py diff --component COMPONENT [--profile PROFILE]
@@ -211,7 +211,6 @@ codegen.py diff --all [--profile PROFILE]
 Flags:
 - =--profile= : which template to run (=sql=, =cpp=, =all-cpp=, =all=). Default: =sql= for this story.
 - =--dry-run= : print output paths that would be written without writing them.
-- =--diff= : show =diff= between current output files and what would be generated, without writing.
 - =--component= : one of the named component manifests (=refdata=, =trade=, =dq=, =iam=, ...).
 - =--all= : run all components in sequence.
 

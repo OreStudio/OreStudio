@@ -9,8 +9,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-The version bump is housekeeping that always accompanies [[id:1E666848-A785-437E-A463-3D5A0DA0765F][opening a new
-sprint]]. Land it as a separate commit on the same sprint-open PR.
+The version bump is housekeeping that always accompanies [[id:47032D2E-4922-4A43-B594-AD76F0213E10][Open a new sprint]]. Land it as a separate commit on the same sprint-open PR.
 
 * Question
 

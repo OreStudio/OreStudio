@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: FE965603-8234-42CE-A626-8F34A133717C
+:END:
+#+title: Task: Fix legacy near/far bucket name references
+#+description: Initial task for: Fix product-backlog bucket names in scripts and captures
+#+type: task
+#+level: s1
+#+filetags: :fix_backlog_bucket_names:sprint_18:v0:
+#+owner: marco
+#+branch: feature/fix-backlog-bucket-names
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC130231-71C2-4DFD-8BA6-B58B4B3029BB][Fix product-backlog bucket names in scripts and captures]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Update =regenerate_backlog_indexes.py= to write =next.org= / =deferred.org= instead of
+=near.org= / =far.org=; fix stale help text in =compass.py= and a comment in
+=doc_generate.py=; rename the remaining =:near:= / =:far:= filetags in all captures;
+delete the stale =near.org=, =far.org=, =near/= and =far/= artefacts.
+
+* Status
+
+| Field        | Value                                                                                    |
+|--------------+------------------------------------------------------------------------------------------|
+| State        | STARTED                                                                                  |
+| Parent story | [[id:BC130231-71C2-4DFD-8BA6-B58B4B3029BB][Fix product-backlog bucket names in scripts and captures]] |
+| Now          | Implementing all changes.                                                                |
+| Waiting on   | Nothing.                                                                                 |
+| Next         | PR and review.                                                                           |
+| Last touched | 2026-05-29                                                                               |
+
+* Acceptance
+
+- Same as parent story acceptance criteria.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

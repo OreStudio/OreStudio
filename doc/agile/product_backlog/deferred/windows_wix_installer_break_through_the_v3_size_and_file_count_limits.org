@@ -5,7 +5,7 @@
 #+description: Windows WiX installer: break through the v3 size and file-count limits
 #+type: capture
 #+level: cross
-#+filetags: :analysis:capture:far:
+#+filetags: :analysis:capture:deferred:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

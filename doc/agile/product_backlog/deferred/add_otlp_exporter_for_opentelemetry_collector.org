@@ -5,7 +5,7 @@
 #+description: Add OTLP exporter for OpenTelemetry collector
 #+type: capture
 #+level: cross
-#+filetags: :code:capture:far:
+#+filetags: :code:capture:deferred:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

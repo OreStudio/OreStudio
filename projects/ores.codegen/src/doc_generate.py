@@ -319,7 +319,7 @@ def main(argv=None):
     today = date.today().isoformat()
     new_id = (args.id if args.id else str(uuid.uuid4())).upper()
 
-    # Captures derive their bucket (near | far) from the parent-dir name.
+    # Captures derive their bucket (next | deferred) from the parent-dir name.
     bucket = parent_dir.name if args.type == "capture" else ""
 
     # Memories carry a subtype (feedback / user / project / reference) that

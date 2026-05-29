@@ -5,7 +5,7 @@
 #+description: Allow creating new connections from login dialog
 #+type: capture
 #+level: cross
-#+filetags: :code:capture:near:
+#+filetags: :code:capture:next:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

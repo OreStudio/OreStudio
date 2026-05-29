@@ -75,6 +75,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Compass PR review management]]                                          | BACKLOG | 2026-05-26 |            | Add compass review list/reply/resolve subcommands wrapping gh API.                                        |
 | [[id:47FD2F81-2143-4C35-9AC1-5A3A9D4AF975][compass goto --kind flag]]                                              | DONE    | 2026-05-28 | 2026-05-28 | Add --kind hotfix to compass goto for hotfix/ branches; update runbook, recipe, docs.                     |
 | [[id:E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F][Per-sprint capture workflow: individual files and compass integration]] | STARTED | 2026-05-27 |            | captures/ folder per sprint; compass capture command; wontdo backlog bucket.                              |
+| [[id:BC130231-71C2-4DFD-8BA6-B58B4B3029BB][Fix product-backlog bucket names in scripts and captures]]              | STARTED | 2026-05-29 |            | Update regenerate_backlog_indexes.py, compass.py, captures to use next/deferred instead of near/far.      |
 
 ** Agile
 

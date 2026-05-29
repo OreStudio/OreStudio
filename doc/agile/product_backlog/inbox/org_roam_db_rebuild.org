@@ -1,15 +1,15 @@
 :PROPERTIES:
 :ID: 8D295781-33E7-4812-AAC6-134BD7CD0DDC
 :END:
-#+title: Story: Rebuild org-roam DB independently from CMake
+#+title: Rebuild org-roam DB independently from CMake
 #+description: Extract org-roam DB sync into .build-org-roam.el and add a standalone cmake target so the DB can be rebuilt without a full site build.
-#+type: story
-#+level: s2
-#+filetags: :build:cmake:org-roam:elisp:sprint_18:v0:
+#+type: capture
+#+level: cross
+#+filetags: :build:capture:cmake:elisp:org-roam:
 #+created: 2026-05-24
-#+updated: 2026-05-24
-#+todo: BACKLOG STARTED | DONE ABANDONED
+#+updated: 2026-05-29
 
+Deferred from [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] on 2026-05-29 — not started; carried forward to product backlog.
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal

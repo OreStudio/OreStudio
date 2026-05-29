@@ -1,15 +1,15 @@
 :PROPERTIES:
-:ID: 84C10B13-51E2-4D8D-B82A-F38F8DB10E86
+:ID: B3EBD70C-DAFA-4854-92F3-54E7D90D22C7
 :END:
-#+title: Story: Work through all types required for ORE Example 1
-#+description: Identify and implement every ORE instrument and market-data type needed to round-trip the ORE Example 1 input files end-to-end.
-#+type: story
-#+level: s2
-#+filetags: :ore:types:example1:sprint_18:v0:
+#+title: Qt: instrument creation in TradeDetailDialog
+#+description: Allow users to create and associate instruments directly from the TradeDetailDialog rather than switching to a separate instrument screen.
+#+type: capture
+#+level: cross
+#+filetags: :capture:instruments:ore:qt:trades:
 #+created: 2026-05-24
-#+updated: 2026-05-24
-#+todo: BACKLOG STARTED | DONE ABANDONED
+#+updated: 2026-05-29
 
+Deferred from [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] on 2026-05-29 — not started; carried forward to product backlog.
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal

@@ -7,7 +7,7 @@
 #+level: s4
 #+filetags: :v0:alpha:
 #+created: 2024-06-15
-#+updated: 2026-05-22
+#+updated: 2026-05-29
 #+todo: STARTED | RELEASED
 
 This page documents *v0* — the pre-1.0 alpha [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]] of ORE Studio. It
@@ -43,10 +43,10 @@ results graphically inside ORE Studio.
 | Field        | Value                                                       |
 |--------------+-------------------------------------------------------------|
 | State        | STARTED                                                     |
-| Now          | Sprint 18 in flight; closing v0.                            |
+| Now          | Sprint 18 closed; sprint 19 not yet started.                |
 | Waiting on   | Nothing.                                                    |
-| Next         | Close remaining v0 sprints, then cut v1.0.                  |
-| Last touched | 2026-05-22                                                  |
+| Next         | Plan and open sprint 19.                                    |
+| Last touched | 2026-05-29                                                  |
 
 * Sprints
 
@@ -73,7 +73,7 @@ the current sprint; the rest are closed.
 | [[id:03D189E0-1960-4F19-B71F-EE7C8D0941A7][Sprint 15]] | 2026-03-19 | 2026-03-30 | Compute grid (BOINC-style) + RAG dashboard; api/core split; CDM instruments.   |
 | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]] | 2026-03-30 | 2026-04-17 | ORE import e2e; workflow engine; market data; Qt plugins; Windows portability. |
 | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] | 2026-04-18 |            | Windows/MSVC portability, symbol visibility, ORE conventions, workspace, DQ publish, service isolation, SQL codegen, Qt UI, v2 docs. |
-| [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] | 2026-05-22 |            | TBD.                                                                           |
+| [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] | 2026-05-22 | 2026-05-29 | Compass CLI, LLM-first docs, agile artefact improvements; ORE pipeline deferred. |
 
 * Release scope
 

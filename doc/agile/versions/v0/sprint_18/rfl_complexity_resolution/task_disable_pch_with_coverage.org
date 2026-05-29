@@ -12,7 +12,7 @@
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-25
-#+updated: 2026-05-25
+#+updated: 2026-05-29
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -38,12 +38,12 @@ caching.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | ABANDONED                                |
 | Parent story | [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] |
-| Now          | Implementing fix.                      |
-| Waiting on   | CI green.                              |
-| Next         | Merge after CI passes.                 |
-| Last touched | 2026-05-25                             |
+| Now          | Complete.|
+| Waiting on   | —|
+| Next         | —|
+| Last touched |  2026-05-29 |
 
 * Acceptance
 

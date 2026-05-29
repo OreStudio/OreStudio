@@ -12,7 +12,7 @@
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
-#+updated: 2026-05-28
+#+updated: 2026-05-29
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -54,12 +54,12 @@ Key active files requiring body updates:
 
 | Field        | Value                                                                        |
 |--------------+------------------------------------------------------------------------------|
-| State        | STARTED                                                                      |
+| State        | DONE                                                                      |
 | Parent story | [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup: migrate v1 docs and remove v2 branding]] |
-| Now          | Applying changes across all active guidance docs.                            |
-| Waiting on   | Nothing.                                                                     |
-| Next         | PR and review.                                                               |
-| Last touched | 2026-05-29                                                                   |
+| Now          | Complete.|
+| Waiting on   | —|
+| Next         | —|
+| Last touched |  2026-05-29 |
 
 * Acceptance
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Generate a v2 org-mode release-notes document for a sprint.
+"""Generate an org-mode release-notes document for a sprint.
 
 Reads the sprint's ``sprint.org`` and each story's ``story.org``, merges the
 data with any available PR records from ``tmp/release_pr_data/``, then renders
-``projects/ores.codegen/library/templates/v2_doc_release_notes.org.mustache``
+``projects/ores.codegen/library/templates/doc_release_notes.org.mustache``
 via pystache and writes the result as ``release_notes.org`` inside the sprint
 folder.  A link to that file is also appended to the sprint's ``sprint.org``.
 
@@ -357,7 +357,7 @@ def render_release_notes(context: dict, repo_root: Path) -> str:
     pystache = _load_pystache(repo_root)
     template_path = (
         repo_root / "projects" / "ores.codegen" / "library" / "templates"
-        / "v2_doc_release_notes.org.mustache"
+        / "doc_release_notes.org.mustache"
     )
     template_text = template_path.read_text(encoding="utf-8")
     renderer = pystache.Renderer(escape=lambda v: v)

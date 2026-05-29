@@ -1,15 +1,15 @@
 :PROPERTIES:
 :ID: 166E8E44-1573-4DE2-825F-A6037A302AE9
 :END:
-#+title: Story: Compass PR review management
+#+title: Compass PR review management
 #+description: Add compass subcommands to list, reply to, and resolve PR review comments — wrappers around the gh CLI.
-#+type: story
-#+level: s2
-#+filetags: :compass:github:pr:review:sprint_18:v0:
+#+type: capture
+#+level: cross
+#+filetags: :capture:compass:github:pr:review:
 #+created: 2026-05-26
-#+updated: 2026-05-26
-#+todo: BACKLOG STARTED | DONE ABANDONED
+#+updated: 2026-05-29
 
+Deferred from [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] on 2026-05-29 — not started; carried forward to product backlog.
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal

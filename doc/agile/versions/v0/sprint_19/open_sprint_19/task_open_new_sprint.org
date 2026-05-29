@@ -25,11 +25,11 @@ Sprint 19 wired into the version manifest and agile index; sprint.org mission an
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]] |
-| Now          | Wiring sprint 19 into version.org and agile.org. |
+| Now          | Done.                                  |
 | Waiting on   | Nothing.                               |
-| Next         | Commit and open PR.                    |
+| Next         | Nothing.                               |
 | Last touched | 2026-05-29                               |
 
 * Acceptance

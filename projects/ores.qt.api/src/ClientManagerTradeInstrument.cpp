@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/IInstrumentFormPopulator.hpp"
 
 namespace {
 

@@ -48,11 +48,15 @@
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.qt/IInstrumentFormPopulator.hpp"
 #include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/export.hpp"
 
 namespace ores::qt {
+
+// Forward declaration: full definition in IInstrumentFormPopulator.hpp.
+// Including the full header here would transitively pull all domain instrument
+// headers into every TU that includes ClientManager.hpp.
+struct IInstrumentFormPopulator;
 
 /**
  * @brief Concept for NATS-aware request types.

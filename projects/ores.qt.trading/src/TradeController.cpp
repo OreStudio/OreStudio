@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/TradeController.hpp"
+#include "ores.qt/IInstrumentFormPopulator.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ImageCache.hpp"
 

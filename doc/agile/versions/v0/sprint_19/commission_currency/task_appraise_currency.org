@@ -32,7 +32,7 @@ fully commissioned.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Appraisal complete; checklist written. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Break commission story into implementation tasks. |
 | Last touched | 2026-05-29                               |

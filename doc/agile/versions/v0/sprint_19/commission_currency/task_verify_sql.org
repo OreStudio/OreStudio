@@ -29,7 +29,7 @@ must be added or corrected. Fix any gaps inline or file captures for deferred wo
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | SQL verified for all 4 entities. No gaps found. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | CLI verification task.                 |
 | Last touched | 2026-05-29                               |

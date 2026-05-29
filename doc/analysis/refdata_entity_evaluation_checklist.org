@@ -1,20 +1,23 @@
 :PROPERTIES:
 :ID: 897A7156-504D-4581-AD4C-026D643C0838
 :END:
-#+title: ores.refdata entity evaluation checklist
-#+description: Per-layer criteria for evaluating whether an ores.refdata entity is fully commissioned. Each criterion shows whether it applies to domain entities, auxiliary (lookup) types, or both, plus what to look for.
+#+title: Domain entity evaluation checklist
+#+description: Per-layer criteria for evaluating whether a domain entity is fully commissioned. Each criterion shows whether it applies to domain entities, auxiliary (lookup) types, or both, plus what to look for. First applied to ores.refdata/currency.
 #+type: knowledge
 #+level: cross
-#+filetags: :refdata:commissioning:checklist:evaluation:knowledge:
+#+filetags: :domain:commissioning:checklist:evaluation:knowledge:
 #+created: 2026-05-29
 #+updated: 2026-05-29
 
 * Summary
 
-A standard =ores.refdata= entity spans twelve layers: DB, codegen, domain, repository,
+A fully commissioned domain entity spans twelve layers: DB, codegen, domain, repository,
 service, messaging (JSON IO), Qt UI, shell REPL, CLI, HTTP routes, Wt web UI, and manual.
-Each layer has a fixed set of criteria that determines whether the entity is fully
-commissioned.
+Each layer has a fixed set of criteria that determines whether the entity is complete.
+
+This checklist is not specific to =ores.refdata=. The criteria describe the standard pattern
+for any ORE Studio domain entity; the examples use =ores.refdata/currency= as the reference
+specimen because it is the most complete entity and was the first to be evaluated.
 
 Two meta-types exist with different expected coverage:
 
@@ -28,8 +31,7 @@ Two meta-types exist with different expected coverage:
 Each checklist table has columns: *Item* | *Description* | *Domain* | *Aux* | *What to look for*.
 Values in Domain/Aux: =Always= / =Usually= / =If applicable= / =N/A=.
 
-Use alongside the [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] when commissioning or auditing any ores.refdata
-entity. The =currency= entity (with its three auxiliaries) is the reference specimen.
+Use alongside the [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] when commissioning or auditing any entity.
 
 * Detail
 

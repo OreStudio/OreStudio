@@ -43,7 +43,7 @@ Sprint 19 stories selected from the product backlog, promoted into the sprint, e
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/926][#926]] | [agile] Run sprint planning session |
+| [[https://github.com/OreStudio/OreStudio/pull/927][#927]] | [agile] Run sprint 19 planning session |
 
 * Review
 

@@ -22,12 +22,12 @@ compiler's template/constexpr depth limit.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
-| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-05-29                               |
+| State         | STARTED                                                                           |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                         |
+| Now           | Implementing split of 502-field Literal type.                                     |
+| Waiting on    | Nothing.                                                                          |
+| Next          | PR and review.                                                                    |
+| Last touched  | 2026-05-29                                                                        |
 
 * Acceptance
 
@@ -38,9 +38,9 @@ compiler's template/constexpr depth limit.
 
 * Tasks
 
-| Task | State | Start | End | Description |
-|------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| Task                                                                                                                        | State   | Start      | End | Description                                               |
+|-----------------------------------------------------------------------------------------------------------------------------+---------+------------+-----+-----------------------------------------------------------|
+| [[id:9212966F-87AC-4B72-B708-8ED5BA253431][Split rfl::Literal 502-field type to fix Windows and macOS CI]] | STARTED | 2026-05-29 |     | Restructure 502-field Literal to fit MSVC/Clang limits. |
 
 * See also
 

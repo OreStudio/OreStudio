@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 9212966F-87AC-4B72-B708-8ED5BA253431
+:END:
+#+title: Task: Split rfl::Literal 502-field type to fix Windows and macOS CI
+#+description: Restructure the rfl::Literal 502-field type in ClientManagerTradeDetail.cpp into smaller chunks to eliminate the MSVC C1202 and Clang fold-expression nesting failures.
+#+type: task
+#+level: s1
+#+filetags: :fix_rfl_complexity:sprint_19:v0:
+#+owner: marco
+#+branch: feature/task-split-rfl-literal-type
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Split or restructure the =rfl::Literal= 502-field type in
+=ores.qt.api/src/ClientManagerTradeDetail.cpp= so that MSVC and Clang can
+compile it within their template/constexpr depth limits, restoring Windows
+and macOS CI builds without affecting Linux.
+
+* Status
+
+| Field        | Value                                                                             |
+|--------------+-----------------------------------------------------------------------------------|
+| State        | STARTED                                                                           |
+| Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
+| Now          | Implementing the split/restructure of the 502-field Literal type.                 |
+| Waiting on   | Nothing.                                                                          |
+| Next         | PR and review.                                                                    |
+| Last touched | 2026-05-29                                                                        |
+
+* Acceptance
+
+- =ClientManagerTradeDetail.cpp= compiles on MSVC without =C1202= (recursive type too complex).
+- =ClientManagerTradeDetail.cpp= compiles on Clang without fold-expression nesting limit error in =rfl/internal/StringLiteral.hpp=.
+- Linux CI remains green.
+- No functional change to the =ClientManager= trade detail behaviour.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

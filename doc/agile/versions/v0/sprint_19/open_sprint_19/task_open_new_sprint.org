@@ -56,6 +56,6 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Remove empty Hotfixes section | sprint_19/sprint.org | Accepted | Fixed in fe4e5c3a0 |
 
 * Result

@@ -42,13 +42,6 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 |-------+-------+-------+-----+-------------|
 | [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]] | STARTED | 2026-05-29 | | Scaffold sprint 19, wire version manifest, PR. |
 
-** Hotfixes
-
-#+ATTR_HTML: :class hug-leading
-| Story | State | Start | End | Description |
-|-------+-------+-------+-----+-------------|
-|       |       |       |     |             |
-
 * Health Review
 
 (Run =sprint-reviewer= to generate this section.)

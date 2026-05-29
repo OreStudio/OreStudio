@@ -33,14 +33,9 @@ regardless of which access layer they prefer.
 
 - Each entity chapter (that has shell support) has a "Shell" subsection with REPL command examples.
 - Shell command examples are verified against the running system.
-- Chapters are written hand-in-hand with the [[id:66F5046D-CF6D-4F7D-94A8-5A5BC69F7068][ores.refdata entity health review]] verification pass.
+- Chapters are written hand-in-hand with the ores.refdata Commissioning stories' verification pass.
 - Site builds cleanly with no broken links.
 
-* Tasks
-
-| Task | State | Start | End | Description |
-|------+-------+-------+-----+-------------|
-|      |       |       |     |             |
 
 * See also
 

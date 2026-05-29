@@ -13,16 +13,15 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+The shell REPL has individual commands for system setup, tenant creation, and party creation,
+but no guided multi-step wizard flow. Users must know the exact sequence of commands and
+supply all parameters manually. The Qt desktop UI has provisioner wizards for these
+operations; the shell offers no equivalent.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+Provisioning a system, tenant, or party involves several dependent steps that are error-prone
+without guidance. The Qt wizards walk users through each step in order; shell users lack this
+support, making the shell unsuitable for first-time setup or low-frequency provisioning tasks.
 
-* References
 
--
-
-* See also
-
--

@@ -196,3 +196,7 @@ Entities that have domain/persistence support but no Wt web UI component:
 - All entities except =ores.iam/account=, =ores.refdata/country=, and
   =ores.refdata/currency=. Wt coverage is minimal and concentrated on
   the most frequently accessed reference data types.
+
+* See also
+
+- [[id:897A7156-504D-4581-AD4C-026D643C0838][ores.refdata entity evaluation checklist]] — per-layer commissioning criteria used when auditing or commissioning any ores.refdata entity

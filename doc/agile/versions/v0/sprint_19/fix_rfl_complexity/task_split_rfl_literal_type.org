@@ -167,14 +167,14 @@ Swap/composite cases note: =swap_instrument_data = with_legs<rates_instrument_va
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                      |
+|-----+------------------------------------------------------------|
+| 931 | Scaffold rfl complexity fix: story decisions and task stubs |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                   | File                                  | Decision | Notes                                              |
+|---+-------------------------------------------------------------------+---------------------------------------+----------+----------------------------------------------------|
+| 1 | Inline struct defs in template args are invalid C++ (Gemini R1)   | task_rename_and_rewrite_parse_path.org | Accept   | Replaced with named wrappers in anon namespace; resolved. |
 
 * Result

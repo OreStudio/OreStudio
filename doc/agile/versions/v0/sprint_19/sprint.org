@@ -41,6 +41,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]] | STARTED | 2026-05-29 | | Scaffold sprint 19, wire version manifest, PR. |
+| [[id:2A6F5FE2-8C50-494F-948F-6BA519075FA9][Sprint planning]] | STARTED | 2026-05-29 | | Select stories from backlog, size tasks, confirm mission. |
 
 * Health Review
 

@@ -43,9 +43,9 @@ results graphically inside ORE Studio.
 | Field        | Value                                                       |
 |--------------+-------------------------------------------------------------|
 | State        | STARTED                                                     |
-| Now          | Sprint 18 closed; sprint 19 not yet started.                |
+| Now          | Sprint 19 open; restoring CI builds and advancing ORE pipeline. |
 | Waiting on   | Nothing.                                                    |
-| Next         | Plan and open sprint 19.                                    |
+| Next         | Work sprint 19 stories.                                     |
 | Last touched | 2026-05-29                                                  |
 
 * Sprints
@@ -74,6 +74,7 @@ the current sprint; the rest are closed.
 | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]] | 2026-03-30 | 2026-04-17 | ORE import e2e; workflow engine; market data; Qt plugins; Windows portability. |
 | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] | 2026-04-18 |            | Windows/MSVC portability, symbol visibility, ORE conventions, workspace, DQ publish, service isolation, SQL codegen, Qt UI, v2 docs. |
 | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] | 2026-05-22 | 2026-05-29 | Compass CLI, LLM-first docs, agile artefact improvements; ORE pipeline deferred. |
+| [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] | 2026-05-29 |            | Restore Windows/macOS CI builds; advance ORE pipeline product stories.           |
 
 * Release scope
 

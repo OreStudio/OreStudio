@@ -55,4 +55,6 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Remove empty * Decisions | story.org | Accepted | Fixed in 2fe9db030 |
+| 2 | Remove empty * Notes | task_implement_sprint_planning.org | Accepted | Fixed in 2fe9db030 |
+| 3 | Remove empty * Result | task_implement_sprint_planning.org | Accepted | Fixed in 2fe9db030 |

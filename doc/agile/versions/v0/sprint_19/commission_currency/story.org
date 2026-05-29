@@ -51,4 +51,4 @@ entity chapter to the user manual. File backlog captures for Wt and HTTP support
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:000FCB22-B1ED-4E09-AB47-03EB8A361B41][Appraise currency across all layers and produce evaluation checklist]] | STARTED | 2026-05-29 | | Assess each layer; produce reusable entity evaluation checklist. |

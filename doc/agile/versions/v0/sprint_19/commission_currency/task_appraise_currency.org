@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 000FCB22-B1ED-4E09-AB47-03EB8A361B41
+:END:
+#+title: Task: Appraise currency across all layers and produce evaluation checklist
+#+description: Review the currency entity at every layer (DB, domain, table IO, JSON IO, Qt, shell, CLI, HTTP, Wt, manual); assess what is working post-NATS; identify gaps; produce a reusable per-layer evaluation checklist for ores.refdata entities.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_19:v0:
+#+owner: marco
+#+branch: feature/appraise-currency
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a per-layer appraisal of the =currency= entity covering every access layer (DB,
+domain, table IO, JSON IO, Qt, shell, CLI, HTTP, Wt, manual). For each layer: record what
+exists, whether it is working post-NATS, and what is missing or broken. The findings are
+distilled into a reusable *entity evaluation checklist* — a knowledge document listing the
+standard criteria at each layer that any ores.refdata entity must satisfy to be considered
+fully commissioned.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Appraising currency layer by layer.    |
+| Waiting on   | Nothing.                               |
+| Next         | Complete appraisal; write checklist doc. |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- Each layer assessed: DB, domain, table IO, JSON IO, Qt, shell, CLI, HTTP, Wt, manual.
+- Per-layer findings recorded in the =* Result= section.
+- A knowledge document =entity_evaluation_checklist.org= exists listing the standard criteria at each layer.
+- Any gaps or regressions found are filed as captures or noted inline.
+- Checklist is referenced from [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]].
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

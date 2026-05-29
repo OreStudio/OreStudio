@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: C72BF572-EE74-4F95-9B44-9CCF2AC0B04A
+:END:
+#+title: Task: Implement codegen.py CLI scaffold
+#+description: Implement the codegen.py entry point with argparse subcommands (generate, regenerate, list, diff), package layout, logging, and venv wiring. generate and regenerate call through to the existing generator.py; diff is a stub.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_sql:sprint_19:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-sql
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create =codegen.py= as the idiomatic Python entry point for ores.codegen. Implement the
+complete argparse subcommand structure, package layout, and logging configuration as
+specified in the [[id:49584C75-48E5-41E3-8C5F-B413E9443A72][survey task]]. Wire =generate= and =regenerate= through to the existing
+=generator.py=; stub =diff= with an informative "not yet available" message. The result
+is a working CLI that can replace =generate_refdata_schema.sh= for day-to-day use.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Implement unified SQL template.        |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- =codegen.py= exists at =projects/ores.codegen/codegen.py= and is executable.
+- Package =src/codegen/= exists with =cli.py=, =generate.py=, =list_cmd.py=, =diff_cmd.py=, =manifest.py=, =logging_config.py=.
+- =codegen.py --help= shows all four subcommands.
+- =codegen.py generate --model PATH --profile sql --dry-run= prints the output path without writing.
+- =codegen.py regenerate --component refdata --profile sql --dry-run= prints all 10 output paths without writing.
+- =codegen.py list components= lists known components.
+- =codegen.py list models --component refdata= lists all =_entity.json= files.
+- =codegen.py diff --component refdata= prints a clear "not yet available" message.
+- =--profile all= on an =_entity.json= model is rejected with an error.
+- Venv is bootstrapped automatically on first run.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Implemented. Package layout:
+
+#+begin_example
+projects/ores.codegen/
+  codegen.py                  top-level entry point; bootstraps venv, cds to repo root
+  src/
+    codegen/
+      __init__.py
+      cli.py                  argparse setup + dispatch
+      generate.py             generate and regenerate command implementations
+      list_cmd.py             list command implementation
+      diff_cmd.py             diff stub (requires unified template)
+      manifest.py             component → model directory mappings
+      logging_config.py       logging setup
+#+end_example
+
+Key behaviours:
+- =generate= and =regenerate= call through to =generator.py= functions directly (no subprocess).
+- =--profile all= is rejected for =_entity.json= (schema) models to prevent the footgun.
+- =--dry-run= resolves and prints output paths without writing.
+- =diff= returns a clear error referencing the unified template task.
+- Venv bootstrapped via =os.execv= re-exec on first run.
+

@@ -6,6 +6,7 @@
 #+type: story
 #+level: s2
 #+filetags: :tooling:codegen:sprint_19:v0:
+#+branch: feature/refactor-codegen-sql
 #+created: 2026-05-29
 #+updated: 2026-05-29
 #+todo: BACKLOG STARTED | DONE ABANDONED

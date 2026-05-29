@@ -33,7 +33,7 @@ In execution order:
 
 4. /Bump the project version./ Follow [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]] to update CMake version strings and tags.
 
-5. /Commit and PR./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]] and [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][create a PR]].
+5. /Commit and PR./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]] and follow [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — title =[COMPONENT] Description=, body sections Summary / Changes / Traceability.
 
 * Postconditions
 

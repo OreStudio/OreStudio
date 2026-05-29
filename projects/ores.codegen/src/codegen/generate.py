@@ -34,10 +34,11 @@ def _generate_single(
 
     # Refuse --profile all for schema/table models: running the all profile
     # silently overwrites production SQL with the wrong template when both
-    # _entity.json/_table.json and _domain_entity.json exist for the same entity.
+    # a SQL model (_table.json / _entity.json) and a _domain_entity.json exist
+    # for the same entity.
     if profile == "all" and model_type in ("schema", "table"):
         log.error(
-            "--profile all is not allowed for _entity.json or _table.json models. "
+            "--profile all is not allowed for SQL models (_table.json or _entity.json). "
             "Use --profile sql or --profile all-cpp explicitly to prevent "
             "accidental SQL overwrites."
         )

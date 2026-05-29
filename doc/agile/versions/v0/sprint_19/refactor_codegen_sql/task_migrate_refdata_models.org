@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 05730114-2017-432B-B7E8-70F8ED9BB172
+:END:
+#+title: Task: Migrate refdata entity models to new format
+#+description: Delete all 10 _entity.json refdata models; update manifest to use *_table.json glob for refdata component; retire refdata-table alias; verify parity.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_sql:sprint_19:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-sql
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Delete all 10 =_entity.json= refdata models now that their =_table.json= replacements
+exist and have verified parity. Update =manifest.py= so the =refdata= component uses
+the =*_table.json= glob directly, and remove the interim =refdata-table= alias that was
+added for parity testing. Run a full parity check to confirm zero logical diff.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] |
+| Now          | Implementation complete; awaiting PR review. |
+| Waiting on   | Nothing.                                     |
+| Next         | Retire generate_refdata_schema.sh.           |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- All 10 =*_entity.json= model files deleted from =projects/ores.codegen/models/refdata/=.
+- =manifest.py= =refdata= component uses =entity_glob="*_table.json"=.
+- =manifest.py= =refdata-table= interim alias removed.
+- =codegen.sh regenerate --component refdata --profile sql --dry-run= prints all 10 output paths.
+- Running the actual regeneration produces zero logical diff against current SQL files.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Migration complete. Files deleted/modified:
+
+#+begin_example
+projects/ores.codegen/
+  models/refdata/
+    book_status_entity.json             deleted (replaced by book_status_table.json)
+    contact_type_entity.json            deleted (replaced by contact_type_table.json)
+    currency_entity.json                deleted (replaced by currency_table.json)
+    currency_market_tier_entity.json    deleted (replaced by currency_market_tier_table.json)
+    monetary_nature_entity.json         deleted (replaced by monetary_nature_table.json)
+    party_id_scheme_entity.json         deleted (replaced by party_id_scheme_table.json)
+    party_status_entity.json            deleted (replaced by party_status_table.json)
+    party_type_entity.json              deleted (replaced by party_type_table.json)
+    purpose_type_entity.json            deleted (replaced by purpose_type_table.json)
+    rounding_type_entity.json           deleted (replaced by rounding_type_table.json)
+  src/codegen/
+    manifest.py                         refdata component now uses *_table.json glob;
+                                        refdata-table interim alias removed
+    generate.py                         updated --profile all guard comment/message
+#+end_example
+
+Parity result: all 10 entities produce zero diff against current SQL files.

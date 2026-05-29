@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: BC130231-71C2-4DFD-8BA6-B58B4B3029BB
+:END:
+#+title: Story: Fix product-backlog bucket names in scripts and captures
+#+description: Update regenerate_backlog_indexes.py, doc_generate.py, and compass.py to use current bucket names (next, deferred) instead of legacy names (near, far); fix :near:/:far: filetags in existing captures.
+#+type: story
+#+level: s2
+#+filetags: :tooling:codegen:backlog:sprint_18:v0:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The product-backlog directories were renamed from =near/= / =far/= to =next/= / =deferred/=,
+but the tooling was not updated in sync. =regenerate_backlog_indexes.py= still writes
+=near.org= and =far.org=, compass help text still says =near|far=, and every capture in
+=next/= carries a stale =:near:= filetag. This story fixes all tooling and capture metadata
+to match the renamed directories.
+
+* Status
+
+| Field         | Value                                                                          |
+|---------------+--------------------------------------------------------------------------------|
+| State         | STARTED                                                                        |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                      |
+| Now           | Implementing fixes across regenerate_backlog_indexes.py, compass.py, and captures. |
+| Waiting on    | Nothing.                                                                       |
+| Next          | PR and review.                                                                 |
+| Last touched  | 2026-05-29                                                                     |
+
+* Acceptance
+
+- =regenerate_backlog_indexes.py= writes to =next.org= and =deferred.org=, not =near.org= / =far.org=.
+- =near.org=, =far.org=, and the empty =near/= and =far/= directories are deleted.
+- All captures under =next/= carry =:next:= filetag, not =:near:=.
+- All captures under =deferred/= carry =:deferred:= filetag, not =:far:=.
+- =compass.py= help text uses =next|deferred|discarded=.
+- =doc_generate.py= comment uses =next | deferred=.
+- Running =regenerate_backlog_indexes.py= produces no diff against committed =next.org= / =deferred.org=.
+
+* Tasks
+
+| Task                                                                                                       | State   | Start      | End | Description                                     |
+|------------------------------------------------------------------------------------------------------------+---------+------------+-----+-------------------------------------------------|
+| [[id:FE965603-8234-42CE-A626-8F34A133717C][Fix legacy near/far bucket name references]] | STARTED | 2026-05-29 |     | Update scripts and capture filetags. |
+
+* Decisions
+
+- =near.org= and =far.org= are deleted outright — they are stale duplicates of =next.org= / =deferred.org= (same UUID, wrong filename).
+- The single file in =near/= (=extend_validate_docs_frontmatter.org=) is moved to =next/= as part of the rename cleanup.
+
+* Out of scope
+
+- The =inbox/=, =discarded/= buckets — names are already current.
+- Sprint story/task docs that contain "near" or "far" in prose.

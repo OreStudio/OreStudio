@@ -29,6 +29,7 @@ on:  # yamllint disable-line rule:truthy
       - 'doc/**'
       - '.claude/**'
       - 'assets/**'
+      - 'projects/ores.codegen/**'
 
 jobs:
   build:

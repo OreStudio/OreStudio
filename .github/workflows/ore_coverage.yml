@@ -22,12 +22,14 @@ on:  # yamllint disable-line rule:truthy
       - 'doc/**'
       - '.claude/**'
       - 'assets/**'
+      - 'projects/ores.codegen/**'
   pull_request:
     branches: ["main"]
     paths-ignore:
       - 'doc/**'
       - '.claude/**'
       - 'assets/**'
+      - 'projects/ores.codegen/**'
 
   workflow_dispatch:
 

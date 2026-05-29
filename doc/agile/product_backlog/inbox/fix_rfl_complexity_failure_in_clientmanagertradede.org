@@ -105,7 +105,7 @@ Clang default fold/bracket depth: 256. Possible workaround: -fbracket-depth=512
 
 - Failing file: =projects/ores.qt.api/src/ClientManagerTradeDetail.cpp=
 - Failing type: =ores::trading::messaging::get_trade_detail_instrument_wrapper=
-- Prior fix story: [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D7][Resolve RFL complexity issues]] — same pattern, different TUs
+- Prior fix story: [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] — same pattern, different TUs
 
 * See also
 

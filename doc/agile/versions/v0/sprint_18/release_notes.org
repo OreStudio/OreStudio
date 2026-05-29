@@ -119,6 +119,40 @@ treat ORE pipeline progress as the primary objective.
 - *Add Downloads and Agile nav entries to the site* (BACKLOG): deferred.
 - *Rebuild org-roam DB independently from CMake* (BACKLOG): deferred.
 
+* 📈 Sprint Charts
+
+** PRs and Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+#+attr_html: :width 100%
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix.
+
+#+attr_html: :width 100%
+[[file:line_churn.png]]
+
+** PR Cycle Time
+
+Hours from PR open to merge, one bar per PR. Long bars indicate
+review bottlenecks.
+
+#+attr_html: :width 100%
+[[file:pr_cycle.png]]
+
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+#+attr_html: :width 100%
+[[file:stories_done.png]]
+
 * 📊 Time Summary
 
 - *Total effort*: not tracked

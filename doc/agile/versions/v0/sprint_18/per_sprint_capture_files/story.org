@@ -22,12 +22,12 @@ Replace it with product-level captures in the [[id:D4219199-7B17-4A89-B4BC-60197
 
 | Field         | Value                                                                    |
 |---------------+--------------------------------------------------------------------------|
-| State         | STARTED                                                                  |
+| State         | DONE                                                                     |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                                                |
-| Now           | All tasks complete; PR pending.                                          |
-| Waiting on    | PR merge.                                                                |
-| Next          | Merge PR and close story.                                                |
-| Last touched  | 2026-05-28                                                               |
+| Now           | Nothing.                                                                 |
+| Waiting on    | —                                                                        |
+| Next          | —                                                                        |
+| Last touched  | 2026-05-29                                                               |
 
 * Acceptance
 

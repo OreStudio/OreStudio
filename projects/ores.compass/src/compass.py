@@ -954,7 +954,7 @@ def cmd_capture(argv):
         rc = exc.code
     if rc in (None, 0):
         print(f"✅ Sprint note created: {out_file.relative_to(PROJECT_ROOT)}")
-        print("ℹ️  Use 'compass capture file <slug> near|far|discarded' to move to backlog,")
+        print("ℹ️  Use 'compass capture file <slug> next|deferred|discarded' to move to backlog,")
         print("   or 'compass capture promote <slug>' for instructions to make it a story/task.")
         return 0
     return rc or 1

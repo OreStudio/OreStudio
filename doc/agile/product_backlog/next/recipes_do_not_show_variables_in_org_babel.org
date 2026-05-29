@@ -5,7 +5,7 @@
 #+description: Recipes do not show variables in org-babel
 #+type: capture
 #+level: cross
-#+filetags: :infra:capture:near:
+#+filetags: :infra:capture:next:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

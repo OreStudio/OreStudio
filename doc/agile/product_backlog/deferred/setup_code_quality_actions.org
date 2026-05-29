@@ -5,7 +5,7 @@
 #+description: Setup code quality actions
 #+type: capture
 #+level: cross
-#+filetags: :infra:capture:far:
+#+filetags: :infra:capture:deferred:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

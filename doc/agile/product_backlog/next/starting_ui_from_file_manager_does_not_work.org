@@ -5,7 +5,7 @@
 #+description: Starting UI from file manager does not work
 #+type: capture
 #+level: cross
-#+filetags: :infra:capture:near:
+#+filetags: :infra:capture:next:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

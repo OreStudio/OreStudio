@@ -5,7 +5,7 @@
 #+description: Add skill to review product backlog
 #+type: capture
 #+level: cross
-#+filetags: :infra:capture:far:
+#+filetags: :infra:capture:deferred:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

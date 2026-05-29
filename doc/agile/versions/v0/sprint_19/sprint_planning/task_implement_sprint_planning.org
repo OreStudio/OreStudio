@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 4AE688F2-298A-4070-B422-6C22F238EC9E
+:END:
+#+title: Task: Run sprint planning session
+#+description: Initial task for: Sprint planning
+#+type: task
+#+level: s1
+#+filetags: :sprint_planning:sprint_19:v0:
+#+owner: marco
+#+branch: feature/sprint-planning
+#+pr: 925
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2A6F5FE2-8C50-494F-948F-6BA519075FA9][Sprint planning]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Sprint 19 stories selected from the product backlog, each broken into tasks, wired into sprint.org, and the sprint mission confirmed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:2A6F5FE2-8C50-494F-948F-6BA519075FA9][Sprint planning]] |
+| Now          | Running planning session with user.    |
+| Waiting on   | Nothing.                               |
+| Next         | Commit stories and open PR.            |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- Stories from backlog promoted into sprint 19.
+- Each story has at least one task.
+- sprint.org Stories table updated.
+- PR open.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/925][#925]] | [agile] Sprint planning |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Remove empty * Decisions | story.org | Accepted | Fixed in 2fe9db030 |
+| 2 | Remove empty * Notes | task_implement_sprint_planning.org | Accepted | Fixed in 2fe9db030 |
+| 3 | Remove empty * Result | task_implement_sprint_planning.org | Accepted | Fixed in 2fe9db030 |

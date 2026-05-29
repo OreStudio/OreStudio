@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 2A6F5FE2-8C50-494F-948F-6BA519075FA9
+:END:
+#+title: Story: Sprint planning
+#+description: Plan sprint 19: select stories from the product backlog, size tasks, and confirm the sprint mission.
+#+type: story
+#+level: s2
+#+filetags: :agile:sprint:planning:v0:sprint_19:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Sprint 19 has a selected, sized set of stories pulled from the product backlog, each broken into tasks and wired into the sprint, with the sprint mission confirmed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Running sprint planning session.       |
+| Waiting on    | Nothing.                               |
+| Next          | Open PR.                               |
+| Last touched  | 2026-05-29                               |
+
+* Acceptance
+
+- Stories selected from the product backlog and wired into sprint 19.
+- Each story has at least one task sized and ready to start.
+- Sprint mission confirmed.
+- PR open; site builds cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4AE688F2-298A-4070-B422-6C22F238EC9E][Run sprint planning session]] | STARTED | 2026-05-29 | | Select stories, size tasks, confirm mission. |
+
+* Out of scope
+
+- Version bump (already done).
+- Story implementation (this story only plans the sprint).

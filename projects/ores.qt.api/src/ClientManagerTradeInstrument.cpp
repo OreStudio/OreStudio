@@ -22,13 +22,13 @@
 
 namespace {
 
-using namespace ores::trading::domain;
+namespace td = ores::trading::domain;
 
 // Phase 1: envelope — rfl silently skips the "instrument" JSON key.
 struct response_envelope {
     bool success = false;
     std::string message;
-    trade trade;
+    td::trade trade;
 };
 
 // Phase 2: one named wrapper per concrete leaf type.
@@ -36,74 +36,74 @@ struct response_envelope {
 // inside template argument lists (e.g. rfl::json::read<struct{...}> is ill-formed).
 
 // Flat types
-struct bond_wrapper      { bond_instrument      instrument; };
-struct credit_wrapper    { credit_instrument    instrument; };
-struct commodity_wrapper { commodity_instrument instrument; };
-struct scripted_wrapper  { scripted_instrument  instrument; };
+struct bond_wrapper      { td::bond_instrument      instrument; };
+struct credit_wrapper    { td::credit_instrument    instrument; };
+struct commodity_wrapper { td::commodity_instrument instrument; };
+struct scripted_wrapper  { td::scripted_instrument  instrument; };
 
 // Composite (with composite legs)
 struct composite_wrapper {
-    composite_instrument             instrument;
-    std::vector<composite_leg>       legs;
+    td::composite_instrument             instrument;
+    std::vector<td::composite_leg>       legs;
 };
 
 // Rates / swap types (with swap legs)
 struct fra_wrapper {
-    fra_instrument               instrument;
-    std::vector<swap_leg>        legs;
+    td::fra_instrument               instrument;
+    std::vector<td::swap_leg>        legs;
 };
 struct vanilla_swap_wrapper {
-    vanilla_swap_instrument      instrument;
-    std::vector<swap_leg>        legs;
+    td::vanilla_swap_instrument      instrument;
+    std::vector<td::swap_leg>        legs;
 };
 struct cap_floor_wrapper {
-    cap_floor_instrument         instrument;
-    std::vector<swap_leg>        legs;
+    td::cap_floor_instrument         instrument;
+    std::vector<td::swap_leg>        legs;
 };
 struct swaption_wrapper {
-    swaption_instrument          instrument;
-    std::vector<swap_leg>        legs;
+    td::swaption_instrument          instrument;
+    std::vector<td::swap_leg>        legs;
 };
 struct bgs_wrapper {
-    balance_guaranteed_swap_instrument  instrument;
-    std::vector<swap_leg>               legs;
+    td::balance_guaranteed_swap_instrument  instrument;
+    std::vector<td::swap_leg>               legs;
 };
 struct callable_swap_wrapper {
-    callable_swap_instrument     instrument;
-    std::vector<swap_leg>        legs;
+    td::callable_swap_instrument     instrument;
+    std::vector<td::swap_leg>        legs;
 };
 struct knock_out_swap_wrapper {
-    knock_out_swap_instrument    instrument;
-    std::vector<swap_leg>        legs;
+    td::knock_out_swap_instrument    instrument;
+    std::vector<td::swap_leg>        legs;
 };
 struct inflation_swap_wrapper {
-    inflation_swap_instrument    instrument;
-    std::vector<swap_leg>        legs;
+    td::inflation_swap_instrument    instrument;
+    std::vector<td::swap_leg>        legs;
 };
 struct rpa_wrapper {
-    rpa_instrument               instrument;
-    std::vector<swap_leg>        legs;
+    td::rpa_instrument               instrument;
+    std::vector<td::swap_leg>        legs;
 };
 
 // FX types
-struct fx_forward_wrapper        { fx_forward_instrument        instrument; };
-struct fx_vanilla_option_wrapper { fx_vanilla_option_instrument instrument; };
-struct fx_barrier_option_wrapper { fx_barrier_option_instrument instrument; };
-struct fx_digital_option_wrapper { fx_digital_option_instrument instrument; };
-struct fx_asian_forward_wrapper  { fx_asian_forward_instrument  instrument; };
-struct fx_accumulator_wrapper    { fx_accumulator_instrument    instrument; };
-struct fx_variance_swap_wrapper  { fx_variance_swap_instrument  instrument; };
+struct fx_forward_wrapper        { td::fx_forward_instrument        instrument; };
+struct fx_vanilla_option_wrapper { td::fx_vanilla_option_instrument instrument; };
+struct fx_barrier_option_wrapper { td::fx_barrier_option_instrument instrument; };
+struct fx_digital_option_wrapper { td::fx_digital_option_instrument instrument; };
+struct fx_asian_forward_wrapper  { td::fx_asian_forward_instrument  instrument; };
+struct fx_accumulator_wrapper    { td::fx_accumulator_instrument    instrument; };
+struct fx_variance_swap_wrapper  { td::fx_variance_swap_instrument  instrument; };
 
 // Equity types
-struct eq_option_wrapper    { equity_option_instrument          instrument; };
-struct eq_forward_wrapper   { equity_forward_instrument         instrument; };
-struct eq_swap_wrapper      { equity_swap_instrument            instrument; };
-struct eq_var_swap_wrapper  { equity_variance_swap_instrument   instrument; };
-struct eq_barrier_wrapper   { equity_barrier_option_instrument  instrument; };
-struct eq_asian_wrapper     { equity_asian_option_instrument    instrument; };
-struct eq_digital_wrapper   { equity_digital_option_instrument  instrument; };
-struct eq_accum_wrapper     { equity_accumulator_instrument     instrument; };
-struct eq_position_wrapper  { equity_position_instrument        instrument; };
+struct eq_option_wrapper    { td::equity_option_instrument          instrument; };
+struct eq_forward_wrapper   { td::equity_forward_instrument         instrument; };
+struct eq_swap_wrapper      { td::equity_swap_instrument            instrument; };
+struct eq_var_swap_wrapper  { td::equity_variance_swap_instrument   instrument; };
+struct eq_barrier_wrapper   { td::equity_barrier_option_instrument  instrument; };
+struct eq_asian_wrapper     { td::equity_asian_option_instrument    instrument; };
+struct eq_digital_wrapper   { td::equity_digital_option_instrument  instrument; };
+struct eq_accum_wrapper     { td::equity_accumulator_instrument     instrument; };
+struct eq_position_wrapper  { td::equity_position_instrument        instrument; };
 
 } // namespace
 

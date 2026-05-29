@@ -61,9 +61,18 @@ must be added or corrected. Fix any gaps inline or file captures for deferred wo
 * Result
 
 All four DDL files verified against the DB-layer criteria in [[id:897A7156-504D-4581-AD4C-026D643C0838][ores.refdata entity evaluation checklist]].
-No gaps found. The auxiliary types (rounding_type, monetary_nature, currency_market_tier)
-follow an identical structural pattern; currency is richer with entity-specific soft-FK
-validations in its insert trigger.
+No gaps at the DB layer. One gap found at the codegen layer (see below).
+
+The auxiliary types (rounding_type, monetary_nature, currency_market_tier) follow an
+identical structural pattern; currency is richer with entity-specific soft-FK validations
+in its insert trigger.
+
+*Codegen gap:* All three auxiliary types have both =<entity>_domain_entity.json= and
+=<entity>_entity.json= in =projects/ores.codegen/models/refdata/=. Currency has only
+=currency_entity.json= — the =currency_domain_entity.json= is missing. The domain struct
+(=currency.hpp=) may be hand-crafted or generated from the entity model alone. This is a
+drift risk: if the DB schema evolves, the domain struct may not be updated via codegen.
+Filed as a gap in the checklist result; needs a dedicated capture or fix.
 
 ** currency (=refdata_currencies_create.sql=) — domain entity
 

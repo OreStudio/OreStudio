@@ -2,7 +2,7 @@
 :ID: 897A7156-504D-4581-AD4C-026D643C0838
 :END:
 #+title: ores.refdata entity evaluation checklist
-#+description: Per-layer criteria for evaluating whether an ores.refdata entity is fully commissioned. Each criterion shows whether it applies to domain entities, auxiliary (lookup) types, or both.
+#+description: Per-layer criteria for evaluating whether an ores.refdata entity is fully commissioned. Each criterion shows whether it applies to domain entities, auxiliary (lookup) types, or both, plus what to look for.
 #+type: knowledge
 #+level: cross
 #+filetags: :refdata:commissioning:checklist:evaluation:knowledge:
@@ -11,176 +11,184 @@
 
 * Summary
 
-A standard =ores.refdata= entity spans eleven layers: DB, domain, repository, service,
-messaging (JSON IO), Qt UI, shell REPL, CLI, HTTP routes, Wt web UI, and manual. Each
-layer has a fixed set of criteria that determines whether the entity is fully commissioned.
+A standard =ores.refdata= entity spans twelve layers: DB, codegen, domain, repository,
+service, messaging (JSON IO), Qt UI, shell REPL, CLI, HTTP routes, Wt web UI, and manual.
+Each layer has a fixed set of criteria that determines whether the entity is fully
+commissioned.
 
 Two meta-types exist with different expected coverage:
 
 - *Domain entity* — a primary entity with its own full CRUD stack, Qt MDI window, shell
   and CLI commands, HTTP routes, and a manual chapter. Example: =currency=.
 - *Auxiliary type* — a small lookup table referenced by one or more domain entities as a
-  soft-FK. It has the same DB and domain/service layers but a narrower UI surface:
-  typically a dropdown in the parent entity's detail dialog rather than its own MDI
-  workflow. Example: =rounding_type=, =monetary_nature=, =currency_market_tier=.
+  soft-FK. Has the same DB, codegen, and service layers but a narrower UI surface: typically
+  a dropdown in the parent entity's detail dialog rather than its own MDI workflow.
+  Example: =rounding_type=, =monetary_nature=, =currency_market_tier=.
 
-Each checklist table below has a *Domain* column and an *Aux* column. Values:
-=Always= / =Usually= / =If applicable= / =N/A=.
+Each checklist table has columns: *Item* | *Description* | *Domain* | *Aux* | *What to look for*.
+Values in Domain/Aux: =Always= / =Usually= / =If applicable= / =N/A=.
 
-Use this document alongside the [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] when commissioning or auditing
-any ores.refdata entity. The =currency= entity (and its three auxiliaries) was used as the
-reference specimen to derive these criteria.
+Use alongside the [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] when commissioning or auditing any ores.refdata
+entity. The =currency= entity (with its three auxiliaries) is the reference specimen.
 
 * Detail
 
 ** DB layer
 
-| Criterion | Domain | Aux | Notes |
-|-----------+--------+-----+-------|
-| Table exists in =refdata_<entity>_create.sql= | Always | Always | |
-| =tenant_id= column (soft-ref to tenants) | Usually | Always | Domain: omit only for truly global entities (currencies, countries). Aux: always tenant-scoped. |
-| =version= column for optimistic locking | Always | Always | |
-| =modified_by= column | Always | Always | |
-| =performed_by= column | Always | Always | |
-| =change_reason_code= column | Always | Always | |
-| =change_commentary= column | Always | Always | |
-| =valid_from= and =valid_to= columns (temporal history) | Always | Always | No separate history table; GIST exclusion on same table. |
-| CHECK constraint: =valid_from < valid_to= | Always | Always | |
-| CHECK constraint: natural key column not empty | Always | Always | |
-| GIST exclusion constraint prevents temporal overlaps | Always | Always | Requires =btree_gist=. |
-| Primary key on (tenant_id, natural_key, valid_from, valid_to) | Always | Always | |
-| Version unique index (where =valid_to = infinity=) | Always | Always | |
-| Code / natural key unique index (where =valid_to = infinity=) | Always | Always | |
-| Tenant index (where =valid_to = infinity=) | Always | Always | |
-| =display_order= column | N/A | Always | Aux types are shown in dropdowns; ordering matters. |
-| =description= column | N/A | Always | Human-readable description of the lookup value. |
-| Insert trigger: version management + tenant/account validation | Always | Always | |
-| Delete rule: soft-delete (set =valid_to = now=) | Always | Always | |
-| Validation function =ores_refdata_validate_<entity>_fn= | Always | Always | Used by parent entities' insert triggers to validate soft-FKs. |
-| Entity-specific soft-FK validations in trigger | Always | N/A | Domain: validate rounding_type, monetary_nature, etc. Aux: no downstream references. |
-| =party_id= soft-reference | If applicable | N/A | Domain only, for party-scoped entities. |
-| =workspace_id= soft-reference | If applicable | N/A | Domain only, for workspace-scoped entities. |
-| =coding_scheme_code= optional column | If applicable | N/A | Domain only; links to DQ coding scheme. |
+| Item | Description | Domain | Aux | What to look for |
+|------+-------------+--------+-----+------------------|
+| Table exists | DDL file exists for the entity | Always | Always | =projects/ores.sql/create/refdata/refdata_<entity>s_create.sql= |
+| =tenant_id= column | Multi-tenancy isolation | Usually | Always | =tenant_id uuid not null= — omit only for truly global domain entities (currencies, countries) |
+| =version= column | Optimistic locking | Always | Always | =version integer not null= |
+| =modified_by= column | Audit: who edited | Always | Always | =modified_by text not null= |
+| =performed_by= column | Audit: which service performed it | Always | Always | =performed_by text not null=; set by trigger to =ores_iam_current_service_fn()= |
+| =change_reason_code= column | Change tracking | Always | Always | =change_reason_code text not null= |
+| =change_commentary= column | Change tracking | Always | Always | =change_commentary text not null= |
+| =valid_from= / =valid_to= | Temporal history | Always | Always | =valid_from timestamp with time zone not null=, =valid_to timestamp with time zone not null= |
+| CHECK: temporal order | Prevents invalid ranges | Always | Always | =check ("valid_from" < "valid_to")= |
+| CHECK: natural key not empty | Data integrity | Always | Always | =check ("iso_code" <> '')= or equivalent |
+| GIST exclusion constraint | Prevents temporal overlaps | Always | Always | =exclude using gist (tenant_id WITH =, <key> WITH =, tstzrange(valid_from, valid_to) WITH &&)= |
+| Primary key | Uniqueness | Always | Always | =(tenant_id, <natural_key>, valid_from, valid_to)= |
+| Version unique index | Fast lookup of current version | Always | Always | =UNIQUE (tenant_id, <key>, version) WHERE valid_to = ores_utility_infinity_timestamp_fn()= |
+| Natural key unique index | Fast lookup of current record | Always | Always | =UNIQUE (tenant_id, <key>) WHERE valid_to = ores_utility_infinity_timestamp_fn()= |
+| Tenant index | Tenant-scoped scans | Always | Always | =INDEX (tenant_id) WHERE valid_to = ores_utility_infinity_timestamp_fn()= |
+| =display_order= column | Dropdown ordering | N/A | Always | =display_order integer not null default 0= |
+| =description= column | Human-readable meaning of code | N/A | Always | =description text not null= |
+| Insert trigger | Version management + validation | Always | Always | =create or replace function ores_refdata_<entity>s_insert_fn()= |
+| Soft-delete rule | History-preserving delete | Always | Always | =on delete to ... do instead update ... set valid_to = current_timestamp= |
+| Validation function | Allows parent entities to validate soft-FK | Always | Always | =create or replace function ores_refdata_validate_<entity>_fn(p_tenant_id uuid, p_value text)= |
+| Entity-specific soft-FK validations | Trigger validates referenced lookup values | Always | N/A | =new.rounding_type := ores_refdata_validate_rounding_type_fn(...)= |
+| =party_id= soft-reference | Party-scoped entity | If applicable | N/A | Domain only; check =party_id uuid not null= and trigger validation |
+| =workspace_id= soft-reference | Workspace-scoped entity | If applicable | N/A | Domain only |
+| =coding_scheme_code= column | Optional DQ coding scheme link | If applicable | N/A | =coding_scheme_code text= (nullable); validated in trigger if present |
+
+** Codegen layer
+
+| Item | Description | Domain | Aux | What to look for |
+|------+-------------+--------+-----+------------------|
+| Domain entity model | Codegen model for the C++ domain struct | Always | Always | =projects/ores.codegen/models/refdata/<entity>_domain_entity.json= |
+| Entity model | Codegen model for the ODB entity + mapper | Always | Always | =projects/ores.codegen/models/refdata/<entity>_entity.json= |
+| Both models consistent with DB schema | Model fields match DB columns | Always | Always | Compare model field names/types against DDL columns |
+| No hand-crafted divergence | Generated files match what codegen would produce | Always | Always | If a generated file has been edited manually, flag as drift risk |
 
 ** Domain layer (C++)
 
-| Criterion | Domain | Aux | Notes |
-|-----------+--------+-----+-------|
-| Domain struct in =ores.refdata.api/domain/<entity>.hpp= | Always | Always | |
-| All business columns represented as struct fields | Always | Always | |
-| =display_order= field present | N/A | Always | |
-| =description= field present | N/A | Always | |
-| Temporal exposure: =recorded_at= or equivalent for =valid_from= | Always | Always | DB manages =valid_to= (infinity); domain exposes the insert timestamp. |
-| Fields use canonical C++ types (=std::string=, =std::optional=, etc.) | Always | Always | |
-| No logic in struct (plain data) | Always | Always | |
+| Item | Description | Domain | Aux | What to look for |
+|------+-------------+--------+-----+------------------|
+| Domain struct | Plain-data C++ struct | Always | Always | =projects/ores.refdata.api/include/ores.refdata.api/domain/<entity>.hpp= |
+| All business columns represented | No column missing from struct | Always | Always | Compare struct fields against DDL columns (temporal managed by trigger, not struct) |
+| =display_order= field | Present for aux types | N/A | Always | =int display_order = 0;= |
+| =description= field | Present for aux types | N/A | Always | =std::string description;= |
+| =recorded_at= or equivalent | Exposes insert timestamp (maps to DB =valid_from=) | Always | Always | =std::chrono::system_clock::time_point recorded_at;= |
+| Canonical C++ types | No raw pointers, no inheritance | Always | Always | =std::string=, =std::optional<T>=, =boost::uuids::uuid=, =int=, =bool= |
+| No logic in struct | Plain data only | Always | Always | No methods beyond constructors; no business logic |
 
 ** Repository layer (C++)
 
-| Criterion | Domain | Aux | Notes |
-|-----------+--------+-----+-------|
-| Entity class in =repository/<entity>_entity.hpp= | Always | Always | Holds domain + ODB metadata. |
-| Mapper class in =repository/<entity>_mapper.hpp= | Always | Always | DB row ↔ domain struct. |
-| Repository class in =repository/<entity>_repository.hpp= | Always | Always | |
-| list, count, save, delete, get by ID | Always | Always | |
-| get_history | Always | Always | |
-| list_for_party | If applicable | N/A | Domain only, party-scoped entities. |
-| Tenant-scoped queries where applicable | Usually | Always | |
+| Item | Description | Domain | Aux | What to look for |
+|------+-------------+--------+-----+------------------|
+| Entity class | ODB-annotated wrapper | Always | Always | =ores.refdata.core/include/.../repository/<entity>_entity.hpp= |
+| Mapper class | DB row ↔ domain struct conversion | Always | Always | =repository/<entity>_mapper.hpp= |
+| Repository class | Data access object | Always | Always | =repository/<entity>_repository.hpp= |
+| list, count, save, delete, get | Core CRUD operations | Always | Always | All five methods present in repository header |
+| get_history | Temporal history query | Always | Always | Method returning all versions for a given key |
+| list_for_party | Party-scoped list | If applicable | N/A | Only for party-scoped domain entities |
+| Tenant-scoped queries | Queries filtered by tenant_id | Usually | Always | WHERE clause includes =tenant_id= condition |
 
 ** Service layer (C++)
 
-| Criterion | Domain | Aux | Notes |
-|-----------+--------+-----+-------|
-| Service class in =service/<entity>_service.hpp= | Always | Always | |
-| list, count, save (upsert), delete, get, get_history | Always | Always | |
-| list_for_party | If applicable | N/A | Domain only. |
-| Authorization checks | Always | Always | |
-| NATS event firing on mutation (save, delete) | Always | Always | Post-NATS migration requirement. |
+| Item | Description | Domain | Aux | What to look for |
+|------+-------------+--------+-----+------------------|
+| Service class | Business logic + authorization wrapper | Always | Always | =ores.refdata.core/include/.../service/<entity>_service.hpp= |
+| list, count, save, delete, get, get_history | Full CRUD + history | Always | Always | All six methods present in service header |
+| list_for_party | Party-scoped list | If applicable | N/A | Domain only |
+| Authorization checks | Caller permission validated | Always | Always | Authorization call before data access |
+| NATS event firing on mutation | Events published on save and delete | Always | Always | NATS publish calls in save and delete implementations |
 
 ** Messaging / JSON IO layer (C++)
 
-| Criterion | Domain | Aux | Notes |
-|-----------+--------+-----+-------|
-| JSON struct in =domain/<entity>_json.hpp= | Always | Always | rfl-based; mirrors domain struct. |
-| IO handler in =domain/<entity>_json_io.hpp= | Always | Always | domain ↔ JSON. |
-| NATS protocol header in =messaging/<entity>_protocol.hpp= | Always | Always | Defines request/reply and event message types. |
-| Save/delete request types and saved/deleted event types | Always | Always | |
-| List, count, get, history request types | Always | Always | |
+| Item | Description | Domain | Aux | What to look for |
+|------+-------------+--------+-----+------------------|
+| JSON struct | rfl-based serialisation struct | Always | Always | =ores.refdata.api/include/.../domain/<entity>_json.hpp= |
+| IO handler | domain ↔ JSON conversion | Always | Always | =domain/<entity>_json_io.hpp= |
+| Protocol header | NATS message type definitions | Always | Always | =messaging/<entity>_protocol.hpp= |
+| Mutation message types | Save/delete request + saved/deleted event | Always | Always | =save_<entity>=, =delete_<entity>=, =<entity>_saved=, =<entity>_deleted= in protocol header |
+| Query message types | List, count, get, history | Always | Always | =list_<entity>s=, =count_<entity>s=, =get_<entity>=, =get_<entity>_history= in protocol header |
 
 ** Qt layer
 
-| Criterion | Domain | Aux | Notes |
-|-----------+--------+-----+-------|
-| MDI list window: =<Entity>MdiWindow= | Always | If applicable | Aux may appear only as a dropdown in the parent entity dialog. |
-| Detail dialog: =<Entity>DetailDialog= | Always | If applicable | Needed if the aux type has its own MDI window. |
-| History dialog: =<Entity>HistoryDialog= | Always | If applicable | Needed if the aux type has its own MDI window. |
-| Controller: =<Entity>Controller= | Always | If applicable | |
-| Client model: =Client<Entity>Model= | Always | If applicable | |
-| Dropdown populated in parent entity detail dialog | N/A | Always | The aux type MUST be loadable as a dropdown choice. |
-| Import dialog: =Import<Entity>Dialog= | If applicable | N/A | Domain only, for bulk-import entities. |
-| List window loads post-NATS | Always | If applicable | Manual verification. |
-| Detail dialog edit + save round-trip | Always | If applicable | Manual verification. |
-| History dialog shows correct history | Always | If applicable | Manual verification. |
-| Delete command removes record; history preserved | Always | If applicable | Manual verification. |
-| NATS eventing: change appears in second session | Always | If applicable | Manual verification with two connected clients. |
+| Item | Description | Domain | Aux | What to look for |
+|------+-------------+--------+-----+------------------|
+| MDI list window | Top-level window in MDI area | Always | If applicable | =ores.qt.refdata/include/ores.qt/<Entity>MdiWindow.hpp= |
+| Detail dialog | Single-record edit/view | Always | If applicable | =<Entity>DetailDialog.hpp= |
+| History dialog | Temporal history for a record | Always | If applicable | =<Entity>HistoryDialog.hpp= |
+| Controller | Wires windows to service | Always | If applicable | =<Entity>Controller.hpp= |
+| Client model | Qt model/view data model | Always | If applicable | =Client<Entity>Model.hpp= |
+| Dropdown populated in parent dialog | Aux type appears as a combo box choice | N/A | Always | Check parent entity's =DetailDialog.cpp= for a combo box loading this type |
+| Import dialog | Bulk import support | If applicable | N/A | =Import<Entity>Dialog.hpp= — not all entities have this |
+| List window loads post-NATS | Manual verification | Always | If applicable | Open app, navigate to entity MDI window, records appear |
+| Detail dialog edit + save round-trip | Manual verification | Always | If applicable | Edit a field, save, reopen — change persisted |
+| History dialog shows correct history | Manual verification | Always | If applicable | After edit, history dialog shows two versions |
+| Delete preserves history | Manual verification | Always | If applicable | Delete record; history dialog still shows prior versions |
+| NATS eventing cross-session | Manual verification | Always | If applicable | Mutation in client A appears in client B without refresh |
 
 ** Shell layer (=ores.shell= interactive REPL)
 
-| Criterion | Domain | Aux | Notes |
-|-----------+--------+-----+-------|
-| Submenu registered for entity | Always | If applicable | Aux types may not warrant a dedicated submenu. |
-| =list= command | Always | If applicable | |
-| =add= / =save= command | Always | If applicable | |
-| =remove= / =delete= command | Always | If applicable | |
-| =history= command | Always | If applicable | |
-| Commands use NATS-based service post-migration | Always | If applicable | |
+| Item | Description | Domain | Aux | What to look for |
+|------+-------------+--------+-----+------------------|
+| Submenu registered | Entity has a dedicated submenu in the REPL | Always | If applicable | =projects/ores.shell/src/app/commands/<entity>s_commands.cpp= registered in menu |
+| =list= command | Lists records from service | Always | If applicable | =list= case in the commands file |
+| =add= / =save= command | Creates or updates a record | Always | If applicable | =add= or =save= case |
+| =remove= / =delete= command | Deletes a record | Always | If applicable | =remove= or =delete= case |
+| =history= command | Shows temporal history | Always | If applicable | =history= case |
+| Post-NATS service wiring | Commands call service via NATS, not directly | Always | If applicable | Service calls use NATS client, not direct repository |
 
 ** CLI layer (=ores.cli= non-interactive)
 
-| Criterion | Domain | Aux | Notes |
-|-----------+--------+-----+-------|
-| Options config struct exists | Always | If applicable | |
-| =list= subcommand | Always | If applicable | |
-| =add= / =save= subcommand | Always | If applicable | |
-| =remove= / =delete= subcommand | Always | If applicable | |
-| Commands use NATS-based service post-migration | Always | If applicable | |
+| Item | Description | Domain | Aux | What to look for |
+|------+-------------+--------+-----+------------------|
+| Options config struct | CLI argument struct for add/save | Always | If applicable | =projects/ores.cli/include/ores.cli/config/add_<entity>_options.hpp= |
+| =list= subcommand | Non-interactive list | Always | If applicable | Subcommand registered and implemented |
+| =add= / =save= subcommand | Non-interactive create/update | Always | If applicable | Subcommand registered and implemented |
+| =remove= / =delete= subcommand | Non-interactive delete | Always | If applicable | Subcommand registered and implemented |
+| Post-NATS service wiring | Commands call service via NATS | Always | If applicable | Same as shell |
 
 ** HTTP layer
 
-| Criterion | Domain | Aux | Notes |
-|-----------+--------+-----+-------|
-| GET list route | Always | If applicable | |
-| POST save route | Always | If applicable | |
-| DELETE (batch) route | Always | If applicable | |
-| GET history route | Always | If applicable | |
-| Routes registered in routes file | Always | If applicable | |
-| Routes tested (manual or automated) | Always | If applicable | |
+| Item | Description | Domain | Aux | What to look for |
+|------+-------------+--------+-----+------------------|
+| GET list route | REST list endpoint | Always | If applicable | =GET /refdata/<entity>s= in routes file |
+| POST save route | REST create/update endpoint | Always | If applicable | =POST /refdata/<entity>s= |
+| DELETE batch route | REST batch delete endpoint | Always | If applicable | =DELETE /refdata/<entity>s= |
+| GET history route | REST history endpoint | Always | If applicable | =GET /refdata/<entity>s/:id/history= |
+| Routes registered | Routes wired into the HTTP server | Always | If applicable | Entry in =projects/ores.http.core/src/routes/= |
 
 ** Wt web UI layer
 
-| Criterion | Domain | Aux | Notes |
-|-----------+--------+-----+-------|
-| List widget: =<entity>_list_widget.hpp= | Always | If applicable | |
-| Detail dialog: =<entity>_dialog.hpp= | Always | If applicable | |
-| Widget wired into Wt app | Always | If applicable | |
-| List + edit round-trip works | Always | If applicable | |
+| Item | Description | Domain | Aux | What to look for |
+|------+-------------+--------+-----+------------------|
+| List widget | Wt list component | Always | If applicable | =projects/ores.wt.service/include/.../app/<entity>_list_widget.hpp= |
+| Detail dialog | Wt edit component | Always | If applicable | =<entity>_dialog.hpp= |
+| Wired into Wt app | Widget registered in application | Always | If applicable | Reference in Wt app class |
+| List + edit round-trip | Manual verification | Always | If applicable | Open Wt app, list entity, edit, save — change persisted |
 
 ** Manual
 
-| Criterion | Domain | Aux | Notes |
-|-----------+--------+-----+-------|
-| Entity chapter in =doc/manual/user_guide/= | Always | If applicable | Aux types are often documented as a subsection of the parent chapter. |
-| Chapter covers: what the entity is, why it matters | Always | If applicable | |
-| Chapter documents: Qt MDI window (screenshot or description) | Always | If applicable | |
-| Chapter documents: Qt detail dialog (fields, validation) | Always | If applicable | |
-| Chapter documents: Qt history dialog | Always | If applicable | |
-| Chapter documents: shell commands | Always | If applicable | |
-| Chapter documents: CLI commands | Always | If applicable | |
-| Aux type documented in parent entity's manual chapter | N/A | Always | At minimum: list the valid values and what they mean. |
-| Chapter / section referenced from manual index | Always | If applicable | |
-| Site builds cleanly | Always | Always | |
+| Item | Description | Domain | Aux | What to look for |
+|------+-------------+--------+-----+------------------|
+| Entity chapter | Dedicated chapter in user guide | Always | If applicable | =doc/manual/user_guide/<entity>.org= or equivalent |
+| What and why | Entity described for a user, not a developer | Always | If applicable | First section: what this entity is, when to use it |
+| Qt MDI window documented | List window walkthrough | Always | If applicable | Screenshot or description of columns and actions |
+| Qt detail dialog documented | Field-by-field documentation | Always | If applicable | Table of fields with type, validation, and meaning |
+| Qt history dialog documented | History usage explained | Always | If applicable | How to view and interpret change history |
+| Shell commands documented | All shell commands with examples | Always | If applicable | =#+begin_example= blocks showing command + output |
+| CLI commands documented | All CLI subcommands with flags | Always | If applicable | =#+begin_example= blocks showing invocation |
+| Aux type documented in parent chapter | Valid values listed and explained | N/A | Always | Subsection in parent entity chapter: table of codes + descriptions |
+| Indexed from manual root | Chapter reachable from table of contents | Always | If applicable | Entry in =doc/manual/user_guide/index.org= or equivalent |
+| Site builds cleanly | No broken links or missing files | Always | Always | =make site= passes without error |
 
 * See also
 
-- [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] — canonical entity inventory
+- [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] — canonical entity inventory (Y/N per layer per entity)
 - [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] — reference domain entity used to derive these criteria
 - [[id:058DF966-13E0-4D97-9A8B-F22301411015][Entity evaluation skill]] — LLM skill for running this checklist against any entity

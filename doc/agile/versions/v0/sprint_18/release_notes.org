@@ -162,4 +162,7 @@ Steady upward slope is healthy; plateauing signals a stall.
 
 -----
 
-/Next sprint: TBD./
+/Sprint 19 priorities: restore Windows and macOS CI builds (both are currently
+RED and this must not carry into a third sprint); advance the ORE pipeline
+product stories deferred from sprint 18; process and tooling improvements take
+a back seat./

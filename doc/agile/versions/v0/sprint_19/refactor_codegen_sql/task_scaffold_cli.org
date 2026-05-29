@@ -60,7 +60,8 @@ is a working CLI that can replace =generate_refdata_schema.sh= for day-to-day us
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Hardcoded =venv/bin/python3= not cross-platform; suggest dynamic resolution | codegen.py | Not changed. Python tooling is Linux-only; consistent with compass.sh convention. | PR #934 round 1 |
+| 2 | Use =python -m pip= instead of invoking =pip= binary directly | codegen.py | Fixed | More robust; follows Python best practice. PR #934 round 1 |
 
 * Result
 

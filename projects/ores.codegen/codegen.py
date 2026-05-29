@@ -28,7 +28,7 @@ def _bootstrap_venv() -> None:
     if req.exists():
         print("Installing dependencies...")
         subprocess.check_call(
-            [str(venv_dir / "bin" / "pip"), "install", "-q", "-r", str(req)]
+            [str(_VENV_PYTHON), "-m", "pip", "install", "-q", "-r", str(req)]
         )
     print("Virtual environment ready.")
 

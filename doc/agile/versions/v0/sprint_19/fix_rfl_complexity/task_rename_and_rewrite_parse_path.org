@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/rfl-rename-and-rewrite-parse-path
 #+pr:
 #+blocked_on: 9212966F-87AC-4B72-B708-8ED5BA253431
 #+blocked_since:
@@ -47,11 +47,11 @@ without a known type at the processing site — that path correctly retains the 
 
 | Field        | Value                                                                               |
 |--------------+-------------------------------------------------------------------------------------|
-| State        | BACKLOG                                                                             |
+| State        | STARTED                                                                             |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | —                                                                                   |
-| Waiting on   | Scaffolding PR merged ([[id:9212966F-87AC-4B72-B708-8ED5BA253431][Task 1]]).         |
-| Next         | Begin once scaffolding PR is green.                                                 |
+| Now          | Renaming protocol types in trade_protocol.hpp; deleting Sprint 18 workarounds.      |
+| Waiting on   | —                                                                                   |
+| Next         | Rewrite ClientManagerTradeInstrument.cpp with dispatch logic.                       |
 | Last touched | 2026-05-29                                                                          |
 
 * Acceptance

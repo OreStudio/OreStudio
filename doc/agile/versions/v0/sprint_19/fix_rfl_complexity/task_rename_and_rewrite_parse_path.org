@@ -227,8 +227,10 @@ BOOST_LOG_SEV(lg(), warn)  << "getTradeInstrument: unknown (product_type, trade_
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                         | File                                    | Decision | Notes                                                              |
+|---+-------------------------------------------------------------------------+-----------------------------------------+----------+--------------------------------------------------------------------|
+| 1 | Forward-declare IInstrumentFormPopulator in ClientManager.hpp (Gemini R1) | ClientManager.hpp                     | Accept   | Replaced include with fwd-decl; added full include to TU and TradeController. |
+| 2 | Add IInstrumentFormPopulator.hpp include to ClientManagerTradeInstrument.cpp | ClientManagerTradeInstrument.cpp    | Accept   | Added direct include alongside ClientManager.hpp.                  |
+| 3 | DONE task Now/Waiting/Next fields should be Nothing. not — (Gemini R1) | task_split_rfl_literal_type.org         | Accept   | Fixed all three fields.                                            |
 
 * Result

@@ -1,15 +1,15 @@
 :PROPERTIES:
 :ID: C3B6F514-559F-4038-A1D7-947BC9F7F398
 :END:
-#+title: Story: Add Downloads and Agile nav entries to the site
+#+title: Add Downloads and Agile nav entries to the site
 #+description: Create doc/downloads.org listing all release binaries per OS; add Downloads and Agile links to the site nav in .build-site.el.
-#+type: story
-#+level: s2
-#+filetags: :site:nav:downloads:agile:sprint_18:v0:
+#+type: capture
+#+level: cross
+#+filetags: :agile:capture:downloads:nav:site:
 #+created: 2026-05-25
-#+updated: 2026-05-25
-#+todo: BACKLOG STARTED | DONE ABANDONED
+#+updated: 2026-05-29
 
+Deferred from [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] on 2026-05-29 — not started; carried forward to product backlog.
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal

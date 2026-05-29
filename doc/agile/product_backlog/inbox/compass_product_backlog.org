@@ -1,15 +1,15 @@
 :PROPERTIES:
 :ID: 15CE567F-489C-4A80-9CEC-27FCF95E5C36
 :END:
-#+title: Story: ores.compass Product Backlog — next and deferred listing
+#+title: ores.compass Product Backlog — next and deferred listing
 #+description: Add compass commands to list next and deferred product-backlog captures, mirroring the sprint-backlog listing in compass where.
-#+type: story
-#+level: s2
-#+filetags: :compass:tooling:python:backlog:next:deferred:sprint_18:v0:
+#+type: capture
+#+level: cross
+#+filetags: :backlog:capture:compass:deferred:next:python:tooling:
 #+created: 2026-05-24
-#+updated: 2026-05-24
-#+todo: BACKLOG STARTED | DONE ABANDONED
+#+updated: 2026-05-29
 
+Deferred from [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] on 2026-05-29 — not started; carried forward to product backlog.
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal

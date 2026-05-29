@@ -1,15 +1,15 @@
 :PROPERTIES:
-:ID: B3EBD70C-DAFA-4854-92F3-54E7D90D22C7
+:ID: D495A1B3-7677-4884-935F-1B6E6D65C983
 :END:
-#+title: Story: Qt: instrument creation in TradeDetailDialog
-#+description: Allow users to create and associate instruments directly from the TradeDetailDialog rather than switching to a separate instrument screen.
-#+type: story
-#+level: s2
-#+filetags: :ore:instruments:qt:trades:sprint_18:v0:
+#+title: ORE sample data
+#+description: Source or generate a representative set of ORE input files covering the key instrument and market-data types needed for integration testing.
+#+type: capture
+#+level: cross
+#+filetags: :capture:ore:sample_data:
 #+created: 2026-05-24
-#+updated: 2026-05-24
-#+todo: BACKLOG STARTED | DONE ABANDONED
+#+updated: 2026-05-29
 
+Deferred from [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] on 2026-05-29 — not started; carried forward to product backlog.
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal

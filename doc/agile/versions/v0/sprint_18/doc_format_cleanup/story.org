@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :documentation:tooling:codegen:sprint_18:v0:
 #+created: 2026-05-28
-#+updated: 2026-05-28
+#+updated: 2026-05-29
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -27,12 +27,12 @@ in script names, template names, or doc titles — the current format is just
 
 | Field         | Value                                                                        |
 |---------------+------------------------------------------------------------------------------|
-| State         | STARTED                                                                      |
+| State         | DONE                                                                         |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                    |
-| Now           | Tasks scaffolded; audit task is first.                                       |
+| Now           | All 5 tasks complete. v2 branding fully removed.                             |
 | Waiting on    | Nothing.                                                                     |
-| Next          | Run audit task, then migrate and rename in parallel.                         |
-| Last touched  | 2026-05-28                                                                   |
+| Next          | Nothing.                                                                     |
+| Last touched  | 2026-05-29                                                                   |
 
 * Acceptance
 
@@ -51,8 +51,8 @@ in script names, template names, or doc titles — the current format is just
 | [[id:3DA3AC61-58A0-48B3-B399-3625508680E2][Audit documents lacking v2 frontmatter]]      | DONE    | 2026-05-28 | 2026-05-29 | Categorise: historical (leave), active (migrate), obsolete (delete). |
 | [[id:C89CEA6F-E264-438C-AD38-39B381B4C632][Migrate active v1 docs to current format]]    | DONE    | 2026-05-28 | 2026-05-29 | Add frontmatter to plans, skill docs, active index files.      |
 | [[id:F35BD43B-B8A6-45E0-B414-891C030C168C][Rename v2-branded codegen scripts and templates]] | DONE | 2026-05-28 | 2026-05-29 | Rename generate_v2_doc.sh, v2_doc_generate.py, all templates. |
-| [[id:58290C08-1D11-4E11-BBB5-C0B6C2EFC844][Remove v2 terminology from documentation]]    | STARTED | 2026-05-29 |            | Rename recipe, update memory, retire port_v1_doc_to_v2 runbook.|
-| [[id:4381FFC6-FDEA-46B3-80C5-3A315AE21B9F][Drop #+version field from all org files]]     | BACKLOG | 2026-05-29 |            | Remove #+version: 2 from ~1840 files, templates, and audit script. |
+| [[id:58290C08-1D11-4E11-BBB5-C0B6C2EFC844][Remove v2 terminology from documentation]]    | DONE    | 2026-05-29 | 2026-05-29 | Rename recipe, update memory, retire port_v1_doc_to_v2 runbook.|
+| [[id:4381FFC6-FDEA-46B3-80C5-3A315AE21B9F][Drop #+version field from all org files]]     | DONE    | 2026-05-29 | 2026-05-29 | Remove #+version: 2 from ~1840 files, templates, and audit script. |
 
 * Decisions
 

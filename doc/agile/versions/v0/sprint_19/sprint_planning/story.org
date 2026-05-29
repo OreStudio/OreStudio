@@ -40,8 +40,6 @@ Sprint 19 has a selected, sized set of stories pulled from the product backlog, 
 |------+-------+-------+-----+-------------|
 | [[id:4AE688F2-298A-4070-B422-6C22F238EC9E][Run sprint planning session]] | STARTED | 2026-05-29 | | Select stories, size tasks, confirm mission. |
 
-* Decisions
-
 * Out of scope
 
 - Version bump (already done).

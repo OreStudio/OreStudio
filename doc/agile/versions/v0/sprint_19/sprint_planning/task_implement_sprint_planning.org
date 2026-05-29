@@ -45,8 +45,6 @@ Sprint 19 stories selected from the product backlog, each broken into tasks, wir
 distilled into the parent story's =* Decisions= and cleared when the
 task closes. Plans do not outlive their task.)
 
-* Notes
-
 * PRs
 
 | PR | Title |
@@ -58,5 +56,3 @@ task closes. Plans do not outlive their task.)
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
-
-* Result

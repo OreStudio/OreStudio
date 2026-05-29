@@ -108,6 +108,10 @@ treat ORE pipeline progress as the primary objective.
 
 * ⚠️ Known Issues & Postponed
 
+- *Windows and macOS builds are RED*: Both the Windows (MSVC) and macOS CI
+  builds are currently failing. The fixes are non-trivial and were not
+  addressed this sprint. This is high-priority work for sprint 19 — ORE
+  Studio should not remain Linux-only for multiple sprints.
 - *ORE sample data* (BACKLOG): deferred.
 - *Work through all types for ORE Example 1* (BACKLOG): deferred.
 - *Fix instruments not visible in UI* (BACKLOG): deferred.

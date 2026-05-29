@@ -46,65 +46,61 @@ treat ORE pipeline progress as the primary objective.
 ** Build & Portability
 
 - *Build and publish user manual PDF via CMake*: A =deploy_manual= CMake target compiles =user_manual.org= to a PDF via Emacs/LaTeX.
-- *Resolve RFL complexity issues*: Permanently resolve the compilation failures in =ores.qt.api= on Windows (MSVC C1202) and Linux (Clang bracket depth) by re-applying the structural isolation strategy (TU splits and two-phase parsing) and increasing global compiler limits.
-- *Rebuild org-roam DB independently from CMake*: The org-roam DB sync is currently embedded inside =.build-site.el= so the only way to get a fresh =.org-roam.db= is to run a full site build.
+- *Resolve RFL complexity issues*: Permanently resolve MSVC C1202 and Clang expression-nesting failures in =ores.qt.api= via TU splits, two-phase parsing, and increased compiler limits.
+- *SQLite CLI quality-of-life setup*: Committed =.sqliterc= gives headed, box-drawn, non-wrapping output with NULL markers and query timing from the =sqlite3= shell.
+- *Lock down uppercase UUID invariant*: All =:ID:= properties and =[[id:UUID]]= links in =doc/= must be uppercase; all code paths that mint UUIDs produce uppercase by construction.
+- *Remove unused GitHub Actions workflows*: Delete the four dormant Gemini workflows; PR review stays via the gemini-code-assist app.
 
 ** Financial Features
 
-- *ORE sample data*: (Describe the user-visible outcome this story delivers.)
-- *Add support for running ORE samples*: Enable end-to-end execution of ORE sample input files from within ORE Studio: promote workspace to a full entity, complete the workspace UI, implement the data import session backend and UI, and surface ORE results in the UI.
-- *Fix instruments not visible in UI*: (Describe the user-visible outcome this story delivers.)
-- *Qt: instrument creation in TradeDetailDialog*: (Describe the user-visible outcome this story delivers.)
-- *Port domain concept notes to knowledge documents*: Convert nine personal domain notes from =/home/marco/Development/Notebooks/summaries/= into v2 knowledge documents under =doc/knowledge/domain/=.
+- *Add support for running ORE samples*: End-to-end execution of ORE sample input files from within ORE Studio: workspace promoted to a full entity, data import session backend and UI, and ORE results surfaced in the UI.
 
-** Service Architecture
+** Compass Tooling
 
-- *Detect and report NATS disconnection*: When a logged-in session loses its backend link, ORE Studio should notice promptly and tell the user, with a way to reconnect.
-- *Fix account registration NATS SSL error*: A user can register a new account from the login dialog's /Register/ link when the deployment permits self-registration.
-- *compass goto: start a unit of work in one command*: One command, =compass goto=, that bootstraps a unit of work.
-- *Per-sprint capture workflow: individual files and compass integration*: The single =capture.org= file per sprint has become unmanageable: annotations accumulate, implemented items are forgotten, and the file becomes noise rather than signal.
-- *Fix product-backlog bucket names in scripts and captures*: The product-backlog directories were renamed from =near/= / =far/= to =next/= / =deferred/=, but the tooling was not updated in sync.
-- *Runbook support*: Introduce a =runbook= as a new document type in the v2 information architecture.
-- *PlantUML integration: recipe and codegen scaffold*: Make PlantUML diagrams a first-class citizen of ORE Studio's documentation workflow.
-- *Doc format cleanup: migrate v1 docs and remove v2 branding*: Eliminate all "v2" branding from the document toolchain and the doc graph.
-- *Document NATS: technology overview, system integration, and recipes*: NATS is the message bus underpinning every ORE Studio service, yet it is nowhere described in the knowledge base.
-- *Tooling documentation*: The developer tooling — =ores.compass=, =ores.codegen=, =ores.lisp=, =ores.sql=, and the standalone scripts in =scripts/= — is unreachable from the architecture pages.
-- *SQLite CLI quality-of-life setup*: Connecting to an ORE Studio SQLite database from the =sqlite3= shell gives a sane, readable experience out of the box: headed, box-drawn output with columns wide enough to show their content (no wrapping), visible NULL markers, query timing, and connection-level safety defaults — all from a single committed, well-commented rc file.
-- *Lock down uppercase UUID invariant*: Make uppercase UUIDs a hard invariant of the documentation system: every =:ID:= property and every =[[id:UUID]]= link in =doc/= and =projects/*/modeling/= must use uppercase hex, and every code path that mints or templates a UUID must produce uppercase by construction.
-
-** Documentation & Tooling
-
-- *ores.compass repository compass tool*: =ores.compass= exists as a proper Python project under =projects/= — a repository "compass" that orients a contributor (human or LLM) in three ways: /Locate/ (where we are in time — version, sprint, in-flight stories and tasks), /Search/ (semantic retrieval of relevant docs from cached =org-roam= data), and /Scaffold/ (add stories, tasks, sprints, recipes via codegen).
-- *ores.compass Locate — temporal orientation*: A contributor (human or LLM) can ask =ores.compass= "where are we?" and get an immediate, accurate answer computed from the documentation graph: the current version, the current sprint, and the stories / tasks currently in flight.
-- *Product backlog refinement*: Equip every future session with two Claude Code skills and companion recipes — one for general backlog housekeeping (=backlog-refiner=) and one for sprint planning (=sprint-planner=) — so that backlog work is structured, repeatable, and recorded.
-- *Sprint health review — System 2 analysis*: A =sprint-reviewer= skill that an LLM can invoke mid-sprint or at close to produce a structured System 2 health report and write it into =sprint.org= under a new =* Health Review= section.
-- *Refactor story task lists to a status table*: The =* Tasks= section in story docs is currently a plain bullet list, giving no visibility into task state, start/end dates, or a brief description.
-- *Sprint theme grouping*: The =* Stories= table in each =sprint.org= is a single flat list with no structural grouping.
-- *Hotfix handling*: Provide a standard procedure for diagnosing and patching a broken build quickly, without disrupting the current sprint's planned work.
-- *Document deduplication recipe*: As the doc graph grows, duplicate documents appear — two files that cover the same ground under slightly different names.
-- *Document ORE Studio as an LLM-first system*: Make explicit that ORE Studio is an LLM-first system: primary development is done by LLMs working under human direction; docs are written to be equally useful to human readers and AI agents; Claude Code is the primary tool but contributions from any LLM following the project instructions are accepted.
-- *System model readability*: Transform the System Model from a flat component inventory into a readable architecture document that a newcomer can understand top-to-bottom.
-- *Add Downloads and Agile nav entries to the site*: The site header gains two new nav entries: - *Downloads* — links to a new =doc/downloads.org= page that lists every release with download links per OS (Linux, macOS, Windows), sourced from GitHub releases.
-- *Improve cybernetics documentation*: Deliver three bundled documentation improvements to the cybernetics meta-layer: 1.
-- *Add Emacs and org-roam knowledge pages*: Create standalone knowledge pages for Emacs, org-roam, and Zettelkasten so that contributors and LLMs have a durable, in-repo reference for the documentation toolchain.
-- *Inline org-roam export into ores.lisp*: The CI site build no longer fails with =Cannot open load file: No such file or directory, /home/runner/.emacs.d/config/org-roam-export.el=.
-
-** Other
-
-- *Work through all types for ORE Example 1*: Implement every ORE instrument and market-data type needed for Example 1.
-- *ores.compass Scaffold — agile authoring*: =add story/task/sprint/recipe=: create agile artefacts from the CLI by calling ores.codegen as a library.
+- *ores.compass repository compass tool*: New =ores.compass= Python project: /Locate/ (current version, sprint, in-flight stories and tasks), /Search/ (semantic doc retrieval from =org-roam= data), and /Scaffold/ (add stories, tasks, sprints, recipes via codegen).
+- *ores.compass Locate — temporal orientation*: =compass where= reports current version, sprint, and in-flight stories and tasks computed from the documentation graph.
+- *ores.compass Scaffold — agile authoring*: =compass add story/task/sprint/recipe= creates agile artefacts from the CLI.
 - *Track PRs per task and surface in compass where*: PRs table in task docs; =compass where --prs= fetches live PR status via =gh=.
-- *Add org-roam index links to compass.org folder entries*: Every folder entry in =doc/compass.org= links to its index file via an org-roam =Title= reference.
-- *ores.compass Product Backlog — next and deferred listing*: =compass backlog= lists the next and deferred product-backlog captures in the same style that =compass where= shows in-flight sprint work: a count summary followed by titled entries per bucket.
-- *compass cross-worktree status (global where)*: A contributor (or agent) can see, in one command, what /every/ git worktree of this repo is currently doing — its branch, the story and task it maps to, and the open PR (with live state).
-- *Compass PR review management*: Add three new compass subcommands that wrap the GitHub API for PR review management — removing the need to remember the raw `gh api` invocations and the `-F` vs `-f` distinction for integer fields.
-- *compass goto --kind flag*: Enable =compass goto= to create =hotfix/<slug>= branches (standard Gitflow convention) in addition to the default =feature/<slug>=, via a =--kind= flag.
-- *Sprint health charts*: Add a set of sprint health charts that render as PNG images on the sprint page, giving a one-glance view of how the sprint is progressing.
-- *Port Tufte visualisation skill into ORE Studio*: A =tufte-viz= skill exists in =doc/llm/skills/= and is listed in the skills catalogue.
-- *Improve LLM runbook and skill tooling*: Tighten the runbook and skill workflow by closing three gaps discovered during sprint 18.
-- *ORE Studio Emacs dashboard*: Replace the broken per-mode =ores.lisp= approach — where scripts from one checkout bleed into another — with an env-aware emacs-dashboard console.
-- *Remove unused GitHub Actions workflows*: The =.github/workflows/= directory contains only workflows we actually use.
-- *Move .build-*.el scripts to ores.lisp*: Move the five =.build-*.el= scripts from the project root into =projects/ores.lisp/src/=, rename them to the =ores-= prefix convention already used by the rest of =ores.lisp=, and update every CMake target and GitHub workflow that references them.
+- *Add org-roam index links to compass.org folder entries*: Every folder entry in =doc/compass.org= links to its index file.
+- *compass cross-worktree status (global where)*: One command shows every git worktree's branch, story, task, and open PR, preventing parallel-agent collisions.
+- *compass goto: start a unit of work in one command*: =compass goto= fetches main, creates the branch, and scaffolds the linked story and task in a single step.
+- *compass goto --kind flag*: Add =--kind hotfix= to =compass goto= for =hotfix/<slug>= branches; update runbook, recipe, and docs.
+- *Per-sprint capture workflow: individual files and compass integration*: Per-sprint =captures/= folder with =compass capture= command replacing the single overloaded =capture.org=.
+- *Fix product-backlog bucket names in scripts and captures*: Update =regenerate_backlog_indexes.py=, =compass.py=, and captures to use =next/deferred= instead of the old =near/far= names.
+
+** Agile & Process
+
+- *Product backlog refinement*: =backlog-refiner= and =sprint-planner= skills with companion recipes for structured backlog housekeeping and sprint planning.
+- *Sprint health review — System 2 analysis*: =sprint-reviewer= skill writes a structured health-check section into =sprint.org=: goal alignment, load, PR velocity, story/task balance, focus signal, and verdict.
+- *Sprint health charts*: Daily charts of PRs, commits, line churn, and story completions rendered as PNGs into the sprint page.
+- *Refactor story task lists to a status table*: =* Tasks= section in story docs converted from bullet lists to State/Start/End/Description tables.
+- *Sprint theme grouping*: =* Stories= in each =sprint.org= grouped under theme subheadings.
+- *Hotfix handling*: Hotfix runbook, branching recipe update, and Hotfixes section in the sprint template.
+
+** LLM & Documentation Infrastructure
+
+- *Runbook support*: New =runbook= document type as a named composition of recipes for repeatable multi-step operations.
+- *Improve LLM runbook and skill tooling*: Add =compass skill= type, update skill-creation recipe, create =run-runbook= skill.
+- *Document deduplication recipe*: Generalised recipe for merging duplicate docs; applied to the duplicate sprint health review runbooks.
+- *PlantUML integration: recipe and codegen scaffold*: PlantUML how-to recipe, =compass add diagram= scaffold, and standard licence header convention.
+- *Document ORE Studio as an LLM-first system*: LLM-first philosophy page and Claude Code tool page; update =llm.org= index.
+- *Port Tufte visualisation skill into ORE Studio*: =tufte-viz= SKILL and two Tufte reference docs converted to org-mode and catalogued.
+- *Port domain concept notes to knowledge documents*: Domain notes converted to knowledge documents under =doc/knowledge/domain/=.
+
+** Knowledge & Architecture
+
+- *System model readability*: Layer blurbs and table-based component inventory added to the system model; architecture diagram linked.
+- *Document NATS: technology overview, system integration, and recipes*: NATS knowledge page, system model section, per-component subject tables, and NATS recipes.
+- *Tooling documentation*: =Tooling= section added to =knowledge.org=; developer scripts doc; overhaul of compass, sql, lisp, and codegen overviews.
+- *Add Emacs and org-roam knowledge pages*: Emacs, org-roam, and Zettelkasten knowledge pages; =ores.lisp= expanded; orientation updated.
+- *Improve cybernetics documentation*: VSM overview page, expanded Cybernetic Levels with context and limitations, compass link added.
+- *Inline org-roam export into ores.lisp*: Vendor =org-roam-export.el= into =ores.lisp= so the CI site build is self-contained.
+
+** Infrastructure
+
+- *Doc format cleanup: migrate v1 docs and remove v2 branding*: Eliminate all "v2" branding from the document toolchain; audit and migrate remaining v1 docs.
+- *ORE Studio Emacs dashboard*: Env-aware =emacs-dashboard= console replaces the broken per-mode =ores.lisp= approach where scripts from one checkout bled into another.
+- *Move .build-*.el scripts to ores.lisp*: Relocate five build scripts from the project root into =projects/ores.lisp/src/= with the =ores-= prefix convention.
 
 * ⚠️ Known Issues & Postponed
 

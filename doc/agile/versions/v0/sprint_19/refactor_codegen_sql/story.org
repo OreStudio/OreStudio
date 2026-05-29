@@ -112,9 +112,9 @@ fidelity is required; whitespace normalisation is acceptable.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Survey complete; unified model format and CLI interface defined. |
-| Waiting on    | Nothing.                               |
-| Next          | Implement =codegen.py= CLI scaffold.   |
+| Now           | CLI scaffold complete; unified template next. |
+| Waiting on    | Nothing.                                      |
+| Next          | Implement unified SQL template.               |
 | Last touched  | 2026-05-29                               |
 
 * Acceptance
@@ -135,7 +135,7 @@ fidelity is required; whitespace normalisation is acceptable.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:49584C75-48E5-41E3-8C5F-B413E9443A72][Survey SQL variation and define unified model format]] | DONE | 2026-05-29 | 2026-05-29 | Audit all generated SQL files; enumerate every variation; define the =table= model schema and CLI interface. |
-| Implement =codegen.py= CLI scaffold | BACKLOG | | | Argparse structure, entry point, package layout, logging; subcommand stubs; venv wiring. |
+| [[id:C72BF572-EE74-4F95-9B44-9CCF2AC0B04A][Implement =codegen.py= CLI scaffold]] | DONE | 2026-05-29 | 2026-05-29 | Argparse structure, entry point, package layout, logging; subcommand stubs; venv wiring. |
 | Implement unified SQL template | BACKLOG | | | Write =sql_schema_create.mustache=; add =table= model-type support in generator; verify parity for all refdata entities. |
 | Migrate refdata entity models to new format | BACKLOG | | | Convert all =_entity.json= models; run parity check (zero logical diff); update =codegen.py= component manifest. |
 | Retire =generate_refdata_schema.sh= | BACKLOG | | | Delete script; update any CI or Makefile references; document replacement in =README.md=. |

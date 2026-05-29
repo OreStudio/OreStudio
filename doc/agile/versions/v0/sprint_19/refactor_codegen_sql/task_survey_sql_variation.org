@@ -1,0 +1,243 @@
+:PROPERTIES:
+:ID: 49584C75-48E5-41E3-8C5F-B413E9443A72
+:END:
+#+title: Task: Survey SQL variation and define unified model format
+#+description: Audit all 10 _entity.json models and their generated SQL files; enumerate every variation in the table schema, validation functions, and trigger logic; define the unified table model format and codegen.py CLI interface.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_sql:sprint_19:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-sql
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Audit all ten =_entity.json= models in =projects/ores.codegen/models/refdata/= and their
+corresponding generated SQL files in =projects/ores.sql/create/refdata/=. Enumerate every
+dimension of variability — table columns, validation function behaviour, insert trigger
+logic, and bootstrap passthrough logic. Use the findings to:
+
+1. Confirm the complete set of variability flags required by the unified =table= model format.
+2. Identify any discrepancies between what the current template would generate and what the
+   repo SQL actually contains (the SQL is ground truth).
+3. Define the exact CLI interface for =codegen.py=, including resolution of the
+   subcommand naming question.
+
+The survey findings and the model format spec are the primary deliverables that unblock all
+subsequent tasks in the story.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                               |
+| Parent story | [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Implement =codegen.py= CLI scaffold.   |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- All 10 =_entity.json= models read and all variability dimensions tabulated.
+- Every discrepancy between the current template output and the repo SQL identified.
+- The unified =table= model format defined with all required flags and their value sets.
+- The =codegen.py= CLI interface specified, including subcommand names, flags, and help text.
+- Findings recorded in =* Result= section.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** Entity survey
+
+All ten =_entity.json= models and their generated SQL files were audited. The full
+variability matrix is:
+
+| Entity | pk_col | tenant_scope (SQL) | has_display_order | coding_scheme | image_id | default_value | validations | notify_trigger |
+|--------+--------+--------------------+-------------------+---------------+----------+---------------+-------------+----------------|
+| =book_status= | =code= | =system= | yes | none | no | none | change_reason | yes |
+| =contact_type= | =code= | =system= | yes | none | no | none | change_reason | yes |
+| =currency= | =iso_code= | =both= | yes | nullable | yes | none | rounding_type, monetary_nature, market_tier, change_reason | yes |
+| =currency_market_tier= | =code= | =both= | yes | none | no | =g10= | change_reason | yes |
+| =monetary_nature= | =code= | =both= | yes | none | no | =fiat= | change_reason | yes |
+| =party_id_scheme= | =code= | =system= | yes | none | no | none | coding_scheme_code, change_reason | yes |
+| =party_status= | =code= | =system= | yes | none | no | none | change_reason | yes |
+| =party_type= | =code= | =system= | yes | none | no | none | change_reason | yes |
+| =purpose_type= | =code= | =system= | yes | none | no | none | change_reason | yes |
+| =rounding_type= | =code= | =both= | yes | none | no | =Closest= | change_reason | no |
+
+=tenant_scope (SQL)= is the variant actually present in the generated SQL files —
+not the =system_tenant_validation= flag in the model files (see discrepancy finding below).
+
+** Template discrepancy: three-way split mapped to binary flag
+
+The current =sql_schema_table_create.mustache= encodes tenant scope as a binary
+=system_tenant_validation= boolean:
+- =true= → generates =WHERE tenant_id = ores_utility_system_tenant_id_fn()=
+- =false= → generates =WHERE tenant_id = p_tenant_id=
+
+The actual SQL in the repo uses only two of the three theoretically possible variants:
+
+| Actual SQL variant | Entities |
+|--------------------+----------|
+| =system= — =WHERE tenant_id = ores_utility_system_tenant_id_fn()= | book_status, contact_type, party_id_scheme, party_status, party_type, purpose_type |
+| =both= — =WHERE tenant_id IN (p_tenant_id, ores_utility_system_tenant_id_fn())= | currency, currency_market_tier, monetary_nature, rounding_type |
+| =tenant= — =WHERE tenant_id = p_tenant_id= | *(none)* |
+
+The current model flag maps incorrectly for four entities:
+
+| Entity | Model =system_tenant_validation= | Template would generate | Actual SQL |
+|--------+----------------------------------+-------------------------+------------|
+| =currency= | =true= | =system= only | =both= (IN) |
+| =rounding_type= | =false= | =tenant= only | =both= (IN) |
+| =monetary_nature= | =false= | =tenant= only | =both= (IN) |
+| =currency_market_tier= | =false= | =tenant= only | =both= (IN) |
+
+*Conclusion:* The binary flag cannot express the =both= variant. The current template
+cannot reproduce the actual SQL for any of these four entities. The SQL files are the
+ground truth; the template is wrong for 40% of the refdata entity set.
+
+** Bootstrap passthrough pattern
+
+The two tenant scope groups have distinct bootstrap passthrough logic:
+
+| Group | Bootstrap check |
+|-------+----------------|
+| =system= (6 entities) | =IF NOT EXISTS (SELECT 1 FROM tbl LIMIT 1)= — global empty-table check |
+| =both= (4 entities) | =IF NOT EXISTS (SELECT 1 FROM tbl WHERE tenant_id IN (p_tenant_id, ores_utility_system_tenant_id_fn()) LIMIT 1)= — tenant-scoped check |
+
+The bootstrap pattern is a direct corollary of the validation function tenant scope and
+does not need a separate flag — the unified template derives it from =validation_fn.tenant_scope=.
+
+** Variability flags for the unified =table= model
+
+The following flags cover all variation observed across the ten entities. This is the
+definitive set for the unified model format; the unified template must express all of them.
+
+| Flag | Values | Used by |
+|------+--------+---------|
+| =validation_fn.tenant_scope= | =system= / =tenant= / =both= | all (system: 6 entities, both: 4 entities, tenant: none yet) |
+| =validation_fn.default= | value string / absent | rounding_type (=Closest=), monetary_nature (=fiat=), currency_market_tier (=g10=); absent → raise exception |
+| =validation_fn.order_by= | column name | all (=display_order= for entities with =has_display_order=; =iso_code= for currency) |
+| =coding_scheme= | =none= / =required= / =nullable= | currency (nullable), party_id_scheme (separate fn file); none for others |
+| =image_id= | =true= / =false= | currency (true); others false |
+| =insert_trigger.validations= | list of {column, function} | currency (3 + change_reason), party_id_scheme (coding_scheme_code + change_reason), others (change_reason only) |
+| =primary_key.column= | column name | =iso_code= for currency; =code= for all others |
+
+*** Flags confirmed absent from this entity set
+
+The following flags appear in the =domain_entity= template and/or story spec but are not
+exercised by any of the ten =_entity.json= models:
+
+| Flag | Source | Status |
+|------+--------+--------|
+| =workspace_id= | domain_entity template | Not present in any =_entity.json= model |
+| =natural_keys= | story spec | All entities use standard version/code unique index; no extra natural key indexes |
+| =insert_trigger.soft_fk_validations= | domain_entity template | Not present in any =_entity.json= model |
+| =insert_trigger.fk_copy_validations= | domain_entity template | Not present in any =_entity.json= model |
+| =insert_trigger.text_code_validations= | domain_entity template | Not present in any =_entity.json= model |
+| =security_definer= | domain_entity template | Not present in any =_entity.json= model |
+| =tenant: nullable= or =none= | story spec | All entities have =tenant_id= required; currency is global but still has the column |
+
+These flags must be defined in the unified model schema for completeness (they will be
+needed when domain entities migrate) but need not be exercised in the refdata pilot.
+
+** Special case: =party_id_scheme= coding scheme validation
+
+The coding scheme validation function for =party_id_scheme= lives in a separate file:
+=refdata_party_id_scheme_functions_create.sql=. This file is *not* generated by the
+=sql_schema_table_create.mustache= template — it is hand-authored. The unified template
+and model design must decide: generate it inline in the main table file, or keep it
+separate. The simplest approach is to generate it inline (within the same output file)
+when =coding_scheme != none=, eliminating the separate file.
+
+** Special case: =rounding_type= has no notify trigger file
+
+Unlike the other nine entities, =rounding_type= has no corresponding
+=refdata_rounding_types_notify_trigger_create.sql= in the repo. This appears to be an
+oversight from the original entity setup rather than intentional design. The unified
+template should generate the notify trigger unconditionally; the missing file for
+=rounding_type= can be added during the parity verification step.
+
+** =codegen.py= CLI interface
+
+*** Subcommand naming
+
+The =gen= / =regen= names used in initial exploration are too similar and ambiguous
+(both are short forms of "generate"). The following naming convention is adopted, drawn
+from the pattern established by =compass.py=:
+
+| Subcommand | Meaning |
+|------------+---------|
+| =generate= | Generate SQL from a single named model file |
+| =regenerate= | Regenerate SQL for a named component or all components |
+| =list= | List models, components, or output paths without generating |
+| =diff= | Show what would change without writing |
+
+Abbreviation: both =generate= and =regenerate= accept short forms =gen= and =regen= as
+aliases, but the canonical name is the long form.
+
+*** Full interface sketch
+
+#+begin_example
+codegen.py generate --model PATH [--profile PROFILE] [--dry-run]
+codegen.py regenerate --component COMPONENT [--profile PROFILE] [--dry-run] [--diff]
+codegen.py regenerate --all [--profile PROFILE] [--dry-run] [--diff]
+codegen.py list models [--component COMPONENT]
+codegen.py list components
+codegen.py diff --component COMPONENT [--profile PROFILE]
+codegen.py diff --all [--profile PROFILE]
+#+end_example
+
+Flags:
+- =--profile= : which template to run (=sql=, =cpp=, =all-cpp=, =all=). Default: =sql= for this story.
+- =--dry-run= : print output paths that would be written without writing them.
+- =--diff= : show =diff= between current output files and what would be generated, without writing.
+- =--component= : one of the named component manifests (=refdata=, =trade=, =dq=, =iam=, ...).
+- =--all= : run all components in sequence.
+
+Open design decision: whether to expose =--profile all= given the footgun risk (silently
+overwrites production SQL when run against an entity with both model files). Recommendation
+is to deprecate =--profile all= in =codegen.py= and require explicit =--profile sql= or
+=--profile all-cpp= to prevent accidental overwrites.
+
+*** Entry point and package layout
+
+#+begin_example
+projects/ores.codegen/
+  codegen.py                  ← top-level entry point (analogous to compass.py)
+  src/
+    codegen/
+      __init__.py
+      cli.py                  ← argparse setup; subcommand registration
+      generate.py             ← generate and regenerate command implementations
+      list_cmd.py             ← list command implementation
+      diff_cmd.py             ← diff command implementation
+      models.py               ← model loading and validation
+      renderer.py             ← mustache rendering (wraps existing generator.py logic)
+      manifest.py             ← component → model file mappings
+      logging_config.py       ← structured logging setup
+#+end_example
+
+The =src/generator.py= and =run_generator.sh= plumbing remains until the migration task
+retires it; =codegen.py= is a new parallel entry point.
+

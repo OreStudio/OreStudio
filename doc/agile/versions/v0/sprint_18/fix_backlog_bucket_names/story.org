@@ -24,11 +24,11 @@ to match the renamed directories.
 
 | Field         | Value                                                                          |
 |---------------+--------------------------------------------------------------------------------|
-| State         | STARTED                                                                        |
+| State         | DONE                                                                           |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                      |
-| Now           | Implementing fixes across regenerate_backlog_indexes.py, compass.py, and captures. |
-| Waiting on    | Nothing.                                                                       |
-| Next          | PR and review.                                                                 |
+| Now           | Nothing.                                                                       |
+| Waiting on    | —                                                                              |
+| Next          | —                                                                              |
 | Last touched  | 2026-05-29                                                                     |
 
 * Acceptance
@@ -45,7 +45,7 @@ to match the renamed directories.
 
 | Task                                                                                                       | State   | Start      | End | Description                                     |
 |------------------------------------------------------------------------------------------------------------+---------+------------+-----+-------------------------------------------------|
-| [[id:FE965603-8234-42CE-A626-8F34A133717C][Fix legacy near/far bucket name references]] | STARTED | 2026-05-29 |     | Update scripts and capture filetags. |
+| [[id:FE965603-8234-42CE-A626-8F34A133717C][Fix legacy near/far bucket name references]] | DONE | 2026-05-29 | 2026-05-29 | Update scripts and capture filetags. |
 
 * Decisions
 

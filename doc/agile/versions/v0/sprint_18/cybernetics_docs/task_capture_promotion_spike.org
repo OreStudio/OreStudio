@@ -38,12 +38,12 @@ in either case produces a runbook the LLM can follow.
 
 | Field        | Value                                                                         |
 |--------------+-------------------------------------------------------------------------------|
-| State        | BACKLOG                                                                       |
+| State        | DONE                                                                          |
 | Parent story | [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Improve cybernetics documentation]] |
-| Now          | Not yet started.                                                              |
-| Waiting on   | Nothing.                                                                      |
-| Next         | Begin spike.                                                                  |
-| Last touched | 2026-05-28                                                                    |
+| Now          | Nothing.                                                                      |
+| Waiting on   | —                                                                             |
+| Next         | —                                                                             |
+| Last touched | 2026-05-29                                                                    |
 
 * Acceptance
 

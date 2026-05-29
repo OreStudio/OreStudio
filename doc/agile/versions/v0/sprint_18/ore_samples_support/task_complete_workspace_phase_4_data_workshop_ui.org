@@ -26,12 +26,12 @@ clone action in the Data Workshop UI.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:34671668-4AEA-46E5-AB28-59DFB169F68E][Add support for running ORE samples]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-05-25                               |
+| Now          | Nothing.                               |
+| Waiting on   | —                                      |
+| Next         | —                                      |
+| Last touched | 2026-05-29                               |
 
 * Acceptance
 
@@ -47,6 +47,8 @@ task closes. Plans do not outlive their task.)
 * Notes
 
 Detail in the source plan =doc/plans/2026-05-17-workspace-design.org=.
+
+Backfilled 2026-05-29: work completed in a prior sprint; task doc not updated at the time.
 
 * PRs
 

@@ -8,7 +8,7 @@
 #+filetags: :fix_backlog_bucket_names:sprint_18:v0:
 #+owner: marco
 #+branch: feature/fix-backlog-bucket-names
-#+pr:
+#+pr: 920
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29
@@ -28,11 +28,11 @@ delete the stale =near.org=, =far.org=, =near/= and =far/= artefacts.
 
 | Field        | Value                                                                                    |
 |--------------+------------------------------------------------------------------------------------------|
-| State        | STARTED                                                                                  |
+| State        | DONE                                                                                     |
 | Parent story | [[id:BC130231-71C2-4DFD-8BA6-B58B4B3029BB][Fix product-backlog bucket names in scripts and captures]] |
-| Now          | Implementing all changes.                                                                |
-| Waiting on   | Nothing.                                                                                 |
-| Next         | PR and review.                                                                           |
+| Now          | Nothing.                                                                                 |
+| Waiting on   | —                                                                                        |
+| Next         | —                                                                                        |
 | Last touched | 2026-05-29                                                                               |
 
 * Acceptance
@@ -51,7 +51,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/920][#920]] | Fix product-backlog bucket names in scripts and captures |
 
 * Review
 

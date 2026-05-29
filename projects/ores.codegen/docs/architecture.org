@@ -58,7 +58,8 @@ projects/ores.codegen/
 ├── requirements.txt
 ├── codegen.sh               # Wrapper: activates venv and calls codegen.py
 ├── run_generator.sh         # Legacy wrapper (kept for non-CLI uses)
-└── generate_doc.sh          # Wrapper for doc_generate.py
+├── generate_doc.sh          # Wrapper for doc_generate.py
+└── generate_*_schema.sh     # Legacy per-component schema scripts (being retired)
 #+end_example
 
 ** Internal modules
@@ -225,6 +226,14 @@ maps a short name to a models directory and a file glob.
 | =trade=   | =projects/ores.codegen/models/trade/=   | =*_entity.json= |
 | =dq=      | =projects/ores.codegen/models/dq/=      | =*_entity.json= |
 | =iam=     | =projects/ores.codegen/models/iam/=     | =*_entity.json= |
+
+** Retired scripts
+
+The following shell scripts have been deleted and replaced by =codegen.sh=:
+
+| Deleted script                    | Replacement command                                                  |
+|-----------------------------------+----------------------------------------------------------------------|
+| =generate_refdata_schema.sh=      | =codegen.sh regenerate --component refdata --profile sql=            |
 
 ** Modeline configurations
 

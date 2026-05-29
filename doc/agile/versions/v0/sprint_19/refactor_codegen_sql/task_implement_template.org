@@ -31,7 +31,7 @@ current SQL files in =projects/ores.sql/create/refdata/=.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] |
 | Now          | Implementation complete; awaiting PR review. |
 | Waiting on   | Nothing.                                     |

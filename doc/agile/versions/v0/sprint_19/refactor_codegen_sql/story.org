@@ -110,12 +110,12 @@ fidelity is required; whitespace normalisation is acceptable.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Retiring generate_refdata_schema.sh.                                        |
+| Now           | Complete. All 5 tasks done; PRs #934–#938 merged.                           |
 | Waiting on    | Nothing.                                                                    |
-| Next          | Close story.                                                                |
-| Last touched  | 2026-05-29                               |
+| Next          | Nothing.                                                                    |
+| Last touched  | 2026-05-30                               |
 
 * Acceptance
 
@@ -138,7 +138,7 @@ fidelity is required; whitespace normalisation is acceptable.
 | [[id:C72BF572-EE74-4F95-9B44-9CCF2AC0B04A][Implement =codegen.py= CLI scaffold]] | DONE | 2026-05-29 | 2026-05-29 | Argparse structure, entry point, package layout, logging; subcommand stubs; venv wiring. |
 | [[id:ADBAD96B-264D-4850-B812-E4ADF544AD81][Implement unified SQL template]] | DONE | 2026-05-29 | 2026-05-29 | Write =sql_schema_create.mustache=; add =table= model-type support in generator; verify parity for all refdata entities. |
 | [[id:05730114-2017-432B-B7E8-70F8ED9BB172][Migrate refdata entity models to new format]] | DONE | 2026-05-29 | 2026-05-30 | Convert all =_entity.json= models to =_table.json=; retire =refdata-table= component alias; run parity check. |
-| [[id:3F9A4145-E8D5-4D6E-AF7B-1BB17D0E34B2][Retire =generate_refdata_schema.sh=]] | STARTED | 2026-05-30 | | Delete script; update any CI or Makefile references; document replacement in =architecture.org=. |
+| [[id:3F9A4145-E8D5-4D6E-AF7B-1BB17D0E34B2][Retire =generate_refdata_schema.sh=]] | DONE | 2026-05-30 | 2026-05-30 | Delete script; update any CI or Makefile references; document replacement in =architecture.org=. |
 
 * Notes
 

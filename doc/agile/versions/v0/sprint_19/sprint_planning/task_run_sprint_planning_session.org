@@ -25,11 +25,11 @@ Sprint 19 stories selected from the product backlog, promoted into the sprint, e
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:2A6F5FE2-8C50-494F-948F-6BA519075FA9][Sprint planning]] |
-| Now          | Stories scaffolded: CI fix, refdata health review, entity eval skill, shell docs per chapter, shell wizards capture. sprint.org updated with mission, six themes, and epic. |
+| Now          | Done. PR #927 reviewed and ready to merge. |
 | Waiting on   | Nothing.                               |
-| Next         | Open combined PR.                      |
+| Next         | Merge PR #927.                         |
 | Last touched | 2026-05-29                               |
 
 * Acceptance

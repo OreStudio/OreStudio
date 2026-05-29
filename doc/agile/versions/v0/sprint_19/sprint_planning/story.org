@@ -20,11 +20,11 @@ Sprint 19 has a selected, sized set of stories pulled from the product backlog, 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Sprint planning session complete; stories scaffolded and wired into sprint.org. |
+| Now           | Done. PR #927 reviewed and ready to merge. |
 | Waiting on    | Nothing.                               |
-| Next          | Open combined PR with all planning work. |
+| Next          | Merge PR #927.                         |
 | Last touched  | 2026-05-29                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ Sprint 19 has a selected, sized set of stories pulled from the product backlog, 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:4AE688F2-298A-4070-B422-6C22F238EC9E][Scaffold sprint planning story]] | DONE | 2026-05-29 | 2026-05-29 | Scaffold story and task docs, wire into sprint, open PR. |
-| [[id:CCA36502-635B-4F0F-BD1B-6D394571C483][Run sprint planning session]] | STARTED | 2026-05-29 | | Select stories from backlog, size tasks, confirm mission. |
+| [[id:CCA36502-635B-4F0F-BD1B-6D394571C483][Run sprint planning session]] | DONE | 2026-05-29 | 2026-05-29 | Select stories from backlog, size tasks, confirm mission. |
 
 * Out of scope
 

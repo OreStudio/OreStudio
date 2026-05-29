@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/commission-currency
 #+pr:
-#+blocked_on: none
-#+blocked_since:
+#+blocked_on: C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D
+#+blocked_since: 2026-05-29
 #+created: 2026-05-29
 #+updated: 2026-05-29
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
@@ -33,11 +33,11 @@ no drift has accumulated across the other three entities.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Run codegen; diff output; fix gaps.    |
+| Now          | Nothing.                               |
+| Waiting on   | [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] |
+| Next         | Resume once codegen SQL unification story is complete. |
 | Last touched | 2026-05-29                               |
 
 * Acceptance
@@ -61,3 +61,29 @@ no drift has accumulated across the other three entities.
 |   |                 |      |          |       |
 
 * Result
+
+** Summary
+
+Blocked. Analysis revealed that the codegen system is not in a state that supports safe
+parity verification for currency or the auxiliaries. Two issues found:
+
+*Issue 1 — Component naming mismatch:* Running =all-cpp= on the auxiliary type
+=_domain_entity.json= models (=rounding_type=, =monetary_nature=,
+=currency_market_tier=) writes C++ files to =projects/ores.refdata/= (new untracked
+directory) instead of =projects/ores.refdata.api/= and =projects/ores.refdata.core/=
+where the production code lives. "Zero git diff" was a false negative — new untracked
+files do not appear in =git diff=. The spurious directory was deleted. The models need
+=component_include= / =component_core= corrections before a valid parity check is
+possible.
+
+*Issue 2 — Two SQL templates with inconsistent variability:* The current
+=sql_schema_table_create.mustache= (for =_entity.json= models) cannot reproduce the
+actual validation functions in the generated SQL for the three auxiliary types. The SQL
+files use =tenant_id in (p_tenant_id, system_tenant)= but the template only supports
+either =system= or =p_tenant_id= (not both). The source SQL is the ground truth; the
+template is inconsistent with what it originally generated.
+
+*Conclusion:* Codegen verification is blocked on [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]].
+The =currency_domain_entity.json= gap remains; it will be created as part of that
+story once the unified model format and template are in place.
+

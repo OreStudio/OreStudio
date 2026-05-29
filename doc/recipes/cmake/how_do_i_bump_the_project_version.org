@@ -9,8 +9,8 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-The version bump is housekeeping that often follows [[id:1E666848-A785-437E-A463-3D5A0DA0765F][opening a new
-sprint]] but is independent of it — do it as its own PR.
+The version bump is housekeeping that always accompanies [[id:1E666848-A785-437E-A463-3D5A0DA0765F][opening a new
+sprint]]. Land it as a separate commit on the same sprint-open PR.
 
 * Question
 
@@ -66,8 +66,7 @@ Five files carry the version string. Edit them as a single commit.
 
    Expect zero matches.
 
-7. /Commit/ as =[build] Bump version to 0.0.<NEW>= and open the PR
-   via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]].
+7. /Commit/ as =[build] Bump version to 0.0.<NEW>= on the sprint-open branch. No separate PR needed.
 
 * Script
 

@@ -29,9 +29,9 @@ In execution order:
 
 2. /Close the current sprint./ Mark the sprint =DONE=, update the version's sprint table, and commit.
 
-3. /Scaffold the new sprint./ Use [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]] to create the sprint folder, =sprint.org=, and wire it into the version.
+3. /Scaffold the new sprint./ Use [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]] to create the sprint folder, =sprint.org=, wire it into the version, and update the vcpkg submodule to latest.
 
-4. /Bump the project version./ Follow [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]] to update CMake version strings and tags.
+4. /Bump the project version./ Follow [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]] to update CMake version strings and tags. Land this as a separate commit on the same PR as step 3 — do not open a second PR.
 
 5. /Commit and PR./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]] and follow [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — title =[COMPONENT] Description=, body sections Summary / Changes / Traceability.
 

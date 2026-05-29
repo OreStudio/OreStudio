@@ -12,6 +12,8 @@
 
 /May 2026/
 
+[[../../../../../assets/images/ore_studio-v0.0.18.png]]
+
 Sprint 18 set out to enable end-to-end ORE imports into workspaces and expand
 supported ORE types, but the sprint health review concluded RED: no primary
 product goals were met and the ten product stories that remained were carried

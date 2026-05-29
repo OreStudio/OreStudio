@@ -49,12 +49,14 @@ fully commissioned.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/929][#929]] | [doc] Appraise currency entity; produce domain entity evaluation checklist |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | Now field should be 'Nothing.' on DONE tasks | task_appraise_currency.org | Fixed in ffc43de33 | |
+| 2 | Now field should be 'Nothing.' on DONE tasks | task_verify_sql.org | Fixed in ffc43de33 | |
 |   |                 |      |          |       |
 
 * Result

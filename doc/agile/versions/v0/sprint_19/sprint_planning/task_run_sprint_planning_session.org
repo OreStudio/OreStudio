@@ -27,9 +27,9 @@ Sprint 19 stories selected from the product backlog, promoted into the sprint, e
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2A6F5FE2-8C50-494F-948F-6BA519075FA9][Sprint planning]] |
-| Now          | Running planning session with user.    |
+| Now          | Stories scaffolded: CI fix, refdata health review, entity eval skill, shell docs per chapter, shell wizards capture. sprint.org updated with mission, six themes, and epic. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit promoted stories; open PR.      |
+| Next         | Open combined PR.                      |
 | Last touched | 2026-05-29                               |
 
 * Acceptance

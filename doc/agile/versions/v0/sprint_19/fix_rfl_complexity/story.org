@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 7763D0EE-A500-4497-9B2D-973C02ADC739
+:END:
+#+title: Story: Fix rfl complexity failure (Windows + macOS CI)
+#+description: Fix ClientManagerTradeDetail.cpp rfl::Literal 502-field compile failure on MSVC and Clang to restore Windows and macOS CI builds.
+#+type: story
+#+level: s2
+#+filetags: :ci:windows:macos:rfl:ores_qt_api:infrastructure:sprint_19:v0:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Windows and macOS CI builds are green: =ClientManagerTradeDetail.cpp= compiles on both MSVC and
+Clang after splitting or restructuring the =rfl::Literal= 502-field type that exceeds each
+compiler's template/constexpr depth limit.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-05-29                               |
+
+* Acceptance
+
+- Windows CI: no =C1202= recursive type error in =ClientManagerTradeDetail.cpp=.
+- macOS CI: no fold-expression nesting limit error in =rfl/internal/StringLiteral.hpp=.
+- Linux CI: unaffected (still green).
+- PR merged; both Windows and macOS artefacts produced by CI.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* See also
+
+- [[id:367D0D5F-24BB-4AA1-B784-D79E95C15A16][Fix rfl complexity failure in ClientManagerTradeDetail (capture)]] — source capture with full error detail.
+- [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] — sprint 18 predecessor story; same structural-isolation pattern.

@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 4AE688F2-298A-4070-B422-6C22F238EC9E
 :END:
-#+title: Task: Run sprint planning session
-#+description: Initial task for: Sprint planning
+#+title: Task: Scaffold sprint planning story
+#+description: Scaffold the sprint planning story and task docs, wire into sprint 19, and open PR.
 #+type: task
 #+level: s1
 #+filetags: :sprint_planning:sprint_19:v0:

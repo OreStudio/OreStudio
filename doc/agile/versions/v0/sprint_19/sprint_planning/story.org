@@ -22,9 +22,9 @@ Sprint 19 has a selected, sized set of stories pulled from the product backlog, 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Running sprint planning session.       |
+| Now           | Sprint planning session complete; stories scaffolded and wired into sprint.org. |
 | Waiting on    | Nothing.                               |
-| Next          | Complete planning session; open PR.    |
+| Next          | Open combined PR with all planning work. |
 | Last touched  | 2026-05-29                               |
 
 * Acceptance

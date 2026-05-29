@@ -1,0 +1,234 @@
+:PROPERTIES:
+:ID: 06C98C06-F950-483A-997B-89AED70D1238
+:END:
+#+title: Task: Rename get_trade_detail → get_trade_instrument and rewrite parse path
+#+description: Rename all get_trade_detail_* protocol types to get_trade_instrument_*, delete Sprint 18 workaround types, rename ClientManagerTradeDetail.cpp, and rewrite the client parse path to dispatch on (product_type, trade_type) reading concrete leaf structs directly — eliminating rfl::AddTagsToVariants and the 502-field Literal.
+#+type: task
+#+level: s1
+#+filetags: :fix_rfl_complexity:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 9212966F-87AC-4B72-B708-8ED5BA253431
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the Sprint 18 two-phase-parse workaround with a correct architectural fix:
+
+1. Rename =get_trade_detail_*= protocol types to =get_trade_instrument_*= and update the
+   NATS subject to =trading.v1.trades.instrument=.
+2. Delete =get_trade_detail_response_base= and =get_trade_detail_instrument_wrapper= from
+   =trade_protocol.hpp= — they were parse artefacts, not protocol concepts.
+3. Update the server-side subscription (=registrar_trades.cpp=) and handler method name
+   (=trade_handler.hpp=).
+4. Rename =ClientManagerTradeDetail.cpp= → =ClientManagerTradeInstrument.cpp= and
+   =getTradeDetail= → =getTradeInstrument= throughout.
+5. Rewrite the client TU: Phase 1 reads a file-local envelope struct
+   ={bool success, string message, trade trade}= (rfl silently skips the =instrument= JSON
+   key); Phase 2 dispatches on =(product_type, trade_type)= from the trade classification
+   and reads the specific concrete leaf struct directly — no =AddTagsToVariants=, no
+   variant in the parse path.
+
+The key architectural principle for the display path: *the type is known by the time the
+instrument is read*, so the instrument must never be packaged into a =trade_instrument=
+variant. The =getTradeInstrument= return type must not include a =trade_instrument= field.
+The concrete instrument is delivered directly to whoever needs it.
+
+This is in contrast to import/export, where many heterogeneous instruments are processed
+without a known type at the processing site — that path correctly retains the variant.
+
+* Status
+
+| Field        | Value                                                                               |
+|--------------+-------------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                             |
+| Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
+| Now          | —                                                                                   |
+| Waiting on   | Scaffolding PR merged ([[id:9212966F-87AC-4B72-B708-8ED5BA253431][Task 1]]).         |
+| Next         | Begin once scaffolding PR is green.                                                 |
+| Last touched | 2026-05-29                                                                          |
+
+* Acceptance
+
+- =trade_protocol.hpp=: =get_trade_instrument_request/response= present; =get_trade_detail_*=
+  types absent; workaround types absent.
+- NATS subject: =trading.v1.trades.instrument=.
+- =registrar_trades.cpp=: subscription uses new subject and calls =h.instrument(…)=.
+- =trade_handler.hpp=: =instrument()= method present; =detail()= absent; response type updated.
+- =ClientManagerTradeInstrument.cpp= present; =ClientManagerTradeDetail.cpp= deleted.
+- =ClientManager.hpp=: =getTradeInstrument= declared; =getTradeDetail= absent.
+- =TradeController.cpp=: calls =getTradeInstrument=.
+- =CMakeLists.txt=: source list updated.
+- =ClientManagerTradeInstrument.cpp= contains zero =AddTagsToVariants= references.
+- =ClientManagerTradeInstrument.cpp= constructs zero =trade_instrument= values.
+- =getTradeInstrument= return type is =std::optional<trading::domain::trade>=; no variant.
+- =IInstrumentFormPopulator= interface exists with one overload per leaf instrument type.
+- Linux CI green after the change.
+- Logging: =debug= on entry to Phase 1 and Phase 2 (including resolved type strings);
+  =warn= for unknown =(product_type, trade_type)= (monostate result);
+  =error= on any =rfl::json::read= failure with the rfl error message.
+
+* Plan
+
+(Transient. Distilled into the parent story's =* Decisions= and cleared when the task closes.)
+
+** Files to change
+
+| File                                                                        | Change                                                  |
+|-----------------------------------------------------------------------------+---------------------------------------------------------|
+| =ores.trading.api/include/…/messaging/trade_protocol.hpp=                  | Rename types; delete workarounds; update NATS subject.  |
+| =ores.trading.core/src/messaging/registrar_trades.cpp=                      | Use new subject constant and call =h.instrument()=.     |
+| =ores.trading.core/include/…/messaging/trade_handler.hpp=                   | Rename =detail()= → =instrument()=; update response type.|
+| =ores.qt.api/include/ores.qt/ClientManager.hpp=                             | Rename =getTradeDetail= → =getTradeInstrument=.         |
+| =ores.qt.api/src/ClientManagerTradeDetail.cpp= → =ClientManagerTradeInstrument.cpp= | Full rewrite; see design below.                 |
+| =ores.qt.api/CMakeLists.txt=                                                | Updated source list.                                    |
+| =ores.qt.trading/src/TradeController.cpp=                                   | Update call site.                                       |
+
+** Return type design
+
+=getTradeInstrument= must not return =trade_export_item= — that struct contains
+=trade_instrument instrument= (a variant) which would immediately reintroduce the variant
+into the display path.
+
+Instead, =getTradeInstrument= takes an =IInstrumentFormPopulator&= (defined below) and
+returns only the trade:
+
+#+begin_src cpp
+// ClientManager.hpp
+std::optional<trading::domain::trade>
+getTradeInstrument(const std::string& trade_id,
+                   IInstrumentFormPopulator& populator);
+#+end_src
+
+=IInstrumentFormPopulator= is a pure abstract interface (defined in =ores.qt.api=) with one
+overload per concrete leaf instrument type. Default implementations do nothing — a concrete
+form only overrides the overload(s) it handles:
+
+#+begin_src cpp
+// ores.qt.api/include/ores.qt/IInstrumentFormPopulator.hpp
+struct IInstrumentFormPopulator {
+    virtual ~IInstrumentFormPopulator() = default;
+    virtual void populate(const trading::domain::fx_forward_instrument&)          {}
+    virtual void populate(const trading::domain::fx_vanilla_option_instrument&)   {}
+    // … one overload per leaf type (~28 total)
+    virtual void populate(const trading::domain::bond_instrument&)                {}
+    virtual void populate(const trading::domain::vanilla_swap_instrument&,
+                          std::vector<trading::domain::swap_leg> legs)            {}
+    // legs passed alongside for with_legs types
+};
+#+end_src
+
+Each concrete form (or its controller) implements the relevant overload. No form ever sees
+=trade_instrument= or any sub-variant.
+
+** Parse path design
+
+Phase 1 — envelope (file-local struct, no instrument field):
+
+#+begin_src cpp
+namespace {
+struct response_envelope {
+    bool success = false;
+    std::string message;
+    ores::trading::domain::trade trade;
+    // instrument key present in JSON but absent here — rfl skips it silently
+};
+} // namespace
+#+end_src
+
+Phase 2 — concrete dispatch (no =AddTagsToVariants=, no variant, direct populator call).
+Mirrors =populate_instruments_for_trades= in =trade_handler.hpp=.
+
+Named wrapper structs are defined in an anonymous namespace at the top of the TU (types
+cannot be defined inline inside a template argument list in C++):
+
+#+begin_src cpp
+namespace {
+// Flat types
+struct bond_wrapper      { domain::bond_instrument instrument; };
+struct credit_wrapper    { domain::credit_instrument instrument; };
+struct commodity_wrapper { domain::commodity_instrument instrument; };
+struct scripted_wrapper  { domain::scripted_instrument instrument; };
+
+// with_legs types
+struct composite_wrapper {
+    domain::composite_instrument instrument;
+    std::vector<domain::composite_leg> legs;
+};
+struct fra_wrapper           { domain::fra_instrument instrument;
+                               std::vector<domain::swap_leg> legs; };
+struct vanilla_swap_wrapper  { domain::vanilla_swap_instrument instrument;
+                               std::vector<domain::swap_leg> legs; };
+// … one wrapper per rates leaf type
+
+struct fx_forward_wrapper         { domain::fx_forward_instrument instrument; };
+struct fx_vanilla_option_wrapper  { domain::fx_vanilla_option_instrument instrument; };
+// … one wrapper per FX leaf type
+
+struct equity_option_wrapper  { domain::equity_option_instrument instrument; };
+// … one wrapper per equity leaf type
+} // namespace
+#+end_src
+
+Dispatch:
+
+#+begin_src
+switch product_type:
+  bond      → rfl::json::read<bond_wrapper>(raw)      → populator.populate(w->instrument)
+  credit    → rfl::json::read<credit_wrapper>(raw)    → populator.populate(w->instrument)
+  commodity → rfl::json::read<commodity_wrapper>(raw) → populator.populate(w->instrument)
+  scripted  → rfl::json::read<scripted_wrapper>(raw)  → populator.populate(w->instrument)
+  composite → rfl::json::read<composite_wrapper>(raw) → populator.populate(w->instrument, std::move(w->legs))
+  fx        → switch trade_type
+              → rfl::json::read<fx_forward_wrapper>(raw)        → populator.populate(w->instrument)
+              → rfl::json::read<fx_vanilla_option_wrapper>(raw) → populator.populate(w->instrument)
+              … (7 FX leaf types, one branch each)
+  equity    → switch trade_type → … (9 equity leaf types, same pattern)
+  swap      → switch trade_type
+              → rfl::json::read<fra_wrapper>(raw)          → populator.populate(w->instrument, std::move(w->legs))
+              → rfl::json::read<vanilla_swap_wrapper>(raw) → populator.populate(w->instrument, std::move(w->legs))
+              … (9 rates leaf types)
+  unknown   → log warn; return nullopt
+#+end_src
+
+No =trade_instrument= variant is ever constructed. The concrete value is read and dispatched
+directly to the populator in the same switch branch. Return =base.trade=.
+
+** Logging specification
+
+#+begin_src cpp
+// Phase 1 entry
+BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: phase 1 parse";
+// Phase 1 success
+BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: product_type=" << to_string(pt)
+                            << " trade_type=" << ttc;
+// Phase 2 entry per branch
+BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading fx_forward_instrument";
+// Deserialise error
+BOOST_LOG_SEV(lg(), error) << "getTradeInstrument: deserialise failed: " << result.error().what();
+// Unknown type
+BOOST_LOG_SEV(lg(), warn)  << "getTradeInstrument: unknown (product_type, trade_type) — ("
+                            << to_string(pt) << ", " << ttc << "); returning monostate";
+#+end_src
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

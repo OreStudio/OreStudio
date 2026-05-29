@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 5C955A5E-0130-40D7-B77F-B41F4F526B79
+:END:
+#+title: Task: Refactor IInstrumentForm to type-specific populate methods
+#+description: Replace the IInstrumentForm::populate_from_instrument(const trade_instrument&) virtual interface with type-specific populate overloads on each concrete form. Remove the trade_instrument variant from the Qt UI boundary; dispatch at the call site using the product_type and trade_type already known from the parse result.
+#+type: task
+#+level: s1
+#+filetags: :fix_rfl_complexity:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: F9E5967D-77E7-49E3-9806-74AF22D26191
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The current =IInstrumentForm::populate_from_instrument(const trade_instrument&)= interface
+is architecturally incorrect: each concrete form already knows its instrument type, yet it
+receives a 9-alternative variant and discards 8 of them via =std::get_if=. The check can
+never legitimately fail — if it does, it is a programming error the interface silently
+swallows.
+
+Task 2 eliminates the variant from the parse path by introducing =IInstrumentFormPopulator=
+— a pure-abstract interface with one =populate= overload per concrete leaf instrument type.
+This task wires the forms to that interface, completing the removal of the variant from the
+entire display path:
+
+1. Each concrete form (or a thin controller wrapper) implements the relevant
+   =IInstrumentFormPopulator::populate= overload(s) for its type.
+2. Remove the old =populate_from_instrument(const trade_instrument&)= virtual method from
+   =IInstrumentForm= and every subclass.
+3. Remove all =std::get_if<trade_instrument>=, =std::get_if<fx_instrument_variant>=, and
+   =std::get_if<equity_instrument_variant>= calls from form implementation files.
+4. Update =TradeController= and =TradeDetailDialog= to pass the form as an
+   =IInstrumentFormPopulator&= to =getTradeInstrument=, replacing the old populate call.
+
+After this task: no form header or implementation file includes =trade_instrument.hpp= or
+any sub-variant header for the purpose of population. The variant exists only in
+import/export paths where the type is genuinely unknown at the processing site.
+
+* Status
+
+| Field        | Value                                                                               |
+|--------------+-------------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                             |
+| Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
+| Now          | —                                                                                   |
+| Waiting on   | Task 3 merged ([[id:F9E5967D-77E7-49E3-9806-74AF22D26191][tests]]).               |
+| Next         | Begin once tests PR is green.                                                       |
+| Last touched | 2026-05-29                                                                          |
+
+* Acceptance
+
+- =IInstrumentForm= has no =populate_from_instrument(const trade_instrument&)= method.
+- Each concrete form implements the relevant =IInstrumentFormPopulator= overload(s).
+- No form =.hpp= or =.cpp= file calls =std::get_if= on =trade_instrument=,
+  =fx_instrument_variant=, or =equity_instrument_variant=.
+- =IInstrumentForm.hpp= does not include =trade_instrument.hpp= or any sub-variant header.
+- =TradeController= and =TradeDetailDialog= pass =*this= (or a wrapper) as an
+  =IInstrumentFormPopulator&= to =getTradeInstrument=; no separate populate call needed.
+- All existing UI behaviour preserved; no regression.
+- No new rfl usage introduced.
+
+* Plan
+
+(Transient.)
+
+** Affected files
+
+=IInstrumentForm.hpp= and every subclass:
+
+- =FxInstrumentForm= (and all 6 other FX form subclasses)
+- =SwapInstrumentForm=
+- =BondInstrumentForm=
+- =CreditInstrumentForm=
+- =CommodityInstrumentForm=
+- =CompositeInstrumentForm=
+- =ScriptedInstrumentForm=
+- =EquityInstrumentForm= (and relevant equity sub-forms)
+
+Call sites:
+
+- =TradeController.cpp= — receives =trade_export_item= from =getTradeInstrument=; dispatch here.
+- =TradeDetailDialog.cpp= — receives =trade_export_item=; dispatch here.
+
+** Design
+
+=IInstrumentFormPopulator= (introduced in task 2, lives in =ores.qt.api=): pure-abstract
+interface with one =populate= overload per concrete leaf type. Default implementations are
+no-ops so only relevant overloads need to be defined.
+
+Each concrete form implements the relevant overload(s). Example:
+
+#+begin_src cpp
+// BondInstrumentForm.hpp — inherits IInstrumentForm AND IInstrumentFormPopulator
+void populate(const trading::domain::bond_instrument& instr) override;
+
+// FxInstrumentForm.hpp — handles all FX leaf types via separate overloads
+void populate(const trading::domain::fx_forward_instrument& instr) override;
+void populate(const trading::domain::fx_vanilla_option_instrument& instr) override;
+// … etc. for all 7 FX leaf types
+#+end_src
+
+Call site (=TradeController=, =TradeDetailDialog=): create the right form as before via
+the factory, then pass it directly as the populator:
+
+#+begin_src cpp
+// factory already creates the concrete form from product_type / trade_type
+auto* form = form_factory_.create(product_type, trade_type);
+auto trade_opt = clientManager_->getTradeInstrument(trade_id, *form);
+// form is now populated; no variant, no dispatch at the call site
+#+end_src
+
+=getTradeInstrument= calls the right =populate= overload inside its dispatch switch.
+The call site never sees the instrument type — it just gets the trade back and the form
+is already populated.
+
+** Note on FX and equity sub-variants
+
+Because =IInstrumentFormPopulator= has one overload per leaf type (e.g.
+=fx_forward_instrument=, =fx_vanilla_option_instrument=, …), =FxInstrumentForm= overrides
+each FX leaf overload individually. There is no need to pass an =fx_instrument_variant= to
+the form at all — each leaf type is dispatched directly. Same for equity and rates.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

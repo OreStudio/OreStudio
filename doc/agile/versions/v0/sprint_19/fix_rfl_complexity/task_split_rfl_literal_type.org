@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 9212966F-87AC-4B72-B708-8ED5BA253431
 :END:
-#+title: Task: Split rfl::Literal 502-field type to fix Windows and macOS CI
-#+description: Restructure the rfl::Literal 502-field type in ClientManagerTradeDetail.cpp into smaller chunks to eliminate the MSVC C1202 and Clang fold-expression nesting failures.
+#+title: Task: Scaffold — document architecture and create task stubs for rfl fix
+#+description: Update story decisions with root-cause analysis and architectural choices; repurpose this task as the scaffolding PR; create task stubs for rename/rewrite, tests, and IInstrumentForm refactor. PR for Gemini architecture review before any code changes.
 #+type: task
 #+level: s1
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
@@ -19,10 +19,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Split or restructure the =rfl::Literal= 502-field type in
-=ores.qt.api/src/ClientManagerTradeDetail.cpp= so that MSVC and Clang can
-compile it within their template/constexpr depth limits, restoring Windows
-and macOS CI builds without affecting Linux.
+Capture the architectural analysis in the story, create task stubs for all
+planned work, and produce a PR that Gemini can review to validate the approach
+before any code changes are made. No production code is changed in this task.
 
 * Status
 
@@ -30,36 +29,152 @@ and macOS CI builds without affecting Linux.
 |--------------+-----------------------------------------------------------------------------------|
 | State        | STARTED                                                                           |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | Implementing the split/restructure of the 502-field Literal type.                 |
+| Now          | Writing story decisions and task stubs; PR for architecture review.               |
 | Waiting on   | Nothing.                                                                          |
-| Next         | PR and review.                                                                    |
+| Next         | PR review by Gemini; then task 2 begins.                                          |
 | Last touched | 2026-05-29                                                                        |
 
 * Acceptance
 
-- =ClientManagerTradeDetail.cpp= compiles on MSVC without =C1202= (recursive type too complex).
-- =ClientManagerTradeDetail.cpp= compiles on Clang without fold-expression nesting limit error in =rfl/internal/StringLiteral.hpp=.
-- Linux CI remains green.
-- No functional change to the =ClientManager= trade detail behaviour.
+- =story.org= contains a complete =* Decisions= section covering root cause, discriminator,
+  protocol rename rationale, workaround deletion, variant retention, logging requirement,
+  and export_portfolio latent issue.
+- Task stubs exist for: rename/rewrite, tests, and IInstrumentForm refactor.
+- PR opened and ready for Gemini architecture review.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+(Transient. Distilled into the parent story's =* Decisions= section above.)
+
+The architectural analysis and implementation plan are captured in [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][the story's Decisions section]].
+This task's deliverable is the scaffolding PR: updated story + task stubs.
+
+** Steps
+
+1. Update =story.org= with =* Decisions= section (done).
+2. Repurpose this task file as the scaffolding task (done).
+3. Create task stub files for tasks 2–4 (done).
+4. Commit; open PR on =feature/task-split-rfl-literal-type=.
+
+** Background decisions (moved to story)
+
+- The 502-field =rfl::Literal= is produced by =rfl::AddTagsToVariants= on
+  =trade_instrument= (9 top-level alternatives, two of which are themselves
+  variants: =fx_instrument_variant= (7 types) and =equity_instrument_variant=
+  (9 types), and =swap_instrument_data= wraps =rates_instrument_variant= (9
+  types)). MSVC C1202 and Clang fold-expression limits both fire on that single
+  type.
+
+- The discriminator we need already exists: =trade.classification.product_type=
+  (family: =fx=, =swap=, =bond=, …) and =trade.classification.trade_type=
+  (leaf: ="FxForward"=, ="VanillaSwap"=, ="EquityOption"=, …) are read in
+  Phase 1. After Phase 1 the client knows the exact leaf type — no
+  =AddTagsToVariants= is needed.
+
+- The protocol type is renamed =get_trade_detail_*= → =get_trade_instrument_*=
+  to accurately reflect its purpose (fetch the instrument for a trade, not a
+  richer trade view). No backwards-compatibility concern: internal NATS
+  protocol.
+
+- The two Sprint 18 workaround types (=get_trade_detail_response_base= and
+  =get_trade_detail_instrument_wrapper=) are deleted — they were parse
+  implementation artefacts, not protocol concepts.
+
+- The =trade_instrument=, =fx_instrument_variant=, =equity_instrument_variant=,
+  and =rates_instrument_variant= variant types are NOT deleted. They are used
+  throughout =ores.qt.trading= as C++ polymorphic holders
+  (=IInstrumentForm= interface, all form subclasses, importer). That use is
+  correct and involves no rfl. What is eliminated is
+  =rfl::json::read<…, rfl::AddTagsToVariants>= on the =get_trade_instrument=
+  client parse path.
+
+** Step 1 — Rename protocol types (=trade_protocol.hpp=)
+
+- =get_trade_detail_request= → =get_trade_instrument_request=; NATS subject
+  ="trading.v1.trades.instrument"=.
+- =get_trade_detail_response= → =get_trade_instrument_response=; keep
+  =trade_instrument instrument= field (server writes it, client does not read
+  this struct directly).
+- Delete =get_trade_detail_response_base=.
+- Delete =get_trade_detail_instrument_wrapper=.
+
+** Step 2 — Update server NATS registration (=registrar_trades.cpp=)
+
+- =get_trade_detail_request::nats_subject= → =get_trade_instrument_request::nats_subject=.
+- =h.detail(…)= → =h.instrument(…)=.
+
+** Step 3 — Update =trade_handler.hpp=
+
+- Rename =detail()= → =instrument()=.
+- =get_trade_detail_response= → =get_trade_instrument_response= at the
+  declaration and construction site.
+
+** Step 4 — Rename and rewrite the Qt client TU
+
+File: =ClientManagerTradeDetail.cpp= → =ClientManagerTradeInstrument.cpp=.
+
+Method: =getTradeDetail= → =getTradeInstrument=.
+
+New parse logic (no =AddTagsToVariants= anywhere):
+
+1. *Phase 1 — envelope read.* A file-local struct
+   ={bool success, string message, trade trade}= reads the JSON. rfl silently
+   skips the =instrument= JSON key (extra keys are ignored on read). Extract
+   =product_type= and =trade_type= from =base.trade.classification=.
+
+2. *Phase 2 — concrete instrument read.* Switch on =(product_type,
+   trade_type)=, mirroring the server-side dispatch in
+   =populate_instruments_for_trades=. For each branch, a file-local struct
+   ={ConcreteType instrument}= (or ={ConcreteType instrument; vector<Leg> legs}=
+   for swap/composite) reads the raw JSON. rfl matches by field name; the
+   server's type tag is an extra JSON key and is silently ignored.
+
+3. *Assemble.* Wrap the concrete value into the appropriate =trade_instrument=
+   alternative and return =trade_export_item{.trade=…, .instrument=…}=.
+
+Swap/composite cases note: =swap_instrument_data = with_legs<rates_instrument_variant, swap_leg>=, so the Phase 2 struct is ={ConcreteRatesType instrument; vector<swap_leg> legs}= and the result is assembled as =rates_instrument_variant{v}= → =swap_instrument_data{.instrument=…, .legs=…}=.
+
+** Step 5 — Update =ClientManager.hpp=
+
+- Rename =getTradeDetail= → =getTradeInstrument= in the public declaration and
+  its doc comment.
+
+** Step 6 — Update caller (=TradeController.cpp=)
+
+- =clientManager_->getTradeDetail(id)= → =clientManager_->getTradeInstrument(id)=.
+
+** Step 7 — Update =CMakeLists.txt= in =ores.qt.api=
+
+- Replace =ClientManagerTradeDetail.cpp= with =ClientManagerTradeInstrument.cpp=
+  in the source list.
+
+** Step 8 — Write tests
+
+- One test per instrument family (at minimum FX, rates/swap, equity, and one
+  flat type such as bond).
+- Each test: construct a =get_trade_instrument_response= with a known concrete
+  instrument → serialize with =rfl::json::write<rfl::AddTagsToVariants>= (same
+  as server) → run through the new dispatch logic → assert the assembled
+  =trade_export_item.instrument= holds the expected alternative with correct
+  fields.
+- Tests live alongside the existing =ores.qt.api= test suite.
 
 * Notes
 
+- [[id:D75F4921-B431-4E78-99AB-62A47F761D1D][Investigation: MSVC C1202 and rfl complexity]] — root-cause analysis; O(N²) field-uniqueness check, triple-isolation recommendation.
+- [[id:367D0D5F-24BB-4AA1-B784-D79E95C15A16][Fix rfl complexity failure in ClientManagerTradeDetail (capture)]] — exact MSVC C1202 and Clang fold-expression error messages.
+- [[https://github.com/getml/reflect-cpp/issues/350][reflect-cpp issue #350]] — upstream tracking.
+
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                      |
+|-----+------------------------------------------------------------|
+| 931 | Scaffold rfl complexity fix: story decisions and task stubs |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                   | File                                  | Decision | Notes                                              |
+|---+-------------------------------------------------------------------+---------------------------------------+----------+----------------------------------------------------|
+| 1 | Inline struct defs in template args are invalid C++ (Gemini R1)   | task_rename_and_rewrite_parse_path.org | Accept   | Replaced with named wrappers in anon namespace; resolved. |
 
 * Result

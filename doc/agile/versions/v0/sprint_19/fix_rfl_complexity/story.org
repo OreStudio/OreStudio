@@ -2,7 +2,7 @@
 :ID: 7763D0EE-A500-4497-9B2D-973C02ADC739
 :END:
 #+title: Story: Fix rfl complexity failure (Windows + macOS CI)
-#+description: Fix ClientManagerTradeDetail.cpp rfl::Literal 502-field compile failure on MSVC and Clang to restore Windows and macOS CI builds.
+#+description: Eliminate the rfl::AddTagsToVariants 502-field Literal from the Qt client instrument parse path by renaming the protocol, rewriting the client TU with type-dispatched reads, adding tests, and refactoring the IInstrumentForm interface to remove the variant.
 #+type: story
 #+level: s2
 #+filetags: :ci:windows:macos:rfl:ores_qt_api:infrastructure:sprint_19:v0:
@@ -14,35 +14,141 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Windows and macOS CI builds are green: =ClientManagerTradeDetail.cpp= compiles on both MSVC and
-Clang after splitting or restructuring the =rfl::Literal= 502-field type that exceeds each
-compiler's template/constexpr depth limit.
+Restore Windows and macOS CI by permanently eliminating =rfl::AddTagsToVariants= from the
+Qt client's instrument parse path. The Sprint 18 triple-isolation workaround (TU split +
+two-phase parse + =-fbracket-depth=1024=) moved the 502-field =rfl::Literal= into a dedicated
+TU but did not remove it; MSVC C1202 and Clang's fold-expression nesting limit both still
+fire. The correct fix is to replace variant-based rfl parsing with a type-dispatched read
+that uses =trade.classification.product_type= and =trade.classification.trade_type= — the
+same discriminators the server already uses — to read each concrete leaf instrument struct
+directly, with no variant and no =AddTagsToVariants=.
+
+The story also corrects naming (=get_trade_detail= → =get_trade_instrument=) and removes the
+accumulated hacks from Sprint 18. A follow-on task refactors =IInstrumentForm= to remove
+the variant from the Qt UI boundary as well, since the variant serves no purpose there.
 
 * Status
 
-| Field         | Value                                  |
-|---------------+----------------------------------------|
-| State         | STARTED                                                                           |
-| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                         |
-| Now           | Implementing split of 502-field Literal type.                                     |
-| Waiting on    | Nothing.                                                                          |
-| Next          | PR and review.                                                                    |
-| Last touched  | 2026-05-29                                                                        |
+| Field         | Value                                                                                         |
+|---------------+-----------------------------------------------------------------------------------------------|
+| State         | STARTED                                                                                       |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                       |
+| Now           | Scaffolding task on branch; architecture agreed; implementation tasks queued.                 |
+| Waiting on    | Gemini review of scaffolding PR.                                                              |
+| Next          | Task 2 (rename + rewrite) once scaffolding PR merges.                                        |
+| Last touched  | 2026-05-29                                                                                    |
 
 * Acceptance
 
-- Windows CI: no =C1202= recursive type error in =ClientManagerTradeDetail.cpp=.
+- Windows CI: no =C1202= recursive type error anywhere in =ores.qt.api=.
 - macOS CI: no fold-expression nesting limit error in =rfl/internal/StringLiteral.hpp=.
 - Linux CI: unaffected (still green).
-- PR merged; both Windows and macOS artefacts produced by CI.
+- =ClientManagerTradeInstrument.cpp= contains no =rfl::AddTagsToVariants= include or use.
+- =get_trade_detail_response_base= and =get_trade_detail_instrument_wrapper= are deleted.
+- Round-trip tests pass for FX, rates/swap, equity, bond, credit, commodity, composite, scripted.
+- =IInstrumentForm::populate_from_instrument(const trade_instrument&)= is replaced by
+  type-specific =populate= overloads on each concrete form.
+- Logging: every parse branch logs at =debug= on entry and on success; deserialise errors
+  log at =error= with the raw JSON fragment and the error message.
 
 * Tasks
 
-| Task                                                                                                                        | State   | Start      | End | Description                                               |
-|-----------------------------------------------------------------------------------------------------------------------------+---------+------------+-----+-----------------------------------------------------------|
-| [[id:9212966F-87AC-4B72-B708-8ED5BA253431][Split rfl::Literal 502-field type to fix Windows and macOS CI]] | STARTED | 2026-05-29 |     | Restructure 502-field Literal to fit MSVC/Clang limits. |
+| Task                                                                                                                                               | State   | Start      | End | Description                                                                     |
+|----------------------------------------------------------------------------------------------------------------------------------------------------+---------+------------+-----+---------------------------------------------------------------------------------|
+| [[id:9212966F-87AC-4B72-B708-8ED5BA253431][Scaffold: document architecture and create task stubs]]                     | STARTED | 2026-05-29 |     | Update story decisions, create task stubs; PR for Gemini architecture review.   |
+| [[id:06C98C06-F950-483A-997B-89AED70D1238][Rename get_trade_detail → get_trade_instrument and rewrite parse path]]    | BACKLOG |            |     | Rename protocol types, delete workarounds, rewrite client TU with dispatch.     |
+| [[id:F9E5967D-77E7-49E3-9806-74AF22D26191][Write round-trip tests for instrument parse dispatch]]                      | BACKLOG |            |     | One test per instrument family; serialize server-side, verify client dispatch.  |
+| [[id:5C955A5E-0130-40D7-B77F-B41F4F526B79][Refactor IInstrumentForm to type-specific populate methods]]                | BACKLOG |            |     | Remove trade_instrument variant from the Qt UI boundary; typed populate per form.|
+
+* Decisions
+
+** Root cause
+
+=rfl::AddTagsToVariants= on =trade_instrument= (a =std::variant= of 9 alternatives, two of
+which are themselves variants — =fx_instrument_variant= (7 types),
+=equity_instrument_variant= (9 types) — and one of which wraps =rates_instrument_variant=
+(9 types)) collects the union of all field names across ~30 leaf structs into a single
+=rfl::Literal<f1, …, f502>=. =rfl::internal::no_duplicate_field_names= then performs an
+O(N²) constexpr string-equality check over all 502 names:
+
+- *MSVC*: =C1202= — recursive type or function dependency too complex (hard limit, no flag).
+- *Clang*: fold-expression nesting exceeds =-fbracket-depth= (set to 1024; the Literal itself
+  saturates it with 502 constructor args).
+- *Linux GCC*: unaffected; more permissive depth limits.
+
+** Discriminator already present
+
+=trade.classification.product_type= (family: =fx=, =swap=, =bond=, …) and
+=trade.classification.trade_type= (leaf: ="FxForward"=, ="VanillaSwap"=, ="EquityOption"=,
+…) are already read in Phase 1. The server uses the same =(product_type, trade_type)= pair
+in =populate_instruments_for_trades= to bucket instrument IDs. After Phase 1 the client
+knows the exact leaf type; =AddTagsToVariants= is not needed.
+
+** Protocol rename
+
+=get_trade_detail_*= renamed to =get_trade_instrument_*=. Rationale: the existing
+=get_trades_response= already carries full trade metadata. This request adds the
+*instrument* — not "more trade detail". The old name implied a richer trade view; the new
+name states the actual purpose. NATS subject: =trading.v1.trades.detail= →
+=trading.v1.trades.instrument=. No backwards-compatibility concern (internal protocol).
+
+** Workaround types deleted
+
+=get_trade_detail_response_base= and =get_trade_detail_instrument_wrapper= were Sprint 18
+parse-implementation artefacts bolted onto the protocol header. They are not protocol
+concepts and are deleted. Phase 1 uses a file-local struct inside
+=ClientManagerTradeInstrument.cpp=.
+
+** Variant types retained
+
+=trade_instrument=, =fx_instrument_variant=, =equity_instrument_variant=, and
+=rates_instrument_variant= are NOT deleted. They are used throughout =ores.qt.trading= as
+C++ polymorphic holders (=IInstrumentForm= virtual interface, all form subclasses,
+=ImportTradeDialog=, =OreImporter=) and in =ores.ore.core= mappers and
+=ores.ore.service= importer. Those uses are correct C++ =std::variant= use with no rfl
+involvement, and the types remain as domain types.
+
+** Variant use: import/export vs. display
+
+=trade_instrument= and the sub-variants are correct for *import and export*: bulk processing
+of heterogeneous instruments where the type is genuinely unknown at the processing site.
+They remain for that use.
+
+For the *display* path, the type is known from Phase 1 (=product_type= + =trade_type=)
+before the instrument is even read. Packaging the result into a =trade_instrument= variant
+just to immediately unpack it is unnecessary indirection. The display path is redesigned
+to eliminate the variant entirely:
+
+- =getTradeInstrument= takes an =IInstrumentFormPopulator&= and returns
+  =std::optional<domain::trade>=. It never constructs a =trade_instrument= value.
+- =IInstrumentFormPopulator= is a pure-abstract interface with one =populate= overload per
+  concrete leaf instrument type (~28 overloads; default no-ops).
+- Each form implements its relevant overload(s). Forms never receive a variant.
+- =TradeController= creates the right form via the factory, then passes it as the
+  populator to =getTradeInstrument=. The call site never dispatches on the instrument type.
+
+Tracked in tasks 2 and 4.
+
+** Logging requirement
+
+All parse branches must log at the correct level:
+- =debug= on entry to each phase and on successful parse, including the resolved
+  =(product_type, trade_type)= pair.
+- =warn= for unknown =(product_type, trade_type)= combinations that fall through the
+  dispatch (monostate result).
+- =error= on any deserialise failure, including the raw JSON fragment and the full rfl
+  error message.
+
+** export_portfolio latent issue
+
+=export_portfolio_response= contains =vector<trade_export_item>= where each item has
+=trade_instrument instrument=. The generic =process_authenticated_request= template reads
+it with =AddTagsToVariants=. This path is not fixed by this story (it is Linux-only in
+practice today) but is a known latent issue for a future story.
 
 * See also
 
-- [[id:367D0D5F-24BB-4AA1-B784-D79E95C15A16][Fix rfl complexity failure in ClientManagerTradeDetail (capture)]] — source capture with full error detail.
-- [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] — sprint 18 predecessor story; same structural-isolation pattern.
+- [[id:367D0D5F-24BB-4AA1-B784-D79E95C15A16][Fix rfl complexity failure in ClientManagerTradeDetail (capture)]] — exact MSVC C1202 and Clang error messages.
+- [[id:D75F4921-B431-4E78-99AB-62A47F761D1D][Investigation: MSVC C1202 and rfl complexity]] — root-cause analysis; O(N²) check, triple-isolation recommendation.
+- [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] — sprint 18 predecessor; same structural-isolation pattern.
+- [[https://github.com/getml/reflect-cpp/issues/350][reflect-cpp issue #350]] — upstream tracking.

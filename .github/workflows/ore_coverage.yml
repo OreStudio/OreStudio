@@ -18,8 +18,16 @@ name: ORE Domain Roundtrip Check
 on:  # yamllint disable-line rule:truthy
   push:
     branches: ["main"]
+    paths-ignore:
+      - 'doc/**'
+      - '.claude/**'
+      - 'assets/**'
   pull_request:
     branches: ["main"]
+    paths-ignore:
+      - 'doc/**'
+      - '.claude/**'
+      - 'assets/**'
 
   workflow_dispatch:
 

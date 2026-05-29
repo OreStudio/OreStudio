@@ -1,0 +1,234 @@
+:PROPERTIES:
+:ID: 7C65ACEC-6DAD-4046-8E5D-7E9150293399
+:END:
+#+title: Task: Health review 3 — sprint 18 close analysis
+#+description: System 2 health review 3 of sprint 18.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_18:v0:
+#+owner: marco
+#+branch: feature/sprint-18-health-review-3
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Final (close) System 2 health review of sprint 18. Assess goal
+achievement, sprint load, PR velocity, story/task balance, and focus
+signal at sprint end. Incorporate shape completeness fixes for DONE
+tasks with missing =#+pr:= fields. Record the sprint verdict.
+
+* Status
+
+| Field        | Value                                                                    |
+|--------------+--------------------------------------------------------------------------|
+| State        | DONE                                                                     |
+| Parent story | [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]] |
+| Now          | Nothing.                                                                 |
+| Waiting on   | —                                                                        |
+| Next         | —                                                                        |
+| Last touched | 2026-05-29                                                               |
+
+* Acceptance
+
+- Full review written in =* Result= with all six sub-sections.
+- =sprint.org= =* Health Review= table has a row for review 3.
+- All DONE tasks in the sprint have =#+pr:= set; any with missing PRs
+  tables are noted and fixed.
+- Sprint 18 stories without linked PR docs are noted.
+
+* Plan
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** Review on 2026-05-29 (day 8 of 7 — sprint closed 1 day late)
+
+*** Pre-analysis notes (System 2 activation)
+
+Before looking at the data, noted concerns:
+- The sprint's primary product goals (ORE imports, ORE types) were already
+  weak entering this close review; the risk is that the record looks healthy
+  due to high tooling velocity while the mission-critical goals remain unmet.
+- =ore_samples_support= is marked DONE but via a backfill — the work was
+  completed in a prior sprint, not this one. This inflates the product
+  completion count.
+- The sprint ran 1 day over target. The commit count is very high. These are
+  structural features of a tooling sprint but must be named honestly.
+
+*** Goal alignment
+
+| Goal                          | Coverage | Stories (DONE / BACKLOG) | Verdict |
+|-------------------------------+----------+--------------------------+---------|
+| ORE imports into workspaces   | WEAK     | 1 / 6                    | RED     |
+| More ORE types                | NONE     | 0 / 1                    | RED     |
+| Compass tool                  | STRONG   | 10 / 2                   | GREEN   |
+| Backlog refinement tooling    | COMPLETE | 2 / 0                    | GREEN   |
+
+*Goal 1 — ORE imports into workspaces*: =ore_samples_support= is DONE
+but this is a documentation backfill: the code was written in a prior
+sprint and the task records were retroactively closed today. Six other
+product stories — ORE sample data, instrument UI fix, ORE types for
+Example 1, NATS disconnection detection, NATS SSL fix, Qt instrument
+creation — all remain BACKLOG. No meaningful new import capability
+shipped during sprint 18. Verdict: RED.
+
+*Goal 2 — More ORE types*: =ore_types_example_1= is BACKLOG with no
+tasks. Zero progress. Verdict: RED.
+
+*Goal 3 — Compass tool*: The core tool is shipped and functional. Ten
+stories DONE, covering CLI orientation, scaffolding, PR tracking,
+product backlog listing infrastructure, cross-worktree status, goto,
+hotfix goto, and capture workflow. The two remaining BACKLOG stories
+(product-backlog listing command, PR review management) are non-core
+extensions. Verdict: GREEN.
+
+*Goal 4 — Backlog refinement tooling*: Product backlog refinement and
+per-sprint capture workflow both DONE. Verdict: GREEN (COMPLETE).
+
+*Scope not serving goals*: 22 DONE stories across Agile, LLMs,
+Documentation, and Infrastructure themes have no direct mapping to the
+four sprint goals. This is normal for an enabling sprint — the tooling
+and documentation investment builds platform for future goals — but it
+must be noted that the primary product goals were sacrificed to
+accommodate this enabling work.
+
+*** Sprint load
+
+| Metric             | Value      | Target   | Status |
+|--------------------+------------+----------+--------|
+| Commits (sprint)   | 802        | ≤ 300    | RED    |
+| Elapsed days       | 8 of 7     | ≤ 7 days | RED    |
+| Commits/day        | 100.3      | —        | —      |
+| Merged PRs         | 125        | —        | —      |
+| PRs/day            | 15.6       | —        | —      |
+
+Sprint 18 ran 1 day over its expected end date (2026-05-28 target,
+closed 2026-05-29) and logged 802 commits — nearly 2.7× the 300-commit
+target. This is consistent with the pattern seen in health reviews 1
+and 2: a tooling/doc/agile sprint generates many small, atomic commits.
+The overrun reflects scope expansion mid-sprint (new stories added as
+enabling work surfaced), not dysfunction.
+
+*Recommendation*: Revisit the 300-commit ceiling. It is not calibrated
+for enabling sprints. A two-tier target (product sprint ≤ 300; tooling
+sprint ≤ 500) would better reflect reality. Alternatively, track PR
+count rather than commit count as the primary load signal.
+
+*** PR velocity
+
+| Metric            | Value    | Notes                        |
+|-------------------+----------+------------------------------|
+| PRs merged        | 125      | Over 8 days                  |
+| PRs/day           | 15.6     | Tooling sprint pattern       |
+| Open PRs at close | 0        | Sprint closed completely     |
+| Longest open PR   | < 1 day  | No WIP accumulation observed |
+| WIP accumulation  | None     | GREEN                        |
+
+Zero open PRs at sprint close — the sprint is clean. 125 merged PRs
+over 8 days at an average of 15.6/day reflects a high cadence of small
+atomic changes, each reviewed by Gemini code-assist. No PR sat open
+longer than a day. PR velocity is the healthiest signal in this review.
+
+Verdict: GREEN.
+
+*** Story and task balance
+
+| Metric                        | Value | Notes                                  |
+|-------------------------------+-------+----------------------------------------|
+| Stories DONE                  | 37    | Of 47 total                            |
+| Stories BACKLOG               | 10    | 6 in Product, 2 in Tooling, 2 in Infra |
+| DONE ratio                    | 79%   | Strong for a sprint close              |
+| Stories without tasks         | 0     | All stories have task files            |
+| Backfilled stories            | 1     | ore_samples_support (prior sprint work)|
+| Tasks with missing =#+pr:=    | 12    | Fixed in this review                   |
+
+37 of 47 stories are DONE at close — a 79% completion rate. All 10
+BACKLOG stories are intentionally deferred: six product stories (ORE
+feature work for future sprints) and four tooling/infrastructure stories
+that were backlog items throughout.
+
+The backfill in =ore_samples_support= is worth flagging: 7 task docs
+showed state BACKLOG but the code had shipped in a prior sprint. This
+was corrected today but is evidence that task records are not always
+updated when code merges. Shape completeness is a recurring discipline
+issue — 12 DONE tasks had =#+pr:= empty. All 12 were corrected in this
+health review (PRs #861, #873, #881, #883, #884, #885, #890, #891, #892,
+#893, #895, #906).
+
+Verdict: AMBER. Strong DONE ratio and clean decomposition, but the
+backfill and shape-completeness gaps lower the confidence in the record.
+
+*** Focus signal
+
+| Metric                       | Value | Verdict |
+|------------------------------+-------+---------|
+| Simultaneously STARTED (end) | 0     | GREEN   |
+| Themes active simultaneously | all 6 | AMBER   |
+| Context switching            | High  | AMBER   |
+
+At sprint close there are zero STARTED stories — the sprint is fully
+closed. However, during execution up to six themes were active
+simultaneously (Product, Tooling, Agile, LLMs, Documentation,
+Infrastructure). This is acceptable for an enabling sprint deliberately
+covering broad technical debt, but the breadth came at the cost of
+depth on the product goals.
+
+Verdict: AMBER — zero in-flight at close is the correct end state,
+but concurrent breadth during execution is a focus cost to monitor.
+
+*** Velocity
+
+| Metric                    | Value | Notes                            |
+|---------------------------+-------+----------------------------------|
+| Stories DONE this sprint  | 37    | 10 BACKLOG deferred              |
+| Story points equivalent   | —     | Not tracked                      |
+| Compared to sprint 17     | —     | No baseline available            |
+| DONE ratio                | 79%   | High for a tooling sprint        |
+
+The sprint delivered strong output across tooling, documentation, and
+agile infrastructure. Product features were effectively deferred. No
+sprint-17 baseline exists for comparison.
+
+*** Overall verdict
+
+| Dimension          | Verdict |
+|--------------------+---------|
+| Goal alignment     | RED     |
+| Sprint load        | RED     |
+| PR velocity        | GREEN   |
+| Story/task balance | AMBER   |
+| Focus signal       | AMBER   |
+| *Overall*          | *RED*   |
+
+Sprint 18 is RED overall — not because the work was poor, but because
+the two mission-critical goals (ORE imports, ORE types) were not
+advanced. The sprint instead delivered an exceptional tooling and
+infrastructure platform: compass, runbooks, skills, the emacs
+dashboard, doc format standardisation, sprint charts, and the health
+review process itself. This is a legitimate strategic choice, but it
+should be named as such in the retrospective rather than obscured by
+high DONE counts. The sprint ran 1 day over and 2.7× over on commits —
+both are structural artefacts of tooling work rather than signals of
+dysfunction. The most important single action going into sprint 19:
+commit unconditionally to ORE imports and ORE types as the primary work
+and protect them from further infrastructure scope creep.

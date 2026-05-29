@@ -8,7 +8,7 @@
 #+filetags: :emacs_and_org_roam_docs:sprint_18:v0:
 #+owner: marco
 #+branch: feature/emacs-and-org-roam-docs
-#+pr:
+#+pr: 904
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28

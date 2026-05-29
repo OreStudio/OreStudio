@@ -34,12 +34,12 @@ VSM (the model) → Cybernetic Levels (how we apply it in ORE Studio).
 
 | Field         | Value                                             |
 |---------------+---------------------------------------------------|
-| State         | STARTED                                           |
+| State         | DONE                                              |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
-| Now           | In progress.                                      |
-| Waiting on    | Nothing.                                          |
-| Next          | Implement task.                                   |
-| Last touched  | 2026-05-28                                        |
+| Now           | Nothing.                                          |
+| Waiting on    | —                                                 |
+| Next          | —                                                 |
+| Last touched  | 2026-05-29                                        |
 
 * Acceptance
 
@@ -60,8 +60,8 @@ VSM (the model) → Cybernetic Levels (how we apply it in ORE Studio).
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6210901B-2B78-430D-AB5A-E10C4F81633D][Improve cybernetics documentation]] | STARTED | 2026-05-28 | | Create cybernetics.org, viable_system_model.org; expand cybernetic_levels.org |
-| [[id:F82855FC-85AD-4A92-9B33-9A33AED9EC8A][Spike: capture promotion runbook and compass support]] | BACKLOG | 2026-05-28 | | Runbook + compass evaluate for promoting a capture to a story (UUID inheritance, content population, cleanup) |
+| [[id:6210901B-2B78-430D-AB5A-E10C4F81633D][Improve cybernetics documentation]] | DONE | 2026-05-28 | 2026-05-29 | Create cybernetics.org, viable_system_model.org; expand cybernetic_levels.org |
+| [[id:F82855FC-85AD-4A92-9B33-9A33AED9EC8A][Spike: capture promotion runbook and compass support]] | DONE | 2026-05-28 | 2026-05-29 | Runbook + compass evaluate for promoting a capture to a story (UUID inheritance, content population, cleanup) |
 
 * Decisions
 

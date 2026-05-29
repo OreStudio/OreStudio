@@ -8,7 +8,7 @@
 #+filetags: :document_deduplication_recipe:sprint_18:v0:
 #+owner: marco
 #+branch: feature/document-deduplication-recipe
-#+pr:
+#+pr: 885
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28

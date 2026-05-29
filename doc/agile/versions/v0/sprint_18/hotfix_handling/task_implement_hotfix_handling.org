@@ -8,12 +8,11 @@
 #+filetags: :hotfix_handling:sprint_18:v0:
 #+owner: marco
 #+branch: feature/hotfix-handling
-#+pr:
+#+pr: 899
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
 #+updated: 2026-05-28
-#+pr: 899
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:185845E7-4CF9-416E-A923-894868A757A0][Hotfix handling]] story. It captures the goal, current status, acceptance, and any notes or results.

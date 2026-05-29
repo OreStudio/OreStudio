@@ -34,12 +34,12 @@ The proposal is six themes:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | DONE                                   |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
-| Now           | Theme proposal agreed; applying to sprint backlogs. |
-| Waiting on    | Nothing.                               |
-| Next          | Apply theme subheadings to all sprint.org files.   |
-| Last touched  | 2026-05-28                             |
+| Now           | Nothing.                               |
+| Waiting on    | —                                      |
+| Next          | —                                      |
+| Last touched  | 2026-05-29                             |
 
 * Acceptance
 
@@ -52,9 +52,9 @@ The proposal is six themes:
 
 * Tasks
 
-In execution order:
-
-- [[id:DF939E90-497C-4332-A30E-B528049D6F71][Implement sprint theme grouping]]
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DF939E90-497C-4332-A30E-B528049D6F71][Implement sprint theme grouping]] | DONE | 2026-05-28 | 2026-05-29 | Apply agreed theme subheadings to sprint_18 and all prior sprint.org files. |
 
 * Decisions
 

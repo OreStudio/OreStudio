@@ -36,12 +36,12 @@ meta-layer:
 
 | Field        | Value                                                                         |
 |--------------+-------------------------------------------------------------------------------|
-| State        | STARTED                                                                       |
+| State        | DONE                                                                          |
 | Parent story | [[id:8AA261FC-B334-45A8-9954-85DD4BECEA45][Improve cybernetics documentation]] |
-| Now          | In progress.                                                                  |
-| Waiting on   | Nothing.                                                                      |
-| Next         | Implement documentation changes.                                              |
-| Last touched | 2026-05-28                                                                    |
+| Now          | Nothing.                                                                      |
+| Waiting on   | —                                                                             |
+| Next         | —                                                                             |
+| Last touched | 2026-05-29                                                                    |
 
 * Acceptance
 

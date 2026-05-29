@@ -8,7 +8,7 @@
 #+filetags: :system_model_readability:sprint_18:v0:
 #+owner: marco
 #+branch: feature/system-model-links
-#+pr:
+#+pr: 873
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-26
@@ -100,7 +100,7 @@ Complete the cross-linking and architectural context pass on
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/873][#873]] | [agile,doc] System model links, sprint status normalisation, and sprint release notes |
 
 * Review
 

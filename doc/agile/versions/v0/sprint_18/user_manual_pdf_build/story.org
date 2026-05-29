@@ -23,12 +23,12 @@ build themselves.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | DONE                                   |
 | Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                              |
-| Now           | New task: split system model layers.   |
-| Waiting on    | Nothing.                               |
-| Next          | Complete task_split_system_model_layers. |
-| Last touched  | 2026-05-28                             |
+| Now           | Nothing.                               |
+| Waiting on    | —                                      |
+| Next          | —                                      |
+| Last touched  | 2026-05-29                             |
 
 * Acceptance
 

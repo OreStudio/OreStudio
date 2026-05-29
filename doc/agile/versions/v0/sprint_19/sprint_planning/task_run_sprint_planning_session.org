@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: CCA36502-635B-4F0F-BD1B-6D394571C483
+:END:
+#+title: Task: Run sprint planning session
+#+description: Select stories from the product backlog, promote into sprint 19, size into tasks, and confirm the sprint mission.
+#+type: task
+#+level: s1
+#+filetags: :sprint_planning:sprint_19:v0:
+#+owner: marco
+#+branch: feature/run-sprint-planning-session
+#+pr: 926
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2A6F5FE2-8C50-494F-948F-6BA519075FA9][Sprint planning]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Sprint 19 stories selected from the product backlog, promoted into the sprint, each broken into tasks, and the sprint mission confirmed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:2A6F5FE2-8C50-494F-948F-6BA519075FA9][Sprint planning]] |
+| Now          | Done. PR #927 reviewed and ready to merge. |
+| Waiting on   | Nothing.                               |
+| Next         | Merge PR #927.                         |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- Stories selected from backlog and wired into sprint 19 Stories table.
+- Each promoted story has at least one task.
+- Sprint mission confirmed in sprint.org.
+- PR open; site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/927][#927]] | [agile] Run sprint 19 planning session |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Empty Tasks table in story | entity_evaluation_skill/story.org | Not changed | BACKLOG stories keep empty Tasks; will be filled at implementation |
+| 2 | Empty Tasks table in story | entity_manual_shell_docs/story.org | Not changed | Same as above |
+| 3 | Empty Tasks table in story | fix_rfl_complexity/story.org | Not changed | Same as above |
+| 4 | Empty Tasks table in story | refdata_entity_health_review/story.org | Not applicable | File deleted; replaced by 15 per-entity stories |
+| 5 | Empty References section | shell_no_wizard_support_for_provisioners.org | Fixed in e3e289c0f | Removed empty sections; filled in What/Why |

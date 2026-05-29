@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 058DF966-13E0-4D97-9A8B-F22301411015
+:END:
+#+title: Story: Entity evaluation skill and runbook
+#+description: Create a reusable skill and runbook for evaluating the health of any entity: coverage matrix lookup, functional verification steps, and gap reporting.
+#+type: story
+#+level: s2
+#+filetags: :llm:skill:runbook:entity:evaluation:sprint_19:v0:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A Claude Code skill and companion runbook exist for evaluating the health of any entity: the
+skill looks up coverage from [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]], walks through standard functional
+verification steps (load, edit, save, events, history), and produces a concise gap report.
+This replaces ad-hoc manual investigation with a repeatable, automated procedure.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-05-29                               |
+
+* Acceptance
+
+- Skill deployed and callable from Claude Code.
+- Skill reads [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] to determine current coverage for a named entity.
+- Skill produces a structured gap report (what is missing per layer).
+- Companion runbook documents the manual verification steps the skill automates.
+- Skill catalogued in the skills index.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* See also
+
+- [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] — data source for coverage lookups.
+- [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] — ores.refdata Commissioning epic is the first consumer of this skill.

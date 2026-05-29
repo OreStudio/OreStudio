@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 40B50055-EB09-4B5B-B26C-24F0F9CD1C5B
+:END:
+#+title: Story: Entity manual: add shell documentation per chapter
+#+description: For each entity chapter in the user manual, document the entity's Qt UI and its shell (REPL) usage side by side.
+#+type: story
+#+level: s2
+#+filetags: :documentation:manual:shell:entities:sprint_19:v0:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every entity chapter in the user manual covers both the Qt desktop UI and the shell (REPL)
+commands side by side, giving users a complete, single-source reference for each entity
+regardless of which access layer they prefer.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-05-29                               |
+
+* Acceptance
+
+- Each entity chapter (that has shell support) has a "Shell" subsection with REPL command examples.
+- Shell command examples are verified against the running system.
+- Chapters are written hand-in-hand with the ores.refdata Commissioning stories' verification pass.
+- Site builds cleanly with no broken links.
+
+
+* See also
+
+- [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] — ores.refdata Commissioning epic stories are worked in parallel with documentation.
+- [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] — identifies which entities have shell support.

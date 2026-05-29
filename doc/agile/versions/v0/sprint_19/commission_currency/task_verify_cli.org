@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 1816FAA3-B987-4307-B265-EBF6EDEE93AA
+:END:
+#+title: Task: Verify and fix currency CLI commands
+#+description: Confirm list/add/remove CLI subcommands exist; implement missing ones; run all commands against a live service and verify correct behaviour post-NATS.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_19:v0:
+#+owner: marco
+#+branch: feature/commission-currency
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ensure all three CLI subcommands for =currency= (list, add, remove) are implemented and
+working against the live service post-NATS migration. The appraisal confirmed only the
+=add= options struct; list and remove may need implementation. Run each command and confirm
+correct output.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Inspect CLI source; implement missing subcommands. |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- =list= subcommand exists, runs, and returns records from the live service.
+- =add= subcommand exists, runs, and creates a record.
+- =remove= subcommand exists, runs, and removes a record.
+- All subcommands use NATS-based service (no direct DB access).
+- Any regressions found are fixed or filed as captures.
+- Findings recorded in =* Result= section.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

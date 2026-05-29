@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: F66CC098-A23B-4ECC-96A4-A99AF94BA838
+:END:
+#+title: Task: Verify currency SQL against evaluation checklist
+#+description: Inspect refdata_currencies_create.sql against the DB-layer criteria in the entity evaluation checklist: columns, indexes, GIST constraint, temporal pattern, soft-FKs.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_19:v0:
+#+owner: marco
+#+branch: feature/commission-currency
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Inspect =refdata_currencies_create.sql= against every criterion in the DB layer of the
+[[id:897A7156-504D-4581-AD4C-026D643C0838][ores.refdata entity evaluation checklist]]. Record which criteria pass, which fail, and what
+must be added or corrected. Fix any gaps inline or file captures for deferred work.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Inspect DDL file against checklist.    |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- All DB-layer checklist criteria evaluated against =refdata_currencies_create.sql=.
+- Natural key index confirmed or added.
+- GIST exclusion constraint confirmed or added.
+- Standard audit columns confirmed (version, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to).
+- Any gaps fixed or filed as captures.
+- Findings recorded in =* Result= section.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

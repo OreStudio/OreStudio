@@ -49,4 +49,8 @@ Sprint 19 stories selected from the product backlog, promoted into the sprint, e
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Empty Tasks table in story | entity_evaluation_skill/story.org | Not changed | BACKLOG stories keep empty Tasks; will be filled at implementation |
+| 2 | Empty Tasks table in story | entity_manual_shell_docs/story.org | Not changed | Same as above |
+| 3 | Empty Tasks table in story | fix_rfl_complexity/story.org | Not changed | Same as above |
+| 4 | Empty Tasks table in story | refdata_entity_health_review/story.org | Not applicable | File deleted; replaced by 15 per-entity stories |
+| 5 | Empty References section | shell_no_wizard_support_for_provisioners.org | Fixed in e3e289c0f | Removed empty sections; filled in What/Why |

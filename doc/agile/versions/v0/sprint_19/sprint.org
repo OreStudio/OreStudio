@@ -60,7 +60,6 @@ and file backlog captures for Wt and HTTP gaps. One story per entity.
 | [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:3567664E-70D5-4492-946E-B9AC63339651][Commission: rounding_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 
 ** Tooling

@@ -2,7 +2,7 @@
 :ID: 7F9C0F29-4268-4B62-A1BB-2153ECF0A858
 :END:
 #+title: Story: Commission: currency
-#+description: Commission currency across all layers: verify Qt UI post-NATS (list, detail, history, delete, eventing), verify shell commands (already implemented), fix regressions, add manual chapter.
+#+description: Commission currency and its ores.refdata auxiliaries (rounding_type, monetary_nature, currency_market_tier) across all layers: SQL, Qt, shell, CLI, documentation.
 #+type: story
 #+level: s2
 #+filetags: :product:refdata:commissioning:currency:sprint_19:v0:
@@ -14,9 +14,13 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Commission =currency= across all access layers: verify the Qt UI end-to-end post-NATS
-migration, verify existing shell and CLI commands, fix any regressions found, and add the
-entity chapter to the user manual. File backlog captures for Wt and HTTP support.
+Commission =currency= and its three ores.refdata auxiliary types — =rounding_type=,
+=monetary_nature=, and =currency_market_tier= — across all access layers: verify SQL DDL,
+verify the Qt UI end-to-end post-NATS migration, verify existing shell and CLI commands,
+fix any regressions found, and add documentation (manual chapter, recipes, NATS reference).
+File backlog captures for Wt and HTTP support. Auxiliary types are commissioned using the
+same per-layer approach as the primary entity; they may have fewer moving parts but the
+same checklist applies.
 
 * Status
 
@@ -31,19 +35,36 @@ entity chapter to the user manual. File backlog captures for Wt and HTTP support
 
 * Acceptance
 
-- Qt list window (MDI): loads and displays records correctly.
-- Qt detail window: edit and save round-trips without error.
-- Qt history window: shows change history for the entity.
-- Qt delete command: removes the record; history is preserved.
-- Qt eventing: a change made in one connected session appears in a second session without manual refresh.
-- Shell list command: verified working post-NATS.
-- Shell add command: verified working post-NATS.
-- Shell remove command: verified working post-NATS.
-- CLI list command: verified working post-NATS.
-- CLI add command: verified working post-NATS.
-- CLI remove command: verified working post-NATS.
-- Manual: entity chapter documents all Qt windows, shell, and CLI commands.
-- Backlog captures filed for Wt and HTTP support.
+The following acceptance criteria apply to =currency= and, where the layer exists, to each
+auxiliary type (=rounding_type=, =monetary_nature=, =currency_market_tier=).
+
+*SQL*
+- currency DDL verified against all DB-layer checklist criteria.
+- rounding_type, monetary_nature, currency_market_tier DDL verified against same checklist.
+- Any missing columns, indexes, or constraints fixed or filed as captures.
+
+*Qt*
+- Currency MDI list window loads and displays records correctly.
+- Currency detail window: edit and save round-trips without error (dropdowns for rounding_type, monetary_nature, currency_market_tier populated correctly).
+- Currency history window: shows change history for the entity.
+- Currency delete command: removes the record; history is preserved.
+- Currency eventing: a change made in one connected session appears in a second session without manual refresh.
+- rounding_type, monetary_nature, currency_market_tier Qt windows (if they exist): loads, detail, history, delete verified.
+
+*Shell*
+- currency: list, add, remove, history commands verified working post-NATS.
+- rounding_type, monetary_nature, currency_market_tier: shell commands verified or implemented.
+
+*CLI*
+- currency: list, add, remove commands verified working post-NATS.
+- rounding_type, monetary_nature, currency_market_tier: CLI commands verified or implemented.
+
+*Documentation*
+- Manual chapter for currency documents Qt windows, shell, and CLI commands.
+- CLI recipes for currency and auxiliaries created or updated.
+- Shell recipes for currency and auxiliaries created.
+- NATS message reference documents subjects and types for currency and auxiliaries.
+- Backlog captures filed for Wt and HTTP support (currency and auxiliaries).
 - All regressions found are fixed inline or filed as captures.
 - Site builds cleanly.
 

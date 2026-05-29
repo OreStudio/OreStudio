@@ -25,8 +25,8 @@ next/=|=deferred/=?
 1. /List both buckets/:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh list --type capture --sort path | grep near
-   ./projects/ores.compass/compass.sh list --type capture --sort path | grep far
+   ./projects/ores.compass/compass.sh next
+   ./projects/ores.compass/compass.sh deferred
    #+end_src
 
 2. /For each capture, apply the VBCD checklist/:
@@ -48,12 +48,12 @@ next/=|=deferred/=?
 
    #+begin_src sh :results verbatim
    projects/ores.compass/compass.sh add capture \
-     --parent-dir doc/agile/product_backlog/near \
+     --parent-dir doc/agile/product_backlog/next \
      --slug <slug> \
      --title "<title>" --description "<one-liner>"
    #+end_src
 
-   Use =--parent-dir doc/agile/product_backlog/far= for longer-horizon items.
+   Use =--parent-dir doc/agile/product_backlog/deferred= for longer-horizon items.
 
 4. /Move items between buckets/:
 
@@ -71,8 +71,8 @@ next/=|=deferred/=?
 
 ** Healthy backlog heuristics
 
-- Near bucket ≤ 20 items. More than that signals drift — push low-priority items to far.
-- Every near capture has a one-line =#+description= a newcomer could act on.
+- Next bucket ≤ 20 items. More than that signals drift — push low-priority items to deferred.
+- Every next capture has a one-line =#+description= a newcomer could act on.
 - No capture has been untouched for more than two sprints without a decision.
 
 * Script

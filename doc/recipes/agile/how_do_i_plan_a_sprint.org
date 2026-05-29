@@ -35,10 +35,10 @@ against it, and promote selected captures into stories?
    table. STARTED and BACKLOG stories are already in scope; do not
    re-select them.
 
-3. /List near-bucket candidates/:
+3. /List next-bucket candidates/:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh list --type capture --sort path | grep near
+   ./projects/ores.compass/compass.sh next
    #+end_src
 
 4. /Score each candidate/ on three axes — record results as a table

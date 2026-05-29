@@ -82,7 +82,7 @@ When you need to act as the product owner of ORE Studio:
 - [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — story / sprint / version /
   capture scaffolds.
 - [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — locate the current
-  sprint, near/deferred buckets, in-flight stories.
+  sprint, next/deferred buckets, in-flight stories.
 - [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — inspect a capture before
   promotion.
 

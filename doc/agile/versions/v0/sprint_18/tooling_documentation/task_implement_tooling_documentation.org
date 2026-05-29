@@ -12,7 +12,7 @@
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-28
-#+updated: 2026-05-28
+#+updated: 2026-05-29
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -37,12 +37,12 @@ The Tooling section in =knowledge.org= must also link to [[id:6F7A122F-BC0F-4F3E
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                |
 | Parent story | [[id:304F8600-3A5B-434F-87C4-10DDA973E47F][Tooling documentation]] |
-| Now          | Implementing Tooling section and developer scripts doc. |
-| Waiting on   | Nothing.                               |
-| Next         | Open PR.                               |
-| Last touched | 2026-05-28                               |
+| Now          | Complete.|
+| Waiting on   | —|
+| Next         | —|
+| Last touched |  2026-05-29 |
 
 * Acceptance
 

@@ -52,9 +52,11 @@ added for parity testing. Run a full parity check to confirm zero logical diff.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                              | File         | Decision | Notes                                                   |
+|---+--------------------------------------------------------------+--------------+----------+---------------------------------------------------------|
+| 1 | Raise ValueError instead of log.error to halt execution      | generate.py  | Decline  | return 1 already halts; ValueError would show traceback |
+
+Round 1 addressed — no code changes.
 
 * Result
 

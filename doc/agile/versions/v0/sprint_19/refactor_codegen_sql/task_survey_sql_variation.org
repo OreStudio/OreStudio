@@ -57,7 +57,7 @@ subsequent tasks in the story.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/933][#933]] | [doc] Survey SQL variation; define unified table model and codegen.py CLI interface |
 
 * Review
 

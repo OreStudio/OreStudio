@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :agile:index:knowledge:
 #+created: 2024-06-15
-#+updated: 2026-05-24
+#+updated: 2026-05-29
 
 This is the entry point to the agile information architecture. Work flows as
 ideas in the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]], promoted into a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] when a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] pulls them in,
@@ -33,8 +33,8 @@ state transitions generically — it is not agile-specific. Agile is the loop
 | Field           | Value     |
 |-----------------+-----------|
 | Current Version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][v0]]        |
-| Current Sprint  | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
-| Next sprint     | Sprint 19 |
+| Current Sprint  | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Next sprint     | Sprint 20 |
 
 * See also
 

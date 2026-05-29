@@ -54,7 +54,7 @@ In execution order:
 
 6. /Commit the status change./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]]: =[agile] Mark <story> STARTED= with a =Co-Authored-By:= trailer.
 
-7. /Push and open a PR./ Push with =git push -u origin <branch>=, then [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][create a PR]] with a structured body (Summary, Changes, Story/Task UUIDs, Story/Task page links). Record the PR number in the task's =* PRs= table.
+7. /Push and open a PR./ Push with =git push -u origin <branch>=, then follow [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — title format =[COMPONENT] Description=, body sections Summary / Changes / Traceability (Markdown table with Artefact, Link, full UUID). Record the PR number in the task's =* PRs= table.
 
 * Postconditions
 

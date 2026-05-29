@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 5F388610-0F72-4A03-A8D9-67ADD371924A
+:END:
+#+title: Task: Open new sprint
+#+description: Follow the open-a-new-sprint runbook: scaffold sprint 19, fill mission, wire version manifest, update agile index, PR.
+#+type: task
+#+level: s1
+#+filetags: :agile:sprint:process:open_sprint_19:v0:sprint_19:
+#+owner: marco
+#+branch: feature/open-sprint-19
+#+pr: 924
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Sprint 19 wired into the version manifest and agile index; sprint.org mission and Previous field filled; PR open.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]] |
+| Now          | Done.                                  |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- version.org has sprint 19 entry.
+- agile.org Current Sprint updated.
+- sprint.org has mission and Previous filled.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/924][#924]] | Open sprint 19 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Remove empty Hotfixes section | sprint_19/sprint.org | Accepted | Fixed in fe4e5c3a0 |
+
+* Result

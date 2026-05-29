@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: A48DEC19-E769-4C71-AC0B-434B551DC801
+:END:
+#+title: Story: Open sprint 19
+#+description: Scaffold sprint 19, wire into version manifest, and open PR.
+#+type: story
+#+level: s2
+#+filetags: :agile:sprint:process:v0:sprint_19:
+#+created: 2026-05-29
+#+updated: 2026-05-29
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Sprint 19 is open: sprint.org scaffolded with mission and Previous wired to sprint 18, version.org updated with sprint 19 entry, and agile.org current-sprint pointer updated.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Scaffolding sprint 19 and wiring into version manifest. |
+| Waiting on    | Nothing.                               |
+| Next          | Open PR.                               |
+| Last touched  | 2026-05-29                               |
+
+* Acceptance
+
+- Sprint 19 folder exists with a filled mission.
+- Previous field in sprint.org points to [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]].
+- version.org lists sprint 19.
+- agile.org Current Sprint points to sprint 19.
+- =compass goto= extended with sprint/story/task modes; [[id:47032D2E-4922-4A43-B594-AD76F0213E10][Open a new sprint]] runbook updated.
+- PR open; site builds cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5F388610-0F72-4A03-A8D9-67ADD371924A][Open new sprint]] | DONE | 2026-05-29 | 2026-05-29 | Follow the [[id:47032D2E-4922-4A43-B594-AD76F0213E10][Open a new sprint]] runbook. |
+| [[id:D397393C-2836-430E-88F7-8C220C6CCBC6][Add compass goto sprint support]] | BACKLOG | | | Extend goto with sprint/story/task modes; update runbook. |
+
+* Decisions
+
+* Out of scope
+
+- Version bump (separate PR per the recipe).
+- vcpkg submodule update (separate commit).

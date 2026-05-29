@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:architecture:knowledge:
 #+created: 2026-05-18
-#+updated: 2026-05-18
+#+updated: 2026-05-30
 
 * Summary
 
@@ -29,17 +29,23 @@ projects/ores.codegen/
 │   ├── data/                # Static data (licences, modelines, ...)
 │   │   ├── licence-GPL-v3.txt
 │   │   └── modeline.json
+│   ├── profiles.json        # Profile → model-type → template mapping
 │   └── templates/           # Mustache templates
 │       ├── sql_*.mustache
 │       └── v2_doc_*.mustache
 ├── models/                  # JSON model files driving generation
-│   └── <subject>/
+│   └── <component>/         # e.g. refdata/, trade/, dq/, iam/
 ├── output/                  # Default destination for generated files
 ├── scripts/                 # Shell scripts for common operations
 ├── src/                     # Python source
-│   ├── generator.py
-│   ├── doc_generate.py
-│   ├── fpml_parser.py
+│   ├── codegen/             # CLI package (codegen.py entry point)
+│   │   ├── __init__.py
+│   │   ├── generate.py      # generate / regenerate subcommands
+│   │   ├── manifest.py      # named component registry
+│   │   └── diff.py          # diff subcommand
+│   ├── generator.py         # Core generator: JSON models + templates → output
+│   ├── doc_generate.py      # v2 information-architecture doc generator
+│   ├── fpml_parser.py       # FPML Genericode XML → JSON models
 │   ├── images_generate_sql.py
 │   ├── lei_extract_subset.py
 │   └── iso_generate_metadata_sql.py
@@ -50,20 +56,25 @@ projects/ores.codegen/
 │   ├── cpp_generation_analysis.md
 │   └── doc_generator.md
 ├── requirements.txt
-├── run_generator.sh
-└── generate_doc.sh
+├── codegen.sh               # Wrapper: activates venv and calls codegen.py
+├── run_generator.sh         # Legacy wrapper (kept for non-CLI uses)
+└── generate_doc.sh          # Wrapper for doc_generate.py
 #+end_example
 
 ** Internal modules
 
 | File                                  | Purpose                                                                  |
 |---------------------------------------+--------------------------------------------------------------------------|
-| =src/generator.py=                    | Main generator: JSON models + Mustache templates → SQL / C++ / etc.      |
-| =src/doc_generate.py=              | v2 information-architecture document generator (task/story/sprint/...)   |
+| =src/generator.py=                    | Core generator: JSON models + Mustache templates → SQL / C++ / etc.      |
+| =src/codegen/generate.py=             | =generate= and =regenerate= subcommand implementations                   |
+| =src/codegen/manifest.py=             | Named component registry (maps component name → models dir + glob)       |
+| =src/codegen/diff.py=                 | =diff= subcommand implementation                                         |
+| =src/doc_generate.py=                 | v2 information-architecture document generator (task/story/sprint/...)   |
 | =src/fpml_parser.py=                  | FPML Genericode XML → JSON models                                        |
 | =src/iso_generate_metadata_sql.py=    | ISO standards → SQL                                                      |
 | =src/images_generate_sql.py=          | Image artefacts (flags, crypto icons) → SQL                              |
 | =src/lei_extract_subset.py=           | LEI dataset subset extractor                                             |
+| =library/profiles.json=               | Declares which templates each profile runs per model type                |
 | =library/data/=                       | Static data files (licences, modelines)                                  |
 | =library/templates/=                  | Mustache templates                                                       |
 | =models/=                             | JSON model files                                                         |
@@ -73,15 +84,14 @@ projects/ores.codegen/
 
 In =src/generator.py=:
 
+- =is_table_model(filename)= — returns =True= for =*_table.json= filenames.
+- =get_model_type(filename)= — maps filename suffix to model type string (=table=, =schema=, =domain_entity=, =junction=, ...).
+- =load_profiles(base_dir)= — load =library/profiles.json=.
+- =resolve_profile_templates(profile, profiles, model_type)= — return the template list for a given profile and model type.
+- =resolve_output_path(pattern, model_data, model_type)= — expand an output path pattern using model fields.
 - =load_data(data_dir)= — load JSON and text files from a data directory.
-- =format_comment_block(text, lang)= — format text as a language-specific
-  comment block.
-- =generate_license_with_header(license_text, modeline_info, lang)= —
-  build a licence header with modeline and copyright.
-- =render_template(template_path, data)= — render a Mustache template
-  with the given data.
-- =get_template_mappings()= — the model-filename → template mapping.
-- =generate_from_model()= — orchestrate generation for one model.
+- =render_template(template_path, data)= — render a Mustache template with the given data.
+- =generate_from_model()= — orchestrate generation for one model file.
 
 ** Template system
 
@@ -95,9 +105,79 @@ In =src/generator.py=:
   generated headers.
 - =library/data/modeline.json= — per-language editor modeline strings.
 
+** Model types and file naming
+
+The generator detects a model's type from its filename suffix.  Each
+type has a root JSON key of the same name and is associated with one or
+more templates through =library/profiles.json=.
+
+| Filename suffix       | Model type      | Root JSON key   | Primary template                             |
+|-----------------------+-----------------+-----------------+----------------------------------------------|
+| =*_table.json=        | =table=         | =table=         | =sql_schema_create.mustache= (profile: sql)  |
+| =*_entity.json=       | =schema=        | =entity=        | =sql_schema_table_create.mustache= (legacy)  |
+| =*_domain_entity.json=| =domain_entity= | =domain_entity= | C++ templates + =sql_schema_domain_entity_create.mustache= |
+| =*_junction.json=     | =junction=      | (varies)        | =sql_schema_junction_create.mustache=        |
+
+The =_table.json= format is the current standard for SQL-only entity
+tables (refdata and similar).  It replaces the legacy =_entity.json= →
+=sql_schema_table_create.mustache= path.
+
 ** Model-template mapping
 
-*** Standard mappings
+The active mapping is declared in =library/profiles.json=, not hard-coded
+in Python.  Each profile entry lists which templates apply to which model
+types and the output path pattern.
+
+*** Table schema mappings (=*_table.json= files)
+
+These files drive unified SQL generation via =sql_schema_create.mustache=.
+Run with =codegen.sh regenerate --component <name> --profile sql=.
+
+| Template                          | Output file pattern                                                    |
+|-----------------------------------+------------------------------------------------------------------------|
+| =sql_schema_create.mustache=      | =projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql= |
+
+The =*_table.json= model root key is =table= with the following fields:
+
+| Field                          | Type            | Description                                               |
+|--------------------------------+-----------------+-----------------------------------------------------------|
+| =schema=, =product=, =component= | string        | Namespace identifiers                                     |
+| =entity_singular=, =entity_plural= | string      | Used in table name and output filename                    |
+| =description=                  | string          | Appears in the SQL header comment                         |
+| =has_tenant_id=                | boolean         | Whether the table has a =tenant_id= column                |
+| =primary_key.column=           | string          | Primary key column name                                   |
+| =primary_key.type=             | string          | SQL type (e.g. =text=, =uuid=)                            |
+| =primary_key.is_text=          | boolean         | Controls empty-string check constraint and default quoting |
+| =columns[]=                    | list            | Non-PK columns (name, type, nullable, default)            |
+| =coding_scheme=                | =none= / =required= / =nullable= | Whether to add a =coding_scheme_code= FK column |
+| =image_id=                     | boolean         | Whether to add an =image_id= UUID FK column               |
+| =validation_fn.tenant_scope=   | =system= / =both= / =tenant= | Which tenants the validation function queries  |
+| =validation_fn.default=        | string / absent | Return value when input is null or empty                  |
+| =validation_fn.order_by=       | string / absent | Column for =ORDER BY= in error messages (defaults to PK)  |
+| =insert_trigger.validations[]= | list            | Per-column validation function calls in the insert trigger |
+| =check_constraints[]=          | list            | Additional SQL check constraints (expression strings)     |
+| =indexes[]=                    | list            | Extra indexes beyond the standard ones                    |
+
+The generator preprocesses boolean flags (=has_coding_scheme=,
+=has_any_coding_scheme=, =scope_system=, =scope_both=, =scope_tenant=,
+etc.) and pre-renders =sql_check_constraints= as a single string before
+passing data to Mustache, to avoid pystache whitespace issues with
+adjacent section tags.
+
+*** Domain entity schema mappings (=*_domain_entity.json= files)
+
+These files drive both C++ generation and SQL for domain entities (party,
+book, counterparty, etc.).  The SQL portion is handled separately from
+the C++ portion.
+
+| Template                                       | Output file                                |
+|------------------------------------------------+--------------------------------------------|
+| =sql_schema_domain_entity_create.mustache=     | ={component}_{entity}_create.sql=          |
+| =sql_schema_notify_trigger.mustache=           | ={component}_{entity}_notify_trigger.sql=  |
+| =sql_schema_artefact_create.mustache=          | =dq_{entity}_artefact_create.sql=          |
+| C++ templates (via =--profile all-cpp=)        | =.hpp= / =.cpp= files                     |
+
+*** Standard data mappings
 
 | Model file               | Template(s)                                                              |
 |--------------------------+--------------------------------------------------------------------------|
@@ -108,19 +188,43 @@ In =src/generator.py=:
 | =methodologies.json=     | =sql_methodology_populate.mustache=                                      |
 | =tags.json=              | =sql_tag_populate.mustache=                                              |
 
-*** Entity schema mappings (=*_entity.json= files)
-
-| Template                                | Output file                               |
-|-----------------------------------------+-------------------------------------------|
-| =sql_schema_table_create.mustache=      | ={component}_{entity}_create.sql=         |
-| =sql_schema_notify_trigger.mustache=    | ={component}_{entity}_notify_trigger.sql= |
-| =sql_schema_artefact_create.mustache=   | =dq_{entity}_artefact_create.sql=         |
-
 *** Entity populate mappings (=*_data.json= files)
 
 | Template                            | Output file                              |
 |-------------------------------------+------------------------------------------|
 | =sql_populate_refdata.mustache=     | ={component}_{entity}_populate.sql=      |
+
+** Profile system
+
+Profiles are declared in =library/profiles.json=.  Each profile maps to a
+list of template entries; each entry specifies the template name, the
+output path pattern, and the model types it applies to.
+
+Built-in profiles:
+
+| Profile     | Description                                      |
+|-------------+--------------------------------------------------|
+| =sql=        | SQL DDL only (table create / domain entity create) |
+| =all-cpp=    | C++ headers, implementations, JSON and table I/O |
+| =all=        | =sql= + =all-cpp= — *not allowed* for =_table.json= or =_entity.json= models (see below) |
+
+The =--profile all= guard: running =all= on a SQL model (=table= or
+=schema= type) is refused by the CLI because a matching
+=_domain_entity.json= may exist for the same entity, and running =all=
+would silently overwrite the production SQL with the wrong template.
+Use =--profile sql= or =--profile all-cpp= explicitly.
+
+** Component registry
+
+Named components are declared in =src/codegen/manifest.py=.  Each entry
+maps a short name to a models directory and a file glob.
+
+| Component | Models directory                        | Glob            |
+|-----------+-----------------------------------------+-----------------|
+| =refdata= | =projects/ores.codegen/models/refdata/= | =*_table.json=  |
+| =trade=   | =projects/ores.codegen/models/trade/=   | =*_entity.json= |
+| =dq=      | =projects/ores.codegen/models/dq/=      | =*_entity.json= |
+| =iam=     | =projects/ores.codegen/models/iam/=     | =*_entity.json= |
 
 ** Modeline configurations
 
@@ -173,12 +277,24 @@ The =sql_catalog_populate.mustache= template generates SQL that:
 
 ** Extending
 
-To add a new model-template pair:
+To add a new =_table.json= model for an existing component:
 
-1. Add the JSON model to the =models/= directory.
-2. Add the Mustache template to =library/templates/=.
-3. Update the mapping in =src/generator.py=
-   in =get_template_mappings()=.
+1. Create the =*_table.json= file in the component's =models/= directory.
+2. Run =codegen.sh regenerate --component <name> --profile sql= to generate the SQL.
+
+To add a new profile or template:
+
+1. Add the Mustache template to =library/templates/=.
+2. Add an entry to =library/profiles.json= under the relevant profile,
+   specifying =template=, =output= pattern, and =model_types=.
+3. If adding a new model type, update =get_model_type()= in =src/generator.py=
+   and add any preprocessing logic in the =generate_from_model()= dispatch block.
+
+To add a new named component:
+
+1. Add a =Component= entry to =src/codegen/manifest.py= with the
+   =models_dir= and =entity_glob= for that component.
+2. The component is then available as =codegen.sh regenerate --component <name>=.
 
 * See also
 

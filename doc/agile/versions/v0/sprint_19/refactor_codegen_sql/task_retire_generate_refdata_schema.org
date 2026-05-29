@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 3F9A4145-E8D5-4D6E-AF7B-1BB17D0E34B2
+:END:
+#+title: Task: Retire generate_refdata_schema.sh
+#+description: Delete generate_refdata_schema.sh; verify no CI or Makefile references; document replacement in architecture.org.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_sql:sprint_19:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-sql
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-30
+#+updated: 2026-05-30
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Delete =generate_refdata_schema.sh= now that =codegen.sh regenerate
+--component refdata --profile sql= is its direct replacement. Verify no
+CI workflows or Makefiles reference it. Update =architecture.org= to
+document the replacement command.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] |
+| Now          | Implementation complete; awaiting PR review. |
+| Waiting on   | Nothing.                                     |
+| Next         | Close story if this is the last task.        |
+| Last touched | 2026-05-30                               |
+
+* Acceptance
+
+- =projects/ores.codegen/generate_refdata_schema.sh= deleted.
+- No CI workflow, Makefile, or documentation references the deleted script.
+- =architecture.org= documents =codegen.sh regenerate --component refdata --profile sql= as the replacement.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Script deleted and replacement documented:
+
+#+begin_example
+projects/ores.codegen/
+  generate_refdata_schema.sh    deleted
+  docs/
+    architecture.org            added "Retired scripts" table with replacement command
+#+end_example
+
+No CI, Makefile, or documentation references to the deleted script were found.
+Replacement: =codegen.sh regenerate --component refdata --profile sql=.

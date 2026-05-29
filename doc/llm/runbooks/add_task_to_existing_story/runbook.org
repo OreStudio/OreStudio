@@ -73,7 +73,12 @@ In execution order:
    Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
    #+end_src
 
-6. /Push and open a PR./ Push the branch, then [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][create a PR]] with Summary, Changes, Story/Task UUIDs, and page links. Record the PR number in the task's =* PRs= table.
+6. /Decide PR strategy./ Ask the user: *"Do you want to do the task work now and open one combined PR, or open a scaffold-only PR first?"*
+
+   - /Combined (default)/: do the task work on this branch, then open a single PR covering scaffold + work. This is preferred for short tasks.
+   - /Scaffold-only/: open the PR now with just the scaffold, then continue work in a follow-up commit. Use this only when the task work is large or needs a separate review pass.
+
+7. /Push and open a PR./ Push the branch, then follow [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — title =[COMPONENT] Description=, body sections Summary / Changes / Traceability. Record the PR number in the task's =* PRs= table.
 
 * Postconditions
 

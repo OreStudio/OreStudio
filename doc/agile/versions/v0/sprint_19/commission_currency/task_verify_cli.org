@@ -55,7 +55,7 @@ correct output.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Now field should describe blocked state, not 'Nothing.' | story.org | Fixed in 6b75cdb8e | PR #932 round 1 |
 
 * Result
 

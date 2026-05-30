@@ -47,12 +47,12 @@ without a known type at the processing site — that path correctly retains the 
 
 | Field        | Value                                                                               |
 |--------------+-------------------------------------------------------------------------------------|
-| State        | STARTED                                                                             |
+| State        | DONE                                                                                |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | Renaming protocol types in trade_protocol.hpp; deleting Sprint 18 workarounds.      |
-| Waiting on   | —                                                                                   |
-| Next         | Rewrite ClientManagerTradeInstrument.cpp with dispatch logic.                       |
-| Last touched | 2026-05-29                                                                          |
+| Now          | Nothing.                                                                            |
+| Waiting on   | Nothing.                                                                            |
+| Next         | Nothing.                                                                            |
+| Last touched | 2026-05-30                                                                          |
 
 * Acceptance
 
@@ -221,9 +221,9 @@ BOOST_LOG_SEV(lg(), warn)  << "getTradeInstrument: unknown (product_type, trade_
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                                              |
+|-----+------------------------------------------------------------------------------------|
+| 935 | Rename get_trade_detail → get_trade_instrument and rewrite client parse path       |
 
 * Review
 
@@ -234,3 +234,9 @@ BOOST_LOG_SEV(lg(), warn)  << "getTradeInstrument: unknown (product_type, trade_
 | 3 | DONE task Now/Waiting/Next fields should be Nothing. not — (Gemini R1) | task_split_rfl_literal_type.org         | Accept   | Fixed all three fields.                                            |
 
 * Result
+
+Protocol renamed (=get_trade_detail_*= → =get_trade_instrument_*=, NATS subject =trading.v1.trades.instrument=).
+Sprint 18 workaround types deleted. =IInstrumentFormPopulator= interface created with 30 =populate()= overloads.
+=ClientManagerTradeInstrument.cpp= rewrites dispatch with named wrappers in anonymous namespace — zero
+=AddTagsToVariants=, zero =trade_instrument= constructions. GCC =-Wchanges-meaning= fixed by replacing
+=using namespace ores::trading::domain= with =namespace td = ores::trading::domain=. PR #935 merged 2026-05-30.

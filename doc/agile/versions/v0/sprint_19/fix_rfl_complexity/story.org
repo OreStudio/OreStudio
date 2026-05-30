@@ -33,10 +33,10 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 |---------------+-----------------------------------------------------------------------------------------------|
 | State         | STARTED                                                                                       |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                       |
-| Now           | Task 2 in progress: renaming protocol types and rewriting parse path.                         |
+| Now           | Task 3 in progress: writing round-trip tests for instrument parse dispatch.                   |
 | Waiting on    | —                                                                                             |
-| Next          | Task 3 (round-trip tests) once Task 2 PR merges.                                             |
-| Last touched  | 2026-05-29                                                                                    |
+| Next          | Task 4 (IInstrumentForm refactor) once Task 3 merges.                                        |
+| Last touched  | 2026-05-30                                                                                    |
 
 * Acceptance
 
@@ -56,8 +56,8 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 | Task                                                                                                                                               | State   | Start      | End | Description                                                                     |
 |----------------------------------------------------------------------------------------------------------------------------------------------------+---------+------------+-----+---------------------------------------------------------------------------------|
 | [[id:9212966F-87AC-4B72-B708-8ED5BA253431][Scaffold: document architecture and create task stubs]]                     | DONE    | 2026-05-29 | 2026-05-29 | Update story decisions, create task stubs; PR for Gemini architecture review.   |
-| [[id:06C98C06-F950-483A-997B-89AED70D1238][Rename get_trade_detail → get_trade_instrument and rewrite parse path]]    | STARTED | 2026-05-29 |     | Rename protocol types, delete workarounds, rewrite client TU with dispatch.     |
-| [[id:F9E5967D-77E7-49E3-9806-74AF22D26191][Write round-trip tests for instrument parse dispatch]]                      | BACKLOG |            |     | One test per instrument family; serialize server-side, verify client dispatch.  |
+| [[id:06C98C06-F950-483A-997B-89AED70D1238][Rename get_trade_detail → get_trade_instrument and rewrite parse path]]    | DONE    | 2026-05-29 | 2026-05-30 | Rename protocol types, delete workarounds, rewrite client TU with dispatch.     |
+| [[id:F9E5967D-77E7-49E3-9806-74AF22D26191][Write round-trip tests for instrument parse dispatch]]                      | STARTED | 2026-05-30 |     | One test per instrument family; serialize server-side, verify client dispatch.  |
 | [[id:5C955A5E-0130-40D7-B77F-B41F4F526B79][Refactor IInstrumentForm to type-specific populate methods]]                | BACKLOG |            |     | Remove trade_instrument variant from the Qt UI boundary; typed populate per form.|
 
 * Decisions

@@ -40,14 +40,6 @@ options, sidebar toggle) being absent from the graph view.
 - Left-panel controls are visible and functional.
 - Site build passes without errors.
 
-* Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
-* Notes
-
 * PRs
 
 | PR | Title |
@@ -60,4 +52,3 @@ task closes. Plans do not outlive their task.)
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
-* Result

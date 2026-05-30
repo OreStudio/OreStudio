@@ -35,7 +35,7 @@ no drift has accumulated across the other three entities.
 |--------------+----------------------------------------------------|
 | State        | DONE                                               |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]]                            |
-| Now          | Complete. SQL zero-diff; C++ drift documented; currency confirmed unnecessary. |
+| Now          | Nothing.                                                                      |
 | Waiting on   |                                                    |
 | Next         | Nothing.                                           |
 | Last touched | 2026-05-30                                         |
@@ -59,6 +59,7 @@ no drift has accumulated across the other three entities.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | No issues found | — | N/A | Gemini: no feedback, review clean. PR #930 round 1. |
+| 2 | =Now= field should be =Nothing.= not a summary when state is DONE | task_verify_codegen.org | Fixed | PR #939 round 1. Matches project convention. |
 
 * Result
 

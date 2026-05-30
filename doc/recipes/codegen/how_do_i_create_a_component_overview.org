@@ -2,7 +2,7 @@
 :ID: 0806C8FB-43D2-497E-900D-5F2E0B3472FD
 :END:
 #+title: How do I create a component overview?
-#+description: Use generate_doc.sh to scaffold a component_overview.org and fill in each required section.
+#+description: Use compass add component to scaffold a component_overview.org and fill in each required section.
 #+type: recipe
 #+level: cross
 #+filetags: :codegen:component:documentation:recipe:
@@ -20,8 +20,8 @@ that is missing one?
 * Answer
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_doc.sh \
-  --type component --slug component_overview \
+./projects/ores.compass/compass.sh add component \
+  --slug component_overview \
   --parent-dir projects/<comp>/modeling \
   --title "<comp>" \
   --description "<one-liner ≤ 120 chars>" \
@@ -52,8 +52,8 @@ Finally, remove the component's =MISSING_OVERVIEW= entry from
 
 * Script
 
-=projects/ores.codegen/generate_doc.sh= — the Mustache-based
-document generator. Full CLI reference at
+=./projects/ores.compass/compass.sh add component= — delegates to the
+Mustache-based document generator. Full CLI reference at
 =projects/ores.codegen/docs/doc_generator.md=.
 
 * Tested by

@@ -61,13 +61,13 @@ correct response.
    than the topic. Use the user's framing where possible —
    =do_not_re_export_env_vars=, not =bash_environment=.
 
-5. /Scaffold the file/ with the codegen — see
+5. /Scaffold the file/ with compass — see
    [[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]] for the full incantation. The
    essentials:
 
    #+begin_src sh :results verbatim
-   projects/ores.codegen/generate_doc.sh \
-     --type memory --slug <slug> \
+   ./projects/ores.compass/compass.sh add memory \
+     --slug <slug> \
      --parent-dir doc/llm/memory \
      --title "<one-line title>" \
      --description "<one-line description>" \

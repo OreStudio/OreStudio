@@ -54,12 +54,12 @@ that question is.
    - =#+title:= =How do I X Y Z?=
    - =* Question= body: the full sentence
 
-3. /Scaffold with the codegen/ — never hand-write the frontmatter, UUID, or
+3. /Scaffold with compass/ — never hand-write the frontmatter, UUID, or
    skeleton:
 
    #+begin_src sh :results verbatim
-   projects/ores.codegen/generate_doc.sh \
-     --type recipe --slug how_do_i_clear_the_cache \
+   ./projects/ores.compass/compass.sh add recipe \
+     --slug how_do_i_clear_the_cache \
      --parent-dir doc/recipes/cmake \
      --title "How do I clear the cache?" \
      --description "Remove the CMake binary cache to force a clean re-configure." \
@@ -141,9 +141,9 @@ that question is.
 
 * Script
 
-The wrapper called above is =projects/ores.codegen/generate_doc.sh=.
-It uses the same Mustache template infrastructure as the C++ codegen.
-The recipe template is at
+Scaffold is done via =./projects/ores.compass/compass.sh add recipe=,
+which delegates to the Mustache-based document generator. The recipe
+template is at
 =projects/ores.codegen/library/templates/recipe/recipe.org.mustache=.
 
 * Tested by

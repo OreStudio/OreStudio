@@ -73,8 +73,8 @@ sprint-selection goal, use [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][backlog-re
       capture's =:ID:=:
 
       #+begin_src sh :results verbatim
-      projects/ores.codegen/generate_doc.sh \
-        --type story --slug <slug> \
+      ./projects/ores.compass/compass.sh add story \
+        --slug <slug> \
         --id <capture-uuid> \
         --parent-dir doc/agile/versions/v0/sprint_NN \
         --title "<title>" --description "<description>"

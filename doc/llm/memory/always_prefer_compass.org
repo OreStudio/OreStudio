@@ -10,18 +10,18 @@
 #+created: 2026-05-25
 #+updated: 2026-05-25
 
-Always use =compass add= (or the appropriate compass subcommand) to scaffold
-new agile artefact files — tasks, stories, sprints, epics. Never write them
-manually using the Write tool or generate_doc.sh.
+Always use =compass add= to scaffold new files — tasks, stories, sprints,
+memories, knowledge docs, recipes, and all other document types. Never write
+them manually using the Write tool.
 
 *Why:* Compass handles UUID generation, file placement, correct frontmatter,
-and wiring into the project graph automatically. Manual creation (with Write
-or generate_doc.sh) was explicitly corrected by the user during sprint 18
-dashboard work (2026-05-25). The generate_doc.sh codegen recipe remains
-correct for knowledge, recipe, and memory files — compass is specifically for
-agile artefacts.
+and wiring into the project graph automatically. Manual creation was explicitly
+corrected by the user during sprint 18 dashboard work (2026-05-25). Compass
+now covers all supported types: story, task, sprint, version, recipe,
+knowledge, component, capture, memory, investigation, product_identity, skill,
+diagram.
 
-*How to apply:* Whenever a new task or story needs to be created, run
-=compass.sh add task "Title" --parent-dir <path/to/story>= or the equivalent
-compass command for the artefact type. Only fall back to Write/codegen if
-compass fails or the artefact type is not supported by compass.
+*How to apply:* Whenever a new document needs to be created, run
+=compass.sh add <type>= with appropriate flags. For runbooks (not yet in
+compass), file a capture to add the type, then use the nearest supported type
+as a template. Never fall back to the Write tool or =generate_doc.sh=.

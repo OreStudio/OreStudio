@@ -139,6 +139,7 @@ trading, iam, dq, and all remaining components.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
+| [[id:D4469217-12E2-41AC-AB35-AC70E849D88C][Codegen architecture analysis and unified model roadmap]] | DONE | 2026-05-30 | 2026-05-30 | System 2 analysis of structural concerns; produces analysis doc and roadmap stories. |
 | [[id:A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F][Audit C++ template drift and build drift catalog]] | BACKLOG | | | Run codegen for all 75 domain_entity models; collect diffs; classify as clean / cosmetic / additive / breaking / path-error. |
 | [[id:F7B3E1D9-6A4C-4F2B-7E8D-1C5A9B3F7D2E][Fix C++ template bugs]] | BACKLOG | | | Fix include guard regression and any other systematic template bugs found in the audit. |
 | [[id:D2E8F4A1-9B3C-4D7F-6A5B-8E1C7D3F9A2B][Fix model consistency and register C++ components in manifest.py]] | BACKLOG | | | Verify and fix component_include/component_core in all 75 models; add all components to manifest.py. |

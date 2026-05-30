@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 88113E9B-DBD4-4E08-8CD9-49B8A709B871
+:END:
+#+title: Story: Codegen unified model — Phase 2: single model file per entity
+#+description: Merge _table.json and _domain_entity.json into one _entity.json per entity; all SQL, C++, Qt, CLI, HTTP facets generated from a single source of truth.
+#+type: story
+#+level: s2
+#+filetags: :tooling:codegen:sprint_19:v0:
+#+created: 2026-05-30
+#+updated: 2026-05-30
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The current system has two model files per entity:
+
+- =_table.json= — SQL variability (tenant mode, coding scheme, validation
+  function, trigger validations). Created by the SQL refactoring story.
+- =_domain_entity.json= — C++ types, Qt UI, repository settings, NATS
+  protocol. Created incrementally by earlier sprints.
+
+These two files can drift from each other. If a column is added to the
+SQL model but not the C++ model, generated C++ will be out of sync with
+the database. There is no cross-validation that enforces agreement. For
+new entities in non-refdata components, engineers must create *two* model
+files and keep them in sync — a maintenance burden that compounds across
+75+ entities.
+
+The goal: *one =_entity.json= per entity* that drives every code
+generation facet: SQL, C++, Qt, CLI, HTTP, shell. Each facet is a
+profile; all profiles read the same model. Adding a new facet (CLI, Wt,
+HTTP) means adding a section to the JSON Schema and new templates, not a
+new model file type.
+
+** Unified model design
+
+The =_entity.json= root key =entity= subsumes both =table= and =domain_entity=:
+
+- SQL variability axes from =table=: tenant mode, coding scheme, validation
+  function, trigger logic, indexes.
+- C++ fields from =domain_entity=: cpp_type annotations, includes, generator
+  expressions, repository short names.
+- Qt fields: derived by [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Phase 1]] or present as genuine variability.
+- =is_temporal= flag from [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Phase 3]]: replaces the two-family template split.
+- Profile routing in =profiles.json= is updated to recognise =entity= model type.
+
+The unified model is defined by a JSON Schema document committed to
+=projects/ores.codegen/library/schemas/entity_schema.json=.
+
+See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and unified model roadmap]] for context.
+
+* Status
+
+| Field         | Value                                                                                    |
+|---------------+------------------------------------------------------------------------------------------|
+| State         | BACKLOG                                                                                  |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                                                |
+| Now           | Not yet started.                                                                         |
+| Waiting on    | [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Phase 1: Qt derivation]] (model is cleaner without transcribed Qt fields). |
+| Next          | Design the unified _entity.json JSON Schema.                                             |
+| Last touched  | 2026-05-30                                                                               |
+
+* Acceptance
+
+- A JSON Schema at =projects/ores.codegen/library/schemas/entity_schema.json=
+  defines the =entity= root key and all variability axes.
+- =generator.py= recognises =entity= model type; =get_model_type()= returns
+  ="entity"= for =*_entity.json= files.
+- =profiles.json= routes =entity= model type to all SQL, C++, and Qt templates.
+- All refdata =_table.json= and =_domain_entity.json= pairs are merged into
+  =_entity.json= files; both old files are deleted.
+- Running =--profile sql= on a refdata =_entity.json= produces zero diff
+  against the current production SQL.
+- Running =--profile all-cpp= on a refdata =_entity.json= produces zero diff
+  against the current production C++ files.
+- All remaining components (trading, iam, dq, analytics, reporting, scheduler,
+  workflow, workspace) have their models migrated.
+- =_table.json= and =_domain_entity.json= model types are removed from
+  =generator.py= and =profiles.json=.
+- [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] is green. CI passes. Site builds cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| Task: Design the unified entity JSON Schema | BACKLOG | | | Define entity root key; enumerate all SQL variability axes from _table.json and all C++ fields from _domain_entity.json; write entity_schema.json; validate it against all existing models. |
+| Task: Implement entity model type in generator.py and profiles.json | BACKLOG | | | Add entity model type detection; update get_model_type(); update resolve_output_path() for entity type; update profiles.json to route entity to all facets. |
+| Task: Migrate refdata models (pilot) | BACKLOG | | | Merge all refdata _table.json and _domain_entity.json pairs into _entity.json; verify zero SQL diff and zero C++ diff; delete old files. |
+| Task: Migrate all remaining components | BACKLOG | | | Apply the same migration to trading, iam, dq, analytics, reporting, scheduler, workflow, workspace; verify zero diff per component. |
+| Task: Retire _table.json and _domain_entity.json model types | BACKLOG | | | Remove old model type branches from generator.py; remove old model type routing from profiles.json; confirm no models directory contains old-format files. |
+
+* Decisions
+
+- /JSON Schema as the contract./ =entity_schema.json= is the machine-readable
+  contract validated before generation. This catches missing required fields at
+  model-parse time, not at diff-check time.
+- /Rename files, not roots./ The unified file is =*_entity.json= (replacing both
+  =*_table.json= and =*_domain_entity.json=). The root key is =entity=. This avoids
+  confusion with the old =*_entity.json= naming that some components used before the
+  SQL refactoring.
+- /Refdata pilot first./ Refdata has the cleanest models after the SQL refactoring
+  and C++ audit. Migrating refdata first produces the reference implementation.
+
+* Out of scope
+
+- Adding CLI, HTTP, shell, or Wt sections to the unified model — that is
+  a follow-on story per facet once the unified model exists.
+- Changing C++ API design or adding new template features.
+- CMakeLists.txt generation — CMake files have non-trivial manual content
+  and are managed separately.

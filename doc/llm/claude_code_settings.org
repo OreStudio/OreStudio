@@ -145,22 +145,23 @@ Common invocations:
 
 ** Code generation
 
-Three codegen scripts live under =projects/ores.codegen/=:
-=generate_doc.sh= scaffolds new org documents; =run_generator.sh=
-drives the C++ code generator (Dogen); =plantuml_er_generate.sh=
-produces PlantUML ER diagrams. All three accept flags and arguments
-that vary per invocation.
+=compass.sh= is the preferred entry point for all document scaffolding
+(=compass add <type>=); it delegates to the Mustache-based =ores.codegen=
+Python package. =run_generator.sh= drives the C++ code generator (Dogen).
+=plantuml_er_generate.sh= produces PlantUML ER diagrams. =generate_doc.sh=
+is a legacy script being decommissioned — use =compass= instead.
 
 The grant is per-script rather than per-directory for the same reason
 as SQL: a directory wildcard would permit running arbitrary scripts in
 a large codegen tree.
 
 Common invocations:
-- =projects/ores.codegen/generate_doc.sh --type memory --slug foo --parent-dir doc/llm/memory ...=
+- =./projects/ores.compass/compass.sh add memory --slug foo --parent-dir doc/llm/memory ...=
 - =projects/ores.codegen/run_generator.sh=
 - =projects/ores.codegen/plantuml_er_generate.sh -i doc/plans/foo.org=
 
 #+begin_src json :tangle no :noweb-ref perm-codegen
+      "Bash(./projects/ores.compass/compass.sh *)",
       "Bash(projects/ores.codegen/generate_doc.sh *)",
       "Bash(projects/ores.codegen/run_generator.sh *)",
       "Bash(projects/ores.codegen/plantuml_er_generate.sh *)"

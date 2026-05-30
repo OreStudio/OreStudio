@@ -19,12 +19,12 @@ inlined rather than linked.
 These apply in every session, with no exceptions:
 
 - /UNIX line endings/ — all new files use LF, never CRLF.
-- /New org docs via codegen only/ — never write =.org= frontmatter by hand.
-  Always use =projects/ores.codegen/generate_doc.sh=.
+- /New org docs via compass only/ — never write =.org= frontmatter by hand.
+  Always use =./projects/ores.compass/compass.sh add <type>=.
   See [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]].
 - /Check recipes first/ — before searching for how to do anything, open
   [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] and find the matching topic.
-- /Every new =.org= file is scaffolded via =compass add= or =generate_doc.sh=/
+- /Every new =.org= file is scaffolded via =compass add=/
   — this ensures correct frontmatter (=:ID:=, =#+type:=, =#+description:=, etc.).
 
 * Orientation

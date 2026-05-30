@@ -14,4 +14,4 @@ New captures always go into =doc/agile/product_backlog/inbox/=, not =near/= or =
 
 *Why:* The inbox is the triage entry point; near and far are for captures that have already been reviewed and placed. Filing directly to near/far skips the triage step.
 
-*How to apply:* When using =compass add capture= or =generate_doc.sh --type capture=, always pass =--parent-dir doc/agile/product_backlog/inbox=. Move to near or far only after explicit triage with the user.
+*How to apply:* When using =compass add capture=, always pass =--parent-dir doc/agile/product_backlog/inbox=. Move to near or far only after explicit triage with the user.

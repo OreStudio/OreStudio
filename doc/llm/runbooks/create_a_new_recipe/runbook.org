@@ -24,7 +24,7 @@ Create a new recipe: scaffold, fill in the required sections, test the shell com
 
 In execution order:
 
-1. /Scaffold./ Use [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]]: =compass add recipe= or =generate_doc.sh --type recipe=. Slug convention: =how_do_i_<thing>=.
+1. /Scaffold./ Use [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]]: =compass add recipe=. Slug convention: =how_do_i_<thing>=.
 
 2. /Fill in the Question./ Write the NLP question as the =* Question= heading — this is the load-bearing field for discovery.
 

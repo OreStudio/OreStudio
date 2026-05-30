@@ -54,8 +54,8 @@ of these exclusions, push back: the right home is somewhere else.
 ** Feedback
 
 - [[id:F9B796DF-2C06-42EF-AACF-D69E53621FF9][Do not re-export ORES_* env vars in Bash tool calls]].
-- [[id:46F83AC1-F41F-4878-9A1D-2E49742E1BFE][Always use codegen to create new documents]] — never write =.org= files
-  directly; use =generate_doc.sh= to scaffold them.
+- [[id:46F83AC1-F41F-4878-9A1D-2E49742E1BFE][Always use compass to create new documents]] — never write =.org= files
+  directly; use =compass add= to scaffold them.
 - [[id:19570253-D852-4D14-A72B-B13FDF0651B7][New captures go to the inbox bucket]] — triage to next/deferred separately.
 - [[id:7F176058-4FF7-4731-920B-26FE318E338F][Always use compass to create agile artefacts]] — never write task/story files
   manually; always scaffold with =compass add=.
@@ -81,6 +81,8 @@ of these exclusions, push back: the right home is somewhere else.
   gaps in compass are captures, not workarounds.
 - [[id:09B8AA56-2F85-47EA-949C-0CBFD36BCD1B][#+version: field is schema version, not a content revision counter]] —
   always =#+version: 2= for docs; never increment it when editing content.
+- [[id:68829E75-34A4-4A7F-915D-AED6285FFD9B][PR review runbook does not include merging]] — runbook ends at resolve
+  threads; never call =gh pr merge= after review steps; user merges.
 
 ** User
 

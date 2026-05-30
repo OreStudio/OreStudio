@@ -28,8 +28,8 @@ component's domain types or structure change significantly.
 
 * How to use this skill
 
-1. /Scaffold the org file/ using codegen:
-   =projects/ores.codegen/generate_doc.sh --type component --slug component_overview --parent-dir projects/COMPONENT/modeling --title "ores.COMPONENT" --description "One-line summary."=
+1. /Scaffold the org file/ using compass:
+   =./projects/ores.compass/compass.sh add component --slug component_overview --parent-dir projects/COMPONENT/modeling --title "ores.COMPONENT" --description "One-line summary."=
    See [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] for the full walkthrough.
 
 2. /Fill in each section/ following [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component Documentation Guide]]:

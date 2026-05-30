@@ -42,8 +42,6 @@ sidebar toggle) must be visible and operable.
 |------------------------------------------------------------------------------------------------------------------------------------------+---------+------------+-----+-----------------------------------------------------------|
 | [[id:4729C928-7EE0-4B8E-A932-FE286BDB2CC7][Task: Implement knowledge graph improvements]] | STARTED | 2026-05-30 |     | Investigate and fix image rendering and missing controls. |
 
-* Decisions
-
 * Out of scope
 
 - New knowledge graph features beyond restoring existing functionality.

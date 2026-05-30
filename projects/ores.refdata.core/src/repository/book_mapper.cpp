@@ -35,7 +35,8 @@ book_mapper::map(const book_entity& v) {
 
     domain::book r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id)
+        .value_or(utility::uuid::tenant_id::system());
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);

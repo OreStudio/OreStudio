@@ -44,7 +44,8 @@ domain::book generate_synthetic_book(
     r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
-    r.name = std::string("BOOK_") + std::to_string(faker::number::integer(1, 999));
+    r.name = std::string("BOOK_") + std::to_string(faker::number::integer(1, 999)) + "-"
+        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
     r.description = std::string(faker::lorem::sentence());
     r.parent_portfolio_id = ctx.generate_uuid();
     r.owner_unit_id = std::nullopt;

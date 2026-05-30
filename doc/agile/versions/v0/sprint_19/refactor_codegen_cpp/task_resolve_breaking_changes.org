@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: B5F1C8D3-4A7E-4B2F-9D6C-3E8A1B5D7C4F
+:END:
+#+title: Task: Resolve breaking API drift
+#+description: For every breaking change in the drift catalog, make an explicit decision: freeze the template to preserve the existing API, or update production code and all callers. No breaking change is silently discarded.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_19:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-cpp
+#+pr:
+#+blocked_on: A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F
+#+blocked_since:
+#+created: 2026-05-30
+#+updated: 2026-05-30
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The drift audit ([[id:A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F][Audit C++ template drift and build drift catalog]]) identifies all breaking
+changes: existing production API renamed, removed, or signature-changed. For each one,
+make and record an explicit decision.
+
+Two outcomes are possible per breaking change:
+
+| Decision | Meaning | Action |
+|----------+---------+--------|
+| *Template frozen* | The production API is the contract; the template is wrong. | Revert the template change so it matches the production file. Document what was reverted and why. |
+| *Production updated* | The template represents the improved design; production must follow. | Update all callers of the old API across all components. Regenerate affected files. Verify CI. |
+
+"Production updated" decisions can only be made for changes where:
+1. The caller update is tractable (no widespread caller network, or callers can be updated
+   in the same PR).
+2. The new API is strictly better (not just different).
+3. The change does not break any user-facing contract (CLI, shell, Qt UI).
+
+** Known breaking changes from the three-entity sample
+
+| Change | Tentative decision | Rationale |
+|--------+--------------------+-----------|
+| =find_type= → =get_type= rename | Template frozen (keep =find_type=) | Callers in 5+ components; rename is cosmetic; high risk with no functional benefit. |
+| =save_types()= removal | Template frozen (keep =save_types=) | Actively used in messaging handlers across trading, refdata, iam; removal breaks NATS ingestion. |
+| =remove_types()= removal | Template frozen (keep =remove_types=) | Same handler usage as =save_types=. |
+| =stamp()= removal | Verify in audit | Need to confirm whether =stamp()= is used in callers before deciding. |
+| =display_order = 0= default | Additive (not breaking) | Does not remove any existing API; classify as additive in audit. |
+
+These are tentative. The drift audit may reveal additional breaking changes or may confirm
+that some of these are not present across all entities. Final decisions are recorded in the
+=* Result= section of this task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Nothing.                               |
+| Waiting on   | [[id:A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F][Audit C++ template drift]] (for complete breaking change list). |
+| Next         | Start once drift audit is complete.    |
+| Last touched | 2026-05-30                             |
+
+* Acceptance
+
+- Every breaking change from the drift catalog has a recorded decision (template frozen or
+  production updated).
+- For "template frozen" decisions: the template is updated to match the production API;
+  the decision and rationale are recorded.
+- For "production updated" decisions: all callers across all components are updated; CI
+  passes; the update scope and affected files are recorded.
+- No breaking change is left in an ambiguous or unresolved state.
+- Findings recorded in =* Result= section.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+
+* Result
+
+(Populated when task is complete.)

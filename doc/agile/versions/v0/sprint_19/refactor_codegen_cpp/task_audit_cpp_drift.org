@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F
+:END:
+#+title: Task: Audit C++ template drift and build drift catalog
+#+description: Run codegen for all 75 _domain_entity.json models; collect diffs against the repo; classify each diff as clean / cosmetic / additive / breaking / path-error; produce a catalog table.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_19:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-cpp
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-30
+#+updated: 2026-05-30
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run =codegen.py generate --model X --profile all-cpp= for every =_domain_entity.json=
+model in =projects/ores.codegen/models/=. Collect the diff between what the generator
+produces and what is currently in the repository. Classify each per-model diff as one of:
+
+| Category | Definition |
+|----------+------------|
+| =clean= | Zero diff. Template and production agree byte-for-byte. |
+| =cosmetic= | Whitespace, comment rewrap, copyright year, or other non-semantic changes only. |
+| =additive= | New method, member, or construct added; no existing production API removed or renamed. |
+| =breaking= | Existing production API renamed, removed, or signature-changed. |
+| =path-error= | Generator writes to wrong directory due to missing or incorrect =component_include= / =component_core=. |
+
+A model may fall into multiple categories (e.g., =additive= + =breaking=). The primary
+category is the worst one present.
+
+The catalog is the primary deliverable that drives every subsequent task in the story.
+It makes the full scope visible before any code is changed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Start once story branch is created.    |
+| Last touched | 2026-05-30                             |
+
+* Acceptance
+
+- All 75 =_domain_entity.json= models processed.
+- Per-model classification recorded in the =* Result= drift catalog table.
+- All breaking changes itemised with: method name, change type, and affected callers (file
+  paths and component names).
+- All path-errors itemised with: model file, current =component= value, and the correct
+  =component_include= / =component_core= target.
+- Known issues from [[id:E8890097-FAE9-40F8-B823-FCE23BAFD6C5][Verify and fix codegen for currency and auxiliaries]] confirmed or updated.
+- Findings recorded in =* Result= section.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+
+* Result
+
+(Populated when task is complete.)

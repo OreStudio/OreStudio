@@ -3,20 +3,20 @@
     "schema": "public",
     "product": "ores",
     "component": "compute",
+    "component_include": "compute.api",
+    "component_core": "compute.core",
     "entity_singular": "app",
     "entity_plural": "apps",
     "entity_title": "App",
     "has_tenant_id": true,
     "brief": "A registered application engine in the compute grid.",
     "description": "Represents the high-level definition of an engine that can be executed on\ngrid nodes (e.g., ORE_STUDIO, LLAMA_CPP, LEDGER). The BOINC equivalent of 'app'.",
-
     "primary_key": {
       "column": "id",
       "type": "uuid",
       "cpp_type": "boost::uuids::uuid",
       "description": "UUID primary key for the app."
     },
-
     "natural_keys": [
       {
         "column": "name",
@@ -25,7 +25,6 @@
         "description": "Unique application identifier, e.g. 'ORE_STUDIO', 'LLAMA_CPP', 'LEDGER'."
       }
     ],
-
     "columns": [
       {
         "name": "description",
@@ -35,25 +34,23 @@
         "description": "Human-readable description of the application engine."
       }
     ],
-
     "sql": {
       "tablename": "ores_compute_apps_tbl"
     },
-
     "repository": {
       "entity_singular_short": "app",
       "entity_plural_short": "apps",
       "entity_singular_words": "compute app",
       "entity_plural_words": "compute apps"
     },
-
     "cpp": {
       "includes": {
-        "domain": ["<string>"]
+        "domain": [
+          "<string>"
+        ]
       },
       "iterator_var": "a"
     },
-
     "qt": {
       "domain_include": "ores.compute/domain/app.hpp",
       "domain_class": "compute::domain::app",
@@ -63,17 +60,38 @@
       "key_field": "name",
       "has_uuid_primary_key": true,
       "has_pagination": true,
-
       "get_request_class": "compute::messaging::list_apps_request",
       "get_response_class": "compute::messaging::list_apps_response",
-
       "columns": [
-        {"enum_name": "Name",        "field": "name",        "header": "Name",        "is_string": true, "width": 160},
-        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 300},
-        {"enum_name": "Version",     "field": "version",     "header": "Version",     "is_int": true,    "width": 60},
-        {"enum_name": "ModifiedBy",  "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120}
+        {
+          "enum_name": "Name",
+          "field": "name",
+          "header": "Name",
+          "is_string": true,
+          "width": 160
+        },
+        {
+          "enum_name": "Description",
+          "field": "description",
+          "header": "Description",
+          "is_string": true,
+          "width": 300
+        },
+        {
+          "enum_name": "Version",
+          "field": "version",
+          "header": "Version",
+          "is_int": true,
+          "width": 60
+        },
+        {
+          "enum_name": "ModifiedBy",
+          "field": "modified_by",
+          "header": "Modified By",
+          "is_string": true,
+          "width": 120
+        }
       ],
-
       "settings_group": "AppListWindow",
       "window_title": "Compute Apps",
       "icon": "Apps"

@@ -3,13 +3,14 @@
     "schema": "public",
     "product": "ores",
     "component": "refdata",
+    "component_include": "refdata.api",
+    "component_core": "refdata.core",
     "has_tenant_id": true,
     "entity_singular": "business_unit",
     "entity_plural": "business_units",
     "entity_title": "Business Unit",
     "brief": "Internal organizational unit within a party.",
     "description": "Represents internal organizational units (e.g., desks, departments, branches).\nSupports hierarchical structure via self-referencing parent_business_unit_id.\nEach unit belongs to a top-level legal entity (party).",
-
     "primary_key": {
       "column": "id",
       "type": "uuid",
@@ -17,7 +18,6 @@
       "description": "UUID uniquely identifying this business unit.",
       "detail": "Surrogate key for the business unit record."
     },
-
     "natural_keys": [
       {
         "column": "party_id",
@@ -36,7 +36,6 @@
         "generator_expr": "std::string(faker::company::name()) + \" Desk\""
       }
     ],
-
     "columns": [
       {
         "name": "parent_business_unit_id",
@@ -66,34 +65,56 @@
         "generator_expr": "std::string(\"GBLO\")"
       }
     ],
-
     "sql": {
       "tablename": "ores_refdata_business_units_tbl"
     },
-
     "repository": {
       "entity_singular_short": "business_unit",
       "entity_plural_short": "business_units",
       "entity_singular_words": "business unit",
       "entity_plural_words": "business units"
     },
-
     "cpp": {
       "includes": {
-        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
-        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+        "domain": [
+          "<chrono>",
+          "<string>",
+          "<boost/uuid/uuid.hpp>"
+        ],
+        "entity": [
+          "<string>",
+          "\"sqlgen/Timestamp.hpp\"",
+          "\"sqlgen/PrimaryKey.hpp\""
+        ]
       },
       "iterator_var": "bu",
       "table_display": [
-        {"column": "party_id", "header": "Party"},
-        {"column": "unit_name", "header": "Unit Name"},
-        {"column": "unit_code", "header": "Code"},
-        {"column": "business_centre_code", "header": "Business Centre"},
-        {"column": "modified_by", "header": "Modified By"},
-        {"column": "version", "header": "Version"}
+        {
+          "column": "party_id",
+          "header": "Party"
+        },
+        {
+          "column": "unit_name",
+          "header": "Unit Name"
+        },
+        {
+          "column": "unit_code",
+          "header": "Code"
+        },
+        {
+          "column": "business_centre_code",
+          "header": "Business Centre"
+        },
+        {
+          "column": "modified_by",
+          "header": "Modified By"
+        },
+        {
+          "column": "version",
+          "header": "Version"
+        }
       ]
     },
-
     "qt": {
       "domain_include": "ores.refdata/domain/business_unit.hpp",
       "domain_class": "refdata::domain::business_unit",
@@ -116,17 +137,74 @@
       "history_response_class": "refdata::messaging::get_business_unit_history_response",
       "history_message_type": "get_business_unit_history_request",
       "detail_fields": [
-        {"field": "unit_code", "label": "Unit Code", "widget": "codeEdit", "type": "line_edit", "is_key": true, "is_required": false, "placeholder": "Enter unit code"},
-        {"field": "unit_name", "label": "Unit Name", "widget": "nameEdit", "type": "line_edit", "is_required": true, "placeholder": "Enter unit name"},
-        {"field": "business_centre_code", "label": "Business Centre", "widget": "businessCentreEdit", "type": "line_edit", "placeholder": "Enter business centre code"}
+        {
+          "field": "unit_code",
+          "label": "Unit Code",
+          "widget": "codeEdit",
+          "type": "line_edit",
+          "is_key": true,
+          "is_required": false,
+          "placeholder": "Enter unit code"
+        },
+        {
+          "field": "unit_name",
+          "label": "Unit Name",
+          "widget": "nameEdit",
+          "type": "line_edit",
+          "is_required": true,
+          "placeholder": "Enter unit name"
+        },
+        {
+          "field": "business_centre_code",
+          "label": "Business Centre",
+          "widget": "businessCentreEdit",
+          "type": "line_edit",
+          "placeholder": "Enter business centre code"
+        }
       ],
       "columns": [
-        {"enum_name": "UnitCode", "field": "unit_code", "header": "Code", "is_string": true, "width": 120},
-        {"enum_name": "UnitName", "field": "unit_name", "header": "Name", "is_string": true, "width": 250},
-        {"enum_name": "BusinessCentreCode", "field": "business_centre_code", "header": "Business Centre", "is_string": true, "width": 130},
-        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
-        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
-        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+        {
+          "enum_name": "UnitCode",
+          "field": "unit_code",
+          "header": "Code",
+          "is_string": true,
+          "width": 120
+        },
+        {
+          "enum_name": "UnitName",
+          "field": "unit_name",
+          "header": "Name",
+          "is_string": true,
+          "width": 250
+        },
+        {
+          "enum_name": "BusinessCentreCode",
+          "field": "business_centre_code",
+          "header": "Business Centre",
+          "is_string": true,
+          "width": 130
+        },
+        {
+          "enum_name": "Version",
+          "field": "version",
+          "header": "Version",
+          "is_int": true,
+          "width": 80
+        },
+        {
+          "enum_name": "ModifiedBy",
+          "field": "modified_by",
+          "header": "Modified By",
+          "is_string": true,
+          "width": 120
+        },
+        {
+          "enum_name": "RecordedAt",
+          "field": "recorded_at",
+          "header": "Recorded At",
+          "is_timestamp": true,
+          "width": 150
+        }
       ],
       "settings_group": "BusinessUnitListWindow",
       "window_title": "Business Units",

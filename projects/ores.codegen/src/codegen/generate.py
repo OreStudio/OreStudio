@@ -139,7 +139,7 @@ def cmd_regenerate(args: Any, base_dir: Path) -> int:
 
         model_files = sorted(
             f for f in models_dir.glob(comp.entity_glob)
-            if not f.name.endswith(comp.exclude_suffix)
+            if comp.exclude_suffix is None or not f.name.endswith(comp.exclude_suffix)
         )
         if not model_files:
             log.warning(

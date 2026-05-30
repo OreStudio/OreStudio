@@ -62,7 +62,7 @@ public:
     /**
      * @brief Returns a workspace by UUID string, or nullopt if not found.
      */
-    std::optional<domain::workspace> get_workspace(const std::string& id);
+    std::optional<domain::workspace> find_workspace(const std::string& id);
 
     /**
      * @brief Creates a new workspace and returns its UUID string.

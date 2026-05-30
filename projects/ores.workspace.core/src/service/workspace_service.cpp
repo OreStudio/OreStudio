@@ -37,7 +37,7 @@ std::vector<domain::workspace> workspace_service::list_workspaces() {
 }
 
 std::optional<domain::workspace>
-workspace_service::get_workspace(const std::string& id) {
+workspace_service::find_workspace(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting workspace: " << id;
     return repo_.find_by_id(ctx_, id);
 }

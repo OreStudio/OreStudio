@@ -54,11 +54,11 @@ that some of these are not present across all entities. Final decisions are reco
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                   |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F][Audit C++ template drift]] (for complete breaking change list). |
-| Next         | Start once drift audit is complete.    |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Task 5: Apply safe drift.              |
 | Last touched | 2026-05-30                             |
 
 * Acceptance
@@ -87,4 +87,57 @@ that some of these are not present across all entities. Final decisions are reco
 
 * Result
 
-(Populated when task is complete.)
+** Decision table
+
+All 15 breaking changes resolved. Decisions:
+
+| Change | Category | Decision | Action taken |
+|--------+----------+----------+--------------|
+| Mapper =.value()= → =.value_or(system())= (×9 convention mappers) | semantic | Production updated | Updated 9 mapper =.cpp= files in =ores.refdata.core= |
+| Service =get_type()= → =find_type()= rename (×3 type services) | template frozen | Template updated | Changed =get_{{entity_singular_short}}= → =find_{{entity_singular_short}}= globally in service template |
+| Service =save_types()= missing from template | template frozen | Template updated | Added =save_{{entity_plural_short}}= batch method to service template |
+| Service =remove_types()= missing from template | template frozen | Template updated | Added =remove_{{entity_plural_short}}= batch method; 1 caller in =instrument_ref_handler.hpp= preserved |
+| Service EXPORT macro missing (=report_definition=, =workspace=) | template frozen | Template updated | Added =ORES_{{component_core_upper}}_EXPORT= and =export.hpp= include to service template |
+| Workspace =get_workspace= → =find_workspace= | template frozen | Production updated | Renamed in =workspace_service.hpp=, =workspace_service.cpp=, =workspace_handler.hpp= (×2 callers) |
+| Portfolio =get_portfolio(string)= → =find_portfolio(uuid)= | template frozen | Deferred to Task 5 | Template now generates =find_portfolio(string)=; portfolio service regenerated in Task 5 |
+| Portfolio =save_portfolios()= missing | template frozen | Template updated | Covered by batch method addition above |
+| =report_definition= =get_definition= → =find_definition= | template frozen | Template updated | Covered by global =find_= rename; 3 callers already use =find_definition=, no change needed |
+| =report_definition= =save_definition= by-value vs const-ref | template frozen | Deferred | Template keeps const-ref (=const domain::T& v=); production updated in Task 5 |
+| =report_definition= EXPORT macro missing | template frozen | Template updated | Covered by EXPORT addition above |
+| =workspace= =create_workspace()= missing | excluded | Workspace service hand-crafted; excluded from bulk regeneration | Not in template; =create_workspace= preserved in production |
+| =workspace= additional methods missing | excluded | Same as above | Not in template scope |
+| Protocol NATS subject hyphens vs underscores (×3) | deferred | Deferred to Task 5 | Minor cosmetic in protocol subjects; no callers broken |
+| Header guard format regressions | fixed in Task 3 | Already resolved | Resolved by =component_include_upper= / =component_core_upper= template fix |
+
+** Service template changes
+
+=cpp_service.hpp.mustache= updated with four changes:
+1. =get_{{entity_singular_short}}= → =find_{{entity_singular_short}}= for the optional single-item lookup.
+2. Added =save_{{entity_plural_short}}(const std::vector<domain::{{entity_singular}}>& ...)= batch method.
+3. Added =remove_{{entity_plural_short}}(const std::vector<std::string>& ...)= batch method.
+4. Added =ORES_{{component_core_upper}}_EXPORT= to class declaration and =export.hpp= include.
+
+All four changes are backward-compatible for entities without callers. Workspace renamed separately (2 callers updated).
+
+** Production file changes
+
+| File | Change |
+|------+--------|
+| =cds_convention_mapper.cpp= | =.value()= → =.value_or(system())= on tenant_id |
+| =deposit_convention_mapper.cpp= | Same |
+| =fra_convention_mapper.cpp= | Same |
+| =fx_convention_mapper.cpp= | Same |
+| =ibor_index_convention_mapper.cpp= | Same |
+| =ois_convention_mapper.cpp= | Same |
+| =overnight_index_convention_mapper.cpp= | Same |
+| =swap_convention_mapper.cpp= | Same |
+| =zero_convention_mapper.cpp= | Same |
+| =workspace_service.hpp= | =get_workspace= → =find_workspace= |
+| =workspace_service.cpp= | =get_workspace= → =find_workspace= |
+| =workspace_handler.hpp= | Two callers: =svc.get_workspace= → =svc.find_workspace= |
+
+** Excluded from regeneration
+
+=workspace_service= contains hand-crafted methods not generated by the template
+(=create_workspace()=, =archive_workspace()=, etc.). This service is excluded from
+bulk regeneration in Task 5; only domain and repository layers regenerate for workspace.

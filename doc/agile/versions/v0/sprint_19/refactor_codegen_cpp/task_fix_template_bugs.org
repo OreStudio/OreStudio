@@ -48,11 +48,11 @@ regenerating with a buggy template would corrupt production include guards.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                   |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F][Audit C++ template drift]] (for any additional bugs). |
-| Next         | Start once drift audit is complete.    |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Task 4: Resolve breaking API drift.    |
 | Last touched | 2026-05-30                             |
 
 * Acceptance
@@ -81,4 +81,44 @@ regenerating with a buggy template would corrupt production include guards.
 
 * Result
 
-(Populated when task is complete.)
+** Include guard fix
+
+14 header templates updated to use =component_include_upper= (api files) and
+=component_core_upper= (core files) in their =#ifndef= / =#define= include guards,
+replacing the incorrect =component_upper= (which dropped the =.api= / =.core=
+segment).
+
+Templates fixed with =component_include_upper=:
+
+| Template | Guard segment |
+|----------+---------------|
+| =cpp_domain_type_class.hpp= | =ORES_{{component_include_upper}}_DOMAIN_...= |
+| =cpp_domain_type_class_non_temporal.hpp= | =ORES_{{component_include_upper}}_DOMAIN_...= |
+| =cpp_domain_type_json_io.hpp= | =ORES_{{component_include_upper}}_DOMAIN_..._JSON_IO_...= |
+| =cpp_domain_type_table.hpp= | =ORES_{{component_include_upper}}_DOMAIN_..._TABLE_...= |
+| =cpp_domain_type_table_io.hpp= | =ORES_{{component_include_upper}}_DOMAIN_..._TABLE_IO_...= |
+| =cpp_domain_type_generator.hpp= | =ORES_{{component_include_upper}}_..._GENERATOR_...= |
+| =cpp_protocol.hpp= (both =domain_entity= and =entity= sections) | =ORES_{{component_include_upper}}_MESSAGING_..._PROTOCOL_...= |
+
+Templates fixed with =component_core_upper=:
+
+| Template | Guard segment |
+|----------+---------------|
+| =cpp_domain_type_entity.hpp= | =ORES_{{component_core_upper}}_REPOSITORY_..._ENTITY_...= |
+| =cpp_domain_type_entity_non_temporal.hpp= | =ORES_{{component_core_upper}}_REPOSITORY_..._ENTITY_...= |
+| =cpp_domain_type_mapper.hpp= | =ORES_{{component_core_upper}}_REPOSITORY_..._MAPPER_...= |
+| =cpp_domain_type_mapper_non_temporal.hpp= | =ORES_{{component_core_upper}}_REPOSITORY_..._MAPPER_...= |
+| =cpp_domain_type_repository.hpp= | =ORES_{{component_core_upper}}_REPOSITORY_..._REPOSITORY_...= |
+| =cpp_domain_type_repository_non_temporal.hpp= | =ORES_{{component_core_upper}}_REPOSITORY_..._REPOSITORY_...= |
+| =cpp_service.hpp= | =ORES_{{component_core_upper}}_SERVICE_..._SERVICE_...= |
+
+Backward compatibility: for models without =component_include= / =component_core=
+set, both variables default to =component=, so guard format is unchanged.
+
+Spot-checked against =rounding_type= (all 18 files manually corrected in a prior
+sprint — template now matches production exactly). Also verified =iam/tenant=.
+
+All 12 C++ components dry-run clean (zero errors, zero warnings):
+=analytics-cpp=, =compute-cpp=, =controller-cpp=, =database-cpp=, =dq-cpp=,
+=iam-cpp=, =refdata-cpp=, =reporting-cpp=, =scheduler-cpp=, =trading-cpp=,
+=workflow-cpp=, =workspace-cpp=.

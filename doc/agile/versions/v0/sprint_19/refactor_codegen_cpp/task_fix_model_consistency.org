@@ -92,6 +92,7 @@ must be unambiguous: =--profile sql= and =--profile all-cpp= must not interfere.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | =Now= field should be =Not yet started.= for BACKLOG tasks, not =Nothing.= | task_fix_model_consistency.org | Fixed | PR #940 round 1. |
+| 2 | =exclude_suffix= type hint should be =Optional[str]= since it can now be =None= | manifest.py | Fixed | PR #943 round 1. |
 
 * Result
 

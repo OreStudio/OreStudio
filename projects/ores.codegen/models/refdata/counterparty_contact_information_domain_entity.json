@@ -3,6 +3,8 @@
     "schema": "public",
     "product": "ores",
     "component": "refdata",
+    "component_include": "refdata.api",
+    "component_core": "refdata.core",
     "has_tenant_id": true,
     "entity_singular": "counterparty_contact_information",
     "entity_plural": "counterparty_contact_informations",
@@ -10,7 +12,6 @@
     "natural_keys_composite_name": "cpty_contact_type",
     "brief": "Contact details for a counterparty organised by purpose.",
     "description": "Contact details for counterparties organised by purpose (Legal, Operations,\nSettlement, Billing). Each counterparty can have one contact record per type.",
-
     "primary_key": {
       "column": "id",
       "type": "uuid",
@@ -18,7 +19,6 @@
       "description": "UUID uniquely identifying this contact information record.",
       "detail": "Surrogate key for the counterparty contact information record."
     },
-
     "natural_keys": [
       {
         "column": "counterparty_id",
@@ -37,7 +37,6 @@
         "generator_expr": "std::string(\"Legal\")"
       }
     ],
-
     "columns": [
       {
         "name": "street_line_1",
@@ -121,33 +120,62 @@
         "generator_expr": "std::string(\"https://example.com\")"
       }
     ],
-
     "sql": {
       "tablename": "ores_refdata_counterparty_contact_informations_tbl"
     },
-
     "repository": {
       "entity_singular_short": "counterparty_contact_information",
       "entity_plural_short": "counterparty_contact_informations",
       "entity_singular_words": "counterparty contact information",
       "entity_plural_words": "counterparty contact informations"
     },
-
     "cpp": {
       "includes": {
-        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
-        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+        "domain": [
+          "<chrono>",
+          "<string>",
+          "<boost/uuid/uuid.hpp>"
+        ],
+        "entity": [
+          "<string>",
+          "\"sqlgen/Timestamp.hpp\"",
+          "\"sqlgen/PrimaryKey.hpp\""
+        ]
       },
       "iterator_var": "cci",
       "table_display": [
-        {"column": "counterparty_id", "header": "Counterparty"},
-        {"column": "contact_type", "header": "Type"},
-        {"column": "city", "header": "City"},
-        {"column": "country_code", "header": "Country"},
-        {"column": "phone", "header": "Phone"},
-        {"column": "email", "header": "Email"},
-        {"column": "modified_by", "header": "Modified By"},
-        {"column": "version", "header": "Version"}
+        {
+          "column": "counterparty_id",
+          "header": "Counterparty"
+        },
+        {
+          "column": "contact_type",
+          "header": "Type"
+        },
+        {
+          "column": "city",
+          "header": "City"
+        },
+        {
+          "column": "country_code",
+          "header": "Country"
+        },
+        {
+          "column": "phone",
+          "header": "Phone"
+        },
+        {
+          "column": "email",
+          "header": "Email"
+        },
+        {
+          "column": "modified_by",
+          "header": "Modified By"
+        },
+        {
+          "column": "version",
+          "header": "Version"
+        }
       ]
     }
   }

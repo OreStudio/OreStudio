@@ -2,12 +2,13 @@
   "domain_entity": {
     "schema": "public",
     "component": "refdata",
+    "component_include": "refdata.api",
+    "component_core": "refdata.core",
     "entity_singular": "contact_type",
     "entity_plural": "contact_types",
     "entity_title": "Contact Type",
     "brief": "Classification of contact information purpose.",
     "description": "Reference data table defining valid contact type classifications.\nExamples: 'Legal', 'Operations', 'Settlement', 'Billing'.\n\nContact types are managed by the system tenant and are used to\ncategorise contact information records for parties and counterparties.",
-
     "primary_key": {
       "column": "code",
       "type": "text",
@@ -15,7 +16,6 @@
       "description": "Unique contact type code.",
       "detail": "Examples: 'Legal', 'Operations', 'Settlement'."
     },
-
     "natural_keys": [
       {
         "column": "name",
@@ -25,7 +25,6 @@
         "generator_expr": "std::string(faker::word::adjective()) + \" Contact\""
       }
     ],
-
     "columns": [
       {
         "name": "description",
@@ -44,34 +43,54 @@
         "generator_expr": "faker::number::integer(1, 100)"
       }
     ],
-
     "sql": {
       "tablename": "ores_refdata_contact_types_tbl"
     },
-
     "repository": {
       "entity_singular_short": "type",
       "entity_plural_short": "types",
       "entity_singular_words": "contact type",
       "entity_plural_words": "contact types"
     },
-
     "cpp": {
       "includes": {
-        "domain": ["<chrono>", "<string>"],
-        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\""]
+        "domain": [
+          "<chrono>",
+          "<string>"
+        ],
+        "entity": [
+          "<string>",
+          "\"sqlgen/Timestamp.hpp\""
+        ]
       },
       "iterator_var": "ct",
       "table_display": [
-        {"column": "code", "header": "Code"},
-        {"column": "name", "header": "Name"},
-        {"column": "description", "header": "Description"},
-        {"column": "display_order", "header": "Order"},
-        {"column": "modified_by", "header": "Modified By"},
-        {"column": "version", "header": "Version"}
+        {
+          "column": "code",
+          "header": "Code"
+        },
+        {
+          "column": "name",
+          "header": "Name"
+        },
+        {
+          "column": "description",
+          "header": "Description"
+        },
+        {
+          "column": "display_order",
+          "header": "Order"
+        },
+        {
+          "column": "modified_by",
+          "header": "Modified By"
+        },
+        {
+          "column": "version",
+          "header": "Version"
+        }
       ]
     },
-
     "qt": {
       "domain_include": "ores.refdata/domain/contact_type.hpp",
       "domain_class": "refdata::domain::contact_type",
@@ -80,7 +99,6 @@
       "item_var": "type",
       "key_field": "code",
       "has_uuid_primary_key": false,
-
       "get_request_class": "refdata::messaging::get_contact_types_request",
       "get_response_class": "refdata::messaging::get_contact_types_response",
       "get_message_type": "get_contact_types_request",
@@ -93,17 +111,57 @@
       "history_request_class": "refdata::messaging::get_contact_type_history_request",
       "history_response_class": "refdata::messaging::get_contact_type_history_response",
       "history_message_type": "get_contact_type_history_request",
-
       "columns": [
-        {"enum_name": "Code", "field": "code", "header": "Code", "is_string": true, "width": 150},
-        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},
-        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 300},
-        {"enum_name": "DisplayOrder", "field": "display_order", "header": "Order", "is_int": true, "width": 80},
-        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
-        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
-        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+        {
+          "enum_name": "Code",
+          "field": "code",
+          "header": "Code",
+          "is_string": true,
+          "width": 150
+        },
+        {
+          "enum_name": "Name",
+          "field": "name",
+          "header": "Name",
+          "is_string": true,
+          "width": 200
+        },
+        {
+          "enum_name": "Description",
+          "field": "description",
+          "header": "Description",
+          "is_string": true,
+          "width": 300
+        },
+        {
+          "enum_name": "DisplayOrder",
+          "field": "display_order",
+          "header": "Order",
+          "is_int": true,
+          "width": 80
+        },
+        {
+          "enum_name": "Version",
+          "field": "version",
+          "header": "Version",
+          "is_int": true,
+          "width": 80
+        },
+        {
+          "enum_name": "ModifiedBy",
+          "field": "modified_by",
+          "header": "Modified By",
+          "is_string": true,
+          "width": 120
+        },
+        {
+          "enum_name": "RecordedAt",
+          "field": "recorded_at",
+          "header": "Recorded At",
+          "is_timestamp": true,
+          "width": 150
+        }
       ],
-
       "settings_group": "ContactTypeListWindow",
       "window_title": "Contact Types",
       "icon": "PersonAccounts"

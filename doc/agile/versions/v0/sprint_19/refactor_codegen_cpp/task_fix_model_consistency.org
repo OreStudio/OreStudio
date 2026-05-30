@@ -62,11 +62,11 @@ must be unambiguous: =--profile sql= and =--profile all-cpp= must not interfere.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                   |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F][Audit C++ template drift]] (for confirmed path-error list). |
-| Next         | Start once drift audit is complete.    |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Task 3: Fix C++ template bugs.         |
 | Last touched | 2026-05-30                             |
 
 * Acceptance
@@ -95,4 +95,56 @@ must be unambiguous: =--profile sql= and =--profile all-cpp= must not interfere.
 
 * Result
 
-(Populated when task is complete.)
+** Part A — model consistency
+
+42 =_domain_entity.json= models updated to add =component_include= and =component_core=.
+One model excluded: =database/database_info= (flat component; =ores.database= has no
+api/core split and generates to the correct path without these fields).
+
+Component mapping applied:
+
+| Component | component_include | component_core | Models fixed |
+|-----------+-------------------+----------------+--------------|
+| analytics | (already set) | (already set) | 0 |
+| compute | =compute.api= | =compute.core= | 6 |
+| controller | =controller.api= | =controller.core= | 2 |
+| database | n/a — flat component | n/a | 0 |
+| dq | =dq.api= | =dq.core= | 4 |
+| iam | =iam.api= | =iam.core= | 4 |
+| refdata | =refdata.api= | =refdata.core= | 11 |
+| reporting | =reporting.api= | =reporting.core= | 3 |
+| scheduler | =scheduler.api= | =scheduler.core= | 1 |
+| trading | =trading.api= | =trading.core= | 9 |
+| workflow | =workflow.api= | =workflow.core= | 2 |
+| workspace | (already set) | (already set) | 0 |
+| *Total* | | | *42* |
+
+Spot-checked with =--dry-run=: compute/app → =ores.compute.api=, iam/tenant →
+=ores.iam.api=, refdata/party → =ores.refdata.api=, trading/leg_type →
+=ores.trading.api=, workflow/workflow_instance → =ores.workflow.api=. All correct.
+
+** Part B — C++ component registry
+
+=manifest.py= extended with 12 new C++ component entries (one per component that has
+=_domain_entity.json= models). The =Component.exclude_suffix= field now supports =None=
+meaning "no exclusion"; =generate.py= updated to handle this. =exclude_suffix=""= was
+wrong — =str.endswith("")= is always =True=, excluding every file.
+
+| Component name | models_dir | Models |
+|----------------+------------+--------|
+| =analytics-cpp= | =models/analytics= | 4 |
+| =compute-cpp= | =models/compute= | 6 |
+| =controller-cpp= | =models/controller= | 2 |
+| =database-cpp= | =models/database= | 1 |
+| =dq-cpp= | =models/dq= | 4 |
+| =iam-cpp= | =models/iam= | 4 |
+| =refdata-cpp= | =models/refdata= | 25 |
+| =reporting-cpp= | =models/reporting= | 4 |
+| =scheduler-cpp= | =models/scheduler= | 1 |
+| =trading-cpp= | =models/trading= | 21 |
+| =workflow-cpp= | =models/workflow= | 2 |
+| =workspace-cpp= | =models/workspace= | 1 |
+| *Total* | | *75* |
+
+All 12 components verified: =codegen.py regenerate --component X --profile all-cpp --dry-run=
+produces zero errors and zero warnings for every component.

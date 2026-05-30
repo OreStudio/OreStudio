@@ -2,6 +2,8 @@
   "domain_entity": {
     "schema": "public",
     "component": "workflow",
+    "component_include": "workflow.api",
+    "component_core": "workflow.core",
     "entity_singular": "workflow_instance",
     "entity_plural": "workflow_instances",
     "entity_singular_title": "Workflow Instance",
@@ -9,16 +11,13 @@
     "has_tenant_id": true,
     "brief": "A single execution of a named workflow.",
     "description": "Tracks the lifecycle of a workflow execution, including its type, status,\nthe serialised request that triggered it, and any result or error produced.\nInstances are append-mostly; status transitions are the primary mutation.",
-
     "primary_key": {
       "column": "id",
       "type": "uuid",
       "cpp_type": "boost::uuids::uuid",
       "description": "UUID primary key for the workflow instance."
     },
-
     "natural_keys": [],
-
     "columns": [
       {
         "name": "tenant_id",
@@ -115,21 +114,23 @@
         "description": "Timestamp of the most recent step-completed event processed."
       }
     ],
-
     "sql": {
       "tablename": "ores_workflow_workflow_instances_tbl"
     },
-
     "repository": {
       "entity_singular_short": "instance",
       "entity_plural_short": "instances",
       "entity_singular_words": "workflow instance",
       "entity_plural_words": "workflow instances"
     },
-
     "cpp": {
       "includes": {
-        "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"]
+        "domain": [
+          "<chrono>",
+          "<optional>",
+          "<string>",
+          "<boost/uuid/uuid.hpp>"
+        ]
       },
       "iterator_var": "wi"
     }

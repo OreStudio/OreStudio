@@ -3,13 +3,14 @@
     "schema": "public",
     "product": "ores",
     "component": "refdata",
+    "component_include": "refdata.api",
+    "component_core": "refdata.core",
     "has_tenant_id": true,
     "entity_singular": "counterparty_identifier",
     "entity_plural": "counterparty_identifiers",
     "entity_title": "Counterparty Identifier",
     "brief": "An external identifier for a counterparty under a specific scheme.",
     "description": "External identifiers for counterparties, such as LEI codes, BIC/SWIFT codes,\nnational registration numbers, and tax identifiers. Each counterparty can have\nmultiple identifiers across different schemes.",
-
     "primary_key": {
       "column": "id",
       "type": "uuid",
@@ -17,7 +18,6 @@
       "description": "UUID uniquely identifying this counterparty identifier.",
       "detail": "Surrogate key for the counterparty identifier record."
     },
-
     "natural_keys": [
       {
         "column": "counterparty_id",
@@ -36,7 +36,6 @@
         "generator_expr": "std::string(\"LEI\")"
       }
     ],
-
     "columns": [
       {
         "name": "id_value",
@@ -57,31 +56,54 @@
         "generator_expr": "std::string(\"Test identifier\")"
       }
     ],
-
     "sql": {
       "tablename": "ores_refdata_counterparty_identifiers_tbl"
     },
-
     "repository": {
       "entity_singular_short": "counterparty_identifier",
       "entity_plural_short": "counterparty_identifiers",
       "entity_singular_words": "counterparty identifier",
       "entity_plural_words": "counterparty identifiers"
     },
-
     "cpp": {
       "includes": {
-        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
-        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+        "domain": [
+          "<chrono>",
+          "<string>",
+          "<boost/uuid/uuid.hpp>"
+        ],
+        "entity": [
+          "<string>",
+          "\"sqlgen/Timestamp.hpp\"",
+          "\"sqlgen/PrimaryKey.hpp\""
+        ]
       },
       "iterator_var": "ci",
       "table_display": [
-        {"column": "counterparty_id", "header": "Counterparty"},
-        {"column": "id_scheme", "header": "Scheme"},
-        {"column": "id_value", "header": "Value"},
-        {"column": "description", "header": "Description"},
-        {"column": "modified_by", "header": "Modified By"},
-        {"column": "version", "header": "Version"}
+        {
+          "column": "counterparty_id",
+          "header": "Counterparty"
+        },
+        {
+          "column": "id_scheme",
+          "header": "Scheme"
+        },
+        {
+          "column": "id_value",
+          "header": "Value"
+        },
+        {
+          "column": "description",
+          "header": "Description"
+        },
+        {
+          "column": "modified_by",
+          "header": "Modified By"
+        },
+        {
+          "column": "version",
+          "header": "Version"
+        }
       ]
     }
   }

@@ -3,6 +3,8 @@
     "schema": "public",
     "product": "ores",
     "component": "scheduler",
+    "component_include": "scheduler.api",
+    "component_core": "scheduler.core",
     "entity_singular": "job_definition",
     "entity_plural": "job_definitions",
     "entity_title": "Job Definition",
@@ -10,7 +12,6 @@
     "generator_facet_name": "generator",
     "brief": "Persistent plan for a pg_cron scheduled SQL job.",
     "description": "Metadata overlay for a pg_cron cron.job entry. Tracks the job name,\ncron expression, SQL command, target database, and active state.",
-
     "primary_key": {
       "column": "id",
       "type": "uuid",
@@ -18,7 +19,6 @@
       "description": "UUID primary key for the job definition.",
       "uuid_check_fn": "ores_utility_nil_uuid_fn()"
     },
-
     "columns": [
       {
         "name": "party_id",
@@ -82,7 +82,6 @@
         "description": "1 = active, 0 = paused."
       }
     ],
-
     "sql": {
       "tablename": "ores_scheduler_job_definitions_tbl",
       "nullable_tenant_id": true,
@@ -102,7 +101,6 @@
         }
       ]
     },
-
     "indexes": [
       {
         "name": "name_tenant_uniq",
@@ -125,21 +123,20 @@
         "current_only": true
       }
     ],
-
     "repository": {
       "entity_singular_short": "definition",
       "entity_plural_short": "definitions",
       "entity_singular_words": "job definition",
       "entity_plural_words": "job definitions"
     },
-
     "cpp": {
       "includes": {
-        "domain": ["<string>"]
+        "domain": [
+          "<string>"
+        ]
       },
       "iterator_var": "jd"
     },
-
     "qt": {
       "domain_include": "ores.scheduler/domain/job_definition.hpp",
       "domain_class": "scheduler::domain::job_definition",
@@ -149,7 +146,6 @@
       "key_field": "job_name",
       "key_widget": "jobNameEdit",
       "has_uuid_primary_key": true,
-
       "get_request_class": "scheduler::messaging::get_job_definitions_request",
       "get_response_class": "scheduler::messaging::get_job_definitions_response",
       "get_message_type": "get_job_definitions_request",
@@ -162,7 +158,6 @@
       "history_request_class": "scheduler::messaging::get_job_history_request",
       "history_response_class": "scheduler::messaging::get_job_history_response",
       "history_message_type": "get_job_history_request",
-
       "detail_fields": [
         {
           "field": "job_name",
@@ -205,17 +200,57 @@
           "placeholder": "Target PostgreSQL database name"
         }
       ],
-
       "columns": [
-        {"enum_name": "JobName",      "field": "job_name",           "header": "Job Name",    "is_string": true,  "width": 200},
-        {"enum_name": "Description",  "field": "description",        "header": "Description", "is_string": true,  "width": 250},
-        {"enum_name": "Schedule",     "field": "schedule_expression","header": "Schedule",    "is_string": true,  "width": 150},
-        {"enum_name": "DatabaseName", "field": "database_name",      "header": "Database",    "is_string": true,  "width": 150},
-        {"enum_name": "Active",       "field": "is_active",          "header": "Active",      "is_bool": true,    "width": 80},
-        {"enum_name": "Version",      "field": "version",            "header": "Version",     "is_int": true,     "width": 60},
-        {"enum_name": "ModifiedBy",   "field": "modified_by",        "header": "Modified By", "is_string": true,  "width": 120}
+        {
+          "enum_name": "JobName",
+          "field": "job_name",
+          "header": "Job Name",
+          "is_string": true,
+          "width": 200
+        },
+        {
+          "enum_name": "Description",
+          "field": "description",
+          "header": "Description",
+          "is_string": true,
+          "width": 250
+        },
+        {
+          "enum_name": "Schedule",
+          "field": "schedule_expression",
+          "header": "Schedule",
+          "is_string": true,
+          "width": 150
+        },
+        {
+          "enum_name": "DatabaseName",
+          "field": "database_name",
+          "header": "Database",
+          "is_string": true,
+          "width": 150
+        },
+        {
+          "enum_name": "Active",
+          "field": "is_active",
+          "header": "Active",
+          "is_bool": true,
+          "width": 80
+        },
+        {
+          "enum_name": "Version",
+          "field": "version",
+          "header": "Version",
+          "is_int": true,
+          "width": 60
+        },
+        {
+          "enum_name": "ModifiedBy",
+          "field": "modified_by",
+          "header": "Modified By",
+          "is_string": true,
+          "width": 120
+        }
       ],
-
       "settings_group": "JobDefinitionListWindow",
       "window_title": "Job Definitions",
       "icon": "CalendarClock"

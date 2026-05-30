@@ -3,13 +3,14 @@
     "schema": "public",
     "product": "ores",
     "component": "refdata",
+    "component_include": "refdata.api",
+    "component_core": "refdata.core",
     "has_tenant_id": true,
     "entity_singular": "party_contact_information",
     "entity_plural": "party_contact_informations",
     "entity_title": "Party Contact Information",
     "brief": "Contact details for a party organised by purpose.",
     "description": "Contact details for parties organised by purpose (Legal, Operations,\nSettlement, Billing). Each party can have one contact record per type.",
-
     "primary_key": {
       "column": "id",
       "type": "uuid",
@@ -17,7 +18,6 @@
       "description": "UUID uniquely identifying this contact information record.",
       "detail": "Surrogate key for the party contact information record."
     },
-
     "natural_keys": [
       {
         "column": "party_id",
@@ -36,7 +36,6 @@
         "generator_expr": "std::string(\"Legal\")"
       }
     ],
-
     "columns": [
       {
         "name": "street_line_1",
@@ -120,33 +119,62 @@
         "generator_expr": "std::string(\"https://example.com\")"
       }
     ],
-
     "sql": {
       "tablename": "ores_refdata_party_contact_informations_tbl"
     },
-
     "repository": {
       "entity_singular_short": "party_contact_information",
       "entity_plural_short": "party_contact_informations",
       "entity_singular_words": "party contact information",
       "entity_plural_words": "party contact informations"
     },
-
     "cpp": {
       "includes": {
-        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
-        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+        "domain": [
+          "<chrono>",
+          "<string>",
+          "<boost/uuid/uuid.hpp>"
+        ],
+        "entity": [
+          "<string>",
+          "\"sqlgen/Timestamp.hpp\"",
+          "\"sqlgen/PrimaryKey.hpp\""
+        ]
       },
       "iterator_var": "pci",
       "table_display": [
-        {"column": "party_id", "header": "Party"},
-        {"column": "contact_type", "header": "Type"},
-        {"column": "city", "header": "City"},
-        {"column": "country_code", "header": "Country"},
-        {"column": "phone", "header": "Phone"},
-        {"column": "email", "header": "Email"},
-        {"column": "modified_by", "header": "Modified By"},
-        {"column": "version", "header": "Version"}
+        {
+          "column": "party_id",
+          "header": "Party"
+        },
+        {
+          "column": "contact_type",
+          "header": "Type"
+        },
+        {
+          "column": "city",
+          "header": "City"
+        },
+        {
+          "column": "country_code",
+          "header": "Country"
+        },
+        {
+          "column": "phone",
+          "header": "Phone"
+        },
+        {
+          "column": "email",
+          "header": "Email"
+        },
+        {
+          "column": "modified_by",
+          "header": "Modified By"
+        },
+        {
+          "column": "version",
+          "header": "Version"
+        }
       ]
     }
   }

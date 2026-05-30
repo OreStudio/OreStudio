@@ -2,6 +2,8 @@
   "domain_entity": {
     "schema": "public",
     "component": "workflow",
+    "component_include": "workflow.api",
+    "component_core": "workflow.core",
     "entity_singular": "workflow_step",
     "entity_plural": "workflow_steps",
     "entity_singular_title": "Workflow Step",
@@ -9,16 +11,13 @@
     "has_tenant_id": false,
     "brief": "A single step within a workflow instance.",
     "description": "Records the execution of one step in a saga workflow, including the step\nindex, name, status, request/response payloads, and timing. Steps reference\ntheir parent workflow instance via workflow_id.",
-
     "primary_key": {
       "column": "id",
       "type": "uuid",
       "cpp_type": "boost::uuids::uuid",
       "description": "UUID primary key for the workflow step."
     },
-
     "natural_keys": [],
-
     "columns": [
       {
         "name": "workflow_id",
@@ -131,21 +130,23 @@
         "description": "Timestamp when the step reached a terminal state."
       }
     ],
-
     "sql": {
       "tablename": "ores_workflow_workflow_steps_tbl"
     },
-
     "repository": {
       "entity_singular_short": "step",
       "entity_plural_short": "steps",
       "entity_singular_words": "workflow step",
       "entity_plural_words": "workflow steps"
     },
-
     "cpp": {
       "includes": {
-        "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"]
+        "domain": [
+          "<chrono>",
+          "<optional>",
+          "<string>",
+          "<boost/uuid/uuid.hpp>"
+        ]
       },
       "iterator_var": "ws"
     }

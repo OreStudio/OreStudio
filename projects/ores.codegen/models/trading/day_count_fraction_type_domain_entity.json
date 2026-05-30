@@ -3,6 +3,8 @@
     "schema": "public",
     "product": "ores",
     "component": "trading",
+    "component_include": "trading.api",
+    "component_core": "trading.core",
     "entity_singular": "day_count_fraction_type",
     "entity_plural": "day_count_fraction_types",
     "entity_title": "Day Count Fraction Type",
@@ -10,7 +12,6 @@
     "generator_facet_name": "generator",
     "brief": "ORE day count fraction convention code (e.g. A360, A365F, ActAct(ISDA)).",
     "description": "Reference data table defining valid day count fraction conventions used in\ninstrument leg definitions. Values are sourced from ORE ore_types.xsd.",
-
     "primary_key": {
       "column": "code",
       "type": "text",
@@ -19,7 +20,6 @@
       "detail": "Examples: 'A360', 'A365F', 'ActAct(ISDA)', '30/360', 'Business252'.",
       "generator_expr": "std::string(faker::word::noun()) + \"_dcf_\" + std::to_string(++counter)"
     },
-
     "columns": [
       {
         "name": "description",
@@ -30,25 +30,24 @@
         "generator_expr": "std::string(faker::lorem::sentence())"
       }
     ],
-
     "sql": {
       "tablename": "ores_trading_day_count_fraction_types_tbl"
     },
-
     "repository": {
       "entity_singular_short": "type",
       "entity_plural_short": "types",
       "entity_singular_words": "day count fraction type",
       "entity_plural_words": "day count fraction types"
     },
-
     "cpp": {
       "includes": {
-        "domain": ["<chrono>", "<string>"]
+        "domain": [
+          "<chrono>",
+          "<string>"
+        ]
       },
       "iterator_var": "t"
     },
-
     "qt": {
       "domain_include": "ores.trading.api/domain/day_count_fraction_type.hpp",
       "domain_class": "trading::domain::day_count_fraction_type",
@@ -57,7 +56,6 @@
       "item_var": "type",
       "key_field": "code",
       "has_uuid_primary_key": false,
-
       "get_request_class": "trading::messaging::get_day_count_fraction_types_request",
       "get_response_class": "trading::messaging::get_day_count_fraction_types_response",
       "get_message_type": "get_day_count_fraction_types_request",
@@ -70,15 +68,43 @@
       "history_request_class": "trading::messaging::get_day_count_fraction_type_history_request",
       "history_response_class": "trading::messaging::get_day_count_fraction_type_history_response",
       "history_message_type": "get_day_count_fraction_type_history_request",
-
       "columns": [
-        {"enum_name": "Code", "field": "code", "header": "Code", "is_string": true, "width": 200},
-        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 350},
-        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
-        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
-        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+        {
+          "enum_name": "Code",
+          "field": "code",
+          "header": "Code",
+          "is_string": true,
+          "width": 200
+        },
+        {
+          "enum_name": "Description",
+          "field": "description",
+          "header": "Description",
+          "is_string": true,
+          "width": 350
+        },
+        {
+          "enum_name": "Version",
+          "field": "version",
+          "header": "Version",
+          "is_int": true,
+          "width": 80
+        },
+        {
+          "enum_name": "ModifiedBy",
+          "field": "modified_by",
+          "header": "Modified By",
+          "is_string": true,
+          "width": 120
+        },
+        {
+          "enum_name": "RecordedAt",
+          "field": "recorded_at",
+          "header": "Recorded At",
+          "is_timestamp": true,
+          "width": 150
+        }
       ],
-
       "settings_group": "DayCountFractionTypeListWindow",
       "window_title": "Day Count Fraction Types",
       "icon": "Calendar"

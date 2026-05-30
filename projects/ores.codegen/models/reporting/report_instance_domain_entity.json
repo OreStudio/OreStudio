@@ -3,13 +3,14 @@
     "schema": "public",
     "product": "ores",
     "component": "reporting",
+    "component_include": "reporting.api",
+    "component_core": "reporting.core",
     "entity_singular": "report_instance",
     "entity_plural": "report_instances",
     "entity_title": "Report Instance",
     "has_tenant_id": true,
     "brief": "A single execution of a report definition.",
     "description": "A single execution of a report_definition. Created automatically when the\nscheduler fires a trigger for an active definition.\n\nLifecycle is managed through the report_instance_lifecycle FSM machine.\nfsm_state_id points to the current state in ores_dq_fsm_states_tbl.\n\nstarted_at is NULL when the instance is cancelled or skipped before execution\nbegins. completed_at is NULL while running or in a terminal-before-start state.",
-
     "primary_key": {
       "column": "id",
       "type": "uuid",
@@ -17,7 +18,6 @@
       "description": "UUID uniquely identifying this report instance.",
       "uuid_check_fn": "ores_utility_nil_uuid_fn()"
     },
-
     "natural_keys": [
       {
         "column": "name",
@@ -27,7 +27,6 @@
         "generator_expr": "std::string(faker::word::noun()) + \"_instance\""
       }
     ],
-
     "columns": [
       {
         "name": "description",
@@ -96,7 +95,6 @@
         "generator_expr": "std::nullopt"
       }
     ],
-
     "sql": {
       "tablename": "ores_reporting_report_instances_tbl",
       "security_definer": true,
@@ -127,17 +125,30 @@
           "select_fields": "name, description",
           "into_vars": "def_name, def_description",
           "declare_vars": [
-            {"name": "def_name",        "type": "text"},
-            {"name": "def_description", "type": "text"}
+            {
+              "name": "def_name",
+              "type": "text"
+            },
+            {
+              "name": "def_description",
+              "type": "text"
+            }
           ],
           "copy_empty": [
-            {"target": "name",        "source": "def_name",        "coalesce": false},
-            {"target": "description", "source": "def_description", "coalesce": true}
+            {
+              "target": "name",
+              "source": "def_name",
+              "coalesce": false
+            },
+            {
+              "target": "description",
+              "source": "def_description",
+              "coalesce": true
+            }
           ]
         }
       ]
     },
-
     "indexes": [
       {
         "name": "definition",
@@ -152,23 +163,35 @@
         "current_only": true
       }
     ],
-
     "repository": {
       "entity_singular_short": "instance",
       "entity_plural_short": "instances",
       "entity_singular_words": "report instance",
       "entity_plural_words": "report instances"
     },
-
     "cpp": {
       "includes": {
-        "domain": ["<chrono>", "<cstdint>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"],
-        "entity": ["<cstdint>", "<optional>", "<string>", "\"sqlgen/Timestamp.hpp\"", "<boost/uuid/uuid.hpp>"],
-        "generator": ["\"faker-cxx/Word.h\"", "\"faker-cxx/Lorem.h\""]
+        "domain": [
+          "<chrono>",
+          "<cstdint>",
+          "<optional>",
+          "<string>",
+          "<boost/uuid/uuid.hpp>"
+        ],
+        "entity": [
+          "<cstdint>",
+          "<optional>",
+          "<string>",
+          "\"sqlgen/Timestamp.hpp\"",
+          "<boost/uuid/uuid.hpp>"
+        ],
+        "generator": [
+          "\"faker-cxx/Word.h\"",
+          "\"faker-cxx/Lorem.h\""
+        ]
       },
       "iterator_var": "ri"
     },
-
     "qt": {
       "domain_include": "ores.reporting/domain/report_instance.hpp",
       "domain_class": "reporting::domain::report_instance",
@@ -178,7 +201,6 @@
       "key_field": "name",
       "key_widget": "nameEdit",
       "has_uuid_primary_key": true,
-
       "get_request_class": "reporting::messaging::get_report_instances_request",
       "get_response_class": "reporting::messaging::get_report_instances_response",
       "get_message_type": "get_report_instances_request",
@@ -191,27 +213,89 @@
       "history_request_class": "reporting::messaging::get_report_instance_history_request",
       "history_response_class": "reporting::messaging::get_report_instance_history_response",
       "history_message_type": "get_report_instance_history_request",
-
       "detail_fields": [
-        {"field": "name",           "label": "Name",          "widget": "nameEdit",        "type": "line_edit",
-         "is_key": true, "is_required": true, "placeholder": "Report instance name"},
-        {"field": "description",    "label": "Description",   "widget": "descriptionEdit", "type": "text_edit",
-         "placeholder": "Description"},
-        {"field": "output_message", "label": "Output",        "widget": "outputEdit",      "type": "text_edit",
-         "placeholder": "Execution log or error message"}
+        {
+          "field": "name",
+          "label": "Name",
+          "widget": "nameEdit",
+          "type": "line_edit",
+          "is_key": true,
+          "is_required": true,
+          "placeholder": "Report instance name"
+        },
+        {
+          "field": "description",
+          "label": "Description",
+          "widget": "descriptionEdit",
+          "type": "text_edit",
+          "placeholder": "Description"
+        },
+        {
+          "field": "output_message",
+          "label": "Output",
+          "widget": "outputEdit",
+          "type": "text_edit",
+          "placeholder": "Execution log or error message"
+        }
       ],
-
       "columns": [
-        {"enum_name": "Name",         "field": "name",          "header": "Name",       "is_string": true,    "width": 200},
-        {"enum_name": "DefinitionId", "field": "definition_id", "header": "Definition", "is_uuid": true,      "width": 200},
-        {"enum_name": "TriggerRunId", "field": "trigger_run_id","header": "Trigger Run","is_int": true,       "width": 100},
-        {"enum_name": "OutputMessage","field": "output_message", "header": "Output",    "is_string": true,    "width": 250},
-        {"enum_name": "StartedAt",    "field": "started_at",    "header": "Started At", "is_timestamp": true, "width": 150},
-        {"enum_name": "CompletedAt",  "field": "completed_at",  "header": "Completed",  "is_timestamp": true, "width": 150},
-        {"enum_name": "Version",      "field": "version",       "header": "Version",    "is_int": true,       "width": 60},
-        {"enum_name": "ModifiedBy",   "field": "modified_by",   "header": "Modified By","is_string": true,    "width": 120}
+        {
+          "enum_name": "Name",
+          "field": "name",
+          "header": "Name",
+          "is_string": true,
+          "width": 200
+        },
+        {
+          "enum_name": "DefinitionId",
+          "field": "definition_id",
+          "header": "Definition",
+          "is_uuid": true,
+          "width": 200
+        },
+        {
+          "enum_name": "TriggerRunId",
+          "field": "trigger_run_id",
+          "header": "Trigger Run",
+          "is_int": true,
+          "width": 100
+        },
+        {
+          "enum_name": "OutputMessage",
+          "field": "output_message",
+          "header": "Output",
+          "is_string": true,
+          "width": 250
+        },
+        {
+          "enum_name": "StartedAt",
+          "field": "started_at",
+          "header": "Started At",
+          "is_timestamp": true,
+          "width": 150
+        },
+        {
+          "enum_name": "CompletedAt",
+          "field": "completed_at",
+          "header": "Completed",
+          "is_timestamp": true,
+          "width": 150
+        },
+        {
+          "enum_name": "Version",
+          "field": "version",
+          "header": "Version",
+          "is_int": true,
+          "width": 60
+        },
+        {
+          "enum_name": "ModifiedBy",
+          "field": "modified_by",
+          "header": "Modified By",
+          "is_string": true,
+          "width": 120
+        }
       ],
-
       "settings_group": "ReportInstanceListWindow",
       "window_title": "Report Instances",
       "icon": "Record"

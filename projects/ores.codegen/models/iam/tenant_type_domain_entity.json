@@ -2,12 +2,13 @@
   "domain_entity": {
     "schema": "public",
     "component": "iam",
+    "component_include": "iam.api",
+    "component_core": "iam.core",
     "entity_singular": "tenant_type",
     "entity_plural": "tenant_types",
     "entity_title": "Tenant Type",
     "brief": "Classification of tenant types.",
     "description": "Reference data table defining valid tenant type classifications.\nExamples: 'organisation', 'platform', 'sandbox'.\n\nTenant types are managed by the system tenant and are used to\ncategorise tenants for different purposes.",
-
     "primary_key": {
       "column": "type",
       "type": "text",
@@ -15,7 +16,6 @@
       "description": "Unique type code.",
       "detail": "Examples: 'organisation', 'platform'."
     },
-
     "natural_keys": [
       {
         "column": "name",
@@ -25,7 +25,6 @@
         "generator_expr": "std::string(faker::word::adjective()) + \" Tenant\""
       }
     ],
-
     "columns": [
       {
         "name": "description",
@@ -44,34 +43,54 @@
         "generator_expr": "faker::number::integer(1, 100)"
       }
     ],
-
     "sql": {
       "tablename": "ores_iam_tenant_types_tbl"
     },
-
     "repository": {
       "entity_singular_short": "type",
       "entity_plural_short": "types",
       "entity_singular_words": "tenant type",
       "entity_plural_words": "tenant types"
     },
-
     "cpp": {
       "includes": {
-        "domain": ["<chrono>", "<string>"],
-        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\""]
+        "domain": [
+          "<chrono>",
+          "<string>"
+        ],
+        "entity": [
+          "<string>",
+          "\"sqlgen/Timestamp.hpp\""
+        ]
       },
       "iterator_var": "tt",
       "table_display": [
-        {"column": "type", "header": "Type"},
-        {"column": "name", "header": "Name"},
-        {"column": "description", "header": "Description"},
-        {"column": "display_order", "header": "Order"},
-        {"column": "modified_by", "header": "Modified By"},
-        {"column": "version", "header": "Version"}
+        {
+          "column": "type",
+          "header": "Type"
+        },
+        {
+          "column": "name",
+          "header": "Name"
+        },
+        {
+          "column": "description",
+          "header": "Description"
+        },
+        {
+          "column": "display_order",
+          "header": "Order"
+        },
+        {
+          "column": "modified_by",
+          "header": "Modified By"
+        },
+        {
+          "column": "version",
+          "header": "Version"
+        }
       ]
     },
-
     "qt": {
       "domain_include": "ores.iam/domain/tenant_type.hpp",
       "domain_class": "iam::domain::tenant_type",
@@ -80,7 +99,6 @@
       "item_var": "tenant_type",
       "key_field": "type",
       "has_uuid_primary_key": false,
-
       "get_request_class": "iam::messaging::get_tenant_types_request",
       "get_response_class": "iam::messaging::get_tenant_types_response",
       "get_message_type": "get_tenant_types_request",
@@ -93,26 +111,83 @@
       "history_request_class": "iam::messaging::get_tenant_type_history_request",
       "history_response_class": "iam::messaging::get_tenant_type_history_response",
       "history_message_type": "get_tenant_type_history_request",
-
       "detail_fields": [
-        {"field": "type", "label": "Type", "widget": "codeEdit", "type": "line_edit",
-         "is_key": true, "is_required": true, "placeholder": "Enter tenant type code"},
-        {"field": "name", "label": "Name", "widget": "nameEdit", "type": "line_edit",
-         "is_required": true, "placeholder": "Enter display name"},
-        {"field": "description", "label": "Description", "widget": "descriptionEdit",
-         "type": "text_edit", "placeholder": "Enter a description"}
+        {
+          "field": "type",
+          "label": "Type",
+          "widget": "codeEdit",
+          "type": "line_edit",
+          "is_key": true,
+          "is_required": true,
+          "placeholder": "Enter tenant type code"
+        },
+        {
+          "field": "name",
+          "label": "Name",
+          "widget": "nameEdit",
+          "type": "line_edit",
+          "is_required": true,
+          "placeholder": "Enter display name"
+        },
+        {
+          "field": "description",
+          "label": "Description",
+          "widget": "descriptionEdit",
+          "type": "text_edit",
+          "placeholder": "Enter a description"
+        }
       ],
-
       "columns": [
-        {"enum_name": "Type", "field": "type", "header": "Type", "is_string": true, "width": 120},
-        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},
-        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 300},
-        {"enum_name": "DisplayOrder", "field": "display_order", "header": "Order", "is_int": true, "width": 80},
-        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
-        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
-        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+        {
+          "enum_name": "Type",
+          "field": "type",
+          "header": "Type",
+          "is_string": true,
+          "width": 120
+        },
+        {
+          "enum_name": "Name",
+          "field": "name",
+          "header": "Name",
+          "is_string": true,
+          "width": 200
+        },
+        {
+          "enum_name": "Description",
+          "field": "description",
+          "header": "Description",
+          "is_string": true,
+          "width": 300
+        },
+        {
+          "enum_name": "DisplayOrder",
+          "field": "display_order",
+          "header": "Order",
+          "is_int": true,
+          "width": 80
+        },
+        {
+          "enum_name": "Version",
+          "field": "version",
+          "header": "Version",
+          "is_int": true,
+          "width": 80
+        },
+        {
+          "enum_name": "ModifiedBy",
+          "field": "modified_by",
+          "header": "Modified By",
+          "is_string": true,
+          "width": 120
+        },
+        {
+          "enum_name": "RecordedAt",
+          "field": "recorded_at",
+          "header": "Recorded At",
+          "is_timestamp": true,
+          "width": 150
+        }
       ],
-
       "settings_group": "TenantTypeListWindow",
       "window_title": "Tenant Types",
       "icon": "Tag"

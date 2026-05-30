@@ -3,13 +3,14 @@
     "schema": "public",
     "product": "ores",
     "component": "refdata",
+    "component_include": "refdata.api",
+    "component_core": "refdata.core",
     "has_tenant_id": true,
     "entity_singular": "party_identifier",
     "entity_plural": "party_identifiers",
     "entity_title": "Party Identifier",
     "brief": "An external identifier for a party under a specific scheme.",
     "description": "External identifiers for parties, such as LEI codes, BIC/SWIFT codes,\nnational registration numbers, and tax identifiers. Each party can have\nmultiple identifiers across different schemes.",
-
     "primary_key": {
       "column": "id",
       "type": "uuid",
@@ -17,7 +18,6 @@
       "description": "UUID uniquely identifying this party identifier.",
       "detail": "Surrogate key for the party identifier record."
     },
-
     "natural_keys": [
       {
         "column": "party_id",
@@ -36,7 +36,6 @@
         "generator_expr": "std::string(\"LEI\")"
       }
     ],
-
     "columns": [
       {
         "name": "id_value",
@@ -57,31 +56,54 @@
         "generator_expr": "std::string(\"Test identifier\")"
       }
     ],
-
     "sql": {
       "tablename": "ores_refdata_party_identifiers_tbl"
     },
-
     "repository": {
       "entity_singular_short": "party_identifier",
       "entity_plural_short": "party_identifiers",
       "entity_singular_words": "party identifier",
       "entity_plural_words": "party identifiers"
     },
-
     "cpp": {
       "includes": {
-        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
-        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+        "domain": [
+          "<chrono>",
+          "<string>",
+          "<boost/uuid/uuid.hpp>"
+        ],
+        "entity": [
+          "<string>",
+          "\"sqlgen/Timestamp.hpp\"",
+          "\"sqlgen/PrimaryKey.hpp\""
+        ]
       },
       "iterator_var": "pi",
       "table_display": [
-        {"column": "party_id", "header": "Party"},
-        {"column": "id_scheme", "header": "Scheme"},
-        {"column": "id_value", "header": "Value"},
-        {"column": "description", "header": "Description"},
-        {"column": "modified_by", "header": "Modified By"},
-        {"column": "version", "header": "Version"}
+        {
+          "column": "party_id",
+          "header": "Party"
+        },
+        {
+          "column": "id_scheme",
+          "header": "Scheme"
+        },
+        {
+          "column": "id_value",
+          "header": "Value"
+        },
+        {
+          "column": "description",
+          "header": "Description"
+        },
+        {
+          "column": "modified_by",
+          "header": "Modified By"
+        },
+        {
+          "column": "version",
+          "header": "Version"
+        }
       ]
     }
   }

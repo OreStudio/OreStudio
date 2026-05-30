@@ -3,13 +3,14 @@
     "schema": "public",
     "product": "ores",
     "component": "iam",
+    "component_include": "iam.api",
+    "component_core": "iam.core",
     "entity_singular": "tenant",
     "entity_plural": "tenants",
     "entity_title": "Tenant",
     "has_tenant_id": true,
     "brief": "A tenant representing an isolated organisation or the system platform.",
     "description": "Core entity for multi-tenancy support. Each tenant represents an isolated\norganisation with its own users, roles, and data. The system tenant (UUID all zeros)\nis a special tenant used for shared reference data and system administration.\n\nTenants are identified by:\n- id: UUID primary key (SQL also has tenant_id = id for self-reference)\n- code: Unique text code for stable referencing (e.g., 'system', 'acme')\n- hostname: Unique hostname for tenant routing during login",
-
     "primary_key": {
       "column": "id",
       "type": "uuid",
@@ -18,7 +19,6 @@
       "detail": "The system tenant has UUID 00000000-0000-0000-0000-000000000000. In SQL, tenant_id = id for tenant records.",
       "skip_uuid_check": true
     },
-
     "natural_keys": [
       {
         "column": "code",
@@ -29,7 +29,6 @@
         "generator_expr": "std::string(faker::word::noun()) + \"_tenant\""
       }
     ],
-
     "columns": [
       {
         "name": "name",
@@ -72,7 +71,6 @@
         "generator_expr": "\"active\""
       }
     ],
-
     "sql": {
       "tablename": "ores_iam_tenants_tbl",
       "system_scope": true,
@@ -100,7 +98,6 @@
         "status = 'terminated'"
       ]
     },
-
     "indexes": [
       {
         "name": "hostname_uniq",
@@ -109,31 +106,58 @@
         "current_only": true
       }
     ],
-
     "repository": {
       "entity_singular_short": "tenant",
       "entity_plural_short": "tenants",
       "entity_singular_words": "tenant",
       "entity_plural_words": "tenants"
     },
-
     "cpp": {
       "includes": {
-        "domain": ["<chrono>", "<string>", "<optional>", "<boost/uuid/uuid.hpp>"],
-        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+        "domain": [
+          "<chrono>",
+          "<string>",
+          "<optional>",
+          "<boost/uuid/uuid.hpp>"
+        ],
+        "entity": [
+          "<string>",
+          "\"sqlgen/Timestamp.hpp\"",
+          "\"sqlgen/PrimaryKey.hpp\""
+        ]
       },
       "iterator_var": "t",
       "table_display": [
-        {"column": "code", "header": "Code"},
-        {"column": "name", "header": "Name"},
-        {"column": "type", "header": "Type"},
-        {"column": "hostname", "header": "Hostname"},
-        {"column": "status", "header": "Status"},
-        {"column": "modified_by", "header": "Modified By"},
-        {"column": "version", "header": "Version"}
+        {
+          "column": "code",
+          "header": "Code"
+        },
+        {
+          "column": "name",
+          "header": "Name"
+        },
+        {
+          "column": "type",
+          "header": "Type"
+        },
+        {
+          "column": "hostname",
+          "header": "Hostname"
+        },
+        {
+          "column": "status",
+          "header": "Status"
+        },
+        {
+          "column": "modified_by",
+          "header": "Modified By"
+        },
+        {
+          "column": "version",
+          "header": "Version"
+        }
       ]
     },
-
     "qt": {
       "domain_include": "ores.iam/domain/tenant.hpp",
       "domain_class": "iam::domain::tenant",
@@ -142,7 +166,6 @@
       "item_var": "tenant",
       "key_field": "code",
       "has_uuid_primary_key": true,
-
       "get_request_class": "iam::messaging::get_tenants_request",
       "get_response_class": "iam::messaging::get_tenants_response",
       "get_message_type": "get_tenants_request",
@@ -155,31 +178,104 @@
       "history_request_class": "iam::messaging::get_tenant_history_request",
       "history_response_class": "iam::messaging::get_tenant_history_response",
       "history_message_type": "get_tenant_history_request",
-
       "detail_fields": [
-        {"field": "code", "label": "Code", "widget": "codeEdit", "type": "line_edit",
-         "is_key": true, "is_required": true, "placeholder": "Enter tenant code"},
-        {"field": "name", "label": "Name", "widget": "nameEdit", "type": "line_edit",
-         "is_required": true, "placeholder": "Enter display name"},
-        {"field": "type", "label": "Type", "widget": "typeEdit", "type": "line_edit",
-         "placeholder": "Enter tenant type"},
-        {"field": "hostname", "label": "Hostname", "widget": "hostnameEdit", "type": "line_edit",
-         "placeholder": "Enter hostname"},
-        {"field": "status", "label": "Status", "widget": "statusEdit", "type": "line_edit",
-         "placeholder": "Enter status"}
+        {
+          "field": "code",
+          "label": "Code",
+          "widget": "codeEdit",
+          "type": "line_edit",
+          "is_key": true,
+          "is_required": true,
+          "placeholder": "Enter tenant code"
+        },
+        {
+          "field": "name",
+          "label": "Name",
+          "widget": "nameEdit",
+          "type": "line_edit",
+          "is_required": true,
+          "placeholder": "Enter display name"
+        },
+        {
+          "field": "type",
+          "label": "Type",
+          "widget": "typeEdit",
+          "type": "line_edit",
+          "placeholder": "Enter tenant type"
+        },
+        {
+          "field": "hostname",
+          "label": "Hostname",
+          "widget": "hostnameEdit",
+          "type": "line_edit",
+          "placeholder": "Enter hostname"
+        },
+        {
+          "field": "status",
+          "label": "Status",
+          "widget": "statusEdit",
+          "type": "line_edit",
+          "placeholder": "Enter status"
+        }
       ],
-
       "columns": [
-        {"enum_name": "Code", "field": "code", "header": "Code", "is_string": true, "width": 120},
-        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},
-        {"enum_name": "Type", "field": "type", "header": "Type", "is_string": true, "width": 100},
-        {"enum_name": "Hostname", "field": "hostname", "header": "Hostname", "is_string": true, "width": 180},
-        {"enum_name": "Status", "field": "status", "header": "Status", "is_string": true, "width": 100},
-        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
-        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
-        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+        {
+          "enum_name": "Code",
+          "field": "code",
+          "header": "Code",
+          "is_string": true,
+          "width": 120
+        },
+        {
+          "enum_name": "Name",
+          "field": "name",
+          "header": "Name",
+          "is_string": true,
+          "width": 200
+        },
+        {
+          "enum_name": "Type",
+          "field": "type",
+          "header": "Type",
+          "is_string": true,
+          "width": 100
+        },
+        {
+          "enum_name": "Hostname",
+          "field": "hostname",
+          "header": "Hostname",
+          "is_string": true,
+          "width": 180
+        },
+        {
+          "enum_name": "Status",
+          "field": "status",
+          "header": "Status",
+          "is_string": true,
+          "width": 100
+        },
+        {
+          "enum_name": "Version",
+          "field": "version",
+          "header": "Version",
+          "is_int": true,
+          "width": 80
+        },
+        {
+          "enum_name": "ModifiedBy",
+          "field": "modified_by",
+          "header": "Modified By",
+          "is_string": true,
+          "width": 120
+        },
+        {
+          "enum_name": "RecordedAt",
+          "field": "recorded_at",
+          "header": "Recorded At",
+          "is_timestamp": true,
+          "width": 150
+        }
       ],
-
       "settings_group": "TenantListWindow",
       "window_title": "Tenants",
       "icon": "Building"

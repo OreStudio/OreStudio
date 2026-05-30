@@ -100,6 +100,12 @@ See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and
   =*_table.json= and =*_domain_entity.json=). The root key is =entity=. This avoids
   confusion with the old =*_entity.json= naming that some components used before the
   SQL refactoring.
+- /Dispatch on root key, not filename suffix./ Several components (trading, dq,
+  iam) already have =*_entity.json= files whose root key is =schema= — the old
+  model format from before the SQL refactoring. =get_model_type()= in
+  =generator.py= must inspect the JSON root key (=entity= vs. =schema= vs.
+  =table= vs. =domain_entity=), not the filename suffix, to avoid silently
+  misrouting legacy schema files as unified entity models.
 - /Refdata pilot first./ Refdata has the cleanest models after the SQL refactoring
   and C++ audit. Migrating refdata first produces the reference implementation.
 

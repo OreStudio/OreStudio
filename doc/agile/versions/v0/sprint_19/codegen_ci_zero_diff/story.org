@@ -78,6 +78,10 @@ See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and
 - /Trigger on affected paths only./ Running regeneration on every PR is
   expensive (~1,746 files). Path-based triggers limit the job to PRs where
   templates, models, or production output files actually changed.
+- /SQL-only pilot can start before Phase 2./ The SQL zero-diff check (refdata
+  =_table.json= models only) is self-contained and can be implemented and
+  enabled as soon as the C++ audit achieves a clean baseline. It does not
+  require the unified =_entity.json= format from Phase 2 to be complete.
 
 * Out of scope
 

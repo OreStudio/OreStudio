@@ -8,7 +8,7 @@
 #+filetags: :refactor_codegen_cpp:sprint_19:v0:
 #+owner: marco
 #+branch: feature/codegen-architecture-analysis
-#+pr:
+#+pr: 945
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-30
@@ -36,7 +36,7 @@ Deliverables:
 |--------------+---------------------------------------------------------------------|
 | State        | DONE                                                                |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]]                                |
-| Now          | Analysis complete; plan doc and roadmap stories written.            |
+| Now          | Nothing.                                                            |
 | Waiting on   | Nothing.                                                            |
 | Next         | Done. Next: [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] before starting C++ audit. |
 | Last touched | 2026-05-30                                                          |
@@ -57,13 +57,19 @@ Deliverables:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/945][#945]] | Codegen architecture analysis and unified model roadmap |
 
 * Review
 
+** Round 1 — 2026-05-30
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | DONE task status table: =Now= field must be =Nothing.= | task file | Fixed: set =Now= to =Nothing.= | Gemini review |
+| 2 | CLI should catch =ValueError= and log clean error; no raw traceback | safety guardrails story | Fixed: acceptance criterion updated | Gemini review |
+| 3 | Task 4 description lacks pre-flight decision table requirement | c++ refactor story | Fixed: description updated | Self-review |
+| 4 | =*_entity.json= naming collision with legacy =schema= models | single model story | Fixed: dispatch-on-root-key decision added | Self-review |
+| 5 | SQL CI pilot can start before Phase 2 | ci zero-diff story | Fixed: decision note added | Self-review |
 
 * Result
 

@@ -143,7 +143,7 @@ trading, iam, dq, and all remaining components.
 | [[id:A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F][Audit C++ template drift and build drift catalog]] | BACKLOG | | | Run codegen for all 75 domain_entity models; collect diffs; classify as clean / cosmetic / additive / breaking / path-error. |
 | [[id:F7B3E1D9-6A4C-4F2B-7E8D-1C5A9B3F7D2E][Fix C++ template bugs]] | BACKLOG | | | Fix include guard regression and any other systematic template bugs found in the audit. |
 | [[id:D2E8F4A1-9B3C-4D7F-6A5B-8E1C7D3F9A2B][Fix model consistency and register C++ components in manifest.py]] | BACKLOG | | | Verify and fix component_include/component_core in all 75 models; add all components to manifest.py. |
-| [[id:B5F1C8D3-4A7E-4B2F-9D6C-3E8A1B5D7C4F][Resolve breaking API drift]] | BACKLOG | | | For each breaking change in the drift catalog, decide: freeze template or update production code and callers. |
+| [[id:B5F1C8D3-4A7E-4B2F-9D6C-3E8A1B5D7C4F][Resolve breaking API drift]] | BACKLOG | | | Record explicit template-frozen-vs-production-updated decision per breaking change before writing any production file changes; then execute each decision and update callers. |
 | [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift and verify zero diff across all components]] | BACKLOG | | | Apply cosmetic and additive diffs component by component; apply any decided production updates; confirm zero diff and CI green. |
 
 * Notes

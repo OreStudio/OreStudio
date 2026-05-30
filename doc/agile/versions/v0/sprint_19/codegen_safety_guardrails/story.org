@@ -52,9 +52,10 @@ See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and
 
 * Acceptance
 
-- =generate.py= raises a =ValueError= (and =codegen.py= exits non-zero) when
-  a =_domain_entity.json= model is missing =component_include= or =component_core=.
-  The error message names the field and the model file.
+- =generate.py= raises a =ValueError= when a =_domain_entity.json= model is
+  missing =component_include= or =component_core=; =codegen.py= catches it,
+  logs a clean human-readable error message naming the missing field and the
+  model file, and exits non-zero. No raw Python traceback is shown to the user.
 - Running =--profile sql= on a =_domain_entity.json= model that has a
   corresponding =_table.json= in the same directory raises an error or warning
   directing the user to use the =_table.json= model instead.

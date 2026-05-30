@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 4729C928-7EE0-4B8E-A932-FE286BDB2CC7
+:END:
+#+title: Task: Implement knowledge graph improvements
+#+description: Investigate and fix image rendering and missing left-panel controls.
+#+type: task
+#+level: s1
+#+filetags: :knowledge_graph_improvements:sprint_19:v0:
+#+owner: marco
+#+branch: feature/knowledge-graph-improvements
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-30
+#+updated: 2026-05-30
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F3CB848E-72C1-4F81-AAE4-1265F41D47C1][Fix knowledge graph issues]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Investigate and fix the two known knowledge graph regressions:
+inline images not rendering and the left-panel controls (configuration
+options, sidebar toggle) being absent from the graph view.
+
+* Status
+
+| Field        | Value                                                           |
+|--------------+-----------------------------------------------------------------|
+| State        | STARTED                                                         |
+| Parent story | [[id:F3CB848E-72C1-4F81-AAE4-1265F41D47C1][Fix knowledge graph issues]]                   |
+| Now          | Investigating root causes.                                      |
+| Waiting on   | Nothing.                                                        |
+| Next         | Apply fixes; rebuild site; verify both issues resolved.         |
+| Last touched | 2026-05-30                                                      |
+
+* Acceptance
+
+- Images render inline in the knowledge graph view.
+- Left-panel controls are visible and functional.
+- Site build passes without errors.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -77,13 +77,14 @@ that some of these are not present across all entities. Final decisions are reco
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/947][#947]] | [codegen] Resolve breaking API drift (Task 4) |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | =Now= field should be =Not yet started.= for BACKLOG tasks, not =Nothing.= | task_resolve_breaking_changes.org | Fixed | PR #940 round 1. |
+| 2 | Batch methods =save_N= / =remove_N= declared in header template but missing implementations in =.cpp= template — would cause linker errors. Also =get_= → =find_= rename missing from =.cpp=. | cpp_service.cpp.mustache | Fixed | PR #947 round 1. |
 
 * Result
 

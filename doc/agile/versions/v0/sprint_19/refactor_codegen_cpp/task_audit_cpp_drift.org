@@ -43,7 +43,7 @@ It makes the full scope visible before any code is changed.
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Audit complete. Drift catalog populated in * Result. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Task 2: fix path-errors (add component_include/component_core to 42 models). |
 | Last touched | 2026-05-30                             |

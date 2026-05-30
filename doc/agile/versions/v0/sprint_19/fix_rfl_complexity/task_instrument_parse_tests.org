@@ -8,7 +8,7 @@
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
 #+branch: feature/instrument-parse-tests
-#+pr:
+#+pr: 941
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29
@@ -103,14 +103,14 @@ EXPECT_EQ(fwd->currency_pair, "EURUSD");
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                         |
+|-----+---------------------------------------------------------------|
+| 941 | [ores.qt.api] Task 3: extract parse_trade_instrument + tests  |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                           | File                       | Decision | Notes                                                          |
+|---+-------------------------------------------+----------------------------+----------+----------------------------------------------------------------|
+| 1 | READ_FLAT/READ_LEGS identical; unhygienic | parse_trade_instrument.cpp | Applied  | Replaced both macros with try_parse<T>() template (8c9cad6b); thread resolved |
 
 * Result

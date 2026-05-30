@@ -18,6 +18,7 @@
  *
  */
 #include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.qt/parse_trade_instrument.hpp"
 #include "ores.qt/IInstrumentFormPopulator.hpp"
 #include "ores.logging/make_logger.hpp"

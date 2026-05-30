@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 
 @dataclass
@@ -10,7 +10,7 @@ class Component:
     # *_entity.json also matches *_domain_entity.json; exclude the latter so
     # regenerate only processes pure schema models, not domain entity models.
     # None means no exclusion.
-    exclude_suffix: str = "_domain_entity.json"
+    exclude_suffix: Optional[str] = "_domain_entity.json"
 
 
 COMPONENTS: Dict[str, Component] = {

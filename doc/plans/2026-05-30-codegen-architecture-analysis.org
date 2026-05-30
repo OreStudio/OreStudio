@@ -1,0 +1,265 @@
+:PROPERTIES:
+:ID: F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E
+:END:
+#+title: Codegen architecture analysis and unified model roadmap
+#+AUTHOR: Claude
+#+DATE: 2026-05-30
+
+* Overview
+
+This document records a System 2 analysis of the =ores.codegen= code
+generation system, conducted at the start of Sprint 19 before the C++
+template audit ([[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]]) begins. It
+identifies structural concerns that could cause the audit to produce
+misleading results or leave the system in a partially coherent state,
+and defines a roadmap for a unified single-model code generator.
+
+The SQL refactoring ([[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]], DONE) was
+correct and necessary. This analysis accepts its outcomes and focuses
+on what must happen next.
+
+* Scope of current system
+
+| Dimension        | Count / value                             |
+|------------------+-------------------------------------------|
+| C++ templates    | 60 (8 facets)                             |
+| Domain models    | 75 =_domain_entity.json= across 8+ components |
+| SQL models       | ~10 =_table.json= (refdata only so far)   |
+| Production files | ~1,746 C++ files in 8 API+Core projects   |
+| Registered C++ components | 12 (manifest.py)                 |
+| SQL profile templates | 2 (sql_schema_create + sql_schema_domain_entity_create) |
+
+* Structural concerns
+
+** C1 — Old SQL template still fires on domain_entity models
+
+=profiles.json= routes the =domain_entity= model type to
+=sql_schema_domain_entity_create.mustache= (the *old* template) under
+the =sql= profile. The new unified template (=sql_schema_create.mustache=)
+only fires for the =table= model type.
+
+For every entity that has *both* a =_table.json= and a =_domain_entity.json=
+(e.g. =currency_market_tier=, =rounding_type=, =monetary_nature=), there
+are two ways to generate SQL using two different templates. Running
+=--profile sql= on a =_domain_entity.json= model silently invokes the old
+template.
+
+The =--profile all= footgun guard in =generate.py= only blocks
+=schema= and =table= model types:
+
+#+begin_src python
+if profile == "all" and model_type in ("schema", "table"):
+#+end_src
+
+A =domain_entity= model running =--profile all= is not blocked and silently
+invokes the old SQL template.
+
+*Risk*: the C++ audit in Task 1 of [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]]
+will report "zero diff" for domain entity SQL output that was written to
+the wrong template's path, obscuring real drift.
+
+*Fix*: [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] — Story 1 of the roadmap.
+
+** C2 — Missing component_include/component_core is silently wrong
+
+=generator.py= falls back to the bare =component= field when
+=component_include= or =component_core= is absent:
+
+#+begin_src python
+component_include = entity.get('component_include', component)
+component_core    = entity.get('component_core',    component)
+#+end_src
+
+For =component = "refdata"=, this resolves to =projects/ores.refdata/=,
+a directory that does not exist. Generated files land in an untracked
+new directory. Git diff reports no change (nothing to compare against),
+so the audit shows "clean" — a false pass.
+
+The SQL story already observed this: "generated files were untracked
+(and therefore reported as 'zero git diff' — misleading). The spurious
+directory was deleted as cleanup."
+
+*Risk*: Task 1 of the C++ audit will silently report 70% of models as
+"clean" because their output is written to the wrong path.
+
+*Fix*: [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] — a one-line guard that raises
+an error when =component_include= falls back to =component= for a
+=domain_entity= model.
+
+** C3 — =all-cpp= profile is not "all C++"
+
+The =all-cpp= profile expands to: =domain, generator, repository,
+service, protocol=. It excludes:
+
+- =qt= — Qt UI (list window, detail dialog, history dialog, controller)
+- =non-temporal-domain=, =non-temporal-repository=
+- =nats-eventing= — the changed-event struct
+
+Running =codegen.sh regenerate --component refdata-cpp --profile all-cpp=
+gives a partial C++ regeneration. The acceptance criterion "zero diff
+across all components" in [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] is
+ambiguous: Qt templates may have drifted, but =all-cpp= will never reveal
+it.
+
+*Fix*: [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] — document in a CI step and
+=--help= output exactly which facets =all-cpp= covers.
+
+** C4 — Temporal templates silently produce wrong output for non-temporal entities
+
+The =all-cpp= profile runs the temporal template family, which emits
+=version=, =modified_by=, =recorded_at= audit columns. If any of the 75
+=_domain_entity.json= models represent non-temporal entities (plausible
+for =analytics=, =dq=, =scheduler= models), running =all-cpp= produces
+C++ code with audit columns that do not exist in the database table.
+There is no validation or guard.
+
+*Fix*: [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] — add an =is_temporal= assertion
+check: if the model lacks =is_temporal= (defaulting to =true=), warn when
+a non-temporal profile is requested.
+
+** C5 — Qt section encodes protocol class names explicitly
+
+Every =_domain_entity.json= model has a =qt= section that explicitly
+lists NATS request/response class names:
+
+#+begin_src json
+"get_request_class": "refdata::messaging::get_currency_market_tiers_request",
+"domain_include": "ores.refdata/domain/currency_market_tier.hpp",
+#+end_src
+
+These are not derived from naming conventions; they are transcribed.
+Any protocol naming refactor requires editing all 75 models manually.
+
+The SQL refactoring succeeded by replacing transcribed SQL with flag-based
+variability. The Qt section is the same problem in the C++ domain.
+
+*Fix*: [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model — Phase 1: derive Qt fields from conventions]]
+— all fields derivable from =component= + =entity_singular/plural= are
+removed from the models; =generator.py= derives them at generation time.
+
+** C6 — Dual model file per entity is a long-term divergence risk
+
+Each entity has two model files: =_table.json= (SQL) and
+=_domain_entity.json= (C++). The SQL refactoring intentionally
+deferred merging them. In the interim, the two files can drift:
+
+- The SQL model has the definitive column list (including FK constraints);
+  the C++ model has its own column list with =cpp_type= annotations.
+  If a column is added to the SQL model and not the C++ model, the
+  generated C++ will be out of sync.
+- There is no cross-validation that the two files agree on column names,
+  types, or primary key.
+
+*Fix*: [[id:88113E9B-DBD4-4E08-8CD9-49B8A709B871][Codegen unified model — Phase 2: single model file per entity]]
+— merge both files into a single =_entity.json=; one source of truth
+drives all facets.
+
+** C7 — Temporal/non-temporal template duplication doubles maintenance cost
+
+There are two parallel template families:
+- =cpp_domain_type_entity.hpp.mustache= (temporal)
+- =cpp_domain_type_entity_non_temporal.hpp.mustache= (non-temporal)
+- Same duplication for mapper and repository (6 template pairs total)
+
+Every template fix or enhancement must be applied twice. The two families
+can drift from each other — a bug fixed in the temporal family may be
+missed in the non-temporal family, or vice versa.
+
+*Fix*: [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal/non-temporal templates]]
+— merge into single templates with ={{#is_temporal}}= conditionals.
+
+** C8 — No CI enforcement of the zero-diff invariant
+
+The "zero diff" invariant (regeneration produces no change to production
+files) is verified only manually, at story completion. Any subsequent
+template change that is not paired with a production file update silently
+breaks the invariant. Without a CI gate, the system reverts to drift
+within one sprint.
+
+*Fix*: [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] — CI job that runs regeneration and
+fails if any output differs from HEAD.
+
+** C9 — Breaking change scope is likely underestimated
+
+The C++ story found 4 breaking changes in a sample of 3 out of 75 models.
+At that rate, the full audit could reveal 30–100 breaking changes. The
+two most impactful:
+
+| Change | Callers affected | Coordination cost |
+|--------+------------------+-------------------|
+| =find_type= → =get_type= | 5 components | Multi-component PR |
+| =save_types= / =remove_types= removal | 15 services | 15 service callers |
+
+Task 4 of the C++ story ("Resolve breaking API drift") is written as a
+single task. These cross-component caller updates need to be treated as
+separate sub-tasks with explicit "template frozen vs. production updated"
+decisions recorded per breaking change before any code changes are made.
+
+* Roadmap
+
+The vision: one =_entity.json= per entity drives SQL, C++, Qt, CLI, HTTP,
+and shell code generation. Each facet is a profile; all profiles read the
+same model. Templates derive everything derivable from naming conventions;
+the model only encodes genuine variability.
+
+** Phase 0 — Safety guardrails (before C++ audit starts)
+
+Resolve C1–C4. Make the audit trustworthy by converting silent failures
+into loud errors. This is a prerequisite for the C++ audit.
+
+Story: [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]]
+
+** Phase 1 — Qt field derivation (after C++ audit)
+
+Resolve C5. Establish naming conventions; remove transcribed Qt fields
+from all 75 models; implement auto-derivation in =generator.py=.
+
+Story: [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model — Phase 1: derive Qt fields from conventions]]
+
+** Phase 2 — Single model file per entity (after Phase 1)
+
+Resolve C6. Merge =_table.json= and =_domain_entity.json= into a single
+=_entity.json= per entity. Pilot with refdata, then roll out to all
+components.
+
+Story: [[id:88113E9B-DBD4-4E08-8CD9-49B8A709B871][Codegen unified model — Phase 2: single model file per entity]]
+
+** Phase 3 — Unified temporal/non-temporal templates (concurrent with Phase 2)
+
+Resolve C7. Merge parallel template families into single conditional
+templates. Can run in parallel with Phase 2.
+
+Story: [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal/non-temporal templates]]
+
+** CI gate (after Phase 2)
+
+Resolve C8. Add CI job that machine-enforces the zero-diff invariant.
+
+Story: [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]]
+
+* What the current C++ story should add
+
+The breaking-change resolution in Task 4 of [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++
+generation]] should record an explicit decision table before any code
+changes begin:
+
+| Breaking change | Template frozen or Production updated | Callers to update | Assigned task |
+|-----------------+---------------------------------------+-------------------+---------------|
+| =find_type= → =get_type= | TBD | 5 components | T4 sub-item |
+| =save_types()= removal | TBD | 15 services | T4 sub-item |
+| =remove_types()= removal | TBD | 15 services | T4 sub-item |
+| =stamp()= removal | TBD | TBD | T4 sub-item |
+| Include guard regression | Template bug fix | None | T2 |
+
+Decisions made here cascade across the entire codebase. Recording them
+before touching any production files avoids mid-task reversals.
+
+* See also
+
+- [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — current sprint story being analysed
+- [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] — precedent and foundation
+- [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] — Phase 0 roadmap story
+- [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model — Phase 1: derive Qt fields from conventions]]
+- [[id:88113E9B-DBD4-4E08-8CD9-49B8A709B871][Codegen unified model — Phase 2: single model file per entity]]
+- [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal/non-temporal templates]]
+- [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]]

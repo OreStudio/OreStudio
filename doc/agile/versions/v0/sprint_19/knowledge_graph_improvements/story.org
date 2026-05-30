@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: F3CB848E-72C1-4F81-AAE4-1265F41D47C1
+:END:
+#+title: Story: Fix knowledge graph issues
+#+description: Fix knowledge graph: images not displaying and left-panel controls missing.
+#+type: story
+#+level: s2
+#+filetags: :documentation:knowledge_graph:site:sprint_19:v0:
+#+created: 2026-05-30
+#+updated: 2026-05-30
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the knowledge graph to a fully functional state: images must
+render inline, and the left-panel controls (configuration options and
+sidebar toggle) must be visible and operable.
+
+* Status
+
+| Field         | Value                                                              |
+|---------------+--------------------------------------------------------------------|
+| State         | STARTED                                                            |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                          |
+| Now           | Investigating root causes for images and missing controls.         |
+| Waiting on    | Nothing.                                                           |
+| Next          | Implement fixes; verify both issues resolved in the deployed site. |
+| Last touched  | 2026-05-30                                                         |
+
+* Acceptance
+
+- Images display correctly in the knowledge graph view.
+- Left-panel controls (configuration options, sidebar toggle) are
+  visible and operable.
+- No regressions in the rest of the site.
+
+* Tasks
+
+| Task                                                                                                                                     | State   | Start      | End | Description                                               |
+|------------------------------------------------------------------------------------------------------------------------------------------+---------+------------+-----+-----------------------------------------------------------|
+| [[id:4729C928-7EE0-4B8E-A932-FE286BDB2CC7][Task: Implement knowledge graph improvements]] | STARTED | 2026-05-30 |     | Investigate and fix image rendering and missing controls. |
+
+* Out of scope
+
+- New knowledge graph features beyond restoring existing functionality.

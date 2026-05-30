@@ -21,8 +21,7 @@ domain::{{entity_singular}}
     domain::{{entity_singular}} r;
     r.version = v.version;
 {{#has_tenant_id}}
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id)
-        .value_or(utility::uuid::tenant_id::system());
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
 {{/has_tenant_id}}
 {{#has_workspace_id}}
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);

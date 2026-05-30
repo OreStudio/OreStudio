@@ -85,6 +85,7 @@ that some of these are not present across all entities. Final decisions are reco
 |---+-----------------+------+----------+-------|
 | 1 | =Now= field should be =Not yet started.= for BACKLOG tasks, not =Nothing.= | task_resolve_breaking_changes.org | Fixed | PR #940 round 1. |
 | 2 | Batch methods =save_N= / =remove_N= declared in header template but missing implementations in =.cpp= template — would cause linker errors. Also =get_= → =find_= rename missing from =.cpp=. | cpp_service.cpp.mustache | Fixed | PR #947 round 1. |
+| 3 | =.value()= → =.value_or(system())= on mapper =tenant_id= is a semantic change (silently masks bad data instead of throwing); codegen review policy requires cosmetic-only changes or explicit justification. | cpp_domain_type_mapper.cpp.mustache + 9 =*_convention_mapper.cpp= | Fixed — reverted template and production to =.value()= | PR #947 round 1 (owner review). |
 
 * Result
 
@@ -94,7 +95,7 @@ All 15 breaking changes resolved. Decisions:
 
 | Change | Category | Decision | Action taken |
 |--------+----------+----------+--------------|
-| Mapper =.value()= → =.value_or(system())= (×9 convention mappers) | semantic | Production updated | Updated 9 mapper =.cpp= files in =ores.refdata.core= |
+| Mapper =.value_or(system())= → =.value()= in template (×9 convention mappers) | template frozen | Template updated | Reverted template to =.value()= to match production; semantic change not justified |
 | Service =get_type()= → =find_type()= rename (×3 type services) | template frozen | Template updated | Changed =get_{{entity_singular_short}}= → =find_{{entity_singular_short}}= globally in service template |
 | Service =save_types()= missing from template | template frozen | Template updated | Added =save_{{entity_plural_short}}= batch method to service template |
 | Service =remove_types()= missing from template | template frozen | Template updated | Added =remove_{{entity_plural_short}}= batch method; 1 caller in =instrument_ref_handler.hpp= preserved |
@@ -124,15 +125,6 @@ All four changes are backward-compatible for entities without callers. Workspace
 
 | File | Change |
 |------+--------|
-| =cds_convention_mapper.cpp= | =.value()= → =.value_or(system())= on tenant_id |
-| =deposit_convention_mapper.cpp= | Same |
-| =fra_convention_mapper.cpp= | Same |
-| =fx_convention_mapper.cpp= | Same |
-| =ibor_index_convention_mapper.cpp= | Same |
-| =ois_convention_mapper.cpp= | Same |
-| =overnight_index_convention_mapper.cpp= | Same |
-| =swap_convention_mapper.cpp= | Same |
-| =zero_convention_mapper.cpp= | Same |
 | =workspace_service.hpp= | =get_workspace= → =find_workspace= |
 | =workspace_service.cpp= | =get_workspace= → =find_workspace= |
 | =workspace_handler.hpp= | Two callers: =svc.get_workspace= → =svc.find_workspace= |

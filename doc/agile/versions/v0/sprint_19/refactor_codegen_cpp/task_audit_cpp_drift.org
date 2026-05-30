@@ -71,6 +71,8 @@ It makes the full scope visible before any code is changed.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | =Now= field should be =Not yet started.= for BACKLOG tasks, not =Nothing.= | task_audit_cpp_drift.org | Fixed | PR #940 round 1. |
+| 2 | =ctx.workspace_id()= needs explicit string cast for database column comparison (×3) | book_repository.cpp | Declined | =ctx.workspace_id()= returns =const std::string&=; no cast needed. PR #942 round 1. |
+| 3 | =Now= field of DONE task must be =Nothing.= | task_audit_cpp_drift.org | Fixed in 513f1173d | PR #942 round 1. |
 
 * Result
 

@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A
+:END:
+#+title: Task: Apply safe drift and verify zero diff across all components
+#+description: Apply all cosmetic and additive diffs component by component; apply any decided production updates from the breaking changes task; confirm zero-diff regeneration for all registered components and CI green.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_19:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-cpp
+#+pr:
+#+blocked_on: B5F1C8D3-4A7E-4B2F-9D6C-3E8A1B5D7C4F
+#+blocked_since:
+#+created: 2026-05-30
+#+updated: 2026-05-30
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+With template bugs fixed ([[id:F7B3E1D9-6A4C-4F2B-7E8D-1C5A9B3F7D2E][Fix C++ template bugs]]), models corrected ([[id:D2E8F4A1-9B3C-4D7F-6A5B-8E1C7D3F9A2B][Fix model consistency
+and register C++ components in manifest.py]]), and all breaking change decisions made
+([[id:B5F1C8D3-4A7E-4B2F-9D6C-3E8A1B5D7C4F][Resolve breaking API drift]]), this task applies the remaining safe drift component by
+component and confirms the zero-diff invariant.
+
+** Process per component
+
+For each registered component (refdata first, then trading, iam, dq, and others):
+
+1. Run =codegen.sh regenerate --component X --profile all-cpp=.
+2. Run =git diff --stat=.
+3. If diff is non-zero: categorise the remaining changes. All should be cosmetic or
+   additive at this point (breaking changes were resolved in Task 4).
+4. Review the diff; if it matches expectations, accept it and commit.
+5. Run the CI suite (or at minimum =cmake --build= + =ctest=) to confirm no regressions.
+6. Record: component name, files changed, diff summary, CI result.
+
+** Pilot: refdata
+
+Refdata is done first. Three of its auxiliary domain entity models already have correct
+=component_include= / =component_core= (fixed in PR #939). Remaining refdata domain
+entities (book, counterparty, party, etc.) may need cosmetic updates.
+
+** Final verification
+
+After all components are done:
+
+#+begin_example
+for component in refdata-cpp trade-cpp dq-cpp iam-cpp ...; do
+    codegen.sh regenerate --component ${component} --profile all-cpp
+    git diff --exit-code   # must be zero
+done
+#+end_example
+
+A zero exit code from =git diff= for every component is the acceptance gate.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:B5F1C8D3-4A7E-4B2F-9D6C-3E8A1B5D7C4F][Resolve breaking API drift]] |
+| Next         | Start once all breaking changes are resolved. |
+| Last touched | 2026-05-30                             |
+
+* Acceptance
+
+- All registered components regenerate with zero diff (=git diff --exit-code= passes).
+- CI passes after each component regeneration.
+- Per-component summary recorded in =* Result=: files changed, diff line count.
+- =codegen.sh regenerate --component X --profile all-cpp= is documented as the canonical
+  regeneration command in =architecture.org=.
+- Findings recorded in =* Result= section.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =Now= field should be =Not yet started.= for BACKLOG tasks, not =Nothing.= | task_apply_safe_drift.org | Fixed | PR #940 round 1. |
+
+* Result
+
+(Populated when task is complete.)

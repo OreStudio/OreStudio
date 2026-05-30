@@ -56,7 +56,7 @@ that some of these are not present across all entities. Final decisions are reco
 |--------------+----------------------------------------|
 | State        | BACKLOG                                |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | [[id:A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F][Audit C++ template drift]] (for complete breaking change list). |
 | Next         | Start once drift audit is complete.    |
 | Last touched | 2026-05-30                             |
@@ -83,7 +83,6 @@ that some of these are not present across all entities. Final decisions are reco
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | =Now= field should be =Not yet started.= for BACKLOG tasks, not =Nothing.= | task_resolve_breaking_changes.org | Fixed | PR #940 round 1. |
 
 * Result
 

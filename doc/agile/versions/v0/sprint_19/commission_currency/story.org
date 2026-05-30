@@ -26,12 +26,12 @@ same checklist applies.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BLOCKED                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Blocked on codegen refactoring; SQL and CLI verified. |
-| Waiting on    | [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] |
-| Next          | Resume once codegen story is complete; pick up shell and Qt tasks. |
-| Last touched  | 2026-05-29                               |
+| Now           | Codegen task done; shell/NATS/Qt tasks next. |
+| Waiting on    | Nothing.                              |
+| Next          | Pick up shell + NATS verification task. |
+| Last touched  | 2026-05-30                               |
 
 * Acceptance
 
@@ -74,7 +74,7 @@ auxiliary type (=rounding_type=, =monetary_nature=, =currency_market_tier=).
 |------+-------+-------+-----+-------------|
 | [[id:000FCB22-B1ED-4E09-AB47-03EB8A361B41][Appraise currency across all layers and produce evaluation checklist]] | DONE | 2026-05-29 | 2026-05-29 | Assess each layer; produce reusable entity evaluation checklist. |
 | [[id:F66CC098-A23B-4ECC-96A4-A99AF94BA838][Verify currency SQL against evaluation checklist]] | DONE | 2026-05-29 | 2026-05-29 | Inspect DDL against DB-layer checklist criteria; fix any gaps. |
-| [[id:E8890097-FAE9-40F8-B823-FCE23BAFD6C5][Verify and fix codegen for currency and auxiliaries]] | BLOCKED | | | Run codegen; diff output; fix missing currency_domain_entity.json. Blocked by [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]]. |
+| [[id:E8890097-FAE9-40F8-B823-FCE23BAFD6C5][Verify and fix codegen for currency and auxiliaries]] | DONE | 2026-05-29 | 2026-05-30 | SQL zero-diff; component path fix in three auxiliaries; currency_domain_entity.json confirmed unnecessary; C++ drift filed. |
 | [[id:1816FAA3-B987-4307-B265-EBF6EDEE93AA][Verify and fix currency CLI commands]] | DONE | 2026-05-29 | 2026-05-29 | Confirm list/add/remove exist; implement missing; run against live service. |
 | [[id:3D394DE4-7101-4E4B-A774-DD583BC5F0B0][Verify currency shell commands and NATS integration]] | BACKLOG | | | Run list/add/remove/history in shell; validates NATS end-to-end. |
 | [[id:E276A541-93EA-46EC-8CD8-D40803FEE587][Verify currency Qt UI end-to-end post-NATS]] | BACKLOG | | | Manually test MDI list, detail, history, delete, eventing. |

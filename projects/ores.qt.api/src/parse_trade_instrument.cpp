@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <rfl/json.hpp>
 #include "ores.qt/parse_trade_instrument.hpp"
 #include "ores.qt/IInstrumentFormPopulator.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -148,7 +149,7 @@ parse_trade_instrument(const std::string& raw, IInstrumentFormPopulator& populat
     const auto& ttc = cls.trade_type;
 
     BOOST_LOG_SEV(lg(), debug)
-        << "getTradeInstrument: product_type=" << to_string(pt)
+        << "getTradeInstrument: product_type=" << td::to_string(pt)
         << " trade_type=" << ttc;
 
     // Phase 2: dispatch on (product_type, trade_type) — read concrete leaf
@@ -240,7 +241,7 @@ parse_trade_instrument(const std::string& raw, IInstrumentFormPopulator& populat
         } else {
             BOOST_LOG_SEV(lg(), warn)
                 << "getTradeInstrument: unknown (product_type, trade_type) — ("
-                << to_string(pt) << ", " << ttc << "); returning monostate";
+                << td::to_string(pt) << ", " << ttc << "); returning monostate";
             return std::nullopt;
         }
         break;
@@ -287,7 +288,7 @@ parse_trade_instrument(const std::string& raw, IInstrumentFormPopulator& populat
         } else {
             BOOST_LOG_SEV(lg(), warn)
                 << "getTradeInstrument: unknown (product_type, trade_type) — ("
-                << to_string(pt) << ", " << ttc << "); returning monostate";
+                << td::to_string(pt) << ", " << ttc << "); returning monostate";
             return std::nullopt;
         }
         break;
@@ -343,7 +344,7 @@ parse_trade_instrument(const std::string& raw, IInstrumentFormPopulator& populat
         } else {
             BOOST_LOG_SEV(lg(), warn)
                 << "getTradeInstrument: unknown (product_type, trade_type) — ("
-                << to_string(pt) << ", " << ttc << "); returning monostate";
+                << td::to_string(pt) << ", " << ttc << "); returning monostate";
             return std::nullopt;
         }
         break;
@@ -352,7 +353,7 @@ parse_trade_instrument(const std::string& raw, IInstrumentFormPopulator& populat
     default:
         BOOST_LOG_SEV(lg(), warn)
             << "getTradeInstrument: unknown (product_type, trade_type) — ("
-            << to_string(pt) << ", " << ttc << "); returning monostate";
+            << td::to_string(pt) << ", " << ttc << "); returning monostate";
         return std::nullopt;
     }
 

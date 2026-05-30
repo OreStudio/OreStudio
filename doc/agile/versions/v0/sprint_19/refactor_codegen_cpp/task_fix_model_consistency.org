@@ -85,7 +85,7 @@ must be unambiguous: =--profile sql= and =--profile all-cpp= must not interfere.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/943][#943]] | [codegen] Fix model consistency and register cpp components (Task 2) |
 
 * Review
 

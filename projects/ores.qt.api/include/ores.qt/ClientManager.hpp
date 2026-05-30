@@ -53,6 +53,11 @@
 
 namespace ores::qt {
 
+// Forward declaration: full definition in IInstrumentFormPopulator.hpp.
+// Including the full header here would transitively pull all domain instrument
+// headers into every TU that includes ClientManager.hpp.
+struct IInstrumentFormPopulator;
+
 /**
  * @brief Concept for NATS-aware request types.
  *
@@ -420,13 +425,19 @@ public:
         std::uint32_t limit = 100);
 
     /**
-     * @brief Fetch a single trade with its instrument data.
+     * @brief Fetch a single trade and dispatch its instrument to the populator.
      *
-     * @param trade_id UUID string of the trade.
-     * @return Trade bundle on success, nullopt on failure or not found.
+     * Phase 1 reads the envelope (success, message, trade). Phase 2 dispatches
+     * on (product_type, trade_type) and calls the matching populate() overload
+     * on the populator directly — no trade_instrument variant is constructed.
+     *
+     * @param trade_id  UUID string of the trade.
+     * @param populator Receives the concrete instrument via the matching overload.
+     * @return The trade on success, nullopt on failure or not found.
      */
-    std::optional<trading::messaging::trade_export_item>
-    getTradeDetail(const std::string& trade_id);
+    std::optional<trading::domain::trade>
+    getTradeInstrument(const std::string& trade_id,
+                       IInstrumentFormPopulator& populator);
 
     /**
      * @brief Get active sessions for the current user.

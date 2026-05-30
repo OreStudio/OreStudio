@@ -58,7 +58,7 @@ struct trade_export_item {
  * An empty @p node_id lists all trades visible to the tenant.
  *
  * The response carries only trade metadata (no instrument data). To load
- * instrument details for a specific trade, use get_trade_detail_request.
+ * the instrument for a specific trade, use get_trade_instrument_request.
  */
 struct get_trades_request {
     using response_type = struct get_trades_response;
@@ -75,29 +75,16 @@ struct get_trades_response {
     int total_available_count = 0;
 };
 
-struct get_trade_detail_request {
-    using response_type = struct get_trade_detail_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trades.detail";
+struct get_trade_instrument_request {
+    using response_type = struct get_trade_instrument_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.instrument";
     std::string trade_id;
 };
 
-struct get_trade_detail_response {
+struct get_trade_instrument_response {
     bool success = false;
     std::string message;
     ores::trading::domain::trade trade;
-    ores::trading::domain::trade_instrument instrument;
-};
-
-// Two-phase parse helpers: split the single rfl::AddTagsToVariants pass into
-// two smaller ones so no TU has to reflect both trade (25 fields) and the
-// trade_instrument variant (9 alternatives) simultaneously.
-struct get_trade_detail_response_base {
-    bool success = false;
-    std::string message;
-    ores::trading::domain::trade trade;
-};
-
-struct get_trade_detail_instrument_wrapper {
     ores::trading::domain::trade_instrument instrument;
 };
 

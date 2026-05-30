@@ -1660,21 +1660,13 @@ namespace ores #F2F2F2 {
                 +trades : vector<ores::trading::domain::trade>
                 +total_available_count : int
             }
-            class get_trade_detail_request <<struct>> {
+            class get_trade_instrument_request <<struct>> {
                 +trade_id : string
             }
-            class get_trade_detail_response <<struct>> {
+            class get_trade_instrument_response <<struct>> {
                 +success : bool
                 +message : string
                 +trade : ores::trading::domain::trade
-                +instrument : ores::trading::domain::trade_instrument
-            }
-            class get_trade_detail_response_base <<struct>> {
-                +success : bool
-                +message : string
-                +trade : ores::trading::domain::trade
-            }
-            class get_trade_detail_instrument_wrapper <<struct>> {
                 +instrument : ores::trading::domain::trade_instrument
             }
             class save_trade_request <<struct>> {

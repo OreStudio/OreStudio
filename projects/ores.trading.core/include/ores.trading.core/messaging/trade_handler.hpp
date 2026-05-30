@@ -548,7 +548,7 @@ public:
         }
     }
 
-    void detail(ores::nats::message msg) {
+    void instrument(ores::nats::message msg) {
         BOOST_LOG_SEV(trade_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(
@@ -559,9 +559,9 @@ public:
         }
         const auto& ctx = *ctx_expected;
         service::trade_service svc(ctx);
-        get_trade_detail_response resp;
+        get_trade_instrument_response resp;
         try {
-            if (auto req = decode<get_trade_detail_request>(msg)) {
+            if (auto req = decode<get_trade_instrument_request>(msg)) {
                 auto trade_opt = svc.find_trade(req->trade_id);
                 if (!trade_opt) {
                     resp.success = false;

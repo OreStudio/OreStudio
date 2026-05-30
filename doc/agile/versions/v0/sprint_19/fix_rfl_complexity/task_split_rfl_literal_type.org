@@ -27,11 +27,11 @@ before any code changes are made. No production code is changed in this task.
 
 | Field        | Value                                                                             |
 |--------------+-----------------------------------------------------------------------------------|
-| State        | STARTED                                                                           |
+| State        | DONE                                                                              |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | Writing story decisions and task stubs; PR for architecture review.               |
+| Now          | Nothing.                                                                          |
 | Waiting on   | Nothing.                                                                          |
-| Next         | PR review by Gemini; then task 2 begins.                                          |
+| Next         | Nothing.                                                                          |
 | Last touched | 2026-05-29                                                                        |
 
 * Acceptance
@@ -178,3 +178,10 @@ Swap/composite cases note: =swap_instrument_data = with_legs<rates_instrument_va
 | 1 | Inline struct defs in template args are invalid C++ (Gemini R1)   | task_rename_and_rewrite_parse_path.org | Accept   | Replaced with named wrappers in anon namespace; resolved. |
 
 * Result
+
+Architecture documented and agreed. Story decisions cover root cause (502-field rfl::Literal,
+O(N²) no_duplicate_field_names), discriminator already present (product_type + trade_type),
+protocol rename rationale, workaround deletion, variant retention for import/export, display
+path redesign (IInstrumentFormPopulator), logging requirement, and export_portfolio latent issue.
+Task stubs created for tasks 2–4. PR #931 reviewed by Gemini: one inline comment (invalid inline
+struct defs in template args) — accepted and fixed before merge.

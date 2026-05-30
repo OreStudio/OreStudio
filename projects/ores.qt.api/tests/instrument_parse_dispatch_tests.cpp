@@ -22,6 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.qt/IInstrumentFormPopulator.hpp"
 #include "ores.qt/parse_trade_instrument.hpp"
 #include "ores.trading.api/domain/product_type.hpp"

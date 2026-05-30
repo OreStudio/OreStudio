@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID: 9F3A2C8E-5D1B-4E7F-B6C4-1A8D3F5E2B9C
+:END:
+#+title: PR review runbook does not include merging
+#+description: The PR review runbook ends at resolve threads; the user merges the PR themselves. Never attempt to merge after completing review steps.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-05-30
+#+updated: 2026-05-30
+
+The PR review runbook ends at: fix → commit → push → reply to comments →
+resolve review threads. *Do not merge the PR.*
+
+*Why:* The user merges PRs themselves. Attempting to merge after completing
+review steps is out of scope for the runbook and was explicitly corrected
+(2026-05-30, PR #940).
+
+*How to apply:* After resolving all review threads, stop. Do not call
+=gh pr merge=. The final step is resolving threads; report completion and
+wait for the user to merge.

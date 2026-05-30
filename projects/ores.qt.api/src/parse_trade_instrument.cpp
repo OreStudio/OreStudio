@@ -32,6 +32,18 @@ inline std::string_view logger_name = "ores.qt.parse_trade_instrument";
     return instance;
 }
 
+// Attempt to parse the raw response JSON as T. Returns nullopt and logs on failure.
+template<typename T>
+static std::optional<T> try_parse(const std::string& raw) {
+    auto r = rfl::json::read<T>(raw);
+    if (!r) {
+        BOOST_LOG_SEV(lg(), error)
+            << "getTradeInstrument: deserialise failed: " << r.error().what();
+        return std::nullopt;
+    }
+    return std::move(*r);
+}
+
 // Phase 1: envelope — rfl silently skips the "instrument" JSON key.
 struct response_envelope {
     bool success = false;
@@ -64,38 +76,35 @@ struct scripted_wrapper  { td::scripted_instrument  instrument; };
 
 // Composite (with composite legs) — two-level wrapper: outer captures with_legs structure,
 // inner captures the concrete composite_instrument.
-struct composite_data {
-    td::composite_instrument             instrument;
-    std::vector<td::composite_leg>       legs;
-};
+struct composite_data    { td::composite_instrument instrument; std::vector<td::composite_leg> legs; };
 struct composite_wrapper { composite_data instrument; };
 
 // Rates / swap types (with swap legs) — same two-level pattern as composite.
-struct fra_data { td::fra_instrument instrument; std::vector<td::swap_leg> legs; };
-struct fra_wrapper { fra_data instrument; };
+struct fra_data          { td::fra_instrument               instrument; std::vector<td::swap_leg> legs; };
+struct fra_wrapper       { fra_data instrument; };
 
-struct vanilla_swap_data { td::vanilla_swap_instrument instrument; std::vector<td::swap_leg> legs; };
+struct vanilla_swap_data    { td::vanilla_swap_instrument   instrument; std::vector<td::swap_leg> legs; };
 struct vanilla_swap_wrapper { vanilla_swap_data instrument; };
 
-struct cap_floor_data { td::cap_floor_instrument instrument; std::vector<td::swap_leg> legs; };
+struct cap_floor_data    { td::cap_floor_instrument         instrument; std::vector<td::swap_leg> legs; };
 struct cap_floor_wrapper { cap_floor_data instrument; };
 
-struct swaption_data { td::swaption_instrument instrument; std::vector<td::swap_leg> legs; };
-struct swaption_wrapper { swaption_data instrument; };
+struct swaption_data     { td::swaption_instrument          instrument; std::vector<td::swap_leg> legs; };
+struct swaption_wrapper  { swaption_data instrument; };
 
-struct bgs_data { td::balance_guaranteed_swap_instrument instrument; std::vector<td::swap_leg> legs; };
-struct bgs_wrapper { bgs_data instrument; };
+struct bgs_data          { td::balance_guaranteed_swap_instrument instrument; std::vector<td::swap_leg> legs; };
+struct bgs_wrapper       { bgs_data instrument; };
 
-struct callable_swap_data { td::callable_swap_instrument instrument; std::vector<td::swap_leg> legs; };
+struct callable_swap_data    { td::callable_swap_instrument instrument; std::vector<td::swap_leg> legs; };
 struct callable_swap_wrapper { callable_swap_data instrument; };
 
-struct knock_out_swap_data { td::knock_out_swap_instrument instrument; std::vector<td::swap_leg> legs; };
+struct knock_out_swap_data    { td::knock_out_swap_instrument instrument; std::vector<td::swap_leg> legs; };
 struct knock_out_swap_wrapper { knock_out_swap_data instrument; };
 
-struct inflation_swap_data { td::inflation_swap_instrument instrument; std::vector<td::swap_leg> legs; };
+struct inflation_swap_data    { td::inflation_swap_instrument instrument; std::vector<td::swap_leg> legs; };
 struct inflation_swap_wrapper { inflation_swap_data instrument; };
 
-struct rpa_data { td::rpa_instrument instrument; std::vector<td::swap_leg> legs; };
+struct rpa_data    { td::rpa_instrument instrument; std::vector<td::swap_leg> legs; };
 struct rpa_wrapper { rpa_data instrument; };
 
 // FX types (direct alternatives in fx_instrument_variant — no extra nesting)
@@ -126,12 +135,8 @@ std::optional<trading::domain::trade>
 parse_trade_instrument(const std::string& raw, IInstrumentFormPopulator& populator) {
     // Phase 1: parse envelope — no variant, no AddTagsToVariants.
     BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: phase 1 parse";
-    auto base = rfl::json::read<response_envelope>(raw);
-    if (!base) {
-        BOOST_LOG_SEV(lg(), error)
-            << "getTradeInstrument: deserialise failed: " << base.error().what();
-        return std::nullopt;
-    }
+    auto base = try_parse<response_envelope>(raw);
+    if (!base) return std::nullopt;
     if (!base->success) {
         BOOST_LOG_SEV(lg(), error)
             << "getTradeInstrument: server error: " << base->message;
@@ -150,106 +155,88 @@ parse_trade_instrument(const std::string& raw, IInstrumentFormPopulator& populat
     // struct directly, no AddTagsToVariants, no trade_instrument variant.
     using ores::trading::domain::product_type;
 
-// Macro for flat types: wrapper has a single "instrument" field at response level.
-#define READ_FLAT(WrapperType, call)                                          \
-    do {                                                                       \
-        auto r = rfl::json::read<WrapperType>(raw);                           \
-        if (!r) {                                                              \
-            BOOST_LOG_SEV(lg(), error)                                        \
-                << "getTradeInstrument: deserialise failed: "                 \
-                << r.error().what();                                           \
-            return std::nullopt;                                               \
-        }                                                                      \
-        call;                                                                  \
-    } while (0)
-
-// Macro for with_legs types: wrapper has "instrument" → {instrument, legs} nesting.
-#define READ_LEGS(WrapperType, call)                                          \
-    do {                                                                       \
-        auto r = rfl::json::read<WrapperType>(raw);                           \
-        if (!r) {                                                              \
-            BOOST_LOG_SEV(lg(), error)                                        \
-                << "getTradeInstrument: deserialise failed: "                 \
-                << r.error().what();                                           \
-            return std::nullopt;                                               \
-        }                                                                      \
-        call;                                                                  \
-    } while (0)
-
     switch (pt) {
-    case product_type::bond:
+    case product_type::bond: {
         BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading bond_instrument";
-        READ_FLAT(bond_wrapper, populator.populate(r->instrument));
+        auto r = try_parse<bond_wrapper>(raw);
+        if (!r) return std::nullopt;
+        populator.populate(r->instrument);
         break;
-
-    case product_type::credit:
+    }
+    case product_type::credit: {
         BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading credit_instrument";
-        READ_FLAT(credit_wrapper, populator.populate(r->instrument));
+        auto r = try_parse<credit_wrapper>(raw);
+        if (!r) return std::nullopt;
+        populator.populate(r->instrument);
         break;
-
-    case product_type::commodity:
+    }
+    case product_type::commodity: {
         BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading commodity_instrument";
-        READ_FLAT(commodity_wrapper, populator.populate(r->instrument));
+        auto r = try_parse<commodity_wrapper>(raw);
+        if (!r) return std::nullopt;
+        populator.populate(r->instrument);
         break;
-
-    case product_type::scripted:
+    }
+    case product_type::scripted: {
         BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading scripted_instrument";
-        READ_FLAT(scripted_wrapper, populator.populate(r->instrument));
+        auto r = try_parse<scripted_wrapper>(raw);
+        if (!r) return std::nullopt;
+        populator.populate(r->instrument);
         break;
-
-    case product_type::composite:
+    }
+    case product_type::composite: {
         BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading composite_instrument";
-        READ_LEGS(composite_wrapper,
-                  populator.populate(r->instrument.instrument,
-                                     std::move(r->instrument.legs)));
+        auto r = try_parse<composite_wrapper>(raw);
+        if (!r) return std::nullopt;
+        populator.populate(r->instrument.instrument, std::move(r->instrument.legs));
         break;
-
-    case product_type::swap:
+    }
+    case product_type::swap: {
         if (ttc == "ForwardRateAgreement") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading fra_instrument";
-            READ_LEGS(fra_wrapper,
-                      populator.populate(r->instrument.instrument,
-                                         std::move(r->instrument.legs)));
+            auto r = try_parse<fra_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument.instrument, std::move(r->instrument.legs));
         } else if (ttc == "Swap" || ttc == "CrossCurrencySwap" || ttc == "FlexiSwap") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading vanilla_swap_instrument";
-            READ_LEGS(vanilla_swap_wrapper,
-                      populator.populate(r->instrument.instrument,
-                                         std::move(r->instrument.legs)));
+            auto r = try_parse<vanilla_swap_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument.instrument, std::move(r->instrument.legs));
         } else if (ttc == "CapFloor") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading cap_floor_instrument";
-            READ_LEGS(cap_floor_wrapper,
-                      populator.populate(r->instrument.instrument,
-                                         std::move(r->instrument.legs)));
+            auto r = try_parse<cap_floor_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument.instrument, std::move(r->instrument.legs));
         } else if (ttc == "Swaption") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading swaption_instrument";
-            READ_LEGS(swaption_wrapper,
-                      populator.populate(r->instrument.instrument,
-                                         std::move(r->instrument.legs)));
+            auto r = try_parse<swaption_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument.instrument, std::move(r->instrument.legs));
         } else if (ttc == "BalanceGuaranteedSwap") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading balance_guaranteed_swap_instrument";
-            READ_LEGS(bgs_wrapper,
-                      populator.populate(r->instrument.instrument,
-                                         std::move(r->instrument.legs)));
+            auto r = try_parse<bgs_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument.instrument, std::move(r->instrument.legs));
         } else if (ttc == "CallableSwap") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading callable_swap_instrument";
-            READ_LEGS(callable_swap_wrapper,
-                      populator.populate(r->instrument.instrument,
-                                         std::move(r->instrument.legs)));
+            auto r = try_parse<callable_swap_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument.instrument, std::move(r->instrument.legs));
         } else if (ttc == "KnockOutSwap") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading knock_out_swap_instrument";
-            READ_LEGS(knock_out_swap_wrapper,
-                      populator.populate(r->instrument.instrument,
-                                         std::move(r->instrument.legs)));
+            auto r = try_parse<knock_out_swap_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument.instrument, std::move(r->instrument.legs));
         } else if (ttc == "InflationSwap") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading inflation_swap_instrument";
-            READ_LEGS(inflation_swap_wrapper,
-                      populator.populate(r->instrument.instrument,
-                                         std::move(r->instrument.legs)));
+            auto r = try_parse<inflation_swap_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument.instrument, std::move(r->instrument.legs));
         } else if (ttc == "RiskParticipationAgreement") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading rpa_instrument";
-            READ_LEGS(rpa_wrapper,
-                      populator.populate(r->instrument.instrument,
-                                         std::move(r->instrument.legs)));
+            auto r = try_parse<rpa_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument.instrument, std::move(r->instrument.legs));
         } else {
             BOOST_LOG_SEV(lg(), warn)
                 << "getTradeInstrument: unknown (product_type, trade_type) — ("
@@ -257,32 +244,46 @@ parse_trade_instrument(const std::string& raw, IInstrumentFormPopulator& populat
             return std::nullopt;
         }
         break;
-
-    case product_type::fx:
+    }
+    case product_type::fx: {
         if (ttc == "FxForward" || ttc == "FxSwap") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading fx_forward_instrument";
-            READ_FLAT(fx_forward_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<fx_forward_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else if (ttc == "FxOption") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading fx_vanilla_option_instrument";
-            READ_FLAT(fx_vanilla_option_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<fx_vanilla_option_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else if (ttc == "FxBarrierOption" || ttc == "FxGenericBarrierOption"
                    || ttc == "FxDoubleBarrierOption" || ttc == "FxEuropeanBarrierOption"
                    || ttc == "FxKIKOBarrierOption") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading fx_barrier_option_instrument";
-            READ_FLAT(fx_barrier_option_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<fx_barrier_option_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else if (ttc == "FxDigitalOption" || ttc == "FxDigitalBarrierOption"
                    || ttc == "FxTouchOption" || ttc == "FxDoubleTouchOption") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading fx_digital_option_instrument";
-            READ_FLAT(fx_digital_option_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<fx_digital_option_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else if (ttc == "FxAverageForward" || ttc == "FxTaRF") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading fx_asian_forward_instrument";
-            READ_FLAT(fx_asian_forward_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<fx_asian_forward_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else if (ttc == "FxAccumulator") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading fx_accumulator_instrument";
-            READ_FLAT(fx_accumulator_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<fx_accumulator_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else if (ttc == "FxVarianceSwap") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading fx_variance_swap_instrument";
-            READ_FLAT(fx_variance_swap_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<fx_variance_swap_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else {
             BOOST_LOG_SEV(lg(), warn)
                 << "getTradeInstrument: unknown (product_type, trade_type) — ("
@@ -290,37 +291,55 @@ parse_trade_instrument(const std::string& raw, IInstrumentFormPopulator& populat
             return std::nullopt;
         }
         break;
-
-    case product_type::equity:
+    }
+    case product_type::equity: {
         if (ttc == "EquityOption" || ttc == "EquityCliquetOption"
             || ttc == "EquityOutperformanceOption") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading equity_option_instrument";
-            READ_FLAT(eq_option_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<eq_option_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else if (ttc == "EquityForward") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading equity_forward_instrument";
-            READ_FLAT(eq_forward_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<eq_forward_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else if (ttc == "EquitySwap" || ttc == "EquityWorstOfBasketSwap") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading equity_swap_instrument";
-            READ_FLAT(eq_swap_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<eq_swap_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else if (ttc == "EquityVarianceSwap") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading equity_variance_swap_instrument";
-            READ_FLAT(eq_var_swap_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<eq_var_swap_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else if (ttc == "EquityBarrierOption" || ttc == "EquityDoubleBarrierOption"
                    || ttc == "EquityEuropeanBarrierOption") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading equity_barrier_option_instrument";
-            READ_FLAT(eq_barrier_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<eq_barrier_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else if (ttc == "EquityAsianOption") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading equity_asian_option_instrument";
-            READ_FLAT(eq_asian_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<eq_asian_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else if (ttc == "EquityDigitalOption" || ttc == "EquityTouchOption") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading equity_digital_option_instrument";
-            READ_FLAT(eq_digital_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<eq_digital_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else if (ttc == "EquityAccumulator" || ttc == "EquityTaRF") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading equity_accumulator_instrument";
-            READ_FLAT(eq_accum_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<eq_accum_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else if (ttc == "EquityPosition") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading equity_position_instrument";
-            READ_FLAT(eq_position_wrapper, populator.populate(r->instrument));
+            auto r = try_parse<eq_position_wrapper>(raw);
+            if (!r) return std::nullopt;
+            populator.populate(r->instrument);
         } else {
             BOOST_LOG_SEV(lg(), warn)
                 << "getTradeInstrument: unknown (product_type, trade_type) — ("
@@ -328,7 +347,7 @@ parse_trade_instrument(const std::string& raw, IInstrumentFormPopulator& populat
             return std::nullopt;
         }
         break;
-
+    }
     case product_type::unknown:
     default:
         BOOST_LOG_SEV(lg(), warn)
@@ -336,9 +355,6 @@ parse_trade_instrument(const std::string& raw, IInstrumentFormPopulator& populat
             << to_string(pt) << ", " << ttc << "); returning monostate";
         return std::nullopt;
     }
-
-#undef READ_FLAT
-#undef READ_LEGS
 
     return std::move(base->trade);
 }

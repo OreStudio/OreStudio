@@ -69,6 +69,14 @@ journal is available.
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/955][#955]] | [compass] Refactor compass fleet to use session journal |
 
+* Review
+
+** Round 1 — 2026-05-31
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =_org_link_text= returns ="—"= polluting data layer / JSON | compass.py | Fixed: return =link_str= unchanged; display layer applies ="—"= | Gemini review |
+
 * Result
 
 - =compass fleet= tested across 5 worktrees: journal worktree shows

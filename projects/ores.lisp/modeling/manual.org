@@ -84,5 +84,6 @@ centred title, author, version, and the login-screen screenshot
 
 * See also
 
+- [[id:914738C6-7C77-41CD-A949-55DBBE0B6908][ORE Studio Manuals]] — the user-facing manuals index; for the available manuals and their PDF downloads, start here.
 - [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] — component overview; lists =ores-build-manual.el= under Source files.
 - [[id:E19E9FDE-4743-4B2E-8724-6369B3E43131][ORE Studio Site]] — the companion page covering HTML site build and menu bar.

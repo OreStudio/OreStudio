@@ -32,3 +32,4 @@ via the project issue tracker so they can be corrected.
 
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the full documentation graph.
 - [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Functions]] — component and service documentation.
+- [[id:E71704D9-60D4-4898-AF25-B6B07101DB90][ORE Studio Manual (developer)]] — for details on how the manual is built: the =ox-latex= pipeline, Tufte layout, margin figures, version stamping, and the =deploy_manual= CMake target.

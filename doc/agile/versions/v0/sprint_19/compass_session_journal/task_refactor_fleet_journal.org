@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 6F0272A9-6059-45FD-819C-0CE7A5555A69
+:END:
+#+title: Task: Refactor compass fleet to use journal
+#+description: Read .journal.org from each worktree in compass fleet; show story+task+state from journal; fall back to branch-based lookup when no journal present.
+#+type: task
+#+level: s1
+#+filetags: :compass_session_journal:sprint_19:v0:
+#+owner: marco
+#+branch: feature/refactor-fleet-journal
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Refactor =compass fleet= to read =.journal.org= from each worktree so
+the fleet view shows story, task, and state from the journal rather than
+inferring context by scanning task org files for =#+branch:= matches.
+Worktrees without a journal fall back to the existing branch-based lookup.
+
+* Status
+
+| Field        | Value                                          |
+|--------------+------------------------------------------------|
+| State        | DONE                                           |
+| Parent story | [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]]                       |
+| Now          | Nothing.                                       |
+| Waiting on   | Nothing.                                       |
+| Next         | Done. Task 5: recipe + semi-autonomous developer skill. |
+| Last touched | 2026-05-31                                     |
+
+* Acceptance
+
+- =compass fleet= reads =<worktree>/.journal.org= for each worktree and
+  uses the last entry's story, task, and state in preference to the
+  branch-based =task_for_branch= lookup.
+- Worktrees without a =.journal.org= fall back to the existing branch
+  scan and display =(from branch)= to signal the data source.
+- Journal-sourced rows show =[STATE]= after the task title.
+- The =--format json= output includes =journal= (bool), =task_state=,
+  and =journal_branch= fields.
+- =compass fleet= still works correctly when no worktree has a journal.
+
+* Notes
+
+** Implementation
+
+Two helpers added to =compass.py=:
+
+- =_journal_last_entry(worktree_path)= — reads =<path>/.journal.org=,
+  parses with =_journal_entries()=, returns the last entry dict or =None=.
+- =_org_link_text(link_str)= — extracts the plain title from an org-roam
+  =[[id:...][Title]]= link; returns the string as-is if not an org link.
+
+=cmd_fleet= updated: for each worktree, try =_journal_last_entry= first;
+if it returns an entry, use =story_link= and =task= fields for titles and
+=state= for the state badge. Fall back to =task_for_branch= only if no
+journal is available.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Result
+
+- =compass fleet= tested across 5 worktrees: journal worktree shows
+  =[STARTED]= badge; others show =(from branch)= fallback.
+- Graceful fallback confirmed — worktrees without =.journal.org= still
+  display correctly.

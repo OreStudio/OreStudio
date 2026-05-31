@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 6AF5890B-8409-4652-AA68-929CBC45C69B
+:END:
+#+title: Task: Wire compass goto to auto-update the journal
+#+description: Call compass journal update at the end of compass goto (both new-story and existing-story modes) so the journal is updated automatically whenever a task is picked up.
+#+type: task
+#+level: s1
+#+filetags: :compass_session_journal:sprint_19:v0:
+#+owner: marco
+#+branch: feature/wire-goto-journal-update
+#+pr: 954
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+After =compass goto= creates a branch and scaffolds a task, automatically
+append a journal entry to =.journal.org= so Claude does not need to call
+=compass journal update= manually. This makes journal tracking invisible
+and reliable — it happens as part of the existing workflow.
+
+* Status
+
+| Field        | Value                                          |
+|--------------+------------------------------------------------|
+| State        | DONE                                           |
+| Parent story | [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]]                       |
+| Now          | Nothing.                                       |
+| Waiting on   | Nothing.                                       |
+| Next         | Done. Task 4: refactor compass fleet to use journal. |
+| Last touched | 2026-05-31                                     |
+
+* Acceptance
+
+- After =compass goto= completes, =.journal.org= contains a new entry
+  with the correct story UUID, task UUID, branch, and =State :: STARTED=.
+- The update is best-effort: if it fails (index unavailable, disk error),
+  =compass goto= still succeeds and prints a normal result.
+- Both new-story mode and existing-story mode update the journal.
+- UUIDs are read from the scaffolded =story.org= and =task_<slug>.org=
+  files via =_read_org_id()=, not from CLI args.
+
+* Notes
+
+** Implementation
+
+Three additions to =compass.py=:
+
+1. =_ORG_ID_RE= — compiled regex for =^:ID:\s+(\S+)= to extract UUID
+   from an org properties drawer.
+2. =_read_org_id(path)= — reads the =:ID:= value from an org file;
+   returns =None= if absent or unreadable.
+3. Step 4 in =cmd_goto= — reads story and task UUIDs via =_read_org_id=
+   after scaffolding, builds a =_JournalArgs= namespace, calls
+   =_journal_update()=. Wrapped in =try/except Exception: pass= so a
+   journal failure never blocks =goto=.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/954][#954]] | [compass] Wire compass goto to auto-update the session journal |
+
+* Review
+
+** Round 1 — 2026-05-31
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =_ORG_ID_RE= doesn't match indented =:ID:= properties | compass.py | Fixed: allow =^[ \t]*= leading whitespace | Gemini review |
+| 2 | Ad-hoc inner class =_JournalArgs= non-idiomatic | compass.py | Fixed: use =argparse.Namespace= | Gemini review |
+
+* Result
+
+- =_read_org_id()= implemented and verified (returns correct UUIDs from
+  story and task org files).
+- =cmd_goto= auto-updates =.journal.org= at the end of both modes.
+- =compass journal where= shows the correct entry after =compass goto= runs.

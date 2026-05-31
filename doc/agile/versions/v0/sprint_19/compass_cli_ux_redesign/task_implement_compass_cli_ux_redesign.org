@@ -8,7 +8,7 @@
 #+filetags: :compass_cli_ux_redesign:sprint_19:v0:
 #+owner: marco
 #+branch: feature/compass-cli-ux-redesign
-#+pr:
+#+pr: 960
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-31
@@ -90,7 +90,7 @@ Current compass commands (as of sprint 19):
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/960][#960]] | [agile] Scaffold compass_cli_ux_redesign story in sprint 19 |
 
 * Review
 

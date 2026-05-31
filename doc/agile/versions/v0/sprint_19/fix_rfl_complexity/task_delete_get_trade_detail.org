@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 2991CE7B-48F3-489F-9792-1BCB529E85BB
+:END:
+#+title: Task: Delete leftover get_trade_detail code and fix remaining AddTagsToVariants use
+#+description: Remove ClientManagerTradeDetail.cpp, delete the getTradeDetail API, and clean up any remaining code that still instantiates AddTagsToVariants on trade_instrument, restoring macOS and Windows CI.
+#+type: task
+#+level: s1
+#+filetags: :fix_rfl_complexity:sprint_19:v0:
+#+owner: marco
+#+branch: feature/delete-get-trade-detail
+#+pr: 956
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove the leftover Sprint-18 =getTradeDetail= implementation that was
+supposed to be deleted in Task 2 but was not. =ClientManagerTradeDetail.cpp=
+still compiles =rfl::AddTagsToVariants= on =trade_instrument= (the
+502-alternative variant), which is the root cause of the continuing
+macOS fold-expression and Windows MSVC C1202 CI failures. Also remove
+the =getTradeDetail= declaration from =ClientManager.hpp= and audit any
+other remaining instantiation sites.
+
+* Status
+
+| Field        | Value                                                                               |
+|--------------+-------------------------------------------------------------------------------------|
+| State        | STARTED                                                                             |
+| Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
+| Now          | Deleting ClientManagerTradeDetail.cpp and removing the getTradeDetail API.          |
+| Waiting on   | —                                                                                   |
+| Next         | Open PR; verify macOS and Windows CI green.                                         |
+| Last touched | 2026-05-31                                                                          |
+
+* Acceptance
+
+- =ClientManagerTradeDetail.cpp= is deleted from =ores.qt.api/src/=.
+- =ClientManager.hpp= has no =getTradeDetail= declaration.
+- No translation unit in =ores.qt.api= or =ores.qt.trading= includes
+  =rfl/AddTagsToVariants.hpp= and instantiates it on =trade_instrument=,
+  =fx_instrument_variant=, =equity_instrument_variant=, or
+  =rates_instrument_variant=.
+- macOS CI: no fold-expression nesting limit error in =rfl/internal/StringLiteral.hpp=.
+- Windows MSVC CI: no C1202 recursive type error in =rfl/internal/no_duplicate_field_names.hpp=.
+- Linux CI remains green.
+- No call site in =ores.qt.trading= still references =getTradeDetail=.
+
+* Plan
+
+Root cause: =registrar_trades.cpp= includes =trade_handler.hpp=, which calls
+=reply(nats_, msg, resp)= where =resp= is =get_trade_instrument_response=.
+=reply()= uses =rfl::json::write<rfl::AddTagsToVariants>= generically on all
+response types. Applied to =get_trade_instrument_response= (which contains
+=trade_instrument=, a 9-alternative variant whose sub-variants bring the
+total field-name union to 502), this triggers =rfl::Literal<f1,…,f502>=
+at compile time, exceeding the macOS fold-expression nesting limit (256) and
+the Windows MSVC recursive-type limit (C1202).
+
+Fix: Add =reply_no_variant_tags= to =handler_helpers.hpp= and use it in
+=trade_handler.hpp::instrument()=. The new client reads concrete leaf types
+via product_type/trade_type dispatch (=parse_trade_instrument=) and does not
+need =AddTagsToVariants= type-name tags in the wire format.
+
+Files changed:
+- =ores.service/include/ores.service/messaging/handler_helpers.hpp= — new =reply_no_variant_tags= helper
+- =ores.trading.core/include/ores.trading.core/messaging/trade_handler.hpp= — use it in =instrument()=; add =using= declaration
+
+* Notes
+
+* PRs
+
+| PR  | Title                                                                                                       |
+|-----+-------------------------------------------------------------------------------------------------------------|
+| 956 | [ores.trading.core] Fix macOS/Windows CI: use reply_no_variant_tags for instrument response                 |
+
+* Review
+
+| # | Comment summary                                                 | File                  | Decision | Notes                                        |
+|---+-----------------------------------------------------------------+-----------------------+----------+----------------------------------------------|
+| 1 | Comment says "30+ alternatives"; should say "9 with sub-variants" | handler_helpers.hpp | Accept   | Fixed in 4f58bd687                          |
+| 2 | Same inaccuracy in trade_handler.hpp comment                    | trade_handler.hpp     | Accept   | Fixed in 4f58bd687                          |
+
+* Result

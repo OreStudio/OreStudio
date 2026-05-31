@@ -161,6 +161,21 @@ void reply(ores::nats::service::client& nats,
     nats.publish(msg.reply_subject, std::span<const std::byte>(p, json.size()));
 }
 
+// Like reply() but writes WITHOUT AddTagsToVariants.
+// Use this when the response contains a large std::variant (e.g. trade_instrument
+// with nested sub-variants) whose field-name union would exceed the macOS/Windows
+// fold-expression nesting limit. Safe when the client dispatches on a separate
+// discriminator (e.g. product_type/trade_type) rather than relying on type tags.
+template<typename Resp>
+void reply_no_variant_tags(ores::nats::service::client& nats,
+    const ores::nats::message& msg,
+    const Resp& resp) {
+    if (msg.reply_subject.empty()) return;
+    const auto json = rfl::json::write(resp);
+    const auto* p = reinterpret_cast<const std::byte*>(json.data());
+    nats.publish(msg.reply_subject, std::span<const std::byte>(p, json.size()));
+}
+
 /**
  * @brief Checks whether the request context carries a required permission.
  *

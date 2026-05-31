@@ -137,8 +137,11 @@ the form at all — each leaf type is dispatched directly. Same for equity and r
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                       | File                                          | Decision    | Notes                                          |
+|---+-----------------------------------------------------------------------+-----------------------------------------------+-------------+------------------------------------------------|
+| 1 | =rpa_instrument= populate missing =emitProvenance= + =instrumentLoaded= | SwapInstrumentForm.cpp                        | Not changed | Already present in submitted code (lines 569–570) |
+| 2 | =Now= must be =Nothing.= when state is DONE (story)                   | story.org                                     | Accept      | Fixed in 934773e25                             |
+| 3 | =Now= must be =Nothing.= when state is DONE (task 3)                  | task_instrument_parse_tests.org               | Accept      | Fixed in 934773e25                             |
+| 4 | =Now= must be =Nothing.= when state is DONE (task 4)                  | task_refactor_instrument_form_interface.org   | Accept      | Fixed in 934773e25                             |
 
 * Result

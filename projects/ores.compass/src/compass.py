@@ -1233,7 +1233,7 @@ def _set_frontmatter_branch(path, branch):
     if new != text:                      # avoid a redundant write
         Path(path).write_text(new, encoding="utf-8")
 
-_ORG_ID_RE = re.compile(r"^:ID:\s+(\S+)\s*$", re.MULTILINE)
+_ORG_ID_RE = re.compile(r"^[ \t]*:ID:\s+(\S+)\s*$", re.MULTILINE)
 
 def _read_org_id(path):
     """Return the :ID: value from an org file, or None if absent/unreadable."""
@@ -1381,13 +1381,9 @@ def cmd_goto(argv):
         story_uuid = _read_org_id(story_file)
         task_uuid  = _read_org_id(task_path)
         if story_uuid and task_uuid:
-            class _JournalArgs:
-                story  = story_uuid
-                task   = task_uuid
-                branch = branch
-                state  = "STARTED"
-                pr     = "none"
-            _journal_update(_JournalArgs())
+            _journal_update(argparse.Namespace(
+                story=story_uuid, task=task_uuid, branch=branch,
+                state="STARTED", pr="none"))
     except Exception:
         pass  # journal update is informational; never block goto on failure
 

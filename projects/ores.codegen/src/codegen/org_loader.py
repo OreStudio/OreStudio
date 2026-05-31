@@ -1,0 +1,570 @@
+"""Org-mode entity loader.
+
+Parses a restricted subset of org-mode into the same dict structure
+produced by the JSON entity loader, so the rest of codegen does not have
+to know whether it is reading JSON or org.
+
+The supported subset:
+
+- Frontmatter lines: ``#+key: value`` before the first heading.
+- Property drawers: ``:PROPERTIES:`` ... ``:END:`` with ``:KEY: VALUE``
+  entries, immediately following a heading or appearing at the top of
+  the file.
+- Headings: ``* Foo`` (level 1), ``** Bar`` (level 2), etc.
+- Plain prose body for each heading.
+- Named babel source blocks::
+
+      #+begin_src cpp :name some_name
+      ...code...
+      #+end_src
+
+- Org tables (pipe-delimited).
+- Plain bullet lists (``- item``).
+
+Output is a dict with the same top-level shape as the JSON entity loader:
+``{"domain_entity": {...}}`` for compatibility with existing templates.
+"""
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+
+# --------------------------------------------------------------------------
+# Low-level parsing: org file -> tree of nodes
+
+
+@dataclass
+class OrgNode:
+    """A heading-rooted node in the org tree."""
+    level: int = 0
+    title: str = ""
+    org_id: str | None = None
+    properties: dict[str, str] = field(default_factory=dict)
+    body_lines: list[str] = field(default_factory=list)
+    src_blocks: dict[str, str] = field(default_factory=dict)
+    tables: list[list[dict[str, str]]] = field(default_factory=list)
+    bullet_lists: list[list[str]] = field(default_factory=list)
+    children: list["OrgNode"] = field(default_factory=list)
+
+
+@dataclass
+class OrgDocument:
+    frontmatter: dict[str, str] = field(default_factory=dict)
+    file_properties: dict[str, str] = field(default_factory=dict)
+    root: OrgNode = field(default_factory=OrgNode)
+
+
+_HEADING_RE = re.compile(r"^(\*+)\s+(.+?)\s*$")
+_FRONTMATTER_RE = re.compile(r"^#\+([A-Za-z_][A-Za-z_0-9]*)\s*:\s*(.*)$")
+_DRAWER_PROP_RE = re.compile(r"^\s*:([A-Za-z_][A-Za-z_0-9]*)\s*:\s*(.*)$")
+_SRC_BEGIN_RE = re.compile(
+    r"^\s*#\+begin_src\s+(\S+)(?:\s+(.*))?\s*$", re.IGNORECASE
+)
+_SRC_END_RE = re.compile(r"^\s*#\+end_src\s*$", re.IGNORECASE)
+_SRC_NAME_RE = re.compile(r":name\s+(\S+)")
+_BULLET_RE = re.compile(r"^\s*-\s+(.*)$")
+_TABLE_ROW_RE = re.compile(r"^\s*\|(.+)\|\s*$")
+_TABLE_SEP_RE = re.compile(r"^\s*\|[-+|]+\|\s*$")
+
+
+def parse_org(text: str) -> OrgDocument:
+    """Parse an org-mode source string into an OrgDocument tree."""
+    doc = OrgDocument()
+    lines = text.splitlines()
+
+    # Stack of nodes; doc.root is always at the bottom.
+    stack: list[OrgNode] = [doc.root]
+    current = doc.root
+    in_drawer = False
+    in_src_block = False
+    src_lang: str | None = None
+    src_name: str | None = None
+    src_lines: list[str] = []
+    pending_table: list[list[str]] = []  # list of raw row token-lists
+
+    seen_first_heading = False
+
+    def close_table_if_open() -> None:
+        nonlocal pending_table
+        if pending_table:
+            current.tables.append(_normalise_table(pending_table))
+            pending_table = []
+
+    def close_bullet_list_if_open() -> None:
+        # Bullet lists are flushed when a non-bullet line appears.
+        # We accumulate into a single list when consecutive.
+        pass  # handled inline
+
+    accumulating_bullets: list[str] = []
+
+    def flush_bullets() -> None:
+        nonlocal accumulating_bullets
+        if accumulating_bullets:
+            current.bullet_lists.append(accumulating_bullets)
+            accumulating_bullets = []
+
+    for raw_line in lines:
+        line = raw_line.rstrip("\n")
+
+        # Inside a source block: collect verbatim.
+        if in_src_block:
+            if _SRC_END_RE.match(line):
+                if src_name is not None:
+                    current.src_blocks[src_name] = "\n".join(src_lines)
+                in_src_block = False
+                src_lang = None
+                src_name = None
+                src_lines = []
+            else:
+                src_lines.append(line)
+            continue
+
+        # Inside a property drawer.
+        if in_drawer:
+            if line.strip().upper() == ":END:":
+                in_drawer = False
+                continue
+            m = _DRAWER_PROP_RE.match(line)
+            if m:
+                key, val = m.group(1), m.group(2).strip()
+                # File-level drawer goes into doc.file_properties
+                # before any heading.
+                if not seen_first_heading and current is doc.root:
+                    doc.file_properties[key] = val
+                    if key == "ID":
+                        doc.root.org_id = val
+                else:
+                    current.properties[key] = val
+                    if key == "ID":
+                        current.org_id = val
+            continue
+
+        # Start of a property drawer.
+        if line.strip().upper() == ":PROPERTIES:":
+            in_drawer = True
+            continue
+
+        # Start of a source block.
+        m = _SRC_BEGIN_RE.match(line)
+        if m:
+            close_table_if_open()
+            flush_bullets()
+            in_src_block = True
+            src_lang = m.group(1)
+            rest = m.group(2) or ""
+            name_match = _SRC_NAME_RE.search(rest)
+            src_name = name_match.group(1) if name_match else None
+            src_lines = []
+            continue
+
+        # Frontmatter line (before first heading).
+        if not seen_first_heading:
+            fm = _FRONTMATTER_RE.match(line)
+            if fm:
+                doc.frontmatter[fm.group(1)] = fm.group(2).strip()
+                continue
+
+        # Heading.
+        hm = _HEADING_RE.match(line)
+        if hm:
+            close_table_if_open()
+            flush_bullets()
+            seen_first_heading = True
+            level = len(hm.group(1))
+            title = hm.group(2).strip()
+
+            # Pop stack until parent of this heading.
+            while stack and stack[-1].level >= level:
+                stack.pop()
+            parent = stack[-1] if stack else doc.root
+            node = OrgNode(level=level, title=title)
+            parent.children.append(node)
+            stack.append(node)
+            current = node
+            continue
+
+        # Table row.
+        if _TABLE_SEP_RE.match(line):
+            # Separator after header — ignore.
+            continue
+        tm = _TABLE_ROW_RE.match(line)
+        if tm:
+            cells = [c.strip() for c in tm.group(1).split("|")]
+            pending_table.append(cells)
+            continue
+        else:
+            close_table_if_open()
+
+        # Bullet item.
+        bm = _BULLET_RE.match(line)
+        if bm:
+            accumulating_bullets.append(bm.group(1).strip())
+            continue
+        else:
+            flush_bullets()
+
+        # Plain prose body.
+        current.body_lines.append(line)
+
+    # Final flushes.
+    close_table_if_open()
+    flush_bullets()
+    return doc
+
+
+def _normalise_table(rows: list[list[str]]) -> list[dict[str, str]]:
+    """Convert an org table (first row is the header) into list[dict]."""
+    if not rows:
+        return []
+    headers = rows[0]
+    out: list[dict[str, str]] = []
+    for row in rows[1:]:
+        entry: dict[str, str] = {}
+        for i, header in enumerate(headers):
+            val = row[i] if i < len(row) else ""
+            entry[header] = val
+        out.append(entry)
+    return out
+
+
+# --------------------------------------------------------------------------
+# Higher level: org tree -> codegen model dict
+
+
+def _section(node: OrgNode, title: str) -> OrgNode | None:
+    """Find a child section by case-insensitive title."""
+    for c in node.children:
+        if c.title.lower() == title.lower():
+            return c
+    return None
+
+
+_ORG_VERBATIM_RE = re.compile(r"=([^=\s][^=]*?)=")
+
+
+def _strip_org_markup(text: str) -> str:
+    """Strip org-mode inline markup that should not appear in codegen output.
+
+    Currently strips ``=foo=`` verbatim markers, leaving the bare token.
+    Other markup (``*bold*``, ``/italic/``, ``~code~``) could be added if
+    we adopt them in models."""
+    return _ORG_VERBATIM_RE.sub(r"\1", text)
+
+
+def _strip_body(node: OrgNode) -> str:
+    """Return the prose body of a node, trimmed of leading/trailing blank
+    lines and with org-mode verbatim markup stripped."""
+    lines = node.body_lines
+    while lines and not lines[0].strip():
+        lines = lines[1:]
+    while lines and not lines[-1].strip():
+        lines = lines[:-1]
+    return _strip_org_markup("\n".join(lines))
+
+
+def _parse_typed(value: str) -> Any:
+    """Decode a property value into Python types where obvious."""
+    low = value.lower()
+    if low == "true":
+        return True
+    if low == "false":
+        return False
+    if value.isdigit():
+        return int(value)
+    return value
+
+
+def _includes_from_named_block(node: OrgNode) -> list[str]:
+    """Extract include tokens from a named ``includes`` babel block.
+
+    The babel block is real C++ with ``#include`` directives. We strip the
+    ``#include `` prefix so the returned tokens match the angle-bracket /
+    double-quote form the JSON model stored."""
+    code = node.src_blocks.get("includes", "")
+    out: list[str] = []
+    for raw in code.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if line.startswith("#include"):
+            line = line[len("#include"):].strip()
+        out.append(line)
+    return out
+
+
+def _description_and_detail(node: OrgNode) -> tuple[str, str]:
+    """Split prose body into description (first paragraph) and detail (rest)."""
+    body = _strip_body(node)
+    parts = re.split(r"\n\s*\n", body, maxsplit=1)
+    description = parts[0].replace("\n", " ").strip()
+    detail = parts[1].replace("\n", " ").strip() if len(parts) > 1 else ""
+    return description, detail
+
+
+def _column_node_to_dict(node: OrgNode) -> dict[str, Any]:
+    """Convert a column or natural-key heading into a model column dict."""
+    out: dict[str, Any] = {}
+    out["name"] = node.title  # caller may rename to 'column' for natural_keys
+    for k, v in node.properties.items():
+        out[k.lower()] = _parse_typed(v)
+    description, detail = _description_and_detail(node)
+    if description:
+        out["description"] = description
+    if detail:
+        out["detail"] = detail
+    if "generator" in node.src_blocks:
+        out["generator_expr"] = node.src_blocks["generator"]
+    return out
+
+
+def _natural_key_node_to_dict(node: OrgNode) -> dict[str, Any]:
+    d = _column_node_to_dict(node)
+    # Natural keys use 'column' instead of 'name' in the JSON model.
+    d["column"] = d.pop("name")
+    return d
+
+
+def _table_display(node: OrgNode) -> list[dict[str, str]]:
+    if not node.tables:
+        return []
+    rows: list[dict[str, str]] = []
+    for row in node.tables[0]:
+        rows.append({"column": row.get("column", ""), "header": row.get("header", "")})
+    return rows
+
+
+def _detail_fields(node: OrgNode) -> list[dict[str, Any]]:
+    if not node.tables:
+        return []
+    out: list[dict[str, Any]] = []
+    for row in node.tables[0]:
+        entry: dict[str, Any] = {}
+        for k, v in row.items():
+            entry[k] = _parse_typed(v)
+        out.append(entry)
+    return out
+
+
+def _qt_columns(node: OrgNode) -> list[dict[str, Any]]:
+    """Convert the Qt 'Columns (Qt model)' table into the dict list shape."""
+    if not node.tables:
+        return []
+    out: list[dict[str, Any]] = []
+    for row in node.tables[0]:
+        entry: dict[str, Any] = {}
+        for k, v in row.items():
+            if k == "type":
+                # Replace the readability column with the type-flag the JSON model uses.
+                low = v.lower()
+                if low == "string":
+                    entry["is_string"] = True
+                elif low == "int":
+                    entry["is_int"] = True
+                elif low == "timestamp":
+                    entry["is_timestamp"] = True
+                continue
+            entry[k] = _parse_typed(v)
+        out.append(entry)
+    return out
+
+
+def _custom_methods(node: OrgNode) -> list[dict[str, Any]]:
+    """Each custom method is a sub-heading with its own ID, prose body
+    explaining intent, and named src blocks for declaration/implementation."""
+    out: list[dict[str, Any]] = []
+    for c in node.children:
+        method: dict[str, Any] = {"name": c.title}
+        if c.org_id:
+            method["id"] = c.org_id
+        method["description"] = _strip_body(c)
+        method.update(c.src_blocks)
+        out.append(method)
+    return out
+
+
+def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
+    """Convert a parsed OrgDocument into the canonical model dict.
+
+    The output mirrors the JSON ``_domain_entity.json`` shape so the rest
+    of codegen can consume it unchanged.
+    """
+    de: dict[str, Any] = {}
+
+    # Frontmatter contains entity-wide string keys.
+    # NB: #+description describes the *document* (the codegen model), not the
+    # modelled thing. The modelled thing's description is the prose body
+    # between the frontmatter and the first heading (captured below).
+    fm = doc.frontmatter
+    for k in (
+        "brief", "entity_singular", "entity_plural", "entity_title",
+    ):
+        if k in fm:
+            de[k] = fm[k]
+
+    # Prose body before the first heading describes the modelled entity.
+    pre_heading_body = _strip_body(doc.root)
+    if pre_heading_body:
+        de["description"] = pre_heading_body
+
+    # File-level properties at the top of the file (if any) contribute too.
+    if doc.root.org_id:
+        de["entity_org_id"] = doc.root.org_id
+
+    # Top-level sections.
+    flags = _section(doc.root, "Flags")
+    if flags:
+        for k, v in flags.properties.items():
+            de[k.lower()] = _parse_typed(v)
+        # Custom: service_find_by_code is represented as a column reference
+        # in the org file; reshape into the {"column": ...} dict the JSON
+        # model uses.
+        if "service_find_by_code_column" in de:
+            col = de.pop("service_find_by_code_column")
+            de["service_find_by_code"] = {"column": col}
+
+    pk = _section(doc.root, "Primary key")
+    if pk:
+        out_pk: dict[str, Any] = {}
+        for k, v in pk.properties.items():
+            out_pk[k.lower()] = _parse_typed(v)
+        description, detail = _description_and_detail(pk)
+        if description:
+            out_pk["description"] = description
+        if detail:
+            out_pk["detail"] = detail
+        de["primary_key"] = out_pk
+
+    nks = _section(doc.root, "Natural keys")
+    if nks:
+        de["natural_keys"] = [_natural_key_node_to_dict(c) for c in nks.children]
+
+    cols = _section(doc.root, "Columns")
+    if cols:
+        de["columns"] = [_column_node_to_dict(c) for c in cols.children]
+
+    sql = _section(doc.root, "SQL")
+    if sql:
+        de["sql"] = {k.lower(): _parse_typed(v) for k, v in sql.properties.items()}
+
+    repo = _section(doc.root, "Repository")
+    if repo:
+        de["repository"] = {k.lower(): _parse_typed(v) for k, v in repo.properties.items()}
+
+    # SQL section: SQL-specific flags + (future) custom triggers.
+    sql_section = _section(doc.root, "SQL")
+    if sql_section:
+        sql_flags = _section(sql_section, "Flags")
+        if sql_flags:
+            de["sql"] = {
+                k.lower(): _parse_typed(v) for k, v in sql_flags.properties.items()
+            }
+
+    # C++ section: everything C++ codegen needs.
+    cpp_section = _section(doc.root, "C++")
+    if cpp_section:
+        # Flags: lift directly onto domain_entity (these are top-level
+        # in the JSON model).
+        cpp_flags = _section(cpp_section, "Flags")
+        if cpp_flags:
+            for k, v in cpp_flags.properties.items():
+                de[k.lower()] = _parse_typed(v)
+            if "service_find_by_code_column" in de:
+                col = de.pop("service_find_by_code_column")
+                de["service_find_by_code"] = {"column": col}
+
+        # Repository naming conventions.
+        repo = _section(cpp_section, "Repository")
+        if repo:
+            de["repository"] = {
+                k.lower(): _parse_typed(v) for k, v in repo.properties.items()
+            }
+
+        # cpp.includes + cpp.iterator_var + cpp.table_display
+        cpp_out: dict[str, Any] = {}
+        dom = _section(cpp_section, "Domain includes")
+        ent = _section(cpp_section, "Entity includes")
+        if dom or ent:
+            cpp_out["includes"] = {
+                "domain": _includes_from_named_block(dom) if dom else [],
+                "entity": _includes_from_named_block(ent) if ent else [],
+            }
+        conv = _section(cpp_section, "Conventions")
+        if conv:
+            for k, v in conv.properties.items():
+                cpp_out[k.lower()] = _parse_typed(v)
+        td = _section(cpp_section, "Table display")
+        if td:
+            cpp_out["table_display"] = _table_display(td)
+        if cpp_out:
+            de["cpp"] = cpp_out
+
+        # Qt UI bindings.
+        qt = _section(cpp_section, "Qt")
+        if qt:
+            qt_out: dict[str, Any] = {}
+            for k, v in qt.properties.items():
+                qt_out[k.lower()] = _parse_typed(v)
+            df = _section(qt, "Detail fields")
+            if df:
+                qt_out["detail_fields"] = _detail_fields(df)
+            qc = _section(qt, "Columns (Qt model)")
+            if qc:
+                qt_out["columns"] = _qt_columns(qc)
+            de["qt"] = qt_out
+
+        # Custom repository methods (the literate fragment mechanism).
+        cm = _section(cpp_section, "Custom repository methods")
+        if cm:
+            de["custom_repository_methods"] = _custom_methods(cm)
+
+    return {"domain_entity": de}
+
+
+# --------------------------------------------------------------------------
+# Validator
+
+
+REQUIRED_FLAGS = ("schema", "product", "component", "component_include", "component_core")
+REQUIRED_COLUMN_PROPS = ("type",)
+
+
+def validate_model(model: dict[str, Any]) -> list[str]:
+    """Return a list of human-readable validation errors (empty == valid)."""
+    errors: list[str] = []
+    if "domain_entity" not in model:
+        errors.append("Missing top-level 'domain_entity' key")
+        return errors
+    de = model["domain_entity"]
+
+    for k in REQUIRED_FLAGS:
+        if k not in de:
+            errors.append(f"Missing required flag: {k}")
+
+    if "primary_key" not in de:
+        errors.append("Missing required section: Primary key")
+    elif "column" not in de["primary_key"]:
+        errors.append("Primary key missing required property: column")
+
+    for col in de.get("columns", []):
+        for required in REQUIRED_COLUMN_PROPS:
+            if required not in col:
+                errors.append(
+                    f"Column '{col.get('name','?')}' missing required property: {required}"
+                )
+
+    return errors
+
+
+# --------------------------------------------------------------------------
+# Public entry point
+
+
+def load_org_model(path: Path | str) -> dict[str, Any]:
+    """Load an org-mode entity model into the canonical dict structure."""
+    text = Path(path).read_text(encoding="utf-8")
+    doc = parse_org(text)
+    model = org_document_to_model(doc)
+    return model

@@ -231,13 +231,20 @@ def is_domain_entity_model(model_filename):
     """
     Check if a model file is a domain entity model.
 
+    Both forms are accepted:
+    - ``*_domain_entity.json`` (legacy JSON model, C++ only)
+    - ``*_entity.org`` (literate org model, unified C++ + SQL)
+
     Args:
         model_filename (str): The model filename
 
     Returns:
         bool: True if this is a domain entity model
     """
-    return model_filename.endswith("_domain_entity.json")
+    return (
+        model_filename.endswith("_domain_entity.json")
+        or model_filename.endswith("_entity.org")
+    )
 
 
 def is_junction_model(model_filename):
@@ -789,12 +796,20 @@ def load_model(model_path):
     """
     Load a model from the specified path.
 
+    Dispatches on file extension: ``.org`` files go through the org-mode
+    loader, anything else (``.json``) is parsed as JSON.
+
     Args:
         model_path (str or Path): Path to the model file
 
     Returns:
         dict: The loaded model data
     """
+    path_str = str(model_path)
+    if path_str.endswith('.org'):
+        # Local import avoids a circular dependency at module load time.
+        from codegen.org_loader import load_org_model
+        return load_org_model(model_path)
     with open(model_path, 'r', encoding='utf-8') as f:
         return json.load(f)
 

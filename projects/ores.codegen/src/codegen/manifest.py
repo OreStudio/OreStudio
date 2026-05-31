@@ -1,12 +1,15 @@
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple, Union
 
 
 @dataclass
 class Component:
     name: str
     models_dir: str
-    entity_glob: str = "*_entity.json"
+    # Either a single glob pattern or a tuple of patterns (the regenerate
+    # driver unions the matches). Tuple form supports the org-mode model
+    # POC (=*_entity.org=) alongside the legacy JSON models.
+    entity_glob: Union[str, Tuple[str, ...]] = "*_entity.json"
     # *_entity.json also matches *_domain_entity.json; exclude the latter so
     # regenerate only processes pure schema models, not domain entity models.
     # None means no exclusion.
@@ -73,7 +76,7 @@ COMPONENTS: Dict[str, Component] = {
     "refdata-cpp": Component(
         name="refdata-cpp",
         models_dir="projects/ores.codegen/models/refdata",
-        entity_glob="*_domain_entity.json",
+        entity_glob=("*_domain_entity.json", "*_entity.org"),
         exclude_suffix=None,
     ),
     "reporting-cpp": Component(

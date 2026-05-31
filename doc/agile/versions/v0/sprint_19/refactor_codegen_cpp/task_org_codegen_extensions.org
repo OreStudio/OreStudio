@@ -250,6 +250,45 @@ The PR ships:
 
 * Notes
 
+** Prior art: Dogen's org-model codec
+
+Marco's Dogen project already migrated to org-mode for modeling. Key takeaways
+relevant to this POC ([[file:/home/marco/Development/mcraveiro.github.io/dogen/docs/literate_modeling_with_org_model.org][Dogen literate modeling chapter]]):
+
+- *Tag-based dispatch* rather than title-matching. Headlines carry semantic
+  tags like =:column:= or =:method:=. The parser dispatches on tags, not
+  heading titles. Renaming a heading does not break codegen as long as tags
+  stay. Adopt in *Stage 1.5* (after the basic POC works).
+- *Natural-language headlines.* =* Customer's full name :column:= reads
+  better than =* full_name=. The machine identifier lives in
+  =:PROPERTIES: :name: full_name :END:=. Pairs with tag-based dispatch.
+- *Stay close to native org-mode idioms.* Files should not surprise regular
+  org-mode users.
+- *Org-roam IDs for cross-document references.* Lines up with the
+  Stage 2 template→block linkage by UUID.
+- *Property drawers carry structured metadata*, headline body is the
+  human-readable comment. (Already doing this.)
+
+** Staged approach to template-block linkage
+
+The POC will land in two stages:
+
+*Stage 1 (this task)* — codegen reads org files, parses each section into a
+dict shaped like the JSON model, and feeds it to the existing mustache
+templates. For things that have a code body (includes, custom methods),
+the parser does language-specific stripping (e.g. removing =#include= from
+C++ include lines). This is *acceptable but inelegant* because the parser
+has to understand the syntax of the language inside each block.
+
+*Stage 2 (follow-up)* — once all JSON models have been migrated to org,
+refactor the linkage so each named block carries its own =:ID:= UUID, and
+mustache templates reference them by ID with a marker like =\<\<UUID\>\>= or
+=\{\{ext:UUID\}\}=. Codegen then substitutes the block content verbatim, no
+syntax parsing. This is the cleaner endgame; doing it now would require
+either (a) coordinated updates to all templates and all models, or
+(b) supporting both schemes during a long transition. Better to land
+Stage 1 first.
+
 ** =orgparse= capability sanity check (to do before starting)
 
 Confirm:

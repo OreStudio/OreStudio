@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :knowledge_graph_improvements:sprint_19:v0:
 #+owner: marco
-#+branch: feature/knowledge-graph-improvements
-#+pr:
+#+branch: feature/implement-knowledge-graph-improvements
+#+pr: 951
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-30
@@ -29,10 +29,10 @@ options, sidebar toggle) being absent from the graph view.
 |--------------+-----------------------------------------------------------------|
 | State        | STARTED                                                         |
 | Parent story | [[id:F3CB848E-72C1-4F81-AAE4-1265F41D47C1][Fix knowledge graph issues]]                   |
-| Now          | Investigating root causes.                                      |
-| Waiting on   | Nothing.                                                        |
-| Next         | Apply fixes; rebuild site; verify both issues resolved.         |
-| Last touched | 2026-05-30                                                      |
+| Now          | PR #951 open; awaiting CI and review.                           |
+| Waiting on   | CI green + review.                                              |
+| Next         | Merge PR; mark DONE.                                            |
+| Last touched | 2026-05-31                                                      |
 
 * Acceptance
 
@@ -44,13 +44,14 @@ options, sidebar toggle) being absent from the graph view.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/951][#951]] | [ores.lisp,org-roam-ui] Fix knowledge graph header overlap and image rendering |
 
 * Review
 
-| # | Comment summary                                    | File                                         | Decision | Notes                |
-|---+----------------------------------------------------+----------------------------------------------+----------+----------------------|
-| 1 | Remove placeholder =* Plan= and empty =* Notes=    | task_implement_knowledge_graph_improvements  | Accept   | Fixed in ca5bc93e4   |
-| 2 | Remove empty =* Result= heading                    | task_implement_knowledge_graph_improvements  | Accept   | Fixed in ca5bc93e4   |
-| 3 | Remove empty =* Decisions= heading from story      | story                                        | Accept   | Fixed in ca5bc93e4   |
+| # | Comment summary                                                      | File                                         | Decision | Notes                |
+|---+----------------------------------------------------------------------+----------------------------------------------+----------+----------------------|
+| 1 | Remove placeholder =* Plan= and empty =* Notes=                      | task_implement_knowledge_graph_improvements  | Accept   | Fixed in ca5bc93e4   |
+| 2 | Remove empty =* Result= heading                                      | task_implement_knowledge_graph_improvements  | Accept   | Fixed in ca5bc93e4   |
+| 3 | Remove empty =* Decisions= heading from story                        | story                                        | Accept   | Fixed in ca5bc93e4   |
+| 4 | =rewrite-img-links= case-sensitive and mishandles =../= paths        | ores-org-roam-export.el                      | Accept   | Fixed in cb67a6388   |
 

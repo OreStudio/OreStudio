@@ -120,6 +120,11 @@ repository are passed here.
 =Bash(build/scripts/build.sh *)= covers the project build wrapper,
 which selects the correct make preset and target.
 
+=Bash(source build/scripts/set_ssh_agent.sh)= exports =SSH_AUTH_SOCK=
+by reading the sole socket file from =/home/marco/.ssh/agent/=. It
+takes no arguments; the exact string is granted rather than a wildcard
+to prevent sourcing other scripts via this entry.
+
 Common invocations:
 - =make -C build/output/linux-clang-debug-make -j2 ores.utility=
 - =cmake --build --preset linux-clang-debug-ninja --target deploy_skills=
@@ -127,12 +132,14 @@ Common invocations:
 - =emacs -Q --script .build-skills.el=
 - =emacs -Q --script .build-settings.el=
 - =build/scripts/build.sh ores.utility.tests=
+- =source build/scripts/set_ssh_agent.sh=
 
 #+begin_src json :tangle no :noweb-ref perm-build
       "Bash(make *)",
       "Bash(cmake *)",
       "Bash(emacs -Q --script *)",
-      "Bash(build/scripts/build.sh *)"
+      "Bash(build/scripts/build.sh *)",
+      "Bash(source build/scripts/set_ssh_agent.sh)"
 #+end_src
 
 ** SQL scripts

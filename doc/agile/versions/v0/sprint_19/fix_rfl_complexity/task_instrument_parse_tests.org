@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on: 06C98C06-F950-483A-997B-89AED70D1238
+#+branch: feature/instrument-parse-tests
+#+pr: 941
+#+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29
-#+updated: 2026-05-29
+#+updated: 2026-05-30
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,12 +28,12 @@ been successfully eliminated from the client parse path.
 
 | Field        | Value                                                                               |
 |--------------+-------------------------------------------------------------------------------------|
-| State        | BACKLOG                                                                             |
+| State        | STARTED                                                                             |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | —                                                                                   |
-| Waiting on   | Task 2 merged ([[id:06C98C06-F950-483A-997B-89AED70D1238][rename + rewrite]]). |
-| Next         | Begin once task 2 PR is green.                                                      |
-| Last touched | 2026-05-29                                                                          |
+| Now          | Extracting dispatch into parse_trade_instrument free function; writing tests.       |
+| Waiting on   | —                                                                                   |
+| Next         | Open PR once tests pass on Linux CI.                                                |
+| Last touched | 2026-05-30                                                                          |
 
 * Acceptance
 
@@ -103,14 +103,14 @@ EXPECT_EQ(fwd->currency_pair, "EURUSD");
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                         |
+|-----+---------------------------------------------------------------|
+| 941 | [ores.qt.api] Task 3: extract parse_trade_instrument + tests  |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                           | File                       | Decision | Notes                                                          |
+|---+-------------------------------------------+----------------------------+----------+----------------------------------------------------------------|
+| 1 | READ_FLAT/READ_LEGS identical; unhygienic | parse_trade_instrument.cpp | Applied  | Replaced both macros with try_parse<T>() template (8c9cad6b); thread resolved |
 
 * Result

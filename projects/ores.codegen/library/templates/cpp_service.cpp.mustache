@@ -17,8 +17,8 @@ std::vector<domain::{{entity_singular}}> {{entity_singular}}_service::list_{{ent
 }
 
 std::optional<domain::{{entity_singular}}>
-{{entity_singular}}_service::find_{{entity_singular_short}}(const std::string& {{primary_key.column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding {{entity_singular_words}}: " << {{primary_key.column}};
+{{entity_singular}}_service::get_{{entity_singular_short}}(const std::string& {{primary_key.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}}: " << {{primary_key.column}};
     auto results = repo_.read_latest(ctx_, {{primary_key.column}});
     if (results.empty()) return std::nullopt;
     return results.front();

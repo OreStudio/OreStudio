@@ -166,7 +166,7 @@ public:
                 return;
             }
         } else {
-            const auto ws = svc.find_workspace(req->id);
+            const auto ws = svc.get_workspace(req->id);
             const bool is_owner = ws.has_value() && ctx.party_id().has_value() &&
                                   (ws->owner_id == *ctx.party_id());
             const auto required = is_owner
@@ -251,7 +251,7 @@ public:
         }
 
         service::workspace_service svc(ctx);
-        const auto ws = svc.find_workspace(req->id);
+        const auto ws = svc.get_workspace(req->id);
         const bool is_owner = ws.has_value() && ctx.party_id().has_value() &&
                               (ws->owner_id == *ctx.party_id());
         const auto required = is_owner

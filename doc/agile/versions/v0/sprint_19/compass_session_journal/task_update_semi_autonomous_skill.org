@@ -72,6 +72,14 @@ pickup.
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/958][#958]] | [agile] Task 5: update session journal recipe and semi-autonomous developer skill |
 
+* Review
+
+** Round 1 — 2026-05-31
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Missing =* Review= section in task doc | task file | Fixed: added; declined suggested =* Reviews= name and table format (wrong convention) | Gemini review |
+
 * Result
 
 - Recipe updated: provisional hedging removed; auto-update noted; manual

@@ -2,33 +2,36 @@
 :ID: F7E4C41F-AF34-43E5-ADC3-1D837126B3DE
 :END:
 #+title: Set SSH_AUTH_SOCK for git operations
-#+description: The sandboxed shell does not inherit the user SSH agent. Export SSH_AUTH_SOCK before git push/fetch/pull.
+#+description: The sandboxed shell does not inherit the user SSH agent. Source build/scripts/set_ssh_agent.sh before git push/fetch/pull.
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-05-26
-#+updated: 2026-05-28
+#+updated: 2026-05-30
 
 The sandboxed shell environment does not inherit the user's SSH agent
-socket. Any =git push=, =git fetch=, or =git pull= will hang waiting
-for credentials unless =SSH_AUTH_SOCK= is explicitly exported first.
+socket. Any =git push=, =git fetch=, or =git pull= will fail with
+"Permission denied (publickey)" unless =SSH_AUTH_SOCK= is explicitly
+exported first.
 
 *Why:* The user's terminal has an SSH agent running with the key
 unlocked, but the sandbox starts with an empty =SSH_AUTH_SOCK=. The
 git remote uses SSH (=git@github.com:=), and without the agent the
-connection hangs on a passphrase prompt that the sandbox can't
-display.
+connection fails on authentication.
 
-*How to apply:* Before any =git push=, =git fetch=, or =git pull=,
-prefix the command with:
+*How to apply:* Source the project script before any push/fetch/pull:
 
 #+begin_src sh
-export SSH_AUTH_SOCK=/home/marco/.ssh/agent/s.qEp3u81YnU.agent.P4RgmsqyMr
+source build/scripts/set_ssh_agent.sh
+git push origin ...
 #+end_src
 
-If that fails (agent restarted, socket path changed), *ask the user*
-to run =echo $SSH_AUTH_SOCK= in their terminal and use the value they
-report. Do *not* probe candidate paths — do not look at =/run/user/*/gnupg/=
-or other sockets. The GPG agent SSH emulation socket (=S.gpg-agent.ssh=)
-is a different thing and must not be touched.
+The script reads the sole file in =/home/marco/.ssh/agent/= and exports
+=SSH_AUTH_SOCK= from it. The filename changes when the agent restarts
+(reboot, crash), but the directory is stable, so the script always
+finds the current socket without manual intervention.
+
+*Do not* probe =/run/user/*/gnupg/= or other sockets. The GPG agent
+SSH emulation socket (=S.gpg-agent.ssh=) is a different thing and must
+not be touched.

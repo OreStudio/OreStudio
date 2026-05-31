@@ -953,7 +953,7 @@ def cmd_capture(argv):
     except SystemExit as exc:
         rc = exc.code
     if rc in (None, 0):
-        print(f"✅ Sprint note created: {out_file.relative_to(PROJECT_ROOT)}")
+        print(f"✅ Product backlog note created: {out_file.relative_to(PROJECT_ROOT)}")
         print("ℹ️  Use 'compass capture file <slug> next|deferred|discarded' to move to backlog,")
         print("   or 'compass capture promote <slug>' for instructions to make it a story/task.")
         return 0

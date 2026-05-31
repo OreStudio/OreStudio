@@ -37,10 +37,31 @@ void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{
     BOOST_LOG_SEV(lg(), info) << "Saved {{entity_singular_words}}: " << v.{{primary_key.column}};
 }
 
+void {{entity_singular}}_service::save_{{entity_plural_short}}(
+    const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}}) {
+{{#primary_key.is_uuid}}
+    for (const auto& e : {{entity_plural_short}})
+        if (e.{{primary_key.column}}.is_nil())
+{{/primary_key.is_uuid}}
+{{^primary_key.is_uuid}}
+    for (const auto& e : {{entity_plural_short}})
+        if (e.{{primary_key.column}}.empty())
+{{/primary_key.is_uuid}}
+            throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << {{entity_plural_short}}.size()
+        << " {{entity_plural_words}}";
+    repo_.write(ctx_, {{entity_plural_short}});
+}
+
 void {{entity_singular}}_service::remove_{{entity_singular_short}}(const std::string& {{primary_key.column}}) {
     BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}: " << {{primary_key.column}};
     repo_.remove(ctx_, {{primary_key.column}});
     BOOST_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}: " << {{primary_key.column}};
+}
+
+void {{entity_singular}}_service::remove_{{entity_plural_short}}(
+    const std::vector<std::string>& {{primary_key.column}}s) {
+    repo_.remove(ctx_, {{primary_key.column}}s);
 }
 
 std::vector<domain::{{entity_singular}}>

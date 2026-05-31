@@ -191,7 +191,9 @@ Common invocations:
 
 =compass.sh= is the preferred entry point for all document scaffolding
 (=compass add <type>=); it delegates to the Mustache-based =ores.codegen=
-Python package. =run_generator.sh= drives the C++ code generator (Dogen).
+Python package. =codegen.sh= is the main entry point for C++ and SQL
+code generation via =ores.codegen= (=regenerate=, =generate=
+subcommands). =run_generator.sh= drives the C++ code generator (Dogen).
 =plantuml_er_generate.sh= produces PlantUML ER diagrams. =generate_doc.sh=
 is a legacy script being decommissioned — use =compass= instead.
 
@@ -201,11 +203,14 @@ a large codegen tree.
 
 Common invocations:
 - =./projects/ores.compass/compass.sh add memory --slug foo --parent-dir doc/llm/memory ...=
+- =projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --profile all-cpp=
+- =projects/ores.codegen/codegen.sh generate --model path/to/model.json --profile all-cpp=
 - =projects/ores.codegen/run_generator.sh=
 - =projects/ores.codegen/plantuml_er_generate.sh -i doc/plans/foo.org=
 
 #+begin_src json :tangle no :noweb-ref perm-codegen
       "Bash(./projects/ores.compass/compass.sh *)",
+      "Bash(projects/ores.codegen/codegen.sh *)",
       "Bash(projects/ores.codegen/generate_doc.sh *)",
       "Bash(projects/ores.codegen/run_generator.sh *)",
       "Bash(projects/ores.codegen/plantuml_er_generate.sh *)"

@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch: feature/refactor-codegen-cpp
 #+pr:
-#+blocked_on: B5F1C8D3-4A7E-4B2F-9D6C-3E8A1B5D7C4F
+#+blocked_on: 615B7214-F87B-49D3-866E-CDC198FF2A06
 #+blocked_since:
 #+created: 2026-05-30
 #+updated: 2026-05-31
@@ -129,9 +129,9 @@ The commit message lists every file restored from HEAD with one-line reason
 |--------------+----------------------------------------|
 | State        | BACKLOG                                |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin Phase A: add template flags refdata needs. |
+| Now          | Paused. WIP stashed (=git stash list= shows refdata-cpp template + 25 model updates + restored exclusions). |
+| Waiting on   | [[id:615B7214-F87B-49D3-866E-CDC198FF2A06][Org-mode codegen POC]] (custom methods need a first-class mechanism before refdata can ship cleanly). |
+| Next         | Resume once org-mode mechanism lands; party_repository custom methods will then come from the org file instead of a HEAD-restore. |
 | Last touched | 2026-05-31                             |
 
 * Acceptance

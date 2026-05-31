@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_session_journal:sprint_19:v0:
 #+owner: marco
-#+branch: feature/compass-session-journal
-#+pr: 948
+#+branch: feature/design-journal-format
+#+pr:
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-31
@@ -30,11 +30,11 @@ built until the format is specified and agreed.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                   |
 | Parent story | [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]]               |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Write format spec and update .gitignore. |
+| Next         | Done. Task 2: implement compass journal subcommand. |
 | Last touched | 2026-05-31                             |
 
 * Acceptance
@@ -79,6 +79,14 @@ from each worktree's =.journal.org= using the same parser.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/948][#948]] | [agile] Scaffold compass_session_journal story in sprint 19 |
+
+* Result
+
+- =.journal.org= added to =.gitignore= with explanatory comment.
+- Recipe [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]] written under =doc/recipes/agile/=.
+- Recipe wired into =doc/recipes/agile/agile.org= index.
+- Entry format, field table, update rules, overlap-detection flow, and
+  manual-write instructions documented; all linked back to the story.
 
 * Review
 

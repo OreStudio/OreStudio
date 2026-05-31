@@ -583,7 +583,8 @@ public:
         }
         BOOST_LOG_SEV(trade_handler_lg(), debug)
             << "Completed " << msg.subject;
-        // trade_instrument is a 30+-alternative variant; reply() would apply
+        // trade_instrument is a 9-alternative variant with nested sub-variants
+        // (bringing the total field-name union to 502 names); reply() would apply
         // AddTagsToVariants and exceed the macOS/Windows fold-expression nesting
         // limit. The client dispatches on product_type/trade_type and reads
         // concrete leaf types directly, so type-name tags are not needed.

@@ -163,7 +163,7 @@ void reply(ores::nats::service::client& nats,
 
 // Like reply() but writes WITHOUT AddTagsToVariants.
 // Use this when the response contains a large std::variant (e.g. trade_instrument
-// with 30+ alternatives) whose field-name union would exceed the macOS/Windows
+// with nested sub-variants) whose field-name union would exceed the macOS/Windows
 // fold-expression nesting limit. Safe when the client dispatches on a separate
 // discriminator (e.g. product_type/trade_type) rather than relying on type tags.
 template<typename Resp>

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 30BC3B04-E85D-4A0C-A6FD-01E6E4B80D6C
+:ID: 20AC8397-1ACD-4B1A-B0FE-6FAB74477592
 :END:
 #+title: Story: Compass session journal
 #+description: Add a per-machine .journal.org (gitignored) that records each Claude environment's story/task journey; add compass journal commands (where, log); refactor compass fleet to read the journal.
@@ -70,6 +70,26 @@ branch is checked out.
 6. *Overlap detection* — =compass journal where --all= (or =compass fleet=)
    shows the current story/task for every worktree. Claude checks this
    before picking up a new story to detect overlap.
+
+7. *Story-side lookup* — =compass fleet --story <UUID>= (or =compass journal
+   find <UUID>=) scans all worktree journals and reports which environment
+   last worked on a given story or task. Answers "which checkout was working
+   on story X?"
+
+** Design options considered
+
+The capture [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Track which checkout last worked on a story or task]] identified four options:
+
+| Option | Pros | Cons |
+|--------+------+------|
+| =#+checkout:= field in task org file | Tracked in git; visible in Emacs | Pollutes every PR with machine-local info; merge conflicts across worktrees |
+| Git commit trailer (=Checkout: local2=) | Permanent history | Requires hook; trailer added per commit not per task-pickup; not queryable |
+| Compass stamp on status change | Integrated into existing flow | Still needs a backing store; same question of where |
+| Worktree-local gitignored file (chosen) | Machine-local; no git noise; cumulative; queryable | Not shared; only visible locally or via fleet read |
+
+The worktree-local gitignored file wins because it keeps machine state off the
+shared branch while remaining readable by =compass fleet= across all local
+worktrees.
 
 ** What is NOT in scope
 

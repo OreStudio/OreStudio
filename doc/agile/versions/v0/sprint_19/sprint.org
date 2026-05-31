@@ -67,7 +67,7 @@ and file backlog captures for Wt and HTTP gaps. One story per entity.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:30BC3B04-E85D-4A0C-A6FD-01E6E4B80D6C][Compass session journal]] | BACKLOG | | | Per-machine .journal.org (gitignored) recording each Claude environment's story/task journey; compass journal commands; compass fleet refactor. |
+| [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]] | BACKLOG | | | Per-machine .journal.org (gitignored) recording each Claude environment's story/task journey; compass journal commands; compass fleet refactor. |
 | [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] | DONE | 2026-05-29 | 2026-05-30 | Unified SQL template + model format + codegen.py CLI replacing all generate_*_schema.sh scripts. |
 | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] | BACKLOG | | | Audit and resolve all drift between C++ templates and production files; fix template bugs; fix model consistency; zero-diff invariant. |
 | [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy ores.codegen bash scripts]] | BACKLOG | | | Replace all direct bash script invocations of ores.codegen with ores.compass or codegen.py; remove legacy scripts starting with generate_doc.sh. |

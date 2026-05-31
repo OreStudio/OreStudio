@@ -84,6 +84,7 @@ and file backlog captures for Wt and HTTP gaps. One story per entity.
 |-------+-------+-------+-----+-------------|
 | [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]] | STARTED | 2026-05-29 | | Scaffold sprint 19, wire version manifest, bump version, PR. |
 | [[id:2A6F5FE2-8C50-494F-948F-6BA519075FA9][Sprint planning]] | STARTED | 2026-05-29 | | Select stories from backlog, size tasks, confirm mission. |
+| [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] | STARTED | 2026-05-31 | | Periodic System 2 health checks: goal alignment, load, PR velocity, story/task balance, focus, verdict. |
 
 ** LLMs
 

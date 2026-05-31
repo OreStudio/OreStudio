@@ -155,15 +155,18 @@ def parse_org(text: str) -> OrgDocument:
             m = _DRAWER_PROP_RE.match(line)
             if m:
                 key, val = m.group(1), m.group(2).strip()
+                # Org-mode property keys are case-insensitive — normalise
+                # only the ID detection (the rest stays case-preserving).
+                is_id = key.upper() == "ID"
                 # File-level drawer goes into doc.file_properties
                 # before any heading.
                 if not seen_first_heading and current is doc.root:
                     doc.file_properties[key] = val
-                    if key == "ID":
+                    if is_id:
                         doc.root.org_id = val
                 else:
                     current.properties[key] = val
-                    if key == "ID":
+                    if is_id:
                         current.org_id = val
             continue
 
@@ -181,9 +184,14 @@ def parse_org(text: str) -> OrgDocument:
             src_lang = m.group(1)
             rest = m.group(2) or ""
             name_match = _SRC_NAME_RE.search(rest)
-            src_name = name_match.group(1) if name_match else None
+            # Header arg values may be quoted (e.g. :name "foo") — strip
+            # surrounding single or double quotes so downstream lookups
+            # work whether the author quoted the value or not.
+            src_name = name_match.group(1).strip("\"'") if name_match else None
             impl_match = _SRC_IMPLEMENTS_RE.search(rest)
-            src_implements = impl_match.group(1) if impl_match else None
+            src_implements = (
+                impl_match.group(1).strip("\"'") if impl_match else None
+            )
             src_lines = []
             continue
 
@@ -293,15 +301,23 @@ def _strip_body(node: OrgNode) -> str:
 
 
 def _parse_typed(value: str) -> Any:
-    """Decode a property value into Python types where obvious."""
+    """Decode a property value into Python types where obvious.
+
+    ``str.isdigit()`` is wrong for negative numbers and floats (e.g.
+    ``-5``, ``3.14`` both return False), so we round-trip through ``int``
+    then ``float`` and fall through to the raw string."""
     low = value.lower()
     if low == "true":
         return True
     if low == "false":
         return False
-    if value.isdigit():
+    try:
         return int(value)
-    return value
+    except ValueError:
+        try:
+            return float(value)
+        except ValueError:
+            return value
 
 
 def _includes_from_named_block(node: OrgNode) -> list[str]:
@@ -309,25 +325,35 @@ def _includes_from_named_block(node: OrgNode) -> list[str]:
 
     The babel block is real C++ with ``#include`` directives. We strip the
     ``#include `` prefix so the returned tokens match the angle-bracket /
-    double-quote form the JSON model stored."""
+    double-quote form the JSON model stored. Non-``#include`` lines
+    (comments, blanks) are ignored — otherwise they would be re-emitted by
+    the include-list template as ``#include // foo``, which is invalid
+    C++."""
     code = node.src_blocks.get("includes", "")
     out: list[str] = []
     for raw in code.splitlines():
         line = raw.strip()
-        if not line:
-            continue
         if line.startswith("#include"):
-            line = line[len("#include"):].strip()
-        out.append(line)
+            out.append(line[len("#include"):].strip())
     return out
 
 
 def _description_and_detail(node: OrgNode) -> tuple[str, str]:
-    """Split prose body into description (first paragraph) and detail (rest)."""
+    """Split prose body into description (first paragraph) and detail (rest).
+
+    Within each paragraph, wrapped lines are joined with a single space.
+    Paragraph breaks (blank lines) between paragraphs are preserved so
+    multi-paragraph detail renders as multi-paragraph C++ comments."""
     body = _strip_body(node)
     parts = re.split(r"\n\s*\n", body, maxsplit=1)
-    description = parts[0].replace("\n", " ").strip()
-    detail = parts[1].replace("\n", " ").strip() if len(parts) > 1 else ""
+    description = re.sub(r"\s*\n\s*", " ", parts[0]).strip()
+    if len(parts) > 1:
+        paragraphs = re.split(r"\n\s*\n", parts[1])
+        detail = "\n\n".join(
+            re.sub(r"\s*\n\s*", " ", p).strip() for p in paragraphs
+        )
+    else:
+        detail = ""
     return description, detail
 
 
@@ -612,8 +638,17 @@ def validate_model(model: dict[str, Any]) -> list[str]:
 
 
 def load_org_model(path: Path | str) -> dict[str, Any]:
-    """Load an org-mode entity model into the canonical dict structure."""
+    """Load an org-mode entity model into the canonical dict structure.
+
+    Raises ``ValueError`` if the loaded model fails validation, so the
+    author sees a structural error up front instead of a cryptic
+    template-render failure later."""
     text = Path(path).read_text(encoding="utf-8")
     doc = parse_org(text)
     model = org_document_to_model(doc)
+    errors = validate_model(model)
+    if errors:
+        raise ValueError(
+            f"Validation errors in {path}:\n  " + "\n  ".join(errors)
+        )
     return model

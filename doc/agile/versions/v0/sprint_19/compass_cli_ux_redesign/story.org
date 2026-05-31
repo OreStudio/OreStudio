@@ -111,7 +111,7 @@ and whether backward-incompatible renames need a deprecation period.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][Compass CLI UX analysis and taxonomy]] | STARTED | 2026-05-31 | | System 2 analysis: full command taxonomy, pillar organisation, backward-compat rules, description fix. |
+| [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][Compass CLI UX analysis and taxonomy]] | DONE | 2026-05-31 | 2026-06-01 | System 2 analysis: full command taxonomy, pillar organisation, backward-compat rules, description fix. |
 | Task: Fix compass description and organise --help by pillar | BACKLOG | | | Update module docstring; group argparse subcommands by pillar in --help output. |
 | Task: Implement compass sprint status | BACKLOG | | | All stories in current sprint grouped by state (DONE/STARTED/BACKLOG) with task counts. |
 | Task: Implement compass story status | BACKLOG | | | All tasks in a story grouped by state, with branch and PR per task. |

@@ -53,9 +53,23 @@ other remaining instantiation sites.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Root cause: =registrar_trades.cpp= includes =trade_handler.hpp=, which calls
+=reply(nats_, msg, resp)= where =resp= is =get_trade_instrument_response=.
+=reply()= uses =rfl::json::write<rfl::AddTagsToVariants>= generically on all
+response types. Applied to =get_trade_instrument_response= (which contains
+=trade_instrument=, a 9-alternative variant whose sub-variants bring the
+total field-name union to 502), this triggers =rfl::Literal<f1,…,f502>=
+at compile time, exceeding the macOS fold-expression nesting limit (256) and
+the Windows MSVC recursive-type limit (C1202).
+
+Fix: Add =reply_no_variant_tags= to =handler_helpers.hpp= and use it in
+=trade_handler.hpp::instrument()=. The new client reads concrete leaf types
+via product_type/trade_type dispatch (=parse_trade_instrument=) and does not
+need =AddTagsToVariants= type-name tags in the wire format.
+
+Files changed:
+- =ores.service/include/ores.service/messaging/handler_helpers.hpp= — new =reply_no_variant_tags= helper
+- =ores.trading.core/include/ores.trading.core/messaging/trade_handler.hpp= — use it in =instrument()=; add =using= declaration
 
 * Notes
 

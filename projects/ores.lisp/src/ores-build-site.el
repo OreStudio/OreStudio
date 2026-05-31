@@ -186,7 +186,7 @@
            (fa-tag  "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css\">")
            ;; Fix graph-page layout: float the header and undo the body flex/padding
            ;; from style.css (org-roam-ui sizes its canvas to window inner dimensions).
-           (fix-tag "<style>#site-header{position:fixed;top:0;left:0;right:0;z-index:9999;}body{display:block;padding:0;align-items:unset;}</style>")
+           (fix-tag "<style>#site-header{position:fixed;top:0;left:0;right:0;z-index:9999;}body{display:block;padding:0;align-items:unset;}#__next{margin-top:56px;}</style>")
            (patched (replace-regexp-in-string
                      "</head>"
                      (concat css-tag fa-tag fix-tag "</head>")

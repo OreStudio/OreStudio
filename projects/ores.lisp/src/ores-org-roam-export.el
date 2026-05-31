@@ -77,7 +77,22 @@ Requires Emacs 29+ built-in SQLite support."
                                        (buffer-string))
                                    (error nil)))))
                         (puthash path c file-cache)
-                        c))))
+                        c)))
+                (rewrite-img-links (content file-path)
+                  (when (and content file-path)
+                    (let ((dir (file-name-directory file-path)))
+                      (replace-regexp-in-string
+                       "\\[\\[\\(?:file:\\|\\./\\)\\([^][]+\\.\\(?:png\\|jpe?g\\|gif\\|svg\\)\\)\\]\\]"
+                       (lambda (m)
+                         (let* (;; strip [[ prefix (file: or ./) and ]] suffix
+                                (img-rel (substring m
+                                                    (if (string-prefix-p "[[file:" m) 7 4)
+                                                    (- (length m) 2)))
+                                (abs     (expand-file-name img-rel dir))
+                                (rel     (if repo-root (file-relative-name abs repo-root) abs))
+                                (url     (if site-prefix (concat site-prefix rel) rel)))
+                           (format "[[%s]]" url)))
+                       content)))))
         ;; build tag index
         (dolist (row tag-rows)
           (let ((nid (unpack (nth 0 row))) (tag (unpack (nth 1 row))))
@@ -100,7 +115,8 @@ Requires Emacs 29+ built-in SQLite support."
                                       (when raw
                                         (condition-case nil (read raw) (error nil)))))
                           (tags     (apply #'vector (gethash id tag-map '())))
-                          (content  (or (file-content raw-path) :json-null)))
+                          (content  (let ((raw (file-content raw-path)))
+                                      (if raw (rewrite-img-links raw raw-path) :json-null))))
                      (list :id id :file file :level level :pos pos :title title
                            :tags tags :content content
                            :properties (or props :json-null)

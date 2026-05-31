@@ -114,6 +114,7 @@ actions under a short heading and maps them to single-keystroke bindings.
 
 * See also
 
+- [[id:E19E9FDE-4743-4B2E-8724-6369B3E43131][ORE Studio Site]] — how the site is built, the menu bar definition, the 404 page, and the org-roam graph injection.
 - [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] — editor overview and the build targets (=deploy_site=, =deploy_manual=, etc.) that =ores.lisp= scripts drive.
 - [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]] — the knowledge graph layer that =ores-org-roam-export.el= exports.
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — architectural context.

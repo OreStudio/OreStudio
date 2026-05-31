@@ -82,12 +82,13 @@ Requires Emacs 29+ built-in SQLite support."
                   (when (and content file-path)
                     (let ((dir (file-name-directory file-path)))
                       (replace-regexp-in-string
-                       "\\[\\[\\(?:file:\\|\\./\\)\\([^][]+\\.\\(?:png\\|jpe?g\\|gif\\|svg\\)\\)\\]\\]"
+                       "\\[\\[\\(?:[fF][iI][lL][eE]:\\|\\.\\.?/\\)[^][]*\\.\\(?:png\\|jpe?g\\|gif\\|svg\\)\\]\\]"
                        (lambda (m)
-                         (let* (;; strip [[ prefix (file: or ./) and ]] suffix
-                                (img-rel (substring m
-                                                    (if (string-prefix-p "[[file:" m) 7 4)
-                                                    (- (length m) 2)))
+                         (let* ((img-rel (progn
+                                           (string-match
+                                            "\\[\\[\\(?:[fF][iI][lL][eE]:\\|\\.\\.?/\\)\\(.*\\)\\]\\]"
+                                            m)
+                                           (match-string 1 m)))
                                 (abs     (expand-file-name img-rel dir))
                                 (rel     (if repo-root (file-relative-name abs repo-root) abs))
                                 (url     (if site-prefix (concat site-prefix rel) rel)))

@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: A596D1E7-6A74-4E55-996D-6F1F2E48F261
+:END:
+#+title: Story: Compass CLI UX redesign
+#+description: Design and implement a noun-based command taxonomy for compass (sprint/story/task namespaces); fix tool description; organise --help by pillar; add sprint and story status report commands.
+#+type: story
+#+level: s2
+#+filetags: :tooling:compass:ux:cli:sprint_19:v0:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=ores.compass= started as an orientation tool but has grown into a full
+developer toolkit — scaffolding, capture, journal, backlog, and fleet
+management alongside the original orientation commands. Two problems have
+emerged:
+
+1. *Misleading description.* The tool still calls itself "a repository
+   orientation tool" in its docstring and =--help= output. New contributors
+   (and LLMs) underestimate its scope.
+
+2. *Inconsistent UX.* Commands are named by verb (=goto=, =add=, =where=,
+   =fleet=) or by noun (=journal=, =capture=, =inbox=). Adding =compass sprint=
+   or =compass story= commands without a taxonomy creates a third naming
+   convention and paints future development into a corner.
+
+3. *Missing orient commands.* There is no way to get a status snapshot of the
+   current sprint (all stories by state) or of a story (all tasks by state).
+   =compass where= only shows STARTED items.
+
+This story:
+- defines the full noun-based command taxonomy through a System 2 UX analysis
+- fixes the tool description and organises =--help= by pillar
+- implements =compass sprint status= and =compass story status=
+- writes a recipe for the new orient commands
+- establishes backward-compatibility rules (aliases, deprecation warnings) so
+  existing scripts and skills are not silently broken
+
+** Proposed taxonomy (to be validated in Task 1)
+
+#+begin_example
+compass orient           # pillar header (existing commands keep their names)
+  where                  # current version/sprint/in-flight (existing)
+  fleet                  # worktree status via journal (existing)
+
+compass sprint           # sprint-level operations
+  status                 # all stories in current sprint, grouped by state (NEW)
+  new                    # open a new sprint (currently: how_do_i_open_a_new_sprint recipe)
+  close                  # close a sprint
+
+compass story            # story-level operations
+  status <id>            # all tasks in story, grouped by state (NEW)
+  new                    # create a story (currently: compass goto --slug)
+  start <id>             # mark story STARTED
+  close <id>             # mark story DONE
+
+compass task             # task-level operations
+  new                    # create a task (currently: compass goto --story)
+  start <id>             # mark task STARTED
+  close <id>             # mark task DONE
+
+compass journal          # session journal (existing)
+  update / where / log
+
+compass capture          # file a capture (existing)
+compass backlog          # backlog buckets (existing)
+compass search           # full-text search (existing)
+compass list             # doc listing (existing)
+compass show             # single doc detail (existing)
+#+end_example
+
+The Task 1 analysis will determine which verbs (=goto=, =add=) become aliases
+and whether backward-incompatible renames need a deprecation period.
+
+* Status
+
+| Field         | Value                                       |
+|---------------+---------------------------------------------|
+| State         | STARTED                                     |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                   |
+| Now           | Task 1 in progress: UX analysis.            |
+| Waiting on    | Nothing.                                    |
+| Next          | Complete Task 1; proceed to implementation. |
+| Last touched  | 2026-05-31                                  |
+
+* Acceptance
+
+- A UX analysis document records the full command taxonomy, backward-compat
+  decisions, and pillar organisation.
+- =compass --help= describes the tool as a "developer toolkit" (not "orientation
+  tool") and lists subcommands grouped by pillar.
+- =compass sprint status= prints all stories in the current sprint grouped by
+  state (DONE / STARTED / BACKLOG) with task counts.
+- =compass story status <id>= prints all tasks in a story grouped by state,
+  with branch and PR per task.
+- A recipe documents =compass sprint status= and =compass story status=,
+  linked from the agile recipe index.
+- Existing commands (=goto=, =add=, =where=, =fleet=, =capture=, =journal=,
+  =backlog=, =search=, =list=, =show=) continue to work unchanged (aliases or
+  retained names per taxonomy decision).
+- All compass references in =doc/recipes/=, =doc/llm/skills/=, and
+  =doc/llm/runbooks/= are consistent with the new taxonomy and description.
+  No recipe or skill refers to a renamed command without also documenting the alias.
+- CI passes. Site builds cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][Compass CLI UX analysis and taxonomy]] | STARTED | 2026-05-31 | | System 2 analysis: full command taxonomy, pillar organisation, backward-compat rules, description fix. |
+| Task: Fix compass description and organise --help by pillar | BACKLOG | | | Update module docstring; group argparse subcommands by pillar in --help output. |
+| Task: Implement compass sprint status | BACKLOG | | | All stories in current sprint grouped by state (DONE/STARTED/BACKLOG) with task counts. |
+| Task: Implement compass story status | BACKLOG | | | All tasks in a story grouped by state, with branch and PR per task. |
+| Task: Write recipe for new orient commands | BACKLOG | | | Recipe documenting compass sprint status and compass story status; link from agile recipe index. |
+| Task: Audit and update compass recipes, skills, and runbooks | BACKLOG | | | Review all compass references in doc/recipes, doc/llm/skills, doc/llm/runbooks; update any inconsistencies with the new taxonomy and description. |
+
+* Decisions
+
+- /Task 1 gates all implementation./ No code changes until the taxonomy
+  and backward-compat decisions are recorded and agreed.
+
+* Out of scope
+
+- Implementing =compass sprint new/close= or =compass story new/start/close=
+  in this story — those are follow-on stories once the taxonomy is agreed.
+- Renaming the =ores.compass= project or Python package.
+- Removing any existing command names — aliases only, no hard breakage.

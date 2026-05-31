@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: ACBF9164-1806-4472-8C96-C57821AD5F29
+:END:
+#+title: Task: Compass CLI UX analysis and taxonomy
+#+description: System 2 analysis of compass CLI UX: define full noun-based command taxonomy, pillar organisation, backward-compatibility rules, and description fix. Produces the design document that gates all implementation tasks.
+#+type: task
+#+level: s1
+#+filetags: :compass_cli_ux_redesign:sprint_19:v0:
+#+owner: marco
+#+branch: feature/compass-cli-ux-redesign
+#+pr: 960
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Conduct a System 2 analysis of the =ores.compass= CLI UX and produce a
+design document that all implementation tasks can build from. The analysis
+must answer:
+
+1. What is the correct noun-based command taxonomy?
+2. Which existing verb commands become aliases vs. retain their names?
+3. What backward-compatibility guarantees apply (aliases, deprecation
+   warnings, hard renames)?
+4. How are subcommands grouped in =--help= output (pillar organisation)?
+5. What is the correct one-line tool description?
+6. Which existing recipes, skills, and runbooks reference compass commands
+   and will need updating?
+
+* Status
+
+| Field        | Value                                         |
+|--------------+-----------------------------------------------|
+| State        | STARTED                                       |
+| Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]                      |
+| Now          | Writing taxonomy and design document.         |
+| Waiting on   | Nothing.                                      |
+| Next         | Complete design doc; gate implementation tasks. |
+| Last touched | 2026-05-31                                    |
+
+* Acceptance
+
+- A design document at =doc/plans/YYYY-MM-DD-compass-cli-ux-taxonomy.org=
+  records the full command taxonomy, pillar groupings, and
+  backward-compatibility decisions.
+- The document includes a table mapping every current command to its
+  taxonomy position and backward-compat treatment.
+- All implementation tasks in the story can proceed from the document
+  without further design discussion.
+
+* Notes
+
+** Commands to inventory
+
+Current compass commands (as of sprint 19):
+
+| Command | Current pillar | Notes |
+|---------+----------------+-------|
+| =index= | Search | Internal; keep |
+| =search= / =find= | Search | Keep |
+| =debug= | Search | Internal; keep |
+| =where= / =status= | Orient | Keep; =status= is alias |
+| =fleet= | Orient | Keep |
+| =list= | Navigate | Keep |
+| =show= | Navigate | Keep |
+| =add= | Scaffold | Becomes alias for =story new= / =task new=? |
+| =goto= | Scaffold | Becomes alias for =story new= + branch? |
+| =capture= | Capture | Keep |
+| =inbox= / =next= / =deferred= / =discarded= | Backlog | Keep |
+| =backlog= | Backlog | Keep |
+| =journal= | Journal | Keep (already noun-based) |
+
+** Key design questions for the analysis
+
+1. Does =compass goto= become =compass task new= or does it stay as =goto=
+   (since it does more: fetch, branch, scaffold, journal update)?
+2. Does =compass add= become =compass story new= / =compass task new= or
+   does =add= remain as a low-level scaffold primitive?
+3. Should =compass sprint= and =compass story= be flat subcommands or
+   subcommand groups with sub-subcommands (like =journal=)?
+4. What is the scope of this sprint? Only =status= commands and description
+   fix, or also start wiring =compass sprint new= / =compass story new=?
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/960][#960]] | [agile] Scaffold compass_cli_ux_redesign story in sprint 19 |
+
+* Review
+
+** Round 1 — 2026-05-31
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Empty =* Result= section should be omitted | task file | Fixed: removed | Gemini review |

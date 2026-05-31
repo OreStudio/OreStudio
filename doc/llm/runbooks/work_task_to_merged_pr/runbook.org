@@ -55,12 +55,20 @@ In execution order:
 
    After merge, update the task: state → =DONE=, fill =* Result=, distill any =* Plan= into the parent story's =* Decisions=.
 
+9. /Sync story and sprint state./ If this was the final task in the story, update both files in the same commit:
+
+   a. In the *story.org* =* Status= table: state → =DONE=, set =Now= to =Nothing.=, fill =End= date.
+   b. In the *sprint.org* =* Stories= table: update the story row to =DONE= and fill the =End= column.
+
+   Both files must stay in sync. A story marked =DONE= in =story.org= but =STARTED= or =BACKLOG= in =sprint.org= is a silent inconsistency that the sprint health review will not catch automatically.
+
 * Postconditions
 
 - Task is =DONE= with =* Result= filled.
 - PR is merged into =main=.
 - Review rounds are recorded in the task's =* Review= table.
 - Parent story reflects any decisions from the task's =* Plan=.
+- If the story is complete: =story.org= and =sprint.org= both show =DONE= with matching end dates.
 
 * See also
 

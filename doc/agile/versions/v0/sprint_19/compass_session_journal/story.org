@@ -104,11 +104,11 @@ worktrees.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | DONE                                   |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                              |
-| Now           | Task 1 in progress: design journal format. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Complete Task 1; open PR.              |
+| Next          | Done. All 5 tasks complete.            |
 | Last touched  | 2026-05-31                             |
 
 * Acceptance
@@ -136,7 +136,7 @@ worktrees.
 | [[id:A8FCCECE-9B64-49A9-8C24-2AE3A1EC7E08][Implement compass journal subcommand]] | DONE | 2026-05-31 | 2026-05-31 | Add compass journal update, where, and log subcommands to compass.py. |
 | [[id:6AF5890B-8409-4652-AA68-929CBC45C69B][Wire compass goto to auto-update the journal]] | DONE | 2026-05-31 | 2026-05-31 | Call compass journal update at the end of compass goto (new-story and existing-story modes). |
 | [[id:6F0272A9-6059-45FD-819C-0CE7A5555A69][Refactor compass fleet to use journal]] | DONE | 2026-05-31 | 2026-05-31 | Read .journal.org from each worktree in compass fleet; show story+task+state; graceful fallback. |
-| Task: Write recipe and update semi-autonomous developer skill | BACKLOG | | | Document journal use in a recipe; update the semi-autonomous developer skill to check/update the journal at task pickup. |
+| [[id:63AAE181-4D5B-464E-9938-368AA190623E][Write recipe and update semi-autonomous developer skill]] | DONE | 2026-05-31 | 2026-05-31 | Document journal use in a recipe; update the semi-autonomous developer skill to check/update the journal at task pickup. |
 
 * Decisions
 

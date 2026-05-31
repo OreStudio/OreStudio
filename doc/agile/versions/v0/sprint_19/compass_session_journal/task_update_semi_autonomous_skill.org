@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 63AAE181-4D5B-464E-9938-368AA190623E
+:END:
+#+title: Task: Write recipe and update semi-autonomous developer skill
+#+description: Update the session journal recipe to remove provisional hedges now that compass journal is live; add overlap-check step and journal auto-update note to the semi-autonomous developer skill.
+#+type: task
+#+level: s1
+#+filetags: :compass_session_journal:sprint_19:v0:
+#+owner: marco
+#+branch: feature/update-semi-autonomous-skill
+#+pr: 958
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The session journal recipe was written before =compass journal= was
+implemented and contains provisional hedging ("once implemented", "until
+available"). Now that all journal commands are live, clean up the recipe
+and teach the semi-autonomous developer skill to use the journal at task
+pickup.
+
+* Status
+
+| Field        | Value                                      |
+|--------------+--------------------------------------------|
+| State        | DONE                                       |
+| Parent story | [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]]                   |
+| Now          | Nothing.                                   |
+| Waiting on   | Nothing.                                   |
+| Next         | Done. Story complete — all 5 tasks DONE.   |
+| Last touched | 2026-05-31                                 |
+
+* Acceptance
+
+- =how_do_i_use_the_session_journal.org= has no provisional hedging;
+  all =compass journal= commands are presented as available.
+- Recipe notes that =compass goto= auto-updates the journal.
+- Recipe documents when manual =compass journal update= is still needed
+  (task completion, mid-session switch).
+- Semi-autonomous developer skill Step 2 includes a =compass fleet=
+  overlap check before branching.
+- Skill Step 2 notes that =compass goto= writes the journal entry automatically.
+- Skill =* Reference= section links to the session journal recipe.
+
+* Notes
+
+** Recipe changes
+
+- Removed "once =compass journal= is implemented" hedge in Querying section.
+- Removed "until =compass journal= is available" manual-write section.
+- Added note that =compass goto= auto-updates the journal.
+- Clarified when manual =compass journal update= is still needed (DONE
+  entry at task completion).
+- Fixed =compass fleet --story <UUID>= reference (flag not implemented;
+  replaced with plain =compass fleet=).
+
+** Skill changes
+
+- Step 2 expanded: run =compass fleet= before branching; link to journal
+  recipe; note =compass goto= auto-update.
+- =* Reference= section: added link to session journal recipe.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/958][#958]] | [agile] Task 5: update session journal recipe and semi-autonomous developer skill |
+
+* Review
+
+** Round 1 — 2026-05-31
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Missing =* Review= section in task doc | task file | Fixed: added; declined suggested =* Reviews= name and table format (wrong convention) | Gemini review |
+
+* Result
+
+- Recipe updated: provisional hedging removed; auto-update noted; manual
+  update guidance added for DONE entries.
+- Skill updated: =compass fleet= overlap check added to Step 2; journal
+  recipe linked from Reference.

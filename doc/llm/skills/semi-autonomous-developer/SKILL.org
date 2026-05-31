@@ -31,12 +31,23 @@ Locate the current sprint (highest-numbered directory under
 =doc/agile/versions/v0/=).  Read the story file and its tasks.  If
 no tasks exist yet, create them with =TaskCreate= before coding.
 
-** Step 2 — Create a feature branch and mark STARTED
+** Step 2 — Check for overlap, then branch and mark STARTED
 
-Follow [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] — branch from =main= using
-=feature/concise-lowercase-description=, mark the story =STARTED=,
-and commit the status change.  The full state machine is in
-[[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]]; the execution-phase context is in [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]].
+Before branching, run =compass fleet= to see what every other worktree is
+currently working on. If another environment is already working on the same
+story or a story that touches the same area of the codebase, coordinate
+before proceeding. See [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]] for overlap
+detection guidance.
+
+#+begin_src sh
+compass fleet
+#+end_src
+
+Then branch using =compass goto= per [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]],
+mark the story =STARTED=, and commit the status change. =compass goto=
+automatically appends a =STARTED= entry to =.journal.org= — no manual
+journal update needed. The full state machine is in [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]]; the
+execution-phase context is in [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]].
 
 ** Step 3 — Implement incrementally
 
@@ -75,6 +86,7 @@ table.
 - [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]] — build and test commands.
 - [[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]] — PR creation, monitoring, and merge lifecycle.
 - [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]] — sprint and story management conventions.
+- [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]] — overlap detection and restart recovery.
 
 * Artefacts                                                        :noexport:
 

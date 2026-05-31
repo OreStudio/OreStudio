@@ -18,8 +18,9 @@ before picking up a new story?
 * Answer
 
 Each worktree has a =.journal.org= file in its root directory. The file is
-gitignored (machine-local, never committed). Every time Claude picks up a
-new task, it appends an entry to =.journal.org=.
+gitignored (machine-local, never committed). =compass goto= appends an entry
+automatically whenever a task is picked up, so no manual update is normally
+needed.
 
 ** Entry format
 
@@ -42,52 +43,43 @@ Fields:
 | =Branch ::= | Current git branch name |
 | =PR ::= | GitHub PR number (=#NNN=) or =none= |
 
-** When to update the journal
-
-Update =.journal.org= whenever you:
-
-1. *Pick up a new task* — append an entry with =State :: STARTED= before
-   doing any other work.
-2. *Complete a task* — append a closing entry with =State :: DONE= and
-   the PR number if one was opened.
-3. *Switch tasks mid-session* — append a new entry for the incoming task.
-
 ** Querying the journal
 
-Once =compass journal= is implemented (Task 2 of
-[[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]]):
-
 #+begin_src sh
-# Where was I? (last entry in this worktree)
+# Where was I? (last entry in this worktree — restart recovery)
 compass journal where
 
 # Full journey of this worktree
 compass journal log
 
-# Which worktree last worked on a given story?
-compass fleet --story <UUID>
+# What is every worktree currently working on? (overlap detection)
+compass fleet
 #+end_src
 
-Until =compass journal= is available, read =.journal.org= directly or
-use =compass fleet= (which shows branch names per worktree).
+** When to update the journal manually
+
+=compass goto= writes the initial =State :: STARTED= entry automatically.
+Manual updates are needed when:
+
+1. *Completing a task* — append a closing entry with =State :: DONE= and
+   the PR number:
+   #+begin_src sh
+   compass journal update --story <UUID> --task <UUID> \
+     --branch <branch> --state DONE --pr <N>
+   #+end_src
+2. *Switching tasks mid-session* — run =compass goto= for the new task;
+   it will append a new =STARTED= entry automatically.
 
 ** Overlap detection before picking up a story
 
-Before running =compass goto= to start a new story, check what the other
-worktrees are currently working on:
+Before running =compass goto=, check what every other worktree is working on:
 
 #+begin_src sh
 compass fleet
 #+end_src
 
 If another worktree's journal shows the same story or a story touching the
-same files, coordinate before proceeding.
-
-** Writing the entry manually (before compass journal is available)
-
-Open =.journal.org= in the project root and append a heading block
-following the format above. The file does not need to be created — create
-it if absent.
+same area of the codebase, coordinate before proceeding.
 
 * Conventions
 
@@ -102,5 +94,5 @@ it if absent.
 
 * See also
 
-- [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]] — the story implementing this feature.
-- [[id:1F41F21C-8D2A-46DA-8C6A-571564DF2C0E][How do I work a task?]] — task lifecycle; update the journal at task pickup.
+- [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]] — the story that implemented this feature.
+- [[id:1F41F21C-8D2A-46DA-8C6A-571564DF2C0E][How do I work a task?]] — task lifecycle.

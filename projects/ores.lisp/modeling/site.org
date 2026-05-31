@@ -99,4 +99,5 @@ makes in-page id-link navigation work correctly in the browser.
 
 - [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] — component overview; lists all source files including =ores-build-site.el=.
 - [[id:4D3C2B1A-9E8F-4A7B-6C5D-3E2F1A0B9C8D][Page Not Found]] — the 404 page served by GitHub Pages.
+- [[id:E71704D9-60D4-4898-AF25-B6B07101DB90][ORE Studio Manual]] — the companion page covering the PDF manual build via ox-latex.
 - [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] — editor overview covering the =deploy_site= build target.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :runbook:agile:sprint:review:health:
 #+created: 2026-05-26
-#+updated: 2026-05-26
+#+updated: 2026-06-01
 
 This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
 
@@ -27,7 +27,7 @@ merged PR.
   =story.org=.
 - =gh= is authenticated; =compass.sh= is available.
 - =python3=, =gnuplot= are available on =PATH= (required for chart
-  regeneration at sprint close).
+  generation in step 2).
 
 * Steps
 
@@ -39,22 +39,31 @@ In execution order:
    git fetch origin && git checkout -b feature/sprint-<N>-health-review-<number> origin/main
    #+end_src
 
-2. /Regenerate sprint charts (sprint-close reviews only)./ Skip for
-   mid-sprint check-ins. At sprint close, rebuild the four chart PNGs
-   so the review references fresh data:
+2. /Generate the sprint charts./ Do this for *every* review, mid-sprint
+   and at close — the charts visualise the same load/velocity data the
+   review analyses, and a sprint page with broken =file:= image links is
+   a defect. Generate the four chart PNGs into the sprint directory:
 
    #+begin_src sh :results verbatim
-   cmake --build build/output/linux-clang-debug-ninja \
-     --target sprint_charts -DSPRINT=<N>
+   python3 scripts/sprint_metrics.py --sprint <N>
+   gnuplot -e "sprint=<N>" scripts/sprint_prs_commits.gnuplot
+   gnuplot -e "sprint=<N>" scripts/sprint_line_churn.gnuplot
+   gnuplot -e "sprint=<N>" scripts/sprint_pr_cycle.gnuplot
+   gnuplot -e "sprint=<N>" scripts/sprint_stories_done.gnuplot
    #+end_src
 
-   See [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][How do I generate sprint health charts?]] for details.
+   The =sprint_charts= CMake target wraps these same commands but pins
+   the sprint via a *configure-time* cache variable: =-DSPRINT= is
+   rejected when passed after =--build=. Either run the scripts directly
+   (above) or reconfigure first (=cmake --preset … -DSPRINT=<N>=). See
+   [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][How do I generate sprint health charts?]] for details.
 
    Verify the charts rendered — check =doc/agile/versions/v0/sprint_<N>/=
    for =prs_commits.png=, =line_churn.png=, =pr_cycle.png=, and
    =stories_done.png=. A flat-line =stories_done.png= when the
    Stories table has several DONE entries is a data bug worth
-   investigating before proceeding.
+   investigating before proceeding. The four PNGs are committed with the
+   review (step 12), matching the convention used by every prior sprint.
 
 3. /Determine the review number./ Count existing
    =task_health_review_*.org= files in the sprint's

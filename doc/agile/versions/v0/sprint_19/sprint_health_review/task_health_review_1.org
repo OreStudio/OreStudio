@@ -56,9 +56,9 @@ Run =/sprint-reviewer= skill against sprint 19.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                      | File                     | Decision | Notes                          |
+|---+------------------------------------------------------+--------------------------+----------+--------------------------------|
+| 1 | DONE task should use "Now: Nothing." not "Complete." | task_health_review_1.org | Accept   | Fixed in 9f2f0be1b             |
 
 * Result
 

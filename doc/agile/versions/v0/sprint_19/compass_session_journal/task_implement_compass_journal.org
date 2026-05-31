@@ -69,9 +69,12 @@ All code added to =projects/ores.compass/src/compass.py=:
 
 * Review
 
+** Round 1 — 2026-05-31
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR prefix bug: =##123= when caller passes =#123= | compass.py | Fixed: strip =#= before digit check | Gemini review |
+| 2 | Atomic write: open("w") risks corruption on interrupted write | compass.py | Fixed: tmp file + Path.replace() | Gemini review |
 
 * Result
 

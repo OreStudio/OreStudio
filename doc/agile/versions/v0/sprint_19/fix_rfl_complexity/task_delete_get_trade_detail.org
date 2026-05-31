@@ -81,8 +81,9 @@ Files changed:
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                 | File                  | Decision | Notes                                        |
+|---+-----------------------------------------------------------------+-----------------------+----------+----------------------------------------------|
+| 1 | Comment says "30+ alternatives"; should say "9 with sub-variants" | handler_helpers.hpp | Accept   | Fixed in 4f58bd687                          |
+| 2 | Same inaccuracy in trade_handler.hpp comment                    | trade_handler.hpp     | Accept   | Fixed in 4f58bd687                          |
 
 * Result

@@ -115,12 +115,12 @@ trading, iam, dq, and all remaining components.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                                |
+| State         | BLOCKED                                |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                              |
-| Now           | Story created; not yet started.        |
-| Waiting on    | Nothing.                               |
-| Next          | Start Task 1: audit C++ template drift. |
-| Last touched  | 2026-05-30                             |
+| Now           | Paused after the refdata pilot exposed a deeper format problem. Tasks 1–4 done; refdata-cpp pilot WIP stashed. |
+| Waiting on    | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]]. The JSON model cannot cleanly express custom methods; we are migrating the format before continuing the drift work. |
+| Next          | Resume the refdata-cpp pilot (and the eleven follow-on per-component drift tasks) once all components are on org-mode. |
+| Last touched  | 2026-06-01                             |
 
 * Acceptance
 
@@ -140,11 +140,23 @@ trading, iam, dq, and all remaining components.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D4469217-12E2-41AC-AB35-AC70E849D88C][Codegen architecture analysis and unified model roadmap]] | DONE | 2026-05-30 | 2026-05-30 | System 2 analysis of structural concerns; produces analysis doc and roadmap stories. |
-| [[id:A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F][Audit C++ template drift and build drift catalog]] | BACKLOG | | | Run codegen for all 75 domain_entity models; collect diffs; classify as clean / cosmetic / additive / breaking / path-error. |
-| [[id:F7B3E1D9-6A4C-4F2B-7E8D-1C5A9B3F7D2E][Fix C++ template bugs]] | BACKLOG | | | Fix include guard regression and any other systematic template bugs found in the audit. |
-| [[id:D2E8F4A1-9B3C-4D7F-6A5B-8E1C7D3F9A2B][Fix model consistency and register C++ components in manifest.py]] | BACKLOG | | | Verify and fix component_include/component_core in all 75 models; add all components to manifest.py. |
-| [[id:B5F1C8D3-4A7E-4B2F-9D6C-3E8A1B5D7C4F][Resolve breaking API drift]] | BACKLOG | | | Record explicit template-frozen-vs-production-updated decision per breaking change before writing any production file changes; then execute each decision and update callers. |
-| [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift and verify zero diff across all components]] | BACKLOG | | | Apply cosmetic and additive diffs component by component; apply any decided production updates; confirm zero diff and CI green. |
+| [[id:A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F][Audit C++ template drift and build drift catalog]] | DONE | 2026-05-30 | 2026-05-30 | Run codegen for all 75 domain_entity models; collect diffs; classify as clean / cosmetic / additive / breaking / path-error. |
+| [[id:F7B3E1D9-6A4C-4F2B-7E8D-1C5A9B3F7D2E][Fix C++ template bugs]] | DONE | 2026-05-30 | 2026-05-30 | Fix include guard regression and any other systematic template bugs found in the audit. |
+| [[id:D2E8F4A1-9B3C-4D7F-6A5B-8E1C7D3F9A2B][Fix model consistency and register C++ components in manifest.py]] | DONE | 2026-05-30 | 2026-05-30 | Verify and fix component_include/component_core in all 75 models; add all components to manifest.py. |
+| [[id:B5F1C8D3-4A7E-4B2F-9D6C-3E8A1B5D7C4F][Resolve breaking API drift]] | DONE | 2026-05-30 | 2026-05-30 | Record explicit template-frozen-vs-production-updated decision per breaking change before writing any production file changes; then execute each decision and update callers. |
+| [[id:615B7214-F87B-49D3-866E-CDC198FF2A06][Org-mode codegen POC — party as unified literate model]] | BACKLOG | | | Prove single org file can drive both C++ and SQL codegen, with custom methods inline. Blocks the per-component drift tasks because custom methods need a first-class mechanism instead of "restore from HEAD". |
+| [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift to refdata-cpp (pilot)]] | BLOCKED | | | Pilot. Add template flags refdata needs; update refdata models; pull party_repository custom methods from the org-mode mechanism; build + test + zero-diff invariant. |
+| [[id:A7FA27E1-0D47-4BEB-BECA-ED06AA6AB4A7][Apply safe drift to trading-cpp]] | BACKLOG | | | Add service_pagination + service_batch_get template flags; update 21 instrument/lookup models; restore trade_service + fra_instrument_service. |
+| [[id:CE4E14AD-81B5-4D86-9739-26BDDA7172FF][Apply safe drift to iam-cpp]] | BACKLOG | | | Set service_find_prefix on tenant_type and tenant_status. No exclusions. |
+| [[id:2C3EADB7-9AB7-4053-B148-8F167FCB7EFE][Apply safe drift to dq-cpp]] | BACKLOG | | | Set service_find_by_uuid + service_find_by_code on dataset_bundle; fix HexPrefix typo in badge_definition. |
+| [[id:1ABAAF88-B7A4-4774-8843-CF9CBC727E4B][Apply safe drift to analytics-cpp]] | BACKLOG | | | Set find_by_uuid/find_by_code/find_prefix flags on the four pricing models. |
+| [[id:193FF620-BB98-4EB4-9124-2D06CA8FFCE0][Apply safe drift to reporting-cpp]] | BACKLOG | | | No model changes expected; clean regeneration. |
+| [[id:085EECB0-B357-4977-9E5D-681CC34B9E44][Apply safe drift to scheduler-cpp]] | BACKLOG | | | Set service_find_prefix on job_definition; delete leftover plural-generators/ directory. |
+| [[id:AA183987-2F31-4C54-B17A-85C88EC8E459][Apply safe drift to workflow-cpp]] | BACKLOG | | | No model changes; stateful → stateless repository migration only. |
+| [[id:C5E5940F-D8EA-4E1A-ADA8-288C021F573A][Apply safe drift to controller-cpp]] | BACKLOG | | | Restore service_definition_protocol and service_instance_protocol from HEAD (rename rejected). |
+| [[id:D8B377B4-2B6E-4DDA-9C41-D6DA5E572E2B][Apply safe drift to database-cpp]] | BACKLOG | | | Smallest component, 7 files, all additive. No model changes. |
+| [[id:950FB9D4-48E0-45A4-BC71-F9668D42BE9A][Apply safe drift to workspace-cpp]] | BACKLOG | | | Add has_party_id template flag; restore workspace_service, workspace_repository, workspace_protocol. |
+| [[id:51E65D05-7F22-4DE1-9509-D50A9D98A503][Apply safe drift to compute-cpp]] | BACKLOG | | | Heaviest exclusion catalogue: restore all 6 services + 6 other files. |
 
 * Notes
 

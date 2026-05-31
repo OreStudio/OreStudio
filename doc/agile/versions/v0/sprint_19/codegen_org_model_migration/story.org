@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: D85E2B30-8C64-46DF-819D-B50D2E70B73C
+:END:
+#+title: Story: Codegen unified model — org-mode migration
+#+description: Migrate every codegen entity model from JSON to a single literate org-mode file per entity. Each entity drives both C++ and SQL generation from one source. Files are co-located with their component (e.g. projects/ores.refdata/modeling/ores.refdata.party.org) and named with the fully-qualified dotted form. Supersedes the unified-JSON Phase 2 story.
+#+type: story
+#+level: s2
+#+filetags: :tooling:codegen:literate:sprint_19:v0:
+#+branch: feature/refactor-codegen-cpp
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current
+status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Replace the current per-entity JSON model files (=*_domain_entity.json= and
+=*_table.json=) with a single literate org-mode file per entity. The org
+file is the unified source of truth for SQL, C++, Qt, NATS protocol, and
+any future facets.
+
+Three goals at once:
+
+1. *One file per entity.* No more drift between separate SQL and C++ models.
+2. *Literate documentation.* Each section, each column, each custom method
+   carries prose describing intent — beyond what a JSON =description= field
+   can hold. Org-mode's =#+begin_src= blocks accommodate generator
+   expressions, custom SQL fragments, and custom repository methods natively.
+3. *Co-location with the component.* Models live under
+   =projects/ores.<component>/modeling/= alongside the C++ they describe, with
+   filenames matching the dotted entity name
+   (=projects/ores.refdata/modeling/ores.refdata.party.org=). This makes the
+   model navigable from the component's directory.
+
+** Relationship to other stories
+
+- *Supersedes* [[id:88113E9B-DBD4-4E08-8CD9-49B8A709B871][Codegen unified model — Phase 2: single model file per entity]].
+  Phase 2 wanted to merge JSON files into one unified JSON; this story
+  goes further by moving the unified format to org-mode.
+- *Blocks* [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] and all its sub-tasks.
+  The refdata-cpp pilot (and the eleven follow-on per-component drift tasks)
+  resume once the migration lands.
+- *Supported by* the org-mode codegen POC ([[id:615B7214-F87B-49D3-866E-CDC198FF2A06][task]]) which proved the
+  mechanism works end-to-end on =party=.
+
+** Why now
+
+The refdata-cpp drift pilot exposed that the "restore from HEAD" workaround
+for custom methods is fragile, and the JSON model can't represent enough
+context (custom methods, why-they-cannot-be-templated prose, generator
+expressions as code blocks). The org POC fixed all that for one entity
+(=party=). Doing it once now is far cheaper than continuing the drift work
+against an inadequate model format and migrating later.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                                |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                              |
+| Now           | Story created from the POC results.    |
+| Waiting on    | Nothing.                               |
+| Next          | Start Task 1 (compass scaffolding) and Task 2 (co-locate the pilot org file). |
+| Last touched  | 2026-06-01                             |
+
+* Acceptance
+
+- Every entity has a single =projects/ores.<component>/modeling/ores.<component>.<entity>.org= file.
+- =projects/ores.codegen/models/= directory is empty (or removed) once the
+  migration completes; codegen no longer reads JSON entity models.
+- =compass add entity-org= scaffolds a new entity org file with the correct
+  frontmatter, sections, and a pointer to the meta-model.
+- Codegen discovers org models from =projects/ores.<component>/modeling/=.
+- For every entity, the regenerated output (C++ and SQL) matches what the
+  JSON-driven path produced *before* migration. Differences are explicit,
+  reviewed, and approved per-entity.
+- =cmake --build --preset linux-clang-debug-make= passes after each
+  per-component migration.
+- =ctest -R "ores\.<component>"= passes after each per-component migration.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8217B0B7-6BE2-4622-A98D-AC9AF0E6EFFC][Compass scaffold for entity org-models]] | BACKLOG | | | New compass doc-type (=ores.codegen.entity=) that scaffolds the standard frontmatter, sections, and meta-model pointer. |
+| [[id:2E0133DD-BD4F-4252-BC7C-4E1E305BDCB1][Co-locate pilot + component-dir discovery]] | BACKLOG | | | Move pilot to =projects/ores.refdata/modeling/=; codegen reads frontmatter to discover entity models. |
+| [[id:10138EEC-C110-4683-A7A0-6993C442ED0A][Migrate refdata entity models to org]] | BACKLOG | | | ~25 entities. First component-wide migration after the pilot is co-located. |
+| [[id:40A2E41F-22DB-4872-BB25-60C160157D04][Migrate trading entity models to org]] | BACKLOG | | | ~35 entities. Largest component; exercises service_pagination / service_batch_get. |
+| [[id:664A5E0F-67F7-4BFD-BBFC-B770B9101CEE][Migrate iam entity models to org]] | BACKLOG | | | Small. |
+| [[id:4CAC1D5C-959F-4C03-B994-C5561BF6C6D9][Migrate dq entity models to org]] | BACKLOG | | | Small. |
+| [[id:9ADEDEC6-9C5C-4A8A-801B-F3FDEADEB4A6][Migrate analytics entity models to org]] | BACKLOG | | | Small. |
+| [[id:4CBB77CA-447C-4AFE-A9CB-9BC5D6E7E874][Migrate reporting entity models to org]] | BACKLOG | | | Small. |
+| [[id:7E5259F2-D758-487F-A223-FCE4F44B5F50][Migrate scheduler entity models to org]] | BACKLOG | | | Small. |
+| [[id:F6C360E3-D326-48CF-A23B-07DE0E81A77F][Migrate workflow entity models to org]] | BACKLOG | | | Small. |
+| [[id:ADF6844E-C1FA-4E72-8C38-A21E3873F642][Migrate controller entity models to org]] | BACKLOG | | | Small. |
+| [[id:305A020A-D254-4BE3-B2EB-2B9063CEC431][Migrate database entity models to org]] | BACKLOG | | | Small. |
+| [[id:C16C4AB0-18AC-4F30-83E2-2D380861E857][Migrate workspace entity models to org]] | BACKLOG | | | Includes hand-crafted protocol exclusions (now sourced from org). |
+| [[id:427C8992-17EE-4538-9C19-385363685FEB][Migrate compute entity models to org]] | BACKLOG | | | Heavy exclusion catalogue (now sourced from org). |
+
+* Notes
+
+** Naming convention
+
+Each org file is named after the fully-qualified entity:
+
+| Component | Example filename                                |
+|-----------+-------------------------------------------------|
+| refdata   | =ores.refdata.party.org=                        |
+| trading   | =ores.trading.vanilla_swap_instrument.org=      |
+| iam       | =ores.iam.tenant.org=                           |
+
+The file lives in =projects/ores.<component>/modeling/=.
+
+** Component-side discovery
+
+Codegen's manifest changes so each =Component= entry points at the
+component's =modeling/= directory instead of (or in addition to)
+=projects/ores.codegen/models/<short>/=. The exact mechanism is settled in
+the first co-location task; until then, the pilot stays in
+=projects/ores.codegen/models/refdata/=.
+
+** Migration order
+
+1. *refdata* first, because the pilot file lives there and it's the most
+   heterogeneous component.
+2. *trading* next, because it has the largest model set and exercises the
+   service_pagination / service_batch_get flags.
+3. *iam*, *dq*, *analytics*, *reporting*: small, low-risk.
+4. *scheduler*, *workflow*: small.
+5. *controller*, *database*, *workspace*, *compute*: small to medium.
+
+** Per-component tasks
+
+Each component task does the following:
+
+1. Author each entity's =ores.<component>.<entity>.org= file by hand or by
+   a one-shot conversion script.
+2. Delete the corresponding =*_domain_entity.json= (and =*_table.json= if
+   present).
+3. Verify regenerated output matches HEAD byte-for-byte.
+4. Build and run tests.
+5. Commit; raise PR; merge.
+
+** Open questions
+
+- *Do junction tables stay as JSON, or migrate to org too?* The POC only
+  covers domain entities; junction tables are a small minority. Suggest
+  defer to a follow-up task at the end of this story.
+- *Do we tangle the org files, or have codegen read them directly?* The POC
+  reads org directly (no tangle step). Keep that until a real reason
+  emerges.

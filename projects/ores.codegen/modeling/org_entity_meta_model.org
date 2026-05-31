@@ -1,0 +1,316 @@
+:PROPERTIES:
+:ID: BDE309BA-71DA-4A52-AA10-00F17AFDA476
+:END:
+#+title: Codegen org-entity meta-model
+#+description: The shape of a =*_entity.org= codegen model. Describes every section, its required and optional properties, and the registry of well-known block kinds that templates reference by UUID.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:meta_model:org_mode:literate:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+A codegen *entity model* is a single literate org-mode file that describes
+one entity (e.g. =party=) and drives both the C++ and SQL code generation
+pipelines for that entity.
+
+This document is the single source of truth for the file shape:
+every section, every required and optional property, every well-known
+*block kind* that templates may reference.
+
+* About this document                                                :ignore:
+
+The =:ignore:= tag asks the codegen loader to skip this heading when reading
+an entity file. Sections without that tag may be consumed.
+
+* File-level conventions
+
+** Naming
+
+Entity files live under =projects/ores.codegen/models/<component>/= with the
+filename =<entity>_entity.org=. Example: =party_entity.org= under
+=models/refdata=.
+
+** Frontmatter
+
+The first few lines of the file are org-mode frontmatter. They describe the
+*document* (this codegen model), not the modelled entity. Required:
+
+| Keyword           | Purpose                                              |
+|-------------------+------------------------------------------------------|
+| =:ID:= (drawer)   | UUID of this org file. Used for cross-document links. |
+| =#+title:=        | Fully-qualified entity name, e.g. =ores.refdata.party=. |
+| =#+description:=  | What this *file* is, not what the modelled thing is. |
+| =#+type:=         | =ores.codegen.entity=                                 |
+| =#+component:=    | Component the entity belongs to (=refdata=, =trading=, ...). |
+| =#+filetags:=     | =:model:entity:<component>:=                         |
+| =#+entity_singular:= | Identifier form, singular (=party=).              |
+| =#+entity_plural:=   | Identifier form, plural (=parties=).              |
+| =#+entity_title:=    | Title-cased human form (=Party=).                 |
+| =#+brief:=           | One-line summary of the modelled entity.          |
+
+** Prose body (between frontmatter and first heading)
+
+A paragraph or two describing *the modelled entity itself*. This text is
+exposed to templates as the entity =description=. Keep the document-level
+=#+description= for the *file* and put the entity description here.
+
+* Sections
+
+The body is divided into top-level sections. The loader recognises the
+section names below. Unrecognised section names (e.g. =* About this file=,
+typically tagged =:ignore:=) are skipped.
+
+** Flags
+
+Cross-cutting properties consumed by both C++ and SQL codegen.
+
+| Property              | Required | Notes                                    |
+|-----------------------+----------+------------------------------------------|
+| =:schema:=            | yes      | Postgres schema (almost always =public=). |
+| =:product:=           | yes      | Top-level namespace (=ores=).             |
+| =:component:=         | yes      | Component name (=refdata=, =trading=, ...). |
+| =:has_tenant_id:=     | no       | Adds =tenant_id= column / field.          |
+| =:has_workspace_id:=  | no       | Adds =workspace_id= column / field.       |
+
+Example:
+
+#+begin_src org
+,* Flags
+,:PROPERTIES:
+,:schema: public
+,:product: ores
+,:component: refdata
+,:has_tenant_id: true
+,:END:
+#+end_src
+
+** Primary key
+
+Drawer holds the primary-key column description. Body holds prose
+documentation.
+
+| Property      | Required | Notes                                     |
+|---------------+----------+-------------------------------------------|
+| =:column:=    | yes      | SQL column name.                          |
+| =:type:=      | yes      | SQL type (=uuid=, =text=, etc.).          |
+| =:cpp_type:=  | yes      | C++ type (=boost::uuids::uuid=, =std::string=, ...). |
+
+Example:
+
+#+begin_src org
+,* Primary key
+,:PROPERTIES:
+,:column:   id
+,:type:     uuid
+,:cpp_type: boost::uuids::uuid
+,:END:
+
+UUID uniquely identifying this party.
+
+Surrogate key for the party record.
+#+end_src
+
+** Natural keys
+
+Container for natural-key sub-headings. Each =**= sub-heading is one
+natural key, with the column name as the heading title.
+
+Each natural-key sub-heading uses the same property structure as a column
+(see =* Columns= below), and may carry a =generator= babel block.
+
+** Columns
+
+Container for column sub-headings. Each =**= sub-heading is one column,
+with the column name as the heading title.
+
+Per-column properties:
+
+| Property        | Required | Notes                                    |
+|-----------------+----------+------------------------------------------|
+| =:type:=        | yes      | SQL type.                                 |
+| =:cpp_type:=    | yes      | C++ type.                                 |
+| =:nullable:=    | no       | =true= for nullable columns (default false). |
+
+Each column's body is split into a *description* (first paragraph) and an
+optional *detail* (second paragraph and beyond).
+
+Each column may carry one or more named babel blocks. The well-known names:
+
+- =generator= — C++ expression producing a synthetic value for tests.
+
+Example:
+
+#+begin_src org
+,** codename
+,:PROPERTIES:
+,:type:     text
+,:cpp_type: std::string
+,:nullable: false
+,:END:
+
+Globally unique human-readable codename (adjective_noun).
+
+Used as the per-party pgmq queue prefix, pg_cron job names, and
+operator tooling.
+
+#+begin_src cpp :name generator
+,std::string(faker::word::adjective()) + "_" + std::string(faker::word::noun())
+,#+end_src
+#+end_src
+
+** SQL
+
+SQL-specific knobs. The first sub-section is always =** Flags= with a
+property drawer.
+
+#+begin_src org
+,* SQL
+,** Flags
+,:PROPERTIES:
+,:tablename: ores_refdata_parties_tbl
+,:END:
+#+end_src
+
+Future SQL sub-sections (custom triggers, indices) will live alongside the
+=Flags= sub-heading.
+
+** C++
+
+C++-specific knobs. Sub-sections:
+
+- =** Flags= — Repository / service flags that affect template output.
+- =** Repository= — Naming-convention strings (=entity_singular_short=,
+  =entity_plural_short=, etc.).
+- =** Domain includes= — Named =includes= babel block; one =#include=
+  directive per line.
+- =** Entity includes= — Same, for the SQL-mapping entity header.
+- =** Conventions= — Misc C++ properties (=iterator_var=, etc.).
+- =** Table display= — Org table mapping column names to display headers.
+- =** Qt= — Property drawer plus sub-tables (=*** Detail fields=,
+  =*** Columns (Qt model)=).
+- =** Custom repository methods= — Custom methods that the standard
+  repository template cannot express. See "Block kinds" below.
+
+* Block kinds
+
+A *block kind* is a *slot* in a template that an entity model can fill.
+Each kind has a stable UUID; templates reference the slot by that UUID;
+entity models attach blocks to the slot by listing the kind UUID in the
+block's =:implements:= property.
+
+Two levels of identity are at play:
+
+- The *kind UUID* is well-known, lives here in the meta-model, and is
+  referenced by templates.
+- An *instance UUID* (each individual block's =:ID:=) is per-entity, per
+  block. Many entities may implement the same kind.
+
+** Repository: additional class-member declarations
+:PROPERTIES:
+:ID: DCA78C69-E508-48D9-9972-A9B8094D91FB
+:END:
+
+Class-member declarations to be inserted into the generated
+=<entity>_repository.hpp= just before the closing brace of the
+=<entity>_repository= class.
+
+Template usage (mustache):
+
+#+begin_src text
+,    void remove(context ctx, const std::string& id);
+,    // <<paste:DCA78C69-E508-48D9-9972-A9B8094D91FB>>
+,};
+#+end_src
+
+Entity attachment (per custom method):
+
+#+begin_src org
+,*** read_system_party
+,:PROPERTIES:
+,:ID: 9B7C5D2E-1A4F-4E7B-9D8A-6F3C2E1B5A4D
+,:END:
+
+Prose describing what this method does and why it cannot be templated.
+
+,#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+,std::vector<domain::party>
+,read_system_party(context ctx, const std::string& tenant_id);
+,#+end_src
+#+end_src
+
+The =:implements= header argument on the babel block is the contract:
+codegen substitutes the =<<paste:DCA78C69-...>>= marker with the
+concatenation of every babel block in the current entity whose
+=:implements= header argument matches.
+
+The babel block's =:name= is for Emacs / human authoring purposes (so
+authors can navigate by name); =:implements= is what codegen looks at.
+
+** Repository: additional out-of-class implementations
+:PROPERTIES:
+:ID: F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+:END:
+
+Out-of-class method definitions to be inserted into the generated
+=<entity>_repository.cpp= at the marker, typically just before the closing
+namespace brace.
+
+Templates reference: =<<paste:F2EB1914-5E94-42CA-9C77-46BDB364BF9E>>=.
+
+Entity attachment: any babel block with
+=:implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E= contributes its body
+to the substitution.
+
+** Repository: additional .cpp includes
+:PROPERTIES:
+:ID: 6141050C-0ED4-4680-B387-7DDDA3A69806
+:END:
+
+Additional =#include= directives that the implementations above need.
+Inserted into the generated =<entity>_repository.cpp= near the top of the
+include block.
+
+Templates reference: =<<paste:6141050C-0ED4-4680-B387-7DDDA3A69806>>=.
+
+Entity attachment: any babel block with
+=:implements 6141050C-0ED4-4680-B387-7DDDA3A69806= contributes its body
+(verbatim, no syntax stripping). Multiple methods may each declare their
+own includes block; the codegen concatenates them. The C++ compiler
+de-duplicates =#include= directives at preprocessing time anyway.
+
+* Notes
+
+** Why two levels of UUID
+
+The kind UUID is a *concept* (akin to an interface), declared once in the
+meta-model. The instance UUID identifies an *implementation* (akin to a
+class) — there will be many. Templates speak the language of concepts;
+entity models speak the language of implementations.
+
+This also means we never have to coordinate UUID changes across templates
+and per-entity files: a template references a fixed kind UUID; entity files
+discover what they implement.
+
+** Template marker syntax
+
+Templates use =<<paste:UUID>>= as the marker. Codegen is a *post-rendering*
+substitution pass: mustache renders first, then a regex pass replaces every
+=<<paste:UUID>>= with the concatenated =body= blocks of every implementing
+sub-heading in the current entity.
+
+If no entity sub-heading implements a given kind, the marker is replaced
+with an empty string (and a single newline is collapsed).
+
+** Block-name conventions
+
+Inside an implementing sub-heading the well-known babel block name is
+=body=. Future kinds may use additional names (=declaration=,
+=implementation=, etc.) — they will be documented alongside each kind.
+
+** Future work
+
+- *Stage 1.5*: tag-based heading dispatch. Replace title matching ("Flags",
+  "Primary key", ...) with tag matching (=:section:flags:=, etc.). Lets us
+  rename headings without breaking codegen.
+- Migration of remaining ~100 entity models from JSON to org.
+- Compass scaffold for =compass add entity-org=.

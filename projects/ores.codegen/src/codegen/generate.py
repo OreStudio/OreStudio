@@ -58,8 +58,12 @@ def _generate_single(
         )
         return 1
 
-    with open(model_path, encoding="utf-8") as f:
-        model_data = json.load(f)
+    if str(model_path).endswith(".org"):
+        from codegen.org_loader import load_org_model
+        model_data = load_org_model(model_path)
+    else:
+        with open(model_path, encoding="utf-8") as f:
+            model_data = json.load(f)
 
     project_root = base_dir.parent.parent
     data_dir = base_dir / "library" / "data"
@@ -137,8 +141,16 @@ def cmd_regenerate(args: Any, base_dir: Path) -> int:
             )
             continue
 
+        globs = (
+            (comp.entity_glob,)
+            if isinstance(comp.entity_glob, str)
+            else tuple(comp.entity_glob)
+        )
+        matches = set()
+        for pattern in globs:
+            matches.update(models_dir.glob(pattern))
         model_files = sorted(
-            f for f in models_dir.glob(comp.entity_glob)
+            f for f in matches
             if comp.exclude_suffix is None or not f.name.endswith(comp.exclude_suffix)
         )
         if not model_files:

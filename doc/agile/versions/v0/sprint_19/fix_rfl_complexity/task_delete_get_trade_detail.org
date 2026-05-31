@@ -8,7 +8,7 @@
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
 #+branch: feature/delete-get-trade-detail
-#+pr:
+#+pr: 956
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-31
@@ -75,9 +75,9 @@ Files changed:
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                                                                       |
+|-----+-------------------------------------------------------------------------------------------------------------|
+| 956 | [ores.trading.core] Fix macOS/Windows CI: use reply_no_variant_tags for instrument response                 |
 
 * Review
 

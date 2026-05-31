@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 1794B513-877B-4B93-A818-53F080C55E47
+:END:
+#+title: How do I initialise the checkout environment?
+#+description: Generate the .env file, NATS certificates, and IAM keys for a local checkout using init-environment.sh.
+#+type: recipe
+#+level: cross
+#+filetags: :cmake:build:environment:init:nats:recipe:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+
+Run once per fresh checkout to generate the =.env= file, NATS TLS
+certificates, and IAM RSA signing key.  See [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] for preset names.
+
+* Question
+
+How do I initialise the checkout environment on a fresh clone?
+
+* Answer
+
+Run =init-environment.sh= with the desired build preset and the postgres
+superuser password:
+
+#+begin_src sh :results verbatim
+PGPASSWORD=<pg-superuser-password> \
+  ./build/scripts/init-environment.sh --preset linux-clang-debug-make -y
+#+end_src
+
+The script:
+- Generates =.env= at the repo root (existing passwords are preserved on
+  re-runs — only missing variables are added).
+- Creates NATS TLS certificates under =build/keys/nats/=.
+- Generates the IAM RSA-2048 signing key at =build/keys/iam-rsa-private.pem=.
+- Writes the NATS server config to =build/config/nats-<label>.conf=.
+- Creates the JetStream store directory.
+
+After initialisation, follow the printed next steps:
+
+1. Create the database (first time only):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.sql/recreate_database.sh -y
+   #+end_src
+
+2. Start NATS:
+
+   #+begin_src sh :results verbatim
+   nats-server --config build/config/nats-<label>.conf
+   #+end_src
+
+3. In Emacs, set up SQL connections:  =M-x ores-db/setup-connections=
+
+4. Start services via prodigy (they read =ORES_PRESET= and credentials
+   from =.env=).
+
+** Re-running safely
+
+Re-running the script preserves existing passwords and only fills in
+missing variables.  Use =--force= to regenerate NATS certificates.
+
+** Toggling test logging
+
+#+begin_src sh :results verbatim
+./build/scripts/init-environment.sh --enable-logging debug   # or trace/info/warn/error
+./build/scripts/init-environment.sh --disable-logging
+#+end_src
+
+Re-run =cmake --preset <preset>= after toggling logging.
+
+* Script
+
+=build/scripts/init-environment.sh= — generates =.env=, NATS certs, and
+IAM key.  Delegates certificate generation to =build/scripts/init-nats.sh=.
+
+* Tested by
+
+Manual, once per fresh checkout.  CI uses pre-configured runners and
+does not exercise this path.
+
+* See also
+
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset menu and output directory layout.
+- [[id:49F7DA81-ADB7-44ED-BE7E-06DBFBB32A84][How do I set up a development environment?]] — full bootstrap including
+  package installation and database initialisation.
+- [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]] — once-per-checkout configure step.

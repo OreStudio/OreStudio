@@ -31,11 +31,11 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 
 | Field         | Value                                                                                         |
 |---------------+-----------------------------------------------------------------------------------------------|
-| State         | DONE                                                                                          |
+| State         | STARTED                                                                                       |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                       |
-| Now           | Nothing.                                                                                      |
+| Now           | Task 5: deleting ClientManagerTradeDetail.cpp to fix remaining macOS/Windows CI failures.     |
 | Waiting on    | —                                                                                             |
-| Next          | Merge Task 4 PR; story complete.                                                              |
+| Next          | PR for Task 5; verify macOS and Windows CI green; close story.                                |
 | Last touched  | 2026-05-31                                                                                    |
 
 * Acceptance
@@ -59,6 +59,7 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 | [[id:06C98C06-F950-483A-997B-89AED70D1238][Rename get_trade_detail → get_trade_instrument and rewrite parse path]]    | DONE    | 2026-05-29 | 2026-05-30 | Rename protocol types, delete workarounds, rewrite client TU with dispatch.     |
 | [[id:F9E5967D-77E7-49E3-9806-74AF22D26191][Write round-trip tests for instrument parse dispatch]]                      | DONE    | 2026-05-30 | 2026-05-31 | One test per instrument family; serialize server-side, verify client dispatch.  |
 | [[id:5C955A5E-0130-40D7-B77F-B41F4F526B79][Refactor IInstrumentForm to type-specific populate methods]]                | DONE    | 2026-05-30 | 2026-05-31 | Remove trade_instrument variant from the Qt UI boundary; typed populate per form.|
+| [[id:2991CE7B-48F3-489F-9792-1BCB529E85BB][Delete leftover get_trade_detail code and fix remaining AddTagsToVariants use]] | STARTED | 2026-05-31 |            | Delete ClientManagerTradeDetail.cpp; remove getTradeDetail API; restore macOS/Windows CI.    |
 
 * Decisions
 

@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 07F68E53-A2A6-4F1F-B699-44B9896EA7DD
+:END:
+#+title: Task: Design journal format and gitignore setup
+#+description: Specify the .journal.org entry schema; add .journal.org to .gitignore; write the format as a recipe so Claude and human contributors know how to read and write it.
+#+type: task
+#+level: s1
+#+filetags: :compass_session_journal:sprint_19:v0:
+#+owner: marco
+#+branch: feature/compass-session-journal
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:30BC3B04-E85D-4A0C-A6FD-01E6E4B80D6C][Compass session journal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Define the =.journal.org= file format — the schema every entry must follow
+so that =compass journal= can parse it reliably — and make it gitignored so
+no environment's journal pollutes the shared repository.
+
+This is the prerequisite for all implementation tasks; nothing else can be
+built until the format is specified and agreed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:30BC3B04-E85D-4A0C-A6FD-01E6E4B80D6C][Compass session journal]]               |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Write format spec and update .gitignore. |
+| Last touched | 2026-05-31                             |
+
+* Acceptance
+
+- =.journal.org= is listed in =.gitignore= (project root entry).
+- The entry schema is documented in a recipe under =doc/recipes/agile/=:
+  - Heading: =* <ISO-timestamp> — [[id:<story-uuid>][Story title]]=
+  - Body: task org-roam link, branch name, PR number (if any), task state.
+- The recipe includes an example entry and explains when =compass journal update=
+  should be called.
+- A hand-crafted =.journal.org= that follows the spec is parseable by a
+  simple Python =re= pattern (verified by a unit test stub or manual check).
+
+* Plan
+
+* Notes
+
+** Proposed entry format
+
+#+begin_example
+* 2026-05-31 09:15 — [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]]
+  - Task :: [[id:D4469217-12E2-41AC-AB35-AC70E849D88C][Codegen architecture analysis and unified model roadmap]]
+  - State :: DONE
+  - Branch :: feature/codegen-architecture-analysis
+  - PR :: #945
+#+end_example
+
+Fields:
+- *Timestamp* — ISO date + time; written by =compass journal update= at call time.
+- *Story link* — org-roam =[[id:...][Title]]= for the parent story.
+- *Task link* — org-roam =[[id:...][Title]]= for the specific task.
+- *State* — task state at time of update (STARTED, DONE, etc.).
+- *Branch* — current git branch name.
+- *PR* — GitHub PR number, or =none= if no PR open yet.
+
+** Parser notes
+
+=compass journal where= reads entries by scanning for =^* \d{4}-= lines
+and parsing the most recent block. =compass fleet= reads the last entry
+from each worktree's =.journal.org= using the same parser.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

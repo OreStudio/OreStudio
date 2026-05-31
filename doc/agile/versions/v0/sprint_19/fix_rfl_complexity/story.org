@@ -153,4 +153,5 @@ practice today) but is a known latent issue for a future story.
 - [[id:D75F4921-B431-4E78-99AB-62A47F761D1D][Investigation: MSVC C1202 and rfl complexity]] — root-cause analysis; O(N²) check, triple-isolation recommendation.
 - [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] — sprint 18 predecessor; same structural-isolation pattern.
 - [[id:D2E4921B-B431-4E78-99AB-62A47F761D1D][Implement triple isolation for RFL complexity]] — the sprint 18 MSVC C1202 workaround (TU split + two-phase parse + =-fbracket-depth=) that this story supersedes.
+- [[id:FE82780A-789D-4C41-BADF-827B0CD9A540][ORE Studio Sprint 18 – Release Notes]] — sprint 18 release covering the triple-isolation workaround context.
 - [[https://github.com/getml/reflect-cpp/issues/350][reflect-cpp issue #350]] — upstream tracking.

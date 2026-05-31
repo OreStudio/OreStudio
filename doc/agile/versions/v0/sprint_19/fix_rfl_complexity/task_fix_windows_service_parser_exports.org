@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: D9E63BBA-82CE-4FD3-9354-47A0A12ED108
+:END:
+#+title: Task: Fix missing Windows DLL export macros on service parser classes
+#+description: Add ORES_*_SERVICE_EXPORT to all service config/parser.hpp files missing it so ores.*.service.tests.exe links on Windows.
+#+type: task
+#+level: s1
+#+filetags: :fix_rfl_complexity:sprint_19:v0:
+#+owner: marco
+#+branch: feature/fix-windows-macos-ci
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+11 service =config/parser.hpp= files lack the =ORES_*_SERVICE_EXPORT= macro
+on their =parser= class. On Windows (shared library build), this means the
+=parse= member function is not exported from the DLL, so test binaries that
+call it fail to link. Add the include and export macro to every affected
+service parser header.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | STARTED                                                          |
+| Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]  |
+| Now          | Implementing fix across all 11 affected service parsers.         |
+| Waiting on   | Nothing.                                                         |
+| Next         | Open PR; verify Windows CI green.                                |
+| Last touched | 2026-06-01                                                       |
+
+* Acceptance
+
+- All service =config/parser.hpp= files include their =export.hpp= and
+  annotate the =parser= class with =ORES_*_SERVICE_EXPORT=.
+- =ores.assets.service.tests.exe= links on Windows (no undefined symbol).
+- Windows CI green; no regressions on Linux or macOS.
+
+* Plan
+
+Affected services (11): =ores.wt.service=, =ores.analytics.service=,
+=ores.scheduler.service=, =ores.controller.service=, =ores.synthetic.service=,
+=ores.iam.service=, =ores.reporting.service=, =ores.workspace.service=,
+=ores.marketdata.service=, =ores.compute.service=, =ores.assets.service=.
+
+Pattern (from working example in =ores.trading.service=):
+1. Add =#include "ores.<name>.service/export.hpp"= to =config/parser.hpp=.
+2. Annotate the class: =class ORES_<NAME>_SERVICE_EXPORT parser final {=.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

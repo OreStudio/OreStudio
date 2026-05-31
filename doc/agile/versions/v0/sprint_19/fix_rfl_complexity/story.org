@@ -59,7 +59,8 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 | [[id:06C98C06-F950-483A-997B-89AED70D1238][Rename get_trade_detail → get_trade_instrument and rewrite parse path]]    | DONE    | 2026-05-29 | 2026-05-30 | Rename protocol types, delete workarounds, rewrite client TU with dispatch.     |
 | [[id:F9E5967D-77E7-49E3-9806-74AF22D26191][Write round-trip tests for instrument parse dispatch]]                      | DONE    | 2026-05-30 | 2026-05-31 | One test per instrument family; serialize server-side, verify client dispatch.  |
 | [[id:5C955A5E-0130-40D7-B77F-B41F4F526B79][Refactor IInstrumentForm to type-specific populate methods]]                | DONE    | 2026-05-30 | 2026-05-31 | Remove trade_instrument variant from the Qt UI boundary; typed populate per form.|
-| [[id:2991CE7B-48F3-489F-9792-1BCB529E85BB][Delete leftover get_trade_detail code and fix remaining AddTagsToVariants use]] | STARTED | 2026-05-31 |            | Delete ClientManagerTradeDetail.cpp; remove getTradeDetail API; restore macOS/Windows CI.    |
+| [[id:2991CE7B-48F3-489F-9792-1BCB529E85BB][Delete leftover get_trade_detail code and fix remaining AddTagsToVariants use]] | DONE    | 2026-05-31 | 2026-05-31 | Delete ClientManagerTradeDetail.cpp; remove getTradeDetail API; restore macOS/Windows CI.    |
+| [[id:D9E63BBA-82CE-4FD3-9354-47A0A12ED108][Fix missing Windows DLL export macros on service parser classes]]              | STARTED | 2026-06-01 |            | Add ORES_*_SERVICE_EXPORT to 11 service parser.hpp files; restore Windows CI linker.          |
 
 * Decisions
 

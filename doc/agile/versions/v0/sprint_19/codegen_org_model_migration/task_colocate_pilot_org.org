@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: 2E0133DD-BD4F-4252-BC7C-4E1E305BDCB1
+:END:
+#+title: Task: Co-locate pilot org model + teach codegen to discover models from component dirs
+#+description: Move party_entity.org from projects/ores.codegen/models/refdata/ to projects/ores.refdata/modeling/ores.refdata.party.org. Update codegen's manifest and discovery so each component's models live under projects/ores.<component>/modeling/ in the dotted-naming form. Codegen identifies entity models by reading frontmatter and selecting files whose #+type: keyword is entity. Keep backward compatibility with the legacy projects/ores.codegen/models/<short>/ glob until all components migrate. Verify that the regenerator finds the relocated file and still produces a structurally correct party.hpp.
+#+type: task
+#+level: s1
+#+filetags: :codegen:literate:org_mode:sprint_19:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-cpp
+#+pr:
+#+blocked_on: 8217B0B7-6BE2-4622-A98D-AC9AF0E6EFFC
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story.
+
+* Goal
+
+Move the pilot org model to its long-term home under the component's own
+=modeling/= directory, with the dotted naming convention, and teach codegen
+how to find it there.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:8217B0B7-6BE2-4622-A98D-AC9AF0E6EFFC][Compass scaffold for entity org-models]] (need the doc-type registered). |
+| Next         | Move party_entity.org; update manifest. |
+| Last touched | 2026-06-01                             |
+
+* Acceptance
+
+- =party_entity.org= is moved from =projects/ores.codegen/models/refdata/=
+  to =projects/ores.refdata/modeling/ores.refdata.party.org=.
+- =projects/ores.codegen/src/codegen/manifest.py= adds a new
+  =models_dir_legacy= concept (the old =projects/ores.codegen/models/<short>/=
+  path) alongside a new =modeling_dir= concept
+  (=projects/ores.<component>/modeling/=). Codegen unions matches from both.
+- Codegen discovers org files in =modeling_dir= by reading frontmatter:
+  *only files whose =#+type:= keyword resolves to =entity= are loaded as
+  entity models*. Other org files in the directory (component overview,
+  plantuml diagrams, etc.) are ignored.
+- =codegen.sh regenerate --component refdata-cpp --profile all-cpp= still
+  finds party and produces a structurally correct =party.hpp= (matches the
+  pre-move output byte-for-byte).
+- Recipe doc added: =How do I add a new codegen entity model?= pointing at
+  =compass add entity-org= and the meta-model.
+
+* Plan
+
+** 1. Decide the discovery mechanism
+
+Two parts:
+
+- *Glob*: =projects/ores.<component>/modeling/*.org= picks up all org files
+  in the modeling directory.
+- *Frontmatter filter*: of those, keep only =#+type: ores.codegen.entity=.
+  The dotted namespace prefix avoids collision with any future generic
+  =entity= type. Anything else (knowledge docs, component overviews,
+  plantuml org files) is ignored by codegen but still navigable in
+  Emacs / via compass.
+
+This makes the modeling directory a literate-friendly space where the
+codegen consumes only the files explicitly marked as models.
+
+** 2. Update =manifest.py=
+
+The =Component= dataclass grows a =modeling_dir= field pointing at the
+component's =modeling/= directory. =entity_glob= and =exclude_suffix= still
+apply to the legacy =models_dir=; the new =modeling_dir= is globbed as
+=*.org= and filtered by =#+type:= via a small helper.
+
+** 3. Update =generate.py= driver
+
+For each component, union the (legacy JSON) matches and the (new org)
+matches. Pass both into the existing model-by-model loop.
+
+** 4. Move the pilot file
+
+#+begin_src sh
+mkdir -p projects/ores.refdata/modeling
+git mv projects/ores.codegen/models/refdata/party_entity.org \
+       projects/ores.refdata/modeling/ores.refdata.party.org
+#+end_src
+
+** 5. Regenerate and verify
+
+=codegen.sh regenerate --component refdata-cpp --profile all-cpp= produces
+the same =party.hpp= (and other party files) as before the move.
+
+** 6. Document
+
+Add a recipe under =doc/recipes/codegen/= for "How do I add a new codegen
+entity model?". Points at =compass add entity-org= and the meta-model.
+
+** 7. Commit + push + raise PR
+
+* Notes
+
+** Frontmatter as a model discriminator
+
+This is the same idiom that makes ORE Studio's existing literate docs
+work: each org file carries =#+type:= and tooling dispatches on it.
+Codegen joins the club. No bespoke discovery mechanism beyond reading the
+frontmatter — the same lightweight regex the org loader uses anyway.
+
+** Backward compatibility
+
+While other components still have their models under
+=projects/ores.codegen/models/<short>/=, codegen unions both locations.
+Once all components migrate, the legacy directory is deleted in the
+story-final cleanup task.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+(Populated when task is complete.)

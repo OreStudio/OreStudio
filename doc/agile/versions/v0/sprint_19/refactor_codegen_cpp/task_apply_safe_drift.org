@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch: feature/refactor-codegen-cpp
 #+pr:
-#+blocked_on: 615B7214-F87B-49D3-866E-CDC198FF2A06
+#+blocked_on: D85E2B30-8C64-46DF-819D-B50D2E70B73C
 #+blocked_since:
 #+created: 2026-05-30
 #+updated: 2026-05-31

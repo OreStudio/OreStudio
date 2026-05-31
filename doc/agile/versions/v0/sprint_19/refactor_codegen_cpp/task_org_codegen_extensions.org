@@ -14,6 +14,7 @@
 #+created: 2026-05-31
 #+updated: 2026-05-31
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+state: DONE
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story.
 
@@ -59,12 +60,12 @@ extension idea retreats to a simpler sidecar-fragment design.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                   |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Not yet started.                       |
+| Now          | POC complete; mechanism proven on =party=. |
 | Waiting on   | Nothing.                               |
-| Next         | Survey =orgparse=; sketch org file structure for party. |
-| Last touched | 2026-05-31                             |
+| Next         | Full migration tracked under [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]]. |
+| Last touched | 2026-06-01                             |
 
 * Acceptance
 
@@ -335,4 +336,25 @@ Post-render is simpler; prefer unless it produces awkward template files.
 
 * Result
 
-(Populated when task is complete.)
+POC successful. Mechanism proven end-to-end on the =party= entity:
+
+- Hand-written ~300 LOC Python parser (=org_loader.py=) handles the
+  restricted org subset we need; no external dependency required.
+- Basic validator (~50 LOC) catches missing required sections.
+- Single literate org file (=party_entity.org=) replaces the JSON model
+  and carries the four custom repository methods inline (=read_system_party=,
+  paginated =read_latest=, =get_total_party_count=, =read_descendants=).
+- Meta-model (=projects/ores.codegen/modeling/org_entity_meta_model.org=)
+  documents the file shape and hosts the kind-UUID registry.
+- Block-paste mechanism: babel blocks carry =:implements <kind-UUID>=;
+  templates carry =<<paste:<kind-UUID>>>= markers; codegen substitutes
+  after Mustache renders. =party_repository.{hpp,cpp}= regenerates with
+  the four custom methods natively — no =git checkout HEAD --= step.
+
+Findings recorded in [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]]. Per-component migration
+work tracked there.
+
+Commits:
+
+- =6399eac34= POC: org-mode entity model + loader for party
+- =20f675e7b= Org-mode meta-model + kind-UUID block-paste mechanism

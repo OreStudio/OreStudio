@@ -7,10 +7,18 @@
 #+level: s2
 #+filetags: :tooling:codegen:sprint_19:v0:
 #+created: 2026-05-30
-#+updated: 2026-05-30
+#+updated: 2026-06-01
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+#+begin_quote
+*ABANDONED 2026-06-01.* Superseded by [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode
+migration]]. The org-mode migration goes further than the unified-JSON
+goal proposed here: literate org-mode with custom methods inline,
+co-located with the component, replacing both JSON model files per
+entity.
+#+end_quote
 
 * Goal
 

@@ -40,7 +40,7 @@ The first few lines of the file are org-mode frontmatter. They describe the
 | =:ID:= (drawer)   | UUID of this org file. Used for cross-document links. |
 | =#+title:=        | Fully-qualified entity name, e.g. =ores.refdata.party=. |
 | =#+description:=  | What this *file* is, not what the modelled thing is. |
-| =#+type:=         | =entity=                                              |
+| =#+type:=         | =ores.codegen.entity=                                 |
 | =#+component:=    | Component the entity belongs to (=refdata=, =trading=, ...). |
 | =#+filetags:=     | =:model:entity:<component>:=                         |
 | =#+entity_singular:= | Identifier form, singular (=party=).              |

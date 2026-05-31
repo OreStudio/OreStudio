@@ -3,7 +3,7 @@
 :END:
 #+title: ores.refdata.party
 #+description: Codegen entity model for the refdata =party= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
-#+type: entity
+#+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+brief: An internal legal entity participating in financial transactions.

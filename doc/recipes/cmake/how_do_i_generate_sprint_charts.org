@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :sprint:charts:cmake:gnuplot:recipe:
 #+created: 2026-05-26
-#+updated: 2026-05-26
+#+updated: 2026-06-01
 
 * Question
 
@@ -15,33 +15,53 @@ How do I generate the sprint health charts (PRs & Commits, Line Churn, PR Cycle 
 
 * Answer
 
-1. /Generate charts for a single sprint/:
+1. /Generate charts for a single sprint/. Run the extractor and the four
+   gnuplot scripts directly — this is the most reliable form:
 
    #+begin_src sh :results verbatim
-   cmake --build --preset linux-clang-debug-ninja --target sprint_charts -DSPRINT=18
+   python3 scripts/sprint_metrics.py --sprint 18
+   gnuplot -e "sprint=18" scripts/sprint_prs_commits.gnuplot
+   gnuplot -e "sprint=18" scripts/sprint_line_churn.gnuplot
+   gnuplot -e "sprint=18" scripts/sprint_pr_cycle.gnuplot
+   gnuplot -e "sprint=18" scripts/sprint_stories_done.gnuplot
    #+end_src
 
-   This runs =scripts/sprint_metrics.py= to extract git and gh API data
-   into CSV files under =build/output/sprint_NN/=, then runs four
-   separate gnuplot scripts to produce per-metric PNGs under
-   =assets/images/=.
+   =sprint_metrics.py= extracts git and gh API data into CSV files under
+   =build/output/sprint_NN/=; the gnuplot scripts read those CSVs and write
+   the per-metric PNGs into =doc/agile/versions/v0/sprint_NN/=.
+
+   The =sprint_charts= CMake target wraps these same commands, but the
+   sprint number is a *configure-time* cache variable — =-DSPRINT= is
+   rejected when passed after =--build=. To use the target, set the
+   variable at configure time first:
+
+   #+begin_src sh :results verbatim
+   cmake --preset linux-clang-debug-ninja -DSPRINT=18
+   cmake --build --preset linux-clang-debug-ninja --target sprint_charts
+   #+end_src
 
 2. /Generate charts for all sprints/:
 
    #+begin_src sh :results verbatim
-   for s in $(seq -w 1 18); do
-     cmake --build --preset linux-clang-debug-ninja --target sprint_charts -DSPRINT=$(echo $s | sed 's/^0//')
+   for s in $(seq 1 18); do
+     python3 scripts/sprint_metrics.py --sprint $s
+     for chart in prs_commits line_churn pr_cycle stories_done; do
+       gnuplot -e "sprint=$s" scripts/sprint_${chart}.gnuplot
+     done
    done
    #+end_src
 
-3. /Outputs/:
+3. /Outputs/ — all four written into =doc/agile/versions/v0/sprint_NN/=:
 
    | File | Contents |
    |------+----------|
-   | =sprint_prs_commits_sprint_NN.png= | Dual-axis bar: PRs and commits per day |
-   | =sprint_line_churn_sprint_NN.png= | Bars: lines added (green) and deleted (red) per day |
-   | =sprint_pr_cycle_sprint_NN.png= | Hours from PR open to merge (only when PR data available) |
-   | =sprint_stories_done_sprint_NN.png= | Cumulative stories DONE per day (only when story data available) |
+   | =prs_commits.png= | Dual-axis bar: PRs and commits per day |
+   | =line_churn.png= | Bars: lines added (green) and deleted (red) per day |
+   | =pr_cycle.png= | Hours from PR open to merge (only when PR data available) |
+   | =stories_done.png= | Cumulative stories DONE per day (only when story data available) |
+
+   Commit these PNGs into the sprint directory; every sprint (01–18)
+   follows this convention.
 
 4. /Wire into the sprint page/. Add a =* Charts= section with
    subheadings and =file:= links to each PNG (see [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] for the

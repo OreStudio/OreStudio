@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: 426D228A-CCA8-4AC7-AE78-942E03A06497
+:END:
+#+title: Never cross worktree boundaries
+#+description: All work must stay within the active OreStudio checkout; never cd or git -C into another worktree.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+
+All work in a session must stay within the current working directory's
+OreStudio checkout (e.g. =local4=). Never =cd= into or use =git -C= to
+operate on another checkout (=local1=, =local2=, =local3=, =remote=).
+
+*Why:* Crossing into =local2= during sprint 19 caused a commit to land on
+=feature/delete-get-trade-detail= (an unrelated in-flight branch) instead of
+=feature/commission-currency=, silently corrupting someone else's work in
+progress.
+
+*How to apply:* If a branch is already checked out in another worktree (git
+refuses with "already used by worktree at …"), do NOT go to that worktree.
+Instead: (1) flag the conflict to the user, (2) offer to pick a different
+task or create a fresh branch from =origin/main= within the current checkout.

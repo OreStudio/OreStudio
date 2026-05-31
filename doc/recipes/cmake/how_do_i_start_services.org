@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: D8663EF2-5626-462E-AADC-AB2717F49C0D
+:END:
+#+title: How do I start the ORE Studio services?
+#+description: Start NATS and all backend services for a local checkout using start-services.sh; stop and check status with companion scripts.
+#+type: recipe
+#+level: cross
+#+filetags: :cmake:build:services:nats:controller:recipe:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+
+Requires =.env= and built binaries (see [[id:49F7DA81-ADB7-44ED-BE7E-06DBFBB32A84][How do I set up a development environment?]]).
+Start order: NATS server → controller; the controller spawns all other
+services (IAM, domain services, HTTP, Wt, compute wrappers) in dependency order.
+
+* Question
+
+How do I start all ORE Studio backend services for a local checkout?
+
+* Answer
+
+1. /Ensure the environment is initialised/ and the project is built (see
+   [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]] and [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]).
+
+2. /Start services/:
+
+   #+begin_src sh :results verbatim
+   ./build/scripts/start-services.sh
+   #+end_src
+
+   The preset defaults to =ORES_PRESET= from =.env=. Override with =--preset=:
+
+   #+begin_src sh :results verbatim
+   ./build/scripts/start-services.sh --preset linux-clang-debug-make
+   #+end_src
+
+   Change log verbosity with =--log-level= (default: =trace=):
+
+   #+begin_src sh :results verbatim
+   ./build/scripts/start-services.sh --log-level info
+   #+end_src
+
+   The script blocks until the controller logs =All services started=, then exits.
+
+** Check status
+
+   #+begin_src sh :results verbatim
+   ./build/scripts/status-services.sh
+   #+end_src
+
+** Stop all services
+
+   #+begin_src sh :results verbatim
+   ./build/scripts/stop-services.sh
+   #+end_src
+
+** Logs
+
+Logs land in =build/output/<preset>/publish/log/=. Each service writes its own
+=<name>.log= file; the NATS server writes =nats-server.log=.
+
+** Prerequisites checklist
+
+- =.env= exists (run =init-environment.sh= if not — see [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]]).
+- Database initialised (=./projects/ores.sql/recreate_database.sh -y=).
+- Project built (=cmake --build --preset <preset>=).
+- =nats-server= on =PATH= or in =/usr/sbin=.
+
+* Script
+
+=build/scripts/start-services.sh= — starts NATS then the controller; blocks until all services are up.
+=build/scripts/stop-services.sh= — stops all services cleanly.
+=build/scripts/status-services.sh= — shows running/stopped state per service.
+
+* Tested by
+
+Manual, each development session. No CI path — CI uses pre-configured runners.
+
+* See also
+
+- [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]] — generate =.env= and NATS certs first.
+- [[id:49F7DA81-ADB7-44ED-BE7E-06DBFBB32A84][How do I set up a development environment?]] — full bootstrap including packages and DB.
+- [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] — build binaries before starting services.

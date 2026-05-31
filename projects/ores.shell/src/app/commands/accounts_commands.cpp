@@ -467,7 +467,7 @@ process_bootstrap(std::ostream& out, nats_client& session,
     req.email = std::move(email);
 
     auto result = do_request<iam::messaging::create_initial_admin_response>(
-        out, session, "iam.v1.auth.bootstrap", rfl::json::write(req));
+        out, session, std::string(iam::messaging::create_initial_admin_request::nats_subject), rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {

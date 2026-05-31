@@ -64,7 +64,7 @@ bool auto_connect(ores::nats::service::nats_client& session, std::ostream& out,
 
 void check_bootstrap_status(ores::nats::service::nats_client& session, std::ostream& out) {
     try {
-        auto reply = session.request("iam.v1.auth.bootstrap-status",
+        auto reply = session.request(std::string(iam::messaging::bootstrap_status_request::nats_subject),
             rfl::json::write(iam::messaging::bootstrap_status_request{}));
         auto data_str = std::string(
             reinterpret_cast<const char*>(reply.data.data()), reply.data.size());

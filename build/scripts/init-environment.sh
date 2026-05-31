@@ -48,8 +48,9 @@ ENV_FILE="${CHECKOUT_ROOT}/.env"
 #   3  Added ORES_WORKSPACE_SERVICE_DB_* for new workspace service.
 #   4  Added ORES_SITE_PORT for the local documentation site server.
 #   5  Added org-roam knowledge graph integration to site build.
+#   6  Added ORES_SHELL_NATS_* for ores.shell mTLS auto-connect support.
 # ---------------------------------------------------------------------------
-ENV_VERSION=5
+ENV_VERSION=6
 
 # ---------------------------------------------------------------------------
 # Argument parsing
@@ -509,6 +510,15 @@ EOF
     echo "ORES_SHELL_DB_USER=${ORES_DB_SHELL_USER}"
     echo "ORES_SHELL_DB_PASSWORD=${ORES_DB_SHELL_PASSWORD}"
     echo "ORES_SHELL_DB_DATABASE=${DB_NAME}"
+    echo ""
+    echo "# ---------------------------------------------------------------------------"
+    echo "# Shell NATS credentials (read by C++ make_mapper(\"SHELL\"))"
+    echo "# ---------------------------------------------------------------------------"
+    echo "ORES_SHELL_NATS_URL=${NATS_URL}"
+    echo "ORES_SHELL_NATS_SUBJECT_PREFIX=${NATS_PREFIX}"
+    echo "ORES_SHELL_NATS_TLS_CA=${NATS_TLS_CA}"
+    echo "ORES_SHELL_NATS_TLS_CERT=${NATS_TLS_CERT}"
+    echo "ORES_SHELL_NATS_TLS_KEY=${NATS_TLS_KEY}"
     echo ""
     echo "# ---------------------------------------------------------------------------"
     echo "# HTTP server DB credentials (read by C++ make_mapper(\"HTTP_SERVER\"))"

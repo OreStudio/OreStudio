@@ -131,7 +131,7 @@ process_get_currencies(std::ostream& out, nats_client& session,
     req.offset = state.current_offset;
     req.limit = pagination.page_size();
 
-    auto result = do_request<refdata::messaging::get_currencies_response>(
+    auto result = do_auth_request<refdata::messaging::get_currencies_response>(
         out, session, "refdata.v1.currencies.list", rfl::json::write(req));
     if (!result) return;
 
@@ -189,7 +189,7 @@ process_add_currency(std::ostream& out, nats_client& session,
             .symbol = std::move(symbol),
             .fraction_symbol = "",
             .fractions_per_unit = fractions,
-            .rounding_type = "Nearest",
+            .rounding_type = "Closest",
             .rounding_precision = 2,
             .format = "",
             .monetary_nature = "fiat",

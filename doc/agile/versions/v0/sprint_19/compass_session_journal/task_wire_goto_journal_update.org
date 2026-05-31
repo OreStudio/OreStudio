@@ -66,6 +66,15 @@ Three additions to =compass.py=:
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/954][#954]] | [compass] Wire compass goto to auto-update the session journal |
 
+* Review
+
+** Round 1 — 2026-05-31
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =_ORG_ID_RE= doesn't match indented =:ID:= properties | compass.py | Fixed: allow =^[ \t]*= leading whitespace | Gemini review |
+| 2 | Ad-hoc inner class =_JournalArgs= non-idiomatic | compass.py | Fixed: use =argparse.Namespace= | Gemini review |
+
 * Result
 
 - =_read_org_id()= implemented and verified (returns correct UUIDs from

@@ -8,7 +8,7 @@
 #+filetags: :compass_session_journal:sprint_19:v0:
 #+owner: marco
 #+branch: feature/wire-goto-journal-update
-#+pr:
+#+pr: 954
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-31
@@ -64,7 +64,7 @@ Three additions to =compass.py=:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/954][#954]] | [compass] Wire compass goto to auto-update the session journal |
 
 * Result
 

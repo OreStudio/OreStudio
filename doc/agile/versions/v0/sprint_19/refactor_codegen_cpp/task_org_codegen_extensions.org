@@ -8,11 +8,11 @@
 #+filetags: :refactor_codegen_cpp:sprint_19:v0:codegen:literate:org_mode:
 #+owner: marco
 #+branch: feature/refactor-codegen-cpp
-#+pr:
+#+pr: 963
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-05-31
-#+updated: 2026-05-31
+#+updated: 2026-06-01
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 #+state: DONE
 
@@ -66,6 +66,7 @@ extension idea retreats to a simpler sidecar-fragment design.
 | Waiting on   | Nothing.                               |
 | Next         | Full migration tracked under [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]]. |
 | Last touched | 2026-06-01                             |
+| Review       | PR #963 round 1: 6 comments, all accepted, fixed in commit =6361b5aa6=. |
 
 * Acceptance
 
@@ -324,15 +325,20 @@ Post-render is simpler; prefer unless it produces awkward template files.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #963 | [codegen] Org-mode literate codegen POC for party entity |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Org-mode property keys are case-insensitive; =:ID:= match should accept any case. | org_loader.py:170 | Accepted | PR #963 round 1. Fixed in =6361b5aa6= via =key.upper() == "ID"=. |
+| 2 | Strip surrounding quotes from =:name=/=:implements= header args. | org_loader.py:197 | Accepted | PR #963 round 1. Fixed in =6361b5aa6= via =.strip("\"'")=. |
+| 3 | =isdigit()= rejects negatives and floats; use try/except parse. | org_loader.py:304 | Accepted | PR #963 round 1. Fixed in =6361b5aa6= via int → float → string. |
+| 4 | =_includes_from_named_block= should filter to lines starting with =#include=. | org_loader.py:338 | Accepted | PR #963 round 1. Fixed in =6361b5aa6=. |
+| 5 | Column descriptions collapse paragraph breaks; preserve them. | org_loader.py:357 | Accepted | PR #963 round 1. Fixed in =6361b5aa6=; intra-paragraph newlines still collapse. |
+| 6 | =validate_model= is unused; wire into =load_org_model= and raise. | org_loader.py:654 | Accepted | PR #963 round 1. Fixed in =6361b5aa6= via =raise ValueError(...)=. |
 
 * Result
 

@@ -94,8 +94,8 @@ Current compass commands (as of sprint 19):
 
 * Review
 
+** Round 1 — 2026-05-31
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
-
-* Result
+| 1 | Empty =* Result= section should be omitted | task file | Fixed: removed | Gemini review |

@@ -166,29 +166,9 @@ void FxAccumulatorInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void FxAccumulatorInstrumentForm::setInstrument(
-    const trading::domain::trade_instrument& instrument) {
-
-    const auto* ex =
-        std::get_if<trading::domain::fx_instrument_variant>(&instrument);
-    if (!ex) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-FX instrument pushed to FxAccumulatorInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected instrument type for FX accumulator form"));
-        return;
-    }
-    const auto* ac =
-        std::get_if<trading::domain::fx_accumulator_instrument>(ex);
-    if (!ac) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-accumulator FX type pushed to FxAccumulatorInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected FX sub-type for accumulator form"));
-        return;
-    }
-
-    instrument_ = *ac;
+void FxAccumulatorInstrumentForm::populate(
+    const trading::domain::fx_accumulator_instrument& instr) {
+    instrument_ = instr;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

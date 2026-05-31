@@ -12,7 +12,7 @@
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29
-#+updated: 2026-05-29
+#+updated: 2026-05-31
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -47,11 +47,11 @@ import/export paths where the type is genuinely unknown at the processing site.
 
 | Field        | Value                                                                               |
 |--------------+-------------------------------------------------------------------------------------|
-| State        | STARTED                                                                             |
+| State        | DONE                                                                                |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | Starting implementation.                                                            |
+| Now          | Nothing.                                                                            |
 | Waiting on   | Nothing.                                                                            |
-| Next         | Implement; open PR.                                                                 |
+| Next         | N/A.                                                                                |
 | Last touched | 2026-05-31                                                                          |
 
 * Acceptance

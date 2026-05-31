@@ -182,29 +182,9 @@ void FxVanillaOptionInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void FxVanillaOptionInstrumentForm::setInstrument(
-    const trading::domain::trade_instrument& instrument) {
-
-    const auto* ex =
-        std::get_if<trading::domain::fx_instrument_variant>(&instrument);
-    if (!ex) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-FX instrument pushed to FxVanillaOptionInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected instrument type for FX vanilla option form"));
-        return;
-    }
-    const auto* opt =
-        std::get_if<trading::domain::fx_vanilla_option_instrument>(ex);
-    if (!opt) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-vanilla-option FX type pushed to FxVanillaOptionInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected FX sub-type for vanilla option form"));
-        return;
-    }
-
-    instrument_ = *opt;
+void FxVanillaOptionInstrumentForm::populate(
+    const trading::domain::fx_vanilla_option_instrument& instr) {
+    instrument_ = instr;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

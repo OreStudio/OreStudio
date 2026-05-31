@@ -228,27 +228,9 @@ void EquityInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void EquityInstrumentForm::setInstrument(
-    const trading::domain::trade_instrument& instrument) {
-
-    const auto* ex =
-        std::get_if<trading::domain::equity_instrument_variant>(&instrument);
-    if (!ex) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-equity instrument pushed to EquityInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected instrument type for equity form"));
-        return;
-    }
-    const auto* opt =
-        std::get_if<trading::domain::equity_option_instrument>(ex);
-    if (!opt) {
-        emit loadFailed(QStringLiteral(
-            "Non-option equity type not yet supported in this dialog"));
-        return;
-    }
-
-    instrument_ = *opt;
+void EquityInstrumentForm::populate(
+    const trading::domain::equity_option_instrument& instr) {
+    instrument_ = instr;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

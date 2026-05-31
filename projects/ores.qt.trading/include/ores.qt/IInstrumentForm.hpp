@@ -25,7 +25,7 @@
 #include <string>
 #include <QString>
 #include <QWidget>
-#include "ores.trading.api/domain/trade_instrument.hpp"
+#include "ores.qt/IInstrumentFormPopulator.hpp"
 
 namespace ores::qt {
 
@@ -57,9 +57,9 @@ struct InstrumentProvenance {
  *
  *  1. Dialog construction: instantiate the form via the registry, call
  *     @ref setClientManager and @ref setUsername.
- *  2. Edit mode: dialog already holds the @c trade_instrument from
- *     the trade bundle and pushes it via @ref setInstrument; the form
- *     pattern-matches its family and populates fields synchronously.
+ *  2. Edit mode: @c getTradeInstrument calls the concrete form's
+ *     @ref IInstrumentFormPopulator::populate overload directly; the
+ *     form stores the domain object and updates the UI synchronously.
  *  3. Create mode: @ref clear is called and the form starts blank.
  *  4. The user picks a trade type → dialog calls @ref setTradeType so the
  *     form can show or hide its options/extension sub-sections (driven by
@@ -70,7 +70,7 @@ struct InstrumentProvenance {
  *     failure callbacks. On success the dialog continues to @c saveTrade;
  *     on failure the trade save is aborted.
  */
-class IInstrumentForm : public QWidget {
+class IInstrumentForm : public QWidget, public IInstrumentFormPopulator {
     Q_OBJECT
 public:
     using QWidget::QWidget;
@@ -84,19 +84,6 @@ public:
 
     /// Inject the image cache for flag icons on currency combo boxes.
     virtual void setImageCache(ImageCache* /*cache*/) {}
-
-    /**
-     * @brief Populate the form with the already-resolved instrument.
-     *
-     * The dialog holds the full trade bundle and pushes the instrument
-     * here. The form pattern-matches its family from the variant, stores
-     * the per-type domain object, and updates the UI synchronously.
-     * On success it emits @ref instrumentLoaded and @ref provenanceChanged.
-     * If the variant does not hold this family's alternative the form
-     * emits @ref loadFailed with a descriptive message.
-     */
-    virtual void setInstrument(
-        const trading::domain::trade_instrument& instrument) = 0;
 
     /// Reset the form to a blank state ready for create mode.
     virtual void clear() = 0;

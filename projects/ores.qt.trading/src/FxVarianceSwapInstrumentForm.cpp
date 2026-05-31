@@ -166,29 +166,9 @@ void FxVarianceSwapInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void FxVarianceSwapInstrumentForm::setInstrument(
-    const trading::domain::trade_instrument& instrument) {
-
-    const auto* ex =
-        std::get_if<trading::domain::fx_instrument_variant>(&instrument);
-    if (!ex) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-FX instrument pushed to FxVarianceSwapInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected instrument type for FX variance swap form"));
-        return;
-    }
-    const auto* vs =
-        std::get_if<trading::domain::fx_variance_swap_instrument>(ex);
-    if (!vs) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-variance-swap FX type pushed to FxVarianceSwapInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected FX sub-type for variance swap form"));
-        return;
-    }
-
-    instrument_ = *vs;
+void FxVarianceSwapInstrumentForm::populate(
+    const trading::domain::fx_variance_swap_instrument& instr) {
+    instrument_ = instr;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

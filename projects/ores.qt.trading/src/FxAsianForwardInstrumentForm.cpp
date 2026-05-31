@@ -220,29 +220,9 @@ void FxAsianForwardInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void FxAsianForwardInstrumentForm::setInstrument(
-    const trading::domain::trade_instrument& instrument) {
-
-    const auto* ex =
-        std::get_if<trading::domain::fx_instrument_variant>(&instrument);
-    if (!ex) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-FX instrument pushed to FxAsianForwardInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected instrument type for FX asian forward form"));
-        return;
-    }
-    const auto* af =
-        std::get_if<trading::domain::fx_asian_forward_instrument>(ex);
-    if (!af) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-asian-forward FX type pushed to FxAsianForwardInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected FX sub-type for asian forward form"));
-        return;
-    }
-
-    instrument_ = *af;
+void FxAsianForwardInstrumentForm::populate(
+    const trading::domain::fx_asian_forward_instrument& instr) {
+    instrument_ = instr;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

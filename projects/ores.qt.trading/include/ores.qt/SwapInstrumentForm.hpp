@@ -118,8 +118,24 @@ public:
     void setUsername(const std::string& username) override;
     void setImageCache(ImageCache* cache) override;
 
-    void setInstrument(
-        const trading::domain::trade_instrument& instrument) override;
+    void populate(const trading::domain::fra_instrument&,
+                  std::vector<trading::domain::swap_leg>) override;
+    void populate(const trading::domain::vanilla_swap_instrument&,
+                  std::vector<trading::domain::swap_leg>) override;
+    void populate(const trading::domain::cap_floor_instrument&,
+                  std::vector<trading::domain::swap_leg>) override;
+    void populate(const trading::domain::swaption_instrument&,
+                  std::vector<trading::domain::swap_leg>) override;
+    void populate(const trading::domain::balance_guaranteed_swap_instrument&,
+                  std::vector<trading::domain::swap_leg>) override;
+    void populate(const trading::domain::callable_swap_instrument&,
+                  std::vector<trading::domain::swap_leg>) override;
+    void populate(const trading::domain::knock_out_swap_instrument&,
+                  std::vector<trading::domain::swap_leg>) override;
+    void populate(const trading::domain::inflation_swap_instrument&,
+                  std::vector<trading::domain::swap_leg>) override;
+    void populate(const trading::domain::rpa_instrument&,
+                  std::vector<trading::domain::swap_leg>) override;
     void clear() override;
 
     void setTradeType(const QString& code,

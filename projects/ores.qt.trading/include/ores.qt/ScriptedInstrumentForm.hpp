@@ -57,8 +57,7 @@ public:
     void setClientManager(ClientManager* cm) override;
     void setUsername(const std::string& username) override;
 
-    void setInstrument(
-        const trading::domain::trade_instrument& instrument) override;
+    void populate(const trading::domain::scripted_instrument& instr) override;
     void clear() override;
 
     void setTradeType(const QString& code,

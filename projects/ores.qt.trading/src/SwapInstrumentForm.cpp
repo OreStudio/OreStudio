@@ -164,31 +164,6 @@ State from_rpa(const trading::domain::rpa_instrument& i) {
     return s;
 }
 
-State extract_state(const trading::domain::swap_instrument_data& swap) {
-    return std::visit([](const auto& instr) -> State {
-        using T = std::decay_t<decltype(instr)>;
-        using namespace trading::domain;
-        if constexpr (std::is_same_v<T, fra_instrument>)
-            return from_fra(instr);
-        else if constexpr (std::is_same_v<T, vanilla_swap_instrument>)
-            return from_vanilla_swap(instr);
-        else if constexpr (std::is_same_v<T, cap_floor_instrument>)
-            return from_cap_floor(instr);
-        else if constexpr (std::is_same_v<T, swaption_instrument>)
-            return from_swaption(instr);
-        else if constexpr (std::is_same_v<T, balance_guaranteed_swap_instrument>)
-            return from_balance_guaranteed_swap(instr);
-        else if constexpr (std::is_same_v<T, callable_swap_instrument>)
-            return from_callable_swap(instr);
-        else if constexpr (std::is_same_v<T, knock_out_swap_instrument>)
-            return from_knock_out_swap(instr);
-        else if constexpr (std::is_same_v<T, inflation_swap_instrument>)
-            return from_inflation_swap(instr);
-        else // rpa_instrument
-            return from_rpa(instr);
-    }, swap.instrument);
-}
-
 // ---------------------------------------------------------------------------
 // Domain builders: SwapFormState → per-type domain object
 // ---------------------------------------------------------------------------
@@ -469,23 +444,125 @@ void SwapInstrumentForm::writeUiToInstrument() {
     state_.performed_by = username_;
 }
 
-void SwapInstrumentForm::setInstrument(
-    const trading::domain::trade_instrument& instrument) {
-
-    const auto* swap =
-        std::get_if<trading::domain::swap_instrument_data>(&instrument);
-    if (!swap) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-swap instrument pushed to SwapInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected instrument type for swap form"));
-        return;
-    }
-
+void SwapInstrumentForm::populate(
+    const trading::domain::fra_instrument& instr,
+    std::vector<trading::domain::swap_leg> legs) {
     const std::string ttc = state_.trade_type_code;
-    state_ = extract_state(*swap);
+    state_ = from_fra(instr);
     state_.trade_type_code = ttc;
-    legs_ = swap->legs;
+    legs_ = std::move(legs);
+    loaded_ = true;
+    dirty_ = false;
+    populateFromState();
+    emitProvenance();
+    emit instrumentLoaded();
+}
+
+void SwapInstrumentForm::populate(
+    const trading::domain::vanilla_swap_instrument& instr,
+    std::vector<trading::domain::swap_leg> legs) {
+    const std::string ttc = state_.trade_type_code;
+    state_ = from_vanilla_swap(instr);
+    state_.trade_type_code = ttc;
+    legs_ = std::move(legs);
+    loaded_ = true;
+    dirty_ = false;
+    populateFromState();
+    emitProvenance();
+    emit instrumentLoaded();
+}
+
+void SwapInstrumentForm::populate(
+    const trading::domain::cap_floor_instrument& instr,
+    std::vector<trading::domain::swap_leg> legs) {
+    const std::string ttc = state_.trade_type_code;
+    state_ = from_cap_floor(instr);
+    state_.trade_type_code = ttc;
+    legs_ = std::move(legs);
+    loaded_ = true;
+    dirty_ = false;
+    populateFromState();
+    emitProvenance();
+    emit instrumentLoaded();
+}
+
+void SwapInstrumentForm::populate(
+    const trading::domain::swaption_instrument& instr,
+    std::vector<trading::domain::swap_leg> legs) {
+    const std::string ttc = state_.trade_type_code;
+    state_ = from_swaption(instr);
+    state_.trade_type_code = ttc;
+    legs_ = std::move(legs);
+    loaded_ = true;
+    dirty_ = false;
+    populateFromState();
+    emitProvenance();
+    emit instrumentLoaded();
+}
+
+void SwapInstrumentForm::populate(
+    const trading::domain::balance_guaranteed_swap_instrument& instr,
+    std::vector<trading::domain::swap_leg> legs) {
+    const std::string ttc = state_.trade_type_code;
+    state_ = from_balance_guaranteed_swap(instr);
+    state_.trade_type_code = ttc;
+    legs_ = std::move(legs);
+    loaded_ = true;
+    dirty_ = false;
+    populateFromState();
+    emitProvenance();
+    emit instrumentLoaded();
+}
+
+void SwapInstrumentForm::populate(
+    const trading::domain::callable_swap_instrument& instr,
+    std::vector<trading::domain::swap_leg> legs) {
+    const std::string ttc = state_.trade_type_code;
+    state_ = from_callable_swap(instr);
+    state_.trade_type_code = ttc;
+    legs_ = std::move(legs);
+    loaded_ = true;
+    dirty_ = false;
+    populateFromState();
+    emitProvenance();
+    emit instrumentLoaded();
+}
+
+void SwapInstrumentForm::populate(
+    const trading::domain::knock_out_swap_instrument& instr,
+    std::vector<trading::domain::swap_leg> legs) {
+    const std::string ttc = state_.trade_type_code;
+    state_ = from_knock_out_swap(instr);
+    state_.trade_type_code = ttc;
+    legs_ = std::move(legs);
+    loaded_ = true;
+    dirty_ = false;
+    populateFromState();
+    emitProvenance();
+    emit instrumentLoaded();
+}
+
+void SwapInstrumentForm::populate(
+    const trading::domain::inflation_swap_instrument& instr,
+    std::vector<trading::domain::swap_leg> legs) {
+    const std::string ttc = state_.trade_type_code;
+    state_ = from_inflation_swap(instr);
+    state_.trade_type_code = ttc;
+    legs_ = std::move(legs);
+    loaded_ = true;
+    dirty_ = false;
+    populateFromState();
+    emitProvenance();
+    emit instrumentLoaded();
+}
+
+void SwapInstrumentForm::populate(
+    const trading::domain::rpa_instrument& instr,
+    std::vector<trading::domain::swap_leg> legs) {
+    const std::string ttc = state_.trade_type_code;
+    state_ = from_rpa(instr);
+    state_.trade_type_code = ttc;
+    legs_ = std::move(legs);
     loaded_ = true;
     dirty_ = false;
     populateFromState();

@@ -78,13 +78,13 @@ public:
     void setImageCache(ImageCache* cache);
 
     /**
-     * @brief Populate the dialog with a trade bundle (trade + instrument).
+     * @brief Populate the dialog with a trade bundle.
      *
-     * The caller must provide the resolved instrument variant alongside the
-     * trade. When the trade has no linked instrument (create mode, or a
-     * version with no instrument reference) pass a @c trade_export_item
-     * whose @c instrument is monostate; the dialog then routes to
-     * @c IInstrumentForm::clear() instead of @c setInstrument().
+     * When the trade has a linked instrument, the dialog calls
+     * @c getTradeInstrument to fetch and populate the active form via
+     * @c IInstrumentFormPopulator. When there is no instrument reference
+     * (create mode, bare historical version), the dialog calls
+     * @c IInstrumentForm::clear() instead.
      */
     void setTradeBundle(const trading::messaging::trade_export_item& bundle);
     void setCreateMode(bool createMode);

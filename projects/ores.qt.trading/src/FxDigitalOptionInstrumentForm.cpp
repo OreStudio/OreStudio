@@ -211,29 +211,9 @@ void FxDigitalOptionInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void FxDigitalOptionInstrumentForm::setInstrument(
-    const trading::domain::trade_instrument& instrument) {
-
-    const auto* ex =
-        std::get_if<trading::domain::fx_instrument_variant>(&instrument);
-    if (!ex) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-FX instrument pushed to FxDigitalOptionInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected instrument type for FX digital option form"));
-        return;
-    }
-    const auto* di =
-        std::get_if<trading::domain::fx_digital_option_instrument>(ex);
-    if (!di) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-digital-option FX type pushed to FxDigitalOptionInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected FX sub-type for digital option form"));
-        return;
-    }
-
-    instrument_ = *di;
+void FxDigitalOptionInstrumentForm::populate(
+    const trading::domain::fx_digital_option_instrument& instr) {
+    instrument_ = instr;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

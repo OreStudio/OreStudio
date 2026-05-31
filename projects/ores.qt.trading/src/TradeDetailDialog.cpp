@@ -402,7 +402,6 @@ void TradeDetailDialog::setTradeBundle(
     const trading::messaging::trade_export_item& bundle) {
     trade_ = bundle.trade;
 
-    const bool has_instrument = !std::holds_alternative<std::monostate>(bundle.instrument);
     const std::string instrument_id_str = bundle.trade.classification.instrument_id
         ? boost::uuids::to_string(*bundle.trade.classification.instrument_id) : "<none>";
 
@@ -411,10 +410,7 @@ void TradeDetailDialog::setTradeBundle(
         << " product_type=" << std::string(
             ores::trading::domain::to_string(bundle.trade.classification.product_type))
         << " trade_type=" << bundle.trade.classification.trade_type
-        << " instrument_id=" << instrument_id_str
-        << " instrument=" << (has_instrument
-            ? ("present (index=" + std::to_string(bundle.instrument.index()) + ")")
-            : "monostate");
+        << " instrument_id=" << instrument_id_str;
 
     updateUiFromTrade();
     selectCurrentBook();
@@ -437,34 +433,29 @@ void TradeDetailDialog::setTradeBundle(
     }
 
     activateForm(form, trade_.classification.trade_type);
-    if (!has_instrument) {
-        if (bundle.trade.classification.instrument_id) {
-            // Server had an instrument_id but returned monostate — something
-            // went wrong during instrument lookup on the server side.
-            const QString msg = tr("Instrument data could not be loaded for trade '%1' "
-                "(instrument_id=%2, trade_type=%3). "
-                "The server returned no instrument data despite a linked instrument. "
-                "Check the trading service log for details.")
-                .arg(QString::fromStdString(bundle.trade.identity.external_id))
-                .arg(QString::fromStdString(instrument_id_str))
-                .arg(QString::fromStdString(bundle.trade.classification.trade_type));
+    if (trade_.classification.instrument_id) {
+        const auto trade_id = boost::uuids::to_string(trade_.identity.id);
+        BOOST_LOG_SEV(lg(), debug)
+            << "setTradeBundle: fetching instrument for trade="
+            << trade_.identity.external_id
+            << " instrument_id=" << instrument_id_str;
+        if (!clientManager_->getTradeInstrument(trade_id, *activeForm_)) {
             BOOST_LOG_SEV(lg(), error)
-                << "setTradeBundle: instrument_id set but got monostate"
-                << " trade=" << bundle.trade.identity.external_id
-                << " instrument_id=" << instrument_id_str;
+                << "setTradeBundle: instrument fetch failed for trade="
+                << trade_.identity.external_id;
+            const QString msg = tr("Could not load instrument data for trade '%1' "
+                "(instrument_id=%2). Check the trading service log for details.")
+                .arg(QString::fromStdString(trade_.identity.external_id))
+                .arg(QString::fromStdString(instrument_id_str));
             MessageBoxHelper::warning(this, tr("Instrument Load Failed"), msg);
             emit errorMessage(msg);
-        } else {
-            BOOST_LOG_SEV(lg(), debug)
-                << "setTradeBundle: no instrument linked, clearing form for trade="
-                << bundle.trade.identity.external_id;
+            activeForm_->clear();
         }
-        activeForm_->clear();
     } else {
         BOOST_LOG_SEV(lg(), debug)
-            << "setTradeBundle: calling setInstrument for trade=" << bundle.trade.identity.external_id
-            << " instrument_id=" << instrument_id_str;
-        activeForm_->setInstrument(bundle.instrument);
+            << "setTradeBundle: no instrument linked, clearing form for trade="
+            << trade_.identity.external_id;
+        activeForm_->clear();
     }
 }
 

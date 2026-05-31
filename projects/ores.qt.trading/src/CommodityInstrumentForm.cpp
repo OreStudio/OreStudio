@@ -291,20 +291,9 @@ void CommodityInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void CommodityInstrumentForm::setInstrument(
-    const trading::domain::trade_instrument& instrument) {
-
-    const auto* ex =
-        std::get_if<trading::domain::commodity_instrument>(&instrument);
-    if (!ex) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-commodity instrument pushed to CommodityInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected instrument type for commodity form"));
-        return;
-    }
-
-    instrument_ = *ex;
+void CommodityInstrumentForm::populate(
+    const trading::domain::commodity_instrument& instr) {
+    instrument_ = instr;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

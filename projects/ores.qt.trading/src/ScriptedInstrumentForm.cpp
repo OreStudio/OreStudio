@@ -109,20 +109,9 @@ void ScriptedInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void ScriptedInstrumentForm::setInstrument(
-    const trading::domain::trade_instrument& instrument) {
-
-    const auto* ex =
-        std::get_if<trading::domain::scripted_instrument>(&instrument);
-    if (!ex) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-scripted instrument pushed to ScriptedInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected instrument type for scripted form"));
-        return;
-    }
-
-    instrument_ = *ex;
+void ScriptedInstrumentForm::populate(
+    const trading::domain::scripted_instrument& instr) {
+    instrument_ = instr;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

@@ -8,7 +8,7 @@
 #+filetags: :compass_session_journal:sprint_19:v0:
 #+owner: marco
 #+branch: feature/implement-compass-journal
-#+pr:
+#+pr: 952
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-31
@@ -65,7 +65,7 @@ All code added to =projects/ores.compass/src/compass.py=:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/952][#952]] | [compass] Implement compass journal subcommand |
 
 * Review
 

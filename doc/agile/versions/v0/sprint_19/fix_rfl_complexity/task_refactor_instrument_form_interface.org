@@ -7,9 +7,9 @@
 #+level: s1
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/refactor-instrument-form-interface
 #+pr:
-#+blocked_on: F9E5967D-77E7-49E3-9806-74AF22D26191
+#+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29
 #+updated: 2026-05-29
@@ -47,12 +47,12 @@ import/export paths where the type is genuinely unknown at the processing site.
 
 | Field        | Value                                                                               |
 |--------------+-------------------------------------------------------------------------------------|
-| State        | BACKLOG                                                                             |
+| State        | STARTED                                                                             |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | —                                                                                   |
-| Waiting on   | Task 3 merged ([[id:F9E5967D-77E7-49E3-9806-74AF22D26191][tests]]).               |
-| Next         | Begin once tests PR is green.                                                       |
-| Last touched | 2026-05-29                                                                          |
+| Now          | Starting implementation.                                                            |
+| Waiting on   | Nothing.                                                                            |
+| Next         | Implement; open PR.                                                                 |
+| Last touched | 2026-05-31                                                                          |
 
 * Acceptance
 

@@ -739,7 +739,8 @@ def _journal_update(args):
     from datetime import datetime
     story_title = _lookup_title(args.story)
     task_title  = _lookup_title(args.task)
-    pr_val = f"#{args.pr}" if args.pr and args.pr.lstrip("#").isdigit() else (args.pr or "none")
+    clean_pr = args.pr.lstrip("#") if args.pr else ""
+    pr_val = f"#{clean_pr}" if clean_pr.isdigit() else (args.pr or "none")
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     entry = (
         f"* {timestamp} — [[id:{args.story.upper()}][{story_title}]]\n"
@@ -749,8 +750,10 @@ def _journal_update(args):
         f"  - PR :: {pr_val}\n"
     )
     existing = JOURNAL_FILE.read_text(encoding="utf-8") if JOURNAL_FILE.exists() else ""
-    with open(JOURNAL_FILE, "w", encoding="utf-8") as f:
-        f.write((existing.rstrip("\n") + "\n\n" + entry) if existing.strip() else entry)
+    new_content = (existing.rstrip("\n") + "\n\n" + entry) if existing.strip() else entry
+    tmp = JOURNAL_FILE.with_suffix(".tmp")
+    tmp.write_text(new_content, encoding="utf-8")
+    tmp.replace(JOURNAL_FILE)
     print(f"📓 journal updated: {timestamp} — {story_title} / {task_title}")
     return 0
 

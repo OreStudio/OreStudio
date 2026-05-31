@@ -885,7 +885,7 @@ def _journal_last_entry(worktree_path):
 def _org_link_text(link_str):
     """Extract plain title from an org-roam [[id:...][Title]] link, or return as-is."""
     m = _ORG_LINK_RE.match(link_str or "")
-    return m.group(2) if m else (link_str or "—")
+    return m.group(2) if m else link_str
 
 def cmd_fleet(args):
     worktrees = list_worktrees()

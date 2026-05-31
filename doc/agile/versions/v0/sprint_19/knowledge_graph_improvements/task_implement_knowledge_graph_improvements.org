@@ -27,11 +27,11 @@ options, sidebar toggle) being absent from the graph view.
 
 | Field        | Value                                                           |
 |--------------+-----------------------------------------------------------------|
-| State        | STARTED                                                         |
+| State        | DONE                                                            |
 | Parent story | [[id:F3CB848E-72C1-4F81-AAE4-1265F41D47C1][Fix knowledge graph issues]]                   |
-| Now          | PR #951 open; awaiting CI and review.                           |
-| Waiting on   | CI green + review.                                              |
-| Next         | Merge PR; mark DONE.                                            |
+| Now          | PR #951 merged.                                                 |
+| Waiting on   | Nothing.                                                        |
+| Next         | N/A.                                                            |
 | Last touched | 2026-05-31                                                      |
 
 * Acceptance

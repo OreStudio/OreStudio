@@ -22,12 +22,12 @@ sidebar toggle) must be visible and operable.
 
 | Field         | Value                                                              |
 |---------------+--------------------------------------------------------------------|
-| State         | STARTED                                                            |
+| State         | DONE                                                               |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                          |
-| Now           | Investigating root causes for images and missing controls.         |
+| Now           | PR #951 merged; all acceptance criteria met.                       |
 | Waiting on    | Nothing.                                                           |
-| Next          | Implement fixes; verify both issues resolved in the deployed site. |
-| Last touched  | 2026-05-30                                                         |
+| Next          | N/A.                                                               |
+| Last touched  | 2026-05-31                                                         |
 
 * Acceptance
 
@@ -40,7 +40,7 @@ sidebar toggle) must be visible and operable.
 
 | Task                                                                                                                                     | State   | Start      | End | Description                                               |
 |------------------------------------------------------------------------------------------------------------------------------------------+---------+------------+-----+-----------------------------------------------------------|
-| [[id:4729C928-7EE0-4B8E-A932-FE286BDB2CC7][Task: Implement knowledge graph improvements]] | STARTED | 2026-05-30 |     | Investigate and fix image rendering and missing controls. |
+| [[id:4729C928-7EE0-4B8E-A932-FE286BDB2CC7][Task: Implement knowledge graph improvements]] | DONE    | 2026-05-30 | 2026-05-31 | Investigate and fix image rendering and missing controls. |
 
 * Out of scope
 

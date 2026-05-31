@@ -98,7 +98,7 @@ and file backlog captures for Wt and HTTP gaps. One story per entity.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:40B50055-EB09-4B5B-B26C-24F0F9CD1C5B][Entity manual: add shell documentation per chapter]] | BACKLOG | | | Each entity chapter in the manual covers Qt UI and shell usage side by side.             |
-| [[id:F3CB848E-72C1-4F81-AAE4-1265F41D47C1][Fix knowledge graph issues]]                         | STARTED | 2026-05-30 | | Fix knowledge graph: images not displaying and left-panel controls missing. |
+| [[id:F3CB848E-72C1-4F81-AAE4-1265F41D47C1][Fix knowledge graph issues]]                         | DONE    | 2026-05-30 | 2026-05-31 | Fix knowledge graph: images not displaying and left-panel controls missing. |
 
 ** Infrastructure
 

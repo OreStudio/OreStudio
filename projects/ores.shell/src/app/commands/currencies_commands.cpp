@@ -38,7 +38,7 @@ namespace {
 
 template<typename Response>
 std::optional<Response> do_request(std::ostream& out, nats_client& session,
-    const std::string& subject, const std::string& body) {
+    std::string_view subject, const std::string& body) {
     try {
         auto reply = session.request(subject, body);
         auto data_str = std::string(
@@ -57,7 +57,7 @@ std::optional<Response> do_request(std::ostream& out, nats_client& session,
 
 template<typename Response>
 std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
-    const std::string& subject, const std::string& body) {
+    std::string_view subject, const std::string& body) {
     try {
         auto reply = session.authenticated_request(subject, body);
         auto data_str = std::string(

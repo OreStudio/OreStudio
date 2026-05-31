@@ -8,7 +8,7 @@
 #+filetags: :compass_session_journal:sprint_19:v0:
 #+owner: marco
 #+branch: feature/refactor-fleet-journal
-#+pr:
+#+pr: 955
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-31
@@ -67,7 +67,7 @@ journal is available.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/955][#955]] | [compass] Refactor compass fleet to use session journal |
 
 * Result
 

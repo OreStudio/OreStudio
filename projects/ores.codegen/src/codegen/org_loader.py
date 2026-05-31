@@ -37,6 +37,15 @@ from typing import Any
 
 
 @dataclass
+class SrcBlock:
+    """A named babel source block with its header arguments."""
+    name: str
+    lang: str
+    code: str
+    implements: str | None = None  # kind UUID this block fills (if any)
+
+
+@dataclass
 class OrgNode:
     """A heading-rooted node in the org tree."""
     level: int = 0
@@ -44,7 +53,12 @@ class OrgNode:
     org_id: str | None = None
     properties: dict[str, str] = field(default_factory=dict)
     body_lines: list[str] = field(default_factory=list)
+    # Block lookup by name; the value is the raw code string for backwards
+    # compatibility with callers that only need the code body.
     src_blocks: dict[str, str] = field(default_factory=dict)
+    # Full list of all source blocks under this node, including their
+    # ``:implements`` header arg for kind-UUID matching.
+    src_blocks_list: list[SrcBlock] = field(default_factory=list)
     tables: list[list[dict[str, str]]] = field(default_factory=list)
     bullet_lists: list[list[str]] = field(default_factory=list)
     children: list["OrgNode"] = field(default_factory=list)
@@ -65,6 +79,7 @@ _SRC_BEGIN_RE = re.compile(
 )
 _SRC_END_RE = re.compile(r"^\s*#\+end_src\s*$", re.IGNORECASE)
 _SRC_NAME_RE = re.compile(r":name\s+(\S+)")
+_SRC_IMPLEMENTS_RE = re.compile(r":implements\s+(\S+)")
 _BULLET_RE = re.compile(r"^\s*-\s+(.*)$")
 _TABLE_ROW_RE = re.compile(r"^\s*\|(.+)\|\s*$")
 _TABLE_SEP_RE = re.compile(r"^\s*\|[-+|]+\|\s*$")
@@ -82,6 +97,7 @@ def parse_org(text: str) -> OrgDocument:
     in_src_block = False
     src_lang: str | None = None
     src_name: str | None = None
+    src_implements: str | None = None
     src_lines: list[str] = []
     pending_table: list[list[str]] = []  # list of raw row token-lists
 
@@ -112,11 +128,20 @@ def parse_org(text: str) -> OrgDocument:
         # Inside a source block: collect verbatim.
         if in_src_block:
             if _SRC_END_RE.match(line):
+                code = "\n".join(src_lines)
+                block = SrcBlock(
+                    name=src_name or "",
+                    lang=src_lang or "",
+                    code=code,
+                    implements=src_implements,
+                )
+                current.src_blocks_list.append(block)
                 if src_name is not None:
-                    current.src_blocks[src_name] = "\n".join(src_lines)
+                    current.src_blocks[src_name] = code
                 in_src_block = False
                 src_lang = None
                 src_name = None
+                src_implements = None
                 src_lines = []
             else:
                 src_lines.append(line)
@@ -157,6 +182,8 @@ def parse_org(text: str) -> OrgDocument:
             rest = m.group(2) or ""
             name_match = _SRC_NAME_RE.search(rest)
             src_name = name_match.group(1) if name_match else None
+            impl_match = _SRC_IMPLEMENTS_RE.search(rest)
+            src_implements = impl_match.group(1) if impl_match else None
             src_lines = []
             continue
 
@@ -385,6 +412,22 @@ def _custom_methods(node: OrgNode) -> list[dict[str, Any]]:
     return out
 
 
+def _collect_implementations(root: OrgNode) -> dict[str, list[str]]:
+    """Walk the tree and return ``{kind_uuid: [block_code, ...]}`` for every
+    babel block carrying an ``:implements <UUID>`` header argument."""
+    out: dict[str, list[str]] = {}
+
+    def walk(node: OrgNode) -> None:
+        for block in node.src_blocks_list:
+            if block.implements:
+                out.setdefault(block.implements, []).append(block.code)
+        for child in node.children:
+            walk(child)
+
+    walk(root)
+    return out
+
+
 def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     """Convert a parsed OrgDocument into the canonical model dict.
 
@@ -519,6 +562,12 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         cm = _section(cpp_section, "Custom repository methods")
         if cm:
             de["custom_repository_methods"] = _custom_methods(cm)
+
+    # Implementations by kind UUID — consumed by the post-render
+    # ``<<paste:UUID>>`` substitution pass in the codegen driver.
+    impls = _collect_implementations(doc.root)
+    if impls:
+        de["implementations"] = impls
 
     return {"domain_entity": de}
 

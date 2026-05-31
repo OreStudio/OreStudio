@@ -2,6 +2,7 @@
 Simple code generator that loads data and applies templates.
 """
 import json
+import re
 import os
 import random
 from pathlib import Path
@@ -790,6 +791,33 @@ def get_non_iso_currency_template_mappings():
         ("sql_non_iso_currency_populate.mustache", "fpml_", "_artefact_populate.sql"),
         ("sql_dataset_refdata.mustache", "fpml_", "_dataset_populate.sql"),
     ]
+
+
+_PASTE_MARKER_RE = re.compile(r"<<paste:([0-9A-Fa-f-]+)>>")
+
+
+def _substitute_paste_markers(text, data):
+    """Replace ``<<paste:KIND_UUID>>`` markers with concatenated bodies of
+    every block in the current entity that ``:implements`` that kind UUID.
+
+    Org-mode entity models carry an ``implementations`` dict keyed by kind
+    UUID under ``domain_entity``. For each marker, look up the matching
+    list of code bodies, join them with a blank line, and substitute.
+
+    Missing kinds produce an empty substitution (with the marker line
+    collapsed). This makes templates safe to include markers that no
+    current entity implements."""
+    de = data.get("domain_entity") or {}
+    impls = de.get("implementations") or {}
+
+    def replace(match):
+        kind = match.group(1)
+        blocks = impls.get(kind)
+        if not blocks:
+            return ""
+        return "\n\n".join(b.rstrip() for b in blocks)
+
+    return _PASTE_MARKER_RE.sub(replace, text)
 
 
 def load_model(model_path):
@@ -1913,6 +1941,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
 
         # Render the template with the combined data
         rendered_content = render_template(template_path, data)
+
+        # Post-render: substitute <<paste:UUID>> markers with implementations
+        # gathered from the entity model (org-mode literate fragment mechanism).
+        rendered_content = _substitute_paste_markers(rendered_content, data)
 
         # Determine output filename
         if target_output:

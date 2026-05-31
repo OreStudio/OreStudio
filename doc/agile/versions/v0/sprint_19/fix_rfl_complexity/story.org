@@ -33,7 +33,7 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 |---------------+-----------------------------------------------------------------------------------------------|
 | State         | DONE                                                                                          |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                       |
-| Now           | PR for Task 4 open; awaiting CI and review.                                                   |
+| Now           | Nothing.                                                                                      |
 | Waiting on    | —                                                                                             |
 | Next          | Merge Task 4 PR; story complete.                                                              |
 | Last touched  | 2026-05-31                                                                                    |

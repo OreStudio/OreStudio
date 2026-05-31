@@ -125,6 +125,14 @@ by reading the sole socket file from =/home/marco/.ssh/agent/=. It
 takes no arguments; the exact string is granted rather than a wildcard
 to prevent sourcing other scripts via this entry.
 
+=Bash(sccache *)= covers direct invocations of the sccache compiler
+cache: starting or stopping the daemon (=sccache --start-server=,
+=sccache --stop-server=), querying statistics (=sccache --show-stats=),
+and manual cache management (=sccache --zero-stats=). CMake invokes
+sccache transparently as a compiler wrapper (=CMAKE_CXX_COMPILER_LAUNCHER=);
+those subprocess invocations do not require a separate entry, but
+direct calls from Claude do.
+
 Common invocations:
 - =make -C build/output/linux-clang-debug-make -j2 ores.utility=
 - =cmake --build --preset linux-clang-debug-ninja --target deploy_skills=
@@ -133,13 +141,16 @@ Common invocations:
 - =emacs -Q --script .build-settings.el=
 - =build/scripts/build.sh ores.utility.tests=
 - =source build/scripts/set_ssh_agent.sh=
+- =sccache --start-server=
+- =sccache --show-stats=
 
 #+begin_src json :tangle no :noweb-ref perm-build
       "Bash(make *)",
       "Bash(cmake *)",
       "Bash(emacs -Q --script *)",
       "Bash(build/scripts/build.sh *)",
-      "Bash(source build/scripts/set_ssh_agent.sh)"
+      "Bash(source build/scripts/set_ssh_agent.sh)",
+      "Bash(sccache *)"
 #+end_src
 
 ** SQL scripts
@@ -363,14 +374,20 @@ scripts must be run with =dangerouslyDisableSandbox: true=.
 Extends the write allowlist to include the =sccache= cache directory.
 The sandbox otherwise blocks writes to =~/.cache/sccache=, causing
 cache misses and forcing builds to recompile from scratch or requiring
-=dangerouslyDisableSandbox: true=. The path is expressed as an
-absolute pattern; adjust if the home directory differs from the
-default.
+=dangerouslyDisableSandbox: true=.
+
+Two entries are required: =~/.cache/sccache= authorises the directory
+itself, and =~/.cache/sccache/**= authorises all files and
+subdirectories within it (object cache shards, the stats file, the
+server log, etc.). Without the =/**= glob, sccache receives =EPERM=
+when writing any cache object because the allowlist matches only the
+directory path, not its contents.
 
 #+begin_src json :tangle no :noweb-ref sandbox-filesystem
     "filesystem": {
       "allowWrite": [
-        "~/.cache/sccache"
+        "~/.cache/sccache",
+        "~/.cache/sccache/**"
       ]
     }
 #+end_src

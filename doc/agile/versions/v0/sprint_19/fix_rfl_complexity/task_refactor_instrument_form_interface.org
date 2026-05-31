@@ -8,7 +8,7 @@
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
 #+branch: feature/refactor-instrument-form-interface
-#+pr:
+#+pr: 950
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29
@@ -131,9 +131,9 @@ the form at all — each leaf type is dispatched directly. Same for equity and r
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                                                                           |
+|-----+-----------------------------------------------------------------------------------------------------------------|
+| 950 | [ores.qt.trading] Refactor IInstrumentForm: replace variant setInstrument with typed populate overloads         |
 
 * Review
 

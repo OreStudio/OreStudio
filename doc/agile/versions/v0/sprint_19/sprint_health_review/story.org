@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 73D162FD-92D6-4567-8D94-4368C97F96E4
+:END:
+#+title: Story: Sprint health review — System 2 analysis
+#+description: Periodic System 2 health checks for sprint 19: goal alignment, load, PR velocity, story/task balance, focus signal, and overall verdict written into sprint.org.
+#+type: story
+#+level: s2
+#+filetags: :agile:review:sprint_19:v0:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Periodic System 2 health checks for sprint 19 using the
+=sprint-reviewer= skill. Each review produces a structured health
+report written into =sprint.org= under =* Health Review=, covering
+goal alignment, load, PR velocity, story/task balance, focus signal,
+and an overall red/amber/green verdict. Reviews are deliberately slow
+and critical — they question whether stories serve sprint goals and
+whether the team is focused — rather than merely summarising status.
+
+* Status
+
+| Field         | Value                                                                   |
+|---------------+-------------------------------------------------------------------------|
+| State         | STARTED                                                                 |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                               |
+| Now           | Health review 1 complete (AMBER, day 3); further reviews as sprint progresses. |
+| Waiting on    | Nothing.                                                                |
+| Next          | Run health review 2 mid-to-late sprint; close review at sprint end.     |
+| Last touched  | 2026-05-31                                                              |
+
+* Acceptance
+
+- Each invocation of =sprint-reviewer= produces a =* Health Review=
+  section written into =sprint.org= covering:
+  - *Goal alignment* — story coverage per sprint goal; uncovered goals
+    and stories with no clear goal flagged.
+  - *Sprint load* — commit count, elapsed days, commits/day, projected
+    total; verdict against ≤ 300 commit / ≤ 7 day targets.
+  - *PR velocity* — PRs merged per day, open PRs, WIP accumulation.
+  - *Story and task balance* — undecomposed stories, longest-open STARTED
+    stories, DONE/total ratio.
+  - *Focus signal* — simultaneously STARTED stories; cross-cutting themes.
+  - *Overall verdict* — red/amber/green per dimension, one-paragraph narrative.
+- The section is idempotent: re-running replaces the existing block.
+- Each review round is recorded in a dedicated task with the full findings
+  in =* Result=; only a short summary link remains in =sprint.org=.
+
+* Tasks
+
+| Task                                                                                                                                               | State   | Start      | End | Description                                                                                          |
+|----------------------------------------------------------------------------------------------------------------------------------------------------+---------+------------+-----+------------------------------------------------------------------------------------------------------|
+| [[id:362F5EFF-26BD-4F26-82EB-0B00FB272E3C][Health review 1 — sprint 19 mid-sprint analysis]]                                                  | DONE    | 2026-05-31 | 2026-05-31 | First System 2 health review: AMBER. Off-mission codegen/tooling crowding out the refdata commissioning goal. |
+
+* Decisions
+
+- Uses the existing [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]] pattern
+  established in sprint 18; no new tooling required.
+- Full review content lives in the task =* Result= section, not in
+  =sprint.org=, to keep the sprint doc concise.
+
+* Out of scope
+
+- Automated remediation of story or task state.
+- Historical comparison across sprints.
+- Blocking CI or PRs on health verdicts.

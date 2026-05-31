@@ -1,0 +1,222 @@
+:PROPERTIES:
+:ID: 362F5EFF-26BD-4F26-82EB-0B00FB272E3C
+:END:
+#+title: Task: Health review 1 — sprint 19 mid-sprint analysis
+#+description: First System 2 health review of sprint 19: goal alignment, load, PR velocity, story/task balance, focus signal, and overall verdict.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_19:v0:
+#+owner: marco
+#+branch: feature/health-review-1
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run the first System 2 health review of sprint 19 using the
+=sprint-reviewer= skill; write the findings into =sprint.org= under
+=* Health Review=; record the full review content in =* Result= below.
+
+* Status
+
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | DONE                                                         |
+| Parent story | [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]]                     |
+| Now          | Nothing.                                                     |
+| Waiting on   | —                                                            |
+| Next         | Open PR.                                                     |
+| Last touched | 2026-05-31                                                   |
+
+* Acceptance
+
+- =* Health Review= section written into sprint 19 =sprint.org=.
+- All six dimensions covered: goal alignment, sprint load, PR velocity,
+  story/task balance, focus signal, overall verdict.
+- Concrete recommendations included for each AMBER or RED dimension.
+- Full findings recorded in =* Result= below.
+
+* Plan
+
+Run =/sprint-reviewer= skill against sprint 19.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary                                      | File                     | Decision | Notes                          |
+|---+------------------------------------------------------+--------------------------+----------+--------------------------------|
+| 1 | DONE task should use "Now: Nothing." not "Complete." | task_health_review_1.org | Accept   | Fixed in 9f2f0be1b             |
+
+* Result
+
+** Review on 2026-05-31 (day 3 of 7)
+
+*** Goal alignment
+
+#+ATTR_HTML: :class hug-leading
+| Goal                                          | Coverage | Stories (DONE / STARTED / BACKLOG) | Verdict |
+|-----------------------------------------------+----------+------------------------------------+---------|
+| Verify entity functionality post-NATS         | WEAK     | 0 / 1 / 14                         | RED     |
+| Document entities in the manual               | NONE     | 0 / 0 / 1                          | RED     |
+| Create entity evaluation tooling              | WEAK     | 0 / 0 / 1                          | AMBER   |
+| Fix Windows / macOS CI builds                 | STRONG   | 0 / 1 / 0                          | GREEN   |
+
+Goal 1 (entity verification / refdata commissioning) is the bulk of the
+sprint by story count — 15 =commission_*= stories — but at day 3 only
+=commission_currency= is STARTED (4 of 7 tasks done). The other 14 are
+BACKLOG with zero tasks. =commission_country=, the natural next pickup, has
+not been decomposed.
+
+Goal 2 (manual entity docs) has a single BACKLOG story
+(=entity_manual_shell_docs=) with no tasks and no activity.
+
+Goal 3 (entity evaluation tooling) has =entity_evaluation_skill= (BACKLOG,
+no tasks). Partial credit: the first =commission_currency= task produced a
+reusable domain-entity evaluation checklist, which is the substance of this
+goal even though the dedicated skill/runbook story is untouched.
+
+Goal 4 (CI fix) is nearly complete: =fix_rfl_complexity= is STARTED with
+4 of 5 tasks DONE; PR #956 (the macOS/Windows root-cause fix) merged today.
+This is the one mission goal on track.
+
+*Scope-creep signal*: the sprint's actual energy has gone into work that
+is /not/ in the stated mission. Five =codegen unified model= stories, plus
+=refactor_codegen_cpp=, =refactor_codegen_sql= (DONE),
+=decommission_codegen_bash_scripts=, =compass_session_journal= (DONE),
+=knowledge_graph_improvements= (DONE), and two open PRs (#959 ores.shell
+fixes, #960 compass CLI UX) are all off-mission. This is the same pattern
+that turned Sprint 18 RED: enabler/tooling work crowding out the product
+goals.
+
+*Recommendation*: Decide explicitly now (day 3) whether Sprint 19 is a
+refdata-commissioning sprint or a codegen/tooling sprint, and align the
+mission to reality. If commissioning is the real goal, pause new codegen
+stories and pick up =commission_country= next, decomposing it first.
+
+*** Sprint load
+
+| Metric             | Value     | Target   | Status |
+|--------------------+-----------+----------+--------|
+| Commits so far     | 126       | —        | —      |
+| Elapsed days       | 3 of 7    | ≤ 7 days | GREEN  |
+| Commits/day (avg)  | 42        | —        | —      |
+| Daily trend        | 6 → 54 → 66 | —      | —      |
+| Projected at close | ~366      | ≤ 300    | AMBER  |
+
+The per-day count is accelerating (6, 54, 66). Projecting the recent
+~60/day rate across the four remaining days gives ~366 commits at close —
+over the 300 soft target. The day-1 figure (6) reflects sprint-18 closeout
+spilling into the window rather than a slow start.
+
+*Recommendation*: Watch days 4–5. If the 60+/day rate holds, question
+whether commits can be batched; a high commit count with low feature-goal
+progress is the warning sign, not the raw number.
+
+*** PR velocity
+
+| Metric            | Value | Notes                                       |
+|-------------------+-------+---------------------------------------------|
+| PRs merged        | 40    | Over 3 days (incl. sprint-18 closeout 29th) |
+| PRs/day           | 13.3  | Very high; small-PR discipline maintained   |
+| Open PRs          | 2     | #959 (ores.shell), #960 (compass UX)        |
+| Oldest open PR    | <1 day | Both raised 2026-05-31                      |
+| WIP accumulation  | None  | Clean                                       |
+
+PR throughput is excellent and WIP is clean — no branch has been open
+longer than a day. The small-PR cadence from Sprint 18 has carried over.
+
+*Recommendation*: None. Both open PRs are off-mission (shell, compass) —
+worth noting in the goal-alignment context, not a velocity problem.
+
+*** Story and task balance
+
+#+ATTR_HTML: :class hug-leading
+| Story                          | State   | Tasks | Notes                                        |
+|--------------------------------+---------+-------+----------------------------------------------|
+| commission_currency            | STARTED | 4/7   | Only active product story                    |
+| fix_rfl_complexity             | STARTED | 4/5   | CI goal; PR #956 merged today                |
+| refactor_codegen_cpp           | BACKLOG | 5/6   | *State inconsistency* — 5/6 tasks done but BACKLOG |
+| refactor_codegen_sql           | DONE    | 5/5   | Off-mission, complete                        |
+| compass_session_journal        | DONE    | 5/5   | Off-mission, complete                        |
+| knowledge_graph_improvements   | DONE    | 1/1   | Off-mission, complete                        |
+| 14 × commission_*              | BACKLOG | 0     | Undecomposed — expected while not picked up  |
+| 5 × codegen unified model      | BACKLOG | 0     | Off-mission; undecomposed                    |
+| entity_evaluation_skill        | BACKLOG | 0     | Goal 3; undecomposed                         |
+| entity_manual_shell_docs       | BACKLOG | 0     | Goal 2; undecomposed                         |
+
+DONE / total ratio: 4 of 30 stories = ~13%. This reads RED, but is softened
+by the fact that the large BACKLOG is dominated by not-yet-picked-up
+commission and codegen stories — normal for day 3.
+
+*Anomaly to fix*: =refactor_codegen_cpp= is marked BACKLOG yet has 5 of 6
+tasks DONE. A story with that much work done cannot be BACKLOG; it should be
+STARTED (or DONE if the sixth task is complete/abandoned). Correct its state.
+
+*Recommendation*: Fix the =refactor_codegen_cpp= state. Leave commission
+stories undecomposed until picked up, but decompose =commission_country=
+before starting it.
+
+*** Focus signal
+
+| Metric                  | Value | Verdict |
+|-------------------------+-------+---------|
+| Simultaneously STARTED  | 4     | AMBER   |
+| Themes in flight        | Mixed | AMBER   |
+
+Four STARTED stories: refdata commissioning, CI/build, and two agile
+(open-sprint, this health review). Add the two open PRs (shell mTLS fixes,
+compass CLI redesign) and the in-flight themes span refdata, build, agile,
+shell, and tooling — five distinct areas at day 3. Coherent enough that no
+single worktree is thrashing, but the spread is wide for a 7-day sprint and
+skews away from the stated mission.
+
+*Recommendation*: Resist opening further off-mission stories. The next
+pickup should be a Goal-1 commission story, not another codegen/tooling item.
+
+*** Velocity
+
+| Metric                        | Value    | Notes                                   |
+|-------------------------------+----------+-----------------------------------------|
+| Stories completed this sprint | 4        | codegen_sql, compass_journal, kg_improvements, sprint_planning |
+| Story throughput              | ~1.3/day | Modest; dominated by tooling stories    |
+| Feature-goal stories DONE     | 0        | No commission/manual/eval story closed  |
+
+Aggregate throughput looks acceptable, but every completed story is
+off-mission tooling or agile scaffolding. Zero mission-goal stories have
+closed. This is the headline risk: motion without progress toward the
+sprint's stated purpose.
+
+*** Overall verdict
+
+| Dimension          | Verdict |
+|--------------------+---------|
+| Goal alignment     | RED     |
+| Sprint load        | AMBER   |
+| PR velocity        | GREEN   |
+| Story/task balance | AMBER   |
+| Focus signal       | AMBER   |
+| *Overall*          | *AMBER* |
+
+Sprint 19 is repeating the Sprint 18 failure mode: high PR/commit velocity
+and excellent execution, but on tooling and codegen work that is not in the
+sprint mission, while the three product-facing goals (entity verification,
+manual docs, evaluation tooling) show almost no movement at day 3 of 7. Only
+the CI-fix goal is on track. The single most valuable action is a deliberate
+day-3 decision: either re-scope the mission to match the codegen/tooling
+reality, or hard-stop new off-mission stories and funnel the remaining four
+days into =commission_country= and the rest of the refdata commissioning
+track. Secondary cleanup: fix the =refactor_codegen_cpp= state inconsistency
+(5/6 tasks done but marked BACKLOG).

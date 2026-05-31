@@ -871,6 +871,22 @@ def task_for_branch(worktree_path, branch):
         return task_title, story_title
     return None, None
 
+def _journal_last_entry(worktree_path):
+    """Return the last entry dict from a worktree's .journal.org, or None."""
+    jf = Path(worktree_path) / ".journal.org"
+    try:
+        if not jf.exists() or not jf.stat().st_size:
+            return None
+        entries = _journal_entries(jf.read_text(encoding="utf-8"))
+        return entries[-1] if entries else None
+    except (OSError, UnicodeDecodeError):
+        return None
+
+def _org_link_text(link_str):
+    """Extract plain title from an org-roam [[id:...][Title]] link, or return as-is."""
+    m = _ORG_LINK_RE.match(link_str or "")
+    return m.group(2) if m else link_str
+
 def cmd_fleet(args):
     worktrees = list_worktrees()
     if not worktrees:
@@ -881,9 +897,17 @@ def cmd_fleet(args):
 
     rows = []
     for path, branch in worktrees:
-        task_title = story_title = None
-        if branch:
-            task_title, story_title = task_for_branch(path, branch)
+        journal = _journal_last_entry(path)
+        if journal:
+            story_title = _org_link_text(journal.get("story_link"))
+            task_title  = _org_link_text(journal.get("task"))
+            task_state  = journal.get("state")
+            journal_branch = journal.get("branch")
+        else:
+            task_title = story_title = task_state = journal_branch = None
+            if branch:
+                task_title, story_title = task_for_branch(path, branch)
+
         pr = pr_map.get(branch) if branch else None
         rows.append({
             "worktree": Path(path).name,
@@ -892,6 +916,9 @@ def cmd_fleet(args):
             "branch": branch,
             "story": story_title,
             "task": task_title,
+            "task_state": task_state,
+            "journal_branch": journal_branch,
+            "journal": bool(journal),
             "pr": ({"number": pr["number"], "state": pr["state"], "url": pr["url"]}
                    if pr else None),
         })
@@ -906,10 +933,12 @@ def cmd_fleet(args):
         branch = r["branch"] or "(detached)"
         print(f"{mark} {r['worktree']}   {branch}")
         if r["task"] or r["story"]:
-            print(f"      story: {r['story'] or '—'}")
-            print(f"      task:  {r['task'] or '—'}")
+            state_suffix = f" [{r['task_state']}]" if r["task_state"] else ""
+            source = "" if r["journal"] else " (from branch)"
+            print(f"      story: {r['story'] or '—'}{source}")
+            print(f"      task:  {r['task'] or '—'}{state_suffix}")
         elif r["branch"] and r["branch"] != "main":
-            print("      (no task records this branch)")
+            print("      (no journal or task records this branch)")
         if r["pr"]:
             print(f"      PR:    #{r['pr']['number']} [{r['pr']['state']}]  {r['pr']['url']}")
 

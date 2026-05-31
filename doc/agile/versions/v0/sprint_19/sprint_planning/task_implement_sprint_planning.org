@@ -25,12 +25,12 @@ Sprint 19 stories selected from the product backlog, each broken into tasks, wir
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:2A6F5FE2-8C50-494F-948F-6BA519075FA9][Sprint planning]] |
-| Now          | Running planning session with user.    |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Commit stories and open PR.            |
-| Last touched | 2026-05-29                               |
+| Next         | N/A.                                   |
+| Last touched | 2026-05-31                             |
 
 * Acceptance
 

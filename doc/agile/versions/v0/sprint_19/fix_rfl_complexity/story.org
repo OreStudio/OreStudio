@@ -31,7 +31,7 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 
 | Field         | Value                                                                                         |
 |---------------+-----------------------------------------------------------------------------------------------|
-| State         | STARTED                                                                                       |
+| State         | DONE                                                                                          |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                       |
 | Now           | Task 9: fix swap_leg 19-field C1202 in ClientManagerExportPortfolio.cpp (DISCOVERED).        |
 | Waiting on    | Task 9 implementation + CI green.                                                             |

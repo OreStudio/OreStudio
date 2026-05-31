@@ -8,7 +8,7 @@
 #+filetags: :compass_session_journal:sprint_19:v0:
 #+owner: marco
 #+branch: feature/compass-session-journal
-#+pr:
+#+pr: 948
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-31
@@ -80,7 +80,7 @@ from each worktree's =.journal.org= using the same parser.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/948][#948]] | [agile] Scaffold compass_session_journal story in sprint 19 |
 
 * Review
 

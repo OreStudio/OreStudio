@@ -48,8 +48,6 @@ built until the format is specified and agreed.
 - A hand-crafted =.journal.org= that follows the spec is parseable by a
   simple Python =re= pattern (verified by a unit test stub or manual check).
 
-* Plan
-
 * Notes
 
 ** Proposed entry format
@@ -84,8 +82,9 @@ from each worktree's =.journal.org= using the same parser.
 
 * Review
 
+** Round 1 — 2026-05-31
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
-
-* Result
+| 1 | Empty =* Plan= section should be omitted | task file | Fixed: removed | Gemini review |
+| 2 | Empty =* Result= section should be omitted | task file | Fixed: removed | Gemini review |

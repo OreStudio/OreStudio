@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: A8FCCECE-9B64-49A9-8C24-2AE3A1EC7E08
+:END:
+#+title: Task: Implement compass journal subcommand
+#+description: Add compass journal update, where, and log subcommands to compass.py; wire journal into main() and argparse help.
+#+type: task
+#+level: s1
+#+filetags: :compass_session_journal:sprint_19:v0:
+#+owner: marco
+#+branch: feature/implement-compass-journal
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =compass journal= as a new compass subcommand with three sub-subcommands:
+=update= (append entry), =where= (last entry), =log= (full history). This
+makes the =.journal.org= format spec from Task 1 machine-readable and
+queryable from the CLI.
+
+* Status
+
+| Field        | Value                                       |
+|--------------+---------------------------------------------|
+| State        | DONE                                        |
+| Parent story | [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]]                    |
+| Now          | Nothing.                                    |
+| Waiting on   | Nothing.                                    |
+| Next         | Done. Task 3: wire compass goto auto-update. |
+| Last touched | 2026-05-31                                  |
+
+* Acceptance
+
+- =compass journal --help= shows =update=, =where=, =log= subcommands.
+- =compass journal update --story <UUID> --task <UUID> --branch <name> [--state STARTED] [--pr none]=
+  appends a timestamped entry with org-roam links to =.journal.org=.
+  Titles are resolved from the compass index; UUIDs are used as fallback.
+- =compass journal where= prints the last entry (timestamp, story, task,
+  state, branch, PR) in the standard fleet-style format.
+- =compass journal log= prints all entries newest-last with a count header.
+- =compass journal= is registered in =--help= output of the top-level parser.
+
+* Notes
+
+** Implementation location
+
+All code added to =projects/ores.compass/src/compass.py=:
+
+- =JOURNAL_FILE= constant (=PROJECT_ROOT / ".journal.org"=)
+- =_ORG_LINK_RE= — parses org-roam =[[id:UUID][Title]]= links
+- =_lookup_title(uuid)= — resolves UUID → title via =doc_index.load_all()=
+- =_journal_entries(text)= — splits =.journal.org= text into entry dicts
+- =_print_entry(entry)= — formats one entry in fleet-style output
+- =_journal_update(args)= / =_journal_where()= / =_journal_log()= — handlers
+- =cmd_journal(argv)= — top-level dispatcher with argparse sub-subcommands
+- Wired into =main()= short-circuit (line ~1270) and argparse registry
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- =compass journal update=, =where=, =log= implemented and tested.
+- Title resolution via =doc_index.load_all()= (dict keyed by lowercase UUID).
+- =compass journal where= output verified against live =.journal.org=.
+- =compass journal log= shows multi-entry history with count header.

@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID:       7EF13B9E-F3D5-4ED7-875E-1EA3369EB2F8
+:END:
+#+title: SSH variable needs to be in .env
+#+description: SSH variable permissions are still an issue due to source command
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :inbox:capture:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+We need to move the SSH script so it is called within .env
+
+* Why
+
+At present we are asked for permissions for every command with source. We will
+move the gh and git commands into compass soon. We will need SSH variable to be
+in .env then.
+
+* References
+
+-
+
+* See also
+
+-

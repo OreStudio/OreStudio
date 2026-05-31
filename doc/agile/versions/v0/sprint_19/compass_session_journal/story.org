@@ -104,11 +104,11 @@ worktrees.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                                |
+| State         | STARTED                                |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                              |
-| Now           | Not yet started.                       |
+| Now           | Task 1 in progress: design journal format. |
 | Waiting on    | Nothing.                               |
-| Next          | Start Task 1: design journal format.   |
+| Next          | Complete Task 1; open PR.              |
 | Last touched  | 2026-05-31                             |
 
 * Acceptance
@@ -132,8 +132,8 @@ worktrees.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:07F68E53-A2A6-4F1F-B699-44B9896EA7DD][Design journal format and gitignore setup]] | BACKLOG | | | Specify .journal.org entry schema; add to .gitignore; write format as a recipe. |
-| Task: Implement compass journal subcommand | BACKLOG | | | Add compass journal update, where, and log subcommands to compass.py. |
+| [[id:07F68E53-A2A6-4F1F-B699-44B9896EA7DD][Design journal format and gitignore setup]] | DONE | 2026-05-31 | 2026-05-31 | Specify .journal.org entry schema; add to .gitignore; write format as a recipe. |
+| [[id:A8FCCECE-9B64-49A9-8C24-2AE3A1EC7E08][Implement compass journal subcommand]] | DONE | 2026-05-31 | 2026-05-31 | Add compass journal update, where, and log subcommands to compass.py. |
 | Task: Wire compass goto to auto-update the journal | BACKLOG | | | Call compass journal update at the end of compass goto (new-story and existing-story modes). |
 | Task: Refactor compass fleet to use journal | BACKLOG | | | Read .journal.org from each worktree in compass fleet; show story+task+state; graceful fallback. |
 | Task: Write recipe and update semi-autonomous developer skill | BACKLOG | | | Document journal use in a recipe; update the semi-autonomous developer skill to check/update the journal at task pickup. |

@@ -19,6 +19,10 @@ sprint /is/ — lives in [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile proces
 - [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]]
 - [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]]
 
+* Claude session coordination
+
+- [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]] — record task pickup in =.journal.org=; check fleet before starting a new story.
+
 * See also
 
 - [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — the four phases (planning, execution,

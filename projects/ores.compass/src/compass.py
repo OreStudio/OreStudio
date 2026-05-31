@@ -59,7 +59,8 @@ ORG_ROAM_DB = str(PROJECT_ROOT / "org-roam.db")
 if not os.path.exists(ORG_ROAM_DB):
     ORG_ROAM_DB = str(PROJECT_ROOT / ".org-roam.db")
 
-COMPASS_DB = str(PROJECT_ROOT / ".compass.db")
+COMPASS_DB   = str(PROJECT_ROOT / ".compass.db")
+JOURNAL_FILE = PROJECT_ROOT / ".journal.org"
 
 def strip_quotes(path):
     """Remove surrounding quotes from a path string."""
@@ -686,6 +687,126 @@ def cmd_where(args):
 _BRANCH_FIELD_RE = re.compile(r"^#\+branch:\s*(\S+)\s*$", re.MULTILINE)
 _TITLE_FIELD_RE  = re.compile(r"^#\+title:\s*(.+?)\s*$",   re.MULTILINE)
 
+# --- Journal pillar: per-worktree .journal.org ---
+
+_ORG_LINK_RE = re.compile(r"\[\[id:([A-F0-9-]+)\]\[([^\]]+)\]\]", re.IGNORECASE)
+
+def _lookup_title(uuid):
+    """Return the title for a UUID from the doc index, or the UUID itself if not found."""
+    try:
+        docs = doc_index.load_all()
+        doc = docs.get(uuid.lower()) or docs.get(uuid.upper())
+        if doc:
+            return _strip_type_prefix(doc.title)
+    except Exception:
+        pass
+    return uuid
+
+def _journal_entries(text):
+    """Parse .journal.org text into a list of entry dicts."""
+    entries = []
+    blocks = re.split(r"\n(?=\* \d{4}-)", "\n" + text)
+    for block in blocks:
+        block = block.strip()
+        if not block:
+            continue
+        m = re.match(r"^\* (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) — (.+)$", block, re.MULTILINE)
+        if not m:
+            continue
+        entry = {"timestamp": m.group(1), "story_link": m.group(2).strip()}
+        for field in ("Task", "State", "Branch", "PR"):
+            fm = re.search(rf"^\s+- {field} ::\s+(.+)$", block, re.MULTILINE)
+            entry[field.lower()] = fm.group(1).strip() if fm else None
+        entries.append(entry)
+    return entries
+
+def _print_entry(entry):
+    """Print one journal entry in the standard fleet-style format."""
+    sl = entry["story_link"]
+    sm = _ORG_LINK_RE.match(sl)
+    story_display = f"{sm.group(2)} ({sm.group(1)[:8]})" if sm else sl
+
+    tl = entry.get("task") or ""
+    tm = _ORG_LINK_RE.match(tl)
+    task_display = f"{tm.group(2)} ({tm.group(1)[:8]})" if tm else (tl or "—")
+
+    print(f"  ● {entry['timestamp']} — {story_display}")
+    print(f"    Task:   {task_display} — {entry.get('state') or '?'}")
+    print(f"    Branch: {entry.get('branch') or '—'}")
+    print(f"    PR:     {entry.get('pr') or 'none'}")
+
+def _journal_update(args):
+    from datetime import datetime
+    story_title = _lookup_title(args.story)
+    task_title  = _lookup_title(args.task)
+    clean_pr = args.pr.lstrip("#") if args.pr else ""
+    pr_val = f"#{clean_pr}" if clean_pr.isdigit() else (args.pr or "none")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+    entry = (
+        f"* {timestamp} — [[id:{args.story.upper()}][{story_title}]]\n"
+        f"  - Task :: [[id:{args.task.upper()}][{task_title}]]\n"
+        f"  - State :: {args.state}\n"
+        f"  - Branch :: {args.branch}\n"
+        f"  - PR :: {pr_val}\n"
+    )
+    existing = JOURNAL_FILE.read_text(encoding="utf-8") if JOURNAL_FILE.exists() else ""
+    new_content = (existing.rstrip("\n") + "\n\n" + entry) if existing.strip() else entry
+    tmp = JOURNAL_FILE.with_suffix(".tmp")
+    tmp.write_text(new_content, encoding="utf-8")
+    tmp.replace(JOURNAL_FILE)
+    print(f"📓 journal updated: {timestamp} — {story_title} / {task_title}")
+    return 0
+
+def _journal_where():
+    if not JOURNAL_FILE.exists() or not JOURNAL_FILE.stat().st_size:
+        print("No .journal.org found. Run 'compass journal update' when you pick up a task.")
+        return 0
+    entries = _journal_entries(JOURNAL_FILE.read_text(encoding="utf-8"))
+    if not entries:
+        print("No entries in .journal.org.")
+        return 0
+    _print_entry(entries[-1])
+    return 0
+
+def _journal_log():
+    if not JOURNAL_FILE.exists() or not JOURNAL_FILE.stat().st_size:
+        print("No .journal.org found.")
+        return 0
+    entries = _journal_entries(JOURNAL_FILE.read_text(encoding="utf-8"))
+    if not entries:
+        print("No entries in .journal.org.")
+        return 0
+    print(f"📓 ores.compass — session journal ({len(entries)} {'entry' if len(entries) == 1 else 'entries'})\n")
+    for entry in entries:
+        _print_entry(entry)
+        print()
+    return 0
+
+def cmd_journal(argv):
+    """compass journal — read and write the per-worktree session journal (.journal.org)."""
+    ap = argparse.ArgumentParser(
+        prog="compass journal",
+        description="Read and write .journal.org — the per-worktree Claude session journal.")
+    sub = ap.add_subparsers(dest="subcmd", required=True)
+
+    up = sub.add_parser("update", help="Append a new entry to .journal.org")
+    up.add_argument("--story",  required=True, help="Story UUID")
+    up.add_argument("--task",   required=True, help="Task UUID")
+    up.add_argument("--branch", required=True, help="Current git branch name")
+    up.add_argument("--state",  default="STARTED", help="Task state (default: STARTED)")
+    up.add_argument("--pr",     default="none",    help="PR number or 'none' (default: none)")
+
+    sub.add_parser("where", help="Show the last journal entry (where was I?)")
+    sub.add_parser("log",   help="Show all journal entries in chronological order")
+
+    args = ap.parse_args(argv)
+    if args.subcmd == "update":
+        return _journal_update(args)
+    if args.subcmd == "where":
+        return _journal_where()
+    if args.subcmd == "log":
+        return _journal_log()
+
 def list_worktrees():
     """Return [(path, branch_or_None)] from `git worktree list --porcelain`."""
     try:
@@ -1266,6 +1387,8 @@ def main():
         sys.exit(cmd_goto(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "capture":
         sys.exit(cmd_capture(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "journal":
+        sys.exit(cmd_journal(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
         sys.exit(cmd_backlog(sys.argv[1], sys.argv[2:]))
 
@@ -1306,6 +1429,8 @@ def main():
                           help="Create a v2 doc via ores.codegen (story/task/sprint/...); 'add --help' for usage")
     subparsers.add_parser("goto",
                           help="Start work: fetch main, branch, scaffold story+task, print next steps ('goto --help')")
+    subparsers.add_parser("journal",
+                          help="Read/write the per-worktree session journal; 'journal --help' for subcommands")
     subparsers.add_parser("inbox",     help="List captures in the product backlog inbox/")
     subparsers.add_parser("next",      help="List captures in the product backlog next/")
     subparsers.add_parser("deferred",  help="List captures in the product backlog deferred/")

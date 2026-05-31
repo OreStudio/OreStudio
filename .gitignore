@@ -29,6 +29,9 @@ compile_commands.json
 # org-roam
 .org-roam.db
 
+# per-worktree Claude session journal (machine-local, not shared)
+.journal.org
+
 .cache
 
 # vcpkg

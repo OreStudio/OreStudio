@@ -28,12 +28,12 @@ mutations trigger NATS events. Fix any regressions found.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Start service; run shell commands.     |
-| Last touched | 2026-05-29                               |
+| Now          | PR #959 open; awaiting CI and review.  |
+| Waiting on   | CI green + review.                     |
+| Next         | Merge PR; mark DONE.                   |
+| Last touched | 2026-05-31                             |
 
 * Acceptance
 
@@ -50,12 +50,14 @@ mutations trigger NATS events. Fix any regressions found.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/959][#959]] | [ores.shell] Fix mTLS, stale NATS subjects, and currencies bugs |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                    | File                    | Decision | Notes          |
+|---+--------------------------------------------------------------------+-------------------------+----------+----------------|
+| 1 | Unnecessary =std::string()= wrap on =bootstrap_status= subject     | application.cpp         | Accept   | Fixed 29ab304f |
+| 2 | Unnecessary =std::string()= wrap on =create_initial_admin= subject | accounts_commands.cpp   | Accept   | Fixed 29ab304f |
+| 3 | Unnecessary =std::string()= wrap on =bootstrap_status= subject     | connection_commands.cpp | Accept   | Fixed 29ab304f |
 
 * Result

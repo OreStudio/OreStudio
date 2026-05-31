@@ -77,7 +77,7 @@ std::string format_duration(std::chrono::seconds dur) {
 
 template<typename Response>
 std::optional<Response> do_request(std::ostream& out, nats_client& session,
-    const std::string& subject, const std::string& body) {
+    std::string_view subject, const std::string& body) {
     try {
         auto reply = session.request(subject, body);
         auto data_str = std::string(
@@ -96,7 +96,7 @@ std::optional<Response> do_request(std::ostream& out, nats_client& session,
 
 template<typename Response>
 std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
-    const std::string& subject, const std::string& body) {
+    std::string_view subject, const std::string& body) {
     try {
         auto reply = session.authenticated_request(subject, body);
         auto data_str = std::string(
@@ -467,7 +467,7 @@ process_bootstrap(std::ostream& out, nats_client& session,
     req.email = std::move(email);
 
     auto result = do_request<iam::messaging::create_initial_admin_response>(
-        out, session, "iam.v1.auth.bootstrap", rfl::json::write(req));
+        out, session, iam::messaging::create_initial_admin_request::nats_subject, rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {

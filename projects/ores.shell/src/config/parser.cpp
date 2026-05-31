@@ -23,6 +23,7 @@
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include "ores.shell/config/parser_exception.hpp"
+#include "ores.nats/config/nats_configuration.hpp"
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.logging/logging_configuration.hpp"
@@ -38,9 +39,6 @@ const std::string usage_error_msg("Usage error: ");
 
 const std::string help_arg("help");
 const std::string version_arg("version");
-
-const std::string nats_url_arg("nats-url");
-const std::string nats_subject_prefix_arg("nats-subject-prefix");
 const std::string login_username_arg("login-username");
 const std::string login_password_arg("login-password");
 
@@ -48,6 +46,7 @@ using boost::program_options::value;
 using boost::program_options::variables_map;
 using boost::program_options::options_description;
 
+using ores::nats::config::nats_configuration;
 using ores::nats::config::nats_options;
 using ores::shell::config::options;
 using ores::shell::config::login_options;
@@ -71,13 +70,7 @@ options_description make_options_description() {
     const auto tod(telemetry_configuration::make_options_description(
             "ores-shell", ORES_VERSION));
 
-    options_description cod("Connection");
-    cod.add_options()
-        (nats_url_arg.c_str(), value<std::string>(),
-            "NATS server URL (e.g., nats://localhost:4222)")
-        (nats_subject_prefix_arg.c_str(), value<std::string>(),
-            "Subject prefix prepended to every NATS subject "
-            "(format: ores.{tier}.{instance}, e.g. ores.dev.local1)");
+    const auto cod(nats_configuration::make_options_description());
 
     options_description lod2("Login");
     lod2.add_options()
@@ -125,18 +118,16 @@ void version(std::ostream& info) {
 
 /**
  * @brief Reads the connection configuration from the variables map.
+ *
+ * Returns empty if subject_prefix is not set — the shell should not
+ * auto-connect unless a complete configuration is provided.
  */
 std::optional<nats_options>
 read_connection_configuration(const variables_map& vm) {
-    if (vm.count(nats_url_arg) == 0 && vm.count(nats_subject_prefix_arg) == 0)
+    auto opts = nats_configuration::read_options(vm);
+    if (opts.subject_prefix.empty())
         return {};
-
-    nats_options r;
-    if (vm.count(nats_url_arg) != 0)
-        r.url = vm[nats_url_arg].as<std::string>();
-    if (vm.count(nats_subject_prefix_arg) != 0)
-        r.subject_prefix = vm[nats_subject_prefix_arg].as<std::string>();
-    return r;
+    return opts;
 }
 
 /**

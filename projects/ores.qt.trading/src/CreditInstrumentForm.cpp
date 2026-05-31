@@ -241,20 +241,9 @@ void CreditInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void CreditInstrumentForm::setInstrument(
-    const trading::domain::trade_instrument& instrument) {
-
-    const auto* ex =
-        std::get_if<trading::domain::credit_instrument>(&instrument);
-    if (!ex) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-credit instrument pushed to CreditInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected instrument type for credit form"));
-        return;
-    }
-
-    instrument_ = *ex;
+void CreditInstrumentForm::populate(
+    const trading::domain::credit_instrument& instr) {
+    instrument_ = instr;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

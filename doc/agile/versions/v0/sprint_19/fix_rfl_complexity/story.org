@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :ci:windows:macos:rfl:ores_qt_api:infrastructure:sprint_19:v0:
 #+created: 2026-05-29
-#+updated: 2026-05-29
+#+updated: 2026-05-31
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -31,11 +31,11 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 
 | Field         | Value                                                                                         |
 |---------------+-----------------------------------------------------------------------------------------------|
-| State         | STARTED                                                                                       |
+| State         | DONE                                                                                          |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                       |
-| Now           | Task 3 merged (PR #941); Task 4 IInstrumentForm refactor is next.                            |
+| Now           | Nothing.                                                                                      |
 | Waiting on    | —                                                                                             |
-| Next          | Start Task 4: refactor IInstrumentForm to type-specific populate methods.                     |
+| Next          | Merge Task 4 PR; story complete.                                                              |
 | Last touched  | 2026-05-31                                                                                    |
 
 * Acceptance
@@ -58,7 +58,7 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 | [[id:9212966F-87AC-4B72-B708-8ED5BA253431][Scaffold: document architecture and create task stubs]]                     | DONE    | 2026-05-29 | 2026-05-29 | Update story decisions, create task stubs; PR for Gemini architecture review.   |
 | [[id:06C98C06-F950-483A-997B-89AED70D1238][Rename get_trade_detail → get_trade_instrument and rewrite parse path]]    | DONE    | 2026-05-29 | 2026-05-30 | Rename protocol types, delete workarounds, rewrite client TU with dispatch.     |
 | [[id:F9E5967D-77E7-49E3-9806-74AF22D26191][Write round-trip tests for instrument parse dispatch]]                      | DONE    | 2026-05-30 | 2026-05-31 | One test per instrument family; serialize server-side, verify client dispatch.  |
-| [[id:5C955A5E-0130-40D7-B77F-B41F4F526B79][Refactor IInstrumentForm to type-specific populate methods]]                | BACKLOG |            |     | Remove trade_instrument variant from the Qt UI boundary; typed populate per form.|
+| [[id:5C955A5E-0130-40D7-B77F-B41F4F526B79][Refactor IInstrumentForm to type-specific populate methods]]                | DONE    | 2026-05-30 | 2026-05-31 | Remove trade_instrument variant from the Qt UI boundary; typed populate per form.|
 
 * Decisions
 

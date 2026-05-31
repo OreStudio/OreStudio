@@ -18,7 +18,6 @@
  *
  */
 #include "ores.qt/TradeController.hpp"
-#include "ores.qt/IInstrumentFormPopulator.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ImageCache.hpp"
 
@@ -158,22 +157,7 @@ void TradeController::openEdit(const trading::domain::trade& trade) {
 
 void TradeController::onShowDetails(const trading::domain::trade& trade) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << trade.identity.external_id;
-    const auto id = boost::uuids::to_string(trade.identity.id);
-    // Interim populator: form wiring is completed in Task 4 (IInstrumentForm refactor).
-    // Until then the populator is a no-op and the detail window shows no instrument fields.
-    ores::qt::IInstrumentFormPopulator populator;
-    auto trade_opt = clientManager_->getTradeInstrument(id, populator);
-    if (!trade_opt) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Failed to fetch instrument for trade: " << trade.identity.external_id;
-        emit errorMessage(tr("Could not load instrument data for trade '%1'.")
-            .arg(QString::fromStdString(trade.identity.external_id)));
-        return;
-    }
-    trading::messaging::trade_export_item bundle{
-        .trade = std::move(*trade_opt),
-        .instrument = {}
-    };
+    trading::messaging::trade_export_item bundle{.trade = trade, .instrument = {}};
     showDetailWindow(bundle);
 }
 

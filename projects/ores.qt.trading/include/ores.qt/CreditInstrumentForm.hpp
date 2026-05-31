@@ -58,8 +58,7 @@ public:
     void setUsername(const std::string& username) override;
     void setImageCache(ImageCache* cache) override;
 
-    void setInstrument(
-        const trading::domain::trade_instrument& instrument) override;
+    void populate(const trading::domain::credit_instrument& instr) override;
     void clear() override;
 
     void setTradeType(const QString& code,

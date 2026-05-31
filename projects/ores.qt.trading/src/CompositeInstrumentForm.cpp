@@ -100,21 +100,11 @@ void CompositeInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void CompositeInstrumentForm::setInstrument(
-    const trading::domain::trade_instrument& instrument) {
-
-    const auto* comp =
-        std::get_if<trading::domain::composite_instrument_data>(&instrument);
-    if (!comp) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-composite instrument pushed to CompositeInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected instrument type for composite form"));
-        return;
-    }
-
-    instrument_ = comp->instrument;
-    legs_ = comp->legs;
+void CompositeInstrumentForm::populate(
+    const trading::domain::composite_instrument& instr,
+    std::vector<trading::domain::composite_leg> legs) {
+    instrument_ = instr;
+    legs_ = std::move(legs);
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

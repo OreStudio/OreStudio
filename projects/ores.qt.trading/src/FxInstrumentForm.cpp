@@ -184,34 +184,9 @@ void FxInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void FxInstrumentForm::setInstrument(
-    const trading::domain::trade_instrument& instrument) {
-
-    const auto* ex =
-        std::get_if<trading::domain::fx_instrument_variant>(&instrument);
-    if (!ex) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-FX instrument pushed to FxInstrumentForm"
-            << " (variant index=" << instrument.index() << ")";
-        emit loadFailed(QStringLiteral(
-            "Unexpected instrument type for FX form"));
-        return;
-    }
-    const auto* fwd =
-        std::get_if<trading::domain::fx_forward_instrument>(ex);
-    if (!fwd) {
-        const auto ttc = ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-forward FX instrument in FxInstrumentForm"
-            << " trade_type_code=" << ttc
-            << " fx variant index=" << ex->index();
-        emit loadFailed(QString::fromStdString(
-            "Non-forward FX type not yet supported in this "
-            "dialog (trade_type_code=" + ttc + ")"));
-        return;
-    }
-
-    instrument_ = *fwd;
+void FxInstrumentForm::populate(
+    const trading::domain::fx_forward_instrument& instr) {
+    instrument_ = instr;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

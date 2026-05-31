@@ -8,11 +8,11 @@
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
 #+branch: feature/refactor-instrument-form-interface
-#+pr:
+#+pr: 950
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29
-#+updated: 2026-05-29
+#+updated: 2026-05-31
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -47,11 +47,11 @@ import/export paths where the type is genuinely unknown at the processing site.
 
 | Field        | Value                                                                               |
 |--------------+-------------------------------------------------------------------------------------|
-| State        | STARTED                                                                             |
+| State        | DONE                                                                                |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | Starting implementation.                                                            |
+| Now          | Nothing.                                                                            |
 | Waiting on   | Nothing.                                                                            |
-| Next         | Implement; open PR.                                                                 |
+| Next         | N/A.                                                                                |
 | Last touched | 2026-05-31                                                                          |
 
 * Acceptance
@@ -131,14 +131,17 @@ the form at all — each leaf type is dispatched directly. Same for equity and r
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR  | Title                                                                                                           |
+|-----+-----------------------------------------------------------------------------------------------------------------|
+| 950 | [ores.qt.trading] Refactor IInstrumentForm: replace variant setInstrument with typed populate overloads         |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                       | File                                          | Decision    | Notes                                          |
+|---+-----------------------------------------------------------------------+-----------------------------------------------+-------------+------------------------------------------------|
+| 1 | =rpa_instrument= populate missing =emitProvenance= + =instrumentLoaded= | SwapInstrumentForm.cpp                        | Not changed | Already present in submitted code (lines 569–570) |
+| 2 | =Now= must be =Nothing.= when state is DONE (story)                   | story.org                                     | Accept      | Fixed in 934773e25                             |
+| 3 | =Now= must be =Nothing.= when state is DONE (task 3)                  | task_instrument_parse_tests.org               | Accept      | Fixed in 934773e25                             |
+| 4 | =Now= must be =Nothing.= when state is DONE (task 4)                  | task_refactor_instrument_form_interface.org   | Accept      | Fixed in 934773e25                             |
 
 * Result

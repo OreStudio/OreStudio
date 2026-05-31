@@ -222,20 +222,9 @@ void BondInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void BondInstrumentForm::setInstrument(
-    const trading::domain::trade_instrument& instrument) {
-
-    const auto* ex =
-        std::get_if<trading::domain::bond_instrument>(&instrument);
-    if (!ex) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-bond instrument pushed to BondInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected instrument type for bond form"));
-        return;
-    }
-
-    instrument_ = *ex;
+void BondInstrumentForm::populate(
+    const trading::domain::bond_instrument& instr) {
+    instrument_ = instr;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

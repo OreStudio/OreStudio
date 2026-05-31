@@ -200,29 +200,9 @@ void FxBarrierOptionInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void FxBarrierOptionInstrumentForm::setInstrument(
-    const trading::domain::trade_instrument& instrument) {
-
-    const auto* ex =
-        std::get_if<trading::domain::fx_instrument_variant>(&instrument);
-    if (!ex) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-FX instrument pushed to FxBarrierOptionInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected instrument type for FX barrier option form"));
-        return;
-    }
-    const auto* bi =
-        std::get_if<trading::domain::fx_barrier_option_instrument>(ex);
-    if (!bi) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Non-barrier-option FX type pushed to FxBarrierOptionInstrumentForm";
-        emit loadFailed(QStringLiteral(
-            "Unexpected FX sub-type for barrier option form"));
-        return;
-    }
-
-    instrument_ = *bi;
+void FxBarrierOptionInstrumentForm::populate(
+    const trading::domain::fx_barrier_option_instrument& instr) {
+    instrument_ = instr;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

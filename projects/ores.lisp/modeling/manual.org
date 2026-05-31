@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: E71704D9-60D4-4898-AF25-B6B07101DB90
+:END:
+#+title: ORE Studio Manual
+#+description: How the ORE Studio user manual is built — org-latex export, Tufte layout, margin figures, version stamping, and the deploy_manual CMake target.
+#+type: knowledge
+#+level: cross
+#+filetags: :manual:lisp:emacs:latex:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+
+* Summary
+
+The ORE Studio user manual is a PDF produced by Emacs =ox-latex=
+(=org-latex-export-to-pdf=), driven by =ores-build-manual.el= in
+[[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]]. The source is
+=doc/manual/user_guide/user_manual.org=; output lands alongside it as
+=user_manual.pdf=. The layout uses the =tufte-book= LaTeX class for
+wide-margin typography. The =deploy_manual= CMake target runs the
+full pipeline in one step via =emacs -Q --script .build-manual.el=.
+
+* Detail
+
+** Build pipeline
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug-ninja --target deploy_manual
+#+end_src
+
+This invokes =emacs -Q --script .build-manual.el=, which loads
+=ores-build-manual.el= and calls =org-latex-export-to-pdf= on
+=doc/manual/user_guide/user_manual.org=. LaTeX is run twice
+(=pdflatex= × 2) so that cross-references and the table of contents
+are fully resolved.
+
+** LaTeX classes
+
+Two custom classes are registered in =ores-build-manual.el=:
+
+- =ores-manual= — a plain =book= class (=a4paper, 11pt=). Heading
+  hierarchy: =*= → =\chapter=, =**= → =\section=, etc. Used as a
+  fallback.
+- =ores-tufte= — the primary class, based on =tufte-book=
+  (=a4paper, justified=). Provides the wide-margin aesthetic:
+  sidenotes, margin figures, and full-bleed headings. =tufte-book=
+  manages its own geometry, fonts, and hyperref; =user_manual.org=
+  keeps only a minimal preamble.
+
+** Margin figures
+
+Small figures (width ≤ 510 px AND height ≤ 320 px) are automatically
+promoted to LaTeX =marginfigure= environments by the
+=ores/figures-to-margin= filter, registered via
+=org-export-filter-final-output-functions=. Larger screenshots stay
+in the text column. This transform is LaTeX-only; the HTML site is
+unaffected.
+
+The filter inspects each =\begin{figure}…\end{figure}= block,
+reads the PNG header of the referenced image to get pixel dimensions,
+and rewrites the block to =\begin{marginfigure}= when both thresholds
+are met.
+
+** Image width
+
+=org-latex-image-default-width= is set to =\\maxwidth=, a custom
+LaTeX macro defined in =user_manual.org= that yields the image's
+natural pixel width when it is smaller than =0.6\linewidth=, and
+=0.6\linewidth= otherwise. This prevents large dialog screenshots
+from overflowing the text column while letting small crops render at
+their natural size.
+
+** Version stamping
+
+The cover page version number is read at export time from
+=CMakeLists.txt= by =ores/cmake-version=, which greps for the
+=project(OreStudio VERSION …)= line. This keeps the PDF cover in
+sync with the single source of truth without any manual update step.
+
+** Title page
+
+A custom =org-latex-title-command= generates the cover page:
+centred title, author, version, and the login-screen screenshot
+(=assets/images/login_screen.png=) scaled to 60% of the text width.
+
+* See also
+
+- [[id:914738C6-7C77-41CD-A949-55DBBE0B6908][ORE Studio Manuals]] — the user-facing manuals index; for the available manuals and their PDF downloads, start here.
+- [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] — component overview; lists =ores-build-manual.el= under Source files.
+- [[id:E19E9FDE-4743-4B2E-8724-6369B3E43131][ORE Studio Site]] — the companion page covering HTML site build and menu bar.

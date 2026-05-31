@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: E19E9FDE-4743-4B2E-8724-6369B3E43131
+:END:
+#+title: ORE Studio Site
+#+description: How the ORE Studio documentation site is built, published, and structured — org-publish pipeline, menu bar, 404 page, and graph export.
+#+type: knowledge
+#+level: cross
+#+filetags: :site:lisp:emacs:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+
+* Summary
+
+The ORE Studio documentation site is generated from the repository's
+=.org= files via Emacs =org-publish=, driven by =ores-build-site.el=
+in [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]]. Every =.org= file (excluding =vcpkg/=, =build/=, and
+=.packages/=) is exported to HTML and published to
+=build/output/site/OreStudio/=, which maps to
+=https://orestudio.github.io/OreStudio/=. The knowledge graph
+(=org-roam-ui=) is exported separately and injected at =/graph/=. The
+=deploy_site= CMake target runs the full pipeline in one step.
+
+* Detail
+
+** Build pipeline
+
+The site is built by invoking Emacs in batch mode:
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug-ninja --target deploy_site
+#+end_src
+
+This calls =emacs -Q --script .build-site.el=, which loads
+=ores-build-site.el= and runs =org-publish-all=. The publishing
+project is defined in =org-publish-project-alist= inside that file
+and has two components:
+
+- =site:pages= — exports all =.org= files to HTML recursively from
+  the repo root, skipping =vcpkg/=, =build/=, =tmp/=, and
+  =external/org-roam-ui=.
+- The =org-roam-ui= graph — built separately and injected at =/graph/=
+  by =ores-inject-site-nav=.
+
+** Menu bar
+
+The navigation bar is defined as a Lisp string variable
+=site-html-preamble= in =ores-build-site.el= and injected into every
+page via the =:html-preamble= key of the =site:pages= project:
+
+#+begin_src elisp
+(defvar site-html-preamble "<header id='site-header'>
+  <nav id='site-nav'>
+    <a href='/OreStudio/readme.html'>Home</a>
+    <a href='/OreStudio/doc/orientation.html'>Orientation</a>
+    <a href='/OreStudio/doc/identity/product_identity.html'>Product</a>
+    <a href='/OreStudio/projects/modeling/system_model.html'>Architecture</a>
+    <a href='/OreStudio/doc/llm/llm.html'>LLMs</a>
+    <a href='/OreStudio/doc/manual/manuals.html'>Manuals</a>
+    <a href='/OreStudio/doc/downloads.html'>Downloads</a>
+    <a href='/OreStudio/doc/agile/agile.html'>Agile</a>
+    <a href='/OreStudio/doc/developer.html'>Developer</a>
+    <a href='/OreStudio/doc/agile/versions/versions.html'>Roadmap</a>
+    <a href='/OreStudio/graph/index.html'>Knowledge Graph</a>
+    <a href='https://github.com/OreStudio/OreStudio' ...><i class='fab fa-github'></i></a>
+  </nav>
+</header>")
+#+end_src
+
+All href values use the absolute =/OreStudio/= prefix to match the
+GitHub Pages base URL. To add or rename a menu item, edit
+=site-html-preamble= in =ores-build-site.el= and redeploy.
+
+The same preamble is injected into the graph page (=graph/index.html=)
+by =ores-inject-site-nav=, with a small CSS override to fix the
+floating header over the graph canvas.
+
+** Styling and assets
+
+- =assets/style.css= — main stylesheet, referenced via =html-header=.
+- =assets/images/modern-icon.png= — favicon.
+- =highlight.js= (CDN) — source-block syntax highlighting.
+- =font-awesome= (CDN) — icon glyphs (GitHub logo in the nav bar).
+
+** 404 page
+
+The [[id:4D3C2B1A-9E8F-4A7B-6C5D-3E2F1A0B9C8D][Page Not Found]] page is at =404.org= in the repo root. GitHub
+Pages serves it automatically for any URL that does not resolve to a
+published file.
+
+** Headline ID anchors
+
+=org-publish= does not stamp an =id= attribute matching =[[id:UUID]]=
+links onto headings. =ores-build-site.el= works around this by
+advising =org-html-headline= to prepend an empty =<a id="ID-UUID"/>=
+anchor before every heading that carries an =:ID:= property. This
+makes in-page id-link navigation work correctly in the browser.
+
+* See also
+
+- [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] — component overview; lists all source files including =ores-build-site.el=.
+- [[id:4D3C2B1A-9E8F-4A7B-6C5D-3E2F1A0B9C8D][Page Not Found]] — the 404 page served by GitHub Pages.
+- [[id:E71704D9-60D4-4898-AF25-B6B07101DB90][ORE Studio Manual]] — the companion page covering the PDF manual build via ox-latex.
+- [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] — editor overview covering the =deploy_site= build target.

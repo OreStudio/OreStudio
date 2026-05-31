@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :downloads:
 #+created: 2026-05-25
-#+updated: 2026-05-25
+#+updated: 2026-05-31
 
 ORE Studio is in early active development (version 0.x). Releases are published
 on [[https://github.com/OreStudio/OreStudio/releases][GitHub]] and are provided for evaluation and learning purposes only. Many
@@ -26,6 +26,7 @@ next sprint.
 #+ATTR_HTML: :class hug-leading
 | Version | Code Name             | Source   | Linux | macOS | Windows | Comments                          |
 |---------+-----------------------+----------+-------+-------+---------+-----------------------------------|
+| [[https://github.com/OreStudio/OreStudio/releases/tag/v0.0.18][v0.0.18]] | Jose Sobral           | [[https://github.com/OreStudio/OreStudio/archive/refs/tags/v0.0.18.zip][ZIP]], [[https://github.com/OreStudio/OreStudio/archive/refs/tags/v0.0.18.tar.gz][TGZ]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.18/linux-gcc-release-ninja-v0.0.18.zip][DEB]]   | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.18/macos-clang-release-ninja-v0.0.18.zip][DMG]]   | —       | No Windows build in this release. |
 | [[https://github.com/OreStudio/OreStudio/releases/tag/v0.0.17][v0.0.17]] | Mutumieque            | [[https://github.com/OreStudio/OreStudio/archive/refs/tags/v0.0.17.zip][ZIP]], [[https://github.com/OreStudio/OreStudio/archive/refs/tags/v0.0.17.tar.gz][TGZ]] | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.17/linux-gcc-release-ninja-v0.0.17.zip][DEB]]   | [[https://github.com/OreStudio/OreStudio/releases/download/v0.0.17/macos-clang-release-ninja-v0.0.17.zip][DMG]]   | —       | No Windows build in this release. |
 | [[https://github.com/OreStudio/OreStudio/releases/tag/v0.0.16][v0.0.16]] | Oncocua               | [[https://github.com/OreStudio/OreStudio/archive/refs/tags/v0.0.16.zip][ZIP]], [[https://github.com/OreStudio/OreStudio/archive/refs/tags/v0.0.16.tar.gz][TGZ]] | —     | —     | —       | No builds available.              |
 | [[https://github.com/OreStudio/OreStudio/releases/tag/v0.0.15][v0.0.15]] | Isaias                | [[https://github.com/OreStudio/OreStudio/archive/refs/tags/v0.0.15.zip][ZIP]], [[https://github.com/OreStudio/OreStudio/archive/refs/tags/v0.0.15.tar.gz][TGZ]] | —     | —     | —       | No builds available.              |

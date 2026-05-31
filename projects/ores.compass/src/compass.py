@@ -1233,6 +1233,17 @@ def _set_frontmatter_branch(path, branch):
     if new != text:                      # avoid a redundant write
         Path(path).write_text(new, encoding="utf-8")
 
+_ORG_ID_RE = re.compile(r"^:ID:\s+(\S+)\s*$", re.MULTILINE)
+
+def _read_org_id(path):
+    """Return the :ID: value from an org file, or None if absent/unreadable."""
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+        m = _ORG_ID_RE.search(text)
+        return m.group(1) if m else None
+    except (OSError, UnicodeDecodeError):
+        return None
+
 def resolve_story(ident):
     """Resolve a story identifier to (story_dir, title), or (None, None).
 
@@ -1364,7 +1375,23 @@ def cmd_goto(argv):
     # 3. record the branch on the task so fleet/where can map this worktree
     _set_frontmatter_branch(task_path, branch)
 
-    # 4. next steps (deliberately manual — needs judgement)
+    # 4. update the session journal — best-effort, never fails the goto
+    try:
+        story_file = Path(PROJECT_ROOT) / story_dir / "story.org"
+        story_uuid = _read_org_id(story_file)
+        task_uuid  = _read_org_id(task_path)
+        if story_uuid and task_uuid:
+            class _JournalArgs:
+                story  = story_uuid
+                task   = task_uuid
+                branch = branch
+                state  = "STARTED"
+                pr     = "none"
+            _journal_update(_JournalArgs())
+    except Exception:
+        pass  # journal update is informational; never block goto on failure
+
+    # 5. next steps (deliberately manual — needs judgement)
     print("\nNext steps:")
     if new_story:
         print(f"  - wire the story into {sprint_dir}/sprint.org (* Stories table)")

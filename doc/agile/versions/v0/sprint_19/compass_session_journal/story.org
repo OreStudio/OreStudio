@@ -1,0 +1,162 @@
+:PROPERTIES:
+:ID: 20AC8397-1ACD-4B1A-B0FE-6FAB74477592
+:END:
+#+title: Story: Compass session journal
+#+description: Add a per-machine .journal.org (gitignored) that records each Claude environment's story/task journey; add compass journal commands (where, log); refactor compass fleet to read the journal.
+#+type: story
+#+level: s2
+#+filetags: :tooling:compass:llm:agile:sprint_19:v0:
+#+created: 2026-05-31
+#+updated: 2026-05-31
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Up to four Claude instances run in parallel, each in its own git worktree,
+each working on a different story. Two recurring problems:
+
+1. *Overlap risk.* Before picking up a new story, a Claude needs to know
+   whether another Claude is already touching the same area of the codebase.
+   There is currently no lightweight way to check this without reading all
+   worktree branches and inferring intent from them.
+
+2. *Restart recovery.* Restarting a Claude (to pick up settings changes,
+   new skills, hook updates) loses conversational context. There is no
+   persistent record of what the environment was doing so the user or Claude
+   can resume quickly.
+
+The solution is a =.journal.org= file per worktree — machine-local,
+gitignored, cumulative — that records the story/task journey of that
+environment as Claude picks up and completes work. Each entry is an org
+heading with timestamp and org-roam links:
+
+#+begin_example
+* 2026-05-31 09:15 — [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]]
+  - Task: [[id:D4469217-12E2-41AC-AB35-AC70E849D88C][Codegen architecture analysis and unified model roadmap]] — DONE
+  - Branch: feature/codegen-architecture-analysis
+  - PR: #945
+#+end_example
+
+New =compass journal= subcommands query the file: =compass journal where=
+answers "where was I?"; =compass journal log= shows the full journey.
+
+=compass fleet= is refactored to read =.journal.org= from each worktree
+so it can show what each Claude is actively working on, not just which
+branch is checked out.
+
+** What we want
+
+1. *A =.journal.org= format spec* — org-mode headings with timestamp,
+   org-roam story/task links, branch, PR, and state. Gitignored. One file
+   per worktree directory.
+
+2. *=compass journal update=* — appends a new entry to =.journal.org=
+   when Claude picks up a task. Called automatically by =compass goto= and
+   by the semi-autonomous developer skill when starting work.
+
+3. *=compass journal where=* — prints the most recent entry (last story +
+   task + branch + PR + state). Answers "where was I?" after a restart.
+
+4. *=compass journal log=* — prints all entries in chronological order.
+   Answers "what has been my journey in this environment?"
+
+5. *=compass fleet= refactored* — reads =.journal.org= from each worktree
+   (via the existing worktree-path enumeration) so the fleet view shows
+   story/task context rather than just branch names. Graceful fallback when
+   no journal exists (new worktree).
+
+6. *Overlap detection* — =compass journal where --all= (or =compass fleet=)
+   shows the current story/task for every worktree. Claude checks this
+   before picking up a new story to detect overlap.
+
+7. *Story-side lookup* — =compass fleet --story <UUID>= (or =compass journal
+   find <UUID>=) scans all worktree journals and reports which environment
+   last worked on a given story or task. Answers "which checkout was working
+   on story X?"
+
+** Design options considered
+
+The capture [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Track which checkout last worked on a story or task]] identified four options:
+
+| Option | Pros | Cons |
+|--------+------+------|
+| =#+checkout:= field in task org file | Tracked in git; visible in Emacs | Pollutes every PR with machine-local info; merge conflicts across worktrees |
+| Git commit trailer (=Checkout: local2=) | Permanent history | Requires hook; trailer added per commit not per task-pickup; not queryable |
+| Compass stamp on status change | Integrated into existing flow | Still needs a backing store; same question of where |
+| Worktree-local gitignored file (chosen) | Machine-local; no git noise; cumulative; queryable | Not shared; only visible locally or via fleet read |
+
+The worktree-local gitignored file wins because it keeps machine state off the
+shared branch while remaining readable by =compass fleet= across all local
+worktrees.
+
+** What is NOT in scope
+
+- Syncing =.journal.org= across machines or worktrees — it is intentionally
+  local and private.
+- Replacing the org-roam knowledge graph or any git-tracked agile artefacts.
+- Automatic conflict resolution when two Claudes work in similar areas —
+  the journal surfaces the overlap; the decision is human or Claude judgement.
+- Reading =.journal.org= entries from the remote (it is gitignored).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                                |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                              |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start Task 1: design journal format.   |
+| Last touched  | 2026-05-31                             |
+
+* Acceptance
+
+- =.journal.org= is listed in =.gitignore= (project root).
+- =compass journal update --story <UUID> --task <UUID> --branch <name> [--pr <N>] [--state <state>]=
+  appends a timestamped entry with org-roam links to =.journal.org=.
+- =compass goto= automatically calls =compass journal update= after
+  branching, so the journal is updated without manual intervention.
+- =compass journal where= prints the last entry in the same concise format
+  shown in the Goal section.
+- =compass journal log= prints all entries, newest last.
+- =compass fleet= reads =.journal.org= from every worktree and shows
+  story + task + state per worktree; falls back to branch-name display if
+  no journal exists.
+- A recipe documents how Claude should use the journal: update on task
+  pickup, check before picking up a new story.
+- CI passes. No production files changed by this story.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:07F68E53-A2A6-4F1F-B699-44B9896EA7DD][Design journal format and gitignore setup]] | BACKLOG | | | Specify .journal.org entry schema; add to .gitignore; write format as a recipe. |
+| Task: Implement compass journal subcommand | BACKLOG | | | Add compass journal update, where, and log subcommands to compass.py. |
+| Task: Wire compass goto to auto-update the journal | BACKLOG | | | Call compass journal update at the end of compass goto (new-story and existing-story modes). |
+| Task: Refactor compass fleet to use journal | BACKLOG | | | Read .journal.org from each worktree in compass fleet; show story+task+state; graceful fallback. |
+| Task: Write recipe and update semi-autonomous developer skill | BACKLOG | | | Document journal use in a recipe; update the semi-autonomous developer skill to check/update the journal at task pickup. |
+
+* Decisions
+
+- /=.journal.org= not =.where_am_i.org= or =.journey.org=./ "Journal" is
+  the most natural term and is immediately understood. The file is per-worktree
+  to match the per-environment isolation model.
+- /Gitignored, not tracked./ The journal is machine-local state. Checking it
+  in would pollute every PR with irrelevant environment bookkeeping and create
+  merge conflicts across worktrees.
+- /Org-roam links in entries./ Story and task titles are likely to change;
+  the UUID-based org-roam link is stable and navigable from Emacs.
+- /=compass goto= auto-updates./ Requiring Claude to explicitly call
+  =compass journal update= after =compass goto= is error-prone. Hooking into
+  =goto= makes the journal update automatic and invisible.
+- /=compass fleet= reads journal, not only branches./ Branch names encode
+  the story slug but not the task or state. The journal provides richer
+  context for overlap detection and fleet visibility.
+
+* Out of scope
+
+- GUI or web view of the journal.
+- Journal entries for non-Claude users (human developers on the same worktree).
+- Retention policy or pruning of old journal entries.

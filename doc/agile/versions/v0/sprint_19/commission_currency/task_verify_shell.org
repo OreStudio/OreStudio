@@ -54,8 +54,10 @@ mutations trigger NATS events. Fix any regressions found.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                    | File                    | Decision | Notes          |
+|---+--------------------------------------------------------------------+-------------------------+----------+----------------|
+| 1 | Unnecessary =std::string()= wrap on =bootstrap_status= subject     | application.cpp         | Accept   | Fixed 29ab304f |
+| 2 | Unnecessary =std::string()= wrap on =create_initial_admin= subject | accounts_commands.cpp   | Accept   | Fixed 29ab304f |
+| 3 | Unnecessary =std::string()= wrap on =bootstrap_status= subject     | connection_commands.cpp | Accept   | Fixed 29ab304f |
 
 * Result

@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 1048B3EE-34B8-42DD-9CF0-7A61CCB147F7
+:END:
+#+title: Task: Implement compass story status
+#+description: Add compass story status subcommand: all tasks in a story grouped by state with branch and PR per task.
+#+type: task
+#+level: s1
+#+filetags: :compass_cli_ux_redesign:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =compass story status <id>= — prints all tasks in a given story grouped
+by state (DONE / STARTED / BACKLOG) with branch and PR per task. Answers
+"what has been done, what is under way, what is not yet started?" for any
+story without opening files manually.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                     |
+| Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]                    |
+| Now          | Not yet started.                            |
+| Waiting on   | [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][Task 1: UX analysis]] (DONE — unblocked).   |
+| Next         | Implement =cmd_story()= in =compass.py=.    |
+| Last touched | 2026-06-01                                  |
+
+* Acceptance
+
+- =compass story status <UUID-or-slug>= prints all tasks in the story
+  grouped by state: DONE first, then STARTED, then BACKLOG.
+- Each task row shows: title, state, branch (=#+branch:=), PR (=#+pr:=).
+- =compass story status --format json= emits machine-readable output.
+- =compass story= is registered in =--help= under the Orient pillar.
+- Story is resolved by UUID prefix or folder slug (same logic as
+  =resolve_story()= already in compass).
+- CI passes.
+
+* Plan
+
+From [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][UX analysis]]:
+
+- =compass story= is a sub-subcommand group mirroring =compass sprint=.
+- Add =cmd_story(argv)= with sub-subcommand =status=.
+- =status <id>= resolves the story via existing =resolve_story()= → finds
+  story dir → globs =task_*.org= → reads =#+title:=, =| State |=,
+  =#+branch:=, =#+pr:= from each → groups by state → prints.
+- Can run in parallel with Task 3 (=compass sprint status=) — both touch
+  =compass.py= but in separate functions with no conflict.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |

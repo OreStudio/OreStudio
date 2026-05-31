@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: C3114FD0-A03B-4BD9-AB8C-6BF73D1265C3
+:END:
+#+title: Task: Audit and update compass recipes skills and runbooks
+#+description: Review all 34 compass references in doc/recipes doc/llm/skills doc/llm/runbooks; update for new taxonomy and description.
+#+type: task
+#+level: s1
+#+filetags: :compass_cli_ux_redesign:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Audit all 34 compass references in recipes, skills, and runbooks; update
+any that refer to the old description or that are inconsistent with the
+new taxonomy. Ensure every document accurately reflects compass as a
+developer toolkit.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | BACKLOG                                                            |
+| Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]                                           |
+| Now          | Not yet started.                                                   |
+| Waiting on   | Tasks 2–5 complete (description fix + new commands + recipe first). |
+| Next         | Run audit after T2–T5 are merged.                                  |
+| Last touched | 2026-06-01                                                         |
+
+* Acceptance
+
+- All 34 files that reference compass commands are reviewed.
+- No file refers to compass as an "orientation tool".
+- Any file that mentions a command renamed or deprecated in this story
+  is updated to use the new form.
+- New commands (=compass sprint status=, =compass story status=) are
+  referenced where appropriate (e.g. sprint health review runbook,
+  agile-product-owner skill).
+- CI passes. Site builds cleanly.
+
+* Plan
+
+From [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][UX analysis]]:
+
+Files to audit (34 total):
+
+- =doc/recipes/compass/= — 6 files: all compass-specific recipes
+- =doc/recipes/agile/= — 4 files referencing compass
+- =doc/recipes/documentation/= — 4 files referencing compass
+- =doc/recipes/codegen/= — 2 files referencing compass
+- =doc/recipes/plantuml/= — 1 file
+- =doc/llm/skills/= — 14 skills referencing compass
+- =doc/llm/runbooks/= — 5 runbooks referencing compass
+
+Key checks per file:
+1. Does it call compass an "orientation tool"? → update to "developer toolkit"
+2. Does it reference only =compass where= for status? → add note about
+   =compass sprint status= / =compass story status= where relevant
+3. Does it reference any deprecated or renamed command? → update (none this sprint)
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |

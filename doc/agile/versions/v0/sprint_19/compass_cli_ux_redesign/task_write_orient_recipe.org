@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 5B8C56E9-A128-4EFE-913B-E2116788F7EF
+:END:
+#+title: Task: Write recipe for new orient commands
+#+description: Recipe documenting compass sprint status and compass story status; wire into agile recipe index.
+#+type: task
+#+level: s1
+#+filetags: :compass_cli_ux_redesign:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write a recipe documenting the two new orient commands (=compass sprint
+status= and =compass story status=) and wire it into the agile recipe index.
+
+* Status
+
+| Field        | Value                                                                 |
+|--------------+-----------------------------------------------------------------------|
+| State        | BACKLOG                                                               |
+| Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]                                              |
+| Now          | Not yet started.                                                      |
+| Waiting on   | Tasks 3 and 4 (sprint status + story status must be implemented first). |
+| Next         | Write recipe once T3 and T4 are merged.                               |
+| Last touched | 2026-06-01                                                            |
+
+* Acceptance
+
+- Recipe at =doc/recipes/agile/how_do_i_get_a_sprint_or_story_status.org=
+  documents =compass sprint status= and =compass story status= with
+  example output.
+- Recipe links to the session journal recipe for the complementary
+  =compass fleet= command.
+- Recipe is wired into =doc/recipes/agile/agile.org= index under a
+  new "Orient" section.
+- CI passes.
+
+* Plan
+
+From [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][UX analysis]]:
+
+- Scope: two commands only (=compass sprint status=, =compass story status=).
+- Recipe goes in =doc/recipes/agile/= alongside the session journal recipe.
+- Show real example output for each command.
+- Note that =compass sprint status= reads from =story.org= files directly
+  (not =sprint.org=) to avoid drift.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |

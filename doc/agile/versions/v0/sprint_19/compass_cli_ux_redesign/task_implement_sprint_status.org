@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_cli_ux_redesign:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-sprint-status
+#+pr: 970
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -28,11 +28,11 @@ STARTED items.
 
 | Field        | Value                                       |
 |--------------+---------------------------------------------|
-| State        | BACKLOG                                     |
+| State        | DONE                                        |
 | Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]                    |
-| Now          | Not yet started.                            |
-| Waiting on   | [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][Task 1: UX analysis]] (DONE — unblocked).   |
-| Next         | Implement =cmd_sprint()= in =compass.py=.   |
+| Now          | Nothing.                                    |
+| Waiting on   | Nothing.                                    |
+| Next         | Done. T4: implement compass story status.   |
 | Last touched | 2026-06-01                                  |
 
 * Acceptance
@@ -47,6 +47,16 @@ STARTED items.
   (not from =sprint.org=) to avoid the drift problem identified in the
   sprint status audit.
 - CI passes.
+
+* Result
+
+- =compass sprint status= implemented in =compass.py=.
+- Stories read from =story.org= files directly (not =sprint.org=) to avoid drift.
+- Grouped by state: DONE / STARTED / BLOCKED / BACKLOG; alphabetical within each group.
+- Task counts (done/total) shown per story from =task_*.org= glob.
+- =--format json= emits machine-readable output.
+- Wired into =main()= short-circuit and argparse registry.
+- =_STATE_RE= and =_TITLE_RE2= regexes shared with upcoming =compass story status=.
 
 * Plan
 
@@ -65,10 +75,15 @@ From [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][UX analysis]]:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/970][#970]] | [compass] Task 3: implement compass sprint status |
 
 * Review
 
+** Round 1 — 2026-06-01
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =_TITLE_RE2= needs =IGNORECASE=; =_STATE_RE= can match trailing =|= | compass.py | Fixed: added =IGNORECASE=; tightened state pattern to =[A-Z]+= | Gemini review |
+| 2 | Normalise story state to uppercase | compass.py | Fixed: =.upper()= on state | Gemini review |
+| 3 | Normalise task state to uppercase | compass.py | Fixed: =.upper()= on task state | Gemini review |
+| 4 | Guard against missing sprint directory | compass.py | Fixed: check exists, print error, return 1 | Gemini review |

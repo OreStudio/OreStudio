@@ -876,6 +876,87 @@ def _journal_last_entry(worktree_path):
     except (OSError, UnicodeDecodeError):
         return None
 
+_STATE_RE  = re.compile(r"^\| State[^|]*\|\s*([A-Z]+)", re.MULTILINE)
+_TITLE_RE2 = re.compile(r"^#\+title:\s*(?:Story:\s*)?(.+?)\s*$", re.MULTILINE | re.IGNORECASE)
+
+def _read_story_state(story_file):
+    """Return (title, state, uuid) from a story.org file, or (stem, 'UNKNOWN', None)."""
+    try:
+        text = story_file.read_text(encoding="utf-8")
+        tm = _TITLE_RE2.search(text)
+        sm = _STATE_RE.search(text)
+        im = _ORG_ID_RE.search(text)
+        title = tm.group(1) if tm else story_file.parent.name
+        state = sm.group(1).upper() if sm else "UNKNOWN"
+        uuid  = im.group(1) if im else None
+        return title, state, uuid
+    except (OSError, UnicodeDecodeError):
+        return story_file.parent.name, "UNKNOWN", None
+
+def _task_counts(story_dir):
+    """Return (done, total) task count for a story directory."""
+    done = total = 0
+    for tf in sorted(story_dir.glob("task_*.org")):
+        try:
+            text = tf.read_text(encoding="utf-8")
+            m = _STATE_RE.search(text)
+            state = m.group(1).upper() if m else "UNKNOWN"
+            total += 1
+            if state == "DONE":
+                done += 1
+        except (OSError, UnicodeDecodeError):
+            pass
+    return done, total
+
+def cmd_sprint(argv):
+    """compass sprint — sprint-level operations."""
+    ap = argparse.ArgumentParser(prog="compass sprint",
+                                 description="Sprint-level operations.")
+    sub = ap.add_subparsers(dest="subcmd", required=True)
+
+    st = sub.add_parser("status", help="All stories in the current sprint grouped by state")
+    st.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty")
+    st.add_argument("--uuids", action="store_true",
+                    help="Show story UUIDs alongside titles for use with other commands")
+
+    args = ap.parse_args(argv)
+
+    if args.subcmd == "status":
+        _, current_sprint = current_version_sprint(doc_index.load_all())
+        if current_sprint is None:
+            print("❌ No current sprint found.", file=sys.stderr)
+            return 1
+        sprint_dir = Path(PROJECT_ROOT) / _parent_dir(current_sprint.rel_path)
+        if not sprint_dir.exists():
+            print(f"❌ Sprint directory not found: {sprint_dir}", file=sys.stderr)
+            return 1
+
+        stories = []
+        for sf in sorted(sprint_dir.glob("*/story.org")):
+            title, state, uuid = _read_story_state(sf)
+            done, total = _task_counts(sf.parent)
+            stories.append({"title": title, "state": state, "uuid": uuid,
+                            "tasks_done": done, "tasks_total": total,
+                            "path": str(sf.relative_to(PROJECT_ROOT))})
+
+        if args.format == "json":
+            print(json.dumps({"sprint": current_sprint.title, "stories": stories}, indent=2))
+            return 0
+
+        order = {"DONE": 0, "STARTED": 1, "BLOCKED": 2, "BACKLOG": 3}
+        stories.sort(key=lambda s: (order.get(s["state"], 9), s["title"]))
+
+        print(f"🧭 ores.compass — sprint status: {current_sprint.title}\n")
+        current_state = None
+        for s in stories:
+            if s["state"] != current_state:
+                current_state = s["state"]
+                print(f"  {current_state}")
+            tasks = f"{s['tasks_done']}/{s['tasks_total']}" if s["tasks_total"] else "—"
+            uuid_suffix = f"  [{s['uuid']}]" if args.uuids and s["uuid"] else ""
+            print(f"    [{tasks}] {s['title']}{uuid_suffix}")
+        return 0
+
 def _org_link_text(link_str):
     """Extract plain title from an org-roam [[id:...][Title]] link, or return as-is."""
     m = _ORG_LINK_RE.match(link_str or "")
@@ -1442,6 +1523,8 @@ def main():
         sys.exit(doc_show.main(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "add":
         sys.exit(cmd_add(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "sprint":
+        sys.exit(cmd_sprint(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "story":
         sys.exit(cmd_story(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "task":
@@ -1462,9 +1545,9 @@ def main():
         "  Journal:  journal\n"
         "\n"
         "Entity commands (sub-subcommands span pillars):\n"
+        "  sprint:   status (orient)\n"
         "  story:    new (scaffold) | status (orient — coming soon)\n"
         "  task:     new (scaffold)\n"
-        "  sprint:   status (orient — coming soon)\n"
     )
     parser = argparse.ArgumentParser(
         description="Compass: developer toolkit for ORE Studio — orient, scaffold, capture, and search.",
@@ -1505,6 +1588,8 @@ def main():
                           help="Show one doc by UUID/prefix: metadata, blurb, in/out links")
     subparsers.add_parser("add",
                           help="Create a v2 doc via ores.codegen (low-level scaffold); 'add --help' for usage")
+    subparsers.add_parser("sprint",
+                          help="Sprint-level operations: 'sprint status' for all stories by state; 'sprint --help'")
     subparsers.add_parser("story",
                           help="Story-level operations: 'story new' to create story+branch+task; 'story --help'")
     subparsers.add_parser("task",

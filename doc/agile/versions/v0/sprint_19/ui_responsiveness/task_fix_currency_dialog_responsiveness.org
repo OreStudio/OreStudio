@@ -27,10 +27,10 @@ other entities in subsequent tasks.
 - *Issue 1* — Remove =waitForFinished()= from both dialog destructors.
   Replace with =cancel()= + disconnect only, so closing a dialog with
   in-flight NATS requests never blocks the UI thread.
-- *Issue 2* — Add a "Loading…" placeholder entry to each combo box
-  (=roundingTypeCombo=, =monetaryNatureCombo=, =marketTierCombo=) before
-  the async fetch starts. Remove it and replace with real data when the
-  future completes, eliminating the blank pop-in.
+- *Issue 2* — Add a localized =tr("Loading…")= placeholder entry to each
+  combo box (=roundingTypeCombo=, =monetaryNatureCombo=, =marketTierCombo=)
+  before the async fetch starts. Remove it and replace with real data when
+  the future completes, eliminating the blank pop-in.
 - *Issue 3* (partial) — =CurrencyHistoryDialog= destructor: apply the
   same =waitForFinished()= fix.
 
@@ -55,9 +55,9 @@ requires a cross-cutting =ClientManager= change.
 - =CurrencyHistoryDialog::~CurrencyHistoryDialog()= (if it has watchers)
   applies the same fix.
 - =roundingTypeCombo=, =monetaryNatureCombo=, and =marketTierCombo= each
-  show a "Loading…" item immediately when =setClientManager()= is called
-  and the combo is in the fetching state; the item is removed and replaced
-  with real data when the future finishes.
+  show a localized =tr("Loading…")= item immediately when
+  =setClientManager()= is called and the combo is in the fetching state;
+  the item is removed and replaced with real data when the future finishes.
 - Opening and immediately closing a Currency dialog no longer freezes the
   UI (verified manually by timing or by inspection of the destructor code).
 - No regressions in the normal edit + save + delete flow.
@@ -80,6 +80,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Localize "Loading…" placeholder in Goal (i18n) | task_fix_currency_dialog_responsiveness.org | Fixed — use =tr("Loading…")= | Gemini round 1 |
+| 2 | Localize "Loading…" in Acceptance criteria (i18n) | task_fix_currency_dialog_responsiveness.org | Fixed — use =tr("Loading…")= | Gemini round 1 |
 
 * Result

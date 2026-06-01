@@ -33,7 +33,6 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <rfl/json.hpp>
-#include <rfl/AddTagsToVariants.hpp>
 #include <QObject>
 #include <QTimer>
 #include "ores.utility/rfl/reflectors.hpp"
@@ -353,7 +352,7 @@ public:
             const std::string_view data(
                 reinterpret_cast<const char*>(msg.data.data()),
                 msg.data.size());
-            auto result = rfl::json::read<ResponseType, rfl::AddTagsToVariants>(data);
+            auto result = rfl::json::read<ResponseType>(data);
             if (!result) {
                 return std::unexpected(
                     std::string("Failed to deserialize response: ") +
@@ -385,7 +384,7 @@ public:
         try {
             const auto raw = send_authenticated_request(
                 RequestType::nats_subject, rfl::json::write(request), timeout);
-            auto result = rfl::json::read<ResponseType, rfl::AddTagsToVariants>(raw);
+            auto result = rfl::json::read<ResponseType>(raw);
             if (!result) {
                 return std::unexpected(
                     std::string("Failed to deserialize response: ") +
@@ -515,7 +514,7 @@ public:
             const auto raw = send_authenticated_request_with_workspace(
                 RequestType::nats_subject, rfl::json::write(request),
                 workspace_id_override, timeout);
-            auto result = rfl::json::read<ResponseType, rfl::AddTagsToVariants>(raw);
+            auto result = rfl::json::read<ResponseType>(raw);
             if (!result) {
                 return std::unexpected(
                     std::string("Failed to deserialize response: ") +
@@ -554,7 +553,7 @@ public:
             const auto raw = send_authenticated_request_with_workspace_ctx(
                 RequestType::nats_subject, rfl::json::write(request),
                 workspace_ctx.id.toStdString(), std::move(chain), timeout);
-            auto result = rfl::json::read<ResponseType, rfl::AddTagsToVariants>(raw);
+            auto result = rfl::json::read<ResponseType>(raw);
             if (!result) {
                 return std::unexpected(
                     std::string("Failed to deserialize response: ") +

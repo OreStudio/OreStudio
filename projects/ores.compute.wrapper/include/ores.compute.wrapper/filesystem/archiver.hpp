@@ -21,6 +21,7 @@
 #define ORES_COMPUTE_WRAPPER_FILESYSTEM_ARCHIVER_HPP
 
 #include <filesystem>
+#include "ores.compute.wrapper/export.hpp"
 
 namespace ores::compute::wrapper::filesystem {
 
@@ -32,7 +33,7 @@ namespace ores::compute::wrapper::filesystem {
  * wchar_t*, so the wide-character libarchive variants must be used.
  * On POSIX, the standard char* variants are used.
  */
-class archiver final {
+class ORES_COMPUTE_WRAPPER_EXPORT archiver final {
 public:
     /**
      * @brief Pack a directory tree into a .tar.gz archive.

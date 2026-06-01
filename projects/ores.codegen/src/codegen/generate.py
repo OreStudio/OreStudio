@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -7,6 +8,22 @@ from typing import Any
 log = logging.getLogger(__name__)
 
 _SAFE_PROFILES_FOR_ENTITY = frozenset({"sql"})
+
+# Filter for org files in a component's modeling/ dir: only files whose
+# frontmatter declares `#+type: ores.codegen.entity` are entity models.
+# Other org files (overviews, knowledge docs, plantuml source) are skipped.
+_ORG_TYPE_RE = re.compile(r"^#\+type:\s*(\S+)\s*$", re.MULTILINE | re.IGNORECASE)
+_ENTITY_TYPE = "ores.codegen.entity"
+
+
+def _is_codegen_entity_org(path: Path) -> bool:
+    """True if the file's frontmatter declares it a codegen entity model."""
+    try:
+        head = path.read_text(encoding="utf-8", errors="replace")[:2048]
+    except OSError:
+        return False
+    match = _ORG_TYPE_RE.search(head)
+    return bool(match and match.group(1) == _ENTITY_TYPE)
 
 
 def _import_generator(base_dir: Path) -> Any:
@@ -134,7 +151,8 @@ def cmd_regenerate(args: Any, base_dir: Path) -> int:
             total_errors += 1
             continue
 
-        models_dir = base_dir.parent.parent / comp.models_dir
+        project_root = base_dir.parent.parent
+        models_dir = project_root / comp.models_dir
         if not models_dir.exists():
             log.warning(
                 "Models directory not found for component %r: %s", comp_name, models_dir
@@ -149,10 +167,21 @@ def cmd_regenerate(args: Any, base_dir: Path) -> int:
         matches = set()
         for pattern in globs:
             matches.update(models_dir.glob(pattern))
-        model_files = sorted(
+        matches = {
             f for f in matches
             if comp.exclude_suffix is None or not f.name.endswith(comp.exclude_suffix)
-        )
+        }
+
+        # Second discovery root: the component's own modeling/ dir, if any.
+        # Org files there are dispatched via #+type: rather than filename.
+        if comp.modeling_dir:
+            modeling_dir = project_root / comp.modeling_dir
+            if modeling_dir.exists():
+                for org_path in modeling_dir.glob("*.org"):
+                    if _is_codegen_entity_org(org_path):
+                        matches.add(org_path)
+
+        model_files = sorted(matches)
         if not model_files:
             log.warning(
                 "No %s files found in %s", comp.entity_glob, models_dir

@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: 579910D3-89FF-4820-9A9B-57508FF39096
 :END:
-#+title: HTTP entity patterns
-#+description: REST route structure, handler skeleton, and CRUD conventions for ores.http.server entity endpoints.
+#+title: HTTP facet
+#+description: The HTTP facet of the MASD entity model: REST route structure, handler skeleton, and CRUD conventions for ores.http.server entity endpoints.
 #+type: knowledge
 #+level: cross
-#+filetags: :knowledge:architecture:http:entity:rest:
+#+filetags: :knowledge:masd:facet:modeling:http:entity:rest:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

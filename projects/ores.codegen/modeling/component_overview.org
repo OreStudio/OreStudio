@@ -164,11 +164,9 @@ harness.  See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]
 
 * See also
 
-- [[id:2A585483-DFF5-429C-ACD3-396342E31117][MASD and code generation principles]] — the theoretical and practical
-  foundations: why code generation exists in ORE Studio, how MASD
-  concepts map onto the development process, and the backout strategy.
-- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][Model Assisted Software Development]] — the practical implementation
-  guide: logical/physical space, facet catalogue, applied to ORE Studio.
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][Model Assisted Software Development]] — the MASD methodology as applied
+  to ORE Studio: logical/physical space, product/component taxonomy, the
+  six principles, the backout strategy, and the full facet catalogue.
 - [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — directory layout, internal modules,
   template system, model-template mapping, modeline configuration,
   features.

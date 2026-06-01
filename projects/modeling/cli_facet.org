@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: 05891220-2503-48A0-ADF5-13EC95B605D7
 :END:
-#+title: CLI entity patterns
-#+description: Options structs, parser layout, and command-dispatch conventions for ores.cli entity commands.
+#+title: CLI facet
+#+description: The CLI facet of the MASD entity model: options structs, parser layout, and command-dispatch conventions for ores.cli entity commands.
 #+type: knowledge
 #+level: cross
-#+filetags: :knowledge:architecture:cli:entity:
+#+filetags: :knowledge:masd:facet:modeling:cli:entity:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

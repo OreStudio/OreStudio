@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: E38360B6-99FF-4AF0-937F-58F31BD573F5
 :END:
-#+title: Shell entity patterns
-#+description: REPL command registration, message-based communication, and operation shapes for ores.shell entity commands.
+#+title: Shell facet
+#+description: The shell facet of the MASD entity model: REPL command registration, message-based communication, and operation shapes for ores.shell entity commands.
 #+type: knowledge
 #+level: cross
-#+filetags: :knowledge:architecture:shell:entity:
+#+filetags: :knowledge:masd:facet:modeling:shell:entity:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: E44891DC-234C-42DB-90E1-9421400ABD1A
 :END:
-#+title: Qt menu and toolbar patterns
-#+description: Plugin registration, on_login() menu wiring, and MDI window toolbar construction for ores.qt entities.
+#+title: Qt UI patterns
+#+description: Supporting patterns for the Qt facet: plugin registration, on_login() menu wiring, and MDI window toolbar construction for ores.qt entities.
 #+type: knowledge
 #+level: cross
-#+filetags: :knowledge:qt:entity:menu:toolbar:
+#+filetags: :knowledge:masd:facet:modeling:qt:entity:menu:toolbar:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

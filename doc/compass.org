@@ -128,12 +128,9 @@ Shell commands inside =#+begin_src sh :results verbatim= blocks so they run in p
 Core documents that explain /why/ the project is built the way it is —
 the theory behind the architecture, the methodology behind the tools.
 
-- [[id:2A585483-DFF5-429C-ACD3-396342E31117][MASD and code generation principles]] — the theoretical and practical
-  foundations of code generation: MASD concepts (logical/physical space,
-  products, components, facets, transformations), the reference-implementation
-  backout strategy, and where ORE Studio sits on the automation spectrum.
-- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][Model Assisted Software Development]] — the practical ORE Studio guide:
-  how logical/physical space and the facet catalogue are applied in practice.
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][Model Assisted Software Development]] — the single authoritative reference
+  for MASD in ORE Studio: theory, taxonomy (product/component/SRPP), the six
+  principles, the backout strategy, and the full facet catalogue.
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the four-layer architecture and component inventory.
 
 ** =knowledge/=: durable reference

@@ -37,6 +37,7 @@ migration task that follows in this story.
 | Waiting on   | Nothing.                               |
 | Next         | Test scaffold; raise PR.               |
 | Last touched | 2026-06-01                             |
+| Review       | PR #965 round 1: 4 comments, 2 accepted (fixed in =2bd0b00b1=), 2 declined (sections already present + convention preserved). |
 
 * Acceptance
 
@@ -135,6 +136,9 @@ One commit per logical unit:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task missing =* PRs= / =* Review= sections; suggest =\| # \| Link \| Status \| Notes \|= columns. | task_compass_entity_org_scaffold.org:127 | Declined | PR #965 round 1. Sections already present (lines 128, 134); suggested PR column shape differs from the repo convention (=\| PR \| Title \|=, e.g. task_org_codegen_extensions.org). |
+| 2 | Template hardcodes =#+title: ores.{{component}}.{{slug}}=; use standard =\{\{title\}\}=. | doc_entity_org.org.mustache:4 | Accepted | PR #965 round 1. Fixed in =2bd0b00b1=; doc_generate already computes the title when --title is omitted. |
+| 3 | Drop the stale "template ignores =\{\{title\}\}=" remark from doc_generate. | doc_generate.py:298 | Accepted | PR #965 round 1. Fixed in =2bd0b00b1= (follow-on to comment 2). |
+| 4 | Task missing =* Review= section. | task_compass_entity_org_scaffold.org:127 | Declined | PR #965 round 1. Section already present at line 134 with the standard columns. |
 
 * Result

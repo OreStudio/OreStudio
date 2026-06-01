@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 40C684EE-EC42-46B2-9AEB-A01829E3AB00
+:ID: 0B64E03F-1EDE-43E9-BEDA-96CDF9822B3F
 :END:
 #+title: ores.iam.tenant_type
 #+description: Codegen entity model for the iam =tenant_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.

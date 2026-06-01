@@ -55,18 +55,21 @@ COMPONENTS: Dict[str, Component] = {
         models_dir="projects/ores.codegen/models/compute",
         entity_glob="*_domain_entity.json",
         exclude_suffix=None,
+        modeling_dir="projects/ores.compute/modeling",
     ),
     "controller-cpp": Component(
         name="controller-cpp",
         models_dir="projects/ores.codegen/models/controller",
         entity_glob="*_domain_entity.json",
         exclude_suffix=None,
+        modeling_dir="projects/ores.controller/modeling",
     ),
     "database-cpp": Component(
         name="database-cpp",
         models_dir="projects/ores.codegen/models/database",
         entity_glob="*_domain_entity.json",
         exclude_suffix=None,
+        modeling_dir="projects/ores.database/modeling",
     ),
     "dq-cpp": Component(
         name="dq-cpp",
@@ -122,6 +125,7 @@ COMPONENTS: Dict[str, Component] = {
         models_dir="projects/ores.codegen/models/workspace",
         entity_glob="*_domain_entity.json",
         exclude_suffix=None,
+        modeling_dir="projects/ores.workspace/modeling",
     ),
 }
 

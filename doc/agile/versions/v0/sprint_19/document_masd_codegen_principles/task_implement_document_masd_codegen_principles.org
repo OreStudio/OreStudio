@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :document_masd_codegen_principles:sprint_19:v0:
 #+owner: marco
-#+branch: feature/document-masd-codegen-principles
-#+pr:
+#+branch: feature/write-masd-codegen-doc
+#+pr: 991
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -47,11 +47,11 @@ The document must:
 
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
-| State        | STARTED                                                            |
+| State        | DONE                                                               |
 | Parent story | [[id:EE6A643D-6C6C-41B8-88FD-2EA9351414CD][Document MASD and code generation principles]]                      |
-| Now          | Writing document.                                                  |
+| Now          | Nothing.                                                           |
 | Waiting on   | Nothing.                                                           |
-| Next         | Commit, push, open PR.                                             |
+| Next         | Nothing.                                                           |
 | Last touched | 2026-06-01                                                         |
 
 * Acceptance
@@ -134,3 +134,12 @@ rather than an idealised design.
 |---+-----------------+------+----------+-------|
 | 1 | Remove empty =* Result= placeholder | task_implement_document_masd_codegen_principles.org | Fixed — removed | Gemini round 1 |
 | 2 | "all eight profiles" inconsistent — table has 7 | masd_and_codegen_principles.org | Fixed — "all seven profiles" | Gemini round 2 |
+
+* Result
+
+=doc/knowledge/masd_and_codegen_principles.org= written and merged in PR #991.
+Covers: MASD conceptual model, logical/physical space, product/component/SRPP
+taxonomy, M2M/M2T/T2T transformation taxonomy, facet catalogue, six MASD
+principles applied to ORE Studio, and the reference-implementation backout
+strategy. Navbar "Code Gen" entry added; =compass.org= Engineering principles
+section wired; =ores.codegen= component overview cross-linked.

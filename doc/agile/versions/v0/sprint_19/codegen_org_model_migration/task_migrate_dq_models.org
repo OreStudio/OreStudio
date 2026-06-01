@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/migrate-dq-org
-#+pr:
+#+pr: 980
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
@@ -47,9 +47,9 @@ files under =projects/ores.dq/modeling/=, using
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #980 | [codegen,dq] Migrate dq entity models from JSON to org-mode |
 
 * Review
 

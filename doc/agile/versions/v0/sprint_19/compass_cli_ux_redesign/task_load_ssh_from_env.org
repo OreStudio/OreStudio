@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: CCFF58E1-CC1E-4887-AFD7-0A5AB8BF68E4
+:END:
+#+title: Task: Load SSH_AUTH_SOCK from .env in compass.sh
+#+description: Add SSH_AUTH_SOCK to the project .env file; update compass.sh to source .env like other scripts so git push/fetch via compass work without manual env var export.
+#+type: task
+#+level: s1
+#+filetags: :compass_cli_ux_redesign:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-01                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

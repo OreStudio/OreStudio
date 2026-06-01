@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_cli_ux_redesign:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-story-status
+#+pr: 972
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -28,11 +28,11 @@ story without opening files manually.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                     |
+| State        | DONE                                        |
 | Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]                    |
-| Now          | Not yet started.                            |
-| Waiting on   | [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][Task 1: UX analysis]] (DONE — unblocked).   |
-| Next         | Implement =cmd_story()= in =compass.py=.    |
+| Now          | Nothing.                                    |
+| Waiting on   | Nothing.                                    |
+| Next         | Done. T5: write recipe for orient commands. |
 | Last touched | 2026-06-01                                  |
 
 * Acceptance
@@ -45,6 +45,17 @@ story without opening files manually.
 - Story is resolved by UUID prefix or folder slug (same logic as
   =resolve_story()= already in compass).
 - CI passes.
+
+* Result
+
+- =compass story status <id>= implemented: tasks grouped by DONE/STARTED/BLOCKED/BACKLOG.
+- Branch and PR shown per task; =--uuids= shows full task UUID.
+- Reuses =_STATE_RE=, =_TITLE_RE2=, =_ORG_ID_RE= from T3.
+- New helpers: =_BRANCH_FIELD_RE2=, =_PR_FIELD_RE= with =[ \t]*= to avoid
+  multiline bleed when frontmatter field has no value.
+- =_read_task_detail()= extracts title, state, uuid, branch, pr from task files.
+- =story status= wired as sub-subcommand of =compass story=.
+- Epilog updated: story status now live.
 
 * Plan
 
@@ -62,10 +73,13 @@ From [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][UX analysis]]:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/972][#972]] | [compass] Task 4: implement compass story status |
 
 * Review
 
+** Round 1 — 2026-06-01
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unknown states (DISCOVERED/ABANDONED) all sort to bucket 9 and interleave | compass.py | Fixed: add state as second sort key so unknown states group correctly; also applied to cmd_sprint | Gemini review |
+| 2 | CRLF line endings leave =\r= before =$=; =[ \t]*= doesn't match it | compass.py | Fixed: use =[ \t\r]*= in =_BRANCH_FIELD_RE2= and =_PR_FIELD_RE= | Gemini review |

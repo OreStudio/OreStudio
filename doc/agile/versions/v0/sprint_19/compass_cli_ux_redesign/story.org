@@ -114,7 +114,8 @@ and whether backward-incompatible renames need a deprecation period.
 | [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][Compass CLI UX analysis and taxonomy]] | DONE | 2026-05-31 | 2026-06-01 | System 2 analysis: full command taxonomy, pillar organisation, backward-compat rules, description fix. |
 | [[id:EE9BBBBF-73E3-4AB9-81E6-9B047BF9D2D4][Fix compass description and organise --help by pillar]] | DONE | 2026-06-01 | 2026-06-01 | Update module docstring; add pillar epilog to --help output. |
 | [[id:A5B4156C-B75A-42D9-9E08-2AB8F5504A8D][Implement compass sprint status]] | DONE | 2026-06-01 | 2026-06-01 | All stories in current sprint grouped by state with task counts; reads story.org directly. |
-| [[id:1048B3EE-34B8-42DD-9CF0-7A61CCB147F7][Implement compass story status]] | BACKLOG | | | All tasks in a story grouped by state, with branch and PR per task. |
+| [[id:1048B3EE-34B8-42DD-9CF0-7A61CCB147F7][Implement compass story status]] | DONE | 2026-06-01 | 2026-06-01 | All tasks in a story grouped by state, with branch and PR per task. |
+| [[id:CCFF58E1-CC1E-4887-AFD7-0A5AB8BF68E4][Load SSH_AUTH_SOCK from .env in compass.sh]] | BACKLOG | | | Add SSH_AUTH_SOCK to .env; update compass.sh to source .env so git operations work without manual export. |
 | [[id:5B8C56E9-A128-4EFE-913B-E2116788F7EF][Write recipe for new orient commands]] | BACKLOG | | | Recipe for compass sprint status and compass story status; wire into agile recipe index. |
 | [[id:C3114FD0-A03B-4BD9-AB8C-6BF73D1265C3][Audit and update compass recipes, skills, and runbooks]] | BACKLOG | | | Review all 34 compass references; update for new taxonomy and description. |
 | [[id:E3F0F75F-59C8-4CF1-BD15-A937FED1FC72][Show blocked story dependency tree in compass where]] | BACKLOG | | | Extend compass where to display blocked story chains as a tree in the Orient pillar. |

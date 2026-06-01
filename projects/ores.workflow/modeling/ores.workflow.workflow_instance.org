@@ -1,0 +1,198 @@
+:PROPERTIES:
+:ID: FDF3C079-4E18-4DB7-911F-7691AD1F5665
+:END:
+#+title: ores.workflow.workflow_instance
+#+description: Codegen entity model for the workflow =workflow_instance= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: workflow
+#+filetags: :model:entity:workflow:
+#+brief: A single execution of a named workflow.
+#+entity_singular: workflow_instance
+#+entity_plural: workflow_instances
+#+entity_title: Workflow Instance
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Tracks the lifecycle of a workflow execution, including its type, status,
+the serialised request that triggered it, and any result or error produced.
+Instances are append-mostly; status transitions are the primary mutation.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     workflow
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID primary key for the workflow instance.
+
+* Natural keys
+
+* Columns
+
+** tenant_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Tenant that owns this workflow instance.
+
+** type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Workflow type name, e.g. 'provision_parties_workflow'.
+
+** state_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+FK to the FSM state record (ores_workflow_fsm_states_tbl) for this instance.
+
+** request_json
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Serialised JSON payload of the originating request.
+
+** result_json
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Serialised JSON result, populated on successful completion.
+
+** error
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Human-readable error message, populated on failure.
+
+** correlation_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Distributed tracing correlation ID (Nats-Correlation-Id header value).
+
+** created_by
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Username or service identity that initiated the workflow.
+
+** current_step_index
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Zero-based index of the step currently being executed.
+
+** step_count
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Total number of steps in this workflow definition.
+
+** materialised_steps_json
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+JSON snapshot of the step sequence built at instance start. Prevents a non-deterministic build_steps from reshaping an in-flight workflow after a service restart.
+
+** completed_at
+:PROPERTIES:
+:type:     timestamptz
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+Timestamp when the workflow reached a terminal state.
+
+** last_event_at
+:PROPERTIES:
+:type:     timestamptz
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+Timestamp of the most recent step-completed event processed.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_workflow_workflow_instances_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: workflow.api
+:component_core:    workflow.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: instance
+:entity_plural_short:   instances
+:entity_singular_words: workflow instance
+:entity_plural_words:   workflow instances
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: wi
+:END:
+
+** Custom repository methods

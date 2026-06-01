@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/codegen-org-migration
-#+pr:
+#+pr: 965
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -127,9 +127,9 @@ One commit per logical unit:
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #965 | [codegen] Add entity_org doc-type for org-mode entity scaffolding |
 
 * Review
 

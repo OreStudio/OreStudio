@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: D3D8DE56-3C8A-4B15-BE6A-B819BF97C050
+:END:
+#+title: Task: Investigate target layout for component regrouping
+#+description: Decide child naming (FQ vs short), what to do with ores.qt.<group>, who owns the group root CMakeLists, and the rename impact on codegen output paths, CI, IDE configs, and tooling. Output is a written decision plus the per-group migration tasks that follow.
+#+type: task
+#+level: s1
+#+filetags: :regroup_components:sprint_19:v0:
+#+owner: marco
+#+branch: feature/regroup-components-story
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components under product-group parent directories]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Decide the target layout for product-group regrouping and the
+implementation strategy *before* moving any files. The output is a
+written decision (landing in the story's =* Decisions= section) and
+the per-group migration tasks scaffolded against that decision.
+
+This is investigation, not implementation. No files move in this task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components under product-group parent directories]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin investigation.                   |
+| Last touched | 2026-06-01                             |
+
+* Acceptance
+
+- Each open question below has a written answer recorded in the
+  story's =* Decisions= section, with the reasoning.
+- A scoping survey is committed: every file that needs to change for
+  refdata, grouped by category (CMake, codegen output paths, CI,
+  presets, tooling, IDE, docs).
+- Per-group migration tasks scaffolded under this story
+  (one per product group), each starting from the agreed plan.
+- The pilot task (refdata) has its plan fully written before any
+  implementation begins.
+
+* Open questions
+
+** Q1. Child directory naming
+
+Two options for child component directories inside the group:
+
+| Option | Path                                  | Pro | Con |
+|--------+---------------------------------------+-----+-----|
+| FQ     | =projects/ores.refdata/ores.refdata.api/= | Folder name self-identifies in IDE breadcrumbs and grep. | Verbose; redundant prefix repeated in every path. |
+| Short  | =projects/ores.refdata/api/=          | Concise; clean. | Folder name alone (=api/=) is ambiguous in grep / git log; mental load to match folder to component. |
+
+Recommendation to investigate: *short*, since the group folder already
+disambiguates and CMake target names keep the FQ form for compiler
+consumption.
+
+** Q2. The =ores.qt.<group>= sibling
+
+=ores.qt.refdata= breaks the =ores.<group>.<role>= pattern: the
+namespace prefix is =ores.qt.= rather than =ores.refdata.=. Three
+options:
+
+1. *Move under the group* as =projects/ores.refdata/qt/= (or
+   =projects/ores.refdata/ores.qt.refdata/= under the FQ option).
+   Group becomes "everything refdata-flavoured" regardless of namespace.
+2. *Move under a separate qt group* =projects/ores.qt/refdata/=.
+   Mirrors the namespace exactly but creates a parallel taxonomy.
+3. *Rename* the C++ namespace to =ores.refdata.qt= so the directory
+   and namespace agree. Out of scope (separate refactor).
+
+Recommendation to investigate: *option 1*. The directory layout exists
+to help humans navigate; the namespace can stay where it is.
+
+** Q3. Who owns =projects/ores.<group>/CMakeLists.txt=?
+
+The group root CMakeLists has at minimum =add_subdirectory= calls for
+each child. It may also factor common settings (warning flags,
+boost lookup, target alias namespaces). Question: is the group root a
+genuine reduction in duplication, or just a trampoline?
+
+Survey what each =projects/ores.refdata.*/CMakeLists.txt= does today
+and identify common boilerplate worth lifting.
+
+** Q4. Codegen output paths
+
+The profile manifest's =output:= patterns and any template-side path
+construction reference =projects/ores.refdata.api/...=. After regroup
+they need to point at =projects/ores.refdata/api/...= (or whatever
+Q1 settles on). Question: how many output patterns are affected, and
+do they share a common helper or is the path duplicated per template?
+
+** Q5. Tooling and CI
+
+Inventory of path-bearing places that need updating:
+
+- =CMakeLists.txt= at repo root (=add_subdirectory=).
+- All per-component =CMakeLists.txt= referencing siblings via
+  =add_subdirectory(../ores.refdata.api ...)=.
+- =CMakePresets.json= / per-preset configs.
+- =.github/workflows/*=.
+- =doc/recipes/= and other docs hard-coding paths.
+- =.compass.db= path resolver (=projects/ores.refdata.api/...=).
+- =plantuml= renders any old paths into C4 diagrams.
+- VS Code workspace files, =.clang-format= cascades.
+
+This task produces the inventory; the pilot task fixes them.
+
+* Plan
+
+** 1. Survey
+
+Walk =projects/= and =git grep 'ores\.refdata\.api'= (and =.core=,
+=.service=, =ores.qt.refdata=) to enumerate every reference. Capture
+the counts per category in the story's =* Decisions= section.
+
+** 2. Decide
+
+Resolve Q1–Q3 (Q4 and Q5 are surveys; their output feeds the per-group
+plans). Record the decision and reasoning under =* Decisions=.
+
+** 3. Scaffold per-group tasks
+
+For each product group (refdata first; then trading, iam, dq,
+analytics, reporting, scheduler, workflow, controller, database,
+workspace, compute), scaffold a task via
+=compass add task --parent-dir doc/agile/versions/v0/sprint_19/regroup_components ...=
+with a plan body that follows the refdata pilot template.
+
+** 4. Pilot plan
+
+Write the refdata pilot's full plan (which files move, the git mv
+sequence, the search-and-replace patterns, the verification script).
+Subsequent groups inherit this plan with names substituted.
+
+** 5. Commit + raise PR
+
+Just docs (story update + investigation deliverable + scaffolded
+follow-on tasks). One PR.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

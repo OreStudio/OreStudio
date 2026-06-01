@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: FF9397CF-E6F6-44C3-9641-882EEA21C58D
+:END:
+#+title: Story: Regroup C++ components under product-group parent directories
+#+description: Move every projects/ores.<group>.<role>/ (api, core, service) and projects/ores.qt.<group>/ under a parent group folder projects/ores.<group>/ so that each product group owns its modeling/ directory, root CMakeLists, and child-component layout. Refdata is the pilot; the other product groups follow one-task-per-group.
+#+type: story
+#+level: s2
+#+filetags: :refactor:cmake:components:layout:sprint_19:v0:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Each *product group* (refdata, trading, iam, dq, analytics, reporting,
+scheduler, workflow, controller, database, workspace, compute) owns a
+single parent directory under =projects/=, with its sub-components
+(=api=, =core=, =service=, the qt UI) as children of that parent, plus
+a =modeling/= directory that holds the group's codegen entity models.
+
+Today the layout is flat:
+
+#+begin_example
+,projects/
+,├── ores.refdata.api/
+,├── ores.refdata.core/
+,├── ores.refdata.service/
+,├── ores.qt.refdata/
+,└── ores.refdata/modeling/      ← orphaned; added by the org-mode pilot
+#+end_example
+
+The target layout groups by product:
+
+#+begin_example
+,projects/
+,└── ores.refdata/
+,    ├── api/  (or ores.refdata.api/, TBD by Task 1)
+,    ├── core/
+,    ├── service/
+,    ├── qt/   (or ores.qt.refdata/, TBD by Task 1)
+,    ├── modeling/
+,    └── CMakeLists.txt   ← group root
+#+end_example
+
+This makes the codegen "models belong to the group" property literally
+true on disk, makes IDE navigation match the conceptual layout, and
+lets the group root CMakeLists factor common settings.
+
+** Why now
+
+Driven by the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. The
+pilot moved =party= to =projects/ores.refdata/modeling/=, but
+=projects/ores.refdata/= is an orphan: it has no CMakeLists, no
+sub-components, no role. Continuing the migration without first
+regrouping pushes the same orphan into every group. Better to land the
+regroup now and have every per-group migration task land into a real
+populated group folder.
+
+** Relationship to other stories
+
+- *Blocks* [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] for per-group
+  tasks beyond refdata. The refdata pilot can proceed in parallel
+  because =projects/ores.refdata/modeling/= already exists.
+- Tracks against [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — the codegen
+  template output paths and the manifest =models_dir= / =modeling_dir=
+  references that this story may touch.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                                |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Task 1 (investigate layout) drafted; investigation pending. |
+| Waiting on    | Nothing.                               |
+| Next          | Run Task 1, then draft per-group migration tasks against the decision. |
+| Last touched  | 2026-06-01                             |
+
+* Acceptance
+
+- Every product group has a single parent directory at
+  =projects/ores.<group>/= containing all its sub-components and its
+  =modeling/= directory.
+- The flat =projects/ores.<group>.<role>/= and =projects/ores.qt.<group>/=
+  directories no longer exist.
+- =cmake --build --preset linux-clang-debug-make= passes; the build
+  output is functionally identical to pre-regroup.
+- =ctest= passes.
+- Codegen output paths (the =output:= patterns in the profile manifest
+  and any template-side path construction) point at the new layout.
+- CI workflows, presets, and any path-bearing scripts updated.
+- Tooling that walks =projects/*/= (compass listings, fleet, doc index)
+  continues to work — either by treating group dirs transparently or
+  by being taught the new layout.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D3D8DE56-3C8A-4B15-BE6A-B819BF97C050][Investigate target layout for component regrouping]] | BACKLOG | | | Decide naming, qt/, root CMakeLists ownership, scope of file path changes. Output: written decision + the per-group migration tasks. |
+
+(Per-group migration tasks added after Task 1.)
+
+* Notes
+
+** Group-level documentation lives at the group, not at a child
+
+Any documentation that describes the *product group as a whole*
+(architecture notes, design overviews, plantuml diagrams covering more
+than one sub-component, knowledge docs about the domain) lands under
+=projects/ores.<group>/= — typically under =projects/ores.<group>/modeling/=
+alongside the entity models, or a sibling =projects/ores.<group>/doc/=
+if the volume justifies it.
+
+Avoid putting cross-cutting docs under any specific child like
+=projects/ores.<group>.api/=: they are no more about the API than they
+are about the core, and parking them in one child makes the others
+look like the wrong place to find them. The same logic that drove the
+regroup itself — "the property belongs to the group, not the children"
+— applies to documentation too.
+
+Per-component documentation (something genuinely API-specific, or
+core-specific) still lives in the child component.
+
+* Decisions
+
+(Populated as Task 1 lands.)
+
+* Out of scope
+
+- Renaming the product groups themselves. =refdata=, =trading=, etc.
+  stay as they are; this is purely a directory regrouping.
+- Changing C++ include paths. The headers stay installed under
+  =ores.refdata.api/foo.hpp=; this is a directory move, not a
+  namespace move.
+- Splitting or merging components within a group. =api=, =core=, and
+  =service= remain three components per group.

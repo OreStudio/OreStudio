@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4D7C2B4F-7C67-4DD6-84A9-DBAA97DA941C
+:ID: BD750888-6B72-48C1-AE74-DDC535705022
 :END:
 #+title: ores.scheduler.job_definition
 #+description: Codegen entity model for the scheduler =job_definition= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
@@ -61,6 +61,7 @@ Unique name for the scheduled job.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:default:  ''
 :END:
 
 Human-readable description of the job.
@@ -70,6 +71,7 @@ Human-readable description of the job.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:default:  ''
 :END:
 
 SQL command to execute (used when action_type = execute_sql).
@@ -88,6 +90,7 @@ Cron expression defining the schedule.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:default:  'execute_sql'
 :END:
 
 Execution mode: execute_sql or nats_publish.
@@ -97,6 +100,7 @@ Execution mode: execute_sql or nats_publish.
 :type:     jsonb
 :cpp_type: std::string
 :nullable: false
+:default:  '{}'::jsonb
 :END:
 
 Payload for nats_publish action type.
@@ -106,6 +110,7 @@ Payload for nats_publish action type.
 :type:     integer
 :cpp_type: int
 :nullable: false
+:default:  1
 :END:
 
 1 = active, 0 = paused.
@@ -192,7 +197,7 @@ Payload for nats_publish action type.
 | Description  | description         | Description | string | 250   |
 | Schedule     | schedule_expression | Schedule    | string | 150   |
 | DatabaseName | database_name       | Database    | string | 150   |
-| Active       | is_active           | Active      |        | 80    |
+| Active       | is_active           | Active      | bool   | 80    |
 | Version      | version             | Version     | int    | 60    |
 | ModifiedBy   | modified_by         | Modified By | string | 120   |
 

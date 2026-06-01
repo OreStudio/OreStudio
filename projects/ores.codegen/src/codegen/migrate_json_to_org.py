@@ -74,15 +74,30 @@ def _generator_block(node, name="generator"):
     return f"#+begin_src cpp :name {name}\n{expr}\n#+end_src"
 
 
+_COLUMN_BODY_KEYS = {"description", "detail", "generator_expr"}
+_COLUMN_HEADER_KEYS = {"name", "column", "type", "cpp_type"}
+
+
 def _column_section(node, level):
     """Render a column-like sub-heading (natural key or column)."""
     title = node.get("name") or node.get("column")
-    drawer_keys = [("type", node.get("type")), ("cpp_type", node.get("cpp_type"))]
+    pairs = [("type", node.get("type")), ("cpp_type", node.get("cpp_type"))]
     if "nullable" in node:
-        drawer_keys.append(("nullable", str(node["nullable"]).lower()))
-    if "default_value" in node:
-        drawer_keys.append(("default_value", node["default_value"]))
-    drawer = _drawer(drawer_keys)
+        pairs.append(("nullable", str(node["nullable"]).lower()))
+    # Forward any other scalar column properties (default, default_value,
+    # SQL-side annotations) so the org_loader can re-emit them via the
+    # generic column-property pass.
+    for k, v in node.items():
+        if k in _COLUMN_HEADER_KEYS or k in _COLUMN_BODY_KEYS or k == "nullable":
+            continue
+        if isinstance(v, (list, dict)):
+            continue
+        if v is None:
+            continue
+        if isinstance(v, bool):
+            v = "true" if v else "false"
+        pairs.append((k, v))
+    drawer = _drawer(pairs)
     body_parts = [_description_and_detail(node)]
     gen = _generator_block(node)
     if gen:
@@ -306,6 +321,8 @@ def _qt_type_string(field):
         return "timestamp"
     if field.get("is_uuid"):
         return "uuid"
+    if field.get("is_bool"):
+        return "bool"
     return ""
 
 

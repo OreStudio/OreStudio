@@ -126,9 +126,11 @@ rather than an idealised design.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/988][#988]] | [agile] Scaffold MASD and code generation principles story |
+| [[https://github.com/OreStudio/OreStudio/pull/991][#991]] | [doc] Add MASD and code generation principles document |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Remove empty =* Result= placeholder | task_implement_document_masd_codegen_principles.org | Fixed — removed | Gemini round 1 |
+| 2 | "all eight profiles" inconsistent — table has 7 | masd_and_codegen_principles.org | Fixed — "all seven profiles" | Gemini round 2 |

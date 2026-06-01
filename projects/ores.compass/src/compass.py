@@ -879,6 +879,27 @@ def _journal_last_entry(worktree_path):
 _STATE_RE  = re.compile(r"^\| State[^|]*\|\s*([A-Z]+)", re.MULTILINE)
 _TITLE_RE2 = re.compile(r"^#\+title:\s*(?:Story:\s*)?(.+?)\s*$", re.MULTILINE | re.IGNORECASE)
 
+_BRANCH_FIELD_RE2 = re.compile(r"^#\+branch:[ \t]*(\S+)[ \t]*$", re.MULTILINE)
+_PR_FIELD_RE      = re.compile(r"^#\+pr:[ \t]*(\S+)[ \t]*$", re.MULTILINE)
+
+def _read_task_detail(task_file):
+    """Return (title, state, uuid, branch, pr) from a task.org file."""
+    try:
+        text = task_file.read_text(encoding="utf-8")
+        tm = _TITLE_RE2.search(text)
+        sm = _STATE_RE.search(text)
+        im = _ORG_ID_RE.search(text)
+        bm = _BRANCH_FIELD_RE2.search(text)
+        pm = _PR_FIELD_RE.search(text)
+        title  = _strip_type_prefix(tm.group(1)) if tm else task_file.stem
+        state  = sm.group(1).upper() if sm else "UNKNOWN"
+        uuid   = im.group(1) if im else None
+        branch = bm.group(1) if bm else None
+        pr     = pm.group(1) if pm else None
+        return title, state, uuid, branch, pr
+    except (OSError, UnicodeDecodeError):
+        return task_file.stem, "UNKNOWN", None, None, None
+
 def _read_story_state(story_file):
     """Return (title, state, uuid) from a story.org file, or (stem, 'UNKNOWN', None)."""
     try:
@@ -1459,6 +1480,12 @@ def cmd_story(argv):
     new_p.add_argument("--kind",        default="feature", choices=["feature", "hotfix"])
     new_p.add_argument("--dry-run",     action="store_true")
 
+    st = sub.add_parser("status", help="All tasks in a story grouped by state with branch and PR")
+    st.add_argument("story", help="Story UUID/prefix or folder slug")
+    st.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty")
+    st.add_argument("--uuids", action="store_true",
+                    help="Show task UUIDs alongside titles")
+
     args = ap.parse_args(argv)
 
     if args.subcmd == "new":
@@ -1476,6 +1503,42 @@ def cmd_story(argv):
             (args.slug, args.title, args.description, args.tags),
             task_slug, task_title, f"Initial task for: {args.title}",
             branch, args.base, args.dry_run, current_sprint)
+
+    if args.subcmd == "status":
+        story_dir, story_title = resolve_story(args.story)
+        if story_dir is None:
+            print(f"❌ Could not resolve story '{args.story}'.", file=sys.stderr)
+            return 1
+        story_path = Path(PROJECT_ROOT) / story_dir
+        if not story_path.exists():
+            print(f"❌ Story directory not found: {story_path}", file=sys.stderr)
+            return 1
+
+        tasks = []
+        for tf in sorted(story_path.glob("task_*.org")):
+            title, state, uuid, branch, pr = _read_task_detail(tf)
+            tasks.append({"title": title, "state": state, "uuid": uuid,
+                          "branch": branch, "pr": pr,
+                          "path": str(tf.relative_to(PROJECT_ROOT))})
+
+        if args.format == "json":
+            print(json.dumps({"story": story_title, "tasks": tasks}, indent=2))
+            return 0
+
+        order = {"DONE": 0, "STARTED": 1, "BLOCKED": 2, "BACKLOG": 3}
+        tasks.sort(key=lambda t: (order.get(t["state"], 9), t["title"]))
+
+        print(f"🧭 ores.compass — story status: {story_title}\n")
+        current_state = None
+        for t in tasks:
+            if t["state"] != current_state:
+                current_state = t["state"]
+                print(f"  {current_state}")
+            uuid_suffix   = f"  [{t['uuid']}]" if args.uuids and t["uuid"] else ""
+            branch_info   = f"  {t['branch']}" if t["branch"] else ""
+            pr_info       = f"  PR:{t['pr']}" if t["pr"] and t["pr"] != "none" else ""
+            print(f"    {t['title']}{uuid_suffix}{branch_info}{pr_info}")
+        return 0
 
 
 def cmd_task(argv):
@@ -1546,7 +1609,7 @@ def main():
         "\n"
         "Entity commands (sub-subcommands span pillars):\n"
         "  sprint:   status (orient)\n"
-        "  story:    new (scaffold) | status (orient — coming soon)\n"
+        "  story:    new (scaffold) | status (orient)\n"
         "  task:     new (scaffold)\n"
     )
     parser = argparse.ArgumentParser(

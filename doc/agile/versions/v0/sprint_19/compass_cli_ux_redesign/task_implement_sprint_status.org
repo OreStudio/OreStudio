@@ -79,6 +79,11 @@ From [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][UX analysis]]:
 
 * Review
 
+** Round 1 — 2026-06-01
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =_TITLE_RE2= needs =IGNORECASE=; =_STATE_RE= can match trailing =|= | compass.py | Fixed: added =IGNORECASE=; tightened state pattern to =[A-Z]+= | Gemini review |
+| 2 | Normalise story state to uppercase | compass.py | Fixed: =.upper()= on state | Gemini review |
+| 3 | Normalise task state to uppercase | compass.py | Fixed: =.upper()= on task state | Gemini review |
+| 4 | Guard against missing sprint directory | compass.py | Fixed: check exists, print error, return 1 | Gemini review |

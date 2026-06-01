@@ -876,8 +876,8 @@ def _journal_last_entry(worktree_path):
     except (OSError, UnicodeDecodeError):
         return None
 
-_STATE_RE  = re.compile(r"^\| State[^|]*\|\s*(\S+)", re.MULTILINE)
-_TITLE_RE2 = re.compile(r"^#\+title:\s*(?:Story:\s*)?(.+?)\s*$", re.MULTILINE)
+_STATE_RE  = re.compile(r"^\| State[^|]*\|\s*([A-Z]+)", re.MULTILINE)
+_TITLE_RE2 = re.compile(r"^#\+title:\s*(?:Story:\s*)?(.+?)\s*$", re.MULTILINE | re.IGNORECASE)
 
 def _read_story_state(story_file):
     """Return (title, state, uuid) from a story.org file, or (stem, 'UNKNOWN', None)."""
@@ -887,11 +887,11 @@ def _read_story_state(story_file):
         sm = _STATE_RE.search(text)
         im = _ORG_ID_RE.search(text)
         title = tm.group(1) if tm else story_file.parent.name
-        state = sm.group(1) if sm else "UNKNOWN"
+        state = sm.group(1).upper() if sm else "UNKNOWN"
         uuid  = im.group(1) if im else None
         return title, state, uuid
     except (OSError, UnicodeDecodeError):
-        return story_file.parent.name, "UNKNOWN"
+        return story_file.parent.name, "UNKNOWN", None
 
 def _task_counts(story_dir):
     """Return (done, total) task count for a story directory."""
@@ -900,7 +900,7 @@ def _task_counts(story_dir):
         try:
             text = tf.read_text(encoding="utf-8")
             m = _STATE_RE.search(text)
-            state = m.group(1) if m else "UNKNOWN"
+            state = m.group(1).upper() if m else "UNKNOWN"
             total += 1
             if state == "DONE":
                 done += 1
@@ -927,6 +927,9 @@ def cmd_sprint(argv):
             print("❌ No current sprint found.", file=sys.stderr)
             return 1
         sprint_dir = Path(PROJECT_ROOT) / _parent_dir(current_sprint.rel_path)
+        if not sprint_dir.exists():
+            print(f"❌ Sprint directory not found: {sprint_dir}", file=sys.stderr)
+            return 1
 
         stories = []
         for sf in sorted(sprint_dir.glob("*/story.org")):

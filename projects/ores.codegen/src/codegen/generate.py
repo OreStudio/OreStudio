@@ -18,10 +18,8 @@ _ENTITY_TYPE = "ores.codegen.entity"
 
 def _is_codegen_entity_org(path: Path) -> bool:
     """True if the file's frontmatter declares it a codegen entity model."""
-    try:
-        head = path.read_text(encoding="utf-8", errors="replace")[:2048]
-    except OSError:
-        return False
+    with path.open(encoding="utf-8", errors="replace") as f:
+        head = f.read(4096)
     match = _ORG_TYPE_RE.search(head)
     return bool(match and match.group(1) == _ENTITY_TYPE)
 
@@ -176,7 +174,7 @@ def cmd_regenerate(args: Any, base_dir: Path) -> int:
         # Org files there are dispatched via #+type: rather than filename.
         if comp.modeling_dir:
             modeling_dir = project_root / comp.modeling_dir
-            if modeling_dir.exists():
+            if modeling_dir.is_dir():
                 for org_path in modeling_dir.glob("*.org"):
                     if _is_codegen_entity_org(org_path):
                         matches.add(org_path)

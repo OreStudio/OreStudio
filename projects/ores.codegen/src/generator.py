@@ -244,10 +244,11 @@ def is_domain_entity_model(model_filename):
     Returns:
         bool: True if this is a domain entity model
     """
+    basename = os.path.basename(model_filename)
     return (
         model_filename.endswith("_domain_entity.json")
         or model_filename.endswith("_entity.org")
-        or (model_filename.startswith("ores.") and model_filename.endswith(".org"))
+        or (basename.startswith("ores.") and basename.endswith(".org"))
     )
 
 

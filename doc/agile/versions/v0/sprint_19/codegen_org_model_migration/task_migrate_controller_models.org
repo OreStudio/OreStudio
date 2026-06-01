@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/migrate-remaining-org
-#+pr:
+#+pr: 989
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
@@ -46,9 +46,9 @@ PR to close out the per-component migration sweep.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #989 | [codegen,controller,database,workspace,compute] Migrate the final 4 components from JSON to org-mode |
 
 * Review
 

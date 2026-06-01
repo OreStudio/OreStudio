@@ -143,7 +143,7 @@ struct eq_position_wrapper  { td::equity_position_instrument        instrument; 
 // then parse legs, then call the matching populate overload.
 template<typename InstrOuter, typename LegsOuter>
 static bool try_parse_and_populate(const std::string& raw,
-    IInstrumentFormPopulator& populator)
+    ores::qt::IInstrumentFormPopulator& populator)
 {
     auto r_instr = try_parse<InstrOuter>(raw);
     if (!r_instr) return false;

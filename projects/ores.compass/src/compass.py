@@ -880,14 +880,16 @@ _STATE_RE  = re.compile(r"^\| State[^|]*\|\s*(\S+)", re.MULTILINE)
 _TITLE_RE2 = re.compile(r"^#\+title:\s*(?:Story:\s*)?(.+?)\s*$", re.MULTILINE)
 
 def _read_story_state(story_file):
-    """Return (title, state) from a story.org file, or (stem, 'UNKNOWN')."""
+    """Return (title, state, uuid) from a story.org file, or (stem, 'UNKNOWN', None)."""
     try:
         text = story_file.read_text(encoding="utf-8")
         tm = _TITLE_RE2.search(text)
         sm = _STATE_RE.search(text)
+        im = _ORG_ID_RE.search(text)
         title = tm.group(1) if tm else story_file.parent.name
         state = sm.group(1) if sm else "UNKNOWN"
-        return title, state
+        uuid  = im.group(1) if im else None
+        return title, state, uuid
     except (OSError, UnicodeDecodeError):
         return story_file.parent.name, "UNKNOWN"
 
@@ -914,6 +916,8 @@ def cmd_sprint(argv):
 
     st = sub.add_parser("status", help="All stories in the current sprint grouped by state")
     st.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty")
+    st.add_argument("--uuids", action="store_true",
+                    help="Show story UUIDs alongside titles for use with other commands")
 
     args = ap.parse_args(argv)
 
@@ -926,9 +930,9 @@ def cmd_sprint(argv):
 
         stories = []
         for sf in sorted(sprint_dir.glob("*/story.org")):
-            title, state = _read_story_state(sf)
+            title, state, uuid = _read_story_state(sf)
             done, total = _task_counts(sf.parent)
-            stories.append({"title": title, "state": state,
+            stories.append({"title": title, "state": state, "uuid": uuid,
                             "tasks_done": done, "tasks_total": total,
                             "path": str(sf.relative_to(PROJECT_ROOT))})
 
@@ -946,7 +950,8 @@ def cmd_sprint(argv):
                 current_state = s["state"]
                 print(f"  {current_state}")
             tasks = f"{s['tasks_done']}/{s['tasks_total']}" if s["tasks_total"] else "—"
-            print(f"    [{tasks}] {s['title']}")
+            uuid_suffix = f"  ({s['uuid'][:8]})" if args.uuids and s["uuid"] else ""
+            print(f"    [{tasks}] {s['title']}{uuid_suffix}")
         return 0
 
 def _org_link_text(link_str):

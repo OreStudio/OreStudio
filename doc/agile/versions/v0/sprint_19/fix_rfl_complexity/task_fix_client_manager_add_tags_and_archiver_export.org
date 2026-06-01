@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 4BF920B2-CA2B-40EF-B463-DDC13D0C2516
+:END:
+#+title: Task: Fix ClientManager AddTagsToVariants and archiver DLL export
+#+description: Remove rfl::AddTagsToVariants from all ClientManager json::read calls; add ORES_COMPUTE_WRAPPER_EXPORT to archiver to restore Windows Clang link.
+#+type: task
+#+level: s1
+#+filetags: :fix_rfl_complexity:sprint_19:v0:
+#+owner: marco
+#+branch: feature/fix-windows-macos-ci
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two remaining Windows/macOS CI failures after PR #969 (service parser exports):
+
+1. *macOS Clang + Windows MSVC*: =ClientManager.hpp= applied =rfl::AddTagsToVariants= to all
+   four =rfl::json::read= call sites. =export_portfolio_response= contains
+   =with_legs<std::variant<...>>= whose fully-qualified type name is 502 chars, exceeding
+   Clang's fold-expression nesting limit of 256 and MSVC's equivalent in
+   =no_duplicate_field_names.hpp=. The server already dropped =AddTagsToVariants= in commit
+   =f6f767439=; the client reads must match.
+
+2. *Windows Clang (linker)*: =ores::compute::wrapper::filesystem::archiver= was missing
+   =ORES_COMPUTE_WRAPPER_EXPORT=, so =pack= and =extract= static methods were not exported
+   from the DLL.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | STARTED                                                          |
+| Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]  |
+| Now          | Committed; PR open; awaiting CI.                                 |
+| Waiting on   | CI green + review.                                               |
+| Next         | Merge PR; mark DONE.                                             |
+| Last touched | 2026-06-01                                                       |
+
+* Acceptance
+
+- macOS CI: no fold-expression nesting limit error from =ClientManager.hpp= reads.
+- Windows MSVC CI: no =C1202= recursive type error from =ClientManager.hpp= reads.
+- Windows Clang CI: =archiver::pack= and =archiver::extract= link without undefined symbol errors.
+- No regression on Linux CI.
+
+* Notes
+
+- The =AddTagsToVariants= removal from =ClientManager.hpp= resolves the "export_portfolio
+  latent issue" documented in the story's =* Decisions= section. It was not Linux-only: it
+  also fired on macOS and Windows once those CIs ran far enough into the build.
+- The =archiver= export omission is the same pattern as task 6 (service parsers) but in
+  =ores.compute.wrapper= rather than a service project.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

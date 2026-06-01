@@ -359,7 +359,7 @@ def _cpp_section(de):
 
 def _description_for_frontmatter(de, slug):
     return (
-        f"Codegen entity model for the {de['component']} =" + slug + "= table. "
+        f"Codegen entity model for the {de['component']} ={slug}= table. "
         "Drives the C++ domain class, mapper, repository, service, generator, "
         "Qt UI, and SQL schema generation from a single literate source."
     )
@@ -442,30 +442,37 @@ def main(argv=None):
     input_dir = Path(args.input_dir)
     output_dir = Path(args.output_dir)
     if not input_dir.is_dir():
-        sys.exit(f"error: input dir not found: {input_dir}")
+        print(f"error: input dir not found: {input_dir}", file=sys.stderr)
+        return 1
 
-    json_files = sorted(input_dir.glob("*_domain_entity.json"))
-    if args.only:
-        wanted = {s.strip() for s in args.only.split(",") if s.strip()}
-        json_files = [j for j in json_files if slug_from_filename(j) in wanted]
-    if not json_files:
-        sys.exit(f"error: no matching *_domain_entity.json files in {input_dir}")
+    try:
+        json_files = sorted(input_dir.glob("*_domain_entity.json"))
+        if args.only:
+            wanted = {s.strip() for s in args.only.split(",") if s.strip()}
+            json_files = [j for j in json_files if slug_from_filename(j) in wanted]
+        if not json_files:
+            print(f"error: no matching *_domain_entity.json files in {input_dir}",
+                  file=sys.stderr)
+            return 1
 
-    today = date.today().isoformat()
+        today = date.today().isoformat()
 
-    if args.dry_run:
+        if args.dry_run:
+            for j in json_files:
+                slug = slug_from_filename(j)
+                print(output_dir / f"ores.{args.component}.{slug}.org")
+            return 0
+
+        output_dir.mkdir(parents=True, exist_ok=True)
+        written = []
         for j in json_files:
-            slug = slug_from_filename(j)
-            print(output_dir / f"ores.{args.component}.{slug}.org")
-        return 0
-
-    output_dir.mkdir(parents=True, exist_ok=True)
-    written = []
-    for j in json_files:
-        out_path = convert_file(j, output_dir, args.component, today)
-        written.append(out_path)
-        print(out_path)
-    print(f"Converted {len(written)} files.", file=sys.stderr)
+            out_path = convert_file(j, output_dir, args.component, today)
+            written.append(out_path)
+            print(out_path)
+        print(f"Converted {len(written)} files.", file=sys.stderr)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     return 0
 
 

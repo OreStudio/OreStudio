@@ -1,0 +1,200 @@
+:PROPERTIES:
+:ID: 0303FDE5-5929-4126-A5F8-2519BFF027DD
+:END:
+#+title: ores.trading.knock_out_swap_instrument
+#+description: Codegen entity model for the trading =knock_out_swap_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Knock-out interest rate swap instrument.
+#+entity_singular: knock_out_swap_instrument
+#+entity_plural: knock_out_swap_instruments
+#+entity_title: Knock-Out Swap Instrument
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Represents a knock-out interest rate swap that terminates automatically
+if the floating rate breaches a specified barrier level.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   instrument_id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this knock-out swap instrument.
+
+Surrogate key for the instrument record.
+
+* Natural keys
+
+* Columns
+
+** trade_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+#+begin_src cpp :name generator
+std::string("KnockOutSwap")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional soft FK to the parent trade.
+
+Links instrument to a trade if applicable.
+
+** start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Swap effective start date.
+
+ISO 8601 date string (YYYY-MM-DD).
+
+#+begin_src cpp :name generator
+std::string("2024-01-15")
+#+end_src
+
+** maturity_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Swap maturity date.
+
+Must be after start_date.
+
+#+begin_src cpp :name generator
+std::string("2029-01-15")
+#+end_src
+
+** barrier_level
+:PROPERTIES:
+:type:          numeric(18, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Barrier level that triggers knock-out.
+
+Expressed as a decimal fraction.
+
+#+begin_src cpp :name generator
+0.05
+#+end_src
+
+** barrier_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Barrier type: UpAndOut or DownAndOut.
+
+UpAndOut knocks out when rate rises above barrier; DownAndOut when it falls below.
+
+#+begin_src cpp :name generator
+std::string("UpAndOut")
+#+end_src
+
+** knock_out_dates_json
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional JSON array of knock-out observation dates.
+
+ISO 8601 date strings for discrete barrier observation.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description.
+
+Human-readable notes about this instrument.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_knock_out_swap_instruments_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include:    trading.api
+:component_core:       trading.core
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: knock_out_swap_instrument
+:entity_plural_short:   knock_out_swap_instruments
+:entity_singular_words: knock-out swap instrument
+:entity_plural_words:   knock-out swap instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ko
+:END:
+
+** Custom repository methods

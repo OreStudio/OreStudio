@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 06F0B798-F261-4BBC-974E-52A41C4AA1F0
+:END:
+#+title: ores.trading.lifecycle_event
+#+description: Codegen entity model for the trading =lifecycle_event= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Trade lifecycle event type (e.g. New, Amendment, Novation, PartialTermination).
+#+entity_singular: lifecycle_event
+#+entity_plural: lifecycle_events
+#+entity_title: Lifecycle Event
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Reference data table defining valid trade lifecycle event types.
+Examples: 'New', 'Amendment', 'Novation', 'PartialTermination', 'FullTermination'.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique lifecycle event code.
+
+Examples: 'New', 'Amendment', 'Novation'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_event"
+#+end_src
+
+* Natural keys
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Detailed description of the lifecycle event.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** fsm_state_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional FSM state identifier associated with this lifecycle event.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_lifecycle_events_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include:    trading.api
+:component_core:       trading.core
+:has_batch_remove:     true
+:generator_facet_name: generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: event
+:entity_plural_short:   events
+:entity_singular_words: lifecycle event
+:entity_plural_words:   lifecycle events
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: le
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| description | Description |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods

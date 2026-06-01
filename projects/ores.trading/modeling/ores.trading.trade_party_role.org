@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: E031135C-5728-401B-BBD4-88B197B937B1
+:END:
+#+title: ores.trading.trade_party_role
+#+description: Codegen entity model for the trading =trade_party_role= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Counterparty role assignment on a trade.
+#+entity_singular: trade_party_role
+#+entity_plural: trade_party_roles
+#+entity_title: Trade Party Role
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Associates a counterparty with a specific role on a trade.
+The internal party (the house) is derived from book_id via books.party_id.
+Supports multiple counterparties per trade in different roles.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this party role assignment.
+
+Surrogate key for the trade party role record.
+
+* Natural keys
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Trade this role assignment belongs to.
+
+Soft FK to ores_trading_trades_tbl.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** counterparty_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Counterparty fulfilling the role.
+
+Soft FK to ores_refdata_counterparties_tbl.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** role
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Role the counterparty plays on this trade.
+
+Soft FK to ores_trading_party_role_types_tbl.
+
+#+begin_src cpp :name generator
+std::string("Counterparty")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_party_roles_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include:    trading.api
+:component_core:       trading.core
+:generator_facet_name: generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: role
+:entity_plural_short:   roles
+:entity_singular_words: trade party role
+:entity_plural_words:   trade party roles
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pr
+:END:
+
+** Custom repository methods

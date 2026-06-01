@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: 6284BC22-3076-4E8A-8938-B50D12B169C0
+:END:
+#+title: ores.trading.trade_identifier
+#+description: Codegen entity model for the trading =trade_identifier= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: External identifier (UTI, USI, internal) assigned to a trade.
+#+entity_singular: trade_identifier
+#+entity_plural: trade_identifiers
+#+entity_title: Trade Identifier
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Junction entity assigning external identifiers to trades.
+Each trade can have multiple identifiers of different types.
+The issuing_party_id references either a party or counterparty.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this trade identifier record.
+
+Surrogate key for the trade identifier record.
+
+* Natural keys
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Trade this identifier belongs to.
+
+Soft FK to ores_trading_trades_tbl.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** issuing_party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Party or counterparty that issued this identifier.
+
+Soft FK to parties or counterparties. Absent if issuer unknown.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** id_value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The identifier value.
+
+e.g., UTI value, internal trade reference.
+
+#+begin_src cpp :name generator
+std::string("ID-") + std::to_string(++counter)
+#+end_src
+
+** id_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Type of identifier (e.g. UTI, USI, Internal).
+
+Soft FK to ores_trading_trade_id_types_tbl.
+
+#+begin_src cpp :name generator
+std::string("Internal")
+#+end_src
+
+** id_scheme
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional scheme qualifier for the identifier.
+
+e.g., the LEI namespace for UTI schemes.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_trade_identifiers_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include:    trading.api
+:component_core:       trading.core
+:generator_facet_name: generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: identifier
+:entity_plural_short:   identifiers
+:entity_singular_words: trade identifier
+:entity_plural_words:   trade identifiers
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ti
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| id_value    | ID Value    |
+| id_type     | ID Type     |
+| id_scheme   | Scheme      |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods

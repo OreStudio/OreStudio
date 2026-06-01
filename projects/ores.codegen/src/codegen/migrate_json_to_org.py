@@ -186,9 +186,12 @@ def _frontmatter(model, slug, today, new_id, description_kw):
 
 
 def _flags_section(de):
+    # The meta-model requires schema/product/component. A handful of
+    # legacy JSON lookup-table models omitted product; default it to
+    # "ores" since every entity in the project belongs to that product.
     pairs = [
-        ("schema", de.get("schema")),
-        ("product", de.get("product")),
+        ("schema", de.get("schema") or "public"),
+        ("product", de.get("product") or "ores"),
         ("component", de.get("component")),
     ]
     if "has_tenant_id" in de:
@@ -206,7 +209,11 @@ def _primary_key_section(de):
         ("type", pk.get("type")),
         ("cpp_type", pk.get("cpp_type")),
     ])
-    body = _description_and_detail(pk)
+    body_parts = [_description_and_detail(pk)]
+    gen = _generator_block(pk)
+    if gen:
+        body_parts.append(gen)
+    body = "\n\n".join(part for part in body_parts if part)
     pieces = ["* Primary key", drawer]
     if body:
         pieces.append("")
@@ -365,8 +372,6 @@ def render(model, slug, today, new_id):
         _frontmatter(de, slug, today, new_id, description_kw),
         "",
         _prose(de.get("description") or ""),
-        "",
-        f"See [[id:{_META_MODEL_ID}][Codegen org-entity meta-model]] for the shape this file follows.",
         "",
         _flags_section(de),
         "",

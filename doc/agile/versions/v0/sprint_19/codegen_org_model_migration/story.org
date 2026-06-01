@@ -6,7 +6,7 @@
 #+type: story
 #+level: s2
 #+filetags: :tooling:codegen:literate:sprint_19:v0:
-#+branch: feature/refactor-codegen-cpp
+#+branch: feature/codegen-org-migration
 #+created: 2026-06-01
 #+updated: 2026-06-01
 #+todo: BACKLOG STARTED | DONE ABANDONED
@@ -58,11 +58,11 @@ against an inadequate model format and migrating later.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                                |
+| State         | STARTED                                |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                              |
-| Now           | Story created from the POC results.    |
+| Now           | Task 1 (compass scaffold) in progress on =feature/codegen-org-migration=. |
 | Waiting on    | Nothing.                               |
-| Next          | Start Task 1 (compass scaffolding) and Task 2 (co-locate the pilot org file). |
+| Next          | Finish Task 1, then Task 2 (co-locate the pilot org file). |
 | Last touched  | 2026-06-01                             |
 
 * Acceptance

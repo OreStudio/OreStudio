@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/migrate-scheduler-org
-#+pr:
+#+pr: 986
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
@@ -44,9 +44,9 @@ Convert the single =job_definition_domain_entity.json= under
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #986 | [codegen,scheduler] Migrate job_definition entity model from JSON to org-mode |
 
 * Review
 

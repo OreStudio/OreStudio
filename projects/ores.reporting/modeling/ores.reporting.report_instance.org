@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4F3F943F-E872-428F-A79B-D67FAD25B1CE
+:ID: 9FCCF6C8-9C10-403B-BDA4-C3E28706BD67
 :END:
 #+title: ores.reporting.report_instance
 #+description: Codegen entity model for the reporting =report_instance= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
@@ -249,7 +249,7 @@ std::nullopt
 | enum_name     | field          | header      | type      | width |
 |---------------+----------------+-------------+-----------+-------|
 | Name          | name           | Name        | string    | 200   |
-| DefinitionId  | definition_id  | Definition  |           | 200   |
+| DefinitionId  | definition_id  | Definition  | uuid      | 200   |
 | TriggerRunId  | trigger_run_id | Trigger Run | int       | 100   |
 | OutputMessage | output_message | Output      | string    | 250   |
 | StartedAt     | started_at     | Started At  | timestamp | 150   |

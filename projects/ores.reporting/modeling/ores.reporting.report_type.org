@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: E8646B7B-3BAB-40FD-AC3E-02174EF2E1FE
+:ID: 24095456-2653-4289-93C6-FB3963785CC9
 :END:
 #+title: ores.reporting.report_type
 #+description: Codegen entity model for the reporting =report_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.

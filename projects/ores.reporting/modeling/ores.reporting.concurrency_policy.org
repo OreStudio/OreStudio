@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 7E819052-320D-4856-835F-AD589A6D9863
+:ID: 4597D5A9-C591-4992-ABEE-8822C10D8D96
 :END:
 #+title: ores.reporting.concurrency_policy
 #+description: Codegen entity model for the reporting =concurrency_policy= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.

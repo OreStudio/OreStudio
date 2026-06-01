@@ -46,6 +46,7 @@ TYPE_TO_TEMPLATE = {
     "release_notes": "doc_release_notes.org.mustache",
     "investigation": "doc_investigation.org.mustache",
     "runbook": "doc_runbook.org.mustache",
+    "entity_org": "doc_entity_org.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {
@@ -63,6 +64,7 @@ DEFAULT_INITIAL_STATE = {
     "memory": "",
     "investigation": "",
     "runbook": "",
+    "entity_org": "",
 }
 
 # Composition: each type's direct parent type.
@@ -78,6 +80,7 @@ PARENT_OF_TYPE = {
 PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "skill", "product_identity",
     "capture", "memory", "release_notes", "investigation", "runbook",
+    "entity_org",
 }
 
 
@@ -240,6 +243,11 @@ def parse_args(argv=None):
                         choices=["feedback", "user", "project", "reference"],
                         help="For --type memory: subtype of memory being stored. "
                              "Default feedback. Ignored for other types.")
+    parser.add_argument("--component", default="",
+                        help="For --type entity_org: short component name "
+                             "(refdata, trading, ...). Drives the output path "
+                             "(projects/ores.<component>/modeling/) and the "
+                             "ores.<component>.<slug> title.")
     parser.add_argument("--force", action="store_true",
                         help="Overwrite the output file if it already exists.")
     return parser.parse_args(argv)
@@ -253,6 +261,15 @@ def main(argv=None):
                               prompt_label="Type",
                               choices=list(TYPE_TO_TEMPLATE))
     args.slug = fill_required("slug", args.slug, prompt_label="Slug (snake_case)")
+
+    # entity_org derives its parent dir from the component if not given.
+    if args.type == "entity_org":
+        args.component = fill_required(
+            "component", args.component,
+            prompt_label="Component (refdata, trading, ...)")
+        if not args.parent_dir:
+            args.parent_dir = f"projects/ores.{args.component}/modeling"
+
     args.parent_dir = fill_required("parent-dir", args.parent_dir,
                                     prompt_label="Parent directory")
     parent_dir = Path(args.parent_dir)
@@ -275,7 +292,10 @@ def main(argv=None):
         args.parent_title = fill_required("parent-title", args.parent_title,
                                           prompt_label=f"Parent {parent_type} title")
 
-    # Required content fields.
+    # Required content fields. entity_org derives its title from
+    # component + slug; the template ignores {{title}}.
+    if args.type == "entity_org" and not args.title:
+        args.title = f"ores.{args.component}.{args.slug}"
     args.title = fill_required("title", args.title, prompt_label="Title")
     args.description = fill_required("description", args.description,
                                      prompt_label="Description (one-liner)")
@@ -346,6 +366,7 @@ def main(argv=None):
         "predecessor_title": args.predecessor_title or "",
         "bucket": bucket,
         "memory_subtype": memory_subtype,
+        "component": args.component,
     }
 
     template_path = TEMPLATE_DIR / TYPE_TO_TEMPLATE[args.type]
@@ -361,6 +382,8 @@ def main(argv=None):
     #              "t" so they sort below story.org and stand apart from any
     #              future siblings in the story folder)
     # - skill:     <parent-dir>/<slug>/SKILL.org  (Claude Code skill folder)
+    # - entity_org: <parent-dir>/ores.<component>.<slug>.org  (codegen
+    #              entity model; filename matches the fully-qualified title)
     # - story / sprint / version: <parent-dir>/<slug>/<type>.org
     #   (these are composition nodes; they hold children)
     if args.type == "task":
@@ -368,6 +391,9 @@ def main(argv=None):
         leaf = args.slug if args.slug.startswith("task_") else f"task_{args.slug}"
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
+    elif args.type == "entity_org":
+        out_dir = parent_dir
+        out_file = out_dir / f"ores.{args.component}.{args.slug}.org"
     elif args.type in ("component", "recipe", "knowledge", "product_identity",
                        "capture", "memory", "investigation"):
         # Captures live at agile/product_backlog/<bucket>/<slug>.org. The

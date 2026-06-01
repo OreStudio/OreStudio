@@ -29,10 +29,11 @@ how to find it there.
 |--------------+----------------------------------------|
 | State        | STARTED                                |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Implementing manifest =modeling_dir= + frontmatter-based discovery. |
-| Waiting on   | Nothing.                               |
-| Next         | Move party_entity.org; regenerate; raise PR. |
+| Now          | PR #967 in review (round 1 applied).   |
+| Waiting on   | Final approval / merge.                |
+| Next         | Move on to next migration task once merged. |
 | Last touched | 2026-06-01                             |
+| Review       | PR #967 round 1: 3 comments, all accepted, fixed in =a7a4d6972=. |
 
 * Acceptance
 
@@ -127,7 +128,9 @@ story-final cleanup task.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =is_domain_entity_model= startswith on path may fail; basename it. | generator.py:251 | Accepted | PR #967 round 1. Fixed in =a7a4d6972= via =os.path.basename= for the =ores.= startswith check only. |
+| 2 | =_is_codegen_entity_org= reads whole file then slices; cheap chunked read instead, drop try/except. | generate.py:24 | Accepted | PR #967 round 1. Fixed in =a7a4d6972= via =with path.open() as f: f.read(4096)=. |
+| 3 | Use =is_dir()= instead of =exists()= before globbing modeling_dir. | generate.py:177 | Accepted | PR #967 round 1. Fixed in =a7a4d6972=. |
 
 * Result
 

@@ -150,18 +150,20 @@ generator.py routing (=get_template_mappings=,
 | =field_group=        |   5 | Migrate     | [[id:E3E380D3-6471-46B6-8422-617F3086B9F8][Migrate trading field-group JSON models to org]] |
 | =enum=               |   3 | Migrate     | [[id:9DA26E86-E206-4DA1-8097-6E79CA4B86E9][Migrate enum JSON models to org]] |
 | =service_registry=   |   1 | Migrate     | [[id:F699C1EF-7365-40B5-83CA-4CA84B0F6306][Migrate service_registry JSON model to org]] |
-| slovaris data*       |   6 | Out of scope | (Slovaris reference data; not a codegen model) |
+| slovaris data*       |   6 | Migrate     | [[id:3B4C2C1F-2174-4A41-A838-991C6D5631B8][Migrate slovaris reference-data JSONs to org-mode]] |
 | =generated_at=       |   1 | Retire      | [[id:EE3A7822-C95F-48C8-8474-862209C446FE][Retire plantuml_er_model.json from models/]] |
 
 *Slovaris files (=manifest.json=, =model.json=, =catalogs.json=,
 =country_currency.json=, =datasets.json=, =tags.json=) hold the
-reference-data taxonomy that codegen reads as *sibling data* (via
-=load_data= / =get_template_mappings=), not as models. They drive
-SQL populate scripts. Their fate is a separate question from this
-story (likely a dedicated data-migration story); for now they stay
-JSON under =projects/ores.codegen/models/slovaris/= and the story's
-empty-=models/= target excludes the =slovaris/= sub-tree from
-consideration.
+reference-data taxonomy that codegen reads as *sibling data* via
+=load_data= / =get_template_mappings= and as a batch driver via
+=model.json=. They drive SQL populate scripts. The full
+decommission of JSON is part of this story's empty-=models/=
+target, so slovaris migrates too — captured as a follow-on task
+that decides the per-file org-mode shape and extends =load_data=
+to read both =.org= and =.json= so the populate pipeline keeps
+working. =methodology.txt= is plain text (not JSON) and stays in
+place.
 
 ** Per-kind detail
 
@@ -241,11 +243,12 @@ Follow-on tasks are ordered roughly easy → hard:
 5. =entity= (12, SQL-only lookup entities).
 6. =service_registry= (1).
 7. =component= (32, biggest but identical shape).
-8. =plantuml_er_model.json= retirement.
+8. =slovaris= (6 reference-data JSONs; load_data extension).
+9. =plantuml_er_model.json= retirement.
 
-Once all eight follow-on tasks land, =projects/ores.codegen/models/=
-contains only =slovaris/= (slovaris reference data — out of scope
-for this story).
+Once all nine follow-on tasks land, =projects/ores.codegen/models/=
+is empty (=slovaris/methodology.txt= is plain text — not under
+inventory).
 
 ** Per-kind task scaffolds
 

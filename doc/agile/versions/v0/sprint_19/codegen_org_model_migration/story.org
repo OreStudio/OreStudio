@@ -108,6 +108,7 @@ against an inadequate model format and migrating later.
 | [[id:F88B35A5-0BE4-4274-99FC-2F08AAE5F80B][Migrate lookup-entity JSON models to org-mode]] | BACKLOG | | | 12 files. SQL-only lookup entities (=*_entity.json= without =_domain_=). |
 | [[id:F699C1EF-7365-40B5-83CA-4CA84B0F6306][Migrate the services service_registry JSON to org-mode]] | BACKLOG | | | 1 file. Catalogue of services / ports. |
 | [[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][Migrate component JSON models to org-mode]] | BACKLOG | | | 32 files. Per-package CMake / C++ component metadata. Biggest kind. |
+| [[id:3B4C2C1F-2174-4A41-A838-991C6D5631B8][Migrate slovaris reference-data JSONs to org-mode]] | BACKLOG | | | 6 files. Reference-data taxonomy read as sibling data via =load_data=; needs a loader extension. |
 | [[id:EE3A7822-C95F-48C8-8474-862209C446FE][Retire plantuml_er_model.json from models/]] | BACKLOG | | | Generated artefact — move to a build path + gitignore. |
 
 * Notes

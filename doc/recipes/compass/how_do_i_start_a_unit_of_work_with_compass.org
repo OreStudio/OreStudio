@@ -2,15 +2,15 @@
 :ID: 84C9177E-C737-428A-BDF9-E55FA6C9680C
 :END:
 #+title: How do I start a unit of work with compass?
-#+description: Use compass goto to fetch main, create a feature branch, and scaffold a linked story and task in one step.
+#+description: Use compass story new or compass task new to fetch main, create a feature branch, and scaffold a linked story and task in one step.
 #+type: recipe
 #+level: cross
 #+filetags: :compass:workflow:agile:recipe:
 #+created: 2026-05-25
-#+updated: 2026-05-25
+#+updated: 2026-06-01
 
-The /Goto/ pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]] — it composes =git= and the
-Scaffold pillar ([[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][=add=]]) into the "start a story" ritual.
+The /Scaffold/ pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]] — composing =git= and the
+low-level =add= primitive into a one-step "start a unit of work" ritual.
 
 * Question
 
@@ -20,52 +20,55 @@ story and for adding a task to an existing one.)
 
 * Answer
 
-=goto= has two modes.
-
 ** New story
 
 #+begin_src sh :results verbatim
-./projects/ores.compass/compass.sh goto \
+./projects/ores.compass/compass.sh story new \
   --slug my_feature --title "My feature" \
   --description "What it delivers." --tags "topic"
 #+end_src
 
 Fetches =main=, creates =feature/my-feature=, scaffolds the story (in
 the current sprint) + a linked task (with =#+branch:= set so [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][=fleet=]]
-picks it up), and prints the remaining manual steps (wire the story into
-the sprint =* Stories= table, set states, push/PR).
+picks it up), updates =.journal.org=, and prints the remaining manual
+steps (wire the story into the sprint =* Stories= table, set states,
+push/PR).
 
 ** Add a task to an existing story
 
 Identify the story by its =:ID:= (or unique prefix) or its folder slug:
 
 #+begin_src sh :results verbatim
-./projects/ores.compass/compass.sh goto \
-  --story compass_goto --task-slug fix_help_text \
-  --task "Fix the goto help text" --description "…"
+./projects/ores.compass/compass.sh task new \
+  --story compass_cli_ux_redesign \
+  --slug fix_help_text \
+  --title "Fix the help text" --description "…"
 #+end_src
 
 Creates =feature/fix-help-text= and adds the task to that story (no new
-story). =--story= is mutually exclusive with =--slug/--title=.
+story). =--story= accepts UUID, UUID prefix, or folder slug.
 
 ** Notes
 
-Preview either mode with =--dry-run= (no side effects). =--task= sets
-the task title (new mode default: =Implement <title>=); =--base=
-overrides the branch base (default =origin/main=).
+Preview either mode with =--dry-run= (no side effects). =--task= in
+=story new= sets the first task title (default: =Implement <title>=);
+=--base= overrides the branch base (default =origin/main=).
 
 * Script
 
-=projects/ores.compass/compass.sh goto= → =src/compass.py= (=cmd_goto=),
-which calls =git fetch= / =git switch -c= and =ores.codegen='s
-=doc_generate= (via the shared =_import_generator=, same as =add=).
+=compass story new= → =src/compass.py= (=cmd_story=, =_scaffold_and_branch=),
+which calls =git fetch= / =git switch -c=, =ores.codegen='s =doc_generate=,
+sets =#+branch:= on the task file, and appends an entry to =.journal.org=.
+
+=compass task new= follows the same path in existing-story mode.
 
 * Tested by
 
 Manual: =--dry-run= plus a throwaway real run (branch + story + task
-created, =#+branch= set), then cleaned up.
+created, =#+branch= set, journal updated), then cleaned up.
 
 * See also
 
-- [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] — the =add= primitive =goto= builds on.
+- [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] — the low-level =add= primitive.
 - [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][How do I see what every worktree is doing?]] — =fleet=, the companion view.
+- [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]] — =.journal.org= auto-updated on task pickup.

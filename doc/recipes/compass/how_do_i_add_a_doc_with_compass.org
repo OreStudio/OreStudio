@@ -14,11 +14,11 @@ over [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]'s generator (call
 of flags per document type, see [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]].
 
 #+begin_note
-*Prefer =goto= for starting work.* =compass goto= creates both a story
-and a linked task, fetches =main=, and creates a feature branch in one
-step — the full "start work on a story" ritual. Use =add= when you need
-the primitive: scaffolding a single document (a standalone task inside
-an existing story, a sprint, a recipe, etc.) without the branch/task
+*Prefer =story new= / =task new= for starting work.* =compass story new=
+creates both a story and a linked task, fetches =main=, and creates a
+feature branch in one step. Use =add= when you need the primitive:
+scaffolding a single document (a standalone task inside an existing
+story, a sprint, a recipe, etc.) without the branch/task
 side-effects.
 #+end_note
 

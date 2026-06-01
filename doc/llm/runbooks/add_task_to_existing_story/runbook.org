@@ -2,7 +2,7 @@
 :ID: 5AE311D8-36A8-4892-AAB4-DB3A13B00B6F
 :END:
 #+title: Add a task to an existing story
-#+description: Add a new task to an in-flight story: scaffold via compass goto --story, fill content, mark STARTED, commit, push, and open a PR.
+#+description: Add a new task to an in-flight story: scaffold via compass task new, fill content, mark STARTED, commit, push, and open a PR.
 #+type: runbook
 #+level: cross
 #+filetags: :runbook:agile:task:compass:
@@ -34,13 +34,13 @@ In execution order:
    ./projects/ores.compass/compass.sh search "<story topic>"
    #+end_src
 
-2. /Scaffold the task./ Use [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — the =--story= form — to create the feature branch and task doc in one step:
+2. /Scaffold the task./ Use [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — =compass task new= — to create the feature branch and task doc in one step:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh goto \
+   ./projects/ores.compass/compass.sh task new \
      --story <story-slug-or-uuid> \
-     --task-slug <task_slug> \
-     --task "Task title" \
+     --slug <task_slug> \
+     --title "Task title" \
      --description "One-sentence description."
    #+end_src
 
@@ -91,6 +91,6 @@ In execution order:
 * See also
 
 - [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] — use this instead when the story itself does not yet exist.
-- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — full =compass goto= syntax for both modes.
+- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — =compass task new= syntax and options.
 - [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] — the next runbook: from task pickup to merge.
 - [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]] — commit format reference.

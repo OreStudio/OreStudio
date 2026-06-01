@@ -43,8 +43,8 @@ detection guidance.
 compass fleet
 #+end_src
 
-Then branch using =compass goto= per [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]],
-mark the story =STARTED=, and commit the status change. =compass goto=
+Then branch using =compass story new= per [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]],
+mark the story =STARTED=, and commit the status change. =compass story new=
 automatically appends a =STARTED= entry to =.journal.org= — no manual
 journal update needed. The full state machine is in [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]]; the
 execution-phase context is in [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]].

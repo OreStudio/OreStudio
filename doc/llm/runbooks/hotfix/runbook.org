@@ -44,17 +44,17 @@ In execution order:
    #+end_src
 
 3. /Create a hotfix branch and scaffold the story./ Use
-   [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — =compass goto= — with
+   [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — =compass story new= — with
    =--kind hotfix=. The slug names the broken thing, not the fix:
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh goto \
+   ./projects/ores.compass/compass.sh story new \
      --slug <broken_thing> \
      --kind hotfix \
      --title "Hotfix: <broken thing>" \
      --description "<one sentence: what is broken>." \
      --tags "hotfix:<component>"
    #+end_src
-   =compass goto --kind hotfix= creates =hotfix/<broken-thing>=,
+   =compass story new --kind hotfix= creates =hotfix/<broken-thing>=,
    =story.org=, and a linked task. See
    [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]].
 
@@ -120,6 +120,6 @@ In execution order:
 * See also
 
 - [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]] — hotfix branch naming convention.
-- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — full =compass goto= syntax.
+- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — =compass story new --kind hotfix= syntax.
 - [[id:EAB80857-3DB3-4A63-8D81-2F0A06B4F6DD][Check git commit conventions before committing]] — commit format.
 - [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] — the normal (non-hotfix) story runbook.

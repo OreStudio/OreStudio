@@ -75,8 +75,9 @@ Three Windows/macOS CI failures after PR #969 (service parser exports):
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                              | File                          | Decision | Notes                              |
+|---+------------------------------------------------------------------------------+-------------------------------+----------+------------------------------------|
+| 1 | Introduce try_parse_and_populate template to remove duplication (line 134)  | parse_trade_instrument.cpp    | Accept   | Fixed 0b0c8551f + 0b990a8d5        |
+| 2 | Use helper across all 10 leg-based cases (line 272)                          | parse_trade_instrument.cpp    | Accept   | Fixed 0b0c8551f                    |
 
 * Result

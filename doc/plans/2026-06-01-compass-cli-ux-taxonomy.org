@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: E4B2D8F1-7C3A-4E9B-A6D5-2F8C1E4B7D3A
+:END:
+#+title: Compass CLI UX taxonomy
+#+AUTHOR: Claude
+#+DATE: 2026-06-01
+
+* Overview
+
+This document records the System 2 analysis of =ores.compass= CLI UX
+conducted at the start of the [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] story. It defines
+the full command taxonomy, pillar organisation, backward-compatibility
+decisions, and the correct tool description. All implementation tasks
+in the story build from this document.
+
+* Current state
+
+=ores.compass= started as an orientation tool (=compass where=, =compass fleet=)
+but has grown into a full developer toolkit. As of sprint 19 the command set is:
+
+| Command | Function | Naming style |
+|---------+----------+--------------|
+| =index= | Rebuild compass search DB | Verb |
+| =search= / =find= | Full-text search | Verb |
+| =debug= | Inspect index | Verb |
+| =where= / =status= | Sprint/version/in-flight | Verb |
+| =fleet= | Worktree status via journal | Noun-ish |
+| =list= | Filter doc graph | Verb |
+| =show= | Single doc detail | Verb |
+| =add= | Scaffold agile artefact | Verb |
+| =goto= | Branch + scaffold + journal | Verb |
+| =capture= | File a product backlog capture | Verb |
+| =inbox= / =next= / =deferred= / =discarded= | Backlog buckets | Noun |
+| =backlog= | List backlog captures | Noun |
+| =journal= | Session journal (update/where/log) | Noun + sub-verb |
+
+Problems:
+1. Self-description: "repository orientation tool" — wrong scope.
+2. Mixed naming: verbs (=goto=, =add=), nouns (=journal=, =backlog=), hybrids (=fleet=).
+3. Missing: no sprint-level or story-level status commands.
+4. Discoverability: =--help= is a flat list with no pillar grouping.
+
+* Taxonomy decision
+
+** Pillars
+
+Five pillars cover the full scope:
+
+| Pillar | Commands | Description |
+|--------+----------+-------------|
+| *Orient* | =where=, =fleet=, =sprint=, =story= | Where are we? What is the state of things? |
+| *Search* | =search= / =find=, =list=, =show= | Find and inspect docs |
+| *Scaffold* | =goto=, =add= | Create artefacts and branches |
+| *Capture* | =capture=, =inbox=, =next=, =deferred=, =discarded=, =backlog= | Manage the product backlog |
+| *Journal* | =journal= | Session journal (per-worktree) |
+
+Internal/maintenance commands (=index=, =debug=) are unlisted in =--help= but still work.
+
+** New commands this sprint
+
+| Command | Pillar | Description |
+|---------+--------+-------------|
+| =compass sprint= | Orient | Sprint status: all stories grouped by state |
+| =compass story= | Orient | Story status: all tasks grouped by state |
+
+Both are sub-subcommand groups. Sprint 19 scope is =status= only:
+- =compass sprint status= — all stories in current sprint, grouped by DONE / STARTED / BACKLOG
+- =compass story status <id>= — all tasks in a story, grouped by state, with branch and PR
+
+Future sub-subcommands (out of scope this sprint):
+- =compass sprint new= / =compass sprint close=
+- =compass story new= / =compass story start= / =compass story close=
+- =compass task new= / =compass task start= / =compass task close=
+
+** Backward compatibility
+
+*Rule: no hard renames this sprint. All existing commands keep their names.*
+
+Rationale: 34 files in =doc/recipes/=, =doc/llm/skills/=, and =doc/llm/runbooks/=
+reference compass commands. A hard rename would require updating all of them,
+touching every worktree, and breaking any external scripts. The correct approach
+is: add new noun-based commands now; migrate callers gradually; retire old verb
+names in a future sprint once all callers are updated.
+
+| Existing command | Treatment | Notes |
+|------------------+-----------+-------|
+| =goto= | Keep | Does more than =story new= (branch + journal + scaffold); keep name |
+| =add= | Keep | Low-level scaffold primitive; keep alongside noun forms |
+| =where= / =status= | Keep | =status= is already an alias; both stay |
+| =fleet= | Keep | Reads journal; fits Orient pillar under its own name |
+| =capture= | Keep | Filing a capture is a distinct action |
+| =inbox= / =next= / =deferred= / =discarded= | Keep | Backlog bucket shortcuts |
+| =backlog= | Keep | Backlog listing |
+| =journal= | Keep | Already noun-based; no change |
+| =search= / =find= | Keep | =find= is alias |
+| =list= / =show= | Keep | Navigate pillar primitives |
+
+** Tool description
+
+Current: "a repository orientation tool"
+Proposed: "developer toolkit for ORE Studio — orient, scaffold, capture, and search"
+
+** =--help= pillar grouping
+
+argparse does not natively support subcommand groups. Implementation options:
+
+1. *Custom formatter* — subclass =argparse.HelpFormatter= to inject group headers.
+2. *Epilog* — put the grouped listing in the =--help= epilog as a formatted string.
+3. *Separate =--help= handler* — intercept =--help= and print a custom grouped table.
+
+Recommendation: *Option 2 (epilog)* — lowest risk, no argparse internals, fully
+testable. The epilog shows five pillar sections; the standard argparse subparser
+list remains as-is for compatibility with shell completion.
+
+* Recipes and docs impact
+
+34 files reference compass commands. Audit findings (Task 6 of the story):
+
+- No existing recipe refers to a command being renamed — no breakage.
+- New commands (=compass sprint status=, =compass story status=) need a new recipe.
+- The existing =how_do_i_see_where_we_are.org= recipe covers =compass where=;
+  the new recipe covers =compass sprint status= and =compass story status=.
+- The tool description fix (docstring + =--help=) has no recipe impact.
+
+* Implementation order
+
+| Task | Depends on | Description |
+|------+------------+-------------|
+| T1 (this doc) | Nothing | UX analysis — gates all others |
+| T2 | T1 | Fix description; add pillar epilog to =--help= |
+| T3 | T1 | Implement =compass sprint status= |
+| T4 | T1 | Implement =compass story status= |
+| T5 | T3, T4 | Write recipe for new orient commands |
+| T6 | T2–T5 | Audit and update recipes/skills/runbooks |
+
+T3 and T4 can run in parallel after T1 is merged.
+
+* See also
+
+- [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] — parent story
+- [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][Compass CLI UX analysis and taxonomy]] — this task

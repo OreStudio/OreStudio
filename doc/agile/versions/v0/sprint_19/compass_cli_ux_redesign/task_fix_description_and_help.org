@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: EE9BBBBF-73E3-4AB9-81E6-9B047BF9D2D4
+:END:
+#+title: Task: Fix compass description and organise --help by pillar
+#+description: Update module docstring to developer toolkit; add pillar epilog to --help output grouping Orient/Search/Scaffold/Capture/Journal.
+#+type: task
+#+level: s1
+#+filetags: :compass_cli_ux_redesign:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the tool's self-description from "repository orientation tool" to
+"developer toolkit for ORE Studio", and organise the =--help= output by
+pillar so contributors can immediately see the full scope of compass.
+
+* Status
+
+| Field        | Value                                       |
+|--------------+---------------------------------------------|
+| State        | BACKLOG                                     |
+| Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]                    |
+| Now          | Not yet started.                            |
+| Waiting on   | [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][Task 1: UX analysis]] (DONE — unblocked).   |
+| Next         | Update docstring; add epilog to =--help=.   |
+| Last touched | 2026-06-01                                  |
+
+* Acceptance
+
+- Module docstring in =compass.py= reads "developer toolkit for ORE Studio"
+  (not "repository orientation tool").
+- =compass --help= includes an epilog grouping subcommands by pillar:
+  Orient / Search / Scaffold / Capture / Journal.
+- Existing =compass --help= subcommand list is unchanged (epilog is additive).
+- CI passes.
+
+* Plan
+
+From [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][UX analysis]]:
+
+- Change line 2 of =compass.py= docstring.
+- Add a formatted epilog string to the top-level =argparse.ArgumentParser=
+  call in =main()= — option 2 from the analysis (lowest risk, no argparse
+  internals).
+- Epilog format:
+
+#+begin_example
+Pillars:
+  Orient:   where, fleet, sprint, story
+  Search:   search (find), list, show
+  Scaffold: goto, add
+  Capture:  capture, inbox, next, deferred, discarded, backlog
+  Journal:  journal
+#+end_example
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |

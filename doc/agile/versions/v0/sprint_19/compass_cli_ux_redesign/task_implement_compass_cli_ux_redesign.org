@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_cli_ux_redesign:sprint_19:v0:
 #+owner: marco
-#+branch: feature/compass-cli-ux-redesign
-#+pr: 960
+#+branch: feature/compass-ux-analysis
+#+pr: 964
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-31
@@ -36,12 +36,12 @@ must answer:
 
 | Field        | Value                                         |
 |--------------+-----------------------------------------------|
-| State        | STARTED                                       |
+| State        | DONE                                          |
 | Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]                      |
-| Now          | Writing taxonomy and design document.         |
+| Now          | Nothing.                                      |
 | Waiting on   | Nothing.                                      |
-| Next         | Complete design doc; gate implementation tasks. |
-| Last touched | 2026-05-31                                    |
+| Next         | Done. T2–T4 can proceed in parallel.          |
+| Last touched | 2026-06-01                                    |
 
 * Acceptance
 
@@ -91,6 +91,7 @@ Current compass commands (as of sprint 19):
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/960][#960]] | [agile] Scaffold compass_cli_ux_redesign story in sprint 19 |
+| [[https://github.com/OreStudio/OreStudio/pull/964][#964]] | [agile] Task 1: Compass CLI UX analysis and taxonomy |
 
 * Review
 
@@ -99,3 +100,13 @@ Current compass commands (as of sprint 19):
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Empty =* Result= section should be omitted | task file | Fixed: removed | Gemini review |
+
+* Result
+
+- Design document written: =doc/plans/2026-06-01-compass-cli-ux-taxonomy.org=
+- Five pillars defined: Orient, Search, Scaffold, Capture, Journal.
+- No hard renames this sprint — 34 existing references are safe.
+- New commands scoped to =compass sprint status= and =compass story status=.
+- =--help= grouping via epilog (Option 2) chosen for low risk.
+- Tool description updated to "developer toolkit for ORE Studio".
+- Implementation order confirmed: T2–T4 can run after this; T3/T4 in parallel.

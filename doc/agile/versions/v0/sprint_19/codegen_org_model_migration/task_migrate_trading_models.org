@@ -80,6 +80,6 @@ Follow the refdata pilot pattern from PR #971:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task missing =* PRs= / =* Review= sections; suggests =\| PR \| Description \| Decision \| Notes \|= columns. | task_migrate_trading_models.org:72 | Declined | PR #975 round 1. Both sections already present (lines 73, 79) with the repo's standard column shape. |
 
 * Result

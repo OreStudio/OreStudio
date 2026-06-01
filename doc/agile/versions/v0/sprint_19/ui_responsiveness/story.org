@@ -24,12 +24,12 @@ feedback about what is happening.
 
 | Field         | Value                                            |
 |---------------+--------------------------------------------------|
-| State         | BACKLOG                                        |
-| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                               |
-| Now           | Not yet started.                                 |
-| Waiting on    | Nothing.                                         |
-| Next          | Break into tasks.                                |
-| Last touched  | 2026-06-01                                         |
+| State         | STARTED                                                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                       |
+| Now           | T1 scaffolded: fix currency dialog responsiveness (issues 1–3 POC). |
+| Waiting on    | Nothing.                                                             |
+| Next          | Implement T1.                                                        |
+| Last touched  | 2026-06-01                                                           |
 
 * Acceptance
 
@@ -47,9 +47,9 @@ feedback about what is happening.
 
 * Tasks
 
-| Task | State | Start | End | Description |
-|------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| Task                                         | State   | Start      | End | Description                                                              |
+|----------------------------------------------+---------+------------+-----+--------------------------------------------------------------------------|
+| [[id:70A2FCBE-B871-4BB7-ABE4-28BB3867A140][T1: Fix currency dialog responsiveness]]  | BACKLOG | 2026-06-01 |     | Issues 1–3 scoped to currency dialogs: remove waitForFinished(), add Loading… combos |
 
 * Analysis
 

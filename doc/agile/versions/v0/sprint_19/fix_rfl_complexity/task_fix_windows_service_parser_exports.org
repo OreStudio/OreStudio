@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-11 service =config/parser.hpp= files lack the =ORES_*_SERVICE_EXPORT= macro
+16 service =config/parser.hpp= files lack the =ORES_*_SERVICE_EXPORT= macro
 on their =parser= class. On Windows (shared library build), this means the
 =parse= member function is not exported from the DLL, so test binaries that
 call it fail to link. Add the include and export macro to every affected
@@ -45,10 +45,12 @@ service parser header.
 
 * Plan
 
-Affected services (11): =ores.wt.service=, =ores.analytics.service=,
-=ores.scheduler.service=, =ores.controller.service=, =ores.synthetic.service=,
-=ores.iam.service=, =ores.reporting.service=, =ores.workspace.service=,
-=ores.marketdata.service=, =ores.compute.service=, =ores.assets.service=.
+Affected services (16): =ores.analytics.service=, =ores.assets.service=,
+=ores.compute.service=, =ores.controller.service=, =ores.dq.service=,
+=ores.iam.service=, =ores.marketdata.service=, =ores.ore.service=,
+=ores.reporting.service=, =ores.scheduler.service=, =ores.synthetic.service=,
+=ores.telemetry.service=, =ores.variability.service=, =ores.workflow.service=,
+=ores.workspace.service=, =ores.wt.service=.
 
 Pattern (from working example in =ores.trading.service=):
 1. Add =#include "ores.<name>.service/export.hpp"= to =config/parser.hpp=.

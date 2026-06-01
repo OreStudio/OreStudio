@@ -43,8 +43,9 @@ PORT=9000 build/scripts/serve-site.sh --compile
 
 * How it works
 
-=--compile= runs =emacs -Q --script .build-site.el= from the repo root,
-which publishes every =.org= file to HTML under =build/output/site/=.
+=--compile= runs =emacs -Q --script projects/ores.lisp/src/ores-build-site.el=
+from the repo root, which publishes every =.org= file to HTML under
+=build/output/site/=.
 
 After compiling (or if the build directory already exists), the script
 creates a temporary directory with a =OreStudio/= symlink pointing at

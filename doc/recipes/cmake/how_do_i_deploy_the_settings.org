@@ -63,7 +63,7 @@ file should be audited.
 
 * Script
 
-=.build-settings.el= is the Emacs script the target invokes. It:
+=projects/ores.lisp/src/ores-build-settings.el= is the Emacs script the target invokes. It:
 
 1. Loads =projects/ores.lisp/ores-babel.el= to make =ores/repo-root=
    available.

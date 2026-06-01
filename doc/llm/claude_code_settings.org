@@ -25,7 +25,7 @@ necessary; each wildcard is chosen to cover only the intended surface.
 cmake --build --preset linux-clang-debug-ninja --target deploy_settings
 #+end_src
 
-This invokes =.build-settings.el=, which tangles this file to
+This invokes =projects/ores.lisp/src/ores-build-settings.el=, which tangles this file to
 =.claude/settings.json=. Requires Emacs on PATH and a configured build
 directory. Must be run outside the sandbox (compiler detection is needed
 by CMake during reconfiguration); use =dangerouslyDisableSandbox: true=
@@ -36,8 +36,9 @@ on the Bash tool call.
 The master block assembles the final JSON from noweb references defined
 in the sections below. It carries no =:tangle= directive; the output
 path (=.claude/settings.json= under the repo root) is injected by
-=.build-settings.el= via =org-babel-default-header-args:json= using
-the =ores/repo-root= variable from =projects/ores.lisp/ores-babel.el=.
+=projects/ores.lisp/src/ores-build-settings.el= via
+=org-babel-default-header-args:json= using the =ores/repo-root=
+variable from =projects/ores.lisp/src/ores-babel.el=.
 Sections are separated by a trailing comma in the reference line; the
 last section in each array carries no comma.
 
@@ -137,8 +138,8 @@ Common invocations:
 - =make -C build/output/linux-clang-debug-make -j2 ores.utility=
 - =cmake --build --preset linux-clang-debug-ninja --target deploy_skills=
 - =cmake --build --preset linux-clang-debug-ninja --target deploy_settings=
-- =emacs -Q --script .build-skills.el=
-- =emacs -Q --script .build-settings.el=
+- =emacs -Q --script projects/ores.lisp/src/ores-build-skills.el=
+- =emacs -Q --script projects/ores.lisp/src/ores-build-settings.el=
 - =build/scripts/build.sh ores.utility.tests=
 - =source build/scripts/set_ssh_agent.sh=
 - =sccache --start-server=

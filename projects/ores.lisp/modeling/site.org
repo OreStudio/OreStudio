@@ -30,10 +30,9 @@ The site is built by invoking Emacs in batch mode:
 cmake --build --preset linux-clang-debug-ninja --target deploy_site
 #+end_src
 
-This calls =emacs -Q --script .build-site.el=, which loads
-=ores-build-site.el= and runs =org-publish-all=. The publishing
-project is defined in =org-publish-project-alist= inside that file
-and has two components:
+This calls =emacs -Q --script projects/ores.lisp/src/ores-build-site.el=,
+which runs =org-publish-all=. The publishing project is defined in
+=org-publish-project-alist= inside that file and has two components:
 
 - =site:pages= — exports all =.org= files to HTML recursively from
   the repo root, skipping =vcpkg/=, =build/=, =tmp/=, and

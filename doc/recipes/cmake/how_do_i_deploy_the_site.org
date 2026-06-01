@@ -9,7 +9,7 @@
 #+created: 2026-05-18
 #+updated: 2026-05-18
 
-For the build script that does the work (=.build-site.el=) and the
+For the build script that does the work (=projects/ores.lisp/src/ores-build-site.el=) and the
 output location, see [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 
 * Question
@@ -19,7 +19,7 @@ How do I build the ORE Studio website locally?
 * Answer
 
 The =deploy_site= CMake target invokes Emacs in batch mode against
-=.build-site.el=, which publishes every =.org= file in the repository
+=projects/ores.lisp/src/ores-build-site.el=, which publishes every =.org= file in the repository
 (excluding =.packages=, =vcpkg=, =build=) to HTML:
 
 #+begin_src sh :results verbatim
@@ -63,7 +63,7 @@ edit anything that affects link resolution. The target wipes
 
 * Script
 
-=.build-site.el= is the Emacs script the target invokes. The CMake
+=projects/ores.lisp/src/ores-build-site.el= is the Emacs script the target invokes. The CMake
 target definition lives in =CMakeLists.txt= near
 =add_custom_target(deploy_site ...)=.
 

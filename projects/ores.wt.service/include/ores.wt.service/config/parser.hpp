@@ -24,6 +24,7 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include "ores.wt.service/export.hpp"
 #include "ores.wt.service/config/options.hpp"
 
 namespace ores::wt::service::config {
@@ -34,7 +35,7 @@ namespace ores::wt::service::config {
  * Parses database and logging options. Wt-specific options (--docroot,
  * --http-address, etc.) are passed through to the Wt framework.
  */
-class parser final {
+class ORES_WT_SERVICE_EXPORT parser final {
 public:
     struct parse_result {
         std::optional<options> opts;

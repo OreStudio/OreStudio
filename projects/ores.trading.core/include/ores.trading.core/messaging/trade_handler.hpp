@@ -85,7 +85,6 @@ inline auto& trade_handler_lg() {
 } // namespace
 
 using ores::service::messaging::reply;
-using ores::service::messaging::reply_no_variant_tags;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
@@ -583,12 +582,7 @@ public:
         }
         BOOST_LOG_SEV(trade_handler_lg(), debug)
             << "Completed " << msg.subject;
-        // trade_instrument is a 9-alternative variant with nested sub-variants
-        // (bringing the total field-name union to 502 names); reply() would apply
-        // AddTagsToVariants and exceed the macOS/Windows fold-expression nesting
-        // limit. The client dispatches on product_type/trade_type and reads
-        // concrete leaf types directly, so type-name tags are not needed.
-        reply_no_variant_tags(nats_, msg, resp);
+        reply(nats_, msg, resp);
     }
 
     void export_portfolio(ores::nats::message msg) {

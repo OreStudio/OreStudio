@@ -24,6 +24,7 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include "ores.telemetry.service/export.hpp"
 #include "ores.telemetry.service/config/options.hpp"
 
 namespace ores::telemetry::service::config {
@@ -34,7 +35,7 @@ namespace ores::telemetry::service::config {
  * Note on logging: logging is not available during parsing since the logger
  * is only initialised after options have been successfully parsed.
  */
-class parser final {
+class ORES_TELEMETRY_SERVICE_EXPORT parser final {
 public:
     std::optional<options>
     parse(const std::vector<std::string>& arguments, std::ostream& info,

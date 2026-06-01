@@ -24,6 +24,7 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include "ores.compute.service/export.hpp"
 #include "ores.compute.service/config/options.hpp"
 
 namespace ores::compute::service::config {
@@ -34,7 +35,7 @@ namespace ores::compute::service::config {
  * Note on logging: logging is not available during parsing since the logger
  * is only initialised after options have been successfully parsed.
  */
-class parser final {
+class ORES_COMPUTE_SERVICE_EXPORT parser final {
 public:
     std::optional<options>
     parse(const std::vector<std::string>& arguments, std::ostream& info,

@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 50F24383-D38D-4753-A6AD-379057A26054
+:END:
+#+title: Task: Inventory remaining JSON models + plan their migration to org-mode
+#+description: The domain-entity sweep is closing out, but ~77 other JSON files remain under projects/ores.codegen/models/ across many shapes: *_table.json (SQL-only lookup tables), *_entity.json (lookup entities), *_field_group.json, *_junction.json, *_enum.json, ores_*_component.json, service registries, and a few standalone files (tags.json, plantuml_er_model.json). This task catalogues every remaining file, groups them by kind, decides what each kind's org-mode shape should be (or whether it stays JSON / gets retired), and sequences the migration work into follow-up tasks on this story.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+After the per-component domain-entity sweep merges (PR #989), the
+target end-state for =projects/ores.codegen/models/= is *empty*:
+every JSON model becomes a literate =.org= file under the appropriate
+component's =modeling/= directory, or is retired entirely. This task
+takes inventory of every remaining JSON file, groups them by kind,
+decides each kind's org-mode shape (or retirement), and writes the
+follow-on per-kind migration tasks that close out =models/=.
+
+The deliverable is a written inventory + sequenced plan committed
+to the story. Actual conversion happens in the follow-on tasks this
+one scaffolds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Not yet started.                       |
+| Waiting on   | PR #989 to merge (final domain-entity sweep). |
+| Next         | Enumerate every remaining JSON; group by kind. |
+| Last touched | 2026-06-01                             |
+
+* Acceptance
+
+- Every file currently under =projects/ores.codegen/models/= is
+  catalogued under exactly one of these dispositions:
+  - *Migrate.* Has an org-mode counterpart in this story. The
+    inventory names the kind, the org section shape, and the
+    follow-on task that owns the conversion.
+  - *Retire.* No longer needed (orphan / superseded). The inventory
+    explains why and the deletion lands in a follow-on cleanup task.
+  - *Out of scope.* Stays JSON (e.g. third-party data, raw fixtures).
+    The inventory states why each one is kept and where it lives.
+- Per-kind migration tasks scaffolded for each *Migrate* group, each
+  with its own plan body covering: which org section it lands in,
+  how the org_loader reads it, what the converter (if any) needs to
+  emit, and what the follow-on tasks (PRs) look like.
+- A retirement task scaffolded if there's a non-trivial *Retire* set.
+- =projects/ores.codegen/models/= empty-target plan recorded in the
+  story's =* Decisions= section so future readers see the closing
+  goal.
+- Inventory committed to this task's =* Result= section as the
+  authoritative reference (CSV / org table) so the follow-on tasks
+  can cross-reference it.
+
+* Plan
+
+** 1. Enumerate
+
+#+begin_src sh :results verbatim
+find projects/ores.codegen/models -maxdepth 3 -name '*.json' | sort
+#+end_src
+
+For each file, capture: path, suffix pattern, top-level JSON shape
+(domain_entity / table / junction / enum / field_group / component /
+service / other), whether codegen actually reads it (search for the
+filename / pattern in =projects/ores.codegen/src/=), and the
+templates that consume it.
+
+** 2. Group by kind
+
+Visible kinds today (from a quick scan of the tree at the time of
+writing):
+
+- =*_table.json= — SQL-only lookup tables (refdata, several others).
+- =*_entity.json= — non-domain lookup-entity models.
+- =*_field_group.json= — trading field groups composed into trade
+  variants.
+- =*_junction.json= — junction tables for many-to-many relationships.
+- =*_enum.json= — pure enum models.
+- =ores_*_component.json= — component manifests (one per package).
+- Per-package =service.json= / registry models under
+  =models/<package>.service/=.
+- Standalone files (=tags.json=, =plantuml_er_model.json=,
+  =profiles.json=, ...).
+
+For each kind, decide:
+- *Migrate to org.* What does the org file look like, where does it
+  live, what =#+type:= identifies it, does it need a converter
+  extension?
+- *Retire.* Is the model still consumed? If not, delete.
+- *Out of scope.* Some kinds are third-party data or generator
+  fixtures and can stay JSON for now.
+
+** 3. Sequence follow-on tasks
+
+One task per migrate-able kind, ordered by:
+1. Number of files in the kind (small kinds first as warm-ups).
+2. Whether new converter / org_loader work is needed (no-converter
+   tasks land first).
+3. Cross-kind dependencies (e.g. junctions reference the
+   domain-entities already migrated).
+
+A final cleanup task removes =projects/ores.codegen/models/=
+entirely once the per-kind tasks all merge.
+
+** 4. Commit + raise PR
+
+Just docs:
+- Inventory in this task's =* Result= section.
+- Per-kind follow-on tasks scaffolded.
+- Story =* Decisions= section updated with the empty-=models/= target.
+- Story task table updated with the new follow-on tasks.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

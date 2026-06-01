@@ -7,9 +7,9 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on: none
+#+branch: feature/migrate-analytics-org
+#+pr: 983
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-01
@@ -19,41 +19,47 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Convert the 4 =*_domain_entity.json= files under
+=projects/ores.codegen/models/analytics/= (pricing_engine_type,
+pricing_model_config, pricing_model_product,
+pricing_model_product_parameter) into literate
+=ores.analytics.<entity>.org= files under
+=projects/ores.analytics/modeling/=, using =migrate_json_to_org.py=.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Migration complete; raising PR.        |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-01                               |
+| Next         | Merge.                                 |
+| Last touched | 2026-06-01                             |
 
 * Acceptance
 
--
-
-* Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+- =analytics-cpp= manifest entry has =modeling_dir="projects/ores.analytics/modeling"=.
+- 4 =ores.analytics.<entity>.org= files exist; 4 corresponding JSON files removed.
 
 * Notes
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #983 | [codegen,analytics] Migrate analytics entity models from JSON to org-mode |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =list_filter_column= + =extra_list_requests= missing from pricing_model_product_parameter. | pricing_model_product_parameter.org:3 | Partially accepted | PR #983 round 1. =list_filter_column= fixed in =5245f40ff= (added to C++ Flags drawer); =extra_list_requests= array deferred to [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][array-fields task]]. |
+| 2 | =key_widget= missing from Qt drawer (pricing_model_product_parameter). | pricing_model_product_parameter.org:171 | Accepted | PR #983 round 1. Fixed in =5245f40ff= (added to Qt drawer key list). |
+| 3 | =combo_values= for parameter_scope static combo missing. | pricing_model_product_parameter.org:193 | Deferred | PR #983 round 1. list-of-dicts shape doesn't fit a table cell; deferred to [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][array-fields task]] (scope broadened). |
+| 4 | =list_filter_column= missing from pricing_model_product. | pricing_model_product.org:3 | Accepted | PR #983 round 1. Fixed in =5245f40ff= via the same C++ Flags drawer entry. |
+| 5 | =key_widget= missing from Qt drawer (pricing_model_product). | pricing_model_product.org:156 | Accepted | PR #983 round 1. Fixed in =5245f40ff=. |
+| 6 | Dynamic-combo properties missing from pricing_engine_type_code detail field. | pricing_model_product.org:178 | Accepted | PR #983 round 1. Fixed in =5245f40ff=; detail-fields table picks up the full combo_* column set whenever any field uses them. |
+| 7 | =key_widget= missing from Qt drawer (pricing_model_config). | pricing_model_config.org:138 | Accepted | PR #983 round 1. Fixed in =5245f40ff=. |
 
 * Result

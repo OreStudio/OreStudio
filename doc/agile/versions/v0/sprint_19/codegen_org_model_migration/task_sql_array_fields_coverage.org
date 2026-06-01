@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC
 :END:
-#+title: Task: Extend converter + org_loader for SQL array-structured fields
-#+description: JSON entity models carry array-structured SQL fields the org-mode pipeline does not yet model: top-level indexes, and sql.{extra_checks, text_code_validations, extra_delete_sets}. The JSON→org converter currently drops them; the org_loader has no shape to read them back. This task adds sub-heading / table-based org representations for each kind, extends both ends of the pipeline, and re-emits the affected org files so --profile sql round-trips cleanly.
+#+title: Task: Extend converter + org_loader for array-structured fields
+#+description: JSON entity models carry array-structured fields the org-mode pipeline does not yet model: SQL-side indexes, sql.{extra_checks, text_code_validations, extra_delete_sets}; entity-level extra_list_requests; Qt detail-field static-combo combo_values (list of {label,value} dicts). The JSON→org converter currently drops all of these; the org_loader has no shape to read them back. This task adds sub-heading / table-based org representations for each kind, extends both ends of the pipeline, and re-emits the affected org files so --profile sql round-trips cleanly and the Qt UI generator emits static combo box values.
 #+type: task
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:

@@ -129,6 +129,7 @@ def _qt_drawer_keys(qt):
         "collection_name",
         "item_var",
         "key_field",
+        "key_widget",
         "has_uuid_primary_key",
         "has_pagination",
         "has_history",
@@ -324,6 +325,8 @@ def _cpp_section(de):
         cpp_flag_pairs.append(("has_batch_read", str(de["has_batch_read"]).lower()))
     if "generator_facet_name" in de:
         cpp_flag_pairs.append(("generator_facet_name", de["generator_facet_name"]))
+    if "list_filter_column" in de:
+        cpp_flag_pairs.append(("list_filter_column", de["list_filter_column"]))
     if cpp_flag_pairs:
         parts.append("")
         parts.append(f"** Flags\n{_drawer(cpp_flag_pairs)}")
@@ -372,8 +375,21 @@ def _cpp_section(de):
             parts.append("")
             parts.append("*** Detail fields")
             parts.append("")
-            cols = ["field", "label", "widget", "type", "is_key", "is_required", "placeholder"]
-            parts.append(_table(detail_fields, cols))
+            base_cols = ["field", "label", "widget", "type",
+                         "is_key", "is_required", "placeholder"]
+            # Dynamic-combo fields carry a fixed family of combo_* scalar
+            # properties. Include those columns when any field uses them so
+            # the table preserves per-field combo wiring. Static-combo
+            # `combo_values` (list of {label,value} dicts) needs richer
+            # structure — deferred to the SQL/array-fields follow-up task.
+            combo_cols = [
+                "combo_type", "combo_include", "combo_display", "combo_value",
+                "combo_is_uuid", "combo_is_optional", "combo_setter",
+                "combo_setter_pascal", "combo_items_member",
+            ]
+            extra_cols = [c for c in combo_cols
+                          if any(c in f for f in detail_fields)]
+            parts.append(_table(detail_fields, base_cols + extra_cols))
 
         qt_columns = qt.get("columns") or []
         if qt_columns:

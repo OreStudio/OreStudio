@@ -8,7 +8,7 @@
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
 #+branch: feature/fix-windows-macos-ci
-#+pr: 978
+#+pr: 978 982
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Two remaining Windows/macOS CI failures after PR #969 (service parser exports):
+Three Windows/macOS CI failures after PR #969 (service parser exports):
 
 1. *macOS Clang + Windows MSVC*: =ClientManager.hpp= applied =rfl::AddTagsToVariants= to all
    four =rfl::json::read= call sites. =export_portfolio_response= contains
@@ -32,21 +32,29 @@ Two remaining Windows/macOS CI failures after PR #969 (service parser exports):
    =ORES_COMPUTE_WRAPPER_EXPORT=, so =pack= and =extract= static methods were not exported
    from the DLL.
 
+3. *Windows MSVC C1202 in parse_trade_instrument.cpp*: reflecting a combined
+   ={concrete_instrument; vector<swap_leg>}= struct in a single =rfl::json::read= call creates
+   a Literal over the union of all unique field names from both types (~29 for
+   =swaption_instrument= + =swap_leg=). MSVC's =no_duplicate_field_names= recursive template
+   check triggers C1202. Fix: split every leg-based type read into two separate
+   =rfl::json::read= calls — one for the instrument sub-object, one for the legs. Applied
+   uniformly to all 9 swap types and composite.
+
 * Status
 
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
 | State        | STARTED                                                          |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]  |
-| Now          | Committed; PR open; awaiting CI.                                 |
-| Waiting on   | CI green + review.                                               |
-| Next         | Merge PR; mark DONE.                                             |
+| Now          | PR #982 open for parse_trade_instrument C1202 fix; awaiting CI.  |
+| Waiting on   | CI green + review on PR #982.                                     |
+| Next         | Merge PR #982; mark DONE.                                         |
 | Last touched | 2026-06-01                                                       |
 
 * Acceptance
 
 - macOS CI: no fold-expression nesting limit error from =ClientManager.hpp= reads.
-- Windows MSVC CI: no =C1202= recursive type error from =ClientManager.hpp= reads.
+- Windows MSVC CI: no =C1202= in =ClientManager.hpp= or =parse_trade_instrument.cpp=.
 - Windows Clang CI: =archiver::pack= and =archiver::extract= link without undefined symbol errors.
 - No regression on Linux CI.
 
@@ -63,11 +71,13 @@ Two remaining Windows/macOS CI failures after PR #969 (service parser exports):
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/978][#978]] | [ores.compute.wrapper,ores.qt.api] Fix remaining Windows/macOS CI failures |
+| [[https://github.com/OreStudio/OreStudio/pull/982][#982]] | [ores.qt.api] Fix MSVC C1202 in parse_trade_instrument.cpp |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                              | File                          | Decision | Notes                              |
+|---+------------------------------------------------------------------------------+-------------------------------+----------+------------------------------------|
+| 1 | Introduce try_parse_and_populate template to remove duplication (line 134)  | parse_trade_instrument.cpp    | Accept   | Fixed 0b0c8551f + 0b990a8d5        |
+| 2 | Use helper across all 10 leg-based cases (line 272)                          | parse_trade_instrument.cpp    | Accept   | Fixed 0b0c8551f                    |
 
 * Result

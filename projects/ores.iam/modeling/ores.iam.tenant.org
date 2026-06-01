@@ -1,0 +1,233 @@
+:PROPERTIES:
+:ID: 246ECBFA-7A14-4320-B56A-7A07AAE96EA5
+:END:
+#+title: ores.iam.tenant
+#+description: Codegen entity model for the iam =tenant= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:
+#+brief: A tenant representing an isolated organisation or the system platform.
+#+entity_singular: tenant
+#+entity_plural: tenants
+#+entity_title: Tenant
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Core entity for multi-tenancy support. Each tenant represents an isolated
+organisation with its own users, roles, and data. The system tenant (UUID all zeros)
+is a special tenant used for shared reference data and system administration.
+
+Tenants are identified by:
+- id: UUID primary key (SQL also has tenant_id = id for self-reference)
+- code: Unique text code for stable referencing (e.g., 'system', 'acme')
+- hostname: Unique hostname for tenant routing during login
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     iam
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this tenant.
+
+The system tenant has UUID 00000000-0000-0000-0000-000000000000. In SQL, tenant_id = id for tenant records.
+
+* Natural keys
+
+** code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique code for stable referencing.
+
+Examples: 'system', 'acme', 'demo'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_tenant"
+#+end_src
+
+* Columns
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable display name for the tenant.
+
+#+begin_src cpp :name generator
+std::string(faker::company::name())
+#+end_src
+
+** type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Tenant type classification (FK to tenant_types).
+
+#+begin_src cpp :name generator
+"organisation"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Detailed description of the tenant.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** hostname
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Unique hostname for tenant routing.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + ".example.com"
+#+end_src
+
+** status
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Tenant lifecycle status (FK to tenant_statuses).
+
+#+begin_src cpp :name generator
+"active"
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_iam_tenants_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: iam.api
+:component_core:    iam.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: tenant
+:entity_plural_short:   tenants
+:entity_singular_words: tenant
+:entity_plural_words:   tenants
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: t
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| name        | Name        |
+| type        | Type        |
+| hostname    | Hostname    |
+| status      | Status      |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.iam/domain/tenant.hpp
+:domain_class:           iam::domain::tenant
+:protocol_include:       ores.iam/messaging/tenant_protocol.hpp
+:collection_name:        tenants
+:item_var:               tenant
+:key_field:              code
+:has_uuid_primary_key:   true
+:get_request_class:      iam::messaging::get_tenants_request
+:get_response_class:     iam::messaging::get_tenants_response
+:get_message_type:       get_tenants_request
+:save_request_class:     iam::messaging::save_tenant_request
+:save_response_class:    iam::messaging::save_tenant_response
+:save_message_type:      save_tenant_request
+:delete_request_class:   iam::messaging::delete_tenant_request
+:delete_response_class:  iam::messaging::delete_tenant_response
+:delete_message_type:    delete_tenant_request
+:history_request_class:  iam::messaging::get_tenant_history_request
+:history_response_class: iam::messaging::get_tenant_history_response
+:history_message_type:   get_tenant_history_request
+:settings_group:         TenantListWindow
+:window_title:           Tenants
+:icon:                   Building
+:END:
+
+*** Detail fields
+
+| field    | label    | widget       | type      | is_key | is_required | placeholder        |
+|----------+----------+--------------+-----------+--------+-------------+--------------------|
+| code     | Code     | codeEdit     | line_edit | true   | true        | Enter tenant code  |
+| name     | Name     | nameEdit     | line_edit |        | true        | Enter display name |
+| type     | Type     | typeEdit     | line_edit |        |             | Enter tenant type  |
+| hostname | Hostname | hostnameEdit | line_edit |        |             | Enter hostname     |
+| status   | Status   | statusEdit   | line_edit |        |             | Enter status       |
+
+*** Columns (Qt model)
+
+| enum_name  | field       | header      | type      | width |
+|------------+-------------+-------------+-----------+-------|
+| Code       | code        | Code        | string    | 120   |
+| Name       | name        | Name        | string    | 200   |
+| Type       | type        | Type        | string    | 100   |
+| Hostname   | hostname    | Hostname    | string    | 180   |
+| Status     | status      | Status      | string    | 100   |
+| Version    | version     | Version     | int       | 80    |
+| ModifiedBy | modified_by | Modified By | string    | 120   |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150   |
+
+** Custom repository methods

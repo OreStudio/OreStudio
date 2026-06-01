@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :ui_responsiveness:sprint_19:v0:
 #+owner: marco
-#+branch: feature/ui-responsiveness-currency
+#+branch: feature/fix-currency-dialog-responsiveness
 #+pr: 977
 #+blocked_on: none
 #+blocked_since:
@@ -41,12 +41,12 @@ requires a cross-cutting =ClientManager= change.
 
 | Field        | Value                                        |
 |--------------+----------------------------------------------|
-| State        | BACKLOG                                      |
-| Parent story | [[id:61F836E5-2277-4765-9038-AF7D0176C993][Make UI more responsive]]             |
-| Now          | Not yet started.                             |
-| Waiting on   | Nothing.                                     |
-| Next         | Begin implementation.                        |
-| Last touched | 2026-06-01                                   |
+| State        | STARTED                                                          |
+| Parent story | [[id:61F836E5-2277-4765-9038-AF7D0176C993][Make UI more responsive]]                               |
+| Now          | Implementing: destructor fix + Loading… combos in both dialogs. |
+| Waiting on   | Nothing.                                                         |
+| Next         | Commit, push, open PR.                                           |
+| Last touched | 2026-06-01                                                       |
 
 * Acceptance
 

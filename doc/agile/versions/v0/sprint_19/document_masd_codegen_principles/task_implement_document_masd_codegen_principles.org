@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 9C7C4C36-76AD-48C0-B217-D6E82F831C03
+:END:
+#+title: Task: Write the MASD and code generation principles document
+#+description: Author the MASD and code generation principles knowledge document; cover MDE theory, ores.codegen practice, and the reference-implementation backout strategy; wire into compass.org and ores.codegen component docs.
+#+type: task
+#+level: s1
+#+filetags: :document_masd_codegen_principles:sprint_19:v0:
+#+owner: marco
+#+branch: feature/document-masd-codegen-principles
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE6A643D-6C6C-41B8-88FD-2EA9351414CD][Document MASD and code generation principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write =doc/knowledge/masd_and_codegen_principles.org= — a technical
+knowledge document that situates ORE Studio's code generation work
+within Model-Driven Engineering theory and makes the project's
+long-term generative intent explicit and navigable.
+
+The document must:
+
+1. State the MDE/MASD theoretical basis concisely: what a meta-model
+   is, what a template is, what a profile is, and how they combine to
+   produce artefacts.
+2. Map those abstractions onto ORE Studio's concrete implementation:
+   JSON models → =ores.codegen= → SQL / C++ / org artefacts.
+3. Articulate the /reference-implementation backout/ strategy:
+   - Commission one entity fully by hand (=currency= is the reference).
+   - Observe the recurring pattern across all layers.
+   - Encode the pattern in Mustache templates and a profile entry.
+   - Use the generator to produce all subsequent entities.
+4. State clearly what generation covers today (SQL DQ scripts, v2
+   org-mode artefacts) and what remains manual, cross-referencing the
+   [[id:897A7156-504D-4581-AD4C-026D643C0838][entity evaluation checklist]].
+5. Wire inbound links: add an entry in [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][ores.codegen]] component overview
+   and a bullet in =compass.org= under a new =** Engineering principles=
+   subsection.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | STARTED                                                            |
+| Parent story | [[id:EE6A643D-6C6C-41B8-88FD-2EA9351414CD][Document MASD and code generation principles]]                      |
+| Now          | Writing document.                                                  |
+| Waiting on   | Nothing.                                                           |
+| Next         | Commit, push, open PR.                                             |
+| Last touched | 2026-06-01                                                         |
+
+* Acceptance
+
+- =doc/knowledge/masd_and_codegen_principles.org= exists with correct
+  compass-generated frontmatter (=:ID:=, =#+type: knowledge=, etc.).
+- Document covers all five points listed in =* Goal=.
+- =compass.org= has a new =** Engineering principles= subsection with a
+  link to the document.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] component overview links to the document.
+- =validate_docs.sh= passes; site builds without errors.
+
+* Plan
+
+1. Use =compass add knowledge= to scaffold the document with correct
+   frontmatter.
+2. Write the content in four sections: MDE theory, ORE Studio mapping,
+   backout strategy, current coverage.
+3. Edit =compass.org= to add the =** Engineering principles= entry.
+4. Edit =projects/ores.codegen/modeling/component_overview.org= to add
+   an inbound link.
+5. Commit as =[doc] Add MASD and code generation principles document=.
+
+* Notes
+
+** Key source documents to read before writing
+
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — component overview; inputs, outputs, profile system.
+- [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — internal structure, template system.
+- [[id:897A7156-504D-4581-AD4C-026D643C0838][ores.refdata entity evaluation checklist]] — what full coverage looks like.
+- =projects/ores.codegen/library/profiles.json= — the profile that maps
+  entity types to template sets; ground truth for what is generated.
+
+** MASD framing notes
+
+MASD (Model-Driven Architecture Software Development) is a software
+engineering method that applies OMG's Model-Driven Architecture (MDA)
+principles at the process level. The three key abstractions to cover:
+
+- *Meta-model* — the abstract grammar of valid models. In ORE Studio the
+  JSON schema for entity models (field names, types, constraints) is the
+  implicit meta-model.
+- *Profile* — a named binding of a meta-model to a concrete platform.
+  =profiles.json= encodes ORE Studio's profiles (=sql_dq=, =v2_doc=, etc.)
+  mapping model elements to Mustache templates.
+- *Template* — a parameterised artefact skeleton. Each =.mustache= file
+  is a template; the generator applies model data to produce a concrete
+  file.
+
+** Backout strategy framing notes
+
+The term /backout/ refers to extracting generative structure from an
+existing implementation rather than designing it top-down. The workflow:
+
+1. Hand-write the =currency= entity across all layers (the reference
+   implementation).
+2. Identify which parts are mechanical and which contain genuine
+   domain-specific logic.
+3. Express the mechanical parts as Mustache templates parameterised by
+   the JSON model.
+4. Add a profile entry mapping =entity= model type to those templates.
+5. Verify the generator reproduces the reference exactly (zero diff on
+   regeneration).
+6. Decommission the hand-written files; the generator owns the output.
+
+This is distinct from a top-down MDA approach (model first, generate
+always) because it grounds the generator in a proven implementation
+rather than an idealised design.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

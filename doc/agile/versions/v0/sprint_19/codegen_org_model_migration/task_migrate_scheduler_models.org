@@ -7,9 +7,9 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on: none
+#+branch: feature/migrate-scheduler-org
+#+pr: 986
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-01
@@ -19,41 +19,45 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Convert the single =job_definition_domain_entity.json= under
+=projects/ores.codegen/models/scheduler/= into a literate
+=ores.scheduler.job_definition.org= file under
+=projects/ores.scheduler/modeling/=, using =migrate_json_to_org.py=.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Migration complete; raising PR.        |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-01                               |
+| Next         | Merge.                                 |
+| Last touched | 2026-06-01                             |
 
 * Acceptance
 
--
-
-* Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+- =scheduler-cpp= manifest entry has =modeling_dir="projects/ores.scheduler/modeling"=.
+- =ores.scheduler.job_definition.org= exists; JSON file removed.
 
 * Notes
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #986 | [codegen,scheduler] Migrate job_definition entity model from JSON to org-mode |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =description= column missing =default: ''=. | job_definition.org:64 | Accepted | PR #986 round 1. Fixed in =d4a0e43d1= (column drawer now forwards every scalar property). |
+| 2 | =command= column missing =default: ''=. | job_definition.org:73 | Accepted | PR #986 round 1. Fixed in =d4a0e43d1=. |
+| 3 | =action_type= column missing =default: 'execute_sql'=. | job_definition.org:91 | Accepted | PR #986 round 1. Fixed in =d4a0e43d1=. |
+| 4 | =action_payload= column missing =default: '{}'::jsonb=. | job_definition.org:100 | Accepted | PR #986 round 1. Fixed in =d4a0e43d1=. |
+| 5 | =is_active= column missing =default: 1=. | job_definition.org:109 | Accepted | PR #986 round 1. Fixed in =d4a0e43d1=. |
+| 6 | =extra_checks= / =soft_fk_validations= / =indexes= missing from SQL section. | job_definition.org:120 | Deferred | PR #986 round 1. Array-structured fields covered by [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][array-fields task]]. |
+| 7 | =Active= Qt column missing type =bool=. | job_definition.org:195 | Accepted | PR #986 round 1. Fixed in =d4a0e43d1= (is_bool → "bool"). |
 
 * Result

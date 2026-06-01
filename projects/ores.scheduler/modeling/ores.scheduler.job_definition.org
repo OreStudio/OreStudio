@@ -1,0 +1,204 @@
+:PROPERTIES:
+:ID: BD750888-6B72-48C1-AE74-DDC535705022
+:END:
+#+title: ores.scheduler.job_definition
+#+description: Codegen entity model for the scheduler =job_definition= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: scheduler
+#+filetags: :model:entity:scheduler:
+#+brief: Persistent plan for a pg_cron scheduled SQL job.
+#+entity_singular: job_definition
+#+entity_plural: job_definitions
+#+entity_title: Job Definition
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Metadata overlay for a pg_cron cron.job entry. Tracks the job name,
+cron expression, SQL command, target database, and active state.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     scheduler
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:        id
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+UUID primary key for the job definition.
+
+* Natural keys
+
+* Columns
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional party scope for this job (NULL for tenant-scoped or system jobs).
+
+** job_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Unique name for the scheduled job.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+Human-readable description of the job.
+
+** command
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+SQL command to execute (used when action_type = execute_sql).
+
+** schedule_expression
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Cron expression defining the schedule.
+
+** action_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  'execute_sql'
+:END:
+
+Execution mode: execute_sql or nats_publish.
+
+** action_payload
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: false
+:default:  '{}'::jsonb
+:END:
+
+Payload for nats_publish action type.
+
+** is_active
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  1
+:END:
+
+1 = active, 0 = paused.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:          ores_scheduler_job_definitions_tbl
+:nullable_tenant_id: true
+:security_definer:   true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include:    scheduler.api
+:component_core:       scheduler.core
+:generator_facet_name: generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: definition
+:entity_plural_short:   definitions
+:entity_singular_words: job definition
+:entity_plural_words:   job definitions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: jd
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.scheduler/domain/job_definition.hpp
+:domain_class:           scheduler::domain::job_definition
+:protocol_include:       ores.scheduler/messaging/scheduler_protocol.hpp
+:collection_name:        definitions
+:item_var:               definition
+:key_field:              job_name
+:key_widget:             jobNameEdit
+:has_uuid_primary_key:   true
+:get_request_class:      scheduler::messaging::get_job_definitions_request
+:get_response_class:     scheduler::messaging::get_job_definitions_response
+:get_message_type:       get_job_definitions_request
+:save_request_class:     scheduler::messaging::schedule_job_request
+:save_response_class:    scheduler::messaging::schedule_job_response
+:save_message_type:      schedule_job_request
+:delete_request_class:   scheduler::messaging::unschedule_job_request
+:delete_response_class:  scheduler::messaging::unschedule_job_response
+:delete_message_type:    unschedule_job_request
+:history_request_class:  scheduler::messaging::get_job_history_request
+:history_response_class: scheduler::messaging::get_job_history_response
+:history_message_type:   get_job_history_request
+:settings_group:         JobDefinitionListWindow
+:window_title:           Job Definitions
+:icon:                   CalendarClock
+:END:
+
+*** Detail fields
+
+| field               | label           | widget                 | type      | is_key | is_required | placeholder                        |
+|---------------------+-----------------+------------------------+-----------+--------+-------------+------------------------------------|
+| job_name            | Job Name        | jobNameEdit            | line_edit | true   | true        | Enter unique job name              |
+| description         | Description     | descriptionEdit        | text_edit |        |             | Enter a human-readable description |
+| command             | SQL Command     | commandEdit            | text_edit |        | true        | Enter the SQL command to execute   |
+| schedule_expression | Schedule (cron) | scheduleExpressionEdit | line_edit |        | true        | e.g., 0 * * * * (every hour)       |
+| database_name       | Database        | databaseNameEdit       | line_edit |        | true        | Target PostgreSQL database name    |
+
+*** Columns (Qt model)
+
+| enum_name    | field               | header      | type   | width |
+|--------------+---------------------+-------------+--------+-------|
+| JobName      | job_name            | Job Name    | string | 200   |
+| Description  | description         | Description | string | 250   |
+| Schedule     | schedule_expression | Schedule    | string | 150   |
+| DatabaseName | database_name       | Database    | string | 150   |
+| Active       | is_active           | Active      | bool   | 80    |
+| Version      | version             | Version     | int    | 60    |
+| ModifiedBy   | modified_by         | Modified By | string | 120   |
+
+** Custom repository methods

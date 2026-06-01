@@ -1,0 +1,270 @@
+:PROPERTIES:
+:ID: 76C8E362-CC14-4CD1-A658-FC382C25964C
+:END:
+#+title: ores.refdata.zero_convention
+#+description: Codegen entity model for the refdata =zero_convention= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for a zero-coupon yield curve.
+#+entity_singular: zero_convention
+#+entity_plural: zero_conventions
+#+entity_title: Zero Convention
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Specifies the day count fraction and compounding method used when bootstrapping
+a discount or zero-rate curve in ORE. Corresponds to the <Zero> element in
+ORE conventions.xml. The id field is the natural key (ORE <Id> element).
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique convention identifier.
+
+Examples: 'EUR-ZERO-CONVENTIONS', 'USD-ZERO-CONVENTIONS'.
+
+#+begin_src cpp :name generator
+std::string("EUR-ZERO-CONVENTIONS")
+#+end_src
+
+* Natural keys
+
+* Columns
+
+** tenor_based
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the curve is defined on a tenor grid (true) or on absolute dates (false).
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** day_count_fraction
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Day count fraction code (canonical FpML, e.g. 'ACT/365.FIXED').
+
+#+begin_src cpp :name generator
+std::string("ACT/365.FIXED")
+#+end_src
+
+** compounding
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Compounding method (canonical CDM, e.g. 'Continuous'). Present only when tenor_based is true.
+
+#+begin_src cpp :name generator
+std::string("Continuous")
+#+end_src
+
+** compounding_frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Frequency at which the rate is compounded (canonical CDM). Present only when compounding is 'Compounded'.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** tenor_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar used to determine tenor dates (e.g. 'TARGET').
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** spot_lag
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Number of business days from today to the spot date.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spot_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar used to compute the spot date.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** roll_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Business day convention applied to tenor dates (canonical FpML).
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** end_of_month
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether end-of-month convention applies.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_zero_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: refdata.api
+:component_core:    refdata.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: zero_convention
+:entity_plural_short:   zero_conventions
+:entity_singular_words: zero convention
+:entity_plural_words:   zero conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: zc
+:END:
+
+** Table display
+
+| column             | header         |
+|--------------------+----------------|
+| id                 | Id             |
+| tenor_based        | Tenor Based    |
+| day_count_fraction | DCF            |
+| compounding        | Compounding    |
+| tenor_calendar     | Tenor Calendar |
+| modified_by        | Modified By    |
+| version            | Version        |
+
+** Qt
+:PROPERTIES:
+:collection_name:         zero_conventions
+:item_var:                zc
+:key_field:               id
+:has_uuid_primary_key:    false
+:get_request_class:       refdata::messaging::get_zero_conventions_request
+:get_response_class:      refdata::messaging::get_zero_conventions_response
+:get_message_type:        get_zero_conventions_request
+:save_request_class:      refdata::messaging::save_zero_convention_request
+:save_response_class:     refdata::messaging::save_zero_convention_response
+:save_message_type:       save_zero_convention_request
+:save_request_item_field: zero_convention
+:delete_request_class:    refdata::messaging::delete_zero_convention_request
+:delete_response_class:   refdata::messaging::delete_zero_convention_response
+:delete_message_type:     delete_zero_convention_request
+:history_request_class:   refdata::messaging::get_zero_convention_history_request
+:history_response_class:  refdata::messaging::get_zero_convention_history_response
+:history_message_type:    get_zero_convention_history_request
+:settings_group:          ZeroConventionListWindow
+:window_title:            Zero Conventions
+:icon:                    Chart
+:END:
+
+*** Detail fields
+
+| field                 | label                 | widget                   | type      | is_key | is_required | placeholder         |
+|-----------------------+-----------------------+--------------------------+-----------+--------+-------------+---------------------|
+| id                    | Id                    | idEdit                   | line_edit | true   | true        | Enter convention id |
+| day_count_fraction    | Day Count Fraction    | dayCountFractionEdit     | line_edit |        | true        | e.g. ACT/365.FIXED  |
+| compounding           | Compounding           | compoundingEdit          | line_edit |        |             | e.g. Continuous     |
+| compounding_frequency | Compounding Frequency | compoundingFrequencyEdit | line_edit |        |             | e.g. Annual         |
+| tenor_calendar        | Tenor Calendar        | tenorCalendarEdit        | line_edit |        |             | e.g. TARGET         |
+| spot_calendar         | Spot Calendar         | spotCalendarEdit         | line_edit |        |             |                     |
+| roll_convention       | Roll Convention       | rollConventionEdit       | line_edit |        |             |                     |
+
+*** Columns (Qt model)
+
+| enum_name        | field              | header         | type      | width |
+|------------------+--------------------+----------------+-----------+-------|
+| Id               | id                 | Id             | string    | 200   |
+| TenorBased       | tenor_based        | Tenor Based    |           | 100   |
+| DayCountFraction | day_count_fraction | DCF            | string    | 140   |
+| Compounding      | compounding        | Compounding    | string    | 120   |
+| TenorCalendar    | tenor_calendar     | Tenor Calendar | string    | 130   |
+| Version          | version            | Version        | int       | 80    |
+| ModifiedBy       | modified_by        | Modified By    | string    | 120   |
+| RecordedAt       | recorded_at        | Recorded At    | timestamp | 150   |
+
+** Custom repository methods

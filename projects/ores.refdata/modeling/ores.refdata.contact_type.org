@@ -1,0 +1,173 @@
+:PROPERTIES:
+:ID: EB3BE18B-A99C-464E-992B-C98AC421A7B9
+:END:
+#+title: ores.refdata.contact_type
+#+description: Codegen entity model for the refdata =contact_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Classification of contact information purpose.
+#+entity_singular: contact_type
+#+entity_plural: contact_types
+#+entity_title: Contact Type
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Reference data table defining valid contact type classifications.
+Examples: 'Legal', 'Operations', 'Settlement', 'Billing'.
+
+Contact types are managed by the system tenant and are used to
+categorise contact information records for parties and counterparties.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique contact type code.
+
+Examples: 'Legal', 'Operations', 'Settlement'.
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the contact type.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Contact"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the contact type.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_contact_types_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: refdata.api
+:component_core:    refdata.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: contact type
+:entity_plural_words:   contact types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ct
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| description   | Description |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata/domain/contact_type.hpp
+:domain_class:           refdata::domain::contact_type
+:protocol_include:       ores.refdata/messaging/contact_type_protocol.hpp
+:collection_name:        types
+:item_var:               type
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      refdata::messaging::get_contact_types_request
+:get_response_class:     refdata::messaging::get_contact_types_response
+:get_message_type:       get_contact_types_request
+:save_request_class:     refdata::messaging::save_contact_type_request
+:save_response_class:    refdata::messaging::save_contact_type_response
+:save_message_type:      save_contact_type_request
+:delete_request_class:   refdata::messaging::delete_contact_type_request
+:delete_response_class:  refdata::messaging::delete_contact_type_response
+:delete_message_type:    delete_contact_type_request
+:history_request_class:  refdata::messaging::get_contact_type_history_request
+:history_response_class: refdata::messaging::get_contact_type_history_response
+:history_message_type:   get_contact_type_history_request
+:settings_group:         ContactTypeListWindow
+:window_title:           Contact Types
+:icon:                   PersonAccounts
+:END:
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Code         | code          | Code        | string    | 150   |
+| Name         | name          | Name        | string    | 200   |
+| Description  | description   | Description | string    | 300   |
+| DisplayOrder | display_order | Order       | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+** Custom repository methods

@@ -1,0 +1,170 @@
+:PROPERTIES:
+:ID: 284D8D40-D243-4E75-885F-FDA5591FB22F
+:END:
+#+title: ores.refdata.currency_market_tier
+#+description: Codegen entity model for the refdata =currency_market_tier= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Classification of currency by market tier.
+#+entity_singular: currency_market_tier
+#+entity_plural: currency_market_tiers
+#+entity_title: Currency Market Tier
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Reference data defining valid currency market tier classifications.
+Values include: G10, Emerging, Exotic, Frontier, Historical.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique currency market tier code.
+
+Examples: 'G10', 'Emerging', 'Exotic', 'Frontier', 'Historical'.
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the currency market tier.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Market Tier"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the currency market tier.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_currency_market_tiers_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: refdata.api
+:component_core:    refdata.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: currency market tier
+:entity_plural_words:   currency market tiers
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: mt
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| description   | Description |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata/domain/currency_market_tier.hpp
+:domain_class:           refdata::domain::currency_market_tier
+:protocol_include:       ores.refdata/messaging/protocol.hpp
+:collection_name:        types
+:item_var:               type
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      refdata::messaging::get_currency_market_tiers_request
+:get_response_class:     refdata::messaging::get_currency_market_tiers_response
+:get_message_type:       get_currency_market_tiers_request
+:save_request_class:     refdata::messaging::save_currency_market_tier_request
+:save_response_class:    refdata::messaging::save_currency_market_tier_response
+:save_message_type:      save_currency_market_tier_request
+:delete_request_class:   refdata::messaging::delete_currency_market_tier_request
+:delete_response_class:  refdata::messaging::delete_currency_market_tier_response
+:delete_message_type:    delete_currency_market_tier_request
+:history_request_class:  refdata::messaging::get_currency_market_tier_history_request
+:history_response_class: refdata::messaging::get_currency_market_tier_history_response
+:history_message_type:   get_currency_market_tier_history_request
+:settings_group:         CurrencyMarketTierListWindow
+:window_title:           Currency Market Tiers
+:icon:                   Chart
+:END:
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Code         | code          | Code        | string    | 150   |
+| Name         | name          | Name        | string    | 200   |
+| Description  | description   | Description | string    | 300   |
+| DisplayOrder | display_order | Order       | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+** Custom repository methods

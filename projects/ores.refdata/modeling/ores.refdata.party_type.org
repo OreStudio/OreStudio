@@ -1,0 +1,173 @@
+:PROPERTIES:
+:ID: E8FD507C-D426-46A3-B81C-670CB448B2E8
+:END:
+#+title: ores.refdata.party_type
+#+description: Codegen entity model for the refdata =party_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Classification of legal entities participating in financial transactions.
+#+entity_singular: party_type
+#+entity_plural: party_types
+#+entity_title: Party Type
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Reference data table defining valid party type classifications.
+Examples: 'Bank', 'Corporate', 'HedgeFund', 'Government'.
+
+Party types are managed by the system tenant and are used to
+categorise parties and counterparties.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique type code.
+
+Examples: 'Bank', 'Corporate', 'HedgeFund'.
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the party type.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Party"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the party type.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_party_types_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: refdata.api
+:component_core:    refdata.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: party type
+:entity_plural_words:   party types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pt
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| description   | Description |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata/domain/party_type.hpp
+:domain_class:           refdata::domain::party_type
+:protocol_include:       ores.refdata/messaging/party_type_protocol.hpp
+:collection_name:        types
+:item_var:               type
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      refdata::messaging::get_party_types_request
+:get_response_class:     refdata::messaging::get_party_types_response
+:get_message_type:       get_party_types_request
+:save_request_class:     refdata::messaging::save_party_type_request
+:save_response_class:    refdata::messaging::save_party_type_response
+:save_message_type:      save_party_type_request
+:delete_request_class:   refdata::messaging::delete_party_type_request
+:delete_response_class:  refdata::messaging::delete_party_type_response
+:delete_message_type:    delete_party_type_request
+:history_request_class:  refdata::messaging::get_party_type_history_request
+:history_response_class: refdata::messaging::get_party_type_history_response
+:history_message_type:   get_party_type_history_request
+:settings_group:         PartyTypeListWindow
+:window_title:           Party Types
+:icon:                   Tag
+:END:
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Code         | code          | Code        | string    | 150   |
+| Name         | name          | Name        | string    | 200   |
+| Description  | description   | Description | string    | 300   |
+| DisplayOrder | display_order | Order       | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+** Custom repository methods

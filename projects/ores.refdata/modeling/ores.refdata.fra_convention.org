@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: 3625B2B3-267C-483B-8B3D-CCBB3EDF3443
+:END:
+#+title: ores.refdata.fra_convention
+#+description: Codegen entity model for the refdata =fra_convention= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for a forward rate agreement (FRA).
+#+entity_singular: fra_convention
+#+entity_plural: fra_conventions
+#+entity_title: FRA Convention
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+A FRA convention ties a FRA instrument to an IBOR index whose own
+conventions (calendar, day count, settlement) govern the FRA.
+Corresponds to the <FRA> element in ORE conventions.xml.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique convention identifier.
+
+Examples: 'EUR-6M-FRA-CONVENTIONS', 'USD-3M-FRA-CONVENTIONS'.
+
+#+begin_src cpp :name generator
+std::string("EUR-6M-FRA-CONVENTIONS")
+#+end_src
+
+* Natural keys
+
+* Columns
+
+** index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+IBOR index identifier (e.g. 'EUR-EURIBOR-6M'). All settlement, calendar, and day count details are inherited from the referenced index convention.
+
+#+begin_src cpp :name generator
+std::string("EUR-EURIBOR-6M")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_fra_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: refdata.api
+:component_core:    refdata.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: fra_convention
+:entity_plural_short:   fra_conventions
+:entity_singular_words: FRA convention
+:entity_plural_words:   FRA conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: fc
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| id          | Id          |
+| index       | Index       |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Qt
+:PROPERTIES:
+:collection_name:         fra_conventions
+:item_var:                fc
+:key_field:               id
+:has_uuid_primary_key:    false
+:get_request_class:       refdata::messaging::get_fra_conventions_request
+:get_response_class:      refdata::messaging::get_fra_conventions_response
+:get_message_type:        get_fra_conventions_request
+:save_request_class:      refdata::messaging::save_fra_convention_request
+:save_response_class:     refdata::messaging::save_fra_convention_response
+:save_message_type:       save_fra_convention_request
+:save_request_item_field: fra_convention
+:delete_request_class:    refdata::messaging::delete_fra_convention_request
+:delete_response_class:   refdata::messaging::delete_fra_convention_response
+:delete_message_type:     delete_fra_convention_request
+:history_request_class:   refdata::messaging::get_fra_convention_history_request
+:history_response_class:  refdata::messaging::get_fra_convention_history_response
+:history_message_type:    get_fra_convention_history_request
+:settings_group:          FraConventionListWindow
+:window_title:            FRA Conventions
+:icon:                    Chart
+:END:
+
+*** Detail fields
+
+| field | label | widget    | type      | is_key | is_required | placeholder         |
+|-------+-------+-----------+-----------+--------+-------------+---------------------|
+| id    | Id    | idEdit    | line_edit | true   | true        | Enter convention id |
+| index | Index | indexEdit | line_edit |        | true        | e.g. EUR-EURIBOR-6M |
+
+*** Columns (Qt model)
+
+| enum_name  | field       | header      | type      | width |
+|------------+-------------+-------------+-----------+-------|
+| Id         | id          | Id          | string    | 220   |
+| Index      | index       | Index       | string    | 180   |
+| Version    | version     | Version     | int       | 80    |
+| ModifiedBy | modified_by | Modified By | string    | 120   |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150   |
+
+** Custom repository methods

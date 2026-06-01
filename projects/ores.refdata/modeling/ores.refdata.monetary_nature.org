@@ -1,0 +1,170 @@
+:PROPERTIES:
+:ID: 7DD42682-6914-4F4E-907C-D57DBBB89B8A
+:END:
+#+title: ores.refdata.monetary_nature
+#+description: Codegen entity model for the refdata =monetary_nature= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Monetary nature of the currency.
+#+entity_singular: monetary_nature
+#+entity_plural: monetary_natures
+#+entity_title: Monetary Nature
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Reference data defining valid monetary natures for currencies.
+Values include: Fiat, Commodity, Synthetic, Supranational.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique monetary nature code.
+
+Examples: 'Fiat', 'Commodity', 'Synthetic', 'Supranational'.
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the monetary nature.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Monetary Nature"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the monetary nature.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_monetary_natures_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: refdata.api
+:component_core:    refdata.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: monetary nature
+:entity_plural_words:   monetary natures
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: mn
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| description   | Description |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata/domain/monetary_nature.hpp
+:domain_class:           refdata::domain::monetary_nature
+:protocol_include:       ores.refdata/messaging/protocol.hpp
+:collection_name:        types
+:item_var:               type
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      refdata::messaging::get_monetary_natures_request
+:get_response_class:     refdata::messaging::get_monetary_natures_response
+:get_message_type:       get_monetary_natures_request
+:save_request_class:     refdata::messaging::save_monetary_nature_request
+:save_response_class:    refdata::messaging::save_monetary_nature_response
+:save_message_type:      save_monetary_nature_request
+:delete_request_class:   refdata::messaging::delete_monetary_nature_request
+:delete_response_class:  refdata::messaging::delete_monetary_nature_response
+:delete_message_type:    delete_monetary_nature_request
+:history_request_class:  refdata::messaging::get_monetary_nature_history_request
+:history_response_class: refdata::messaging::get_monetary_nature_history_response
+:history_message_type:   get_monetary_nature_history_request
+:settings_group:         MonetaryNatureListWindow
+:window_title:           Monetary Natures
+:icon:                   Classification
+:END:
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Code         | code          | Code        | string    | 150   |
+| Name         | name          | Name        | string    | 200   |
+| Description  | description   | Description | string    | 300   |
+| DisplayOrder | display_order | Order       | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+** Custom repository methods

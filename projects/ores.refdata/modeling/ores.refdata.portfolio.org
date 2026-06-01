@@ -1,0 +1,276 @@
+:PROPERTIES:
+:ID: 282C87C1-11E1-42F0-BEE6-D6983A5F836B
+:END:
+#+title: ores.refdata.portfolio
+#+description: Codegen entity model for the refdata =portfolio= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Logical aggregation node for risk and reporting.
+#+entity_singular: portfolio
+#+entity_plural: portfolios
+#+entity_title: Portfolio
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Represents organizational, risk, or reporting groupings.
+Never holds trades directly. Supports hierarchical structure
+via self-referencing parent_portfolio_id.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this portfolio.
+
+Surrogate key for the portfolio record.
+
+* Natural keys
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Party that owns this portfolio.
+
+Set server-side from the authenticated session. Enforced by RLS.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the portfolio.
+
+e.g., 'Global Rates', 'APAC Credit'.
+
+#+begin_src cpp :name generator
+std::string(faker::company::companyName()) + " Portfolio"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description of the portfolio.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** parent_portfolio_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Self-referencing FK. NULL indicates a root node.
+
+Links to the parent portfolio in the hierarchy.
+
+#+begin_src cpp :name generator
+boost::uuids::uuid()
+#+end_src
+
+** owner_unit_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Business unit responsible for management.
+
+References the business_units table.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** purpose_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Portfolio purpose classification.
+
+References purpose_types lookup (Risk, Regulatory, ClientReporting, Internal).
+
+#+begin_src cpp :name generator
+std::string("Risk")
+#+end_src
+
+** aggregation_ccy
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Currency for P&L/risk aggregation at this node.
+
+ISO 4217 currency code.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** is_virtual
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+If 1, node is purely for on-demand reporting.
+
+Not persisted in trade attribution when virtual.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** status
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Current lifecycle status (Active, Inactive, Closed).
+
+#+begin_src cpp :name generator
+std::string("Active")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_portfolios_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: refdata.api
+:component_core:    refdata.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: portfolio
+:entity_plural_short:   portfolios
+:entity_singular_words: portfolio
+:entity_plural_words:   portfolios
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pf
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| name            | Name        |
+| purpose_type    | Purpose     |
+| aggregation_ccy | Currency    |
+| is_virtual      | Virtual     |
+| modified_by     | Modified By |
+| version         | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.refdata/domain/portfolio.hpp
+:domain_class:            refdata::domain::portfolio
+:protocol_include:        ores.refdata/messaging/portfolio_protocol.hpp
+:collection_name:         portfolios
+:item_var:                portfolio
+:key_field:               name
+:has_uuid_primary_key:    true
+:get_request_class:       refdata::messaging::get_portfolios_request
+:get_response_class:      refdata::messaging::get_portfolios_response
+:get_message_type:        get_portfolios_request
+:save_request_class:      refdata::messaging::save_portfolio_request
+:save_response_class:     refdata::messaging::save_portfolio_response
+:save_message_type:       save_portfolio_request
+:save_request_item_field: portfolio
+:delete_request_class:    refdata::messaging::delete_portfolio_request
+:delete_response_class:   refdata::messaging::delete_portfolio_response
+:delete_message_type:     delete_portfolio_request
+:history_request_class:   refdata::messaging::get_portfolio_history_request
+:history_response_class:  refdata::messaging::get_portfolio_history_response
+:history_message_type:    get_portfolio_history_request
+:settings_group:          PortfolioListWindow
+:window_title:            Portfolios
+:icon:                    Folder
+:END:
+
+*** Detail fields
+
+| field           | label                | widget             | type      | is_key | is_required | placeholder                |
+|-----------------+----------------------+--------------------+-----------+--------+-------------+----------------------------|
+| name            | Name                 | nameEdit           | line_edit | true   | true        | Enter portfolio name       |
+| purpose_type    | Purpose Type         | purposeTypeEdit    | line_edit |        |             | Enter purpose type         |
+| aggregation_ccy | Aggregation Currency | aggregationCcyEdit | line_edit |        |             | Enter aggregation currency |
+
+*** Columns (Qt model)
+
+| enum_name      | field           | header        | type      | width |
+|----------------+-----------------+---------------+-----------+-------|
+| Name           | name            | Name          | string    | 250   |
+| PurposeType    | purpose_type    | Purpose       | string    | 120   |
+| AggregationCcy | aggregation_ccy | Agg. Currency | string    | 120   |
+| IsVirtual      | is_virtual      | Virtual       | int       | 70    |
+| Version        | version         | Version       | int       | 80    |
+| ModifiedBy     | modified_by     | Modified By   | string    | 120   |
+| RecordedAt     | recorded_at     | Recorded At   | timestamp | 150   |
+
+** Custom repository methods

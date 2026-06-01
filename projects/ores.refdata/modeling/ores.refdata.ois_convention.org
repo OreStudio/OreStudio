@@ -1,0 +1,313 @@
+:PROPERTIES:
+:ID: 136FC526-B671-4438-A790-BFD5E48B0C8B
+:END:
+#+title: ores.refdata.ois_convention
+#+description: Codegen entity model for the refdata =ois_convention= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for an overnight index swap (OIS).
+#+entity_singular: ois_convention
+#+entity_plural: ois_conventions
+#+entity_title: OIS Convention
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Defines the fixed-leg and overnight floating-leg parameters for an OIS.
+OIS are used to bootstrap risk-free overnight discount curves (e.g. EONIA,
+SOFR, SONIA). Corresponds to the <OIS> element in ORE conventions.xml.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique convention identifier.
+
+Examples: 'EUR-OIS-CONVENTIONS', 'USD-OIS-CONVENTIONS'.
+
+#+begin_src cpp :name generator
+std::string("EUR-OIS-CONVENTIONS")
+#+end_src
+
+* Natural keys
+
+* Columns
+
+** spot_lag
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Number of business days from trade date to spot date.
+
+#+begin_src cpp :name generator
+2
+#+end_src
+
+** index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Overnight index identifier (e.g. 'EUR-EONIA', 'USD-SOFR').
+
+#+begin_src cpp :name generator
+std::string("EUR-EONIA")
+#+end_src
+
+** fixed_day_count_fraction
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Day count fraction for the fixed leg (canonical FpML).
+
+#+begin_src cpp :name generator
+std::string("ACT/360")
+#+end_src
+
+** fixed_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Fixed-leg payment calendar (e.g. 'TARGET').
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** payment_lag
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Number of business days between period end and payment.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** end_of_month
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether end-of-month convention applies.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** fixed_frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Fixed-leg payment frequency (canonical CDM, e.g. 'Annual').
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** fixed_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Business day convention for fixed coupon dates (canonical FpML).
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** fixed_payment_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Business day convention for fixed payment dates (canonical FpML).
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** rule
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Date generation rule for the schedule (e.g. 'Backward', 'CDS2015').
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** payment_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Payment calendar override (e.g. 'TARGET').
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** rate_cutoff
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Number of fixing days before period end that rate is locked.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_ois_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: refdata.api
+:component_core:    refdata.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: ois_convention
+:entity_plural_short:   ois_conventions
+:entity_singular_words: OIS convention
+:entity_plural_words:   OIS conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: oc
+:END:
+
+** Table display
+
+| column                   | header      |
+|--------------------------+-------------|
+| id                       | Id          |
+| index                    | Index       |
+| spot_lag                 | Spot Lag    |
+| fixed_day_count_fraction | Fixed DCF   |
+| modified_by              | Modified By |
+| version                  | Version     |
+
+** Qt
+:PROPERTIES:
+:collection_name:         ois_conventions
+:item_var:                oc
+:key_field:               id
+:has_uuid_primary_key:    false
+:get_request_class:       refdata::messaging::get_ois_conventions_request
+:get_response_class:      refdata::messaging::get_ois_conventions_response
+:get_message_type:        get_ois_conventions_request
+:save_request_class:      refdata::messaging::save_ois_convention_request
+:save_response_class:     refdata::messaging::save_ois_convention_response
+:save_message_type:       save_ois_convention_request
+:save_request_item_field: ois_convention
+:delete_request_class:    refdata::messaging::delete_ois_convention_request
+:delete_response_class:   refdata::messaging::delete_ois_convention_response
+:delete_message_type:     delete_ois_convention_request
+:history_request_class:   refdata::messaging::get_ois_convention_history_request
+:history_response_class:  refdata::messaging::get_ois_convention_history_response
+:history_message_type:    get_ois_convention_history_request
+:settings_group:          OisConventionListWindow
+:window_title:            OIS Conventions
+:icon:                    Chart
+:END:
+
+*** Detail fields
+
+| field                    | label                    | widget                     | type      | is_key | is_required | placeholder            |
+|--------------------------+--------------------------+----------------------------+-----------+--------+-------------+------------------------|
+| id                       | Id                       | idEdit                     | line_edit | true   | true        | Enter convention id    |
+| index                    | Index                    | indexEdit                  | line_edit |        | true        | e.g. EUR-EONIA         |
+| spot_lag                 | Spot Lag                 | spotLagEdit                | spin_box  |        |             |                        |
+| fixed_day_count_fraction | Fixed Day Count Fraction | fixedDayCountFractionEdit  | line_edit |        | true        | e.g. ACT/360           |
+| fixed_calendar           | Fixed Calendar           | fixedCalendarEdit          | line_edit |        |             | e.g. TARGET            |
+| payment_lag              | Payment Lag              | paymentLagEdit             | spin_box  |        |             |                        |
+| fixed_frequency          | Fixed Frequency          | fixedFrequencyEdit         | line_edit |        |             | e.g. Annual            |
+| fixed_convention         | Fixed Convention         | fixedConventionEdit        | line_edit |        |             | e.g. ModifiedFollowing |
+| fixed_payment_convention | Fixed Payment Convention | fixedPaymentConventionEdit | line_edit |        |             | e.g. Following         |
+| rule                     | Rule                     | ruleEdit                   | line_edit |        |             | e.g. Backward          |
+| payment_calendar         | Payment Calendar         | paymentCalendarEdit        | line_edit |        |             | e.g. TARGET            |
+| rate_cutoff              | Rate Cutoff              | rateCutoffEdit             | spin_box  |        |             |                        |
+| end_of_month             | End Of Month             | endOfMonthEdit             | check_box |        |             |                        |
+
+*** Columns (Qt model)
+
+| enum_name             | field                    | header      | type      | width |
+|-----------------------+--------------------------+-------------+-----------+-------|
+| Id                    | id                       | Id          | string    | 200   |
+| Index                 | index                    | Index       | string    | 140   |
+| SpotLag               | spot_lag                 | Spot Lag    | int       | 80    |
+| FixedDayCountFraction | fixed_day_count_fraction | Fixed DCF   | string    | 100   |
+| Version               | version                  | Version     | int       | 80    |
+| ModifiedBy            | modified_by              | Modified By | string    | 120   |
+| RecordedAt            | recorded_at              | Recorded At | timestamp | 150   |
+
+** Custom repository methods

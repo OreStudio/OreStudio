@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_cli_ux_redesign:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-description-and-help
+#+pr: 966
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -27,11 +27,11 @@ pillar so contributors can immediately see the full scope of compass.
 
 | Field        | Value                                       |
 |--------------+---------------------------------------------|
-| State        | BACKLOG                                     |
+| State        | DONE                                        |
 | Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]                    |
-| Now          | Not yet started.                            |
-| Waiting on   | [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][Task 1: UX analysis]] (DONE — unblocked).   |
-| Next         | Update docstring; add epilog to =--help=.   |
+| Now          | Nothing.                                    |
+| Waiting on   | Nothing.                                    |
+| Next         | Done. T3/T4 can proceed.                    |
 | Last touched | 2026-06-01                                  |
 
 * Acceptance
@@ -62,13 +62,26 @@ Pillars:
   Journal:  journal
 #+end_example
 
+* Result
+
+- Module docstring updated: "developer toolkit for ORE Studio — orient, scaffold, capture, and search."
+- Five pillars listed in docstring: Orient, Search, Scaffold, Capture, Journal.
+- =compass --help= description updated and pillar epilog added via =RawDescriptionHelpFormatter=.
+- Verified: epilog renders cleanly after the subcommand list.
+
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/966][#966]] | [compass] Task 2: fix description and organise --help by pillar |
 
 * Review
+
+** Round 1 — 2026-06-01
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Missing =* Review= section | task file | Fixed: added with standard table | Gemini review |
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|

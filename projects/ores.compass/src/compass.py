@@ -1,19 +1,13 @@
 #!/usr/bin/env python3
 """
-Compass: a repository orientation tool for ORE Studio.
+Compass: developer toolkit for ORE Studio — orient, scaffold, capture, and search.
 
 Pillars:
-  - Search: fast NLP/FTS retrieval over Org-Roam notes (index/search/debug).
-  - Locate: where are we in time — current version, sprint, in-flight work
-    (where/status), read from the agile document tree.
-  - Navigate: list/filter the doc graph (list) and inspect a single doc with
-    its inbound/outbound links (show).
-  - Scaffold: create agile/doc artefacts (add) by calling ores.codegen as a
-    library — generation stays in codegen, not duplicated here.
-  - Fleet: what every git worktree is doing — branch, story, task, PR
-    (fleet), so parallel checkouts/agents don't collide.
-  - Goto: start a unit of work in one step — fetch main, branch, scaffold
-    a linked story+task, print next steps (goto).
+  - Orient:   where we are (where/fleet/sprint/story) and what every worktree is doing.
+  - Search:   fast NLP/FTS retrieval over Org-Roam notes (search/list/show).
+  - Scaffold: create branches and agile artefacts in one step (goto/add).
+  - Capture:  file and triage product backlog ideas (capture/inbox/next/backlog).
+  - Journal:  per-worktree session log for restart recovery and overlap detection.
 """
 
 import argparse
@@ -1299,75 +1293,17 @@ def resolve_story(ident):
         return _parent_dir(d.rel_path), _strip_type_prefix(d.title)
     return None, None
 
-def cmd_goto(argv):
-    """Start a unit of work in one command. Two modes:
-
-      new story:      --slug --title --description [--tags] [--task] [--kind]
-      existing story: --story <id-or-slug> --task-slug --task [--description] [--kind]
-
-    Both fetch main, create a branch, scaffold the task (and the story, in
-    new-story mode) via codegen, set the task #+branch, and print the
-    remaining manual steps.
-
-    --kind controls the branch prefix: feature (default) → feature/<slug>,
-    hotfix → hotfix/<slug>."""
-    ap = argparse.ArgumentParser(prog="compass goto",
-                                 description="Fetch main, branch, scaffold a story/task, print next steps.")
-    ap.add_argument("--story", default="", help="existing story (UUID/prefix or folder slug) — existing-story mode")
-    ap.add_argument("--slug", default="", help="new-story mode: snake_case slug (drives branch + folder)")
-    ap.add_argument("--title", default="", help="new-story mode: story title")
-    ap.add_argument("--description", default="", help="story description (new mode) or task description (existing mode)")
-    ap.add_argument("--tags", default="", help="new-story mode: comma-separated content tags")
-    ap.add_argument("--task", default="", help="task title (default in new mode: 'Implement <title>')")
-    ap.add_argument("--task-slug", default="", help="existing-story mode: task slug (drives the branch)")
-    ap.add_argument("--base", default="origin/main", help="branch base (default: origin/main)")
-    ap.add_argument("--kind", default="feature", choices=["feature", "hotfix"],
-                    help="branch kind: feature (default) or hotfix — sets the branch prefix")
-    ap.add_argument("--dry-run", action="store_true", help="print the plan without executing")
-    args = ap.parse_args(argv)
-
-    _, current_sprint = current_version_sprint(doc_index.load_all())
-    if current_sprint is None:
-        print("❌ No current sprint found under doc/agile/versions/.", file=sys.stderr)
-        return 1
-    sprint_dir = _parent_dir(current_sprint.rel_path)
-
-    if args.story:
-        # --- existing-story mode ---
-        if args.slug or args.title:
-            print("❌ --story cannot be combined with --slug/--title (new-story mode).", file=sys.stderr)
-            return 1
-        if not (args.task_slug and args.task):
-            print("❌ --story requires --task-slug and --task.", file=sys.stderr)
-            return 1
-        story_dir, story_title = resolve_story(args.story)
-        if story_dir is None:
-            print(f"❌ Could not resolve a unique story for '{args.story}'.", file=sys.stderr)
-            return 1
-        new_story = None
-        task_slug, task_title = args.task_slug, args.task
-        task_desc = args.description or f"Task for: {story_title}"
-        branch = args.kind + "/" + task_slug.replace("_", "-")
-    else:
-        # --- new-story mode ---
-        if not (args.slug and args.title and args.description):
-            print("❌ new-story mode needs --slug, --title and --description "
-                  "(or use --story for an existing story).", file=sys.stderr)
-            return 1
-        story_dir = f"{sprint_dir}/{args.slug}"
-        story_title = args.title
-        new_story = (args.slug, args.title, args.description, args.tags)
-        task_slug = "implement_" + args.slug
-        task_title = args.task or f"Implement {args.title}"
-        task_desc = f"Initial task for: {args.title}"
-        branch = args.kind + "/" + args.slug.replace("_", "-")
-
+def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
+                          task_slug, task_title, task_desc, branch, base, dry_run,
+                          current_sprint):
+    """Shared implementation for compass story new and compass task new."""
     task_path = Path(PROJECT_ROOT) / story_dir / f"task_{task_slug}.org"
 
-    if args.dry_run:
-        print("compass goto — plan (dry run):")
-        print(f"  mode:    {'new story' if new_story else 'existing story'}")
-        print(f"  branch:  {branch}   (base {args.base})")
+    if dry_run:
+        cmd = "story new" if new_story else "task new"
+        print(f"compass {cmd} — plan (dry run):")
+        print(f"  mode:    {'new story' if new_story else 'new task on existing story'}")
+        print(f"  branch:  {branch}   (base {base})")
         print(f"  story:   {story_dir}/story.org   "
               f"({'new' if new_story else f'existing: {story_title}'})")
         print(f"  task:    {story_dir}/task_{task_slug}.org   (#+branch: {branch})")
@@ -1378,16 +1314,15 @@ def cmd_goto(argv):
 
     # 1. fetch + new branch off base
     subprocess.run(["git", "fetch", "origin"], cwd=str(PROJECT_ROOT), check=False)
-    sw = subprocess.run(["git", "switch", "-c", branch, args.base],
+    sw = subprocess.run(["git", "switch", "-c", branch, base],
                         cwd=str(PROJECT_ROOT), capture_output=True, text=True)
     if sw.returncode != 0:
-        print(f"❌ git switch -c {branch} {args.base} failed:\n{sw.stderr.strip()}",
+        print(f"❌ git switch -c {branch} {base} failed:\n{sw.stderr.strip()}",
               file=sys.stderr)
         return 1
-    print(f"✅ created and switched to {branch} (off {args.base})")
+    print(f"✅ created and switched to {branch} (off {base})")
 
-    # 2. scaffold the story (new mode only) + the task via codegen, stopping on
-    # the first failure (gen.main returns 0 on success but may sys.exit on error).
+    # 2. scaffold story (new mode only) + task via codegen
     try:
         if new_story:
             slug, title, desc, tags = new_story
@@ -1404,28 +1339,97 @@ def cmd_goto(argv):
             print(f"❌ scaffolding failed: {exc.code}", file=sys.stderr)
         return exc.code or 0
 
-    # 3. record the branch on the task so fleet/where can map this worktree
+    # 3. record branch on task so fleet/where can map this worktree
     _set_frontmatter_branch(task_path, branch)
 
-    # 4. update the session journal — best-effort, never fails the goto
+    # 4. update session journal — best-effort, never fails
     try:
-        story_file = Path(PROJECT_ROOT) / story_dir / "story.org"
-        story_uuid = _read_org_id(story_file)
+        story_uuid = _read_org_id(Path(PROJECT_ROOT) / story_dir / "story.org")
         task_uuid  = _read_org_id(task_path)
         if story_uuid and task_uuid:
             _journal_update(argparse.Namespace(
                 story=story_uuid, task=task_uuid, branch=branch,
                 state="STARTED", pr="none"))
     except Exception:
-        pass  # journal update is informational; never block goto on failure
+        pass
 
-    # 5. next steps (deliberately manual — needs judgement)
+    # 5. next steps
     print("\nNext steps:")
     if new_story:
         print(f"  - wire the story into {sprint_dir}/sprint.org (* Stories table)")
     print(f"  - flip the {'story and task' if new_story else 'task'} State to STARTED when you begin")
     print(f"  - git push -u origin {branch}   &&   open a PR")
     return 0
+
+
+def cmd_story(argv):
+    """compass story — story-level operations."""
+    ap = argparse.ArgumentParser(prog="compass story",
+                                 description="Story-level operations.")
+    sub = ap.add_subparsers(dest="subcmd", required=True)
+
+    new_p = sub.add_parser("new", help="Create a story, branch, and first task in the current sprint")
+    new_p.add_argument("--slug",        required=True, help="snake_case slug (drives branch + folder)")
+    new_p.add_argument("--title",       required=True, help="Story title")
+    new_p.add_argument("--description", required=True, help="Story description")
+    new_p.add_argument("--tags",        default="",    help="Comma-separated content tags")
+    new_p.add_argument("--task",        default="",    help="First task title (default: 'Implement <title>')")
+    new_p.add_argument("--base",        default="origin/main")
+    new_p.add_argument("--kind",        default="feature", choices=["feature", "hotfix"])
+    new_p.add_argument("--dry-run",     action="store_true")
+
+    args = ap.parse_args(argv)
+
+    if args.subcmd == "new":
+        _, current_sprint = current_version_sprint(doc_index.load_all())
+        if current_sprint is None:
+            print("❌ No current sprint found.", file=sys.stderr)
+            return 1
+        sprint_dir = _parent_dir(current_sprint.rel_path)
+        story_dir  = f"{sprint_dir}/{args.slug}"
+        task_slug  = "implement_" + args.slug
+        task_title = args.task or f"Implement {args.title}"
+        branch     = args.kind + "/" + args.slug.replace("_", "-")
+        return _scaffold_and_branch(
+            sprint_dir, story_dir, args.title,
+            (args.slug, args.title, args.description, args.tags),
+            task_slug, task_title, f"Initial task for: {args.title}",
+            branch, args.base, args.dry_run, current_sprint)
+
+
+def cmd_task(argv):
+    """compass task — task-level operations."""
+    ap = argparse.ArgumentParser(prog="compass task",
+                                 description="Task-level operations.")
+    sub = ap.add_subparsers(dest="subcmd", required=True)
+
+    new_p = sub.add_parser("new", help="Add a task to an existing story and create a branch")
+    new_p.add_argument("--story",     required=True, help="Story UUID/prefix or folder slug")
+    new_p.add_argument("--slug",      required=True, dest="task_slug", help="Task slug (drives branch)")
+    new_p.add_argument("--title",     required=True, help="Task title")
+    new_p.add_argument("--description", default="",  help="Task description")
+    new_p.add_argument("--base",      default="origin/main")
+    new_p.add_argument("--kind",      default="feature", choices=["feature", "hotfix"])
+    new_p.add_argument("--dry-run",   action="store_true")
+
+    args = ap.parse_args(argv)
+
+    if args.subcmd == "new":
+        _, current_sprint = current_version_sprint(doc_index.load_all())
+        if current_sprint is None:
+            print("❌ No current sprint found.", file=sys.stderr)
+            return 1
+        story_dir, story_title = resolve_story(args.story)
+        if story_dir is None:
+            print(f"❌ Could not resolve story '{args.story}'.", file=sys.stderr)
+            return 1
+        sprint_dir = _parent_dir(current_sprint.rel_path)
+        task_desc  = args.description or f"Task for: {story_title}"
+        branch     = args.kind + "/" + args.task_slug.replace("_", "-")
+        return _scaffold_and_branch(
+            sprint_dir, story_dir, story_title, None,
+            args.task_slug, args.title, task_desc,
+            branch, args.base, args.dry_run, current_sprint)
 
 def main():
     # `list` and `show` pass every remaining argument straight through to the
@@ -1438,8 +1442,10 @@ def main():
         sys.exit(doc_show.main(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "add":
         sys.exit(cmd_add(sys.argv[2:]))
-    if len(sys.argv) >= 2 and sys.argv[1] == "goto":
-        sys.exit(cmd_goto(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "story":
+        sys.exit(cmd_story(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "task":
+        sys.exit(cmd_task(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "capture":
         sys.exit(cmd_capture(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "journal":
@@ -1447,7 +1453,24 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
         sys.exit(cmd_backlog(sys.argv[1], sys.argv[2:]))
 
-    parser = argparse.ArgumentParser(description="Compass: orientation tool for ORE Studio")
+    _EPILOG = (
+        "Pillars:\n"
+        "  Orient:   where, fleet\n"
+        "  Search:   search (find), list, show\n"
+        "  Scaffold: story, task, add\n"
+        "  Capture:  capture, inbox, next, deferred, discarded, backlog\n"
+        "  Journal:  journal\n"
+        "\n"
+        "Entity commands (sub-subcommands span pillars):\n"
+        "  story:    new (scaffold) | status (orient — coming soon)\n"
+        "  task:     new (scaffold)\n"
+        "  sprint:   status (orient — coming soon)\n"
+    )
+    parser = argparse.ArgumentParser(
+        description="Compass: developer toolkit for ORE Studio — orient, scaffold, capture, and search.",
+        epilog=_EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     index_parser = subparsers.add_parser("index", help="Index or update notes from org-roam.db")
@@ -1481,9 +1504,11 @@ def main():
     subparsers.add_parser("show",
                           help="Show one doc by UUID/prefix: metadata, blurb, in/out links")
     subparsers.add_parser("add",
-                          help="Create a v2 doc via ores.codegen (story/task/sprint/...); 'add --help' for usage")
-    subparsers.add_parser("goto",
-                          help="Start work: fetch main, branch, scaffold story+task, print next steps ('goto --help')")
+                          help="Create a v2 doc via ores.codegen (low-level scaffold); 'add --help' for usage")
+    subparsers.add_parser("story",
+                          help="Story-level operations: 'story new' to create story+branch+task; 'story --help'")
+    subparsers.add_parser("task",
+                          help="Task-level operations: 'task new' to add task+branch to existing story; 'task --help'")
     subparsers.add_parser("journal",
                           help="Read/write the per-worktree session journal; 'journal --help' for subcommands")
     subparsers.add_parser("inbox",     help="List captures in the product backlog inbox/")

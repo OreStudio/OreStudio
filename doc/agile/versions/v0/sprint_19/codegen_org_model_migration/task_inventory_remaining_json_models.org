@@ -139,19 +139,36 @@ generator.py routing (=get_template_mappings=,
 
 * Result
 
-77 files in total across these kinds (root key → count):
+77 files in total at inventory time, across these kinds (root key →
+count):
 
 | Root key             |   N | Disposition | Follow-on task |
 |----------------------+-----+-------------+----------------|
-| =component=          |  32 | Migrate     | [[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][Migrate component JSON models to org]] |
+| =component=          |  32 | Migrate (31) + retire mq.service (1) | [[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][Migrate component JSON models to org]] |
 | =entity=             |  12 | Migrate     | [[id:F88B35A5-0BE4-4274-99FC-2F08AAE5F80B][Migrate lookup-entity JSON models to org]] |
 | =table=              |  10 | Migrate     | [[id:92AEBBDA-1FDD-4501-9C66-E893EF448CE6][Migrate refdata table JSON models to org]] |
 | =junction=           |   7 | Migrate     | [[id:487E72E9-4117-4CB6-AAE4-080F19D5A9FB][Migrate junction JSON models to org]] |
 | =field_group=        |   5 | Migrate     | [[id:E3E380D3-6471-46B6-8422-617F3086B9F8][Migrate trading field-group JSON models to org]] |
-| =enum=               |   3 | Migrate     | [[id:9DA26E86-E206-4DA1-8097-6E79CA4B86E9][Migrate enum JSON models to org]] |
+| =enum=               |   3 | Migrate (1) + retire comms (2) | [[id:9DA26E86-E206-4DA1-8097-6E79CA4B86E9][Migrate enum JSON models to org]] |
 | =service_registry=   |   1 | Migrate     | [[id:F699C1EF-7365-40B5-83CA-4CA84B0F6306][Migrate service_registry JSON model to org]] |
 | slovaris data*       |   6 | Migrate     | [[id:3B4C2C1F-2174-4A41-A838-991C6D5631B8][Migrate slovaris reference-data JSONs to org-mode]] |
 | =generated_at=       |   1 | Retire      | [[id:EE3A7822-C95F-48C8-8474-862209C446FE][Retire plantuml_er_model.json from models/]] |
+
+** Orphan sweep — retired models
+
+Three files identified as having no consumer were retired with the
+inventory work (see commit 7/8 of this PR):
+
+- =comms/message_type_enum.json= — comms component decommissioned.
+- =comms/compression_type_enum.json= — comms component decommissioned.
+- =mq.service/ores_mq_service_component.json= — no =projects/ores.mq*=
+  dir anywhere, no references outside the JSON itself.
+
+Initially flagged as possible orphans but kept (real consumers found):
+=dq/lei_entities_entity.json= (C++ in dq.api + generator), =dq/lei_relationships_entity.json=
+(dedicated =lei_generate_metadata_sql.py= + SQL populates under
+=projects/ores.sql/populate/lei/=), =dq/report_definitions_entity.json=
+(C++ in dq.core + linked from reporting org).
 
 *Slovaris files (=manifest.json=, =model.json=, =catalogs.json=,
 =country_currency.json=, =datasets.json=, =tags.json=) hold the

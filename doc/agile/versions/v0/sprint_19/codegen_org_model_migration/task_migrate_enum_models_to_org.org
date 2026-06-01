@@ -2,7 +2,7 @@
 :ID: 9DA26E86-E206-4DA1-8097-6E79CA4B86E9
 :END:
 #+title: Task: Migrate enum JSON models to org-mode
-#+description: Convert the 3 *_enum.json files (workflow_status_enum, comms/message_type_enum, comms/compression_type_enum) into ores.<package>.<enum>.org files under each owning component's modeling/ dir. Pure C++ enums — small shape, no Qt, no SQL DDL. Settle the enum org section layout, extend org_loader (or write a tiny enum-loader), extend migrate_json_to_org.py (or write a sibling converter), regen, delete JSON, build.
+#+description: Convert the surviving *_enum.json files into ores.<package>.<enum>.org files under each owning component's modeling/ dir. The two comms enums (message_type_enum, compression_type_enum) were retired with the comms component itself; workflow_status_enum is the only remaining enum. Settle the enum org section layout, extend org_loader (or write a tiny enum-loader), extend migrate_json_to_org.py (or write a sibling converter), regen, delete JSON, build.
 #+type: task
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
@@ -19,22 +19,43 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Convert the surviving =workflow_status_enum.json= into a literate
+org-mode model under =projects/ores.workflow/modeling/= and delete
+the JSON. The other two enums originally listed in the inventory
+(=comms/message_type_enum.json=, =comms/compression_type_enum.json=)
+are retired separately as part of the comms decommission and no
+longer count toward this task.
+
+The migration also has to settle the enum-org *shape* — a different
+section layout from the entity meta-model — and extend the codegen
+pipeline (org_loader + generator dispatch) to recognise enum org
+files.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BACKLOG                                |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-01                               |
+| Next         | Settle the enum org shape; thin-slice on workflow_status. |
+| Last touched | 2026-06-02                             |
 
 * Acceptance
 
--
+- =projects/ores.workflow/modeling/ores.workflow.workflow_status_enum.org=
+  exists, carrying the same =name=, =namespace=, =underlying_type=,
+  =brief=, =description=, =includes=, and =values= the JSON did.
+- =workflow_status_enum.json= is deleted.
+- =org_loader= grows a =load_org_enum_model= or equivalent that
+  reproduces the JSON dict shape codegen already consumes.
+- =generator.py= / =generate.py= dispatch recognises enum org files
+  (via filename suffix =_enum.org= or frontmatter =#+type:
+  ores.codegen.enum=).
+- =codegen.sh generate --model
+  projects/ores.workflow/modeling/ores.workflow.workflow_status_enum.org
+  --profile enum= produces the same =.hpp= as the JSON path would.
 
 * Plan
 

@@ -204,13 +204,28 @@ def _flags_section(de):
     return f"* Flags\n{drawer}"
 
 
+_PK_BODY_KEYS = {"description", "detail", "generator_expr"}
+
+
 def _primary_key_section(de):
     pk = de.get("primary_key", {})
-    drawer = _drawer([
+    pairs = [
         ("column", pk.get("column")),
         ("type", pk.get("type")),
         ("cpp_type", pk.get("cpp_type")),
-    ])
+    ]
+    # Forward any other scalar properties on the primary key (e.g.
+    # skip_uuid_check) so the org_loader can re-emit them. Sequences and
+    # mappings stay out of the drawer; they would need section structure.
+    for k, v in pk.items():
+        if k in {"column", "type", "cpp_type"} or k in _PK_BODY_KEYS:
+            continue
+        if isinstance(v, (list, dict)):
+            continue
+        if isinstance(v, bool):
+            v = "true" if v else "false"
+        pairs.append((k, v))
+    drawer = _drawer(pairs)
     body_parts = [_description_and_detail(pk)]
     gen = _generator_block(pk)
     if gen:
@@ -245,7 +260,20 @@ def _columns_section(de):
 
 def _sql_section(de):
     sql = de.get("sql", {}) or {}
-    drawer = _drawer([("tablename", sql.get("tablename"))])
+    pairs = [("tablename", sql.get("tablename"))]
+    # Forward additional scalar SQL flags (system_scope, etc.). Array- and
+    # mapping-valued fields (indexes, extra_checks, text_code_validations,
+    # extra_delete_sets) need richer org structure and an org_loader
+    # extension; they are deferred to a follow-up task.
+    for k, v in sql.items():
+        if k == "tablename":
+            continue
+        if isinstance(v, (list, dict)):
+            continue
+        if isinstance(v, bool):
+            v = "true" if v else "false"
+        pairs.append((k, v))
+    drawer = _drawer(pairs)
     return f"* SQL\n\n** Flags\n{drawer}"
 
 

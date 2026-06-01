@@ -98,6 +98,7 @@ against an inadequate model format and migrating later.
 | [[id:305A020A-D254-4BE3-B2EB-2B9063CEC431][Migrate database entity models to org]] | BACKLOG | | | Small. |
 | [[id:C16C4AB0-18AC-4F30-83E2-2D380861E857][Migrate workspace entity models to org]] | BACKLOG | | | Includes hand-crafted protocol exclusions (now sourced from org). |
 | [[id:427C8992-17EE-4538-9C19-385363685FEB][Migrate compute entity models to org]] | BACKLOG | | | Heavy exclusion catalogue (now sourced from org). |
+| [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][Extend converter + org_loader for SQL array-structured fields]] | BACKLOG | | | indexes / extra_checks / text_code_validations / extra_delete_sets — needed for =--profile sql= round-trip. Surfaced by PR #976 review. |
 
 * Notes
 

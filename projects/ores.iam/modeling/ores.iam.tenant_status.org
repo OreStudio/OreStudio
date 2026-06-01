@@ -1,0 +1,181 @@
+:PROPERTIES:
+:ID: 22C2020E-E745-4D7B-B2BF-C17659DFCE6E
+:END:
+#+title: ores.iam.tenant_status
+#+description: Codegen entity model for the iam =tenant_status= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:
+#+brief: Tenant lifecycle status definitions.
+#+entity_singular: tenant_status
+#+entity_plural: tenant_statuses
+#+entity_title: Tenant Status
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Reference data table defining valid tenant lifecycle statuses.
+Examples: 'active', 'suspended', 'terminated'.
+
+Tenant statuses are managed by the system tenant and control
+tenant access and capabilities.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: iam
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   status
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique status code.
+
+Examples: 'active', 'suspended', 'terminated'.
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the status.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Status"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the status.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_iam_tenant_statuses_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: iam.api
+:component_core:    iam.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: status
+:entity_plural_short:   statuses
+:entity_singular_words: tenant status
+:entity_plural_words:   tenant statuses
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ts
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| status        | Status      |
+| name          | Name        |
+| description   | Description |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.iam/domain/tenant_status.hpp
+:domain_class:           iam::domain::tenant_status
+:protocol_include:       ores.iam/messaging/tenant_status_protocol.hpp
+:collection_name:        tenant_statuses
+:item_var:               tenant_status
+:key_field:              status
+:has_uuid_primary_key:   false
+:get_request_class:      iam::messaging::get_tenant_statuses_request
+:get_response_class:     iam::messaging::get_tenant_statuses_response
+:get_message_type:       get_tenant_statuses_request
+:save_request_class:     iam::messaging::save_tenant_status_request
+:save_response_class:    iam::messaging::save_tenant_status_response
+:save_message_type:      save_tenant_status_request
+:delete_request_class:   iam::messaging::delete_tenant_status_request
+:delete_response_class:  iam::messaging::delete_tenant_status_response
+:delete_message_type:    delete_tenant_status_request
+:history_request_class:  iam::messaging::get_tenant_status_history_request
+:history_response_class: iam::messaging::get_tenant_status_history_response
+:history_message_type:   get_tenant_status_history_request
+:settings_group:         TenantStatusListWindow
+:window_title:           Tenant Statuses
+:icon:                   CircleCheck
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder         |
+|-------------+-------------+-----------------+-----------+--------+-------------+---------------------|
+| status      | Status      | codeEdit        | line_edit | true   | true        | Enter status code   |
+| name        | Name        | nameEdit        | line_edit |        | true        | Enter display name  |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description |
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Status       | status        | Status      | string    | 120   |
+| Name         | name          | Name        | string    | 200   |
+| Description  | description   | Description | string    | 300   |
+| DisplayOrder | display_order | Order       | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+** Custom repository methods

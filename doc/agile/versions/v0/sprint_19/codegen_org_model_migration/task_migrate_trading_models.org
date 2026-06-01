@@ -7,9 +7,9 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/migrate-trading-org
 #+pr:
-#+blocked_on: none
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-01
@@ -19,28 +19,54 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Convert the 21 =*_domain_entity.json= files under
+=projects/ores.codegen/models/trading/= into literate
+=ores.trading.<entity>.org= files under =projects/ores.trading/modeling/=,
+using =migrate_json_to_org.py= that landed in PR #971. Add
+=modeling_dir= to the =trading-cpp= component entry in the manifest so
+codegen discovers them. Delete the JSON files once the regenerated
+output matches the pre-migration regen byte-for-byte.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Running migrate_json_to_org.py over the 21 trading entities. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-01                               |
+| Next         | Snapshot regen; convert; round-trip diff; raise PR. |
+| Last touched | 2026-06-01                             |
 
 * Acceptance
 
--
+- =trading-cpp= component entry in =manifest.py= has
+  =modeling_dir="projects/ores.trading/modeling"= alongside the legacy
+  =models_dir=.
+- 21 =ores.trading.<entity>.org= files exist under
+  =projects/ores.trading/modeling/=.
+- =codegen.sh regenerate --component trading-cpp --profile all-cpp=
+  produces byte-identical output to a pre-migration regen.
+- 21 corresponding =*_domain_entity.json= files in
+  =projects/ores.codegen/models/trading/= are deleted.
+- =cmake --build --preset linux-clang-debug-make --target ores.trading.api.lib ores.trading.core.lib=
+  succeeds against the production tree.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Follow the refdata pilot pattern from PR #971:
+
+1. Snapshot the current refdata-cpp regen output for byte-identity comparison.
+2. Run =migrate_json_to_org.py --input-dir ... --output-dir ... --component trading=.
+3. Delete the 21 JSON files.
+4. Regenerate via =codegen.sh=.
+5. =diff -rq= the regen tree against the snapshot — should be empty
+   (no See-also drop needed this time since the scaffold template was
+   already fixed).
+6. Build the production-tree libs to confirm nothing in the regen
+   output broke the build vs HEAD.
+7. Tidy-commit per the refdata pattern (one commit each for the
+   manifest entry, the 21 org files, the 21 JSON deletions).
 
 * Notes
 

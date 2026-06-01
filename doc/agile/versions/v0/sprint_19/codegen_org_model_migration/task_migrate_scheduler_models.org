@@ -52,6 +52,12 @@ Convert the single =job_definition_domain_entity.json= under
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =description= column missing =default: ''=. | job_definition.org:64 | Accepted | PR #986 round 1. Fixed in =d4a0e43d1= (column drawer now forwards every scalar property). |
+| 2 | =command= column missing =default: ''=. | job_definition.org:73 | Accepted | PR #986 round 1. Fixed in =d4a0e43d1=. |
+| 3 | =action_type= column missing =default: 'execute_sql'=. | job_definition.org:91 | Accepted | PR #986 round 1. Fixed in =d4a0e43d1=. |
+| 4 | =action_payload= column missing =default: '{}'::jsonb=. | job_definition.org:100 | Accepted | PR #986 round 1. Fixed in =d4a0e43d1=. |
+| 5 | =is_active= column missing =default: 1=. | job_definition.org:109 | Accepted | PR #986 round 1. Fixed in =d4a0e43d1=. |
+| 6 | =extra_checks= / =soft_fk_validations= / =indexes= missing from SQL section. | job_definition.org:120 | Deferred | PR #986 round 1. Array-structured fields covered by [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][array-fields task]]. |
+| 7 | =Active= Qt column missing type =bool=. | job_definition.org:195 | Accepted | PR #986 round 1. Fixed in =d4a0e43d1= (is_bool → "bool"). |
 
 * Result

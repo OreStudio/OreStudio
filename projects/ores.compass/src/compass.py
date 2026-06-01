@@ -879,8 +879,8 @@ def _journal_last_entry(worktree_path):
 _STATE_RE  = re.compile(r"^\| State[^|]*\|\s*([A-Z]+)", re.MULTILINE)
 _TITLE_RE2 = re.compile(r"^#\+title:\s*(?:Story:\s*)?(.+?)\s*$", re.MULTILINE | re.IGNORECASE)
 
-_BRANCH_FIELD_RE2 = re.compile(r"^#\+branch:[ \t]*(\S+)[ \t]*$", re.MULTILINE)
-_PR_FIELD_RE      = re.compile(r"^#\+pr:[ \t]*(\S+)[ \t]*$", re.MULTILINE)
+_BRANCH_FIELD_RE2 = re.compile(r"^#\+branch:[ \t\r]*(\S+)[ \t\r]*$", re.MULTILINE)
+_PR_FIELD_RE      = re.compile(r"^#\+pr:[ \t\r]*(\S+)[ \t\r]*$", re.MULTILINE)
 
 def _read_task_detail(task_file):
     """Return (title, state, uuid, branch, pr) from a task.org file."""
@@ -965,7 +965,7 @@ def cmd_sprint(argv):
             return 0
 
         order = {"DONE": 0, "STARTED": 1, "BLOCKED": 2, "BACKLOG": 3}
-        stories.sort(key=lambda s: (order.get(s["state"], 9), s["title"]))
+        stories.sort(key=lambda s: (order.get(s["state"], 9), s["state"], s["title"]))
 
         print(f"🧭 ores.compass — sprint status: {current_sprint.title}\n")
         current_state = None
@@ -1526,7 +1526,7 @@ def cmd_story(argv):
             return 0
 
         order = {"DONE": 0, "STARTED": 1, "BLOCKED": 2, "BACKLOG": 3}
-        tasks.sort(key=lambda t: (order.get(t["state"], 9), t["title"]))
+        tasks.sort(key=lambda t: (order.get(t["state"], 9), t["state"], t["title"]))
 
         print(f"🧭 ores.compass — story status: {story_title}\n")
         current_state = None

@@ -77,6 +77,9 @@ From [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][UX analysis]]:
 
 * Review
 
+** Round 1 — 2026-06-01
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unknown states (DISCOVERED/ABANDONED) all sort to bucket 9 and interleave | compass.py | Fixed: add state as second sort key so unknown states group correctly; also applied to cmd_sprint | Gemini review |
+| 2 | CRLF line endings leave =\r= before =$=; =[ \t]*= doesn't match it | compass.py | Fixed: use =[ \t\r]*= in =_BRANCH_FIELD_RE2= and =_PR_FIELD_RE= | Gemini review |

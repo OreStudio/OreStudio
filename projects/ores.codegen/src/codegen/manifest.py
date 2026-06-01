@@ -14,6 +14,12 @@ class Component:
     # regenerate only processes pure schema models, not domain entity models.
     # None means no exclusion.
     exclude_suffix: Optional[str] = "_domain_entity.json"
+    # Optional second discovery root: the component's own modeling/ dir
+    # (e.g. projects/ores.refdata/modeling/). Any *.org file in this dir
+    # whose frontmatter declares `#+type: ores.codegen.entity` is treated
+    # as an entity model. Other org files (component overviews, plantuml
+    # source, knowledge docs) are skipped. None means no second root.
+    modeling_dir: Optional[str] = None
 
 
 COMPONENTS: Dict[str, Component] = {
@@ -76,8 +82,9 @@ COMPONENTS: Dict[str, Component] = {
     "refdata-cpp": Component(
         name="refdata-cpp",
         models_dir="projects/ores.codegen/models/refdata",
-        entity_glob=("*_domain_entity.json", "*_entity.org"),
+        entity_glob="*_domain_entity.json",
         exclude_suffix=None,
+        modeling_dir="projects/ores.refdata/modeling",
     ),
     "reporting-cpp": Component(
         name="reporting-cpp",

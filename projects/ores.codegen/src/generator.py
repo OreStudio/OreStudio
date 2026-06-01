@@ -232,9 +232,11 @@ def is_domain_entity_model(model_filename):
     """
     Check if a model file is a domain entity model.
 
-    Both forms are accepted:
+    Three forms are accepted:
     - ``*_domain_entity.json`` (legacy JSON model, C++ only)
-    - ``*_entity.org`` (literate org model, unified C++ + SQL)
+    - ``*_entity.org`` (POC literate org model, unified C++ + SQL)
+    - ``ores.<component>.<entity>.org`` (current literate org model,
+      co-located under projects/ores.<component>/modeling/)
 
     Args:
         model_filename (str): The model filename
@@ -242,9 +244,11 @@ def is_domain_entity_model(model_filename):
     Returns:
         bool: True if this is a domain entity model
     """
+    basename = os.path.basename(model_filename)
     return (
         model_filename.endswith("_domain_entity.json")
         or model_filename.endswith("_entity.org")
+        or (basename.startswith("ores.") and basename.endswith(".org"))
     )
 
 

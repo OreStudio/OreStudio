@@ -7,9 +7,9 @@
 #+level: s1
 #+filetags: :codegen:literate:org_mode:sprint_19:v0:
 #+owner: marco
-#+branch: feature/refactor-codegen-cpp
-#+pr:
-#+blocked_on: 8217B0B7-6BE2-4622-A98D-AC9AF0E6EFFC
+#+branch: feature/codegen-org-colocate
+#+pr: 967
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-01
@@ -27,12 +27,13 @@ how to find it there.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | STARTED                                |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:8217B0B7-6BE2-4622-A98D-AC9AF0E6EFFC][Compass scaffold for entity org-models]] (need the doc-type registered). |
-| Next         | Move party_entity.org; update manifest. |
+| Now          | PR #967 in review (round 1 applied).   |
+| Waiting on   | Final approval / merge.                |
+| Next         | Move on to next migration task once merged. |
 | Last touched | 2026-06-01                             |
+| Review       | PR #967 round 1: 3 comments, all accepted, fixed in =a7a4d6972=. |
 
 * Acceptance
 
@@ -119,15 +120,17 @@ story-final cleanup task.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #967 | [codegen] Co-locate pilot org model + component-dir discovery |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =is_domain_entity_model= startswith on path may fail; basename it. | generator.py:251 | Accepted | PR #967 round 1. Fixed in =a7a4d6972= via =os.path.basename= for the =ores.= startswith check only. |
+| 2 | =_is_codegen_entity_org= reads whole file then slices; cheap chunked read instead, drop try/except. | generate.py:24 | Accepted | PR #967 round 1. Fixed in =a7a4d6972= via =with path.open() as f: f.read(4096)=. |
+| 3 | Use =is_dir()= instead of =exists()= before globbing modeling_dir. | generate.py:177 | Accepted | PR #967 round 1. Fixed in =a7a4d6972=. |
 
 * Result
 

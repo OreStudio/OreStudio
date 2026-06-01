@@ -56,6 +56,8 @@ files under =projects/ores.iam/modeling/=, using the
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =skip_uuid_check= dropped from tenant primary key. | tenant.org:38 | Accepted | PR #976 round 1. Fixed in =23b4d1ee8=; converter now forwards every scalar primary-key property to the drawer. |
+| 2 | Tenant SQL flags (=system_scope=, =extra_checks=, =text_code_validations=, =extra_delete_sets=) + =indexes= dropped. | tenant.org:132 | Partially accepted | PR #976 round 1. =system_scope= fixed in =23b4d1ee8=; array-structured fields deferred to follow-up task [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][SQL array fields coverage]] (need sub-heading / table org structure + org_loader extension, only affect =--profile sql=). |
+| 3 | Task missing =* Review= section. | task_migrate_iam_models.org:48 | Declined | PR #976 round 1. Section already present at line 53 with the repo's standard column shape. |
 
 * Result

@@ -53,6 +53,7 @@ report_definition, report_instance, report_type) into literate
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task missing =* PRs= / =* Review= sections (false-positive). | task_migrate_reporting_models.org:45 | Declined | PR #984 round 1. Both sections already present with the repo's standard column shape. |
+| 2 | report_instance Qt columns =definition_id= type cell empty; should be =uuid=. | report_instance.org:252 | Accepted | PR #984 round 1. Fixed in =6e778de82=; \`_qt_type_string\` now maps =is_uuid= to "uuid". |
 
 * Result

@@ -266,7 +266,7 @@ The automation spectrum (P-6 above) provides a useful frame for honest assessmen
 | 3     | Full entity generated with no human editing     | Partial (SQL + domain + protocol) |
 | 4     | Product-line generation: new entity = new model | Not yet reached           |
 
-The immediate goal is to reach Level 3 for the complete entity stack (all eight
+The immediate goal is to reach Level 3 for the complete entity stack (all seven
 profiles) using the =currency= reference implementation as the fitness function.
 Level 4, where a new =country= or =party= entity requires only a model file, is the
 long-term target.

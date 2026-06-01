@@ -8,7 +8,7 @@
 #+filetags: :ui_responsiveness:sprint_19:v0:
 #+owner: marco
 #+branch: feature/ui-responsiveness-currency
-#+pr:
+#+pr: 977
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -74,7 +74,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/977][#977]] | [agile] Scaffold UI responsiveness story T1: currency dialog fixes |
 
 * Review
 

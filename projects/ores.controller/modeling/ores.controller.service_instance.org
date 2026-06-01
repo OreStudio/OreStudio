@@ -1,0 +1,172 @@
+:PROPERTIES:
+:ID: B74723D5-ECA9-4442-9F21-6E7CFC20BB21
+:END:
+#+title: ores.controller.service_instance
+#+description: Codegen entity model for the controller =service_instance= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: controller
+#+filetags: :model:entity:controller:
+#+brief: Operational state of a single running replica of a managed service.
+#+entity_singular: service_instance
+#+entity_plural: service_instances
+#+entity_title: Service Instance
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Represents a Kubernetes-style Pod: one concrete running instance of a
+service definition. Tracks the OS process ID, lifecycle phase, start/stop
+times, and how many times the instance has been restarted. Non-temporal:
+only the current state is kept here; history is captured in service_events.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     controller
+:has_tenant_id: false
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID primary key for the service instance.
+
+* Natural keys
+
+* Columns
+
+** service_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Name of the service definition this instance belongs to.
+
+** replica_index
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Zero-based replica number; used to generate unique log file names.
+
+** pid
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: true
+:END:
+
+OS process ID while running; NULL when stopped or pending.
+
+** phase
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  'pending'
+:END:
+
+Lifecycle phase: pending, running, stopping, stopped, failed.
+
+** started_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: true
+:END:
+
+Timestamp when the process was last successfully started.
+
+** stopped_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: true
+:END:
+
+Timestamp when the process last stopped or was stopped.
+
+** restart_count
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Number of times this instance has been automatically restarted.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_controller_service_instances_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: controller.api
+:component_core:    controller.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: service_instance
+:entity_plural_short:   service_instances
+:entity_singular_words: service instance
+:entity_plural_words:   service instances
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <chrono>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: si
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:       ores.controller/domain/service_instance.hpp
+:domain_class:         controller::domain::service_instance
+:protocol_include:     ores.controller/messaging/service_instance_protocol.hpp
+:collection_name:      service_instances
+:item_var:             service_instance
+:key_field:            id
+:has_uuid_primary_key: true
+:has_pagination:       false
+:get_request_class:    controller::messaging::list_service_instances_request
+:get_response_class:   controller::messaging::list_service_instances_response
+:settings_group:       ServiceInstanceListWindow
+:window_title:         Service Instances
+:icon:                 Server
+:END:
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header   | type      | width |
+|--------------+---------------+----------+-----------+-------|
+| ServiceName  | service_name  | Service  | string    | 200   |
+| ReplicaIndex | replica_index | Replica  | int       | 60    |
+| Phase        | phase         | Phase    | string    | 80    |
+| Pid          | pid           | PID      | int       | 70    |
+| StartedAt    | started_at    | Started  | timestamp | 140   |
+| StoppedAt    | stopped_at    | Stopped  | timestamp | 140   |
+| RestartCount | restart_count | Restarts | int       | 70    |
+
+** Custom repository methods

@@ -1,0 +1,220 @@
+:PROPERTIES:
+:ID: B09B3A40-C58C-4918-AFD6-22CFF2B4E4C6
+:END:
+#+title: ores.workspace.workspace
+#+description: Codegen entity model for the workspace =workspace= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: workspace
+#+filetags: :model:entity:workspace:
+#+brief: Named, isolated data context for workspace-level operations.
+#+entity_singular: workspace
+#+entity_plural: workspaces
+#+entity_title: Workspace
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Workspaces provide Docker-layer-style inheritance: data not present in a
+workspace is resolved from the parent chain up to the Live workspace
+(ores_utility_live_workspace_id_fn()).
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        workspace
+:has_tenant_id:    true
+:has_party_id:     true
+:has_workspace_id: false
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:        id
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+UUID primary key.
+
+Live workspace uses the sentinel aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique workspace name.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description.
+
+** source_path
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional path to source data.
+
+** parent_workspace_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional parent workspace UUID for inheritance chain.
+
+** scope_portfolio_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional portfolio UUID to scope this workspace.
+
+** owner_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+UUID of the IAM account that owns this workspace.
+
+** status_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Lifecycle status: active or archived.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_workspaces_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: workspace.api
+:component_core:    workspace.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: workspace
+:entity_plural_short:   workspaces
+:entity_singular_words: workspace
+:entity_plural_words:   workspaces
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ws
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| name        | Name        |
+| status_code | Status      |
+| version     | Version     |
+| modified_by | Modified By |
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.workspace.api/domain/workspace.hpp
+:domain_class:            workspace::domain::workspace
+:protocol_include:        ores.workspace.api/messaging/workspace_protocol.hpp
+:collection_name:         workspaces
+:item_var:                workspace
+:key_field:               name
+:has_uuid_primary_key:    true
+:has_pagination:          false
+:has_history:             true
+:get_request_class:       workspace::messaging::list_workspaces_request
+:get_response_class:      workspace::messaging::list_workspaces_response
+:get_message_type:        list_workspaces_request
+:save_request_class:      workspace::messaging::create_workspace_request
+:save_response_class:     workspace::messaging::create_workspace_response
+:save_message_type:       create_workspace_request
+:save_request_item_field: workspace
+:delete_request_class:    workspace::messaging::archive_workspace_request
+:delete_response_class:   workspace::messaging::archive_workspace_response
+:delete_message_type:     archive_workspace_request
+:delete_request_id_field: id
+:delete_is_single:        true
+:history_request_class:   workspace::messaging::get_workspace_history_request
+:history_response_class:  workspace::messaging::get_workspace_history_response
+:history_message_type:    get_workspace_history_request
+:settings_group:          WorkspaceListWindow
+:window_title:            Workspaces
+:icon:                    Database
+:END:
+
+*** Detail fields
+
+| field               | label       | widget          | type            | is_key | is_required | placeholder               |
+|---------------------+-------------+-----------------+-----------------+--------+-------------+---------------------------|
+| name                | Name        | nameEdit        | line_edit       | true   | true        | Unique workspace name     |
+| description         | Description | descriptionEdit | plain_text_edit |        |             |                           |
+| source_path         | Source Path | sourcePathEdit  | line_edit       |        |             | Optional data source path |
+| parent_workspace_id | Parent      | parentEdit      | line_edit       |        |             | Inherited from (UUID)     |
+| owner_id            | Owner       | ownerEdit       | line_edit       |        |             |                           |
+| status_code         | Status      | statusEdit      | line_edit       |        |             |                           |
+
+*** Columns (Qt model)
+
+| enum_name   | field       | header      | type   | width |
+|-------------+-------------+-------------+--------+-------|
+| Name        | name        | Name        | string | 200   |
+| Description | description | Description | string | 340   |
+| StatusCode  | status_code | Status      | string | 90    |
+| ParentName  | parent_name | Parent      | string | 160   |
+| Version     | version     | Version     | int    | 70    |
+| ModifiedBy  | modified_by | Modified By | string | 130   |
+
+** Custom repository methods

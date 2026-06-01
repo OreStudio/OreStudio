@@ -158,6 +158,8 @@ def _qt_drawer_keys(qt):
         "delete_request_class",
         "delete_response_class",
         "delete_message_type",
+        "delete_request_id_field",
+        "delete_is_single",
         "history_request_class",
         "history_response_class",
         "history_message_type",
@@ -212,10 +214,19 @@ def _flags_section(de):
         ("product", de.get("product") or "ores"),
         ("component", de.get("component")),
     ]
-    if "has_tenant_id" in de:
-        pairs.append(("has_tenant_id", str(de["has_tenant_id"]).lower()))
-    if "has_workspace_id" in de:
-        pairs.append(("has_workspace_id", str(de["has_workspace_id"]).lower()))
+    # Forward every has_* scalar flag (has_tenant_id, has_party_id,
+    # has_workspace_id, ...) so the org_loader can re-emit them.
+    # has_batch_* are handled by the * C++ >> ** Flags drawer in
+    # _cpp_section; exclude them here to avoid double emission.
+    _cpp_flag_excludes = {"has_batch_remove", "has_batch_read"}
+    for k, v in de.items():
+        if not k.startswith("has_") or k in _cpp_flag_excludes:
+            continue
+        if isinstance(v, (list, dict)):
+            continue
+        if isinstance(v, bool):
+            v = "true" if v else "false"
+        pairs.append((k, v))
     drawer = _drawer(pairs)
     return f"* Flags\n{drawer}"
 

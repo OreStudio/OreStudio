@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 3267354B-A74E-4CE5-B37F-9E30950D94C7
+:END:
+#+title: ores.database.database_info
+#+description: Codegen entity model for the database =database_info= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: database
+#+filetags: :model:entity:database:
+#+brief: Build and schema metadata recorded when the database was created or recreated.
+#+entity_singular: database_info
+#+entity_plural: database_infos
+#+entity_title: Database Info
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Stores the schema version, git commit, and build environment inserted at
+database creation time. Used to correlate service behaviour with the
+database schema in use. Contains exactly one row.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     database
+:has_tenant_id: false
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Fixed UUID identifying the singleton database info record.
+
+A well-known UUID inserted by the creation script.
+
+* Natural keys
+
+* Columns
+
+** schema_version
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Database schema version matching the application version.
+
+Set to ORES_VERSION (e.g. '0.0.13') at database creation time.
+
+#+begin_src cpp :name generator
+std::string("0.0.1")
+#+end_src
+
+** build_environment
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Build environment identifier.
+
+e.g. 'local', 'production', 'staging'. Prefix from ORES_BUILD_INFO.
+
+#+begin_src cpp :name generator
+std::string("local")
+#+end_src
+
+** git_commit
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Short git commit hash of the code that created this database.
+
+e.g. 'c7681ac4' or 'c7681ac4-dirty'. From ORES_BUILD_INFO.
+
+#+begin_src cpp :name generator
+std::string("abc1234")
+#+end_src
+
+** git_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Date and time of the git commit that created this database.
+
+e.g. '2026/02/25 22:43:31'. From ORES_BUILD_INFO.
+
+#+begin_src cpp :name generator
+std::string("2026/01/01 00:00:00")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_database_info_tbl
+:END:
+
+* C++
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: database_info
+:entity_plural_short:   database_infos
+:entity_singular_words: database info
+:entity_plural_words:   database infos
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: di
+:END:
+
+** Custom repository methods

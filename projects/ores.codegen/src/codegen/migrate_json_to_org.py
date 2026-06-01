@@ -80,6 +80,8 @@ def _column_section(node, level):
     drawer_keys = [("type", node.get("type")), ("cpp_type", node.get("cpp_type"))]
     if "nullable" in node:
         drawer_keys.append(("nullable", str(node["nullable"]).lower()))
+    if "default_value" in node:
+        drawer_keys.append(("default_value", node["default_value"]))
     drawer = _drawer(drawer_keys)
     body_parts = [_description_and_detail(node)]
     gen = _generator_block(node)
@@ -288,6 +290,12 @@ def _cpp_section(de):
         cpp_flag_pairs.append(("component_include", de["component_include"]))
     if "component_core" in de:
         cpp_flag_pairs.append(("component_core", de["component_core"]))
+    if "has_batch_remove" in de:
+        cpp_flag_pairs.append(("has_batch_remove", str(de["has_batch_remove"]).lower()))
+    if "has_batch_read" in de:
+        cpp_flag_pairs.append(("has_batch_read", str(de["has_batch_read"]).lower()))
+    if "generator_facet_name" in de:
+        cpp_flag_pairs.append(("generator_facet_name", de["generator_facet_name"]))
     if cpp_flag_pairs:
         parts.append("")
         parts.append(f"** Flags\n{_drawer(cpp_flag_pairs)}")

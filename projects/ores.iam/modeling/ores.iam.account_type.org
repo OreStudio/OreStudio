@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4522E4AE-FC06-4B31-BDE2-3D1F507FAFA5
+:ID: C9C16C50-C9DF-4D56-8E6B-FCCB0D29BA97
 :END:
 #+title: ores.iam.account_type
 #+description: Codegen entity model for the iam =account_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.

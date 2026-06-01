@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 246ECBFA-7A14-4320-B56A-7A07AAE96EA5
+:ID: 11ED9447-461D-4074-9663-E83190BA7371
 :END:
 #+title: ores.iam.tenant
 #+description: Codegen entity model for the iam =tenant= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
@@ -32,9 +32,10 @@ Tenants are identified by:
 
 * Primary key
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:column:          id
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:skip_uuid_check: true
 :END:
 
 UUID uniquely identifying this tenant.
@@ -128,7 +129,8 @@ Tenant lifecycle status (FK to tenant_statuses).
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_iam_tenants_tbl
+:tablename:    ores_iam_tenants_tbl
+:system_scope: true
 :END:
 
 * C++

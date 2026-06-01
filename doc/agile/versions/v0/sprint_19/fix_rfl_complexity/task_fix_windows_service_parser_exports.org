@@ -62,12 +62,15 @@ Pattern (from working example in =ores.trading.service=):
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/969][#969]] | [ores.service,services] Fix macOS and Windows CI failures |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                      | File                                        | Decision | Notes          |
+|---+------------------------------------------------------+---------------------------------------------+----------+----------------|
+| 1 | Service count says 11 in Goal (should be 16)         | task_fix_windows_service_parser_exports.org | Accept   | Fixed 71667d1c |
+| 2 | Service count says 11 in Now field (should be 16)    | task_fix_windows_service_parser_exports.org | Accept   | Fixed 71667d1c |
+| 3 | Affected list has 11 services (should be 16)         | task_fix_windows_service_parser_exports.org | Accept   | Fixed 71667d1c |
+| 4 | Story table says 11 service parsers (should be 16)   | story.org                                   | Accept   | Fixed 71667d1c |
 
 * Result

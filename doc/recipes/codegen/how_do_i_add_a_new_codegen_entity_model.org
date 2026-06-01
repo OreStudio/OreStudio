@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 4A92A706-F1B7-49B3-AA38-888B7A707D92
+:END:
+#+title: How do I add a new codegen entity model?
+#+description: Scaffold a new org-mode entity model under projects/ores.<component>/modeling/ using compass add entity_org, then customise per the meta-model.
+#+type: recipe
+#+level: cross
+#+filetags: :codegen:entity:org_mode:literate:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Entity models drive C++ + SQL codegen. The current form is a literate
+=ores.<component>.<entity>.org= file under the component's =modeling/=
+directory; codegen discovers it from the =modeling_dir= manifest entry
+by matching =#+type: ores.codegen.entity= in the frontmatter. The
+shape is documented in the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]].
+
+* Question
+
+How do I add a new codegen entity model?
+
+* Answer
+
+** 1. Scaffold the file
+
+#+begin_src sh :results verbatim
+projects/ores.compass/compass.sh add entity_org \
+    --slug <entity> --component <component> \
+    --description "<one-line description of the modelled entity>"
+#+end_src
+
+The scaffold writes
+=projects/ores.<component>/modeling/ores.<component>.<entity>.org=
+with the required frontmatter (=#+type: ores.codegen.entity= and
+friends) and skeleton sections (=Flags=, =Primary key=, =Natural keys=,
+=Columns=, =SQL=, =C++=). It also embeds an inline pointer to the
+meta-model so authors land on the spec without searching for it.
+
+** 2. Fill in the model
+
+Open the scaffolded file and complete each section. The
+[[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][meta-model]] documents every required property and the well-known
+block kinds (e.g. additional repository declarations / implementations
+/ includes) that custom methods attach to via =:implements <kind-UUID>=.
+
+** 3. Wire the component (first entity in a component only)
+
+If =projects/ores.<component>/modeling/= is the first org model in
+this component, add a =modeling_dir= entry to the component's
+=COMPONENTS= record in
+=projects/ores.codegen/src/codegen/manifest.py=:
+
+#+begin_src python
+"<component>-cpp": Component(
+    name="<component>-cpp",
+    models_dir="projects/ores.codegen/models/<component>",
+    entity_glob="*_domain_entity.json",
+    exclude_suffix=None,
+    modeling_dir="projects/ores.<component>/modeling",
+),
+#+end_src
+
+Existing components that already have =modeling_dir= set need no change
+to add another entity.
+
+** 4. Regenerate
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/codegen.sh regenerate \
+    --component <component>-cpp --profile all-cpp
+#+end_src
+
+Codegen unions matches from the legacy JSON glob and the new
+=modeling_dir= (org files whose =#+type:= says
+=ores.codegen.entity=).
+
+* Script
+
+=projects/ores.compass/compass.sh add entity_org= — the scaffold
+itself. The codegen template is
+=projects/ores.codegen/library/templates/doc_entity_org.org.mustache=.
+
+* Tested by
+
+The pilot entity =ores.refdata.party= under
+=projects/ores.refdata/modeling/=. Regenerating =refdata-cpp= picks it
+up via the =modeling_dir= entry and produces byte-identical output to
+the legacy =party_entity.org= location.
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the spec the scaffold mirrors.
+- [[id:B6C5D4E3-F2A1-4B0C-8D9E-0F1A2B3C4D5E][How do I create a new entity?]] — the older JSON-based recipe (kept
+  for components not yet migrated).

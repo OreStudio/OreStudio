@@ -8,7 +8,7 @@
 #+filetags: :compass_cli_ux_redesign:sprint_19:v0:
 #+owner: marco
 #+branch: feature/write-orient-recipe
-#+pr:
+#+pr: 973
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -65,7 +65,7 @@ From [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][UX analysis]]:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/973][#973]] | [agile] Task 5: write recipe for compass sprint and story status |
 
 * Review
 

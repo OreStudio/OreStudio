@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 863183E0-453A-4AC1-98FB-3A91A9C8A9E3
+:ID: 044AB81F-3FEF-4AAC-96FB-D9226B009C62
 :END:
 #+title: ores.analytics.pricing_model_config
 #+description: Codegen entity model for the analytics =pricing_model_config= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
@@ -135,6 +135,7 @@ std::string("standard")
 :collection_name:        configs
 :item_var:               config
 :key_field:              name
+:key_widget:             nameEdit
 :has_uuid_primary_key:   true
 :get_request_class:      analytics::messaging::get_pricing_model_configs_request
 :get_response_class:     analytics::messaging::get_pricing_model_configs_response

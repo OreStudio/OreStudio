@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: E5B8CCB0-95A9-4C7C-9EE9-D1D3BE859DBF
+:ID: BDECF3A4-4A7C-4F64-94C1-A106E215F88D
 :END:
 #+title: ores.analytics.pricing_model_product
 #+description: Codegen entity model for the analytics =pricing_model_product= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
@@ -112,8 +112,9 @@ std::string("DiscountingSwapEngine")
 
 ** Flags
 :PROPERTIES:
-:component_include: analytics.api
-:component_core:    analytics.core
+:component_include:  analytics.api
+:component_core:     analytics.core
+:list_filter_column: config_id
 :END:
 
 ** Repository
@@ -153,6 +154,7 @@ std::string("DiscountingSwapEngine")
 :collection_name:        products
 :item_var:               product
 :key_field:              pricing_engine_type_code
+:key_widget:             pricingEngineTypeCodeCombo
 :has_uuid_primary_key:   true
 :get_request_class:      analytics::messaging::get_pricing_model_products_request
 :get_response_class:     analytics::messaging::get_pricing_model_products_response
@@ -173,11 +175,11 @@ std::string("DiscountingSwapEngine")
 
 *** Detail fields
 
-| field                    | label               | widget                     | type          | is_key | is_required | placeholder                                                   |
-|--------------------------+---------------------+----------------------------+---------------+--------+-------------+---------------------------------------------------------------|
-| pricing_engine_type_code | Pricing Engine Type | pricingEngineTypeCodeCombo | dynamic_combo | true   | true        |                                                               |
-| model                    | Model               | modelEdit                  | line_edit     |        | true        | Pricing model (e.g. DiscountedCashflows, LGM, BlackBachelier) |
-| engine                   | Engine              | engineEdit                 | line_edit     |        | true        | Numerical engine (e.g. DiscountingSwapEngine, Grid, AMC)      |
+| field                    | label               | widget                     | type          | is_key | is_required | placeholder                                                   | combo_type                             | combo_include                                     | combo_display | combo_value | combo_is_uuid | combo_is_optional | combo_setter          | combo_setter_pascal | combo_items_member |
+|--------------------------+---------------------+----------------------------+---------------+--------+-------------+---------------------------------------------------------------+----------------------------------------+---------------------------------------------------+---------------+-------------+---------------+-------------------+-----------------------+---------------------+--------------------|
+| pricing_engine_type_code | Pricing Engine Type | pricingEngineTypeCodeCombo | dynamic_combo | true   | true        |                                                               | analytics::domain::pricing_engine_type | ores.analytics.api/domain/pricing_engine_type.hpp | code          | code        | false         | false             | setPricingEngineTypes | PricingEngineTypes  | pricingEngineTypes |
+| model                    | Model               | modelEdit                  | line_edit     |        | true        | Pricing model (e.g. DiscountedCashflows, LGM, BlackBachelier) |                                        |                                                   |               |             |               |                   |                       |                     |                    |
+| engine                   | Engine              | engineEdit                 | line_edit     |        | true        | Numerical engine (e.g. DiscountingSwapEngine, Grid, AMC)      |                                        |                                                   |               |             |               |                   |                       |                     |                    |
 
 *** Columns (Qt model)
 

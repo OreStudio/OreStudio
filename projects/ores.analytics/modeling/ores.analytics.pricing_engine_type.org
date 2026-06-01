@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 296DDD3E-669D-4FBE-851B-83AC987EB6DF
+:ID: 93F6A725-496B-4BE8-9AC0-BA5BC1B7CAB0
 :END:
 #+title: ores.analytics.pricing_engine_type
 #+description: Codegen entity model for the analytics =pricing_engine_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.

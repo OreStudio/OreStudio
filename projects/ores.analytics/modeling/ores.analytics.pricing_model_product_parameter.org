@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9829775B-5FF4-46D6-8D62-A0699402193F
+:ID: 4B17A175-E34F-45A2-AADB-D61517A53578
 :END:
 #+title: ores.analytics.pricing_model_product_parameter
 #+description: Codegen entity model for the analytics =pricing_model_product_parameter= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
@@ -126,8 +126,9 @@ std::string("0.03")
 
 ** Flags
 :PROPERTIES:
-:component_include: analytics.api
-:component_core:    analytics.core
+:component_include:  analytics.api
+:component_core:     analytics.core
+:list_filter_column: config_id
 :END:
 
 ** Repository
@@ -168,6 +169,7 @@ std::string("0.03")
 :collection_name:        parameters
 :item_var:               parameter
 :key_field:              parameter_name
+:key_widget:             parameterNameEdit
 :has_uuid_primary_key:   true
 :get_request_class:      analytics::messaging::get_pricing_model_product_parameters_request
 :get_response_class:     analytics::messaging::get_pricing_model_product_parameters_response

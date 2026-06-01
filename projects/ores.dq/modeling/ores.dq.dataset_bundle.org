@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: 2DC7CB2C-EF21-4E55-BB05-07F42DF5BD8B
+:END:
+#+title: ores.dq.dataset_bundle
+#+description: Codegen entity model for the dq =dataset_bundle= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: A named collection of datasets designed to work together.
+#+entity_singular: dataset_bundle
+#+entity_plural: dataset_bundles
+#+entity_title: Dataset Bundle
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Installing a bundle gets the system into a ready state with a coherent set
+of reference data. Bundles provide a way to group related datasets that
+should be installed together.
+
+Examples:
+- "slovaris": Synthetic reference data for development and testing
+- "base": Industry-standard reference data (ISO + FpML) for production
+- "crypto": Base system plus cryptocurrency reference data
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     dq
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this bundle.
+
+This is the surrogate key for the bundle.
+
+* Natural keys
+
+** code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique code for stable referencing.
+
+Examples: "slovaris", "base", "crypto".
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_bundle"
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the bundle.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " " + std::string(faker::word::noun()) + " Bundle"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the bundle's contents and purpose.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_dataset_bundles_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: dq.api
+:component_core:    dq.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: bundle
+:entity_plural_short:   bundles
+:entity_singular_words: dataset bundle
+:entity_plural_words:   dataset bundles
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: b
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| name        | Name        |
+| description | Description |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.dq/domain/dataset_bundle.hpp
+:domain_class:           dq::domain::dataset_bundle
+:protocol_include:       ores.dq/messaging/dataset_bundle_protocol.hpp
+:collection_name:        bundles
+:item_var:               bundle
+:key_field:              code
+:has_uuid_primary_key:   true
+:get_request_class:      dq::messaging::get_dataset_bundles_request
+:get_response_class:     dq::messaging::get_dataset_bundles_response
+:get_message_type:       get_dataset_bundles_request
+:save_request_class:     dq::messaging::save_dataset_bundle_request
+:save_response_class:    dq::messaging::save_dataset_bundle_response
+:save_message_type:      save_dataset_bundle_request
+:delete_request_class:   dq::messaging::delete_dataset_bundle_request
+:delete_response_class:  dq::messaging::delete_dataset_bundle_response
+:delete_message_type:    delete_dataset_bundle_request
+:history_request_class:  dq::messaging::get_dataset_bundle_history_request
+:history_response_class: dq::messaging::get_dataset_bundle_history_response
+:history_message_type:   get_dataset_bundle_history_request
+:settings_group:         DatasetBundleListWindow
+:window_title:           Dataset Bundles
+:icon:                   Folder
+:END:
+
+*** Columns (Qt model)
+
+| enum_name   | field       | header      | type      | width |
+|-------------+-------------+-------------+-----------+-------|
+| Code        | code        | Code        | string    | 150   |
+| Name        | name        | Name        | string    | 200   |
+| Description | description | Description | string    | 300   |
+| Version     | version     | Version     | int       | 80    |
+| ModifiedBy  | modified_by | Modified By | string    | 120   |
+| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |
+
+** Custom repository methods

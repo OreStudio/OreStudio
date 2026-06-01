@@ -1,0 +1,174 @@
+:PROPERTIES:
+:ID: 22798D61-7CF5-4FFC-8AC4-F3D469C47918
+:END:
+#+title: ores.dq.badge_severity
+#+description: Codegen entity model for the dq =badge_severity= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: Severity levels for badge visual classification.
+#+entity_singular: badge_severity
+#+entity_plural: badge_severities
+#+entity_title: Badge Severity
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Reference data defining severity levels used to classify badges.
+Codes align with Bootstrap 5 contextual classes so Wt rendering
+requires no translation layer.
+
+Values: secondary, info, success, warning, danger, primary.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     dq
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique severity code.
+
+Examples: 'secondary', 'info', 'success', 'warning', 'danger', 'primary'.
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the severity level.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Severity"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the severity level.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_badge_severities_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: dq.api
+:component_core:    dq.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: severity
+:entity_plural_short:   severities
+:entity_singular_words: badge severity
+:entity_plural_words:   badge severities
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: bs
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| description   | Description |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.dq/domain/badge_severity.hpp
+:domain_class:           dq::domain::badge_severity
+:protocol_include:       ores.dq/messaging/badge_severity_protocol.hpp
+:collection_name:        severities
+:item_var:               severity
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      dq::messaging::get_badge_severities_request
+:get_response_class:     dq::messaging::get_badge_severities_response
+:get_message_type:       get_badge_severities_request
+:save_request_class:     dq::messaging::save_badge_severity_request
+:save_response_class:    dq::messaging::save_badge_severity_response
+:save_message_type:      save_badge_severity_request
+:delete_request_class:   dq::messaging::delete_badge_severity_request
+:delete_response_class:  dq::messaging::delete_badge_severity_response
+:delete_message_type:    delete_badge_severity_request
+:history_request_class:  dq::messaging::get_badge_severity_history_request
+:history_response_class: dq::messaging::get_badge_severity_history_response
+:history_message_type:   get_badge_severity_history_request
+:settings_group:         BadgeSeverityListWindow
+:window_title:           Badge Severities
+:icon:                   Award
+:END:
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Code         | code          | Code        | string    | 120   |
+| Name         | name          | Name        | string    | 150   |
+| Description  | description   | Description | string    | 300   |
+| DisplayOrder | display_order | Order       | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+** Custom repository methods

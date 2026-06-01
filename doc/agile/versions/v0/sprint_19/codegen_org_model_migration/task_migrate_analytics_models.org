@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/migrate-analytics-org
-#+pr:
+#+pr: 983
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
@@ -46,9 +46,9 @@ pricing_model_product_parameter) into literate
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #983 | [codegen,analytics] Migrate analytics entity models from JSON to org-mode |
 
 * Review
 

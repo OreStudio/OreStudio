@@ -94,6 +94,7 @@ COMPONENTS: Dict[str, Component] = {
         models_dir="projects/ores.codegen/models/reporting",
         entity_glob="*_domain_entity.json",
         exclude_suffix=None,
+        modeling_dir="projects/ores.reporting/modeling",
     ),
     "scheduler-cpp": Component(
         name="scheduler-cpp",

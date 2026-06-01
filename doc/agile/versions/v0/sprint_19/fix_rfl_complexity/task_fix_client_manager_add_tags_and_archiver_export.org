@@ -8,7 +8,7 @@
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
 #+branch: feature/fix-windows-macos-ci
-#+pr:
+#+pr: 978
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -62,7 +62,7 @@ Two remaining Windows/macOS CI failures after PR #969 (service parser exports):
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/978][#978]] | [ores.compute.wrapper,ores.qt.api] Fix remaining Windows/macOS CI failures |
 
 * Review
 

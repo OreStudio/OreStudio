@@ -7,9 +7,9 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on: none
+#+branch: feature/migrate-dq-org
+#+pr: 980
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-01
@@ -19,41 +19,42 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Convert the 4 =*_domain_entity.json= files under
+=projects/ores.codegen/models/dq/= (badge_definition, badge_severity,
+code_domain, dataset_bundle) into literate =ores.dq.<entity>.org=
+files under =projects/ores.dq/modeling/=, using
+=migrate_json_to_org.py=.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Migration complete; raising PR.        |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-01                               |
+| Next         | Merge.                                 |
+| Last touched | 2026-06-01                             |
 
 * Acceptance
 
--
-
-* Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+- =dq-cpp= manifest entry has =modeling_dir="projects/ores.dq/modeling"=.
+- 4 =ores.dq.<entity>.org= files exist; 4 corresponding JSON files removed.
+- Build of =ores.dq.api.lib= / =ores.dq.core.lib= against the
+  production tree shows no migration-induced regression.
 
 * Notes
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #980 | [codegen,dq] Migrate dq entity models from JSON to org-mode |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task missing =* PRs= / =* Review= sections; suggests =\| PR \| Description \| Decision \| Notes \|=. | task_migrate_dq_models.org:44 | Declined | PR #980 round 1. Both sections already present with the repo's standard column shape. |
 
 * Result

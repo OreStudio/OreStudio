@@ -1,0 +1,243 @@
+:PROPERTIES:
+:ID: 7BEB786A-A573-474E-9677-64C869A64E47
+:END:
+#+title: ores.dq.badge_definition
+#+description: Codegen entity model for the dq =badge_definition= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: Visual definition for a badge, including colours, label, and severity.
+#+entity_singular: badge_definition
+#+entity_plural: badge_definitions
+#+entity_title: Badge Definition
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+The badge catalogue. Each entry defines the complete visual presentation
+of a badge: display label, tooltip, background colour, text colour,
+severity level, and an optional Bootstrap CSS class hint for Wt.
+
+Badge definitions are the single source of truth for all badge visual
+metadata across Qt and Wt. They are loaded at client startup as
+reference data and looked up at render time via BadgeCache.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     dq
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique badge definition code.
+
+Examples: 'active', 'locked', 'fsm_draft', 'login_online'.
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Display label shown inside the badge.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective())
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Tooltip text explaining what this badge represents.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** background_colour
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Badge background colour as a hex string.
+
+Example: '#22c55e'.
+
+#+begin_src cpp :name generator
+std::string("#") + faker::string::hexadecimal(6, faker::HexCasing::Lower, faker::HexPrefix::NoPrefix)
+#+end_src
+
+** text_colour
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Badge text colour as a hex string.
+
+Default is '#ffffff' (white). May vary for light-background badges.
+
+#+begin_src cpp :name generator
+std::string("#ffffff")
+#+end_src
+
+** severity_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Severity classification for this badge.
+
+Soft FK to ores_dq_badge_severities_tbl. Bootstrap-aligned codes: secondary, info, success, warning, danger, primary.
+
+#+begin_src cpp :name generator
+std::string("secondary")
+#+end_src
+
+** css_class
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional Bootstrap CSS class hint for Wt rendering.
+
+Example: 'badge bg-success'. Qt ignores this field. Nullable — Wt falls back to inline style from background_colour/text_colour when absent.
+
+#+begin_src cpp :name generator
+std::optional<std::string>{}
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_badge_definitions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: dq.api
+:component_core:    dq.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: definition
+:entity_plural_short:   definitions
+:entity_singular_words: badge definition
+:entity_plural_words:   badge definitions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: bd
+:END:
+
+** Table display
+
+| column            | header      |
+|-------------------+-------------|
+| code              | Code        |
+| name              | Name        |
+| background_colour | Background  |
+| text_colour       | Text        |
+| severity_code     | Severity    |
+| display_order     | Order       |
+| modified_by       | Modified By |
+| version           | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.dq/domain/badge_definition.hpp
+:domain_class:           dq::domain::badge_definition
+:protocol_include:       ores.dq/messaging/badge_definition_protocol.hpp
+:collection_name:        definitions
+:item_var:               definition
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      dq::messaging::get_badge_definitions_request
+:get_response_class:     dq::messaging::get_badge_definitions_response
+:get_message_type:       get_badge_definitions_request
+:save_request_class:     dq::messaging::save_badge_definition_request
+:save_response_class:    dq::messaging::save_badge_definition_response
+:save_message_type:      save_badge_definition_request
+:delete_request_class:   dq::messaging::delete_badge_definition_request
+:delete_response_class:  dq::messaging::delete_badge_definition_response
+:delete_message_type:    delete_badge_definition_request
+:history_request_class:  dq::messaging::get_badge_definition_history_request
+:history_response_class: dq::messaging::get_badge_definition_history_response
+:history_message_type:   get_badge_definition_history_request
+:settings_group:         BadgeDefinitionListWindow
+:window_title:           Badge Definitions
+:icon:                   Tag
+:END:
+
+*** Columns (Qt model)
+
+| enum_name        | field             | header      | type      | width |
+|------------------+-------------------+-------------+-----------+-------|
+| Code             | code              | Code        | string    | 150   |
+| Name             | name              | Name        | string    | 150   |
+| Description      | description       | Description | string    | 250   |
+| BackgroundColour | background_colour | Background  | string    | 100   |
+| TextColour       | text_colour       | Text        | string    | 80    |
+| SeverityCode     | severity_code     | Severity    | string    | 100   |
+| DisplayOrder     | display_order     | Order       | int       | 80    |
+| Version          | version           | Version     | int       | 80    |
+| ModifiedBy       | modified_by       | Modified By | string    | 120   |
+| RecordedAt       | recorded_at       | Recorded At | timestamp | 150   |
+
+** Custom repository methods

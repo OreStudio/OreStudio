@@ -1,0 +1,177 @@
+:PROPERTIES:
+:ID: 17FF90EF-64C4-4FF2-B30F-C0714A79FFD4
+:END:
+#+title: ores.dq.code_domain
+#+description: Codegen entity model for the dq =code_domain= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: A named namespace for disambiguating enum codes across entity types.
+#+entity_singular: code_domain
+#+entity_plural: code_domains
+#+entity_title: Code Domain
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+A code domain is a classification registry that names the context in
+which a code value exists. It disambiguates identical codes used in
+different entity types — e.g. 'ACTIVE' in party_status vs 'ACTIVE'
+in book_status.
+
+Code domains are reusable beyond badges: any future system needing
+to namespace code values (validation rules, audit customisation, etc.)
+can reference this table.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     dq
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique code domain identifier.
+
+Examples: 'party_status', 'book_type', 'fsm_state', 'dq_nature'.
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the code domain.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Domain"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of what this code domain classifies.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_code_domains_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: dq.api
+:component_core:    dq.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: domain
+:entity_plural_short:   domains
+:entity_singular_words: code domain
+:entity_plural_words:   code domains
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cd
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| description   | Description |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.dq/domain/code_domain.hpp
+:domain_class:           dq::domain::code_domain
+:protocol_include:       ores.dq/messaging/code_domain_protocol.hpp
+:collection_name:        domains
+:item_var:               domain
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      dq::messaging::get_code_domains_request
+:get_response_class:     dq::messaging::get_code_domains_response
+:get_message_type:       get_code_domains_request
+:save_request_class:     dq::messaging::save_code_domain_request
+:save_response_class:    dq::messaging::save_code_domain_response
+:save_message_type:      save_code_domain_request
+:delete_request_class:   dq::messaging::delete_code_domain_request
+:delete_response_class:  dq::messaging::delete_code_domain_response
+:delete_message_type:    delete_code_domain_request
+:history_request_class:  dq::messaging::get_code_domain_history_request
+:history_response_class: dq::messaging::get_code_domain_history_response
+:history_message_type:   get_code_domain_history_request
+:settings_group:         CodeDomainListWindow
+:window_title:           Code Domains
+:icon:                   Grid
+:END:
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Code         | code          | Code        | string    | 150   |
+| Name         | name          | Name        | string    | 200   |
+| Description  | description   | Description | string    | 300   |
+| DisplayOrder | display_order | Order       | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+** Custom repository methods

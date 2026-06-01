@@ -18,7 +18,7 @@ before picking up a new story?
 * Answer
 
 Each worktree has a =.journal.org= file in its root directory. The file is
-gitignored (machine-local, never committed). =compass story new / compass task new= appends an entry
+gitignored (machine-local, never committed). =compass story new= or =compass task new= appends an entry
 automatically whenever a task is picked up, so no manual update is normally
 needed.
 
@@ -58,7 +58,7 @@ compass fleet
 
 ** When to update the journal manually
 
-=compass story new / compass task new= writes the initial =State :: STARTED= entry automatically.
+=compass story new= or =compass task new= writes the initial =State :: STARTED= entry automatically.
 Manual updates are needed when:
 
 1. *Completing a task* — append a closing entry with =State :: DONE= and
@@ -67,12 +67,12 @@ Manual updates are needed when:
    compass journal update --story <UUID> --task <UUID> \
      --branch <branch> --state DONE --pr <N>
    #+end_src
-2. *Switching tasks mid-session* — run =compass story new / compass task new= for the new task;
+2. *Switching tasks mid-session* — run =compass story new= or =compass task new= for the new task;
    it will append a new =STARTED= entry automatically.
 
 ** Overlap detection before picking up a story
 
-Before running =compass story new / compass task new=, check what every other worktree is working on:
+Before running =compass story new= or =compass task new=, check what every other worktree is working on:
 
 #+begin_src sh
 compass fleet

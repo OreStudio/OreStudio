@@ -103,6 +103,7 @@ COMPONENTS: Dict[str, Component] = {
         models_dir="projects/ores.codegen/models/trading",
         entity_glob="*_domain_entity.json",
         exclude_suffix=None,
+        modeling_dir="projects/ores.trading/modeling",
     ),
     "workflow-cpp": Component(
         name="workflow-cpp",

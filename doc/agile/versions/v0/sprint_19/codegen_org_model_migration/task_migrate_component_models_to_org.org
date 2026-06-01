@@ -226,6 +226,6 @@ not here.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task missing =* PRs= / =* Review= sections (false-positive). | task_migrate_component_models_to_org.org:218 | Declined | PR #992 (brainstorm) round 1. Both sections already present at lines 219 / 225. |
 
 * Result

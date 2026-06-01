@@ -1,19 +1,13 @@
 #!/usr/bin/env python3
 """
-Compass: a repository orientation tool for ORE Studio.
+Compass: developer toolkit for ORE Studio — orient, scaffold, capture, and search.
 
 Pillars:
-  - Search: fast NLP/FTS retrieval over Org-Roam notes (index/search/debug).
-  - Locate: where are we in time — current version, sprint, in-flight work
-    (where/status), read from the agile document tree.
-  - Navigate: list/filter the doc graph (list) and inspect a single doc with
-    its inbound/outbound links (show).
-  - Scaffold: create agile/doc artefacts (add) by calling ores.codegen as a
-    library — generation stays in codegen, not duplicated here.
-  - Fleet: what every git worktree is doing — branch, story, task, PR
-    (fleet), so parallel checkouts/agents don't collide.
-  - Goto: start a unit of work in one step — fetch main, branch, scaffold
-    a linked story+task, print next steps (goto).
+  - Orient:   where we are (where/fleet/sprint/story) and what every worktree is doing.
+  - Search:   fast NLP/FTS retrieval over Org-Roam notes (search/list/show).
+  - Scaffold: create branches and agile artefacts in one step (goto/add).
+  - Capture:  file and triage product backlog ideas (capture/inbox/next/backlog).
+  - Journal:  per-worktree session log for restart recovery and overlap detection.
 """
 
 import argparse
@@ -1444,7 +1438,19 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
         sys.exit(cmd_backlog(sys.argv[1], sys.argv[2:]))
 
-    parser = argparse.ArgumentParser(description="Compass: orientation tool for ORE Studio")
+    _EPILOG = (
+        "Pillars:\n"
+        "  Orient:   where, fleet, sprint, story\n"
+        "  Search:   search (find), list, show\n"
+        "  Scaffold: goto, add\n"
+        "  Capture:  capture, inbox, next, deferred, discarded, backlog\n"
+        "  Journal:  journal\n"
+    )
+    parser = argparse.ArgumentParser(
+        description="Compass: developer toolkit for ORE Studio — orient, scaffold, capture, and search.",
+        epilog=_EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     index_parser = subparsers.add_parser("index", help="Index or update notes from org-roam.db")

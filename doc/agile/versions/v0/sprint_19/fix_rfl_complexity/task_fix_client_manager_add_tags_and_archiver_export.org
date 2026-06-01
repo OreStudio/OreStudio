@@ -8,7 +8,7 @@
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
 #+branch: feature/fix-windows-macos-ci
-#+pr: 978
+#+pr: 978 982
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -46,9 +46,9 @@ Three Windows/macOS CI failures after PR #969 (service parser exports):
 |--------------+------------------------------------------------------------------|
 | State        | STARTED                                                          |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]  |
-| Now          | Committed; PR open; awaiting CI.                                 |
-| Waiting on   | CI green + review.                                               |
-| Next         | Merge PR; mark DONE.                                             |
+| Now          | PR #982 open for parse_trade_instrument C1202 fix; awaiting CI.  |
+| Waiting on   | CI green + review on PR #982.                                     |
+| Next         | Merge PR #982; mark DONE.                                         |
 | Last touched | 2026-06-01                                                       |
 
 * Acceptance
@@ -71,6 +71,7 @@ Three Windows/macOS CI failures after PR #969 (service parser exports):
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/978][#978]] | [ores.compute.wrapper,ores.qt.api] Fix remaining Windows/macOS CI failures |
+| [[https://github.com/OreStudio/OreStudio/pull/982][#982]] | [ores.qt.api] Fix MSVC C1202 in parse_trade_instrument.cpp |
 
 * Review
 

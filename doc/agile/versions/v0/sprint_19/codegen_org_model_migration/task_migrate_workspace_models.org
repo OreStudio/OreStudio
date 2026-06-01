@@ -54,6 +54,8 @@ PR to close out the per-component migration sweep.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =has_party_id= missing from top-level Flags drawer. | workspace.org:26 | Accepted | PR #989 round 1. Fixed in =07374321a= (generic has_* forwarding). |
+| 2 | Qt drawer missing =delete_request_id_field= + =delete_is_single=. | workspace.org:187 | Accepted | PR #989 round 1. Fixed in =07374321a= (added to Qt drawer key list). |
+| 3 | Task missing =* PRs= / =* Review= sections (false-positive). | task_migrate_workspace_models.org:43 | Declined | PR #989 round 1. Both sections already present at lines 47 / 53. |
 
 * Result

@@ -54,6 +54,6 @@ PR to close out the per-component migration sweep.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task missing =* PRs= / =* Review= sections (false-positive). | task_migrate_database_models.org:43 | Declined | PR #989 round 1. Both sections already present at lines 47 / 53. |
 
 * Result

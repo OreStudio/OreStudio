@@ -139,6 +139,21 @@ struct eq_digital_wrapper   { td::equity_digital_option_instrument  instrument; 
 struct eq_accum_wrapper     { td::equity_accumulator_instrument     instrument; };
 struct eq_position_wrapper  { td::equity_position_instrument        instrument; };
 
+// Two-pass helper for leg-based types: parse instrument, short-circuit on failure,
+// then parse legs, then call the matching populate overload.
+template<typename InstrOuter, typename LegsOuter>
+static bool try_parse_and_populate(const std::string& raw,
+    IInstrumentFormPopulator& populator)
+{
+    auto r_instr = try_parse<InstrOuter>(raw);
+    if (!r_instr) return false;
+    auto r_legs = try_parse<LegsOuter>(raw);
+    if (!r_legs) return false;
+    populator.populate(r_instr->instrument.instrument,
+                       std::move(r_legs->instrument.legs));
+    return true;
+}
+
 } // namespace
 
 namespace ores::qt {
@@ -198,77 +213,47 @@ parse_trade_instrument(const std::string& raw, IInstrumentFormPopulator& populat
     }
     case product_type::composite: {
         BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading composite_instrument";
-        auto r_instr = try_parse<composite_instr_outer>(raw);
-        auto r_legs  = try_parse<composite_legs_outer>(raw);
-        if (!r_instr || !r_legs) return std::nullopt;
-        populator.populate(r_instr->instrument.instrument,
-                           std::move(r_legs->instrument.legs));
+        if (!try_parse_and_populate<composite_instr_outer, composite_legs_outer>(raw, populator))
+            return std::nullopt;
         break;
     }
     case product_type::swap: {
         if (ttc == "ForwardRateAgreement") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading fra_instrument";
-            auto r_instr = try_parse<fra_instr_outer>(raw);
-            auto r_legs  = try_parse<swap_legs_outer>(raw);
-            if (!r_instr || !r_legs) return std::nullopt;
-            populator.populate(r_instr->instrument.instrument,
-                               std::move(r_legs->instrument.legs));
+            if (!try_parse_and_populate<fra_instr_outer, swap_legs_outer>(raw, populator))
+                return std::nullopt;
         } else if (ttc == "Swap" || ttc == "CrossCurrencySwap" || ttc == "FlexiSwap") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading vanilla_swap_instrument";
-            auto r_instr = try_parse<vanilla_swap_instr_outer>(raw);
-            auto r_legs  = try_parse<swap_legs_outer>(raw);
-            if (!r_instr || !r_legs) return std::nullopt;
-            populator.populate(r_instr->instrument.instrument,
-                               std::move(r_legs->instrument.legs));
+            if (!try_parse_and_populate<vanilla_swap_instr_outer, swap_legs_outer>(raw, populator))
+                return std::nullopt;
         } else if (ttc == "CapFloor") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading cap_floor_instrument";
-            auto r_instr = try_parse<cap_floor_instr_outer>(raw);
-            auto r_legs  = try_parse<swap_legs_outer>(raw);
-            if (!r_instr || !r_legs) return std::nullopt;
-            populator.populate(r_instr->instrument.instrument,
-                               std::move(r_legs->instrument.legs));
+            if (!try_parse_and_populate<cap_floor_instr_outer, swap_legs_outer>(raw, populator))
+                return std::nullopt;
         } else if (ttc == "Swaption") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading swaption_instrument";
-            auto r_instr = try_parse<swaption_instr_outer>(raw);
-            auto r_legs  = try_parse<swap_legs_outer>(raw);
-            if (!r_instr || !r_legs) return std::nullopt;
-            populator.populate(r_instr->instrument.instrument,
-                               std::move(r_legs->instrument.legs));
+            if (!try_parse_and_populate<swaption_instr_outer, swap_legs_outer>(raw, populator))
+                return std::nullopt;
         } else if (ttc == "BalanceGuaranteedSwap") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading balance_guaranteed_swap_instrument";
-            auto r_instr = try_parse<bgs_instr_outer>(raw);
-            auto r_legs  = try_parse<swap_legs_outer>(raw);
-            if (!r_instr || !r_legs) return std::nullopt;
-            populator.populate(r_instr->instrument.instrument,
-                               std::move(r_legs->instrument.legs));
+            if (!try_parse_and_populate<bgs_instr_outer, swap_legs_outer>(raw, populator))
+                return std::nullopt;
         } else if (ttc == "CallableSwap") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading callable_swap_instrument";
-            auto r_instr = try_parse<callable_swap_instr_outer>(raw);
-            auto r_legs  = try_parse<swap_legs_outer>(raw);
-            if (!r_instr || !r_legs) return std::nullopt;
-            populator.populate(r_instr->instrument.instrument,
-                               std::move(r_legs->instrument.legs));
+            if (!try_parse_and_populate<callable_swap_instr_outer, swap_legs_outer>(raw, populator))
+                return std::nullopt;
         } else if (ttc == "KnockOutSwap") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading knock_out_swap_instrument";
-            auto r_instr = try_parse<knock_out_swap_instr_outer>(raw);
-            auto r_legs  = try_parse<swap_legs_outer>(raw);
-            if (!r_instr || !r_legs) return std::nullopt;
-            populator.populate(r_instr->instrument.instrument,
-                               std::move(r_legs->instrument.legs));
+            if (!try_parse_and_populate<knock_out_swap_instr_outer, swap_legs_outer>(raw, populator))
+                return std::nullopt;
         } else if (ttc == "InflationSwap") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading inflation_swap_instrument";
-            auto r_instr = try_parse<inflation_swap_instr_outer>(raw);
-            auto r_legs  = try_parse<swap_legs_outer>(raw);
-            if (!r_instr || !r_legs) return std::nullopt;
-            populator.populate(r_instr->instrument.instrument,
-                               std::move(r_legs->instrument.legs));
+            if (!try_parse_and_populate<inflation_swap_instr_outer, swap_legs_outer>(raw, populator))
+                return std::nullopt;
         } else if (ttc == "RiskParticipationAgreement") {
             BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading rpa_instrument";
-            auto r_instr = try_parse<rpa_instr_outer>(raw);
-            auto r_legs  = try_parse<swap_legs_outer>(raw);
-            if (!r_instr || !r_legs) return std::nullopt;
-            populator.populate(r_instr->instrument.instrument,
-                               std::move(r_legs->instrument.legs));
+            if (!try_parse_and_populate<rpa_instr_outer, swap_legs_outer>(raw, populator))
+                return std::nullopt;
         } else {
             BOOST_LOG_SEV(lg(), warn)
                 << "getTradeInstrument: unknown (product_type, trade_type) — ("

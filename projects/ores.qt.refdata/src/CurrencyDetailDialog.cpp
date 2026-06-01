@@ -1047,6 +1047,9 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
         return;
     }
 
+    if (findChild<QFutureWatcherBase*>("roundingTypeWatcher"))
+        return;
+
     BOOST_LOG_SEV(lg(), debug) << "Populating rounding type combo";
 
     const QString previousSelection = ui_->roundingTypeCombo->currentText();
@@ -1077,6 +1080,7 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
     });
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
+    watcher->setObjectName("roundingTypeWatcher");
     connect(watcher, &QFutureWatcher<FetchResult>::finished,
             self, [self, watcher, previousSelection]() {
         auto result = watcher->result();
@@ -1135,6 +1139,9 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
         return;
     }
 
+    if (findChild<QFutureWatcherBase*>("monetaryNatureWatcher"))
+        return;
+
     BOOST_LOG_SEV(lg(), debug) << "Populating monetary nature combo";
 
     const QString previousSelection = ui_->monetaryNatureCombo->currentText();
@@ -1165,6 +1172,7 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
     });
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
+    watcher->setObjectName("monetaryNatureWatcher");
     connect(watcher, &QFutureWatcher<FetchResult>::finished,
             self, [self, watcher, previousSelection]() {
         auto result = watcher->result();
@@ -1221,6 +1229,9 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
         return;
     }
 
+    if (findChild<QFutureWatcherBase*>("marketTierWatcher"))
+        return;
+
     BOOST_LOG_SEV(lg(), debug) << "Populating market tier combo";
 
     const QString previousSelection = ui_->marketTierCombo->currentText();
@@ -1251,6 +1262,7 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
     });
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
+    watcher->setObjectName("marketTierWatcher");
     connect(watcher, &QFutureWatcher<FetchResult>::finished,
             self, [self, watcher, previousSelection]() {
         auto result = watcher->result();

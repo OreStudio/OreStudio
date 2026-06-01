@@ -83,5 +83,11 @@ task closes. Plans do not outlive their task.)
 |---+-----------------+------+----------+-------|
 | 1 | Localize "Loading…" placeholder in Goal (i18n) | task_fix_currency_dialog_responsiveness.org | Fixed — use =tr("Loading…")= | Gemini round 1 |
 | 2 | Localize "Loading…" in Acceptance criteria (i18n) | task_fix_currency_dialog_responsiveness.org | Fixed — use =tr("Loading…")= | Gemini round 1 |
+| 3 | Race condition + guard: check for active roundingTypeWatcher | CurrencyDetailDialog.cpp | Fixed — guard + setObjectName | Gemini round 1 |
+| 4 | Set object name on roundingTypeWatcher | CurrencyDetailDialog.cpp | Fixed — watcher->setObjectName | Gemini round 1 |
+| 5 | Race condition + guard: check for active monetaryNatureWatcher | CurrencyDetailDialog.cpp | Fixed — guard + setObjectName | Gemini round 1 |
+| 6 | Set object name on monetaryNatureWatcher | CurrencyDetailDialog.cpp | Fixed — watcher->setObjectName | Gemini round 1 |
+| 7 | Race condition + guard: check for active marketTierWatcher | CurrencyDetailDialog.cpp | Fixed — guard + setObjectName | Gemini round 1 |
+| 8 | Set object name on marketTierWatcher | CurrencyDetailDialog.cpp | Fixed — watcher->setObjectName | Gemini round 1 |
 
 * Result

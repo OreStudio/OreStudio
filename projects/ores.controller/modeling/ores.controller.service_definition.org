@@ -1,0 +1,172 @@
+:PROPERTIES:
+:ID: 840CAF71-5CB3-4306-B3FB-874F81FA71CB
+:END:
+#+title: ores.controller.service_definition
+#+description: Codegen entity model for the controller =service_definition= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: controller
+#+filetags: :model:entity:controller:
+#+brief: Desired state configuration for a managed ORE Studio service.
+#+entity_singular: service_definition
+#+entity_plural: service_definitions
+#+entity_title: Service Definition
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Represents a Kubernetes-style Deployment: the desired configuration for a
+named service, including how many replicas to run, the binary name, restart
+policy, and whether the service is enabled. This is a bitemporal table so
+that the full history of configuration changes is preserved for audit.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     controller
+:has_tenant_id: false
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID primary key for the service definition.
+
+* Natural keys
+
+** service_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique name of the service (e.g. ores.iam.service).
+
+* Columns
+
+** binary_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Executable filename (may differ from service_name for multi-instance services).
+
+** desired_replicas
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  1
+:END:
+
+Number of replicas to maintain.
+
+** restart_policy
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  'always'
+:END:
+
+Restart policy: always, on-failure, or never.
+
+** max_restart_count
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  3
+:END:
+
+Maximum number of automatic restarts before marking the instance failed.
+
+** enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  1
+:END:
+
+1 if the service should be started, 0 if it should remain stopped.
+
+** args_template
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional command-line argument template; NULL means use the default launch arguments.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_controller_service_definitions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: controller.api
+:component_core:    controller.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: service_definition
+:entity_plural_short:   service_definitions
+:entity_singular_words: service definition
+:entity_plural_words:   service definitions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sd
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:       ores.controller/domain/service_definition.hpp
+:domain_class:         controller::domain::service_definition
+:protocol_include:     ores.controller/messaging/service_definition_protocol.hpp
+:collection_name:      service_definitions
+:item_var:             service_definition
+:key_field:            service_name
+:has_uuid_primary_key: true
+:has_pagination:       false
+:get_request_class:    controller::messaging::list_service_definitions_request
+:get_response_class:   controller::messaging::list_service_definitions_response
+:settings_group:       ServiceDefinitionListWindow
+:window_title:         Service Definitions
+:icon:                 Server
+:END:
+
+*** Columns (Qt model)
+
+| enum_name       | field             | header         | type   | width |
+|-----------------+-------------------+----------------+--------+-------|
+| ServiceName     | service_name      | Service        | string | 200   |
+| BinaryName      | binary_name       | Binary         | string | 180   |
+| DesiredReplicas | desired_replicas  | Replicas       | int    | 70    |
+| RestartPolicy   | restart_policy    | Restart Policy | string | 100   |
+| MaxRestartCount | max_restart_count | Max Restarts   | int    | 90    |
+| Enabled         | enabled           | Enabled        | int    | 60    |
+| Version         | version           | Version        | int    | 60    |
+| ModifiedBy      | modified_by       | Modified By    | string | 120   |
+
+** Custom repository methods

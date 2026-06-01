@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 719F3770-0838-4FBC-B376-8CE41A3D1328
+:END:
+#+title: How do I solve the postgres max connections error?
+#+description: Diagnose and fix FATAL: remaining connection slots are reserved for roles with the SUPERUSER attribute by identifying which environments hold idle connections and terminating them or raising max_connections.
+#+type: recipe
+#+level: cross
+#+filetags: :ops:sql:postgres:max_connections:connection:logging:recipe:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+This error appears in service logs (see [[id:B7726C15-7A7B-4FC6-A0E2-48A6EE64216F][How do I find the log files for an environment?]])
+as:
+
+#+begin_example
+[ERROR] Failed to create connection pool: Connection to postgres failed:
+FATAL:  remaining connection slots are reserved for roles with the SUPERUSER attribute
+#+end_example
+
+It means PostgreSQL has reached its =max_connections= ceiling. All
+remaining slots are superuser-reserved, so non-superuser service
+accounts cannot connect.
+
+* Question
+
+How do I diagnose and fix the "remaining connection slots are reserved
+for roles with the SUPERUSER attribute" error?
+
+* Answer
+
+** Step 1 — Confirm the error in the service log
+
+#+begin_src sh :results verbatim
+grep -i "connection\|fatal\|failed" \
+  build/output/linux-clang-debug-make/publish/log/ores.refdata.service.0.log
+#+end_src
+
+** Step 2 — Check current connection counts and limits
+
+#+begin_src sh :results verbatim
+projects/ores.sql/run_sql.sh -c "
+SELECT count(*), state, usename
+FROM pg_stat_activity
+GROUP BY state, usename
+ORDER BY count DESC;"
+#+end_src
+
+#+begin_src sh :results verbatim
+projects/ores.sql/run_sql.sh -c "
+SELECT setting::int AS max_connections
+  FROM pg_settings WHERE name = 'max_connections';
+SELECT count(*) AS total_connections
+  FROM pg_stat_activity;
+SELECT setting::int AS superuser_reserved
+  FROM pg_settings WHERE name = 'superuser_reserved_connections';"
+#+end_src
+
+If the total exceeds =max_connections - superuser_reserved=, non-superuser
+accounts are locked out.
+
+** Step 3 — Identify which environments are holding connections
+
+Multiple OreStudio environments (e.g. =local2= and =local4=) each create
+per-service connection pools. Both running simultaneously easily exhausts
+the default limit. Look for =ores_<env>_*_service= usernames in the
+output above.
+
+** Step 4a — Fix: terminate idle connections from the unused environment
+
+Replace =local4= with the environment slug you want to clear:
+
+#+begin_src sh :results verbatim
+projects/ores.sql/run_sql.sh -c "
+SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE usename LIKE 'ores_local4_%'
+  AND state = 'idle';"
+#+end_src
+
+** Step 4b — Fix: raise max_connections (persistent)
+
+Find the active config file:
+
+#+begin_src sh :results verbatim
+projects/ores.sql/run_sql.sh -c "SHOW config_file;"
+#+end_src
+
+Edit =postgresql.conf= and increase =max_connections= (e.g. to 400),
+then reload:
+
+#+begin_src sh :results verbatim
+projects/ores.sql/run_sql.sh -c "SELECT pg_reload_conf();"
+#+end_src
+
+A full restart is required if =max_connections= was raised beyond what
+a reload can apply. Check the PostgreSQL log after reloading to confirm.
+
+* Script
+
+Uses =projects/ores.sql/run_sql.sh -c "<sql>"= throughout. No other wrapper needed.
+
+* Tested by
+
+Reproduced during Sprint 19 when both =local2= and =local4= environments
+were running simultaneously, pushing active connections above 200 and
+blocking =ores_local2_refdata_service= from connecting.
+
+* See also
+
+- [[id:B7726C15-7A7B-4FC6-A0E2-48A6EE64216F][How do I find the log files for an environment?]] — find the error in service logs.

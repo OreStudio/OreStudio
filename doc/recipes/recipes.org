@@ -26,6 +26,7 @@ recipes; each topic has its own inventory that lists its recipes.
 - [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][Shell recipes]] — using the client REPL.
 - [[id:10408305-F864-4152-8FCA-8132179F4DF4][HTTP recipes]] — exercising the HTTP API.
 - [[id:C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F][SQL recipes]] — direct SQL queries against the ORE Studio database.
+- [[id:2EAC4BEA-53D3-4CF1-AC00-1459F3B2D19D][Ops recipes]] — environment management, log files, service health, infrastructure troubleshooting.
 - [[id:B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44][Git recipes]] — pure git workflows (branches, submodules).
 - [[id:FCF81F0B-AFBF-4169-BD24-04DBD08180A9][GitHub recipes]] — =gh= CLI, PRs, CI checks, review threads.
 - [[id:51FE4DF6-D12F-4CF3-A32F-E793979AA68B][LLM prompt recipes]] — reusable prompts for LLM chat interfaces.

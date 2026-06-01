@@ -131,6 +131,4 @@ rather than an idealised design.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
-
-* Result
+| 1 | Remove empty =* Result= placeholder | task_implement_document_masd_codegen_principles.org | Fixed — removed | Gemini round 1 |

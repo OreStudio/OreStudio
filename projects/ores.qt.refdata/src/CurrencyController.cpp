@@ -20,7 +20,6 @@
 #include "ores.qt/CurrencyController.hpp"
 
 #include <QPointer>
-#include <QElapsedTimer>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/CurrencyMdiWindow.hpp"
@@ -187,19 +186,9 @@ void CurrencyController::showListWindow() {
         }
     });
 
-    QElapsedTimer t;
-
-    t.start();
     mdiArea_->addSubWindow(currencyListWindow_);
-    BOOST_LOG_SEV(lg(), debug) << "addSubWindow: " << t.elapsed() << "ms";
-
-    t.restart();
     currencyListWindow_->adjustSize();
-    BOOST_LOG_SEV(lg(), debug) << "adjustSize: " << t.elapsed() << "ms";
-
-    t.restart();
     currencyListWindow_->show();
-    BOOST_LOG_SEV(lg(), debug) << "show: " << t.elapsed() << "ms";
 }
 
 void CurrencyController::closeAllWindows() {

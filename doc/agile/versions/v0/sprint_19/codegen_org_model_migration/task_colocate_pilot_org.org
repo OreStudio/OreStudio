@@ -8,7 +8,7 @@
 #+filetags: :codegen:literate:org_mode:sprint_19:v0:
 #+owner: marco
 #+branch: feature/codegen-org-colocate
-#+pr:
+#+pr: 967
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
@@ -119,9 +119,9 @@ story-final cleanup task.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #967 | [codegen] Co-locate pilot org model + component-dir discovery |
 
 * Review
 

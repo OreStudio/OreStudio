@@ -8,7 +8,7 @@
 #+filetags: :compass_cli_ux_redesign:sprint_19:v0:
 #+owner: marco
 #+branch: feature/audit-compass-docs
-#+pr:
+#+pr: 981
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -88,7 +88,7 @@ Key checks per file:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/981][#981]] | [agile] Task 6: audit and update all compass doc references |
 
 * Review
 

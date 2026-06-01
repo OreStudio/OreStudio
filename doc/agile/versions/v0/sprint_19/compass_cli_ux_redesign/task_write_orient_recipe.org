@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_cli_ux_redesign:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/write-orient-recipe
+#+pr: 973
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -26,11 +26,11 @@ status= and =compass story status=) and wire it into the agile recipe index.
 
 | Field        | Value                                                                 |
 |--------------+-----------------------------------------------------------------------|
-| State        | BACKLOG                                                               |
+| State        | DONE                                                                  |
 | Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]                                              |
-| Now          | Not yet started.                                                      |
-| Waiting on   | Tasks 3 and 4 (sprint status + story status must be implemented first). |
-| Next         | Write recipe once T3 and T4 are merged.                               |
+| Now          | Nothing.                                                              |
+| Waiting on   | Nothing.                                                              |
+| Next         | Done. T6: audit compass docs.                                         |
 | Last touched | 2026-06-01                                                            |
 
 * Acceptance
@@ -43,6 +43,21 @@ status= and =compass story status=) and wire it into the agile recipe index.
 - Recipe is wired into =doc/recipes/agile/agile.org= index under a
   new "Orient" section.
 - CI passes.
+
+* Review
+
+** Round 1 — 2026-06-01
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Missing =* Review= section | task file | Fixed: added | Gemini review |
+
+* Result
+
+- Recipe written at =doc/recipes/agile/how_do_i_get_a_sprint_or_story_status.org=.
+- Covers: =compass sprint status=, =compass story status=, =--uuids= flag,
+  UUID-to-command workflow, =--format json=, conventions.
+- Wired into =doc/recipes/agile/agile.org= under "Orient — sprint and story status".
 
 * Plan
 
@@ -58,7 +73,7 @@ From [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][UX analysis]]:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/973][#973]] | [agile] Task 5: write recipe for compass sprint and story status |
 
 * Review
 

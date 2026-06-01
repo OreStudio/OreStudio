@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: A7D3C1E5-9F2B-4A8D-B6E4-3C7F1D9A2E5B
+:END:
+#+title: How do I get a sprint or story status?
+#+description: Use compass sprint status and compass story status to see what is done, in progress, and not yet started — without opening any files.
+#+type: recipe
+#+level: cross
+#+filetags: :agile:compass:orient:recipe:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+* Question
+
+How do I see the current state of all stories in the sprint, or all tasks
+in a given story, without opening files?
+
+* Answer
+
+** Sprint status — all stories grouped by state
+
+#+begin_src sh
+compass sprint status
+#+end_src
+
+Output groups stories by DONE / STARTED / BLOCKED / BACKLOG with task
+counts (done/total) per story:
+
+#+begin_example
+🧭 ores.compass — sprint status: Sprint 19
+
+  DONE
+    [5/5] Compass session journal
+    [5/5] Refactor ores.codegen SQL generation
+  STARTED
+    [4/7] Commission: currency
+    [3/7] Compass CLI UX redesign
+  BLOCKED
+    [6/19] Refactor ores.codegen C++ generation
+  BACKLOG
+    [—] Commission: book
+    ...
+#+end_example
+
+Add =--uuids= to show full UUIDs for use with other commands:
+
+#+begin_src sh
+compass sprint status --uuids
+#+end_src
+
+#+begin_example
+  STARTED
+    [3/7] Compass CLI UX redesign  [A596D1E7-6A74-4E55-996D-6F1F2E48F261]
+#+end_example
+
+** Story status — all tasks grouped by state
+
+Pass a UUID, UUID prefix, or folder slug:
+
+#+begin_src sh
+compass story status A596D1E7
+compass story status compass_cli_ux_redesign
+compass story status A596D1E7-6A74-4E55-996D-6F1F2E48F261
+#+end_src
+
+Output groups tasks by state with branch and PR per task:
+
+#+begin_example
+🧭 ores.compass — story status: Compass CLI UX redesign
+
+  DONE
+    Compass CLI UX analysis and taxonomy  feature/compass-ux-analysis  PR:964
+    Fix compass description and organise --help by pillar  feature/fix-description-and-help  PR:966
+  BACKLOG
+    Write recipe for new orient commands  feature/write-orient-recipe
+    Audit and update compass recipes skills and runbooks
+#+end_example
+
+Add =--uuids= to show full task UUIDs:
+
+#+begin_src sh
+compass story status A596D1E7 --uuids
+#+end_src
+
+** Getting a UUID to use with other commands
+
+1. Run =compass sprint status --uuids= to list all stories with their UUIDs.
+2. Copy the UUID of the story you want.
+3. Pass it to =compass story status=, =compass show=, or =compass task new=:
+
+#+begin_src sh
+# Get the full UUID from sprint status
+compass sprint status --uuids
+
+# Then drill into that story
+compass story status A596D1E7
+
+# Or inspect the story doc
+compass show A596D1E7
+#+end_src
+
+** JSON output
+
+Both commands support =--format json= for scripting:
+
+#+begin_src sh
+compass sprint status --format json
+compass story status A596D1E7 --format json
+#+end_src
+
+* Conventions
+
+- =compass sprint status= reads each =story.org= file directly, not
+  =sprint.org=, so it reflects the actual state of the story rather than
+  the sprint table (which can drift).
+- State grouping order: DONE → STARTED → BLOCKED → BACKLOG → other states.
+- Task counts (=done/total=) count all =task_*.org= files in the story folder.
+  A story with no task files shows =—=.
+
+* See also
+
+- [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]] — =compass fleet= for per-worktree status.
+- [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] — the story that implemented these commands.

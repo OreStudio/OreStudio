@@ -55,6 +55,6 @@ files under =projects/ores.dq/modeling/=, using
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task missing =* PRs= / =* Review= sections; suggests =\| PR \| Description \| Decision \| Notes \|=. | task_migrate_dq_models.org:44 | Declined | PR #980 round 1. Both sections already present with the repo's standard column shape. |
 
 * Result

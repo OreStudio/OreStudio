@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: EE6A643D-6C6C-41B8-88FD-2EA9351414CD
+:END:
+#+title: Story: Document MASD and code generation principles
+#+description: Create a technical knowledge document weaving MASD theory with ORE Studio's practical code generation implementation; describe the objective of backing out code generation from a reference implementation; link from compass.org and ores.codegen component documents.
+#+type: story
+#+level: s2
+#+filetags: :codegen:masd:mde:documentation:knowledge:sprint_19:v0:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Produce a permanent technical knowledge document that establishes code
+generation as a first-class engineering principle of ORE Studio. The
+document weaves the theoretical foundations of Model-Driven Engineering
+(MDE) and the MASD method with the concrete choices made in ORE Studio's
+=ores.codegen= implementation, so that both new contributors and LLM
+agents understand not just /what/ the generator does but /why/ it exists
+and what it is working towards.
+
+The document also articulates the long-term objective: /backing out/ code
+generation from a reference implementation. Rather than designing abstract
+models first, ORE Studio commissions entities by hand, extracts the
+recurring pattern into a generator, and then uses that generator to
+produce all subsequent entities. The currency entity is the current
+reference implementation; it is the yardstick against which codegen
+coverage is measured.
+
+Once written, the document is linked from [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][ores.compass]] (the site entry
+point) so that it is reachable from the top of the documentation tree.
+
+* Status
+
+| Field         | Value                                                            |
+|---------------+------------------------------------------------------------------|
+| State         | STARTED                                                          |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                       |
+| Now           | T1 scaffolded: writing MASD and codegen principles document.     |
+| Waiting on    | Nothing.                                                         |
+| Next          | Implement T1.                                                    |
+| Last touched  | 2026-06-01                                                       |
+
+* Acceptance
+
+- A knowledge document exists in =doc/knowledge/= titled
+  "MASD and code generation principles" covering:
+  - The theoretical underpinnings of MDE and MASD as they apply to ORE
+    Studio.
+  - How =ores.codegen= realises these principles in practice (inputs,
+    templates, outputs, profiles).
+  - The reference-implementation backout strategy: hand-write one entity
+    fully (=currency=), extract the pattern, generate all others.
+  - A clear statement of what code generation covers today vs. what
+    remains manual, keyed to the entity evaluation checklist.
+- The document is linked from [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][ores.codegen]] (component overview) and from
+  =compass.org= (the top-level site entry point).
+- The document links back to [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]], [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]],
+  and the entity evaluation checklist.
+- The document passes =validate_docs.sh= and the site builds cleanly.
+
+* Tasks
+
+| Task                                                    | State   | Start      | End | Description                                       |
+|---------------------------------------------------------+---------+------------+-----+---------------------------------------------------|
+| [[id:9C7C4C36-76AD-48C0-B217-D6E82F831C03][T1: Write the MASD and code generation principles doc]] | STARTED | 2026-06-01 |     | Author the knowledge document; wire into site nav |
+
+* Decisions
+
+- Document type: =knowledge= (cross-cutting reference, not a recipe or
+  task). Lives in =doc/knowledge/= with a =#+level: cross= tag so it
+  appears in the knowledge index.
+- Entry point linkage: add a bullet in =compass.org= under a new
+  =** Engineering principles= subsection rather than burying it inside a
+  component page; this makes it discoverable from the top of the tree.
+- MASD scope: focus on ORE Studio's own usage of MASD concepts
+  (meta-models, templates, profiles, the backout strategy). Do not attempt
+  a comprehensive survey of the academic literature — one citation to the
+  foundational Brambilla et al. or Selic work is sufficient.
+
+* Out of scope
+
+- Changes to =ores.codegen= itself (new templates, new outputs).
+- Generation of new entity artefacts from the expanded generator.
+- Documentation of non-codegen architectural decisions.

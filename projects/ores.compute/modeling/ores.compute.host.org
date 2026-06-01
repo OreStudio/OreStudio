@@ -1,0 +1,172 @@
+:PROPERTIES:
+:ID: 0739BC05-3713-4695-8B7B-04D9DBA1AEE0
+:END:
+#+title: ores.compute.host
+#+description: Codegen entity model for the compute =host= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: compute
+#+filetags: :model:entity:compute:
+#+brief: A registered compute node in the distributed grid.
+#+entity_singular: host
+#+entity_plural: hosts
+#+entity_title: Host
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Represents a physical or virtual machine that participates in the BOINC-inspired
+compute grid. Tracks hardware capabilities, heartbeat, and accumulated credit.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     compute
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID primary key for the host.
+
+* Natural keys
+
+** external_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+User-defined name or hostname for the node.
+
+* Columns
+
+** location
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Physical site or region identifier.
+
+** cpu_count
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Total logical CPU cores available.
+
+** ram_mb
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:nullable: false
+:default:  0
+:END:
+
+Total system memory in megabytes.
+
+** gpu_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+GPU model identifier, e.g. 'A100' or NULL if no GPU.
+
+** last_rpc_time
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: true
+:END:
+
+Timestamp of the last heartbeat received from this node.
+
+** credit_total
+:PROPERTIES:
+:type:     numeric
+:cpp_type: double
+:nullable: false
+:default:  0
+:END:
+
+Accumulated work units successfully processed by this host.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_compute_hosts_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: compute.api
+:component_core:    compute.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: host
+:entity_plural_short:   hosts
+:entity_singular_words: compute host
+:entity_plural_words:   compute hosts
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <cstdint>
+#include <chrono>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: h
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:       ores.compute/domain/host.hpp
+:domain_class:         compute::domain::host
+:protocol_include:     ores.compute/messaging/host_protocol.hpp
+:collection_name:      hosts
+:item_var:             host
+:key_field:            external_id
+:has_uuid_primary_key: true
+:has_pagination:       true
+:get_request_class:    compute::messaging::list_hosts_request
+:get_response_class:   compute::messaging::list_hosts_response
+:settings_group:       HostListWindow
+:window_title:         Compute Hosts
+:icon:                 Desktop
+:END:
+
+*** Columns (Qt model)
+
+| enum_name   | field         | header         | type      | width |
+|-------------+---------------+----------------+-----------+-------|
+| ExternalId  | external_id   | Host ID        | string    | 180   |
+| Location    | location      | Location       | string    | 120   |
+| CpuCount    | cpu_count     | CPUs           | int       | 60    |
+| RamMb       | ram_mb        | RAM (MB)       | int       | 80    |
+| GpuType     | gpu_type      | GPU            | string    | 100   |
+| LastRpcTime | last_rpc_time | Last Heartbeat | timestamp | 140   |
+| CreditTotal | credit_total  | Credits        | int       | 80    |
+| Version     | version       | Version        | int       | 60    |
+| ModifiedBy  | modified_by   | Modified By    | string    | 120   |
+
+** Custom repository methods

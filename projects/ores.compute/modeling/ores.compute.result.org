@@ -1,0 +1,172 @@
+:PROPERTIES:
+:ID: 4A441171-D5FB-4942-B406-F0B9F7D32B87
+:END:
+#+title: ores.compute.result
+#+description: Codegen entity model for the compute =result= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: compute
+#+filetags: :model:entity:compute:
+#+brief: A specific execution instance of a workunit assigned to a host.
+#+entity_singular: result
+#+entity_plural: results
+#+entity_title: Result
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Bridges the workunit definition and the actual execution on a grid node.
+Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
+and the location of output data. The BOINC equivalent of 'result'.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     compute
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID primary key for the result.
+
+* Natural keys
+
+* Columns
+
+** workunit_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+FK reference to ores_compute_workunits_tbl.
+
+** host_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: true
+:END:
+
+FK reference to ores_compute_hosts_tbl; NULL until the result is dispatched.
+
+** pgmq_msg_id
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:nullable: true
+:END:
+
+PGMQ lease pointer; NULL when not actively queued.
+
+** server_state
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  1
+:END:
+
+State machine: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done.
+
+** outcome
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: true
+:END:
+
+Result outcome code: 1=Success, 3=ClientError, 4=NoReply.
+
+** output_uri
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+URI where the wrapper uploaded the zipped output; NULL until completed.
+
+** received_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: true
+:END:
+
+Timestamp when the output was received by the server pool.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_compute_results_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: compute.api
+:component_core:    compute.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: result
+:entity_plural_short:   results
+:entity_singular_words: compute result
+:entity_plural_words:   compute results
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <cstdint>
+#include <chrono>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: r
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:       ores.compute/domain/result.hpp
+:domain_class:         compute::domain::result
+:protocol_include:     ores.compute/messaging/result_protocol.hpp
+:collection_name:      results
+:item_var:             result
+:key_field:            modified_by
+:has_uuid_primary_key: true
+:has_pagination:       true
+:get_request_class:    compute::messaging::list_results_request
+:get_response_class:   compute::messaging::list_results_response
+:settings_group:       ResultListWindow
+:window_title:         Results
+:icon:                 CheckmarkCircle
+:END:
+
+*** Columns (Qt model)
+
+| enum_name   | field        | header      | type      | width |
+|-------------+--------------+-------------+-----------+-------|
+| WorkunitId  | workunit_id  | Workunit ID | uuid      | 160   |
+| HostId      | host_id      | Host ID     | uuid      | 160   |
+| ServerState | server_state | State       | int       | 70    |
+| Outcome     | outcome      | Outcome     | int       | 70    |
+| OutputUri   | output_uri   | Output URI  | string    | 200   |
+| ReceivedAt  | received_at  | Received At | timestamp | 140   |
+| Version     | version      | Version     | int       | 60    |
+| ModifiedBy  | modified_by  | Modified By | string    | 120   |
+
+** Custom repository methods

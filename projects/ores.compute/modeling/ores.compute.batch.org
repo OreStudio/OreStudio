@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157
+:END:
+#+title: ores.compute.batch
+#+description: Codegen entity model for the compute =batch= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: compute
+#+filetags: :model:entity:compute:
+#+brief: A logical grouping of workunits forming a financial computation batch.
+#+entity_singular: batch
+#+entity_plural: batches
+#+entity_title: Batch
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Tracks the lifecycle of a collection of workunits that together constitute a
+financial computation (e.g., a risk report run). The Assimilator monitors
+batch completion to trigger downstream report generation.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     compute
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID primary key for the batch.
+
+* Natural keys
+
+** external_ref
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+External reference linking this batch to the originating finance system or project.
+
+* Columns
+
+** status
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  'open'
+:END:
+
+Lifecycle status: open, processing, assimilating, or closed.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_compute_batches_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: compute.api
+:component_core:    compute.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: batch
+:entity_plural_short:   batches
+:entity_singular_words: compute batch
+:entity_plural_words:   compute batches
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: b
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:       ores.compute/domain/batch.hpp
+:domain_class:         compute::domain::batch
+:protocol_include:     ores.compute/messaging/batch_protocol.hpp
+:collection_name:      batches
+:item_var:             batch
+:key_field:            external_ref
+:has_uuid_primary_key: true
+:has_pagination:       true
+:get_request_class:    compute::messaging::list_batches_request
+:get_response_class:   compute::messaging::list_batches_response
+:settings_group:       BatchListWindow
+:window_title:         Compute Batches
+:icon:                 TextBulletListSquare
+:END:
+
+*** Columns (Qt model)
+
+| enum_name   | field        | header      | type   | width |
+|-------------+--------------+-------------+--------+-------|
+| ExternalRef | external_ref | Reference   | string | 200   |
+| Status      | status       | Status      | string | 100   |
+| Version     | version      | Version     | int    | 60    |
+| ModifiedBy  | modified_by  | Modified By | string | 120   |
+
+** Custom repository methods

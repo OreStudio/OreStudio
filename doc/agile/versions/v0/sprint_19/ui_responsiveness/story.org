@@ -1,0 +1,222 @@
+:PROPERTIES:
+:ID: 61F836E5-2277-4765-9038-AF7D0176C993
+:END:
+#+title: Story: Make UI more responsive
+#+description: Fix dialog responsiveness: remove waitForFinished() blocking in destructors, add spinner/loading overlays to DetailDialogBase and HistoryDialogBase, pre-populate combo boxes with loading state, and use a dedicated thread pool for I/O-bound NATS requests to prevent QThreadPool starvation.
+#+type: story
+#+level: s2
+#+filetags: :product:qt:ux:performance:sprint_19:v0:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every Qt dialog opens instantly and remains responsive at all times. When a dialog
+needs data from the server (NATS round-trip), it shows a clear visual indicator
+— a spinner or loading overlay — immediately, and hides it when the data arrives.
+No dialog ever hangs, stutters, or appears with empty unpopulated fields and no
+feedback about what is happening.
+
+* Status
+
+| Field         | Value                                            |
+|---------------+--------------------------------------------------|
+| State         | BACKLOG                                        |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                               |
+| Now           | Not yet started.                                 |
+| Waiting on    | Nothing.                                         |
+| Next          | Break into tasks.                                |
+| Last touched  | 2026-06-01                                         |
+
+* Acceptance
+
+- Opening any detail dialog (e.g. Currency, Country, Party) shows a visible
+  loading indicator immediately and hides it when combo boxes and fields are populated.
+- History dialogs show a loading indicator while the version history loads.
+- Closing a dialog that has in-flight NATS requests does /not/ block the UI thread
+  (no =waitForFinished()= in destructors).
+- Combo boxes (rounding type, monetary nature, market tier, etc.) show a
+  "Loading…" entry until the server response arrives, avoiding the blank pop-in.
+- The UI thread is never blocked by NATS request/reply — all I/O runs on
+  background threads.
+- A dedicated thread pool is used for I/O-bound NATS requests so they do not
+  compete with CPU-bound QtConcurrent tasks for the global QThreadPool.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Analysis
+
+During Sprint 19, an agent investigation traced the dialog-open code path for
+=CurrencyMdiWindow=, =CurrencyDetailDialog=, =CurrencyHistoryDialog=, their
+base classes, and the NATS client library. The findings are recorded below.
+
+** Key insight: no single blocking bug
+
+The NATS request/reply calls are already wrapped in =QtConcurrent::run()= +
+=QFutureWatcher= throughout the Qt layer. The UI thread is never directly
+blocked by a synchronous NATS call. However, several interacting issues make
+dialogs feel slow and unresponsive.
+
+** Issue 1: =waitForFinished()= in dialog destructors blocks the UI thread
+
+Every dialog that makes async NATS requests cleans up its watchers in the
+destructor like this:
+
+#+begin_src cpp
+CurrencyDetailDialog::~CurrencyDetailDialog() {
+    const auto watchers = findChildren<QFutureWatcherBase*>();
+    for (auto* watcher : watchers) {
+        disconnect(watcher, nullptr, this, nullptr);
+        watcher->cancel();
+        watcher->waitForFinished();  // BLOCKS the UI thread!
+    }
+}
+#+end_src
+
+=waitForFinished()= blocks the calling thread (the UI thread, since destructors
+run on the owning thread) until the background NATS request completes. If the
+user opens a dialog and immediately closes it, or rapidly switches between
+dialogs, each close blocks the UI until all in-flight NATS requests finish.
+
+Affects: =CurrencyDetailDialog=, =CurrencyHistoryDialog=, =CurrencyMdiWindow=,
+and every other detail/history/list window in =ores.qt.refdata=, =ores.qt.party=,
+=ores.qt.admin=, =ores.qt.analytics=, etc.
+
+*** Fix
+
+Replace =waitForFinished()= with =cancel()= + disconnect only. The watcher's
+finished signal is disconnected, so the callback never fires. The background
+task completes harmlessly on the thread pool and the QFutureWatcher is
+deleted. Qt guarantees that cancelling a running future does not leak resources.
+
+** Issue 2: no loading indicator in dialogs
+
+=DetailDialogBase= and =HistoryDialogBase= have no loading state infrastructure
+at all — no spinner, no overlay, no "Loading…" text. When a dialog opens, the
+user sees:
+
+1. An empty window with no feedback
+2. Combo boxes populate asynchronously (pop-in effect)
+3. The user has no way to distinguish "loading" from "broken"
+
+By contrast, =EntityListMdiWindow= has =beginLoading()= / =endLoading()= and a
+=QProgressBar=, but even that is an indeterminate marquee bar — not a spinner
+icon or overlay.
+
+Concrete example: =CurrencyDetailDialog::setClientManager()= fires up to **4
+concurrent async NATS requests** to populate combo boxes and check feature flags,
+but nothing tells the user work is in progress.
+
+*** Fix
+
+- Add a loading overlay widget (spinner + "Loading…" text) to =DetailDialogBase=
+  that is shown immediately on construction and hidden when all data arrives.
+- Add the same to =HistoryDialogBase=, shown when =loadHistory()= starts and
+  hidden when history data arrives.
+- Provide a =setLoading(bool)= signal chain so derived dialogs can coordinate
+  multiple async loads.
+
+** Issue 3: combo boxes start empty and pop in
+
+Every detail dialog calls =setClientManager()= from the controller, which fires
+=populate*Combo()= methods asynchronously. The combo box starts empty, and when
+the future completes, it is cleared and repopulated. The result is a jarring
+pop-in effect where fields appear one by one.
+
+Concrete example in =CurrencyDetailDialog::setClientManager()=:
+
+#+begin_src cpp
+void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
+    clientManager_ = clientManager;
+    if (clientManager_) {
+        // ...
+        if (clientManager_->isConnected()) {
+            populateRoundingTypeCombo();      // 1 NATS request
+            populateMonetaryNatureCombo();    // 1 NATS request
+            populateMarketTierCombo();        // 1 NATS request
+        }
+    }
+}
+#+end_src
+
+Each =populate*Combo()= method does:
+
+#+begin_src cpp
+void CurrencyDetailDialog::populateRoundingTypeCombo() {
+    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+        auto req = refdata::messaging::get_rounding_types_request{};
+        auto result = self->clientManager_->process_authenticated_request(std::move(req));
+        // ...
+    });
+    // On completion: clear() + re-add items
+}
+#+end_src
+
+*** Fix
+
+Add a "Loading…" entry to each combo box before starting the async fetch.
+Replace it with real data when the future completes. This gives immediate
+visual feedback that the dialog is working.
+
+** Issue 4: global QThreadPool starvation
+
+The =QThreadPool= used by =QtConcurrent::run()= defaults to
+=QThread::idealThreadCount()= threads (typically 8-16). Every async NATS
+request blocks one of those threads waiting for the network round-trip.
+
+At application startup (on =loggedIn= signal), the following async loads fire
+concurrently:
+
+| Source | Requests | Purpose |
+|--------+----------+---------|
+| =ImageCache::loadAll()= | 1+ | Fetch currency/country image IDs |
+| =ImageCache::loadImageList()= | 1+ | Fetch available image list |
+| =ChangeReasonCache::loadAll()= | 2 | Fetch reasons + categories |
+| =BadgeCache::loadAll()= | 1+ | Fetch badge definitions |
+
+Then when a user opens a dialog:
+
+| Source | Requests | Purpose |
+|--------+----------+---------|
+| =populateRoundingTypeCombo()= | 1 | Fill Rounding Type combo |
+| =populateMonetaryNatureCombo()= | 1 | Fill Monetary Nature combo |
+| =populateMarketTierCombo()= | 1 | Fill Market Tier combo |
+| =updateGenerateActionVisibility()= | 1 | Check feature flag |
+| =currencyModel_->refresh()= | 1 | Load currency list |
+
+With multiple entity types and windows, the thread pool can become saturated
+with I/O-blocked threads, causing queued requests to wait and increasing
+latency for every dialog.
+
+*** Fix
+
+Create a dedicated =QThreadPool= for I/O-bound NATS requests (e.g.,
+=QThreadPool("nats-io", 64)=) so they do not compete with CPU-bound
+QtConcurrent tasks. Update =ClientManager= to accept an optional thread pool
+parameter, or add a thin wrapper that runs NATS requests on the dedicated pool.
+
+Alternatively, use =QtConcurrent::runWithPool()= where the dedicated pool is
+passed explicitly.
+
+* Decisions
+
+- The loading overlay should be a =QWidget= with a =QMovie= (animated GIF/APNG)
+  or a custom-painted arc spinner, painted on top of the dialog content.
+- Pre-populating combo boxes with "Loading…" is preferred over disabling them
+  because it gives immediate visual feedback without changing layout.
+- The dedicated thread pool size should be generous (64 threads) since NATS
+  requests are I/O-bound and threads spend most of their time blocked on the
+  network.
+
+* Out of scope
+
+- Server-side performance optimisations (slow queries, index tuning).
+- HTTP/Wt layer responsiveness (Qt layer only).
+- Dashboard or aggregate report loading times.

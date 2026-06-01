@@ -62,6 +62,18 @@ and file backlog captures for Wt and HTTP gaps. One story per entity.
 | [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 
+*** Epic: UI Responsiveness
+
+Fix dialog responsiveness across the Qt layer: remove =waitForFinished()= blocking in
+all dialog destructors, add loading overlays to =DetailDialogBase= and =HistoryDialogBase=,
+pre-populate combo boxes with "Loading…" state, and isolate I/O-bound NATS requests on a
+dedicated thread pool to prevent =QThreadPool= starvation.
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:61F836E5-2277-4765-9038-AF7D0176C993][Make UI more responsive]] | BACKLOG | | | Fix waitForFinished() in destructors; add spinners; pre-populate combos; dedicated I/O thread pool. |
+
 ** Tooling
 
 #+ATTR_HTML: :class hug-leading

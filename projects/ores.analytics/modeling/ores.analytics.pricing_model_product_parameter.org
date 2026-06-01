@@ -1,0 +1,208 @@
+:PROPERTIES:
+:ID: 9829775B-5FF4-46D6-8D62-A0699402193F
+:END:
+#+title: ores.analytics.pricing_model_product_parameter
+#+description: Codegen entity model for the analytics =pricing_model_product_parameter= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: Normalised key-value parameter for a pricing model product or global configuration.
+#+entity_singular: pricing_model_product_parameter
+#+entity_plural: pricing_model_product_parameters
+#+entity_title: Pricing Model Product Parameter
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Stores model parameters, engine parameters, and global parameters as normalised rows
+for granular diffing. Product-scoped parameters have pricing_model_product_id set;
+global parameters have it NULL with parameter_scope = 'global'.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     analytics
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this parameter row.
+
+Surrogate key for the parameter.
+
+* Natural keys
+
+* Columns
+
+** pricing_model_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Parent pricing model configuration.
+
+Soft FK to ores_analytics_pricing_model_configs_tbl. Always set.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** pricing_model_product_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Parent product mapping, if product-scoped.
+
+Soft FK to ores_analytics_pricing_model_products_tbl. NULL for global parameters.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** parameter_scope
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Scope of the parameter.
+
+One of: 'model', 'engine', 'global'.
+
+#+begin_src cpp :name generator
+std::string("model")
+#+end_src
+
+** parameter_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Parameter name.
+
+Examples: 'Calibration', 'Reversion', 'sy', 'ContinueOnCalibrationError'.
+
+#+begin_src cpp :name generator
+std::string("Reversion")
+#+end_src
+
+** parameter_value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Parameter value as text.
+
+All values stored as text. Examples: '0.03', 'Bootstrap', 'Y', '1.0,2.0,3.0'.
+
+#+begin_src cpp :name generator
+std::string("0.03")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_pricing_model_product_parameters_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: analytics.api
+:component_core:    analytics.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: parameter
+:entity_plural_short:   parameters
+:entity_singular_words: pricing model product parameter
+:entity_plural_words:   pricing model product parameters
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pp
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.analytics.api/domain/pricing_model_product_parameter.hpp
+:domain_class:           analytics::domain::pricing_model_product_parameter
+:protocol_include:       ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp
+:collection_name:        parameters
+:item_var:               parameter
+:key_field:              parameter_name
+:has_uuid_primary_key:   true
+:get_request_class:      analytics::messaging::get_pricing_model_product_parameters_request
+:get_response_class:     analytics::messaging::get_pricing_model_product_parameters_response
+:get_message_type:       get_pricing_model_product_parameters_request
+:save_request_class:     analytics::messaging::save_pricing_model_product_parameter_request
+:save_response_class:    analytics::messaging::save_pricing_model_product_parameter_response
+:save_message_type:      save_pricing_model_product_parameter_request
+:delete_request_class:   analytics::messaging::delete_pricing_model_product_parameter_request
+:delete_response_class:  analytics::messaging::delete_pricing_model_product_parameter_response
+:delete_message_type:    delete_pricing_model_product_parameter_request
+:history_request_class:  analytics::messaging::get_pricing_model_product_parameter_history_request
+:history_response_class: analytics::messaging::get_pricing_model_product_parameter_history_response
+:history_message_type:   get_pricing_model_product_parameter_history_request
+:settings_group:         PricingModelProductParameterListWindow
+:window_title:           Pricing Model Product Parameters
+:icon:                   Settings
+:END:
+
+*** Detail fields
+
+| field           | label | widget              | type         | is_key | is_required | placeholder                                      |
+|-----------------+-------+---------------------+--------------+--------+-------------+--------------------------------------------------|
+| parameter_scope | Scope | parameterScopeCombo | static_combo |        | true        |                                                  |
+| parameter_name  | Name  | parameterNameEdit   | line_edit    | true   | true        | Parameter name (e.g. Calibration, Reversion, sy) |
+| parameter_value | Value | parameterValueEdit  | line_edit    |        | true        | Parameter value (e.g. Bootstrap, 0.03, Y)        |
+
+*** Columns (Qt model)
+
+| enum_name      | field           | header      | type      | width |
+|----------------+-----------------+-------------+-----------+-------|
+| ParameterScope | parameter_scope | Scope       | string    | 80    |
+| ParameterName  | parameter_name  | Name        | string    | 200   |
+| ParameterValue | parameter_value | Value       | string    | 200   |
+| Version        | version         | Version     | int       | 70    |
+| ModifiedBy     | modified_by     | Modified By | string    | 120   |
+| RecordedAt     | recorded_at     | Recorded At | timestamp | 150   |
+
+** Custom repository methods

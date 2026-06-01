@@ -1,0 +1,175 @@
+:PROPERTIES:
+:ID: 863183E0-453A-4AC1-98FB-3A91A9C8A9E3
+:END:
+#+title: ores.analytics.pricing_model_config
+#+description: Codegen entity model for the analytics =pricing_model_config= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: Named pricing model configuration mapping pricing engine types to models and engines.
+#+entity_singular: pricing_model_config
+#+entity_plural: pricing_model_configs
+#+entity_title: Pricing Model Configuration
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Header entity for a pricing model configuration. Each config contains product mappings
+(in pricing_model_products) and parameters (in pricing_model_product_parameters).
+Corresponds to ORE's pricingengine.xml.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     analytics
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this pricing model configuration.
+
+Surrogate key for the pricing model configuration.
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for this configuration.
+
+Unique per tenant. Examples: 'Standard', 'AMC', 'DeltaGamma', 'SABR'.
+
+#+begin_src cpp :name generator
+std::string("config")
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Detailed description of this pricing model configuration.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** config_variant
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Configuration variant tag.
+
+Examples: 'standard', 'amc', 'amccg', 'dg', 'sabr', 'ad'.
+
+#+begin_src cpp :name generator
+std::string("standard")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_pricing_model_configs_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: analytics.api
+:component_core:    analytics.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: config
+:entity_plural_short:   configs
+:entity_singular_words: pricing model configuration
+:entity_plural_words:   pricing model configurations
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pmc
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.analytics.api/domain/pricing_model_config.hpp
+:domain_class:           analytics::domain::pricing_model_config
+:protocol_include:       ores.analytics.api/messaging/pricing_model_config_protocol.hpp
+:collection_name:        configs
+:item_var:               config
+:key_field:              name
+:has_uuid_primary_key:   true
+:get_request_class:      analytics::messaging::get_pricing_model_configs_request
+:get_response_class:     analytics::messaging::get_pricing_model_configs_response
+:get_message_type:       get_pricing_model_configs_request
+:save_request_class:     analytics::messaging::save_pricing_model_config_request
+:save_response_class:    analytics::messaging::save_pricing_model_config_response
+:save_message_type:      save_pricing_model_config_request
+:delete_request_class:   analytics::messaging::delete_pricing_model_config_request
+:delete_response_class:  analytics::messaging::delete_pricing_model_config_response
+:delete_message_type:    delete_pricing_model_config_request
+:history_request_class:  analytics::messaging::get_pricing_model_config_history_request
+:history_response_class: analytics::messaging::get_pricing_model_config_history_response
+:history_message_type:   get_pricing_model_config_history_request
+:settings_group:         PricingModelConfigListWindow
+:window_title:           Pricing Model Configurations
+:icon:                   Chart
+:END:
+
+*** Detail fields
+
+| field          | label       | widget            | type      | is_key | is_required | placeholder                                               |
+|----------------+-------------+-------------------+-----------+--------+-------------+-----------------------------------------------------------|
+| name           | Name        | nameEdit          | line_edit | true   | true        | Enter configuration name (e.g. Standard, AMC, DeltaGamma) |
+| config_variant | Variant     | configVariantEdit | line_edit |        |             | Optional variant tag (e.g. standard, amc, dg)             |
+| description    | Description | descriptionEdit   | text_edit |        |             | Enter a description of this pricing model configuration   |
+
+*** Columns (Qt model)
+
+| enum_name     | field          | header      | type      | width |
+|---------------+----------------+-------------+-----------+-------|
+| Name          | name           | Name        | string    | 180   |
+| ConfigVariant | config_variant | Variant     | string    | 100   |
+| Description   | description    | Description | string    | 300   |
+| Version       | version        | Version     | int       | 70    |
+| ModifiedBy    | modified_by    | Modified By | string    | 120   |
+| RecordedAt    | recorded_at    | Recorded At | timestamp | 150   |
+
+** Custom repository methods

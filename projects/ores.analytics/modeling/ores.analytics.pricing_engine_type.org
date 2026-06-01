@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: 296DDD3E-669D-4FBE-851B-83AC987EB6DF
+:END:
+#+title: ores.analytics.pricing_engine_type
+#+description: Codegen entity model for the analytics =pricing_engine_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: Pricing engine type code identifying the product granularity used by the pricing engine.
+#+entity_singular: pricing_engine_type
+#+entity_plural: pricing_engine_types
+#+entity_title: Pricing Engine Type
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Classification of products at the granularity needed by the pricing engine to select the correct model and numerical method (e.g. EuropeanSwaption, BermudanSwaption, CMS).
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     analytics
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique pricing engine type code.
+
+Examples: 'Swap', 'EuropeanSwaption', 'BermudanSwaption', 'CMS', 'CapFloor'.
+
+* Natural keys
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Human-readable description of the pricing engine type.
+
+** instrument_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional reference to the corresponding trading instrument type.
+
+Soft FK to ores_trading_trade_types_tbl. May be NULL for engine types with no direct instrument mapping.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_pricing_engine_types_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: analytics.api
+:component_core:    analytics.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: pricing engine type
+:entity_plural_words:   pricing engine types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pet
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.analytics.api/domain/pricing_engine_type.hpp
+:domain_class:           analytics::domain::pricing_engine_type
+:protocol_include:       ores.analytics.api/messaging/pricing_engine_type_protocol.hpp
+:collection_name:        types
+:item_var:               type
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      analytics::messaging::get_pricing_engine_types_request
+:get_response_class:     analytics::messaging::get_pricing_engine_types_response
+:get_message_type:       get_pricing_engine_types_request
+:save_request_class:     analytics::messaging::save_pricing_engine_type_request
+:save_response_class:    analytics::messaging::save_pricing_engine_type_response
+:save_message_type:      save_pricing_engine_type_request
+:delete_request_class:   analytics::messaging::delete_pricing_engine_type_request
+:delete_response_class:  analytics::messaging::delete_pricing_engine_type_response
+:delete_message_type:    delete_pricing_engine_type_request
+:history_request_class:  analytics::messaging::get_pricing_engine_type_history_request
+:history_response_class: analytics::messaging::get_pricing_engine_type_history_response
+:history_message_type:   get_pricing_engine_type_history_request
+:settings_group:         PricingEngineTypeListWindow
+:window_title:           Pricing Engine Types
+:icon:                   Tag
+:END:
+
+*** Detail fields
+
+| field                | label                | widget                 | type      | is_key | is_required | placeholder                                            |
+|----------------------+----------------------+------------------------+-----------+--------+-------------+--------------------------------------------------------|
+| code                 | Code                 | codeEdit               | line_edit | true   | true        | Enter pricing engine type code (e.g. EuropeanSwaption) |
+| description          | Description          | descriptionEdit        | text_edit |        |             | Enter a human-readable description                     |
+| instrument_type_code | Instrument Type Code | instrumentTypeCodeEdit | line_edit |        |             | Optional reference to trading instrument type          |
+
+*** Columns (Qt model)
+
+| enum_name          | field                | header          | type      | width |
+|--------------------+----------------------+-----------------+-----------+-------|
+| Code               | code                 | Code            | string    | 220   |
+| Description        | description          | Description     | string    | 320   |
+| InstrumentTypeCode | instrument_type_code | Instrument Type | string    | 150   |
+| Version            | version              | Version         | int       | 70    |
+| ModifiedBy         | modified_by          | Modified By     | string    | 120   |
+| RecordedAt         | recorded_at          | Recorded At     | timestamp | 150   |
+
+** Custom repository methods

@@ -1,0 +1,193 @@
+:PROPERTIES:
+:ID: E5B8CCB0-95A9-4C7C-9EE9-D1D3BE859DBF
+:END:
+#+title: ores.analytics.pricing_model_product
+#+description: Codegen entity model for the analytics =pricing_model_product= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: Maps a pricing engine type to a model and engine within a pricing model configuration.
+#+entity_singular: pricing_model_product
+#+entity_plural: pricing_model_products
+#+entity_title: Pricing Model Product
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Detail row within a pricing model configuration. Each row maps a pricing engine type
+(e.g. EuropeanSwaption, CMS) to a specific model (e.g. LGM, BlackBachelier) and
+numerical engine (e.g. Grid, AMC). Product-specific parameters are stored in
+pricing_model_product_parameters.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     analytics
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this product mapping.
+
+Surrogate key for the pricing model product.
+
+* Natural keys
+
+* Columns
+
+** pricing_model_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Parent pricing model configuration.
+
+Soft FK to ores_analytics_pricing_model_configs_tbl.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** pricing_engine_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Pricing engine type this mapping applies to.
+
+Soft FK to ores_analytics_pricing_engine_types_tbl. Examples: 'Swap', 'EuropeanSwaption', 'CMS'.
+
+#+begin_src cpp :name generator
+std::string("Swap")
+#+end_src
+
+** model
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Pricing model name.
+
+Examples: 'DiscountedCashflows', 'LGM', 'BlackBachelier', 'GarmanKohlhagen', 'CrossAssetModel'.
+
+#+begin_src cpp :name generator
+std::string("DiscountedCashflows")
+#+end_src
+
+** engine
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Numerical engine name.
+
+Examples: 'DiscountingSwapEngine', 'Grid', 'AMC', 'AnalyticEuropeanEngine'.
+
+#+begin_src cpp :name generator
+std::string("DiscountingSwapEngine")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_pricing_model_products_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: analytics.api
+:component_core:    analytics.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: product
+:entity_plural_short:   products
+:entity_singular_words: pricing model product
+:entity_plural_words:   pricing model products
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pmp
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.analytics.api/domain/pricing_model_product.hpp
+:domain_class:           analytics::domain::pricing_model_product
+:protocol_include:       ores.analytics.api/messaging/pricing_model_product_protocol.hpp
+:collection_name:        products
+:item_var:               product
+:key_field:              pricing_engine_type_code
+:has_uuid_primary_key:   true
+:get_request_class:      analytics::messaging::get_pricing_model_products_request
+:get_response_class:     analytics::messaging::get_pricing_model_products_response
+:get_message_type:       get_pricing_model_products_request
+:save_request_class:     analytics::messaging::save_pricing_model_product_request
+:save_response_class:    analytics::messaging::save_pricing_model_product_response
+:save_message_type:      save_pricing_model_product_request
+:delete_request_class:   analytics::messaging::delete_pricing_model_product_request
+:delete_response_class:  analytics::messaging::delete_pricing_model_product_response
+:delete_message_type:    delete_pricing_model_product_request
+:history_request_class:  analytics::messaging::get_pricing_model_product_history_request
+:history_response_class: analytics::messaging::get_pricing_model_product_history_response
+:history_message_type:   get_pricing_model_product_history_request
+:settings_group:         PricingModelProductListWindow
+:window_title:           Pricing Model Products
+:icon:                   Table
+:END:
+
+*** Detail fields
+
+| field                    | label               | widget                     | type          | is_key | is_required | placeholder                                                   |
+|--------------------------+---------------------+----------------------------+---------------+--------+-------------+---------------------------------------------------------------|
+| pricing_engine_type_code | Pricing Engine Type | pricingEngineTypeCodeCombo | dynamic_combo | true   | true        |                                                               |
+| model                    | Model               | modelEdit                  | line_edit     |        | true        | Pricing model (e.g. DiscountedCashflows, LGM, BlackBachelier) |
+| engine                   | Engine              | engineEdit                 | line_edit     |        | true        | Numerical engine (e.g. DiscountingSwapEngine, Grid, AMC)      |
+
+*** Columns (Qt model)
+
+| enum_name             | field                    | header      | type      | width |
+|-----------------------+--------------------------+-------------+-----------+-------|
+| PricingEngineTypeCode | pricing_engine_type_code | Engine Type | string    | 200   |
+| Model                 | model                    | Model       | string    | 200   |
+| Engine                | engine                   | Engine      | string    | 200   |
+| Version               | version                  | Version     | int       | 70    |
+| ModifiedBy            | modified_by              | Modified By | string    | 120   |
+| RecordedAt            | recorded_at              | Recorded At | timestamp | 150   |
+
+** Custom repository methods

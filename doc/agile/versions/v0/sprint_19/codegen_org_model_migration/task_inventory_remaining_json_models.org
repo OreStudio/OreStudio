@@ -7,9 +7,9 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/inventory-remaining-json-models
 #+pr:
-#+blocked_on: none
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-01
@@ -35,11 +35,11 @@ one scaffolds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | STARTED                                |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
-| Waiting on   | PR #989 to merge (final domain-entity sweep). |
-| Next         | Enumerate every remaining JSON; group by kind. |
+| Now          | Inventory complete; per-kind follow-on tasks scaffolded. |
+| Waiting on   | Nothing.                               |
+| Next         | Land this PR; tackle the per-kind tasks. |
 | Last touched | 2026-06-01                             |
 
 * Acceptance
@@ -125,6 +125,142 @@ Just docs:
 - Story task table updated with the new follow-on tasks.
 
 * Notes
+
+** Method
+
+#+begin_src sh :results verbatim
+find projects/ores.codegen/models -maxdepth 3 -name '*.json' | sort
+#+end_src
+
+For each file, ran =jq -r 'keys[0]'= to discover the root key, then
+grouped by root and verified each kind against the templates and
+generator.py routing (=get_template_mappings=,
+=is_*_model= predicates).
+
+* Result
+
+77 files in total across these kinds (root key → count):
+
+| Root key             |   N | Disposition | Follow-on task |
+|----------------------+-----+-------------+----------------|
+| =component=          |  32 | Migrate     | [[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][Migrate component JSON models to org]] |
+| =entity=             |  12 | Migrate     | [[id:F88B35A5-0BE4-4274-99FC-2F08AAE5F80B][Migrate lookup-entity JSON models to org]] |
+| =table=              |  10 | Migrate     | [[id:92AEBBDA-1FDD-4501-9C66-E893EF448CE6][Migrate refdata table JSON models to org]] |
+| =junction=           |   7 | Migrate     | [[id:487E72E9-4117-4CB6-AAE4-080F19D5A9FB][Migrate junction JSON models to org]] |
+| =field_group=        |   5 | Migrate     | [[id:E3E380D3-6471-46B6-8422-617F3086B9F8][Migrate trading field-group JSON models to org]] |
+| =enum=               |   3 | Migrate     | [[id:9DA26E86-E206-4DA1-8097-6E79CA4B86E9][Migrate enum JSON models to org]] |
+| =service_registry=   |   1 | Migrate     | [[id:F699C1EF-7365-40B5-83CA-4CA84B0F6306][Migrate service_registry JSON model to org]] |
+| slovaris data*       |   6 | Out of scope | (Slovaris reference data; not a codegen model) |
+| =generated_at=       |   1 | Retire      | [[id:EE3A7822-C95F-48C8-8474-862209C446FE][Retire plantuml_er_model.json from models/]] |
+
+*Slovaris files (=manifest.json=, =model.json=, =catalogs.json=,
+=country_currency.json=, =datasets.json=, =tags.json=) hold the
+reference-data taxonomy that codegen reads as *sibling data* (via
+=load_data= / =get_template_mappings=), not as models. They drive
+SQL populate scripts. Their fate is a separate question from this
+story (likely a dedicated data-migration story); for now they stay
+JSON under =projects/ores.codegen/models/slovaris/= and the story's
+empty-=models/= target excludes the =slovaris/= sub-tree from
+consideration.
+
+** Per-kind detail
+
+*** component (32)
+
+Pattern: =projects/ores.codegen/models/<package>/ores_<package>_component.json=
+(or =/<package>.<role>/ores_<package>_<role>_component.json=).
+
+Each file describes a CMake / C++ component (one per library, app,
+or service). The root object lives under the =component= key.
+Codegen consumes them via =is_component_model= and the component
+template family. Org-mode shape: =ores.<package>.component.org=
+(or per-role variant) with a small property drawer + section per
+sub-template. Lives under each component's =modeling/= dir alongside
+the entity models.
+
+*** entity (12)
+
+=*_entity.json= (without the =_domain_= infix). These are SQL-only
+lookup tables that don't get a C++ domain class — they back columns
+that reference them via text codes. Codegen consumes via
+=is_entity_model= and the entity template family. Org-mode shape:
+similar to =ores.codegen.entity= but with a narrower section set
+(no Qt, no C++ repository). Could share the same =#+type:= or carve
+a new =#+type: ores.codegen.lookup_entity=.
+
+*** table (10)
+
+=projects/ores.codegen/models/refdata/*_table.json= — all refdata.
+SQL DDL for lookup tables. Root key =table=. Org-mode shape: a
+small table-model org file under =projects/ores.refdata/modeling/=.
+
+*** junction (7)
+
+=*_junction.json=. Many-to-many join tables. Distributed across
+refdata, dq, iam, compute. Root key =junction=. Org-mode shape: a
+junction-model org file under the owning component's =modeling/=.
+
+*** field_group (5)
+
+=projects/ores.codegen/models/trading/*_field_group.json=.
+Composable field sets that several trading instruments inherit
+(trade_audit, trade_classification, trade_identity, trade_lifecycle,
+trade_parties). Root key =field_group=. Org-mode shape: a
+field-group org file under =projects/ores.trading/modeling/=.
+
+*** enum (3)
+
+=workflow/workflow_status_enum.json=, =comms/message_type_enum.json=,
+=comms/compression_type_enum.json=. Pure C++ enums. Root key =enum=.
+Org-mode shape: tiny enum org file under the owning component's
+=modeling/= (or under =projects/ores.comms/modeling/= for the
+comms ones).
+
+*** service_registry (1)
+
+=projects/ores.codegen/models/services/ores_services_service_registry.json=.
+Catalogue of services / ports. Root key =service_registry=. Org-mode
+shape: probably a single registry org file under a top-level
+=projects/ores.services/modeling/=.
+
+*** Retire (1)
+
+=projects/ores.codegen/models/plantuml_er_model.json= is *generated*
+by =projects/ores.codegen/plantuml_er_generate.sh= and shouldn't
+live under =models/=. Move the output to a build-only path, add it
+to =.gitignore=, and clean up the existing check-in.
+
+** Sequencing
+
+Follow-on tasks are ordered roughly easy → hard:
+
+1. =enum= (3 files, simple shape, no Qt) — warm-up.
+2. =field_group= (5, trading-only, no SQL DDL).
+3. =junction= (7, structurally small).
+4. =table= (10, SQL DDL only).
+5. =entity= (12, SQL-only lookup entities).
+6. =service_registry= (1).
+7. =component= (32, biggest but identical shape).
+8. =plantuml_er_model.json= retirement.
+
+Once all eight follow-on tasks land, =projects/ores.codegen/models/=
+contains only =slovaris/= (slovaris reference data — out of scope
+for this story).
+
+** Per-kind task scaffolds
+
+Each follow-on task carries the same skeleton:
+
+- *Goal*: convert the N JSON files of kind =K= to org-mode files
+  under each owning component's =modeling/= dir; delete the JSON.
+- *Acceptance*: org_loader extension (if needed); converter
+  extension (if needed); regen byte-identical output; build the
+  affected libs cleanly against the production tree.
+- *Plan*: settle the org-mode shape; extend tooling; convert;
+  delete; commit; PR.
+
+The detail body of each scaffold mirrors the entity-migration tasks
+already in the story.
 
 * PRs
 

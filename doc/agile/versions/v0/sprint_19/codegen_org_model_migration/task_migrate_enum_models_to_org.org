@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 9DA26E86-E206-4DA1-8097-6E79CA4B86E9
+:END:
+#+title: Task: Migrate enum JSON models to org-mode
+#+description: Convert the 3 *_enum.json files (workflow_status_enum, comms/message_type_enum, comms/compression_type_enum) into ores.<package>.<enum>.org files under each owning component's modeling/ dir. Pure C++ enums — small shape, no Qt, no SQL DDL. Settle the enum org section layout, extend org_loader (or write a tiny enum-loader), extend migrate_json_to_org.py (or write a sibling converter), regen, delete JSON, build.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-01                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

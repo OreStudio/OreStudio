@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/migrate-refdata-org
-#+pr:
+#+pr: 971
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -140,9 +140,9 @@ Three commits:
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #971 | [codegen] Migrate refdata entity models from JSON to org-mode |
 
 * Review
 

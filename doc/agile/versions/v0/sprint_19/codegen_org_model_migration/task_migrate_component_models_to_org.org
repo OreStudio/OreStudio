@@ -19,28 +19,200 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Move the 32 =ores_*_component.json= files into org-mode and have
+codegen read the component identity from there. Do this *without*
+creating a second per-component document — the project already has
+=component_overview.org= files in each component's =modeling/=
+directory (86 of them across the tree). The component identity that
+codegen needs (name, full_name, brief, description) is a thin
+property layer; the literate overview is the home for it. The
+migration target is *one* org file per component, not two.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BACKLOG                                |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-01                               |
+| Now          | Design brainstorm captured below; needs sign-off before implementation. |
+| Waiting on   | Decision on the design questions in =* Design — brainstorm=. |
+| Next         | Settle the shape; implement. |
+| Last touched | 2026-06-01                             |
+
+* Design — brainstorm
+
+** The overlap
+
+=projects/ores.codegen/models/<package>/ores_<package>_component.json=
+is tiny — exactly:
+
+#+begin_src json
+{
+  "component": {
+    "name": "<short>",
+    "full_name": "ores.<package>",
+    "brief": "<one line>",
+    "description": "<paragraph>"
+  }
+}
+#+end_src
+
+=projects/ores.<package>/modeling/component_overview.org= already
+exists (86 instances), already carries =#+type: component=, already
+holds =#+title= (≈ full_name), =#+description= (≈ description) and a
+=* Summary= section that subsumes =description=. The =brief=
+attribute has no analogue today.
+
+So we have *two ways* to describe a component, and the JSON's content
+is a strict subset of what the overview already says. The user's
+question on the migration story:
+
+#+begin_quote
+Do we really need two completely separate documents to model aspects
+of the component? We already have the notion of component overview.
+#+end_quote
+
+The answer this task assumes is *no*. =component_overview.org= is
+the home; the codegen drawer hangs off it.
+
+** Proposed shape (option A — recommended)
+
+One org file per component: the existing
+=projects/ores.<package>/modeling/component_overview.org=, with a
+property drawer added so codegen can read the identity:
+
+#+begin_example
+,:PROPERTIES:
+,:ID: <existing org-roam id>
+,:name:      refdata.service
+,:full_name: ores.refdata.service
+,:brief:     Reference data service
+,:END:
+,#+title: ores.refdata.service
+,#+description: Standalone NATS microservice ...
+,#+type: component
+,#+codegen_role: component_model     ; the discovery hint codegen uses
+,#+filetags: :refdata:service:component:
+#+end_example
+
+The overview's =* Summary= section already covers what the JSON
+calls =description=, so we don't duplicate.
+
+org_loader gains a =load_component_model= that reads the drawer +
+=#+title= + =#+description= and returns the same dict shape the
+JSON path produced. =manifest.py= / =generate.py= dispatch on
+=#+codegen_role:= when discovering files in =modeling/=.
+
+** Alternative (option B — explicitly rejected)
+
+A separate =ores.<package>.component.org= sitting alongside the
+overview. This is what the inventory task initially assumed and is
+what the simple "JSON → org" pattern would produce. Rejected because
+it duplicates identity and creates an extra file for humans to
+maintain.
+
+** Cross-linking work this surfaces
+
+Once the component model lives in the overview, three forward/back
+links become natural and load-bearing for navigation:
+
+1. *Component overview → entity models* — the overview gains a
+   =* Entities= section that lists every =ores.<package>.<entity>.org=
+   under the same =modeling/= dir, as id-links.
+2. *Entity model → owning component* — each entity org gains a
+   =#+component_overview: <id>= keyword or a =* Component= section
+   with an id-link back to the overview.
+3. *Entity model → schema document* — for columns referencing a
+   lookup table, the entity org links to the matching table-kind
+   org file (lands after [[id:92AEBBDA-1FDD-4501-9C66-E893EF448CE6][refdata table migration]] / per-entity
+   lookups). Lookup column =party_type= → table doc
+   =ores.refdata.party_type.org=.
+
+Items 1 and 2 affect already-migrated entity orgs and need a separate
+sweep — captured as [[id:95031F88-44AB-4705-BA99-05A874800EC5][Cross-link entity / component overview / schema
+org docs]]. Item 3 has to wait for the table-kind migrations to land.
+
+** Two-level component hierarchy (group + sub-components)
+
+The migration story also introduced top-level component folders
+(=projects/ores.refdata/=, =projects/ores.trading/=, ...) which
+today only hold entity models under =modeling/=. Those *groups*
+will have their own component models too, sitting *above* the
+existing sub-component overviews:
+
+#+begin_example
+projects/ores.refdata/modeling/component_overview.org      ← GROUP
+projects/ores.refdata.api/modeling/component_overview.org   ← sub
+projects/ores.refdata.core/modeling/component_overview.org  ← sub
+projects/ores.refdata.service/modeling/component_overview.org
+projects/ores.qt.refdata/modeling/component_overview.org    ← sub
+#+end_example
+
+The group overview is the index for the family. It links to each
+sub-component overview, and the sub-components link back.
+
+Concrete state today (12 groups in scope):
+
+| Group     | =modeling/= dir | Group overview exists? |
+|-----------+-----------------+------------------------|
+| database  | ✓               | ✓ (already present)    |
+| All other 11 (refdata, trading, iam, dq, analytics, reporting, scheduler, workflow, controller, workspace, compute) | ✓ | ✗ — to be created |
+
+The 32 JSON component models map onto a *mix* of groups and
+sub-components. JSON covers groups =compute=, =controller=,
+=reporting=, =trading=, =workflow= plus utility groups (=nats=,
+=service=, =storage=, =ore.*=). JSON has *no* group model for
+=refdata=, =analytics=, =dq=, =iam=, =scheduler=, =workspace=,
+=database= — for those, the group overview is brand new.
+
+So the work here is broader than "translate 32 JSON files":
+
+- Migrate every JSON into the matching existing overview (or, where
+  the overview is missing, create one as part of this task).
+- Create the missing group overviews for the 7 groups JSON doesn't
+  cover, so every group has an index doc.
+- Decide whether the group overview is itself a codegen-readable
+  "component model" or whether codegen continues to read only the
+  sub-component models. Suggest: codegen keeps reading
+  sub-components; the group overview is *navigation-only*.
+
+** Open questions for sign-off
+
+- Confirm option A (merge into overview) vs option B (parallel doc).
+- Name of the codegen discovery keyword (=#+codegen_role:= vs
+  =#+type:=). The existing overview already uses =#+type: component=;
+  we may not need a new keyword at all and instead extend codegen to
+  treat every =#+type: component= file as a component model.
+- Should =brief= live in the drawer or as a new =#+brief:= keyword
+  (matching the entity convention)?
+- Confirm: the *group* overview is navigation-only (humans + Emacs);
+  codegen continues to read the *sub-component* overviews as
+  component models.
 
 * Acceptance
 
--
+(Filled in once the brainstorm decisions land. The shape below is
+the option-A target.)
+
+- Each =projects/ores.<package>/modeling/component_overview.org= has
+  a property drawer carrying =name=, =full_name=, =brief= (or
+  =#+brief:=) so codegen can read the identity without a sibling
+  JSON.
+- =org_loader= gains a component reader; =manifest.py= and
+  =generate.py= discover component models under each component's
+  =modeling/= dir via the same dispatch path the entity migration
+  established.
+- All 32 =ores_*_component.json= files removed. =projects/ores.codegen/models/=
+  shrinks by 32.
+- Regenerating any consumer that pulls component identity produces
+  output unchanged from the JSON-driven path.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+(Filled in after sign-off. High-level shape: settle the keyword
+question, write the loader, hand-edit the 32 overview drawers, run
+regen, delete JSON. Cross-linking work runs as a follow-on task,
+not here.)
 
 * Notes
 

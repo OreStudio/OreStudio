@@ -54,6 +54,12 @@ pricing_model_product_parameter) into literate
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =list_filter_column= + =extra_list_requests= missing from pricing_model_product_parameter. | pricing_model_product_parameter.org:3 | Partially accepted | PR #983 round 1. =list_filter_column= fixed in =5245f40ff= (added to C++ Flags drawer); =extra_list_requests= array deferred to [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][array-fields task]]. |
+| 2 | =key_widget= missing from Qt drawer (pricing_model_product_parameter). | pricing_model_product_parameter.org:171 | Accepted | PR #983 round 1. Fixed in =5245f40ff= (added to Qt drawer key list). |
+| 3 | =combo_values= for parameter_scope static combo missing. | pricing_model_product_parameter.org:193 | Deferred | PR #983 round 1. list-of-dicts shape doesn't fit a table cell; deferred to [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][array-fields task]] (scope broadened). |
+| 4 | =list_filter_column= missing from pricing_model_product. | pricing_model_product.org:3 | Accepted | PR #983 round 1. Fixed in =5245f40ff= via the same C++ Flags drawer entry. |
+| 5 | =key_widget= missing from Qt drawer (pricing_model_product). | pricing_model_product.org:156 | Accepted | PR #983 round 1. Fixed in =5245f40ff=. |
+| 6 | Dynamic-combo properties missing from pricing_engine_type_code detail field. | pricing_model_product.org:178 | Accepted | PR #983 round 1. Fixed in =5245f40ff=; detail-fields table picks up the full combo_* column set whenever any field uses them. |
+| 7 | =key_widget= missing from Qt drawer (pricing_model_config). | pricing_model_config.org:138 | Accepted | PR #983 round 1. Fixed in =5245f40ff=. |
 
 * Result

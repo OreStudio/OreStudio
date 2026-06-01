@@ -293,7 +293,7 @@ def main(argv=None):
                                           prompt_label=f"Parent {parent_type} title")
 
     # Required content fields. entity_org derives its title from
-    # component + slug; the template ignores {{title}}.
+    # component + slug.
     if args.type == "entity_org" and not args.title:
         args.title = f"ores.{args.component}.{args.slug}"
     args.title = fill_required("title", args.title, prompt_label="Title")

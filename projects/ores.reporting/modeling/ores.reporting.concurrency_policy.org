@@ -1,0 +1,183 @@
+:PROPERTIES:
+:ID: 4597D5A9-C591-4992-ABEE-8822C10D8D96
+:END:
+#+title: ores.reporting.concurrency_policy
+#+description: Codegen entity model for the reporting =concurrency_policy= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: Report instance concurrency behaviour when a new trigger fires.
+#+entity_singular: concurrency_policy
+#+entity_plural: concurrency_policies
+#+entity_title: Concurrency Policy
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Reference data table defining valid concurrency policies for report definitions.
+Examples: 'skip', 'queue', 'fail'.
+
+Concurrency policies control what happens when a scheduler trigger fires
+for a report definition that already has a running instance.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique concurrency policy code.
+
+Examples: 'skip', 'queue', 'fail'.
+
+* Natural keys
+
+* Columns
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable name for the concurrency policy.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Policy"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the concurrency policy behaviour.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_concurrency_policies_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: reporting.api
+:component_core:    reporting.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: policy
+:entity_plural_short:   policies
+:entity_singular_words: concurrency policy
+:entity_plural_words:   concurrency policies
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cp
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| description   | Description |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.reporting/domain/concurrency_policy.hpp
+:domain_class:           reporting::domain::concurrency_policy
+:protocol_include:       ores.reporting/messaging/concurrency_policy_protocol.hpp
+:collection_name:        policies
+:item_var:               policy
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      reporting::messaging::get_concurrency_policies_request
+:get_response_class:     reporting::messaging::get_concurrency_policies_response
+:get_message_type:       get_concurrency_policies_request
+:save_request_class:     reporting::messaging::save_concurrency_policy_request
+:save_response_class:    reporting::messaging::save_concurrency_policy_response
+:save_message_type:      save_concurrency_policy_request
+:delete_request_class:   reporting::messaging::delete_concurrency_policy_request
+:delete_response_class:  reporting::messaging::delete_concurrency_policy_response
+:delete_message_type:    delete_concurrency_policy_request
+:history_request_class:  reporting::messaging::get_concurrency_policy_history_request
+:history_response_class: reporting::messaging::get_concurrency_policy_history_response
+:history_message_type:   get_concurrency_policy_history_request
+:settings_group:         ConcurrencyPolicyListWindow
+:window_title:           Concurrency Policies
+:icon:                   LayoutList
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder         |
+|-------------+-------------+-----------------+-----------+--------+-------------+---------------------|
+| code        | Code        | codeEdit        | line_edit | true   | true        | Enter policy code   |
+| name        | Name        | nameEdit        | line_edit |        | true        | Enter display name  |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description |
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Code         | code          | Code        | string    | 120   |
+| Name         | name          | Name        | string    | 200   |
+| Description  | description   | Description | string    | 300   |
+| DisplayOrder | display_order | Order       | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+** Custom repository methods

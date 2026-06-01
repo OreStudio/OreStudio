@@ -1,0 +1,183 @@
+:PROPERTIES:
+:ID: 24095456-2653-4289-93C6-FB3963785CC9
+:END:
+#+title: ores.reporting.report_type
+#+description: Codegen entity model for the reporting =report_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: Supported report category classifications.
+#+entity_singular: report_type
+#+entity_plural: report_types
+#+entity_title: Report Type
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Reference data table defining valid report type classifications.
+Examples: 'risk', 'grid'.
+
+Report types are managed by the system tenant and drive which
+configuration block is used when creating a report definition.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique report type code.
+
+Examples: 'risk', 'grid'.
+
+* Natural keys
+
+* Columns
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable name for the report type.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Report"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the report type.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_report_types_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: reporting.api
+:component_core:    reporting.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: report type
+:entity_plural_words:   report types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rt
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| description   | Description |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.reporting/domain/report_type.hpp
+:domain_class:           reporting::domain::report_type
+:protocol_include:       ores.reporting/messaging/report_type_protocol.hpp
+:collection_name:        types
+:item_var:               type
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      reporting::messaging::get_report_types_request
+:get_response_class:     reporting::messaging::get_report_types_response
+:get_message_type:       get_report_types_request
+:save_request_class:     reporting::messaging::save_report_type_request
+:save_response_class:    reporting::messaging::save_report_type_response
+:save_message_type:      save_report_type_request
+:delete_request_class:   reporting::messaging::delete_report_type_request
+:delete_response_class:  reporting::messaging::delete_report_type_response
+:delete_message_type:    delete_report_type_request
+:history_request_class:  reporting::messaging::get_report_type_history_request
+:history_response_class: reporting::messaging::get_report_type_history_response
+:history_message_type:   get_report_type_history_request
+:settings_group:         ReportTypeListWindow
+:window_title:           Report Types
+:icon:                   FileBarChart
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder            |
+|-------------+-------------+-----------------+-----------+--------+-------------+------------------------|
+| code        | Code        | codeEdit        | line_edit | true   | true        | Enter report type code |
+| name        | Name        | nameEdit        | line_edit |        | true        | Enter display name     |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description    |
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Code         | code          | Code        | string    | 120   |
+| Name         | name          | Name        | string    | 200   |
+| Description  | description   | Description | string    | 300   |
+| DisplayOrder | display_order | Order       | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+** Custom repository methods

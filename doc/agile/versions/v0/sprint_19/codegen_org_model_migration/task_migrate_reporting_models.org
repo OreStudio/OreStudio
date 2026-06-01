@@ -7,9 +7,9 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on: none
+#+branch: feature/migrate-reporting-org
+#+pr: 984
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-01
@@ -19,41 +19,41 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Convert the 4 =*_domain_entity.json= files under
+=projects/ores.codegen/models/reporting/= (concurrency_policy,
+report_definition, report_instance, report_type) into literate
+=ores.reporting.<entity>.org= files under
+=projects/ores.reporting/modeling/=, using =migrate_json_to_org.py=.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Migration complete; raising PR.        |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-01                               |
+| Next         | Merge.                                 |
+| Last touched | 2026-06-01                             |
 
 * Acceptance
 
--
-
-* Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+- =reporting-cpp= manifest entry has =modeling_dir="projects/ores.reporting/modeling"=.
+- 4 =ores.reporting.<entity>.org= files exist; 4 corresponding JSON files removed.
 
 * Notes
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #984 | [codegen,reporting] Migrate reporting entity models from JSON to org-mode |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task missing =* PRs= / =* Review= sections (false-positive). | task_migrate_reporting_models.org:45 | Declined | PR #984 round 1. Both sections already present with the repo's standard column shape. |
+| 2 | report_instance Qt columns =definition_id= type cell empty; should be =uuid=. | report_instance.org:252 | Accepted | PR #984 round 1. Fixed in =6e778de82=; \`_qt_type_string\` now maps =is_uuid= to "uuid". |
 
 * Result

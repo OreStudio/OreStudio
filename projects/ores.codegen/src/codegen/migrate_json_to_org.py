@@ -297,13 +297,15 @@ def _includes_block(includes):
 
 
 def _qt_type_string(field):
-    """Render the qt-columns 'type' cell from is_string/is_int/is_timestamp flags."""
+    """Render the qt-columns 'type' cell from the is_X family of flags."""
     if field.get("is_string"):
         return "string"
     if field.get("is_int"):
         return "int"
     if field.get("is_timestamp"):
         return "timestamp"
+    if field.get("is_uuid"):
+        return "uuid"
     return ""
 
 

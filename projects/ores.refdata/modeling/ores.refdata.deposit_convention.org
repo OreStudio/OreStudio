@@ -1,0 +1,247 @@
+:PROPERTIES:
+:ID: F7C5287B-7781-45EA-BA4C-63F077E36A89
+:END:
+#+title: ores.refdata.deposit_convention
+#+description: Codegen entity model for the refdata =deposit_convention= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for a money-market deposit or IBOR index fixing.
+#+entity_singular: deposit_convention
+#+entity_plural: deposit_conventions
+#+entity_title: Deposit Convention
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Specifies the settlement lag, calendar, and day count for short-term
+deposits used as the near-end instruments when bootstrapping a yield
+curve. Corresponds to the <Deposit> element in ORE conventions.xml.
+When index_based is true the remaining fields may be omitted and are
+instead inherited from the referenced IBOR index convention.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique convention identifier.
+
+Examples: 'USD-LIBOR-CONVENTIONS', 'EUR-EURIBOR-CONVENTIONS'.
+
+#+begin_src cpp :name generator
+std::string("USD-LIBOR-CONVENTIONS")
+#+end_src
+
+* Natural keys
+
+* Columns
+
+** index_based
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the deposit conventions are derived from an IBOR index. When true, index must be set and the remaining fields are optional.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+IBOR index identifier (e.g. 'USD-LIBOR') used when index_based.
+
+#+begin_src cpp :name generator
+std::string("USD-LIBOR")
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Settlement calendar (e.g. 'TARGET', 'US-FED').
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Business day convention applied to settlement dates (canonical FpML).
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** end_of_month
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether end-of-month convention applies.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** day_count_fraction
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Day count fraction code (canonical FpML, e.g. 'ACT/360').
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** settlement_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Number of business days from trade date to settlement.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_deposit_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: refdata.api
+:component_core:    refdata.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: deposit_convention
+:entity_plural_short:   deposit_conventions
+:entity_singular_words: deposit convention
+:entity_plural_words:   deposit conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: dc
+:END:
+
+** Table display
+
+| column             | header      |
+|--------------------+-------------|
+| id                 | Id          |
+| index_based        | Index Based |
+| index              | Index       |
+| calendar           | Calendar    |
+| day_count_fraction | DCF         |
+| modified_by        | Modified By |
+| version            | Version     |
+
+** Qt
+:PROPERTIES:
+:collection_name:         deposit_conventions
+:item_var:                dc
+:key_field:               id
+:has_uuid_primary_key:    false
+:get_request_class:       refdata::messaging::get_deposit_conventions_request
+:get_response_class:      refdata::messaging::get_deposit_conventions_response
+:get_message_type:        get_deposit_conventions_request
+:save_request_class:      refdata::messaging::save_deposit_convention_request
+:save_response_class:     refdata::messaging::save_deposit_convention_response
+:save_message_type:       save_deposit_convention_request
+:save_request_item_field: deposit_convention
+:delete_request_class:    refdata::messaging::delete_deposit_convention_request
+:delete_response_class:   refdata::messaging::delete_deposit_convention_response
+:delete_message_type:     delete_deposit_convention_request
+:history_request_class:   refdata::messaging::get_deposit_convention_history_request
+:history_response_class:  refdata::messaging::get_deposit_convention_history_response
+:history_message_type:    get_deposit_convention_history_request
+:settings_group:          DepositConventionListWindow
+:window_title:            Deposit Conventions
+:icon:                    Chart
+:END:
+
+*** Detail fields
+
+| field              | label              | widget               | type      | is_key | is_required | placeholder         |
+|--------------------+--------------------+----------------------+-----------+--------+-------------+---------------------|
+| id                 | Id                 | idEdit               | line_edit | true   | true        | Enter convention id |
+| index_based        | Index Based        | indexBasedEdit       | check_box |        |             |                     |
+| index              | Index              | indexEdit            | line_edit |        |             | e.g. USD-LIBOR      |
+| calendar           | Calendar           | calendarEdit         | line_edit |        |             | e.g. TARGET         |
+| convention         | Convention         | conventionEdit       | line_edit |        |             | e.g. Following      |
+| day_count_fraction | Day Count Fraction | dayCountFractionEdit | line_edit |        |             | e.g. ACT/360        |
+| end_of_month       | End Of Month       | endOfMonthEdit       | check_box |        |             |                     |
+| settlement_days    | Settlement Days    | settlementDaysEdit   | spin_box  |        |             |                     |
+
+*** Columns (Qt model)
+
+| enum_name        | field              | header      | type      | width |
+|------------------+--------------------+-------------+-----------+-------|
+| Id               | id                 | Id          | string    | 200   |
+| IndexBased       | index_based        | Index Based |           | 100   |
+| Index            | index              | Index       | string    | 140   |
+| Calendar         | calendar           | Calendar    | string    | 120   |
+| DayCountFraction | day_count_fraction | DCF         | string    | 100   |
+| Version          | version            | Version     | int       | 80    |
+| ModifiedBy       | modified_by        | Modified By | string    | 120   |
+| RecordedAt       | recorded_at        | Recorded At | timestamp | 150   |
+
+** Custom repository methods

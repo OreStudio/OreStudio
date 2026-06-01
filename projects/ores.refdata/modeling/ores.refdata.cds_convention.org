@@ -1,0 +1,285 @@
+:PROPERTIES:
+:ID: 558BC028-D6EF-473C-96E7-8518D6302472
+:END:
+#+title: ores.refdata.cds_convention
+#+description: Codegen entity model for the refdata =cds_convention= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for a credit default swap (CDS).
+#+entity_singular: cds_convention
+#+entity_plural: cds_conventions
+#+entity_title: CDS Convention
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Defines the settlement lag, premium payment schedule, and accrual rules
+for a vanilla CDS. Corresponds to the <CDS> element in ORE conventions.xml.
+The rule field governs IMM dates and standard CDS roll dates.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique convention identifier.
+
+Examples: 'CDS-STANDARD-CONVENTIONS', 'EUR-CDS-CONVENTIONS'.
+
+#+begin_src cpp :name generator
+std::string("CDS-STANDARD-CONVENTIONS")
+#+end_src
+
+* Natural keys
+
+* Columns
+
+** settlement_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Number of business days from trade date to cash settlement.
+
+#+begin_src cpp :name generator
+3
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Calendar used for premium payment date adjustment (e.g. 'WeekendsOnly').
+
+#+begin_src cpp :name generator
+std::string("WeekendsOnly")
+#+end_src
+
+** frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Premium payment frequency (canonical CDM, e.g. 'Quarterly').
+
+#+begin_src cpp :name generator
+std::string("Quarterly")
+#+end_src
+
+** payment_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Business day convention for premium payments (canonical FpML).
+
+#+begin_src cpp :name generator
+std::string("Following")
+#+end_src
+
+** rule
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Date generation rule (e.g. 'CDS2015', 'Backward', 'TwentiethIMM').
+
+#+begin_src cpp :name generator
+std::string("CDS2015")
+#+end_src
+
+** day_count_fraction
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Day count fraction for premium accrual (canonical FpML, e.g. 'ACT/360').
+
+#+begin_src cpp :name generator
+std::string("ACT/360")
+#+end_src
+
+** settles_accrual
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether accrued interest is settled on default.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** pays_at_default_time
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the protection payment is made at the time of default.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** upfront_settlement_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Override for the upfront cash settlement lag (business days).
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** last_period_day_count_fraction
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Day count fraction for the last coupon period (canonical FpML). When absent the same fraction as day_count_fraction is used.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_cds_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: refdata.api
+:component_core:    refdata.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cds_convention
+:entity_plural_short:   cds_conventions
+:entity_singular_words: CDS convention
+:entity_plural_words:   CDS conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cc
+:END:
+
+** Table display
+
+| column             | header      |
+|--------------------+-------------|
+| id                 | Id          |
+| frequency          | Frequency   |
+| rule               | Rule        |
+| day_count_fraction | DCF         |
+| modified_by        | Modified By |
+| version            | Version     |
+
+** Qt
+:PROPERTIES:
+:collection_name:         cds_conventions
+:item_var:                cc
+:key_field:               id
+:has_uuid_primary_key:    false
+:get_request_class:       refdata::messaging::get_cds_conventions_request
+:get_response_class:      refdata::messaging::get_cds_conventions_response
+:get_message_type:        get_cds_conventions_request
+:save_request_class:      refdata::messaging::save_cds_convention_request
+:save_response_class:     refdata::messaging::save_cds_convention_response
+:save_message_type:       save_cds_convention_request
+:save_request_item_field: cds_convention
+:delete_request_class:    refdata::messaging::delete_cds_convention_request
+:delete_response_class:   refdata::messaging::delete_cds_convention_response
+:delete_message_type:     delete_cds_convention_request
+:history_request_class:   refdata::messaging::get_cds_convention_history_request
+:history_response_class:  refdata::messaging::get_cds_convention_history_response
+:history_message_type:    get_cds_convention_history_request
+:settings_group:          CdsConventionListWindow
+:window_title:            CDS Conventions
+:icon:                    Chart
+:END:
+
+*** Detail fields
+
+| field                          | label                   | widget                         | type      | is_key | is_required | placeholder         |
+|--------------------------------+-------------------------+--------------------------------+-----------+--------+-------------+---------------------|
+| id                             | Id                      | idEdit                         | line_edit | true   | true        | Enter convention id |
+| calendar                       | Calendar                | calendarEdit                   | line_edit |        | true        | e.g. WeekendsOnly   |
+| frequency                      | Frequency               | frequencyEdit                  | line_edit |        | true        | e.g. Quarterly      |
+| payment_convention             | Payment Convention      | paymentConventionEdit          | line_edit |        | true        | e.g. Following      |
+| rule                           | Rule                    | ruleEdit                       | line_edit |        | true        | e.g. CDS2015        |
+| day_count_fraction             | Day Count Fraction      | dayCountFractionEdit           | line_edit |        | true        | e.g. ACT/360        |
+| settlement_days                | Settlement Days         | settlementDaysEdit             | spin_box  |        |             |                     |
+| upfront_settlement_days        | Upfront Settlement Days | upfrontSettlementDaysEdit      | spin_box  |        |             |                     |
+| last_period_day_count_fraction | Last Period DCF         | lastPeriodDayCountFractionEdit | line_edit |        |             | e.g. ACT/360        |
+| settles_accrual                | Settles Accrual         | settlesAccrualEdit             | check_box |        |             |                     |
+| pays_at_default_time           | Pays At Default Time    | paysAtDefaultTimeEdit          | check_box |        |             |                     |
+
+*** Columns (Qt model)
+
+| enum_name        | field              | header      | type      | width |
+|------------------+--------------------+-------------+-----------+-------|
+| Id               | id                 | Id          | string    | 220   |
+| Frequency        | frequency          | Frequency   | string    | 100   |
+| Rule             | rule               | Rule        | string    | 120   |
+| DayCountFraction | day_count_fraction | DCF         | string    | 100   |
+| Version          | version            | Version     | int       | 80    |
+| ModifiedBy       | modified_by        | Modified By | string    | 120   |
+| RecordedAt       | recorded_at        | Recorded At | timestamp | 150   |
+
+** Custom repository methods

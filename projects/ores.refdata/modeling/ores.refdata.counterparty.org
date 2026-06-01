@@ -1,0 +1,239 @@
+:PROPERTIES:
+:ID: 8FB6949F-05C1-4867-91F3-B9B6FA2329EC
+:END:
+#+title: ores.refdata.counterparty
+#+description: Codegen entity model for the refdata =counterparty= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: An external trading partner participating in financial transactions.
+#+entity_singular: counterparty
+#+entity_plural: counterparties
+#+entity_title: Counterparty
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+External trading partners and counterparties that participate in financial
+transactions with the organisation. Counterparties form a hierarchy through
+parent_counterparty_id for group structures.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this counterparty.
+
+Surrogate key for the counterparty record.
+
+* Natural keys
+
+** full_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Full legal name of the counterparty.
+
+The official registered name of the external entity.
+
+#+begin_src cpp :name generator
+std::string(faker::company::name())
+#+end_src
+
+** short_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Short code for quick reference.
+
+A brief mnemonic code used in trading systems.
+
+#+begin_src cpp :name generator
+std::string(faker::string::alpha(6))
+#+end_src
+
+* Columns
+
+** party_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Classification of this counterparty.
+
+References the party_type lookup table.
+
+#+begin_src cpp :name generator
+std::string("Bank")
+#+end_src
+
+** parent_counterparty_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Parent counterparty for hierarchy.
+
+References the parent counterparty record for group structures. Null for root counterparties.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** business_center_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Business center location code.
+
+FpML business center code indicating primary location.
+
+#+begin_src cpp :name generator
+std::string("USNY")
+#+end_src
+
+** status
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Current lifecycle status.
+
+References the party_status lookup table.
+
+#+begin_src cpp :name generator
+std::string("Active")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_counterparties_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: refdata.api
+:component_core:    refdata.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: counterparty
+:entity_plural_short:   counterparties
+:entity_singular_words: counterparty
+:entity_plural_words:   counterparties
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cp
+:END:
+
+** Table display
+
+| column               | header          |
+|----------------------+-----------------|
+| short_code           | Code            |
+| full_name            | Name            |
+| party_type           | Type            |
+| status               | Status          |
+| business_center_code | Business Center |
+| modified_by          | Modified By     |
+| version              | Version         |
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.refdata/domain/counterparty.hpp
+:domain_class:            refdata::domain::counterparty
+:protocol_include:        ores.refdata/messaging/counterparty_protocol.hpp
+:collection_name:         counterparties
+:item_var:                counterparty
+:key_field:               short_code
+:has_uuid_primary_key:    true
+:get_request_class:       refdata::messaging::get_counterparties_request
+:get_response_class:      refdata::messaging::get_counterparties_response
+:get_message_type:        get_counterparties_request
+:save_request_class:      refdata::messaging::save_counterparty_request
+:save_response_class:     refdata::messaging::save_counterparty_response
+:save_message_type:       save_counterparty_request
+:save_request_item_field: counterparty
+:delete_request_class:    refdata::messaging::delete_counterparty_request
+:delete_response_class:   refdata::messaging::delete_counterparty_response
+:delete_message_type:     delete_counterparty_request
+:history_request_class:   refdata::messaging::get_counterparty_history_request
+:history_response_class:  refdata::messaging::get_counterparty_history_response
+:history_message_type:    get_counterparty_history_request
+:settings_group:          CounterpartyListWindow
+:window_title:            Counterparties
+:icon:                    Handshake
+:END:
+
+*** Detail fields
+
+| field                | label           | widget             | type      | is_key | is_required | placeholder                |
+|----------------------+-----------------+--------------------+-----------+--------+-------------+----------------------------|
+| short_code           | Short Code      | codeEdit           | line_edit | true   | true        | Enter short code           |
+| full_name            | Full Name       | nameEdit           | line_edit |        | true        | Enter full name            |
+| party_type           | Party Type      | partyTypeEdit      | line_edit |        |             | Enter party type           |
+| status               | Status          | statusEdit         | line_edit |        |             | Enter status               |
+| business_center_code | Business Center | businessCenterEdit | line_edit |        |             | Enter business center code |
+
+*** Columns (Qt model)
+
+| enum_name          | field                | header          | type      | width |
+|--------------------+----------------------+-----------------+-----------+-------|
+| ShortCode          | short_code           | Code            | string    | 120   |
+| FullName           | full_name            | Name            | string    | 250   |
+| PartyType          | party_type           | Type            | string    | 120   |
+| Status             | status               | Status          | string    | 100   |
+| BusinessCenterCode | business_center_code | Business Center | string    | 130   |
+| Version            | version              | Version         | int       | 80    |
+| ModifiedBy         | modified_by          | Modified By     | string    | 120   |
+| RecordedAt         | recorded_at          | Recorded At     | timestamp | 150   |
+
+** Custom repository methods

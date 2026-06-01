@@ -1,0 +1,243 @@
+:PROPERTIES:
+:ID: F68E18C5-A704-40E8-A37B-4B8F5DCB5089
+:END:
+#+title: ores.refdata.swap_convention
+#+description: Codegen entity model for the refdata =swap_convention= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for a vanilla interest rate swap.
+#+entity_singular: swap_convention
+#+entity_plural: swap_conventions
+#+entity_title: Swap Convention
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Defines the fixed-leg schedule and the floating-leg index for a standard
+interest rate swap. Used by ORE to bootstrap par swap rates off a yield
+curve. Corresponds to the <Swap> element in ORE conventions.xml.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique convention identifier.
+
+Examples: 'EUR-6M-SWAP-CONVENTIONS', 'USD-3M-SWAP-CONVENTIONS'.
+
+#+begin_src cpp :name generator
+std::string("EUR-6M-SWAP-CONVENTIONS")
+#+end_src
+
+* Natural keys
+
+* Columns
+
+** fixed_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Fixed-leg payment calendar (e.g. 'TARGET').
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** fixed_frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Fixed-leg payment frequency (canonical CDM, e.g. 'Annual').
+
+#+begin_src cpp :name generator
+std::string("Annual")
+#+end_src
+
+** fixed_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Business day convention for the fixed leg (canonical FpML).
+
+#+begin_src cpp :name generator
+std::string("ModifiedFollowing")
+#+end_src
+
+** fixed_day_count_fraction
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Day count fraction for the fixed leg (canonical FpML, e.g. '30/360').
+
+#+begin_src cpp :name generator
+std::string("30/360")
+#+end_src
+
+** index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Floating-leg index identifier (e.g. 'EUR-EURIBOR-6M').
+
+#+begin_src cpp :name generator
+std::string("EUR-EURIBOR-6M")
+#+end_src
+
+** float_frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Floating-leg payment frequency override (canonical CDM). When absent the frequency is derived from the index tenor.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** sub_periods_coupon_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Sub-period coupon type when the float leg uses sub-periods. Either 'Compounding' or 'Averaging'.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_swap_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: refdata.api
+:component_core:    refdata.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: swap_convention
+:entity_plural_short:   swap_conventions
+:entity_singular_words: swap convention
+:entity_plural_words:   swap conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sc
+:END:
+
+** Table display
+
+| column                   | header      |
+|--------------------------+-------------|
+| id                       | Id          |
+| fixed_frequency          | Fixed Freq  |
+| fixed_day_count_fraction | Fixed DCF   |
+| index                    | Index       |
+| modified_by              | Modified By |
+| version                  | Version     |
+
+** Qt
+:PROPERTIES:
+:collection_name:         swap_conventions
+:item_var:                sc
+:key_field:               id
+:has_uuid_primary_key:    false
+:get_request_class:       refdata::messaging::get_swap_conventions_request
+:get_response_class:      refdata::messaging::get_swap_conventions_response
+:get_message_type:        get_swap_conventions_request
+:save_request_class:      refdata::messaging::save_swap_convention_request
+:save_response_class:     refdata::messaging::save_swap_convention_response
+:save_message_type:       save_swap_convention_request
+:save_request_item_field: swap_convention
+:delete_request_class:    refdata::messaging::delete_swap_convention_request
+:delete_response_class:   refdata::messaging::delete_swap_convention_response
+:delete_message_type:     delete_swap_convention_request
+:history_request_class:   refdata::messaging::get_swap_convention_history_request
+:history_response_class:  refdata::messaging::get_swap_convention_history_response
+:history_message_type:    get_swap_convention_history_request
+:settings_group:          SwapConventionListWindow
+:window_title:            Swap Conventions
+:icon:                    Chart
+:END:
+
+*** Detail fields
+
+| field                    | label                    | widget                    | type      | is_key | is_required | placeholder            |
+|--------------------------+--------------------------+---------------------------+-----------+--------+-------------+------------------------|
+| id                       | Id                       | idEdit                    | line_edit | true   | true        | Enter convention id    |
+| fixed_frequency          | Fixed Frequency          | fixedFrequencyEdit        | line_edit |        | true        | e.g. Annual            |
+| fixed_day_count_fraction | Fixed Day Count Fraction | fixedDayCountFractionEdit | line_edit |        | true        | e.g. 30/360            |
+| index                    | Index                    | indexEdit                 | line_edit |        | true        | e.g. EUR-EURIBOR-6M    |
+| fixed_calendar           | Fixed Calendar           | fixedCalendarEdit         | line_edit |        |             | e.g. TARGET            |
+| fixed_convention         | Fixed Convention         | fixedConventionEdit       | line_edit |        |             | e.g. ModifiedFollowing |
+| float_frequency          | Float Frequency          | floatFrequencyEdit        | line_edit |        |             | e.g. Semiannual        |
+| sub_periods_coupon_type  | Sub-Periods Coupon Type  | subPeriodsCouponTypeEdit  | line_edit |        |             | e.g. Compounding       |
+
+*** Columns (Qt model)
+
+| enum_name             | field                    | header      | type      | width |
+|-----------------------+--------------------------+-------------+-----------+-------|
+| Id                    | id                       | Id          | string    | 220   |
+| FixedFrequency        | fixed_frequency          | Fixed Freq  | string    | 100   |
+| FixedDayCountFraction | fixed_day_count_fraction | Fixed DCF   | string    | 100   |
+| Index                 | index                    | Index       | string    | 160   |
+| Version               | version                  | Version     | int       | 80    |
+| ModifiedBy            | modified_by              | Modified By | string    | 120   |
+| RecordedAt            | recorded_at              | Recorded At | timestamp | 150   |
+
+** Custom repository methods

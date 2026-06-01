@@ -1,0 +1,297 @@
+:PROPERTIES:
+:ID: 5A63B4D1-0F55-468B-B734-A5DC37B26DC4
+:END:
+#+title: ores.refdata.book
+#+description: Codegen entity model for the refdata =book= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Operational ledger leaf that holds trades.
+#+entity_singular: book
+#+entity_plural: books
+#+entity_title: Book
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Operational ledger leaves. The only entity that holds trades.
+Serves as the basis for accounting, ownership, and regulatory
+capital treatment. Must belong to exactly one portfolio.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this book.
+
+Surrogate key for the book record.
+
+* Natural keys
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Party that owns this book.
+
+References the parties table.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Book name, unique within party.
+
+e.g., 'FXO_EUR_VOL_01'.
+
+#+begin_src cpp :name generator
+std::string("BOOK_") + std::to_string(faker::number::integer(1, 999))
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description of the book.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** parent_portfolio_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Links to exactly one portfolio.
+
+Mandatory: Every book must belong to a portfolio.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** owner_unit_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Business unit that owns this book.
+
+Optional FK to business_units. Should reference a unit that is an owner_unit_id in the book's portfolio ancestry chain.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** ledger_ccy
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Functional/accounting currency.
+
+ISO 4217 currency code.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** gl_account_ref
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Reference to external General Ledger.
+
+e.g., 'GL-10150-FXO'. Nullable if not integrated.
+
+#+begin_src cpp :name generator
+std::string("GL-10150-TEST")
+#+end_src
+
+** cost_center
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Internal finance code for P&L attribution.
+
+Links to cost center in finance system.
+
+#+begin_src cpp :name generator
+std::string("CC-001")
+#+end_src
+
+** book_status
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Lifecycle status of the book.
+
+References book_statuses lookup (Active, Closed, Frozen).
+
+#+begin_src cpp :name generator
+std::string("Active")
+#+end_src
+
+** is_trading_book
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Basel III/IV classification.
+
+1 = Trading Book, 0 = Banking Book.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_books_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: refdata.api
+:component_core:    refdata.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: book
+:entity_plural_short:   books
+:entity_singular_words: book
+:entity_plural_words:   books
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: bk
+:END:
+
+** Table display
+
+| column          | header       |
+|-----------------+--------------|
+| name            | Name         |
+| party_id        | Party        |
+| ledger_ccy      | Currency     |
+| book_status     | Status       |
+| is_trading_book | Trading Book |
+| modified_by     | Modified By  |
+| version         | Version      |
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.refdata/domain/book.hpp
+:domain_class:            refdata::domain::book
+:protocol_include:        ores.refdata/messaging/book_protocol.hpp
+:collection_name:         books
+:item_var:                book
+:key_field:               name
+:has_uuid_primary_key:    true
+:get_request_class:       refdata::messaging::get_books_request
+:get_response_class:      refdata::messaging::get_books_response
+:get_message_type:        get_books_request
+:save_request_class:      refdata::messaging::save_book_request
+:save_response_class:     refdata::messaging::save_book_response
+:save_message_type:       save_book_request
+:save_request_item_field: book
+:delete_request_class:    refdata::messaging::delete_book_request
+:delete_response_class:   refdata::messaging::delete_book_response
+:delete_message_type:     delete_book_request
+:history_request_class:   refdata::messaging::get_book_history_request
+:history_response_class:  refdata::messaging::get_book_history_response
+:history_message_type:    get_book_history_request
+:settings_group:          BookListWindow
+:window_title:            Books
+:icon:                    Book
+:END:
+
+*** Detail fields
+
+| field          | label           | widget           | type      | is_key | is_required | placeholder                |
+|----------------+-----------------+------------------+-----------+--------+-------------+----------------------------|
+| name           | Name            | nameEdit         | line_edit | true   | true        | Enter book name            |
+| ledger_ccy     | Ledger Currency | ledgerCcyEdit    | line_edit |        |             | Enter ledger currency      |
+| gl_account_ref | GL Account Ref  | glAccountRefEdit | line_edit |        |             | Enter GL account reference |
+| cost_center    | Cost Center     | costCenterEdit   | line_edit |        |             | Enter cost center          |
+| book_status    | Status          | bookStatusEdit   | line_edit |        |             | Enter status               |
+
+*** Columns (Qt model)
+
+| enum_name     | field           | header      | type      | width |
+|---------------+-----------------+-------------+-----------+-------|
+| Name          | name            | Name        | string    | 200   |
+| LedgerCcy     | ledger_ccy      | Ledger Ccy  | string    | 100   |
+| BookStatus    | book_status     | Status      | string    | 100   |
+| CostCenter    | cost_center     | Cost Center | string    | 120   |
+| IsTradingBook | is_trading_book | Trading     | int       | 70    |
+| Version       | version         | Version     | int       | 80    |
+| ModifiedBy    | modified_by     | Modified By | string    | 120   |
+| RecordedAt    | recorded_at     | Recorded At | timestamp | 150   |
+
+** Custom repository methods

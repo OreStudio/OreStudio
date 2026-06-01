@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: E3F0F75F-59C8-4CF1-BD15-A937FED1FC72
+:END:
+#+title: Task: Show blocked story dependency tree in compass where
+#+description: Extend compass where to display blocked story chains as a tree (A blocked-by B blocked-by C) in the Orient pillar, so multi-level dependencies are visible at a glance.
+#+type: task
+#+level: s1
+#+filetags: :compass_cli_ux_redesign:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Stories can be blocked at multiple levels: story C blocked by B, B blocked
+by A. =compass where= currently shows STARTED items but does not surface
+blocked chains or their root causes. This task extends =compass where= to
+display blocked story dependency trees in the Orient pillar output, so the
+user can see the full chain at a glance without opening individual files.
+
+* Status
+
+| Field        | Value                                       |
+|--------------+---------------------------------------------|
+| State        | BACKLOG                                     |
+| Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]                    |
+| Now          | Not yet started.                            |
+| Waiting on   | Nothing.                                    |
+| Next         | Implement after =compass sprint status= (T3). |
+| Last touched | 2026-06-01                                  |
+
+* Acceptance
+
+- =compass where= output includes a "Blocked chains" section listing every
+  story that is =BLOCKED=, with its =Waiting on= link, followed by that
+  story's blocker recursively — presented as an indented tree.
+- Cycles (A blocked-by B, B blocked-by A) are detected and reported as
+  "⚠ cycle detected" rather than looping infinitely.
+- Stories with no blocked entries produce no "Blocked chains" section.
+- =--format json= output includes a =blocked_chains= key with the tree
+  as nested objects.
+- CI passes.
+
+* Plan
+
+- Read story state from each =story.org= in the current sprint (same glob
+  as =compass sprint status=).
+- For each story with =State: BLOCKED=, extract the =Waiting on= field
+  (org-roam link or plain text) to identify the blocker.
+- Recurse until the chain reaches a non-blocked story or a cycle.
+- Render as indented lines under a "Blocked:" header in =compass where= output.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |

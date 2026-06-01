@@ -77,6 +77,12 @@ Pillars:
 
 * Review
 
+** Round 1 — 2026-06-01
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Missing =* Review= section | task file | Fixed: added with standard table | Gemini review |
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |

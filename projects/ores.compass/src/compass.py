@@ -1181,10 +1181,13 @@ def cmd_add(argv):
         print("usage: compass add <type> [generate_doc options]\n"
               "  types: story task sprint version recipe knowledge component\n"
               "         capture memory investigation product_identity skill\n"
-              "         diagram\n"
+              "         diagram entity_org\n"
               "  --parent-dir defaults to the current sprint (story) or\n"
               "  version (sprint), or doc/llm/skills (skill); required otherwise.\n"
               "  diagram: scaffolds a .puml file with the standard licence header.\n"
+              "  entity_org: scaffolds projects/ores.<component>/modeling/\n"
+              "    ores.<component>.<slug>.org; requires --component, --slug,\n"
+              "    --description.\n"
               "  remaining flags are passed through to ores.codegen "
               "(see 'How do I create a new v2 doc?').")
         return 0

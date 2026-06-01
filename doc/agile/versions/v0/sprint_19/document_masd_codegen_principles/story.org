@@ -37,12 +37,12 @@ point) so that it is reachable from the top of the documentation tree.
 
 | Field         | Value                                                            |
 |---------------+------------------------------------------------------------------|
-| State         | STARTED                                                          |
-| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                       |
-| Now           | T1 scaffolded: writing MASD and codegen principles document.     |
-| Waiting on    | Nothing.                                                         |
-| Next          | Implement T1.                                                    |
-| Last touched  | 2026-06-01                                                       |
+| State         | DONE                                            |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                              |
+| Now           | Nothing.                                        |
+| Waiting on    | Nothing.                                        |
+| Next          | Nothing.                                        |
+| Last touched  | 2026-06-01                                      |
 
 * Acceptance
 
@@ -66,7 +66,7 @@ point) so that it is reachable from the top of the documentation tree.
 
 | Task                                                    | State   | Start      | End | Description                                       |
 |---------------------------------------------------------+---------+------------+-----+---------------------------------------------------|
-| [[id:9C7C4C36-76AD-48C0-B217-D6E82F831C03][T1: Write the MASD and code generation principles doc]] | STARTED | 2026-06-01 |     | Author the knowledge document; wire into site nav |
+| [[id:9C7C4C36-76AD-48C0-B217-D6E82F831C03][T1: Write the MASD and code generation principles doc]] | DONE    | 2026-06-01 | 2026-06-01 | Author the knowledge document; wire into site nav |
 
 * Decisions
 

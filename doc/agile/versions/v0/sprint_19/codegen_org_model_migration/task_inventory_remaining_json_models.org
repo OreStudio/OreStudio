@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/inventory-remaining-json-models
-#+pr:
+#+pr: 990
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
@@ -264,9 +264,9 @@ already in the story.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #990 | [agile] Inventory remaining JSON models + scaffold 8 per-kind follow-on tasks |
 
 * Review
 

@@ -2,10 +2,10 @@
 :ID: F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756
 :END:
 #+title: Component architecture
-#+description: api/core/service split, facet placement, CMake dependency chain, and scaffold profiles for ORE Studio components.
+#+description: How MASD components are structured in ORE Studio: the api/core/service split, facet placement per component, CMake dependency chain, and scaffold profiles.
 #+type: knowledge
 #+level: cross
-#+filetags: :knowledge:architecture:component:cmake:codegen:
+#+filetags: :knowledge:masd:modeling:architecture:component:cmake:codegen:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

@@ -130,7 +130,7 @@
     <a href='/OreStudio/doc/llm/llm.html'>LLMs</a>
     <a href='/OreStudio/doc/manual/manuals.html'>Manuals</a>
     <a href='/OreStudio/doc/downloads.html'>Downloads</a>
-    <a href='/OreStudio/doc/knowledge/masd_and_codegen_principles.html'>Code Gen</a>
+    <a href='/OreStudio/projects/modeling/masd.html'>MASD</a>
     <a href='/OreStudio/doc/agile/agile.html'>Agile</a>
     <a href='/OreStudio/doc/developer.html'>Developer</a>
     <a href='/OreStudio/doc/agile/versions/versions.html'>Roadmap</a>

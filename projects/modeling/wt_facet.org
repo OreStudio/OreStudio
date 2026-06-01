@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: ACF334D8-703B-4020-A48E-F8A8E5090E72
 :END:
-#+title: Wt entity patterns
-#+description: List widget, detail dialog, and application-integration patterns for ores.wt entity UI components.
+#+title: Wt facet
+#+description: The Wt facet of the MASD entity model: list widget, detail dialog, and application-integration patterns for ores.wt entity UI components.
 #+type: knowledge
 #+level: cross
-#+filetags: :knowledge:architecture:wt:entity:ui:
+#+filetags: :knowledge:masd:facet:modeling:wt:entity:ui:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

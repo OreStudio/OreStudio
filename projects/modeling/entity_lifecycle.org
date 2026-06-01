@@ -2,10 +2,10 @@
 :ID: 608675E1-4284-4902-99AC-4DA565390AFB
 :END:
 #+title: Entity lifecycle
-#+description: Layer ordering, type mappings, and service conventions for creating a full-stack entity in ORE Studio.
+#+description: The cross-facet lifecycle of an ORE Studio entity: layer ordering, type mappings, and service conventions spanning all MASD facets.
 #+type: knowledge
 #+level: cross
-#+filetags: :knowledge:architecture:entity:lifecycle:
+#+filetags: :knowledge:masd:facet:modeling:architecture:entity:lifecycle:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

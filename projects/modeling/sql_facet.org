@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: 5CB31A0E-4E38-4521-B0EE-E4396C3E2936
 :END:
-#+title: SQL entity schema patterns
-#+description: Naming conventions, idempotency patterns, and entity-type catalogue for ORE Studio SQL schemas.
+#+title: SQL facet
+#+description: The SQL facet of the MASD entity model: naming conventions, idempotency patterns, and entity-type catalogue for ORE Studio SQL schemas.
 #+type: knowledge
 #+level: cross
-#+filetags: :knowledge:architecture:sql:entity:schema:
+#+filetags: :knowledge:masd:facet:modeling:sql:entity:schema:
 #+created: 2026-05-21
 #+updated: 2026-05-27
 

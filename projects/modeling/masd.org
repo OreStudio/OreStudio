@@ -11,19 +11,23 @@
 #+updated: 2026-06-01
 
 MASD is the [[https://uhra.herts.ac.uk/id/eprint/17031/][Model Assisted Software Development]] methodology developed as
-part of a PhD programme. ORE Studio does not use the original code generator
-Dogen (which was decommissioned) but ports MASD's core ideas to [[https://en.wikipedia.org/wiki/Large_language_model][LLMs]] and
-[[https://en.wikipedia.org/wiki/Natural_language_processing][NLP]]. The conceptual model governs how the project is organised, how code
-generation is approached, and what the long-term generative objective is.
+part of a PhD programme and documented in full on the [[https://mcraveiro.github.io/dogen/index.html][Dogen site]]. ORE Studio
+does not use the original code generator Dogen (which was decommissioned) but
+ports MASD's core ideas to [[https://en.wikipedia.org/wiki/Large_language_model][LLMs]] and [[https://en.wikipedia.org/wiki/Natural_language_processing][NLP]]. The conceptual model governs how
+the project is organised, how code generation is approached, and what the
+long-term generative objective is.
 
 * Conceptual model
 
 MASD starts from the premise that a software project is a collection of
 /physical artefacts/ — files and directories — that live in /physical space/,
 and that these artefacts can be thought of as projections from a
-higher-dimension space called the /logical space/.
+higher-dimension space called the /logical space/. For a thorough formal
+treatment of these spaces, models, and transformations see
+[[https://mcraveiro.github.io/dogen/docs/models_and_transformations.html][Models and Transformations]] on the Dogen site.
 
-The distinction is adapted from Lakos's /Large Scale C++ Software Design/:
+The distinction between logical and physical is adapted from Lakos's
+/Large Scale C++ Software Design/:
 
 #+begin_quote
 /Logical design/ addresses all the type-related aspects of design — classes
@@ -97,7 +101,8 @@ headers).
 
 * Model transformations
 
-MDE distinguishes three categories of /model transformation/:
+MDE distinguishes three categories of /model transformation/ (per
+[[https://mcraveiro.github.io/dogen/docs/models_and_transformations.html][Models and Transformations]]):
 
 - *Model-to-Model (M2M)* — transforms one model into another at the same or a
   different abstraction level.
@@ -120,6 +125,9 @@ concepts are encoded in skills and recipes that an LLM can understand and
 apply.
 
 * The six MASD principles
+
+The principles below are defined in full in
+[[https://mcraveiro.github.io/dogen/docs/the_masd_methodology.html][The MASD Methodology]]. Each is applied here to ORE Studio specifically.
 
 1. *Focus Narrowly (P-1)* — target infrastructure code only, not business
    logic. The generator produces mechanical layers (C++ plumbing, SQL DDL, Qt
@@ -149,7 +157,10 @@ apply.
 * The reference-implementation backout strategy
 
 Rather than designing an abstract generator first, ORE Studio extracts the
-generator from a proven hand-written implementation:
+generator from a proven hand-written implementation. This is analogous to
+the bootstrapping / dogfooding approach described in
+[[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html][MASD Reference Implementation]] for Dogen itself, grounded in a working
+system rather than an idealised top-down design:
 
 1. *Commission the reference entity by hand.* The =currency= entity is the
    reference implementation — every layer written by hand without generator
@@ -224,6 +235,8 @@ to extract required information.
 
 * See also
 
+** ORE Studio
+
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the code generator that implements the facet transformations:
   inputs, templates, profiles, and operational recipes.
 - [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — directory layout, internal modules, template
@@ -237,3 +250,23 @@ to extract required information.
 - [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]] — skill for generating all facets of a domain entity.
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the four-layer architecture; shows how components map to
   layers and how facets distribute across them.
+
+** Dogen site (primary MASD references)
+
+- [[https://mcraveiro.github.io/dogen/docs/the_masd_methodology.html][The MASD Methodology]] — the complete methodology: vision, mission, six
+  principles, actors, processes, and the MRI reference implementation
+  model that ORE Studio's backout strategy mirrors.
+- [[https://mcraveiro.github.io/dogen/docs/models_and_transformations.html][Models and Transformations]] — formal definitions of model, meta-model,
+  metamodelling hierarchy, and the M2M/M2T/T2T transformation taxonomy
+  used in the Model transformations section above.
+- [[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html][MASD Reference Implementation]] — how Dogen bootstrapped itself; the
+  four phases of evolution; the fitness function and conformance model
+  that ORE Studio's zero-drift verification adapts.
+- [[https://mcraveiro.github.io/dogen/docs/literate_modeling_with_org_model.html][Literate Modeling with org-model]] — the org-mode literate modeling
+  approach that ORE Studio entity model files (=ores.refdata.*.org=)
+  implement.
+- [[https://mcraveiro.github.io/dogen/docs/towards_a_definition_of_mde.html][Towards a Definition of MDE]] — disambiguation of MDE scope and its
+  relationship to methodologies; background for the Model transformations
+  section.
+- [[https://mcraveiro.github.io/dogen/docs/mde_and_the_software_development_process.html][MDE and the Software Development Process]] — how MDE integrates with
+  SDMs; theoretical grounding for the six MASD principles.

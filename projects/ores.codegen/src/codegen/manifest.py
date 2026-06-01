@@ -72,6 +72,7 @@ COMPONENTS: Dict[str, Component] = {
         models_dir="projects/ores.codegen/models/dq",
         entity_glob="*_domain_entity.json",
         exclude_suffix=None,
+        modeling_dir="projects/ores.dq/modeling",
     ),
     "iam-cpp": Component(
         name="iam-cpp",

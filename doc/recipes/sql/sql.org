@@ -90,3 +90,7 @@ Recipes related to *SQL recipes*. Each entry below is a single how-do-I question
 - [[id:2BF63848-718F-4388-AD09-759292EF65DC][Database Size]]
 - [[id:3D098827-07D6-4D73-89BC-87980365B10D][Table Sizes]]
 - [[id:35D6EC68-F7E0-445A-8F03-78CA5EAC9C13][Row Counts per Table]]
+
+* Operations
+
+- [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]]

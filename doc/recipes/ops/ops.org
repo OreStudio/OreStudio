@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: 2EAC4BEA-53D3-4CF1-AC00-1459F3B2D19D
+:END:
+#+title: Ops recipes
+#+description: Inventory of operational how-to recipes: environment management, log files, service health, and infrastructure troubleshooting.
+#+type: knowledge
+#+level: cross
+#+filetags: :recipe:ops:environment:index:knowledge:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Recipes related to running, observing, and troubleshooting OreStudio
+environments. New recipes go in this folder; edit this inventory to add a link.
+
+* Environment and Logs
+
+- [[id:B7726C15-7A7B-4FC6-A0E2-48A6EE64216F][How do I find the log files for an environment?]]
+
+* Database
+
+- [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]]
+
+* See also
+
+- [[id:C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F][SQL recipes]] — query-level SQL how-tos.

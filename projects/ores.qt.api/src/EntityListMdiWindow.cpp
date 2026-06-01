@@ -151,7 +151,7 @@ void EntityListMdiWindow::initializeTableSettings(
     settingsSplitter_ = splitter;
 
     auto* header = settingsTableView_->horizontalHeader();
-    header->setSectionResizeMode(QHeaderView::ResizeToContents);
+    header->setSectionResizeMode(QHeaderView::Interactive);
 
     if (settingsSplitter_) {
         connect(settingsSplitter_, &QSplitter::splitterMoved,
@@ -187,8 +187,7 @@ void EntityListMdiWindow::restoreTableSettings() {
             header->setSectionHidden(col, true);
     }
 
-    // Always enforce ResizeToContents (guards against stale saved state)
-    header->setSectionResizeMode(QHeaderView::ResizeToContents);
+    header->setSectionResizeMode(QHeaderView::Interactive);
 
     savedWindowSize_ = UiPersistence::restoreSize(settingsGroup_, defaultSize_);
     if (settingsSplitter_)

@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: B7726C15-7A7B-4FC6-A0E2-48A6EE64216F
+:END:
+#+title: How do I find the log files for an environment?
+#+description: Locate the publish/log directory for a running OreStudio environment and identify the right log file for each service.
+#+type: recipe
+#+level: cross
+#+filetags: :ops:logs:environment:logging:recipe:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Each OreStudio environment writes service logs under its build output
+directory. The path encodes the CMake preset name, so the same pattern
+works for every preset.
+
+* Question
+
+How do I find the log files for a running OreStudio environment?
+
+* Answer
+
+1. /Locate the log directory./ Log files live at:
+
+   #+begin_src sh :results verbatim
+   build/output/<preset>/publish/log/
+   #+end_src
+
+   For the default local development preset:
+
+   #+begin_src sh :results verbatim
+   ls build/output/linux-clang-debug-make/publish/log/
+   #+end_src
+
+2. /Identify the file for a specific service./ Each service writes to
+   =<service-name>.<replica-index>.log=, e.g.:
+
+   | Log file | Service |
+   |----------+---------|
+   | =ores.refdata.service.0.log= | Reference data service |
+   | =ores.trading.service.0.log= | Trading service |
+   | =ores.workspace.service.0.log= | Workspace service |
+   | =ores.wt.service.0.log= | Wt web UI service |
+   | =ores.http.server.0.log= | HTTP server |
+   | =nats-server.log= | NATS message bus |
+
+3. /Tail a service log/ for live output:
+
+   #+begin_src sh :results verbatim
+   tail -f build/output/linux-clang-debug-make/publish/log/ores.refdata.service.0.log
+   #+end_src
+
+4. /Grep for errors/ across all service logs:
+
+   #+begin_src sh :results verbatim
+   grep -i "error\|fatal\|failed\|connection" \
+     build/output/linux-clang-debug-make/publish/log/*.log
+   #+end_src
+
+5. /Find the most recently written log/ when you are unsure which
+   service is failing:
+
+   #+begin_src sh :results verbatim
+   ls -lt build/output/linux-clang-debug-make/publish/log/*.log | head -10
+   #+end_src
+
+* Script
+
+No wrapper — bare shell commands against the =build/output/<preset>/publish/log/= directory.
+
+* Tested by
+
+Manual. Run the environment with =cmake --build= and confirm the log
+directory is populated.
+
+* See also
+
+- [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]] — a common error visible in service logs.

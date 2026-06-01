@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :ui_responsiveness:sprint_19:v0:
 #+owner: marco
-#+branch: feature/ui-responsiveness-currency
-#+pr: 977
+#+branch: feature/fix-currency-dialog-responsiveness
+#+pr: 979
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -41,12 +41,12 @@ requires a cross-cutting =ClientManager= change.
 
 | Field        | Value                                        |
 |--------------+----------------------------------------------|
-| State        | BACKLOG                                      |
-| Parent story | [[id:61F836E5-2277-4765-9038-AF7D0176C993][Make UI more responsive]]             |
-| Now          | Not yet started.                             |
-| Waiting on   | Nothing.                                     |
-| Next         | Begin implementation.                        |
-| Last touched | 2026-06-01                                   |
+| State        | DONE                                            |
+| Parent story | [[id:61F836E5-2277-4765-9038-AF7D0176C993][Make UI more responsive]] |
+| Now          | Nothing.                                        |
+| Waiting on   | Nothing.                                        |
+| Next         | Nothing.                                        |
+| Last touched | 2026-06-01                                      |
 
 * Acceptance
 
@@ -75,6 +75,7 @@ task closes. Plans do not outlive their task.)
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/977][#977]] | [agile] Scaffold UI responsiveness story T1: currency dialog fixes |
+| [[https://github.com/OreStudio/OreStudio/pull/979][#979]] | [ores.qt.refdata] Fix currency dialog responsiveness (T1 POC) |
 
 * Review
 
@@ -82,5 +83,32 @@ task closes. Plans do not outlive their task.)
 |---+-----------------+------+----------+-------|
 | 1 | Localize "Loading…" placeholder in Goal (i18n) | task_fix_currency_dialog_responsiveness.org | Fixed — use =tr("Loading…")= | Gemini round 1 |
 | 2 | Localize "Loading…" in Acceptance criteria (i18n) | task_fix_currency_dialog_responsiveness.org | Fixed — use =tr("Loading…")= | Gemini round 1 |
+| 3 | Race condition + guard: check for active roundingTypeWatcher | CurrencyDetailDialog.cpp | Fixed — guard + setObjectName | Gemini round 1 |
+| 4 | Set object name on roundingTypeWatcher | CurrencyDetailDialog.cpp | Fixed — watcher->setObjectName | Gemini round 1 |
+| 5 | Race condition + guard: check for active monetaryNatureWatcher | CurrencyDetailDialog.cpp | Fixed — guard + setObjectName | Gemini round 1 |
+| 6 | Set object name on monetaryNatureWatcher | CurrencyDetailDialog.cpp | Fixed — watcher->setObjectName | Gemini round 1 |
+| 7 | Race condition + guard: check for active marketTierWatcher | CurrencyDetailDialog.cpp | Fixed — guard + setObjectName | Gemini round 1 |
+| 8 | Set object name on marketTierWatcher | CurrencyDetailDialog.cpp | Fixed — watcher->setObjectName | Gemini round 1 |
+| 9 | Comments 3–8 re-opened by force-push after rebase | — | Re-replied + re-resolved; no code change needed | Gemini round 2 |
 
 * Result
+
+Three fixes shipped in PR #979:
+
+1. =waitForFinished()= removed from =CurrencyDetailDialog= and
+   =CurrencyHistoryDialog= destructors — closing a dialog with
+   in-flight NATS requests no longer blocks the UI thread.
+
+2. =tr("Loading…")= placeholder added to =roundingTypeCombo=,
+   =monetaryNatureCombo=, and =marketTierCombo= before each async
+   fetch, with a named-watcher guard preventing concurrent fetches.
+
+3. =QHeaderView::ResizeToContents= replaced with =Interactive= in
+   =EntityListMdiWindow= — eliminated a 24-second main-thread freeze
+   on first open of any entity list window (all entities, not just
+   currency). Root cause: =ResizeToContents= measured every cell on
+   every layout pass; =Interactive= uses saved widths with no
+   per-cell measurement.
+
+Two ops recipes added: how to find environment log files; how to
+solve the postgres max connections error.

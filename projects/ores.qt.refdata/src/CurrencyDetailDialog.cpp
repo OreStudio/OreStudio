@@ -311,7 +311,6 @@ CurrencyDetailDialog::~CurrencyDetailDialog() {
     for (auto* watcher : watchers) {
         disconnect(watcher, nullptr, this, nullptr);
         watcher->cancel();
-        watcher->waitForFinished();
     }
 }
 
@@ -1048,7 +1047,16 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
         return;
     }
 
+    if (findChild<QFutureWatcherBase*>("roundingTypeWatcher"))
+        return;
+
     BOOST_LOG_SEV(lg(), debug) << "Populating rounding type combo";
+
+    const QString previousSelection = ui_->roundingTypeCombo->currentText();
+    ui_->roundingTypeCombo->blockSignals(true);
+    ui_->roundingTypeCombo->clear();
+    ui_->roundingTypeCombo->addItem(tr("Loading…"));
+    ui_->roundingTypeCombo->blockSignals(false);
 
     QPointer<CurrencyDetailDialog> self = this;
 
@@ -1072,8 +1080,9 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
     });
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
+    watcher->setObjectName("roundingTypeWatcher");
     connect(watcher, &QFutureWatcher<FetchResult>::finished,
-            self, [self, watcher]() {
+            self, [self, watcher, previousSelection]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -1084,9 +1093,6 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
             emit self->errorMessage(tr("Could not load rounding types."));
             return;
         }
-
-        // Remember current selection
-        QString current = self->ui_->roundingTypeCombo->currentText();
 
         self->ui_->roundingTypeCombo->blockSignals(true);
         self->ui_->roundingTypeCombo->clear();
@@ -1107,9 +1113,8 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
                 Qt::ToolTipRole);
         }
 
-        // Restore selection
-        if (!current.isEmpty()) {
-            self->ui_->roundingTypeCombo->setCurrentText(current);
+        if (!previousSelection.isEmpty()) {
+            self->ui_->roundingTypeCombo->setCurrentText(previousSelection);
         }
 
         self->ui_->roundingTypeCombo->blockSignals(false);
@@ -1134,7 +1139,16 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
         return;
     }
 
+    if (findChild<QFutureWatcherBase*>("monetaryNatureWatcher"))
+        return;
+
     BOOST_LOG_SEV(lg(), debug) << "Populating monetary nature combo";
+
+    const QString previousSelection = ui_->monetaryNatureCombo->currentText();
+    ui_->monetaryNatureCombo->blockSignals(true);
+    ui_->monetaryNatureCombo->clear();
+    ui_->monetaryNatureCombo->addItem(tr("Loading…"));
+    ui_->monetaryNatureCombo->blockSignals(false);
 
     QPointer<CurrencyDetailDialog> self = this;
 
@@ -1158,8 +1172,9 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
     });
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
+    watcher->setObjectName("monetaryNatureWatcher");
     connect(watcher, &QFutureWatcher<FetchResult>::finished,
-            self, [self, watcher]() {
+            self, [self, watcher, previousSelection]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -1170,8 +1185,6 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
             emit self->errorMessage(tr("Could not load monetary natures."));
             return;
         }
-
-        QString current = self->ui_->monetaryNatureCombo->currentText();
 
         self->ui_->monetaryNatureCombo->blockSignals(true);
         self->ui_->monetaryNatureCombo->clear();
@@ -1191,8 +1204,8 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
                 Qt::ToolTipRole);
         }
 
-        if (!current.isEmpty()) {
-            self->ui_->monetaryNatureCombo->setCurrentText(current);
+        if (!previousSelection.isEmpty()) {
+            self->ui_->monetaryNatureCombo->setCurrentText(previousSelection);
         }
 
         self->ui_->monetaryNatureCombo->blockSignals(false);
@@ -1216,7 +1229,16 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
         return;
     }
 
+    if (findChild<QFutureWatcherBase*>("marketTierWatcher"))
+        return;
+
     BOOST_LOG_SEV(lg(), debug) << "Populating market tier combo";
+
+    const QString previousSelection = ui_->marketTierCombo->currentText();
+    ui_->marketTierCombo->blockSignals(true);
+    ui_->marketTierCombo->clear();
+    ui_->marketTierCombo->addItem(tr("Loading…"));
+    ui_->marketTierCombo->blockSignals(false);
 
     QPointer<CurrencyDetailDialog> self = this;
 
@@ -1240,8 +1262,9 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
     });
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
+    watcher->setObjectName("marketTierWatcher");
     connect(watcher, &QFutureWatcher<FetchResult>::finished,
-            self, [self, watcher]() {
+            self, [self, watcher, previousSelection]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -1252,8 +1275,6 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
             emit self->errorMessage(tr("Could not load currency market tiers."));
             return;
         }
-
-        QString current = self->ui_->marketTierCombo->currentText();
 
         self->ui_->marketTierCombo->blockSignals(true);
         self->ui_->marketTierCombo->clear();
@@ -1273,8 +1294,8 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
                 Qt::ToolTipRole);
         }
 
-        if (!current.isEmpty()) {
-            self->ui_->marketTierCombo->setCurrentText(current);
+        if (!previousSelection.isEmpty()) {
+            self->ui_->marketTierCombo->setCurrentText(previousSelection);
         }
 
         self->ui_->marketTierCombo->blockSignals(false);

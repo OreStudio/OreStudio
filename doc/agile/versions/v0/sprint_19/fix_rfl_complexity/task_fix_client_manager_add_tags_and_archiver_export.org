@@ -8,7 +8,7 @@
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
 #+branch: feature/fix-windows-macos-ci
-#+pr: 978 982
+#+pr: 978 982 985
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
@@ -46,9 +46,9 @@ Three Windows/macOS CI failures after PR #969 (service parser exports):
 |--------------+------------------------------------------------------------------|
 | State        | STARTED                                                          |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]  |
-| Now          | PR #982 open for parse_trade_instrument C1202 fix; awaiting CI.  |
-| Waiting on   | CI green + review on PR #982.                                     |
-| Next         | Merge PR #982; mark DONE.                                         |
+| Now          | PR #985 open (TU split for swap types); review round 1 addressed. |
+| Waiting on   | CI green + merge on PR #985.                                       |
+| Next         | Merge PR #985; verify Windows CI green; mark DONE.                 |
 | Last touched | 2026-06-01                                                       |
 
 * Acceptance
@@ -72,6 +72,7 @@ Three Windows/macOS CI failures after PR #969 (service parser exports):
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/978][#978]] | [ores.compute.wrapper,ores.qt.api] Fix remaining Windows/macOS CI failures |
 | [[https://github.com/OreStudio/OreStudio/pull/982][#982]] | [ores.qt.api] Fix MSVC C1202 in parse_trade_instrument.cpp |
+| [[https://github.com/OreStudio/OreStudio/pull/985][#985]] | [ores.qt.api] Split swap-type rfl parsing into dedicated TU to fix MSVC C1202 |
 
 * Review
 
@@ -79,5 +80,7 @@ Three Windows/macOS CI failures after PR #969 (service parser exports):
 |---+------------------------------------------------------------------------------+-------------------------------+----------+------------------------------------|
 | 1 | Introduce try_parse_and_populate template to remove duplication (line 134)  | parse_trade_instrument.cpp    | Accept   | Fixed 0b0c8551f + 0b990a8d5        |
 | 2 | Use helper across all 10 leg-based cases (line 272)                          | parse_trade_instrument.cpp    | Accept   | Fixed 0b0c8551f                    |
+| 3 | Add explicit <optional> and <vector> includes (PR #985 line 34)              | parse_swap_instruments.cpp    | Accept   | Fixed 7c28c434f                    |
+| 4 | Forward-declare IInstrumentFormPopulator instead of full include (PR #985)   | parse_swap_impl.hpp           | Accept   | Fixed 7c28c434f                    |
 
 * Result

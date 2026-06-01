@@ -1,0 +1,218 @@
+:PROPERTIES:
+:ID: 9DDA15D5-2287-46E0-A8B3-00571E7A2027
+:END:
+#+title: ores.workflow.workflow_step
+#+description: Codegen entity model for the workflow =workflow_step= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: workflow
+#+filetags: :model:entity:workflow:
+#+brief: A single step within a workflow instance.
+#+entity_singular: workflow_step
+#+entity_plural: workflow_steps
+#+entity_title: Workflow Step
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Records the execution of one step in a saga workflow, including the step
+index, name, status, request/response payloads, and timing. Steps reference
+their parent workflow instance via workflow_id.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     workflow
+:has_tenant_id: false
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID primary key for the workflow step.
+
+* Natural keys
+
+* Columns
+
+** workflow_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+FK reference to the parent workflow instance.
+
+** step_index
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Zero-based ordinal position of this step within the workflow. Negative values denote compensation steps.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable step name, e.g. 'save_party'.
+
+** state_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+FK to the FSM state record (ores_workflow_fsm_states_tbl) for this step.
+
+** request_json
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Serialised JSON payload sent to the downstream service for this step.
+
+** response_json
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Serialised JSON response received from the downstream service.
+
+** error
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Human-readable error message if the step failed.
+
+** command_subject
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+NATS subject to which the step command was published.
+
+** command_json
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+Serialised JSON command payload published to the domain service.
+
+** command_published_at
+:PROPERTIES:
+:type:     timestamptz
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+Timestamp when the step command was published to NATS.
+
+** idempotency_key
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+Idempotency key (echoes the step UUID) sent as X-Workflow-Step-Id header.
+
+** compensation_subject
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+NATS subject for the compensation command. Empty if this step has no compensation.
+
+** compensation_json
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+Serialised JSON compensation command payload, populated when compensation is triggered.
+
+** started_at
+:PROPERTIES:
+:type:     timestamptz
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+Timestamp when the step began executing.
+
+** completed_at
+:PROPERTIES:
+:type:     timestamptz
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+Timestamp when the step reached a terminal state.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_workflow_workflow_steps_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: workflow.api
+:component_core:    workflow.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: step
+:entity_plural_short:   steps
+:entity_singular_words: workflow step
+:entity_plural_words:   workflow steps
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ws
+:END:
+
+** Custom repository methods

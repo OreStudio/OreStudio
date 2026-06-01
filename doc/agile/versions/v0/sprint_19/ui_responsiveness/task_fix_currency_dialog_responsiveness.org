@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 70A2FCBE-B871-4BB7-ABE4-28BB3867A140
+:END:
+#+title: Task: Fix currency dialog responsiveness
+#+description: Remove waitForFinished() from CurrencyDetailDialog and CurrencyHistoryDialog destructors; pre-populate combo boxes with a Loading entry before async fetches; scope issues 1-3 from the UI responsiveness story to currency as a proof-of-concept.
+#+type: task
+#+level: s1
+#+filetags: :ui_responsiveness:sprint_19:v0:
+#+owner: marco
+#+branch: feature/ui-responsiveness-currency
+#+pr: 977
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61F836E5-2277-4765-9038-AF7D0176C993][Make UI more responsive]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Apply issues 1, 2, and 3 from the UI responsiveness story analysis to the
+currency dialogs (=CurrencyDetailDialog=, =CurrencyHistoryDialog=) as a
+proof-of-concept. If the pattern holds here, it can be rolled out to all
+other entities in subsequent tasks.
+
+- *Issue 1* — Remove =waitForFinished()= from both dialog destructors.
+  Replace with =cancel()= + disconnect only, so closing a dialog with
+  in-flight NATS requests never blocks the UI thread.
+- *Issue 2* — Add a localized =tr("Loading…")= placeholder entry to each
+  combo box (=roundingTypeCombo=, =monetaryNatureCombo=, =marketTierCombo=)
+  before the async fetch starts. Remove it and replace with real data when
+  the future completes, eliminating the blank pop-in.
+- *Issue 3* (partial) — =CurrencyHistoryDialog= destructor: apply the
+  same =waitForFinished()= fix.
+
+Issue 4 (thread-pool starvation) is out of scope for this task; it
+requires a cross-cutting =ClientManager= change.
+
+* Status
+
+| Field        | Value                                        |
+|--------------+----------------------------------------------|
+| State        | BACKLOG                                      |
+| Parent story | [[id:61F836E5-2277-4765-9038-AF7D0176C993][Make UI more responsive]]             |
+| Now          | Not yet started.                             |
+| Waiting on   | Nothing.                                     |
+| Next         | Begin implementation.                        |
+| Last touched | 2026-06-01                                   |
+
+* Acceptance
+
+- =CurrencyDetailDialog::~CurrencyDetailDialog()= calls =cancel()= +
+  disconnect on each watcher but does /not/ call =waitForFinished()=.
+- =CurrencyHistoryDialog::~CurrencyHistoryDialog()= (if it has watchers)
+  applies the same fix.
+- =roundingTypeCombo=, =monetaryNatureCombo=, and =marketTierCombo= each
+  show a localized =tr("Loading…")= item immediately when
+  =setClientManager()= is called and the combo is in the fetching state;
+  the item is removed and replaced with real data when the future finishes.
+- Opening and immediately closing a Currency dialog no longer freezes the
+  UI (verified manually by timing or by inspection of the destructor code).
+- No regressions in the normal edit + save + delete flow.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/977][#977]] | [agile] Scaffold UI responsiveness story T1: currency dialog fixes |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Localize "Loading…" placeholder in Goal (i18n) | task_fix_currency_dialog_responsiveness.org | Fixed — use =tr("Loading…")= | Gemini round 1 |
+| 2 | Localize "Loading…" in Acceptance criteria (i18n) | task_fix_currency_dialog_responsiveness.org | Fixed — use =tr("Loading…")= | Gemini round 1 |
+
+* Result

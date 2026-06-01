@@ -125,10 +125,10 @@ and whether backward-incompatible renames need a deprecation period.
   and backward-compat decisions are recorded and agreed.
 - /=--uuids= flag is a consistent convention./ =compass sprint status --uuids=,
   =compass story status --uuids= (T4), and any future listing command show the
-  first 8 characters of each item's UUID as a suffix. This makes it easy to
-  copy a UUID prefix for use with =compass story status <uuid>=, =compass show=,
-  or other commands that accept a UUID. The flag name =--uuids= is standardised
-  across all listing commands.
+  full UUID of each item as a bracketed suffix. The full UUID is shown (not a
+  prefix) so it can be copied and passed directly to =compass story status=,
+  =compass show=, or any other command that accepts a UUID or UUID prefix.
+  The flag name =--uuids= is standardised across all listing commands.
 
 * Out of scope
 

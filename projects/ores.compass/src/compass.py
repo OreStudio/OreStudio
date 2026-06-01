@@ -950,7 +950,7 @@ def cmd_sprint(argv):
                 current_state = s["state"]
                 print(f"  {current_state}")
             tasks = f"{s['tasks_done']}/{s['tasks_total']}" if s["tasks_total"] else "—"
-            uuid_suffix = f"  ({s['uuid'][:8]})" if args.uuids and s["uuid"] else ""
+            uuid_suffix = f"  [{s['uuid']}]" if args.uuids and s["uuid"] else ""
             print(f"    [{tasks}] {s['title']}{uuid_suffix}")
         return 0
 

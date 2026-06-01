@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/migrate-reporting-org
-#+pr:
+#+pr: 984
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
@@ -45,9 +45,9 @@ report_definition, report_instance, report_type) into literate
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #984 | [codegen,reporting] Migrate reporting entity models from JSON to org-mode |
 
 * Review
 

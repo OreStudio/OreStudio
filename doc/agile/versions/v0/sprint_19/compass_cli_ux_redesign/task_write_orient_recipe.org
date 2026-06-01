@@ -44,6 +44,14 @@ status= and =compass story status=) and wire it into the agile recipe index.
   new "Orient" section.
 - CI passes.
 
+* Review
+
+** Round 1 — 2026-06-01
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Missing =* Review= section | task file | Fixed: added | Gemini review |
+
 * Result
 
 - Recipe written at =doc/recipes/agile/how_do_i_get_a_sprint_or_story_status.org=.

@@ -125,7 +125,7 @@ rather than an idealised design.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/988][#988]] | [agile] Scaffold MASD and code generation principles story |
 
 * Review
 

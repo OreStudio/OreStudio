@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: 4D7C7F25-E52B-4406-84FB-CC88526A2CBC
+:ID: 92AEBBDA-1FDD-4501-9C66-E893EF448CE6
 :END:
-#+title: Task: Externalise codegen component manifest to a config file
-#+description: The COMPONENTS table lives as a hardcoded Python dict in projects/ores.codegen/src/codegen/manifest.py. Each new component or per-component option requires editing Python code. Move the table to a declarative config (JSON / TOML / YAML) loaded at startup and have manifest.py reduce to a loader/validator. Same approach as profiles.json. Settle the format choice, port refdata-cpp/trading-cpp/... and the SQL-side refdata/trade/dq/iam entries, and update the modeling_dir docs to point at the config instead of the dict.
+#+title: Task: Migrate refdata table JSON models to org-mode
+#+description: Convert the 10 refdata/*_table.json files (book_status, contact_type, currency, currency_market_tier, monetary_nature, party_id_scheme, party_status, party_type, purpose_type, rounding_type) into ores.refdata.<table>.org files under projects/ores.refdata/modeling/. SQL DDL only, no C++ domain class. Settle the table org shape, extend the pipeline, convert, delete JSON, build.
 #+type: task
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:

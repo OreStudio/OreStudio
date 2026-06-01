@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: 4D7C7F25-E52B-4406-84FB-CC88526A2CBC
+:ID: 3B4C2C1F-2174-4A41-A838-991C6D5631B8
 :END:
-#+title: Task: Externalise codegen component manifest to a config file
-#+description: The COMPONENTS table lives as a hardcoded Python dict in projects/ores.codegen/src/codegen/manifest.py. Each new component or per-component option requires editing Python code. Move the table to a declarative config (JSON / TOML / YAML) loaded at startup and have manifest.py reduce to a loader/validator. Same approach as profiles.json. Settle the format choice, port refdata-cpp/trading-cpp/... and the SQL-side refdata/trade/dq/iam entries, and update the modeling_dir docs to point at the config instead of the dict.
+#+title: Task: Migrate slovaris reference-data JSONs to org-mode
+#+description: The 6 slovaris JSON files (manifest, model, catalogs, country_currency, datasets, tags) hold the reference-data taxonomy that codegen reads as sibling data via load_data and as a batch driver via model.json. Each shape is different: country_currency is a 100-entry list of {country, currency} pairs; datasets is a 3-row dataset descriptor; tags is a 3-row tag list; catalogs is a single-row index; manifest is a per-catalog descriptor; model.json drives sql_batch_execute. Settle the org-mode shape for each (likely: one *.org per file holding a literate table + drawer); extend the codegen sibling-data loader (load_data) to read both .org and .json so populates keep working; convert; delete JSON. methodology.txt stays put — it's a plain-text companion to manifest.
 #+type: task
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:

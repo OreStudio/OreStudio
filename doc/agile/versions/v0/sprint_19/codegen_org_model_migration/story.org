@@ -100,7 +100,16 @@ against an inadequate model format and migrating later.
 | [[id:427C8992-17EE-4538-9C19-385363685FEB][Migrate compute entity models to org]] | BACKLOG | | | Heavy exclusion catalogue (now sourced from org). |
 | [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][Extend converter + org_loader for SQL array-structured fields]] | BACKLOG | | | indexes / extra_checks / text_code_validations / extra_delete_sets — needed for =--profile sql= round-trip. Surfaced by PR #976 review. |
 | [[id:4D7C7F25-E52B-4406-84FB-CC88526A2CBC][Externalise codegen component manifest to a config file]] | BACKLOG | | | Move COMPONENTS from a Python dict in manifest.py to a declarative config (JSON/TOML/YAML) loaded at startup. Surfaced during workflow migration. |
-| [[id:50F24383-D38D-4753-A6AD-379057A26054][Inventory remaining JSON models + plan their migration to org-mode]] | BACKLOG | | | Domain-entity sweep is closing out, but ~77 other JSON files remain (table / entity / field_group / junction / enum / component / service). Catalogue every file, decide each kind's org shape (or retirement), scaffold the per-kind follow-on tasks that empty =projects/ores.codegen/models/=. |
+| [[id:50F24383-D38D-4753-A6AD-379057A26054][Inventory remaining JSON models + plan their migration to org-mode]] | STARTED | 2026-06-01 | | Inventory complete; 8 per-kind follow-on tasks scaffolded below. |
+| [[id:9DA26E86-E206-4DA1-8097-6E79CA4B86E9][Migrate enum JSON models to org-mode]] | BACKLOG | | | 3 files. Warm-up task: simple shape, no Qt, no SQL DDL. |
+| [[id:E3E380D3-6471-46B6-8422-617F3086B9F8][Migrate trading field-group JSON models to org-mode]] | BACKLOG | | | 5 files. Composable trading column sets. |
+| [[id:487E72E9-4117-4CB6-AAE4-080F19D5A9FB][Migrate junction JSON models to org-mode]] | BACKLOG | | | 7 files across refdata / dq / iam / compute. Many-to-many join tables. |
+| [[id:92AEBBDA-1FDD-4501-9C66-E893EF448CE6][Migrate refdata table JSON models to org-mode]] | BACKLOG | | | 10 files. SQL DDL for refdata lookup tables (no C++ domain). |
+| [[id:F88B35A5-0BE4-4274-99FC-2F08AAE5F80B][Migrate lookup-entity JSON models to org-mode]] | BACKLOG | | | 12 files. SQL-only lookup entities (=*_entity.json= without =_domain_=). |
+| [[id:F699C1EF-7365-40B5-83CA-4CA84B0F6306][Migrate the services service_registry JSON to org-mode]] | BACKLOG | | | 1 file. Catalogue of services / ports. |
+| [[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][Migrate component JSON models to org-mode]] | BACKLOG | | | 32 files. Per-package CMake / C++ component metadata. Biggest kind. |
+| [[id:3B4C2C1F-2174-4A41-A838-991C6D5631B8][Migrate slovaris reference-data JSONs to org-mode]] | BACKLOG | | | 6 files. Reference-data taxonomy read as sibling data via =load_data=; needs a loader extension. |
+| [[id:EE3A7822-C95F-48C8-8474-862209C446FE][Retire plantuml_er_model.json from models/]] | BACKLOG | | | Generated artefact — move to a build path + gitignore. |
 
 * Notes
 

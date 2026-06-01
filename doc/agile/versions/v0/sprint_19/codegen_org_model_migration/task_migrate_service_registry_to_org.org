@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: 4D7C7F25-E52B-4406-84FB-CC88526A2CBC
+:ID: F699C1EF-7365-40B5-83CA-4CA84B0F6306
 :END:
-#+title: Task: Externalise codegen component manifest to a config file
-#+description: The COMPONENTS table lives as a hardcoded Python dict in projects/ores.codegen/src/codegen/manifest.py. Each new component or per-component option requires editing Python code. Move the table to a declarative config (JSON / TOML / YAML) loaded at startup and have manifest.py reduce to a loader/validator. Same approach as profiles.json. Settle the format choice, port refdata-cpp/trading-cpp/... and the SQL-side refdata/trade/dq/iam entries, and update the modeling_dir docs to point at the config instead of the dict.
+#+title: Task: Migrate the services service_registry JSON to org-mode
+#+description: Convert the single ores_services_service_registry.json file into ores.services.registry.org under projects/ores.services/modeling/. service_registry is a catalogue of services / ports — only one file in the tree but distinct shape. Settle the registry org shape, extend the pipeline, convert, delete JSON, build.
 #+type: task
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:

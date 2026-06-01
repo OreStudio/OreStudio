@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch: feature/migrate-refdata-org
 #+pr: 971
-#+blocked_on: none
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-01

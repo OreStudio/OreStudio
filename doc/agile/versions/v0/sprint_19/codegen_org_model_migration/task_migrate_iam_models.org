@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/migrate-iam-org
-#+pr:
+#+pr: 976
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
@@ -48,9 +48,9 @@ files under =projects/ores.iam/modeling/=, using the
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #976 | [codegen,iam] Migrate iam entity models from JSON to org-mode |
 
 * Review
 

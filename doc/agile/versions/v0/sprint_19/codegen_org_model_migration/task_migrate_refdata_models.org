@@ -45,6 +45,7 @@ land via the =:implements <kind-UUID>= mechanism.
 | Waiting on   | Nothing.                               |
 | Next         | Run script on refdata; round-trip verify; manual touch-up. |
 | Last touched | 2026-06-01                             |
+| Review       | PR #971 round 1: 3 comments, 2 accepted (fixed in =aa7f3e87d=), 1 declined (sections already present + convention preserved). |
 
 * Acceptance
 
@@ -148,6 +149,8 @@ Three commits:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Wrap main() in try/except ValueError so CLI prints a clean error instead of a traceback. | migrate_json_to_org.py:469 | Accepted | PR #971 round 1. Fixed in =aa7f3e87d=; input-dir-not-found path also switched to return 1 for consistency. |
+| 2 | Use a single f-string instead of mixing f-string + =+= concatenation. | migrate_json_to_org.py:365 | Accepted | PR #971 round 1. Fixed in =aa7f3e87d= via =f"... ={slug}= ..."=. |
+| 3 | Task missing =* PRs= / =* Review= sections; suggests =\| PR \| Description \| Status \|= columns. | task_migrate_refdata_models.org:140 | Declined | PR #971 round 1. Both sections already present (lines 141, 147); the suggested column shape differs from the repo convention (=\| PR \| Title \|=). |
 
 * Result

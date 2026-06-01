@@ -1,0 +1,387 @@
+:PROPERTIES:
+:ID: 73D2511B-0D9C-4D8B-96AC-7A7B1FD27F0D
+:END:
+#+title: ores.trading.trade
+#+description: Codegen entity model for the trading =trade= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Trade capturing FpML Trade Header properties.
+#+entity_singular: trade
+#+entity_plural: trades
+#+entity_title: Trade
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Temporal trade record. Each lifecycle event (New, Amendment, Novation,
+etc.) creates a new temporal row for the same trade id. The internal party
+is derived from book_id via books.party_id.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this trade.
+
+Surrogate key for the trade record.
+
+* Natural keys
+
+* Columns
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Internal party owning this trade (denormalized from book_id).
+
+#+begin_src cpp :name generator
+boost::uuids::random_generator()()
+#+end_src
+
+** external_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional external trade identifier.
+
+e.g., UTI prefix or legacy system ID.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** book_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Book that owns this trade.
+
+Soft FK to ores_refdata_books_tbl.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** portfolio_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Portfolio this trade belongs to.
+
+Soft FK to ores_refdata_portfolios_tbl.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** successor_trade_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+UUID of the trade that replaced this one (e.g., after novation).
+
+Self-referencing soft FK. Absent for active trades.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** trade_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ORE instrument type code (e.g. Swap, FxForward, CapFloor).
+
+Soft FK to ores_trading_trade_types_tbl.
+
+#+begin_src cpp :name generator
+std::string("Swap")
+#+end_src
+
+** counterparty_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional counterparty (soft FK to ores_refdata_counterparties_tbl).
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** product_type
+:PROPERTIES:
+:type:     product_type_t
+:cpp_type: std::string
+:nullable: true
+:END:
+
+ORE product type discriminator.
+
+#+begin_src cpp :name generator
+std::string("Swap")
+#+end_src
+
+** instrument_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional instrument record for this trade.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** asset_class
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Asset class code for the trade.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** netting_set_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Netting set identifier for ORE aggregation.
+
+Groups trades under the same netting agreement.
+
+#+begin_src cpp :name generator
+std::string("NS-001")
+#+end_src
+
+** activity_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Activity type code (soft FK to ores_trading_activity_types_tbl).
+
+#+begin_src cpp :name generator
+std::string("New")
+#+end_src
+
+** status_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Current FSM state (soft FK to ores_dq_fsm_states_tbl).
+
+#+begin_src cpp :name generator
+boost::uuids::random_generator()()
+#+end_src
+
+** trade_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Date the trade was agreed.
+
+ISO 8601 date: YYYY-MM-DD.
+
+#+begin_src cpp :name generator
+std::string("2025-01-15")
+#+end_src
+
+** execution_timestamp
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Timestamp when the trade was executed (with timezone).
+
+ISO 8601 timestamp: YYYY-MM-DD HH:MM:SS+TZ.
+
+#+begin_src cpp :name generator
+std::string("2025-01-15 10:00:00")
+#+end_src
+
+** effective_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Date from which the trade is effective.
+
+ISO 8601 date: YYYY-MM-DD.
+
+#+begin_src cpp :name generator
+std::string("2025-01-16")
+#+end_src
+
+** termination_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Date on which the trade matures or terminates.
+
+ISO 8601 date: YYYY-MM-DD.
+
+#+begin_src cpp :name generator
+std::string("2026-01-15")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_trades_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include:    trading.api
+:component_core:       trading.core
+:generator_facet_name: generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade
+:entity_plural_short:   trades
+:entity_singular_words: trade
+:entity_plural_words:   trades
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tr
+:END:
+
+** Table display
+
+| column                    | header      |
+|---------------------------+-------------|
+| identity.id               | ID          |
+| lifecycle.trade_date      | Trade Date  |
+| classification.trade_type | Type        |
+| audit.modified_by         | Modified By |
+| identity.version          | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.trading/domain/trade.hpp
+:domain_class:            trading::domain::trade
+:protocol_include:        ores.trading/messaging/trade_protocol.hpp
+:collection_name:         trades
+:item_var:                trade
+:key_field:               external_id
+:has_uuid_primary_key:    true
+:has_pagination:          true
+:get_request_class:       trading::messaging::get_trades_request
+:get_response_class:      trading::messaging::get_trades_response
+:get_message_type:        get_trades_request
+:save_request_class:      trading::messaging::save_trade_request
+:save_response_class:     trading::messaging::save_trade_response
+:save_message_type:       save_trade_request
+:save_request_item_field: trade
+:delete_request_class:    trading::messaging::delete_trade_request
+:delete_response_class:   trading::messaging::delete_trade_response
+:delete_message_type:     delete_trade_request
+:history_request_class:   trading::messaging::get_trade_history_request
+:history_response_class:  trading::messaging::get_trade_history_response
+:history_message_type:    get_trade_history_request
+:settings_group:          TradeListWindow
+:window_title:            Trades
+:icon:                    DocumentTable
+:END:
+
+*** Detail fields
+
+| field               | label               | widget                 | type      | is_key | is_required | placeholder                         |
+|---------------------+---------------------+------------------------+-----------+--------+-------------+-------------------------------------|
+| external_id         | External ID         | externalIdEdit         | line_edit | true   |             | Enter external trade ID (e.g., UTI) |
+| trade_type          | Trade Type          | tradeTypeEdit          | line_edit |        | true        | e.g., Swap, FxForward               |
+| netting_set_id      | Netting Set         | nettingSetIdEdit       | line_edit |        |             | e.g., NS-001                        |
+| trade_date          | Trade Date          | tradeDateEdit          | line_edit |        | true        | YYYY-MM-DD                          |
+| effective_date      | Effective Date      | effectiveDateEdit      | line_edit |        | true        | YYYY-MM-DD                          |
+| termination_date    | Termination Date    | terminationDateEdit    | line_edit |        | true        | YYYY-MM-DD                          |
+| execution_timestamp | Execution Timestamp | executionTimestampEdit | line_edit |        |             | YYYY-MM-DD HH:MM:SS                 |
+
+*** Columns (Qt model)
+
+| enum_name       | field            | header      | type      | width |
+|-----------------+------------------+-------------+-----------+-------|
+| ExternalId      | external_id      | External ID | string    | 180   |
+| TradeType       | trade_type       | Type        | string    | 120   |
+| TradeDate       | trade_date       | Trade Date  | string    | 110   |
+| EffectiveDate   | effective_date   | Effective   | string    | 110   |
+| TerminationDate | termination_date | Termination | string    | 110   |
+| NettingSetId    | netting_set_id   | Netting Set | string    | 120   |
+| Version         | version          | Version     | int       | 80    |
+| ModifiedBy      | modified_by      | Modified By | string    | 120   |
+| RecordedAt      | recorded_at      | Recorded At | timestamp | 150   |
+
+** Custom repository methods

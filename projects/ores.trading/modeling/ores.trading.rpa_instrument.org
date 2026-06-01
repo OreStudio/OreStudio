@@ -1,0 +1,189 @@
+:PROPERTIES:
+:ID: 3B868579-42B4-4A10-8A8E-F51B3289FE4F
+:END:
+#+title: ores.trading.rpa_instrument
+#+description: Codegen entity model for the trading =rpa_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Risk Participation Agreement (RPA) instrument.
+#+entity_singular: rpa_instrument
+#+entity_plural: rpa_instruments
+#+entity_title: RPA Instrument
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Represents a Risk Participation Agreement where one bank (protection
+buyer) pays a fee to another (protection seller) to assume a portion of
+credit risk on a reference counterparty.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   instrument_id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this RPA instrument.
+
+Surrogate key for the instrument record.
+
+* Natural keys
+
+* Columns
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional soft FK to the parent trade.
+
+Links instrument to a trade if applicable.
+
+** start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Agreement effective start date.
+
+ISO 8601 date string (YYYY-MM-DD).
+
+#+begin_src cpp :name generator
+std::string("2024-01-15")
+#+end_src
+
+** maturity_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Agreement maturity date.
+
+Must be after start_date.
+
+#+begin_src cpp :name generator
+std::string("2027-01-15")
+#+end_src
+
+** reference_counterparty
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Identifier of the reference counterparty whose credit risk is shared.
+
+e.g., LEI code or name of the reference entity.
+
+#+begin_src cpp :name generator
+std::string("ACME Corp")
+#+end_src
+
+** participation_rate
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Participation rate (0, 1] representing the fraction of risk transferred.
+
+Expressed as a decimal fraction (e.g., 0.5 for 50%).
+
+#+begin_src cpp :name generator
+0.5
+#+end_src
+
+** protection_fee
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      std::optional<double>
+:nullable:      false
+:default_value: std::nullopt
+:END:
+
+Optional protection fee paid by the buyer.
+
+Expressed as a decimal fraction. Must be non-negative if set.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description.
+
+Human-readable notes about this instrument.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_rpa_instruments_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include:    trading.api
+:component_core:       trading.core
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: rpa_instrument
+:entity_plural_short:   rpa_instruments
+:entity_singular_words: RPA instrument
+:entity_plural_words:   RPA instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rp
+:END:
+
+** Custom repository methods

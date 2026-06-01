@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 20D446E8-EA13-47AA-BE0C-FDDD7CF428F3
+:END:
+#+title: ores.trading.trade_id_type
+#+description: Codegen entity model for the trading =trade_id_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Trade identifier type code (e.g. UTI, USI, Internal).
+#+entity_singular: trade_id_type
+#+entity_plural: trade_id_types
+#+entity_title: Trade ID Type
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Reference data table defining valid trade identifier type codes.
+Examples: 'UTI', 'USI', 'Internal', 'CICI'.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique trade identifier type code.
+
+Examples: 'UTI', 'USI', 'Internal'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_id_type_" + std::to_string(++counter)
+#+end_src
+
+* Natural keys
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Detailed description of the trade identifier type.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_trade_id_types_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include:    trading.api
+:component_core:       trading.core
+:generator_facet_name: generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: id_type
+:entity_plural_short:   id_types
+:entity_singular_words: trade ID type
+:entity_plural_words:   trade ID types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tit
+:END:
+
+** Custom repository methods

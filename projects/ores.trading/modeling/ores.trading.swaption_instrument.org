@@ -1,0 +1,211 @@
+:PROPERTIES:
+:ID: BF079887-725E-4BB5-94C1-7462AB8BB198
+:END:
+#+title: ores.trading.swaption_instrument
+#+description: Codegen entity model for the trading =swaption_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Swaption (option on an interest rate swap) instrument.
+#+entity_singular: swaption_instrument
+#+entity_plural: swaption_instruments
+#+entity_title: Swaption Instrument
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Represents a swaption — an option granting the right to enter into an
+interest rate swap at a future date. Exercise type may be European,
+Bermudan, or American.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   instrument_id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this swaption instrument.
+
+Surrogate key for the instrument record.
+
+* Natural keys
+
+* Columns
+
+** trade_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+#+begin_src cpp :name generator
+std::string("EuropeanSwaption")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional soft FK to the parent trade.
+
+Links instrument to a trade if applicable.
+
+** expiry_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Option expiry date.
+
+ISO 8601 date string (YYYY-MM-DD).
+
+#+begin_src cpp :name generator
+std::string("2025-06-15")
+#+end_src
+
+** exercise_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Exercise type: European, Bermudan, or American.
+
+Determines when the option may be exercised.
+
+#+begin_src cpp :name generator
+std::string("European")
+#+end_src
+
+** settlement_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Settlement type: Cash or Physical.
+
+Determines how the swaption is settled upon exercise.
+
+#+begin_src cpp :name generator
+std::string("Physical")
+#+end_src
+
+** long_short
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Position direction: Long or Short.
+
+Indicates whether the party holds or writes the option.
+
+#+begin_src cpp :name generator
+std::string("Long")
+#+end_src
+
+** start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional underlying swap start date.
+
+ISO 8601 date string (YYYY-MM-DD). Null if not yet determined.
+
+** maturity_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional underlying swap maturity date.
+
+ISO 8601 date string (YYYY-MM-DD). Null if not yet determined.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description.
+
+Human-readable notes about this instrument.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_swaption_instruments_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include:    trading.api
+:component_core:       trading.core
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: swaption_instrument
+:entity_plural_short:   swaption_instruments
+:entity_singular_words: swaption instrument
+:entity_plural_words:   swaption instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sw
+:END:
+
+** Custom repository methods

@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: D18832B9-0D51-4617-A789-AB33E14AA41A
+:END:
+#+title: ores.trading.party_role_type
+#+description: Codegen entity model for the trading =party_role_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: FpML-aligned party role code (e.g. Counterparty, CalculationAgent, ExecutingBroker).
+#+entity_singular: party_role_type
+#+entity_plural: party_role_types
+#+entity_title: Party Role Type
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+Reference data table defining valid trade party role type codes.
+Examples: 'Counterparty', 'CalculationAgent', 'ExecutingBroker', 'NovationTransferee'.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique party role type code.
+
+Examples: 'Counterparty', 'CalculationAgent', 'ExecutingBroker'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_role_" + std::to_string(++counter)
+#+end_src
+
+* Natural keys
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Detailed description of the party role type.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_party_role_types_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include:    trading.api
+:component_core:       trading.core
+:generator_facet_name: generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: role_type
+:entity_plural_short:   role_types
+:entity_singular_words: party role type
+:entity_plural_words:   party role types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: prt
+:END:
+
+** Custom repository methods

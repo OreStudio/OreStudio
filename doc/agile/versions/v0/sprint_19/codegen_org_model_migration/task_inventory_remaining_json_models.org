@@ -275,6 +275,6 @@ already in the story.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1-8 | =#+blocked_on: none= placeholder on every scaffolded follow-on task; convention is empty. | task_migrate_*_to_org.org / task_retire_*.org:12 | Accepted | PR #990 round 1. Eight identical comments. Fixed in =88ca303b6= (swept the placeholder across all 13 task files under the story dir) and =8aac84e08= (root cause: =doc_task.org.mustache= scaffold template hardcoded =none=; template now leaves it empty so future tasks land clean). |
 
 * Result

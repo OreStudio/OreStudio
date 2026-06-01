@@ -80,12 +80,12 @@ and whether backward-incompatible renames need a deprecation period.
 
 | Field         | Value                                       |
 |---------------+---------------------------------------------|
-| State         | STARTED                                     |
+| State         | DONE                                        |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                   |
-| Now           | Task 1 in progress: UX analysis.            |
+| Now           | Nothing.                                    |
 | Waiting on    | Nothing.                                    |
-| Next          | Complete Task 1; proceed to implementation. |
-| Last touched  | 2026-05-31                                  |
+| Next          | Done. All tasks complete.                   |
+| Last touched  | 2026-06-01                                  |
 
 * Acceptance
 
@@ -117,7 +117,7 @@ and whether backward-incompatible renames need a deprecation period.
 | [[id:1048B3EE-34B8-42DD-9CF0-7A61CCB147F7][Implement compass story status]] | DONE | 2026-06-01 | 2026-06-01 | All tasks in a story grouped by state, with branch and PR per task. |
 | [[id:CCFF58E1-CC1E-4887-AFD7-0A5AB8BF68E4][Load SSH_AUTH_SOCK from .env in compass.sh]] | BACKLOG | | | Add SSH_AUTH_SOCK to .env; update compass.sh to source .env so git operations work without manual export. |
 | [[id:5B8C56E9-A128-4EFE-913B-E2116788F7EF][Write recipe for new orient commands]] | DONE | 2026-06-01 | 2026-06-01 | Recipe for compass sprint status and compass story status; wire into agile recipe index. |
-| [[id:C3114FD0-A03B-4BD9-AB8C-6BF73D1265C3][Audit and update compass recipes, skills, and runbooks]] | BACKLOG | | | Review all 34 compass references; update for new taxonomy and description. |
+| [[id:C3114FD0-A03B-4BD9-AB8C-6BF73D1265C3][Audit and update compass recipes, skills, and runbooks]] | DONE | 2026-06-01 | 2026-06-01 | Review all 34 compass references; update for new taxonomy and description. |
 | [[id:E3F0F75F-59C8-4CF1-BD15-A937FED1FC72][Show blocked story dependency tree in compass where]] | BACKLOG | | | Extend compass where to display blocked story chains as a tree in the Orient pillar. |
 
 * Decisions

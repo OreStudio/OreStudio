@@ -9,7 +9,7 @@
 #+created: 2026-05-24
 #+updated: 2026-05-24
 
-Compass is the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][repository orientation tool]]; =search= is its full-text
+Compass is the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][developer toolkit]] for ORE Studio; =search= is its full-text
 slice. It needs a local index first — see [[id:DEAC11AE-3753-49FA-994A-98594162A605][How do I index notes for
 compass?]]. To find /one/ doc by UUID instead, see [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by
 UUID?]].

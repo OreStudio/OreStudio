@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :compass_cli_ux_redesign:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/audit-compass-docs
 #+pr:
 #+blocked_on: none
 #+blocked_since:
@@ -28,11 +28,11 @@ developer toolkit.
 
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
-| State        | BACKLOG                                                            |
+| State        | DONE                                                               |
 | Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]                                           |
-| Now          | Not yet started.                                                   |
-| Waiting on   | Tasks 2–5 complete (description fix + new commands + recipe first). |
-| Next         | Run audit after T2–T5 are merged.                                  |
+| Now          | Nothing.                                                           |
+| Waiting on   | Nothing.                                                           |
+| Next         | Done. Story complete — all tasks DONE.                             |
 | Last touched | 2026-06-01                                                         |
 
 * Acceptance
@@ -45,6 +45,24 @@ developer toolkit.
   referenced where appropriate (e.g. sprint health review runbook,
   agile-product-owner skill).
 - CI passes. Site builds cleanly.
+
+* Result
+
+Files updated (11 total):
+- =doc/recipes/compass/compass.org= — description + Orient section + story new ref
+- =doc/recipes/compass/how_do_i_start_a_unit_of_work_with_compass.org= — full rewrite: goto → story new / task new
+- =doc/recipes/compass/how_do_i_search_docs_with_compass.org= — "orientation tool" → "developer toolkit"
+- =doc/recipes/compass/how_do_i_add_a_doc_with_compass.org= — goto note updated
+- =doc/recipes/git/how_do_i_start_a_new_feature_branch_phase.org= — hotfix goto ref
+- =doc/recipes/agile/how_do_i_use_the_session_journal.org= — all goto refs
+- =doc/llm/skills/semi-autonomous-developer/SKILL.org= — goto → story new
+- =doc/llm/runbooks/start_new_story/runbook.org= — goto → story new
+- =doc/llm/runbooks/add_task_to_existing_story/runbook.org= — goto → task new
+- =doc/llm/runbooks/hotfix/runbook.org= — goto → story new --kind hotfix
+- =doc/llm/runbooks/runbooks.org= — summary updated
+- =doc/llm/memory/prefer_compass_over_unix_tools.org= — goto → story new / task new; added sprint/story status
+
+Zero remaining "compass goto" or "orientation tool" references in doc/recipes or doc/llm.
 
 * Plan
 

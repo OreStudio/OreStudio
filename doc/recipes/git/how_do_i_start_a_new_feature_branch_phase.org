@@ -97,7 +97,7 @@ post-merge main, and removes the old branch locally and remotely.
   protected-branch policy.
 - /Delete after merge/ — keeps both ends of the remote clean.
 - /Hotfix branches/ — emergency fixes use =hotfix/<description>=,
-  created with =compass goto --slug <thing> --kind hotfix=.
+  created with =compass story new --slug <thing> --kind hotfix=.
   They are branched from fresh =main= and follow the same PR process.
   The story lands in the sprint's =** Hotfixes= section. See
   [[id:0CED1212-6763-4238-B861-9740C62AE499][Handle a hotfix]] for the full procedure.

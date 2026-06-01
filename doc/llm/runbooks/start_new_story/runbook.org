@@ -32,17 +32,17 @@ In execution order:
    git fetch origin main
    #+end_src
 
-   =compass goto= also fetches =main= internally, but doing it explicitly first makes divergence visible before any files are created.
+   =compass story new= also fetches =main= internally, but doing it explicitly first makes divergence visible before any files are created.
 
-2. /Scaffold the story./ Use [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — specifically =compass goto= — to create the feature branch, scaffold the story, and link a task in one step:
+2. /Scaffold the story./ Use [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — specifically =compass story new= — to create the feature branch, scaffold the story, and link a task in one step:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh goto \
+   ./projects/ores.compass/compass.sh story new \
      --slug my_feature --title "My feature" \
      --description "What it delivers." --tags "topic"
    #+end_src
 
-   This fetches =main=, creates =feature/my-feature=, and writes =story.org= + a linked task into the current sprint. To add a task to an /existing/ story instead, see [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][the recipe]] for the =--story= form.
+   This fetches =main=, creates =feature/my-feature=, and writes =story.org= + a linked task into the current sprint. To add a task to an /existing/ story instead, use =compass task new --story <id>=.
 
 2a. /Read all generated files before writing anything./ Immediately after scaffold, read every file compass created and note the =:ID:= property of each. Do this before writing any content to =story.org= or the task file. Failure to read first causes placeholder UUIDs to be written and then silently corrected — an error-prone pattern that breaks org-roam links.
 
@@ -67,7 +67,7 @@ In execution order:
 * See also
 
 - [[id:5AE311D8-36A8-4892-AAB4-DB3A13B00B6F][Add a task to an existing story]] — use this instead when the story already exists and you only need a new task.
-- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — full =compass goto= syntax (new story and add-task-to-existing forms, =--dry-run= flag).
+- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — =compass story new= and =compass task new= syntax, =--dry-run= flag.
 - [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — where captures live before becoming stories; the =next=, =deferred=, and =discarded= buckets; how to promote a capture into a sprint.
 - [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] — what comes after the PR is open.
 - [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]] — commit format reference.

@@ -24,7 +24,7 @@ all runbooks with =compass list --type runbook=.
 | Runbook                                                    | Description                                                                |
 |------------------------------------------------------------+----------------------------------------------------------------------------|
 | [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]]                                    | Scaffold a story → create branch → mark STARTED → wire sprint → PR         |
-| [[id:5AE311D8-36A8-4892-AAB4-DB3A13B00B6F][Add a task to an existing story]]                              | Scaffold task via compass goto --story → fill content → wire story → PR     |
+| [[id:5AE311D8-36A8-4892-AAB4-DB3A13B00B6F][Add a task to an existing story]]                              | Scaffold task via compass task new → fill content → wire story → PR         |
 | [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]]                             | Pick up BACKLOG task → implement → commit → PR → review → merge            |
 | [[id:690BBD16-0C36-4D2C-9E2D-BC92AA93E5B2][Add a new entity across all layers]]                          | Domain type → SQL → repository → service → Qt UI → CLI → HTTP → tests      |
 | [[id:47032D2E-4922-4A43-B594-AD76F0213E10][Open a new sprint]]                                          | Close sprint → release notes → scaffold new sprint → bump version          |

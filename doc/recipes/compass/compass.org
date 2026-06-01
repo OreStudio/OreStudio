@@ -2,23 +2,25 @@
 :ID: 95A33EA9-DFF9-4937-8A3F-AD82E42A68D3
 :END:
 #+title: Compass recipes
-#+description: Inventory of recipes for using the compass tool: search, orientation, doc navigation, and indexing.
+#+description: Inventory of recipes for using the compass developer toolkit: orient, scaffold, capture, search, and journal.
 #+type: knowledge
 #+level: cross
 #+filetags: :recipe:compass:docs:search:
 #+created: 2026-05-24
 #+updated: 2026-05-24
 
-How to use =compass=, the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][repository orientation tool]]. One CLI
-(=projects/ores.compass/compass.sh=) answers three kinds of question:
-/where are we?/, /which docs are relevant?/, and /show me this doc/.
+How to use =compass=, the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][developer toolkit]] for ORE Studio.
+One CLI (=projects/ores.compass/compass.sh=) covers five pillars:
+Orient, Search, Scaffold, Capture, and Journal.
 
-* Orientation
+* Orient
 
 - [[id:41E5F9A8-1C2B-4ECA-8EA0-1ABBAB0B6A31][How do I see where we are?]] — current version, sprint, and in-flight
   stories/tasks (=where= / =status=).
 - [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][How do I see what every worktree is doing?]] — branch / story / task /
   PR per git worktree (=fleet=).
+- [[id:A7D3C1E5-9F2B-4A8D-B6E4-3C7F1D9A2E5B][How do I get a sprint or story status?]] — all stories or tasks grouped
+  by state (=sprint status= / =story status=).
 
 * Search and indexing
 
@@ -30,7 +32,7 @@ How to use =compass=, the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][repository 
 - [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] — create a doc via codegen
   (=add=).
 - [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — fetch main, branch,
-  scaffold a linked story+task (=goto=).
+  scaffold a linked story+task (=story new= / =task new=).
 
 * Captures
 

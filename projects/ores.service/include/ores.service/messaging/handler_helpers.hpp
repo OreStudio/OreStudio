@@ -25,7 +25,6 @@
 #include <string_view>
 #include <boost/uuid/uuid.hpp>
 #include <rfl/json.hpp>
-#include <rfl/AddTagsToVariants.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -146,28 +145,8 @@ inline const std::string& delegated_actor(const ores::database::context& ctx) {
     return ctx.actor().empty() ? ctx.service_account() : ctx.actor();
 }
 
-// Serialise resp to JSON and publish to the message's reply subject.
-// AddTagsToVariants ensures each std::variant alternative carries a type-name
-// discriminant so the client can unambiguously select the right alternative.
-// Without it, std::monostate (zero required fields) always matches first.
-// No-op if the message has no reply subject.
 template<typename Resp>
 void reply(ores::nats::service::client& nats,
-    const ores::nats::message& msg,
-    const Resp& resp) {
-    if (msg.reply_subject.empty()) return;
-    const auto json = rfl::json::write<rfl::AddTagsToVariants>(resp);
-    const auto* p = reinterpret_cast<const std::byte*>(json.data());
-    nats.publish(msg.reply_subject, std::span<const std::byte>(p, json.size()));
-}
-
-// Like reply() but writes WITHOUT AddTagsToVariants.
-// Use this when the response contains a large std::variant (e.g. trade_instrument
-// with nested sub-variants) whose field-name union would exceed the macOS/Windows
-// fold-expression nesting limit. Safe when the client dispatches on a separate
-// discriminator (e.g. product_type/trade_type) rather than relying on type tags.
-template<typename Resp>
-void reply_no_variant_tags(ores::nats::service::client& nats,
     const ores::nats::message& msg,
     const Resp& resp) {
     if (msg.reply_subject.empty()) return;

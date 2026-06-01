@@ -504,6 +504,8 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             out_pk["description"] = description
         if detail:
             out_pk["detail"] = detail
+        if "generator" in pk.src_blocks:
+            out_pk["generator_expr"] = pk.src_blocks["generator"]
         de["primary_key"] = out_pk
 
     nks = _section(doc.root, "Natural keys")

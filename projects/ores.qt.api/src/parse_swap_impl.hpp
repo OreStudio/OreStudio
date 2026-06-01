@@ -27,7 +27,8 @@
 // those instantiations share a TU with the flat/FX/equity instrument types.
 
 #include <string>
-#include "ores.qt/IInstrumentFormPopulator.hpp"
+
+namespace ores::qt { struct IInstrumentFormPopulator; }
 
 namespace ores::qt::internal {
 

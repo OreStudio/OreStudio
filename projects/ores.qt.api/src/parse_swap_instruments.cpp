@@ -27,6 +27,8 @@
 // gives MSVC a clean slate; the flat/FX/equity types in parse_trade_instrument.cpp
 // never enter this compilation context.
 
+#include <optional>
+#include <vector>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"

@@ -1,0 +1,260 @@
+:PROPERTIES:
+:ID: 4F3F943F-E872-428F-A79B-D67FAD25B1CE
+:END:
+#+title: ores.reporting.report_instance
+#+description: Codegen entity model for the reporting =report_instance= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: A single execution of a report definition.
+#+entity_singular: report_instance
+#+entity_plural: report_instances
+#+entity_title: Report Instance
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+A single execution of a report_definition. Created automatically when the
+scheduler fires a trigger for an active definition.
+
+Lifecycle is managed through the report_instance_lifecycle FSM machine.
+fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
+
+started_at is NULL when the instance is cancelled or skipped before execution
+begins. completed_at is NULL while running or in a terminal-before-start state.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:        id
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+UUID uniquely identifying this report instance.
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name copied from the report definition at creation time.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_instance"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Description copied from the report definition at creation time.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this report instance (inherited from the definition).
+
+#+begin_src cpp :name generator
+boost::uuids::random_generator()()
+#+end_src
+
+** definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The report definition that produced this instance.
+
+#+begin_src cpp :name generator
+boost::uuids::random_generator()()
+#+end_src
+
+** fsm_state_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Current FSM state (FK to ores_dq_fsm_states_tbl).
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** trigger_run_id
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:nullable: false
+:END:
+
+Scheduler trigger run ID that caused this instance to be created.
+
+#+begin_src cpp :name generator
+faker::number::integer<std::int64_t>(1, 1000000)
+#+end_src
+
+** output_message
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Execution log or error message.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** started_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When execution began. NULL if cancelled before starting.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** completed_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When execution completed. NULL while running or before start.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:        ores_reporting_report_instances_tbl
+:security_definer: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: reporting.api
+:component_core:    reporting.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: instance
+:entity_plural_short:   instances
+:entity_singular_words: report instance
+:entity_plural_words:   report instances
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ri
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.reporting/domain/report_instance.hpp
+:domain_class:           reporting::domain::report_instance
+:protocol_include:       ores.reporting/messaging/report_instance_protocol.hpp
+:collection_name:        instances
+:item_var:               instance
+:key_field:              name
+:key_widget:             nameEdit
+:has_uuid_primary_key:   true
+:get_request_class:      reporting::messaging::get_report_instances_request
+:get_response_class:     reporting::messaging::get_report_instances_response
+:get_message_type:       get_report_instances_request
+:save_request_class:     reporting::messaging::save_report_instance_request
+:save_response_class:    reporting::messaging::save_report_instance_response
+:save_message_type:      save_report_instance_request
+:delete_request_class:   reporting::messaging::delete_report_instance_request
+:delete_response_class:  reporting::messaging::delete_report_instance_response
+:delete_message_type:    delete_report_instance_request
+:history_request_class:  reporting::messaging::get_report_instance_history_request
+:history_response_class: reporting::messaging::get_report_instance_history_response
+:history_message_type:   get_report_instance_history_request
+:settings_group:         ReportInstanceListWindow
+:window_title:           Report Instances
+:icon:                   Record
+:END:
+
+*** Detail fields
+
+| field          | label       | widget          | type      | is_key | is_required | placeholder                    |
+|----------------+-------------+-----------------+-----------+--------+-------------+--------------------------------|
+| name           | Name        | nameEdit        | line_edit | true   | true        | Report instance name           |
+| description    | Description | descriptionEdit | text_edit |        |             | Description                    |
+| output_message | Output      | outputEdit      | text_edit |        |             | Execution log or error message |
+
+*** Columns (Qt model)
+
+| enum_name     | field          | header      | type      | width |
+|---------------+----------------+-------------+-----------+-------|
+| Name          | name           | Name        | string    | 200   |
+| DefinitionId  | definition_id  | Definition  |           | 200   |
+| TriggerRunId  | trigger_run_id | Trigger Run | int       | 100   |
+| OutputMessage | output_message | Output      | string    | 250   |
+| StartedAt     | started_at     | Started At  | timestamp | 150   |
+| CompletedAt   | completed_at   | Completed   | timestamp | 150   |
+| Version       | version        | Version     | int       | 60    |
+| ModifiedBy    | modified_by    | Modified By | string    | 120   |
+
+** Custom repository methods

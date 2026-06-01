@@ -1,0 +1,257 @@
+:PROPERTIES:
+:ID: 100FB3E6-1F86-420A-BF63-262419B1913C
+:END:
+#+title: ores.reporting.report_definition
+#+description: Codegen entity model for the reporting =report_definition= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: Persistent template for a scheduled report.
+#+entity_singular: report_definition
+#+entity_plural: report_definitions
+#+entity_title: Report Definition
+#+created: 2026-06-01
+#+updated: 2026-06-01
+
+The persistent template for a report. Describes what to run, when to run it,
+and how to handle concurrent executions. Type-specific configuration (e.g.
+risk parameters) lives in a separate table keyed by report_definition_id.
+
+Lifecycle is managed through the report_definition_lifecycle FSM machine.
+fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
+
+scheduler_job_id links to ores_scheduler_job_definitions_tbl.id and is set
+by the scheduler service when the definition is activated (state: active).
+It is cleared when the definition is suspended or archived.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        reporting
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:        id
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+UUID uniquely identifying this report definition.
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique name for the report definition within a party.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_report"
+#+end_src
+
+* Columns
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this report definition.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable description of the report.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** report_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Report type code (FK to ores_reporting_report_types_tbl).
+
+#+begin_src cpp :name generator
+std::string("risk")
+#+end_src
+
+** fsm_state_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Current FSM state (FK to ores_dq_fsm_states_tbl). Null until first activation.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** schedule_expression
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Validated cron expression driving report recurrence.
+
+#+begin_src cpp :name generator
+std::string("0 6 * * 1")
+#+end_src
+
+** concurrency_policy
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Concurrency policy code (FK to ores_reporting_concurrency_policies_tbl).
+
+#+begin_src cpp :name generator
+std::string("skip")
+#+end_src
+
+** scheduler_job_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Scheduler job UUID (FK to ores_scheduler_job_definitions_tbl). Present only when status is active.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:        ores_reporting_report_definitions_tbl
+:security_definer: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: reporting.api
+:component_core:    reporting.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: definition
+:entity_plural_short:   definitions
+:entity_singular_words: report definition
+:entity_plural_words:   report definitions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rd
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| id          | ID          |
+| name        | Name        |
+| report_type | Type        |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.reporting/domain/report_definition.hpp
+:domain_class:           reporting::domain::report_definition
+:protocol_include:       ores.reporting/messaging/report_definition_protocol.hpp
+:collection_name:        definitions
+:item_var:               definition
+:key_field:              name
+:key_widget:             nameEdit
+:has_uuid_primary_key:   true
+:get_request_class:      reporting::messaging::get_report_definitions_request
+:get_response_class:     reporting::messaging::get_report_definitions_response
+:get_message_type:       get_report_definitions_request
+:save_request_class:     reporting::messaging::save_report_definition_request
+:save_response_class:    reporting::messaging::save_report_definition_response
+:save_message_type:      save_report_definition_request
+:delete_request_class:   reporting::messaging::delete_report_definition_request
+:delete_response_class:  reporting::messaging::delete_report_definition_response
+:delete_message_type:    delete_report_definition_request
+:history_request_class:  reporting::messaging::get_report_definition_history_request
+:history_response_class: reporting::messaging::get_report_definition_history_response
+:history_message_type:   get_report_definition_history_request
+:settings_group:         ReportDefinitionListWindow
+:window_title:           Report Definitions
+:icon:                   FileText
+:END:
+
+*** Detail fields
+
+| field               | label              | widget                 | type      | is_key | is_required | placeholder                  |
+|---------------------+--------------------+------------------------+-----------+--------+-------------+------------------------------|
+| name                | Name               | nameEdit               | line_edit | true   | true        | Enter report definition name |
+| description         | Description        | descriptionEdit        | text_edit |        |             | Enter a description          |
+| report_type         | Report Type        | reportTypeEdit         | line_edit |        | true        | e.g. risk                    |
+| schedule_expression | Schedule (cron)    | scheduleExpressionEdit | line_edit |        | true        | e.g. 0 6 * * 1               |
+| concurrency_policy  | Concurrency Policy | concurrencyPolicyEdit  | line_edit |        | true        | e.g. skip                    |
+
+*** Columns (Qt model)
+
+| enum_name          | field               | header      | type   | width |
+|--------------------+---------------------+-------------+--------+-------|
+| Name               | name                | Name        | string | 200   |
+| ReportType         | report_type         | Type        | string | 100   |
+| ScheduleExpression | schedule_expression | Schedule    | string | 150   |
+| ConcurrencyPolicy  | concurrency_policy  | Concurrency | string | 100   |
+| Version            | version             | Version     | int    | 60    |
+| ModifiedBy         | modified_by         | Modified By | string | 120   |
+
+** Custom repository methods

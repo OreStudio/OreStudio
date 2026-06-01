@@ -41,12 +41,12 @@ requires a cross-cutting =ClientManager= change.
 
 | Field        | Value                                        |
 |--------------+----------------------------------------------|
-| State        | STARTED                                                          |
-| Parent story | [[id:61F836E5-2277-4765-9038-AF7D0176C993][Make UI more responsive]]                               |
-| Now          | Implementing: destructor fix + Loading… combos in both dialogs. |
-| Waiting on   | Nothing.                                                         |
-| Next         | Commit, push, open PR.                                           |
-| Last touched | 2026-06-01                                                       |
+| State        | DONE                                            |
+| Parent story | [[id:61F836E5-2277-4765-9038-AF7D0176C993][Make UI more responsive]] |
+| Now          | Nothing.                                        |
+| Waiting on   | Nothing.                                        |
+| Next         | Nothing.                                        |
+| Last touched | 2026-06-01                                      |
 
 * Acceptance
 
@@ -89,5 +89,26 @@ task closes. Plans do not outlive their task.)
 | 6 | Set object name on monetaryNatureWatcher | CurrencyDetailDialog.cpp | Fixed — watcher->setObjectName | Gemini round 1 |
 | 7 | Race condition + guard: check for active marketTierWatcher | CurrencyDetailDialog.cpp | Fixed — guard + setObjectName | Gemini round 1 |
 | 8 | Set object name on marketTierWatcher | CurrencyDetailDialog.cpp | Fixed — watcher->setObjectName | Gemini round 1 |
+| 9 | Comments 3–8 re-opened by force-push after rebase | — | Re-replied + re-resolved; no code change needed | Gemini round 2 |
 
 * Result
+
+Three fixes shipped in PR #979:
+
+1. =waitForFinished()= removed from =CurrencyDetailDialog= and
+   =CurrencyHistoryDialog= destructors — closing a dialog with
+   in-flight NATS requests no longer blocks the UI thread.
+
+2. =tr("Loading…")= placeholder added to =roundingTypeCombo=,
+   =monetaryNatureCombo=, and =marketTierCombo= before each async
+   fetch, with a named-watcher guard preventing concurrent fetches.
+
+3. =QHeaderView::ResizeToContents= replaced with =Interactive= in
+   =EntityListMdiWindow= — eliminated a 24-second main-thread freeze
+   on first open of any entity list window (all entities, not just
+   currency). Root cause: =ResizeToContents= measured every cell on
+   every layout pass; =Interactive= uses saved widths with no
+   per-cell measurement.
+
+Two ops recipes added: how to find environment log files; how to
+solve the postgres max connections error.

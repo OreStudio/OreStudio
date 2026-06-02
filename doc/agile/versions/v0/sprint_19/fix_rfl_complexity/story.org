@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :ci:windows:macos:rfl:ores_qt_api:infrastructure:sprint_19:v0:
 #+created: 2026-05-29
-#+updated: 2026-05-31
+#+updated: 2026-06-02
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -33,9 +33,9 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 |---------------+-----------------------------------------------------------------------------------------------|
 | State         | STARTED                                                                                       |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                       |
-| Now           | Task 8: investigating ClientManager template C1202 in BookMdiWindow.cpp.                      |
-| Waiting on    | Task 8 PR + CI green.                                                                         |
-| Next          | Merge task 8 PR; verify Windows CI fully green; close story.                                  |
+| Now           | Task 9: fix swap_leg 19-field C1202 in ClientManagerExportPortfolio.cpp (DISCOVERED).        |
+| Waiting on    | Task 9 implementation + CI green.                                                             |
+| Next          | Implement rfl::Flatten decomposition of swap_leg; raise PR; verify Windows CI green.         |
 | Last touched  | 2026-06-02                                                                                    |
 
 * Acceptance
@@ -63,6 +63,7 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 | [[id:D9E63BBA-82CE-4FD3-9354-47A0A12ED108][Fix missing Windows DLL export macros on service parser classes]]              | DONE    | 2026-06-01 | 2026-06-01 | Add ORES_*_SERVICE_EXPORT to 16 service parser.hpp files; restore Windows CI linker.          |
 | [[id:4BF920B2-CA2B-40EF-B463-DDC13D0C2516][Fix ClientManager AddTagsToVariants and archiver DLL export]]                  | STARTED | 2026-06-01 |            | Remove AddTagsToVariants from ClientManager reads; add ORES_COMPUTE_WRAPPER_EXPORT to archiver. |
 | [[id:A10ACBA5-BABD-4B60-8CF3-79108BA9DA92][Investigate and fix ClientManager template C1202 for complex response types]]  | STARTED | 2026-06-02 |            | process_authenticated_request<T> injects rfl in caller's TU; fix by concrete method for export_portfolio. |
+| [[id:C19E28EF-FA66-4A53-8958-7F3D7A093F46][Fix C1202 in ClientManagerExportPortfolio.cpp (swap_leg 19-field Literal)]]    | DISCOVERED | 2026-06-02 |            | swap_leg's 19-field rfl::Literal triggers no_duplicate_field_names C1202 even in the fresh ExportPortfolio TU; fix via rfl::Flatten. |
 
 * Decisions
 
@@ -231,6 +232,89 @@ instantiation to a fresh TU where MSVC's dependency graph starts clean.
 
 Pattern used in this story: =parse_swap_instruments.cpp=, =ClientManagerExportPortfolio.cpp=.
 
+** Architectural analysis: two distinct failure modes
+
+*** Two problems being conflated
+
+Through sprint 17, 18, and 19 these errors have been treated as one escalating problem.
+Error 7 makes clear they are two separate failure modes with different fixes.
+
+*Problem A — struct field count exceeds MSVC's threshold.*
+
+=rfl::internal::no_duplicate_field_names= builds an =rfl::Literal<f1,…,fN>= for every
+struct it reflects and performs an O(N²) constexpr string-equality check. With N ≥ ~15
+this check exceeds MSVC's internal template dependency graph budget regardless of TU size
+or context. Error 7 proves it: =ClientManagerExportPortfolio.cpp= fires at step 1145/4938
+with exactly two includes. TU isolation does not help when the struct itself is above the
+threshold.
+
+*Problem B — rfl in header templates leaks to caller TUs.*
+
+=process_authenticated_request<T>= is a function template defined in the header. Every
+caller TU instantiates =rfl::json::read<ResponseType>= in its own translation unit. In
+large, late-compiled files (e.g. =BookMdiWindow.cpp= at step 4651/4936) the already-
+saturated template dependency graph cannot absorb the additional =rfl::StringLiteral<N>=
+nodes from =swap_leg='s 19 fields. The "concrete method in dedicated TU" fix addresses
+this.
+
+*** Why fixes keep exposing the next layer
+
+The seven-incident cascade is not seven separate bugs. It is one structural problem
+(struct fields exceed MSVC's threshold) repeatedly re-encountered after each partial fix
+removes the immediately visible symptom:
+
+| Fix applied                             | Problem cleared         | Problem exposed               |
+|-----------------------------------------+-------------------------+-------------------------------|
+| Remove =AddTagsToVariants=              | 502-field Literal       | Individual structs ≥15 fields |
+| TU split / fresh TU                     | Caller TU saturation    | Struct threshold in isolation |
+| Concrete method in dedicated TU         | Template leak (B)       | Problem A in isolation        |
+
+*** The domain model's structural risk
+
+Every persisted domain struct carries five audit fields: =modified_by=, =performed_by=,
+=change_reason_code=, =change_commentary=, =recorded_at=. These are invisible in domain
+terms but consume five slots in the rfl Literal. A struct that appears to have 10 domain
+fields is 15 to rfl. Any domain struct across =ores.refdata=, =ores.assets=,
+=ores.trading=, =ores.iam=, =ores.dq=, etc. that has ≥11 non-audit domain fields is
+silently above the MSVC threshold. There is no compile-time guard or lint rule to catch
+this; discovery is always reactive (CI failure).
+
+The proactive audit in the "template instantiation leak" section above was a Problem B
+audit — it checked which =process_authenticated_request= response types contain
+=trade_instrument=. A Problem A audit would check which domain structs have ≥~15 fields,
+irrespective of how they are called. That audit has not yet been done for the full domain
+model.
+
+*** The systematic fix
+
+Extract the five audit fields into a shared sub-struct and compose it into every domain
+struct via =rfl::Flatten=:
+
+#+begin_src cpp
+struct audit_info {
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    std::chrono::system_clock::time_point recorded_at;
+};
+
+struct swap_leg {
+    // up to ~13 domain fields
+    rfl::Flatten<audit_info> audit;   // 5 fields; checked independently by rfl
+};
+#+end_src
+
+=rfl::Flatten= projects sub-struct fields directly into the parent in JSON (no nesting),
+so the on-wire format is unchanged. =no_duplicate_field_names= checks each sub-struct
+independently: O(5²) = 25 comparisons for the audit group instead of O(N²) for the full
+struct. The safe domain field budget per struct is then ~13 non-audit fields, which
+comfortably covers all current domain types.
+
+This systematic extraction is not yet scheduled as a story; task 9 applies it locally to
+=swap_leg=. A cross-cutting story would audit all persisted domain structs and apply the
+same pattern project-wide, permanently closing the structural risk.
+
 ** Linear trace of C1202 errors and fixes
 
 This story produced a sequence of progressively deeper C1202 fixes, each exposing the
@@ -244,6 +328,7 @@ next layer. The full sequence:
 | 4 | =parse_trade_instrument.cpp= | Combined =swaption_instrument= (18) + =swap_leg= (19) = 29-field Literal: two types in one =rfl::json::read= | Split each leg-based read into two passes (instrument + legs separately) | PR #982 |
 | 5 | =parse_trade_instrument.cpp= | Accumulated TU context: flat/FX/equity types fill MSVC's graph before swap types start; =swaption_instr_outer= (19 fields) pushes it over | Move all 9 swap types to =parse_swap_instruments.cpp= (fresh TU) | PR #985 |
 | 6 | =BookMdiWindow.cpp= | =process_authenticated_request<export_portfolio_request>= is a template → instantiates =rfl::json::read<export_portfolio_response>= in BookMdiWindow's already-saturated context; =swap_leg= (19 fields) triggers C1202 | Concrete =ClientManager::exportPortfolio()= in a dedicated TU | task 8 |
+| 7 | =ClientManagerExportPortfolio.cpp= | =swap_leg= has 19 fields → =rfl::Literal<f1,…,f19>= → 171 constexpr string comparisons in =no_duplicate_field_names.hpp= exceed MSVC's template graph budget even in a clean TU (step 1145/4938) | Decompose =swap_leg= into three sub-structs (≤9 fields each) via =rfl::Flatten= | task 9 |
 
 * See also
 

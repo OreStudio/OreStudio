@@ -2,7 +2,7 @@
 :ID: 6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B
 :END:
 #+title: How do I generate sprint health charts?
-#+description: Run the sprint_metrics.py extractor and gnuplot scripts to produce per-metric PNGs for a sprint.
+#+description: Run compass sprint charts to extract git/PR metrics, then gnuplot to produce per-metric PNGs for a sprint.
 #+type: recipe
 #+level: cross
 #+filetags: :sprint:charts:cmake:gnuplot:recipe:
@@ -19,16 +19,22 @@ How do I generate the sprint health charts (PRs & Commits, Line Churn, PR Cycle 
    gnuplot scripts directly — this is the most reliable form:
 
    #+begin_src sh :results verbatim
-   python3 scripts/sprint_metrics.py --sprint 18
+   ./projects/ores.compass/compass.sh sprint charts --sprint 18
    gnuplot -e "sprint=18" scripts/sprint_prs_commits.gnuplot
    gnuplot -e "sprint=18" scripts/sprint_line_churn.gnuplot
    gnuplot -e "sprint=18" scripts/sprint_pr_cycle.gnuplot
    gnuplot -e "sprint=18" scripts/sprint_stories_done.gnuplot
    #+end_src
 
-   =sprint_metrics.py= extracts git and gh API data into CSV files under
+   =compass sprint charts= extracts git and gh API data into CSV files under
    =build/output/sprint_NN/=; the gnuplot scripts read those CSVs and write
    the per-metric PNGs into =doc/agile/versions/v0/sprint_NN/=.
+
+   Omit =--sprint= to auto-detect the current sprint from the agile index:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh sprint charts
+   #+end_src
 
    The =sprint_charts= CMake target wraps these same commands, but the
    sprint number is a *configure-time* cache variable — =-DSPRINT= is
@@ -44,7 +50,7 @@ How do I generate the sprint health charts (PRs & Commits, Line Churn, PR Cycle 
 
    #+begin_src sh :results verbatim
    for s in $(seq 1 18); do
-     python3 scripts/sprint_metrics.py --sprint $s
+     ./projects/ores.compass/compass.sh sprint charts --sprint $s
      for chart in prs_commits line_churn pr_cycle stories_done; do
        gnuplot -e "sprint=$s" scripts/sprint_${chart}.gnuplot
      done
@@ -69,7 +75,8 @@ How do I generate the sprint health charts (PRs & Commits, Line Churn, PR Cycle 
 
 * Script
 
-=scripts/sprint_metrics.py= (extracts git log + gh API → CSV),
+=compass sprint charts= (extracts git log + gh API → CSV; lives in
+=projects/ores.compass/src/compass.py=),
 =scripts/sprint_prs_commits.gnuplot=, =scripts/sprint_line_churn.gnuplot=,
 =scripts/sprint_pr_cycle.gnuplot=, =scripts/sprint_stories_done.gnuplot=,
 CMake =sprint_charts= target in top-level =CMakeLists.txt=.

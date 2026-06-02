@@ -45,7 +45,7 @@ In execution order:
    a defect. Generate the four chart PNGs into the sprint directory:
 
    #+begin_src sh :results verbatim
-   python3 scripts/sprint_metrics.py --sprint <N>
+   ./projects/ores.compass/compass.sh sprint charts --sprint <N>
    gnuplot -e "sprint=<N>" scripts/sprint_prs_commits.gnuplot
    gnuplot -e "sprint=<N>" scripts/sprint_line_churn.gnuplot
    gnuplot -e "sprint=<N>" scripts/sprint_pr_cycle.gnuplot

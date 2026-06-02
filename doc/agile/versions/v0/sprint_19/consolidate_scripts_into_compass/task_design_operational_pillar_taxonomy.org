@@ -272,7 +272,7 @@ No =logs= pillar/noun.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1004][#1004]] | [agile] T1: operational compass pillar taxonomy design |
 
 * Review
 

@@ -74,6 +74,9 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Parsed start date discarded when end missing | =compass.py:_sc_get_sprint_range= | Fixed | Fallback to #+created: only when start is None — 600a5e86a |
+| 2 | Null JSON title causes AttributeError on [:60] | =compass.py:_sc_get_merged_prs= | Fixed | (pr.get("title") or "")[:60] — 600a5e86a |
+| 3 | Same regex run twice per table row | =compass.py:_sc_parse_sprint_stories= | Fixed | Cached match in m, reused m.group() — 600a5e86a |
+| 4 | Bad --start-date/--end-date raises traceback | =compass.py:cmd_sprint_charts= | Fixed | try/except + clean error + return 1 — 600a5e86a |
 
 * Result

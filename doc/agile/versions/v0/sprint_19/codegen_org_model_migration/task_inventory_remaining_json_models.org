@@ -244,8 +244,9 @@ comms ones).
 
 =projects/ores.codegen/models/services/ores_services_service_registry.json=.
 Catalogue of services / ports. Root key =service_registry=. Org-mode
-shape: probably a single registry org file under a top-level
-=projects/ores.services/modeling/=.
+shape: single registry org file under =projects/modeling/=
+(the project-wide cross-cutting modeling dir — the registry isn't
+owned by any one component).
 
 *** Retire (1)
 

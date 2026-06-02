@@ -91,8 +91,9 @@ Regroup complete: all groups moved to =ores.<group>/<short>/=, Qt under
 build configures, compiles, and services start and run clean. Shipped in
 PR #997 along with two pre-existing-breakage fixes surfaced by the clean
 build (the swap-parse TU and the init-environment service glob). The
-service-registry consolidation discovered here is deferred follow-up,
-captured in its own task (not a blocker for this story).
+service-registry consolidation discovered here was promoted to its own
+story, [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] (not a blocker for
+this story).
 
 * Acceptance
 
@@ -114,7 +115,7 @@ captured in its own task (not a blocker for this story).
   =build/scripts/init-environment.sh= globs =projects/ores.*.service= to
   discover NATS services, which the regroup broke (CI "Setup Database"
   failure). Fixed by reading the existing service registry instead;
-  full consolidation tracked by [[id:9B8BB792-3562-4B52-B367-C94EF46BA100][Consolidate service registries]].
+  full consolidation tracked by [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]].
 - Include paths made move-invariant (D4) rather than re-pointed to the
   new absolute layout, so future moves do not re-break them.
 
@@ -127,7 +128,6 @@ by the pilot are left in place for that story to populate.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D3D8DE56-3C8A-4B15-BE6A-B819BF97C050][Investigate target layout for component regrouping]] | DONE | 2026-06-01 | 2026-06-02 | Decided naming (short), qt under ores.qt/, host as application/, relative includes. Subsumed implementation — regroup done in one pass. |
-| [[id:9B8BB792-3562-4B52-B367-C94EF46BA100][Consolidate service registries into a single source of truth]] | DISCOVERED | | | Deferred follow-up (not part of this story's completion). Inventory + plan captured; to be promoted to its own story. Surfaced by the regroup breaking the directory glob; unblocked here by a stop-gap. |
 
 No per-group migration tasks were scaffolded: the regroup is a
 mechanical, atomic change and was carried out in a single pass under

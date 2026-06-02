@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: 6695E245-E789-40EC-8AC6-EB10276CA241
+:END:
+#+title: Story: Consolidate standalone scripts into compass
+#+description: Inventory the ~61 standalone shell/Python operational scripts, design how they map onto compass pillars (new operational pillars alongside the existing Orient/Search/Scaffold/Capture/Journal), and fold them into compass as documented subcommands so there is one entry point for operating and developing the system. Supersedes and absorbs the service-registry consolidation task.
+#+type: story
+#+level: s2
+#+filetags: :tooling:compass:scripts:refactor:documentation:sprint_19:v0:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make =compass= the single, documented entry point for /operating and
+developing/ ORE Studio, folding the ~61 standalone shell and Python
+scripts into compass subcommands organised by pillar. Today the
+operational surface is a sprawl of scripts across =build/scripts/=,
+=projects/ores.sql/=, =projects/ores.codegen/=, and elsewhere; each
+reimplements =.env= sourcing, preset resolution, and path plumbing, and
+they drift independently (the regroup broke one by changing the
+directory layout it globbed). A contributor should run =compass <pillar>
+<verb>= rather than memorising script paths.
+
+This story *supersedes and absorbs* the service-registry consolidation
+task discovered during the regroup — that becomes one concrete migration
+within this larger effort.
+
+* Status
+
+| Field         | Value                                            |
+|---------------+--------------------------------------------------|
+| State         | BACKLOG                                          |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                               |
+| Now           | Inventory + pillar analysis captured; awaiting design task. |
+| Waiting on    | Nothing.                                         |
+| Next          | Run the taxonomy design task (T1).               |
+| Last touched  | 2026-06-02                                       |
+
+* Background: script inventory (2026-06-02)
+
+61 operational/dev scripts, by category:
+
+| Category | Count | Representative scripts |
+|----------+-------+------------------------|
+| database | 19 | =recreate_database.sh=, =setup_database.sh=, =run_sql.sh=, =reset_system.sh=, =service_vars.sh= (generated), utility/* |
+| codegen | 18 | =codegen.sh=, =run_generator.sh=, =generate_*_schema.sh=, =generate_*_refdata.sh=, =validate_docs.sh=, =plantuml_er_generate.sh= |
+| services-lifecycle | 4 | =start-services.sh=, =stop-services.sh=, =status-services.sh=, =start-client.sh= |
+| nats | 3 | =nats.sh=, =init-nats.sh=, =generate_nats_certs.sh= |
+| environment-bootstrap | 3 | =init-environment.sh=, =diff-environment.sh=, =install_debian_packages.sh= |
+| build | 3 | =build.sh=, =collect_release_pr_data.py=, =generate_release_notes.py= |
+| pr-automation | 3 | =pr-watch.sh=, =pr_watch.py=, =append_pr_to_backlog.py= |
+| site | 1 | =serve-site.sh= |
+| ci-health | 1 | =ci_health.py= |
+| other | 6 | =clear-logs.sh=, =set_ssh_agent.sh=, =setup_postgres_extensions.sh=, compass itself, =doc_*.py= |
+
+Most =.sh= scripts already share a =.env=-sourcing + =ORES_PRESET= idiom
+(=set -a; source .env; set +a=), which is exactly the plumbing compass
+already does once in Python.
+
+* Background: compass today
+
+Compass is self-contained Python (=projects/ores.compass/src/compass.py=)
+organised into five pillars — all of which serve the /information
+architecture/, not system operation:
+
+| Pillar | Purpose | Commands |
+|--------+---------+----------|
+| Orient | where we are / fleet state | =where=, =fleet=, =sprint=, =story= |
+| Search | retrieve docs (FTS/org-roam) | =search=/=find=, =list=, =show= |
+| Scaffold | create branches + artefacts | =goto=, =add= |
+| Capture | product-backlog triage | =capture=, =inbox=, =next=, =deferred=, =backlog= |
+| Journal | per-worktree session log | =journal= |
+
+Subcommands are registered in =compass.py= via a two-tier dispatch:
+top-level commands with sub-subcommands are short-circuited before
+argparse and handled by a =cmd_<name>(argv)= function with its own nested
+=ArgumentParser=. Adding a pillar = add a =cmd_<pillar>()= handler + an
+=_EPILOG= section + a short-circuit dispatch entry. Compass shells out
+only for =git=/=gh=; everything else is native Python.
+
+* Proposed direction (to be finalised by the design task)
+
+The existing five pillars cover /navigating the project/. The scripts
+cover /running the project/ — a distinct concern that warrants new
+operational pillars. Candidate mapping (illustrative, not final):
+
+| New pillar | Absorbs | Example commands |
+|------------+---------+------------------|
+| Provision | environment-bootstrap, nats setup, db create/teardown, certs, the service registry | =compass env init=, =compass env diff=, =compass db recreate=, =compass nats init= |
+| Operate | services-lifecycle, nats CLI, logs | =compass run services=, =compass run client=, =compass run status=, =compass logs clear= |
+| Build | build, site | =compass build=, =compass site serve= |
+| Generate | codegen wrappers | =compass gen schema=, =compass gen refdata= (or keep delegating to ores.codegen) |
+
+Open questions for the design task: pillar names and boundaries; whether
+codegen folds in or stays a delegated tool (compass =add= already
+delegates to it); whether scripts become thin shims that call compass
+(backward-compat) or are deleted; how CI workflows that call the scripts
+migrate; the single service registry's home (=projects/services.json=).
+
+* Acceptance
+
+- The operational-pillar taxonomy — every operational script mapped to a
+  compass pillar + verb, with backward-compatibility and CI-migration
+  decisions — is settled in the design task and distilled into this
+  story's =* Decisions= (kept inline, not in =doc/plans/=).
+- The operational pillars are implemented in =compass= and documented in
+  =--help= and the compass recipes/knowledge docs.
+- Migrated scripts either become thin compatibility shims that call
+  compass, or are removed with their callers (CI, docs, dashboard,
+  recipes) updated — no dangling references.
+- The service registry is consolidated to a single source (absorbs the
+  prior task); =init-environment= functionality runs under compass.
+- =cmake --build= + =ctest= and a full =provision → run= round-trip pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A3CBBC36-AB3E-4046-817B-09A1B289BA98][T1: Design the operational compass pillar taxonomy]] | BACKLOG | | | System 2 design: operational pillars + per-script mapping + backward-compat/CI/docs decisions. Gates all migration tasks. |
+| [[id:9B8BB792-3562-4B52-B367-C94EF46BA100][Consolidate service registries into a single source of truth]] | DISCOVERED | | | First concrete migration (registry + init-environment). Plan finalised by T1. |
+
+Per-pillar migration tasks to be scaffolded by T1 once the taxonomy is
+settled.
+
+* Out of scope
+
+- Rewriting the codegen engine itself (=ores.codegen=); at most its
+  wrapper scripts become compass verbs that delegate to it.
+- Changing what any script /does/ — this is a relocation/consolidation
+  onto a single CLI, not a behaviour change.
+- The component regroup (done) and the org-mode model migration (separate
+  story).
+
+* See also
+
+- [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] — established the pillar model and the
+  taxonomy-design-doc-first approach this story follows.
+- [[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components under product-group parent directories]] — where
+  the script-fragility (and the absorbed registry task) surfaced.

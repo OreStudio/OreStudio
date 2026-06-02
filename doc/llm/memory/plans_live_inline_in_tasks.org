@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: A5827C19-D0EB-46B7-99C3-4CA2DFE53E93
+:END:
+#+title: Plans live inline in tasks, not in doc/plans
+#+description: Design and implementation plans belong in the task's * Plan / * Notes and distil into the story's * Decisions; doc/plans/ is the historical archive, not where live design goes.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+Design and implementation plans live *inline* in the task that owns the
+work: the working strategy/analysis goes in the task's =* Plan= (and
+=* Notes= for supporting material), and the durable outcomes distil into
+the parent story's =* Decisions=. Do not create a separate plan file
+under =doc/plans/= for live work.
+
+*Why:* The v2 information architecture treats a task's =* Plan= as
+transient — written when work starts, distilled into the story's
+=* Decisions=, and cleared when the task closes ("plans do not outlive
+their task"). =doc/plans/= is the /historical archive/ of older one-off
+plans, not where current design belongs. The user corrected a design task
+that proposed writing its taxonomy to =doc/plans/YYYY-MM-DD-*.org=.
+
+*How to apply:* When scaffolding or writing a design/analysis task
+(taxonomies, migration strategies, architecture decisions), put the
+analysis and the working tables in the task body and the settled choices
+in the story's =* Decisions=. Only reference =doc/plans/= to read
+historical plans; never direct new live design output there. Earlier
+docs (e.g. the compass CLI UX taxonomy) used =doc/plans/= — follow their
+/content shape/, not their location.

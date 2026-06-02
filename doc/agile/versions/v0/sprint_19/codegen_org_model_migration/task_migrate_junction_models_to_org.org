@@ -80,8 +80,11 @@ output needs to render verbatim.
 
 * Review
 
+** Round 1 — 2026-06-02 (gemini)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =_column_section= drops =default_value= and =generator_expr= on extra columns | =projects/ores.codegen/src/codegen/migrate_junction_to_org.py= | Accepted | Fixed in =b76490a7f= (converter) and =920362848= (org files). Drawer now emits =:default_value:= alongside =:default:=; appends a =#+begin_src cpp :name generator= block when present. SQL byte-identity preserved (template only reads =:default:=). |
+| 2 | Columns loop misses =default_value= (Mustache 0-falsy) and =generator_expr= from the generator src block | =projects/ores.codegen/src/codegen/org_loader.py= | Accepted | Fixed in =b76490a7f=. Columns loop now treats both =default= and =default_value= as raw strings and reads =generator_expr= from =node.src_blocks['generator']=. Verified end-to-end against origin/main JSON. |
 
 * Result

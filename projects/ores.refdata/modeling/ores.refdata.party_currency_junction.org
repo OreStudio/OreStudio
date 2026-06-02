@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 0BB9EF29-22CD-4088-9D9B-40AE4E7FF099
+:END:
+#+title: ores.refdata.party_currency
+#+description: Codegen junction model for party_currencies.
+#+type: ores.codegen.junction
+#+component: refdata
+#+filetags: :model:junction:refdata:
+#+name: party_currencies
+#+name_singular: party_currency
+#+name_title: Party Currency
+#+name_singular_words: party currency assignment
+#+brief: Links a party to a currency it can see.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+Junction table controlling which currencies are visible to which parties.
+Currency definitions are shared at tenant level; this junction controls
+party-level visibility.
+
+* Left
+:PROPERTIES:
+:column:        party_id
+:column_short:  party
+:column_title:  Party
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for looking up currencies visible to a party
+:END:
+
+ID of the party.
+
+References ores_refdata_parties_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        currency_iso_code
+:column_short:  currency
+:column_title:  Currency
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding parties that can see a currency
+:END:
+
+ISO 4217 code of the currency visible to this party.
+
+References ores_refdata_currencies_tbl.iso_code (soft FK).
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+* Columns
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_party_currencies_tbl
+:END:
+
+* Repository
+:PROPERTIES:
+:name_singular_short: party_currency
+:name_short:          party_currencies
+:name_singular_words: party currency
+:name_words:          party currencies
+:order_column:        currency_iso_code
+:END:
+
+* C++
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pc
+:END:
+
+** Table display
+
+| column            | header      |
+|-------------------+-------------|
+| party_id          | Party       |
+| currency_iso_code | Currency    |
+| modified_by       | Modified By |
+| version           | Version     |

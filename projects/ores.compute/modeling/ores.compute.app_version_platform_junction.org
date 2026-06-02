@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: E0010C05-D225-462B-A194-330F12A41B28
+:END:
+#+title: ores.compute.app_version_platform
+#+description: Codegen junction model for app_version_platforms.
+#+type: ores.codegen.junction
+#+component: compute
+#+filetags: :model:junction:compute:
+#+name: app_version_platforms
+#+name_singular: app_version_platform
+#+name_title: App Version Platform
+#+name_singular_words: app version platform association
+#+brief: Links an app version to a supported platform and its package URI.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+Associates app versions with the platforms they support, and carries the URI
+of the per-platform packaged bundle (a .tar.gz containing the wrapper+engine
+binaries built for that target triplet). Each (app_version, platform) row
+owns its own package_uri, so the orchestrator can dispatch per-triplet
+assignments without the wrapper needing to negotiate package selection.
+
+* Left
+:PROPERTIES:
+:column:        app_version_id
+:column_short:  app_version
+:column_title:  App Version
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for looking up platforms for an app version
+:END:
+
+FK reference to ores_compute_app_versions_tbl.
+
+References ores_compute_app_versions_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        platform_id
+:column_short:  platform
+:column_title:  Platform
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for finding app versions supporting a platform
+:END:
+
+FK reference to ores_compute_platforms_tbl.
+
+References ores_compute_platforms_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Columns
+
+** package_uri
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+URI of the per-platform packaged bundle in object storage.
+
+One .tar.gz per (app_version, platform). Wrappers download the URI
+matching their own ORES_PLATFORM_TRIPLET at dispatch time.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_compute_app_version_platforms_tbl
+:END:
+
+* Repository
+:PROPERTIES:
+:name_singular_short: app_version_platform
+:name_short:          app_version_platforms
+:name_singular_words: app version platform
+:name_words:          app version platforms
+:order_column:        platform_id
+:END:
+
+* C++
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: avp
+:END:
+
+** Table display
+
+| column         | header      |
+|----------------+-------------|
+| app_version_id | App Version |
+| platform_id    | Platform    |
+| package_uri    | Package URI |
+| modified_by    | Modified By |
+| version        | Version     |

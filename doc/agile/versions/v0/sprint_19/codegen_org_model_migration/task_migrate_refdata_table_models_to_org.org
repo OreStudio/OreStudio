@@ -92,8 +92,12 @@ Org file shape:
 
 * Review
 
+** Round 1 — 2026-06-02 (gemini)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =validation_fn.default= should be a raw string (Mustache 0-falsy guard) | =projects/ores.codegen/src/codegen/org_loader.py= | Accepted | Fixed in =0d05912d4=. Mirrors the columns/junction loaders. Current refdata defaults are strings (=g10=, =fiat=, =Closest=) so SQL is unchanged; a future numeric default would have been silently dropped. |
+| 2 | Empty =* PRs= / =* Review= sections must be present | =doc/agile/versions/v0/sprint_19/codegen_org_model_migration/task_migrate_refdata_table_models_to_org.org= | Declined | Sections are already present. =* PRs= carries the PR-#1003 row; =* Review= carries the standard header. The compass scaffold emits both by default. |
+| 3 | Preserve custom check-constraint heading title as =name= | =projects/ores.codegen/src/codegen/org_loader.py= | Accepted | Fixed in =0d05912d4=. Loader now keeps the heading title as =name= unless it starts with the auto-prefix =check_=, letting hand-authored constraint names flow through to SQL. |
 
 * Result

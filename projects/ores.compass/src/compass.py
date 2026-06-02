@@ -1623,7 +1623,22 @@ def cmd_task(argv):
     new_p.add_argument("--kind",      default="feature", choices=["feature", "hotfix"])
     new_p.add_argument("--dry-run",   action="store_true")
 
-    start_p = sub.add_parser("start", help="Clock on to an existing task: switch branch, STARTED state, stamp journal")
+    start_p = sub.add_parser(
+        "start",
+        help="Clock on to a task: switch branch, flip to STARTED, stamp journal",
+        description=(
+            "Clock on to an existing task — covers all three use cases:\n"
+            "  1. new task just scaffolded (compass task new)\n"
+            "  2. BACKLOG task being picked up for the first time\n"
+            "  3. STARTED task being resumed after a restart\n\n"
+            "Switches to the task's branch, flips BACKLOG→STARTED if needed,\n"
+            "and appends a timestamped entry to .journal.org so 'compass journal\n"
+            "where' and 'compass fleet' show the current context.\n\n"
+            "This is the required first step in both the new-story and\n"
+            "work-task-to-merged-PR runbooks."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     start_p.add_argument("task", help="Task slug, UUID/prefix, or branch suffix")
 
     args = ap.parse_args(argv)

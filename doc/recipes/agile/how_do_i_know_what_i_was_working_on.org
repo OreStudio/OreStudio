@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: F3373CC1-C2B3-4371-A63F-FBEC54297265
+:END:
+#+title: How do I know what I was working on?
+#+description: Use compass journal where and compass task start to recover session context after a restart.
+#+type: recipe
+#+level: cross
+#+filetags: :agile:compass:llm:recipe:journal:restart:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+* Question
+
+After restarting a Claude session (or starting a fresh one in an existing
+worktree), how do I find out what this environment was last working on and
+get back to it quickly?
+
+* Answer
+
+Two commands: =compass journal where= to read the last recorded context,
+then =compass task start= to clock back on.
+
+** Step 1 — read the last journal entry
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh journal where
+#+end_src
+
+Example output:
+
+#+begin_example
+📓 ores.compass — last entry (2026-06-02 09:39)
+
+Story:  Clarify versioning strategy  [EC20475A-E7B4-4DFB-8E55-4B8DA6B36202]
+Task:   Scaffold version 2 doc       [EDAE4567-CA33-45A0-8FBF-6A8D062E3DC0]
+State:  STARTED
+Branch: feature/scaffold-version-2-doc
+PR:     none
+#+end_example
+
+If no journal exists yet:
+
+#+begin_example
+No .journal.org found. Run 'compass task start <slug>' when you pick up a task.
+#+end_example
+
+Use =compass where= to see what is in-flight in the sprint and pick up a task.
+
+** Step 2 — clock back on
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh task start <task-slug>
+#+end_src
+
+This switches to the task's branch, ensures state is STARTED, and appends
+a fresh journal entry so context is recorded for the next restart.
+
+** Checking all environments (overlap detection)
+
+Before picking up new work, check whether another worktree is already on
+the same story:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh fleet
+#+end_src
+
+* Tested by
+
+Manual smoke test: run =compass journal where= in a worktree that has
+previously called =compass task start=.
+
+* See also
+
+- [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]] — full journal reference (all commands).
+- [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] — task lifecycle runbook.
+- [[id:41E5F9A8-1C2B-4ECA-8EA0-1ABBAB0B6A31][How do I see where we are?]] — sprint/story/task overview.

@@ -2,12 +2,12 @@
 :ID: B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E
 :END:
 #+title: How do I use the session journal?
-#+description: Read and update .journal.org to record what story/task each Claude environment is working on; use compass journal commands for restart recovery and overlap detection.
+#+description: Use compass task start to clock on to work; use compass journal where/log for restart recovery and compass fleet for overlap detection.
 #+type: recipe
 #+level: cross
 #+filetags: :agile:compass:llm:recipe:journal:
 #+created: 2026-05-31
-#+updated: 2026-05-31
+#+updated: 2026-06-02
 
 * Question
 
@@ -17,82 +17,95 @@ before picking up a new story?
 
 * Answer
 
-Each worktree has a =.journal.org= file in its root directory. The file is
-gitignored (machine-local, never committed). =compass story new= or =compass task new= appends an entry
-automatically whenever a task is picked up, so no manual update is normally
-needed.
+Each worktree has a =.journal.org= file in its root directory — machine-local,
+gitignored, never committed. Use =compass task start= to clock on whenever
+you pick up a task (new or existing). The journal then answers two questions:
+=compass journal where= ("where was I?") and =compass fleet= ("what is every
+worktree doing?").
+
+** Clocking on to a task
+
+#+begin_src sh :results verbatim
+# New task or resuming an existing task — all three cases:
+./projects/ores.compass/compass.sh task start <task-slug>
+#+end_src
+
+This switches to the task's branch, flips the state from BACKLOG to STARTED
+if needed, and appends a timestamped entry to =.journal.org=. It is the
+required first step in both [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] and
+[[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]].
+
+** Restart recovery
+
+#+begin_src sh :results verbatim
+# What was I working on? (last entry in this worktree)
+./projects/ores.compass/compass.sh journal where
+#+end_src
+
+Then clock back on:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh task start <slug-from-where-output>
+#+end_src
+
+** Viewing the full session history
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh journal log
+#+end_src
+
+** Overlap detection before picking up a story
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh fleet
+#+end_src
+
+Shows every worktree's current story, task, branch, and PR. Check this before
+starting new work to avoid touching the same area as another environment.
+
+** Updating the journal manually
+
+For cases not covered by =compass task start= (e.g. recording a PR number
+or a DONE state):
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh journal update \
+  --story <UUID> --task <UUID> \
+  --branch <branch> --state DONE --pr <N>
+#+end_src
 
 ** Entry format
 
 #+begin_example
-* 2026-05-31 09:15 — [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]]
-  - Task :: [[id:07F68E53-A2A6-4F1F-B699-44B9896EA7DD][Design journal format and gitignore setup]]
+* 2026-06-02 09:34 — [[id:EC20475A-E7B4-4DFB-8E55-4B8DA6B36202][Clarify versioning strategy]]
+  - Task :: [[id:450D52AB-8BD9-459E-9F77-6C0BD652FFAB][Create milestones infrastructure]]
   - State :: STARTED
-  - Branch :: feature/design-journal-format
+  - Branch :: feature/clarify-versioning-strategy
   - PR :: none
 #+end_example
 
-Fields:
-
 | Field | Description |
 |-------+-------------|
-| Heading timestamp | ISO date + time of the entry (when work was picked up) |
+| Heading timestamp | ISO date + time of clock-on |
 | Story link | org-roam =[[id:UUID][Title]]= of the parent story |
 | =Task ::= | org-roam =[[id:UUID][Title]]= of the specific task |
-| =State ::= | Task state at pickup: =STARTED=, =DONE=, =BLOCKED=, etc. |
-| =Branch ::= | Current git branch name |
-| =PR ::= | GitHub PR number (=#NNN=) or =none= |
-
-** Querying the journal
-
-#+begin_src sh
-# Where was I? (last entry in this worktree — restart recovery)
-compass journal where
-
-# Full journey of this worktree
-compass journal log
-
-# What is every worktree currently working on? (overlap detection)
-compass fleet
-#+end_src
-
-** When to update the journal manually
-
-=compass story new= or =compass task new= writes the initial =State :: STARTED= entry automatically.
-Manual updates are needed when:
-
-1. *Completing a task* — append a closing entry with =State :: DONE= and
-   the PR number:
-   #+begin_src sh
-   compass journal update --story <UUID> --task <UUID> \
-     --branch <branch> --state DONE --pr <N>
-   #+end_src
-2. *Switching tasks mid-session* — run =compass story new= or =compass task new= for the new task;
-   it will append a new =STARTED= entry automatically.
-
-** Overlap detection before picking up a story
-
-Before running =compass story new= or =compass task new=, check what every other worktree is working on:
-
-#+begin_src sh
-compass fleet
-#+end_src
-
-If another worktree's journal shows the same story or a story touching the
-same area of the codebase, coordinate before proceeding.
+| =State ::= | =STARTED=, =DONE=, =BLOCKED=, etc. |
+| =Branch ::= | Current git branch |
+| =PR ::= | GitHub PR number or =none= |
 
 * Conventions
 
-- One entry per task pickup, not per commit. The entry records intent, not
-  every action taken.
-- Org-roam links (=[[id:UUID][Title]]=) are preferred over plain text so
-  entries are navigable from Emacs and stable when titles change.
-- The file grows indefinitely; do not prune it. Old entries are the journey
-  log and may be queried with =compass journal log=.
-- =.journal.org= is *never* committed to git. If it appears in =git status=,
-  check that =.gitignore= contains the entry.
+- Clock on with =compass task start= at the start of every task pickup,
+  including after restarts. Do not rely on creation commands to do it.
+- One entry per task pickup, not per commit.
+- Org-roam links are preferred — entries are navigable from Emacs and stable
+  when titles change.
+- The file grows indefinitely; do not prune it.
+- =.journal.org= is *never* committed to git.
 
 * See also
 
+- [[id:F3373CC1-C2B3-4371-A63F-FBEC54297265][How do I know what I was working on?]] — the restart recovery recipe.
+- [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] — full new-story runbook.
+- [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] — full task-to-merge runbook.
 - [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]] — the story that implemented this feature.
-- [[id:1F41F21C-8D2A-46DA-8C6A-571564DF2C0E][How do I work a task?]] — task lifecycle.

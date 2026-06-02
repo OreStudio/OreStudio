@@ -7,9 +7,10 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/retire-plantuml-er-model
 #+pr:
 #+blocked_on:
+#+state: DONE
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-01
@@ -19,28 +20,38 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+=projects/ores.codegen/models/plantuml_er_model.json= is the
+intermediate artefact between =plantuml_er_parse_sql.py= (which
+writes it from the SQL schema) and =plantuml_er_generate.py= (which
+reads it to emit =ores_schema.puml=). It has no consumer outside
+that script, is regenerated on every run, and shouldn't live under
+=models/= — that directory is the *input* tree for codegen, not a
+scratch dir for intermediate output. Move the file to a
+build-output path, gitignore it, delete the check-in.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Retired.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-01                               |
+| Next         | n/a                                    |
+| Last touched | 2026-06-02                             |
 
 * Acceptance
 
--
-
-* Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+- =plantuml_er_generate.sh= writes the model to
+  =build/output/codegen/plantuml_er_model.json= and reads it back
+  from the same path. =build/output= is already gitignored (line 40
+  of =.gitignore=), so no new ignore entry is needed.
+- The existing
+  =projects/ores.codegen/models/plantuml_er_model.json= check-in is
+  removed.
+- Running =projects/ores.codegen/plantuml_er_generate.sh= end-to-end
+  succeeds: the parse stage writes the new path, the render stage
+  picks it up, and =ores_schema.puml= regenerates as before.
 
 * Notes
 

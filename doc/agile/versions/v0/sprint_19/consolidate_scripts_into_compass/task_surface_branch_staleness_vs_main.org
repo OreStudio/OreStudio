@@ -119,8 +119,11 @@ and in a detached HEAD it degrades without error.
 
 * Review
 
+** Round 1 (gemini-code-assist bot)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| C1 | Combine two =rev-list= calls into one =--left-right --count= | =compass.py:644= | Accepted | Fewer subprocesses per worktree, especially for fleet |
+| C1 | Resolve =.git= dir directly instead of =git rev-parse --git-dir= | =compass.py:644= | Accepted | Eliminates one subprocess; direct file read is simpler |
 
 * Result

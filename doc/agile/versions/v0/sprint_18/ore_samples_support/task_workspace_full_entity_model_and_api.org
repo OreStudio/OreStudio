@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: C10117BF-4054-4B31-AF2F-158EE8ABE88A
+:ID: 86E8D4E2-AE8A-4022-90D1-5AF0C3D9E0F7
 :END:
 #+title: Task: Workspace full entity: model and API
 #+description: Promote workspace to a full standard entity at the model and API layer: history table, generated detail dialog metadata, and API surface.

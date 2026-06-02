@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 1BFBA7F6-59BF-4814-BECE-C2AB75F78C41
+:ID: BEAD6EE5-BE2D-4CEA-BBE8-170E5DD65114
 :END:
 #+title: Task: Fix: portfolios and books not visible in workspace context
 #+description: Fix the bug where portfolios and books are not visible when a workspace is active.

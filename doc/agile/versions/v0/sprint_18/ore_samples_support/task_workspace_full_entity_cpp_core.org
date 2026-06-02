@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 71EB9DB0-1F5C-48D0-AA2E-E47A9F487B86
+:ID: C8FD97CA-F4B5-47D5-BD0D-565739DFFDDE
 :END:
 #+title: Task: Workspace full entity: C++ core
 #+description: Implement the C++ core for workspace as a full standard entity: repository, service, and history support generated from the model.

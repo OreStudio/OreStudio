@@ -744,7 +744,13 @@ On other systems `setsid' is used when available, otherwise an error is raised."
             (let ((lbl label)
                   (s   (expand-file-name "build/scripts/stop-services.sh" root))
                   (r   root) (db dash-buf))
-              (lambda (_) (ores/dashboard--compile lbl s "stop-services" r db)))))
+              (lambda (_) (ores/dashboard--compile lbl s "stop-services" r db))))
+           (ores/dashboard--mkitem
+            "Clear logs" 'nerd-icons-faicon "nf-fa-trash"
+            (let ((lbl label)
+                  (s   (expand-file-name "build/scripts/clear-logs.sh" root))
+                  (r   root) (db dash-buf))
+              (lambda (_) (ores/dashboard--compile lbl s "clear-logs" r db)))))
           'ores/dashboard-group-services-face)))
 
 (defun ores/dashboard--compass-group (env root dash-buf)

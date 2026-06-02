@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/migrate-component-models-org
-#+pr:
+#+pr: 1012
 #+blocked_on:
 #+state: DONE
 #+blocked_since:
@@ -243,7 +243,7 @@ not here.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1012][#1012]] | [codegen,components] Migrate 31 component models from JSON to org-mode |
 
 * Review
 

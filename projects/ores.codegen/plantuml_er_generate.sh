@@ -11,8 +11,15 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 SQL_DIR="${SCRIPT_DIR}/../ores.sql"
 VENV_PATH="$SCRIPT_DIR/venv"
+
+# Intermediate model lives under build/output/ (gitignored), not models/.
+# The file is regenerated on every run by Step 1 and consumed by Step 2.
+ER_MODEL_DIR="${PROJECT_ROOT}/build/output/codegen"
+ER_MODEL="${ER_MODEL_DIR}/plantuml_er_model.json"
+mkdir -p "${ER_MODEL_DIR}"
 
 # Check virtual environment
 if [ ! -d "$VENV_PATH" ]; then
@@ -31,7 +38,7 @@ echo "Parsing SQL schema..."
 python3 "${SCRIPT_DIR}/src/plantuml_er_parse_sql.py" \
     --create-dir "${SQL_DIR}/create" \
     --drop-dir "${SQL_DIR}/drop" \
-    --output "${SCRIPT_DIR}/models/plantuml_er_model.json" \
+    --output "${ER_MODEL}" \
     --ignore-file "${SQL_DIR}/utility/validation_ignore.txt" \
     --warn \
     "$@"
@@ -40,7 +47,7 @@ python3 "${SCRIPT_DIR}/src/plantuml_er_parse_sql.py" \
 echo ""
 echo "Generating PlantUML..."
 python3 "${SCRIPT_DIR}/src/plantuml_er_generate.py" \
-    --model "${SCRIPT_DIR}/models/plantuml_er_model.json" \
+    --model "${ER_MODEL}" \
     --template "${SCRIPT_DIR}/library/templates/plantuml_er.mustache" \
     --output "${SQL_DIR}/modeling/ores_schema.puml"
 

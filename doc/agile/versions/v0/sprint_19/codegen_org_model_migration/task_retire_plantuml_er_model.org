@@ -7,9 +7,10 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/retire-plantuml-er-model
+#+pr: 996
 #+blocked_on:
+#+state: DONE
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-01
@@ -19,41 +20,55 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+=projects/ores.codegen/models/plantuml_er_model.json= is the
+intermediate artefact of the ER-diagram codegen pipeline, written by
+=plantuml_er_parse_sql.py= and read by =plantuml_er_generate.py= to
+emit =ores_schema.puml=. It belongs to the *automated codegen route*
+(see [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — Two codegen routes), where the model is derived from
+already-generated artefacts rather than authored by a human.
+=projects/ores.codegen/models/= is the authored-input tree; derived
+models go to =build/output/= so they stay out of source.
+
+Move the file to a build-output path, rely on the existing
+=build/output= gitignore entry, and delete the check-in.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-01                               |
+| Next         | n/a                                    |
+| Last touched | 2026-06-02                             |
 
 * Acceptance
 
--
-
-* Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+- =plantuml_er_generate.sh= writes the model to
+  =build/output/codegen/plantuml_er_model.json= and reads it back
+  from the same path. =build/output= is already gitignored (line 40
+  of =.gitignore=), so no new ignore entry is needed.
+- The existing
+  =projects/ores.codegen/models/plantuml_er_model.json= check-in is
+  removed.
+- Running =projects/ores.codegen/plantuml_er_generate.sh= end-to-end
+  succeeds: the parse stage writes the new path, the render stage
+  picks it up, and =ores_schema.puml= regenerates as before.
 
 * Notes
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #996 | [codegen,agile] Retire plantuml_er_model.json from models/ |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =Now: Retired.= violates the "=Nothing.= reserved for DONE" convention. | task_retire_plantuml_er_model.org:38 | Accepted | PR #996 round 1. Fixed in =888b7bbcd=. |
+| 2 | Task missing =* PRs= / =* Review= sections (false-positive). | task_retire_plantuml_er_model.org:56 | Declined | PR #996 round 1. Both sections already present at lines 58 / 64 with the standard column shape. |
 
 * Result

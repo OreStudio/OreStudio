@@ -152,7 +152,7 @@ count):
 | =enum=               |   3 | Retire all (orphans) | [[id:9DA26E86-E206-4DA1-8097-6E79CA4B86E9][Migrate enum JSON models to org]] (DONE via retirement) |
 | =service_registry=   |   1 | Migrate     | [[id:F699C1EF-7365-40B5-83CA-4CA84B0F6306][Migrate service_registry JSON model to org]] |
 | slovaris data*       |   6 | Migrate     | [[id:3B4C2C1F-2174-4A41-A838-991C6D5631B8][Migrate slovaris reference-data JSONs to org-mode]] |
-| =generated_at=       |   1 | Retire      | [[id:EE3A7822-C95F-48C8-8474-862209C446FE][Retire plantuml_er_model.json from models/]] |
+| =generated_at=       |   1 | Retire      | [[id:EE3A7822-C95F-48C8-8474-862209C446FE][Retire plantuml_er_model.json from models/]] (DONE) |
 
 ** Orphan sweep — retired models
 

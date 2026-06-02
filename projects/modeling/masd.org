@@ -124,6 +124,40 @@ rather than in a formal meta-meta-model such as MOF or Ecore. The underlying
 concepts are encoded in skills and recipes that an LLM can understand and
 apply.
 
+** Two codegen routes: authored and automated
+
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] runs in two distinct routes that share the same machinery but
+take their input model from different sources:
+
+| Route     | Where the model comes from              | Format     | Where the model lives                     |
+|-----------+-----------------------------------------+------------+-------------------------------------------|
+| Authored  | A human (or LLM) writes it.             | =.org=     | =projects/ores.<group>/modeling/=         |
+| Automated | A script parses already-generated artefacts and derives it. | =.json=    | =build/output/codegen/= (gitignored)      |
+
+The *authored route* is the common case. Domain entities, lookup
+tables, junctions, components — everything that a human is expected
+to maintain — uses literate org-mode under each component's
+=modeling/= directory. Literate format earns its place there because
+the model carries intent that other readers need: descriptions,
+custom-method prose, generator expressions inside =#+begin_src=
+blocks. The [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]] tracks moving the entire
+authored set off legacy JSON.
+
+The *automated route* applies when the model is not authored, just
+derived. The canonical example today is the [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram]]: the
+parse stage reads the already-generated SQL DDL under
+=projects/ores.sql/create/= and produces an intermediate JSON model;
+the render stage feeds it to a Mustache template and emits
+=ores_schema.puml=. The intermediate model is regenerated on every
+run, carries no information a human is expected to read or edit, and
+lives under =build/output/= so it stays out of the input tree. JSON
+is the right shape here precisely *because* it's machine output:
+literate prose, drawers, and block-paste mechanisms have no readers.
+
+The distinction matters for the input tree. =projects/ores.codegen/models/=
+holds authored input only. Intermediate / derived artefacts go under
+=build/output/=.
+
 * The six MASD principles
 
 The principles below are defined in full in

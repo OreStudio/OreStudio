@@ -19,7 +19,37 @@ looks/. The schema lives in [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]
 | Item      | Value                                |
 |-----------+--------------------------------------|
 | Diagram   | =projects/ores.sql/modeling/ores_schema.puml= |
+| Rendered  | =projects/ores.sql/modeling/ores_schema.png= (committed) |
 | CMakeLists | =projects/ores.sql/modeling/CMakeLists.txt= |
+
+* Generation pipeline
+
+The ER diagram is generated, not hand-written. It's the canonical
+example in the project of the *automated codegen route* (see [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]]
+for the routes architecture): codegen parses already-generated
+artefacts, derives a model from them, and renders new artefacts from
+that model.
+
+The pipeline has three stages, all driven by
+=projects/ores.codegen/plantuml_er_generate.sh=:
+
+| Stage    | Reads                                                  | Tool                                         | Writes                          |
+|----------+--------------------------------------------------------+----------------------------------------------+---------------------------------|
+| Parse    | =projects/ores.sql/create/**/*.sql=                    | =projects/ores.codegen/src/plantuml_er_parse_sql.py= | =build/output/codegen/plantuml_er_model.json= |
+| Render   | the intermediate JSON + a mustache template            | =projects/ores.codegen/src/plantuml_er_generate.py= (pystache) | =projects/ores.sql/modeling/ores_schema.puml= |
+| Diagram  | the =.puml=                                            | PlantUML (system =plantuml=, or =plantuml.jar=) | =projects/ores.sql/modeling/ores_schema.png= |
+
+The intermediate model file is *not* committed and *not* literate. It
+lives under =build/output/= (gitignored) because it is regenerated on
+every run and carries no information a human is expected to read or
+edit. The format is JSON for the same reason: a generated artefact
+doesn't benefit from org-mode literate prose, drawers, or block-paste
+mechanisms — those are reserved for the *authored* models humans
+maintain (under each component's =modeling/= directory).
+
+The =.puml= and =.png= are committed because reviewers and readers
+benefit from seeing schema-shape diffs in PRs and viewing the diagram
+without rebuilding.
 
 * Skeleton
 

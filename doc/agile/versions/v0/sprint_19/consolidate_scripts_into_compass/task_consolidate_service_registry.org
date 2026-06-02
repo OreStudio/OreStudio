@@ -31,49 +31,46 @@ names rather than reading an authored registry.
 
 | Field        | Value                                                       |
 |--------------+-------------------------------------------------------------|
-| State        | DISCOVERED                                                  |
+| State        | DONE                                                        |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
-| Now          | Inventory + plan captured; sequenced as the first migration. |
-| Waiting on   | T1 (operational-pillar taxonomy design).                    |
-| Next         | Decide registry location (D1) per T1, then implement.       |
+| Now          | Nothing.                                                    |
+| Waiting on   | Nothing.                                                    |
+| Next         | Nothing.                                                    |
 | Last touched | 2026-06-02                                                  |
 
 * Acceptance
 
 - Exactly one authored registry file is the source of truth for the
   domain-service list; every other artefact is generated from it or
-  reads it at runtime.
-- =init-environment= no longer globs =projects/ores.*.service= (or any
-  directory layout) to discover services; it reads the registry.
-- =service_vars.sh= continues to be generated from the registry
-  (unchanged consumer contract for =recreate_database.sh= /
-  =setup_database.sh=).
-- =ores-prodigy.el= and any other consumer derive from the registry
-  (directly, or transitively via =.env= as today) — no hand-kept list.
-- Adding or removing a service is a one-file edit + regen; no script
-  greps the filesystem layout to find services.
-- =cmake --build= + =ctest= and a local =init-environment= +
-  =recreate_database= round-trip pass.
+  reads it at runtime. *Verified* for all consumers (see Result).
+- The single source is documented in a discoverable recipe — where the
+  registry lives, what regenerates from it, and how to add a service —
+  so the "first class" intent is met without relocating the file.
+- No consumer infers the service set from the directory layout.
+
+The =init-environment= → =compass env init= port (the D2 Python-rewrite
+scope) is split into its own task,
+[[id:5E5D286C-70E4-48B4-A5FE-A4A28DC8BE63][Port init-environment to compass env init]].
 
 * Plan
 
-** Decision D1 — registry location
+** Decision D1 — registry location: KEEP in codegen/models (resolved)
 
-User direction so far: promote the registry to =projects/services.json=
-as a product-level, first-class file. Today the authoritative registry
-already exists but lives under codegen models at
+Resolved: *keep* the registry at
 =projects/ores.codegen/models/services/ores_services_service_registry.json=.
-Options:
 
-1. *Move* it to =projects/services.json= and update the codegen manifest
-   / =service-registry= profile input path. Most aligned with "first
-   class," but codegen no longer "owns" it.
-2. *Keep* it under codegen models (it is already the authored source that
-   generates =service_vars.sh=) and simply have =init-environment= read
-   it too. Smallest change; treats the service list as codegen model data.
-
-Resolve D1 before implementing. (User picked =projects/services.json= in
-discussion; confirm against option 2's lower churn.)
+The earlier inclination was to move it to =projects/services.json=, but
+investigation showed it is not merely a list — it is a rich *codegen
+model* (=model_types: ["service_registry"]=) whose =service-registry=
+profile generates *five* artefacts: =service_vars.sh= plus four SQL
+templates (=sql_service_users_create=, =sql_service_accounts_populate=,
+=sql_service_account_roles_populate=, =sql_service_db_grants=). Moving it
+out of =codegen/models/= would detach a codegen model from where every
+other model lives and require repointing the profile input + path
+resolution — cosmetic gain, real churn. It is already the single
+authored source (the regroup-era directory glob was the only rogue
+duplicate, removed in PR #997). So this task /documents/ that source
+rather than relocating it.
 
 ** Decision D2 — init-environment language
 
@@ -177,6 +174,7 @@ when this task is picked up.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/1001][#1001]] | [agile] Promote service-registry task to scripts-into-compass story |
+| [[https://github.com/OreStudio/OreStudio/pull/1006][#1006]] | [doc] Confirm + document the service registry as the single source |
 
 * Review
 
@@ -184,5 +182,33 @@ when this task is picked up.
 |---+-----------------+------+----------+-------|
 | 1 | Omit empty =* Decisions= placeholder section | story.org | Fixed — removed | Gemini round 1 |
 | 2 | Stale Now/Waiting fields after promotion | task_consolidate_service_registry.org | Fixed — Now/Waiting updated | Gemini round 1 |
+| 3 | Recipe step 2 =cd= breaks repo-root-relative paths in steps 3–4 | how_do_i_add_a_domain_service.org | Fixed — run generator from root (it cd's internally) | Gemini round 2 (PR #1006) |
 
 * Result
+
+The service list is confirmed to have a single source of truth — the
+codegen registry model
+=projects/ores.codegen/models/services/ores_services_service_registry.json=
+— and that source is now documented discoverably.
+
+D1 resolved: *keep* the registry in =codegen/models= (it is a rich
+codegen model generating five artefacts, not just a list; relocating it
+to =projects/services.json= was cosmetic churn). The single-source goal
+was already met once PR #997 removed the directory glob.
+
+Verified every consumer derives from the one registry:
+- =service_vars.sh= (=SERVICE_NAMES=) — generated by the
+  =service-registry= profile.
+- SQL service users / accounts / roles / grants — generated by the same
+  profile (4 templates).
+- =init-environment.sh= — reads the registry directly (no glob).
+- =ores-prodigy.el= — derives from =.env= =ORES_*_SERVICE_DB_USER=,
+  downstream of init-environment.
+- No script infers the service set from the directory layout.
+
+Documented in the recipe [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]] (wired into the
+codegen recipes index), covering the registry edit, the regen, and the
+full consumer table.
+
+The =init-environment= → =compass env init= port (D2) is split into
+[[id:5E5D286C-70E4-48B4-A5FE-A4A28DC8BE63][Port init-environment to compass env init]].

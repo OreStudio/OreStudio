@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 0BCCD2EF-BE69-401E-916D-520AA6E1168A
+:END:
+#+title: ores.trading.trade_lifecycle
+#+description: Codegen field-group model for ores::trading::domain::trade_lifecycle.
+#+type: ores.codegen.field_group
+#+component: trading
+#+component_include: trading.api
+#+product: ores
+#+entity_singular: trade_lifecycle
+#+namespace: ores::trading::domain
+#+brief: Key dates and timestamps for a trade.
+#+filetags: :model:field_group:trading:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+One of five field-groups that compose trading::domain::trade via
+rfl::Flatten<T>.  See trade_identity_field_group.json for the
+rationale behind the sub-struct decomposition.
+
+This group carries the temporal dimension fields (trade date,
+effective date, termination date, and execution timestamp).
+All are optional because not every trade type requires all dates
+at creation time.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** trade_date
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Date on which the trade was agreed (ISO-8601 date string).
+
+** effective_date
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Date from which the trade becomes effective (ISO-8601 date string).
+
+** termination_date
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Scheduled end date of the trade (ISO-8601 date string).
+
+** execution_timestamp
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Exact moment the trade was executed (ISO-8601 timestamp string).

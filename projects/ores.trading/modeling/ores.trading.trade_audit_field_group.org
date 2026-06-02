@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 3FFFC45B-4BE9-4497-993E-A25B4B127A2C
+:END:
+#+title: ores.trading.trade_audit
+#+description: Codegen field-group model for ores::trading::domain::trade_audit.
+#+type: ores.codegen.field_group
+#+component: trading
+#+component_include: trading.api
+#+product: ores
+#+entity_singular: trade_audit
+#+namespace: ores::trading::domain
+#+brief: Audit trail fields for a trade.
+#+filetags: :model:field_group:trading:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+One of five field-groups that compose trading::domain::trade via
+rfl::Flatten<T>.  See trade_identity_field_group.json for the
+rationale behind the sub-struct decomposition.
+
+This group carries the provenance/audit fields that record who
+changed the trade, why, and when.  These mirror the standard
+ORE audit columns present on all temporal entities.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+* Fields
+
+** modified_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Username of the system actor that wrote this record.
+
+** performed_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Username of the business user on whose behalf the change was made.
+
+** change_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Structured reason code for the lifecycle event (e.g. NEW, AMEND, CANCEL).
+
+** change_commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Free-text commentary describing the reason for the change.
+
+** recorded_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+Wall-clock timestamp at which this version of the trade was persisted.

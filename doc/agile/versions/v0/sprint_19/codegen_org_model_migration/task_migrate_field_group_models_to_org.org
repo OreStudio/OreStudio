@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/migrate-field-group-org
-#+pr:
+#+pr: 998
 #+blocked_on:
 #+state: DONE
 #+blocked_since:
@@ -65,9 +65,9 @@ dedicated loader.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #998 | [codegen,trading] Migrate trading field-group models from JSON to org-mode |
 
 * Review
 

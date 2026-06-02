@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: F7E215FD-AF91-4E02-989A-FC5D918DB1C9
+:END:
+#+title: ores.trading.trade_parties
+#+description: Codegen field-group model for ores::trading::domain::trade_parties.
+#+type: ores.codegen.field_group
+#+component: trading
+#+component_include: trading.api
+#+product: ores
+#+entity_singular: trade_parties
+#+namespace: ores::trading::domain
+#+brief: Counterparty and book/portfolio relationships for a trade.
+#+filetags: :model:field_group:trading:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+One of five field-groups that compose trading::domain::trade via
+rfl::Flatten<T>.  See trade_identity_field_group.json for the
+rationale behind the sub-struct decomposition.
+
+This group carries the party relationship fields (book, portfolio,
+counterparty, and optional successor trade).
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+* Fields
+
+** book_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+Book that owns this trade (soft FK to ores_refdata_books_tbl).
+
+** portfolio_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+Portfolio this trade belongs to (soft FK to ores_refdata_portfolios_tbl).
+
+** counterparty_id
+:PROPERTIES:
+:cpp_type: std::optional<boost::uuids::uuid>
+:END:
+
+Optional counterparty (soft FK to ores_refdata_counterparties_tbl).
+
+** successor_trade_id
+:PROPERTIES:
+:cpp_type: std::optional<boost::uuids::uuid>
+:END:
+
+UUID of the trade that replaced this one (e.g. after novation). Absent for active trades.

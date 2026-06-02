@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 0E23C661-2D22-48AA-BF76-60BA00EF0C3B
+:END:
+#+title: ores.trading.trade_identity
+#+description: Codegen field-group model for ores::trading::domain::trade_identity.
+#+type: ores.codegen.field_group
+#+component: trading
+#+component_include: trading.api
+#+product: ores
+#+entity_singular: trade_identity
+#+namespace: ores::trading::domain
+#+brief: Ownership and surrogate key fields for a trade.
+#+filetags: :model:field_group:trading:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+One of five field-groups that compose trading::domain::trade via
+rfl::Flatten<T>.  Splitting trade into small sub-structs keeps each
+per-struct rfl field-uniqueness check (O(n²)) shallow enough to avoid
+the MSVC C1202 recursive-template-depth error.
+
+This group carries the identity / surrogate-key fields that
+uniquely identify the trade record within a tenant.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
+#+end_src
+
+* Fields
+
+** tenant_id
+:PROPERTIES:
+:cpp_type:      utility::uuid::tenant_id
+:default_value: utility::uuid::tenant_id::system()
+:END:
+
+Tenant identifier for multi-tenancy isolation.
+
+** id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID surrogate key for this trade record.
+
+** version
+:PROPERTIES:
+:cpp_type:      int
+:default_value: 0
+:END:
+
+Optimistic-locking version counter.
+
+** party_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+Internal party that owns this trade (denormalised from book_id).
+
+** external_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional external trade identifier (e.g. UTI prefix or legacy system ID).

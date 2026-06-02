@@ -238,6 +238,11 @@ def is_domain_entity_model(model_filename):
     - ``ores.<component>.<entity>.org`` (current literate org model,
       co-located under projects/ores.<component>/modeling/)
 
+    Other org-mode model kinds use a discriminating suffix
+    (``_field_group.org``, etc.); those are excluded from the generic
+    ``ores.<component>.<entity>.org`` match so they route to their own
+    predicates instead.
+
     Args:
         model_filename (str): The model filename
 
@@ -245,11 +250,16 @@ def is_domain_entity_model(model_filename):
         bool: True if this is a domain entity model
     """
     basename = os.path.basename(model_filename)
-    return (
-        model_filename.endswith("_domain_entity.json")
-        or model_filename.endswith("_entity.org")
-        or (basename.startswith("ores.") and basename.endswith(".org"))
-    )
+    _other_org_kinds = ("_field_group.org",)
+    if model_filename.endswith("_domain_entity.json"):
+        return True
+    if model_filename.endswith("_entity.org"):
+        return True
+    if basename.startswith("ores.") and basename.endswith(".org"):
+        if any(basename.endswith(s) for s in _other_org_kinds):
+            return False
+        return True
+    return False
 
 
 def is_junction_model(model_filename):
@@ -319,7 +329,10 @@ def is_field_group_model(model_filename):
     Returns:
         bool: True if this is a field-group model
     """
-    return model_filename.endswith("_field_group.json")
+    return (
+        model_filename.endswith("_field_group.json")
+        or model_filename.endswith("_field_group.org")
+    )
 
 
 def is_table_model(model_filename):
@@ -840,7 +853,12 @@ def load_model(model_path):
     path_str = str(model_path)
     if path_str.endswith('.org'):
         # Local import avoids a circular dependency at module load time.
-        from codegen.org_loader import load_org_model
+        from codegen.org_loader import (
+            load_org_model,
+            load_org_field_group_model,
+        )
+        if path_str.endswith('_field_group.org'):
+            return load_org_field_group_model(model_path)
         return load_org_model(model_path)
     with open(model_path, 'r', encoding='utf-8') as f:
         return json.load(f)

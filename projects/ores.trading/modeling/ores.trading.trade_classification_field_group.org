@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: FAA3DF5F-48A3-4A1B-A450-C3ADC10649A2
+:END:
+#+title: ores.trading.trade_classification
+#+description: Codegen field-group model for ores::trading::domain::trade_classification.
+#+type: ores.codegen.field_group
+#+component: trading
+#+component_include: trading.api
+#+product: ores
+#+entity_singular: trade_classification
+#+namespace: ores::trading::domain
+#+brief: Product and instrument classification fields for a trade.
+#+filetags: :model:field_group:trading:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+One of five field-groups that compose trading::domain::trade via
+rfl::Flatten<T>.  See trade_identity_field_group.json for the
+rationale behind the sub-struct decomposition.
+
+This group carries the product/instrument classification fields
+(trade type, product type, instrument, asset class, netting set,
+activity type, and status).
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.trading.api/domain/product_type.hpp"
+#+end_src
+
+* Fields
+
+** trade_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Trade type code (e.g. Swap, FRA, Option).
+
+** product_type
+:PROPERTIES:
+:cpp_type:      domain::product_type
+:default_value: domain::product_type::unknown
+:END:
+
+Broad product classification enum.
+
+** instrument_id
+:PROPERTIES:
+:cpp_type: std::optional<boost::uuids::uuid>
+:END:
+
+Optional instrument (soft FK to ores_refdata_instruments_tbl).
+
+** asset_class
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Optional asset class override (e.g. Rates, Credit, FX).
+
+** netting_set_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Netting set identifier for collateral/margin grouping.
+
+** activity_type_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Lifecycle activity code (e.g. New, Amendment, Novation, Termination).
+
+** status_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+Trade status (soft FK to ores_refdata_trade_statuses_tbl).

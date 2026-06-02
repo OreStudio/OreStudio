@@ -19,11 +19,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Conduct a System 2 analysis of the operational script surface and
-produce a *taxonomy design document* that all per-pillar migration tasks
-build from — the same design-first approach the [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]
-used before touching code. The document must answer the open questions
-below and map every operational script to a compass pillar + verb.
+Conduct a System 2 analysis of the operational script surface and settle
+the operational pillar taxonomy that all per-pillar migration tasks build
+from — the same design-first approach the [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] used
+before touching code. The analysis must answer the open questions below
+and map every operational script to a compass pillar + verb.
+
+The design lives *inline* — the working mapping and analysis in this
+task's =* Plan= / =* Notes=, and the durable decisions distilled into the
+parent story's =* Decisions=. It is /not/ written to =doc/plans/= (that
+directory is the historical archive of older one-off plans, not where
+live design belongs under the v2 architecture).
 
 This is design, not migration. No scripts are folded in or deleted in
 this task; it produces the plan and scaffolds the migration tasks.
@@ -41,10 +47,12 @@ this task; it produces the plan and scaffolds the migration tasks.
 
 * Acceptance
 
-- A design document at =doc/plans/YYYY-MM-DD-compass-operational-pillars.org=
-  records: the operational pillar set, the full per-script mapping
-  (script → pillar → =compass <pillar> <verb>=), and the
-  backward-compatibility / CI-migration / documentation decisions.
+- The operational pillar set and the full per-script mapping
+  (script → pillar → =compass <pillar> <verb>=) are recorded in this
+  task's =* Plan= / =* Notes=; the durable decisions (pillar set, naming
+  grammar, backward-compat policy, CI-migration approach, documentation
+  surface) are distilled into the story's =* Decisions=. Nothing is
+  written to =doc/plans/=.
 - Every one of the ~61 operational scripts in the story inventory appears
   in the mapping table with a target verb or an explicit "stays as-is"
   rationale.
@@ -121,12 +129,14 @@ directly — it should call the compass verbs instead).
 
 1. *Survey.* Re-confirm the inventory against the repo; for each script
    read its header + flags to capture the verb surface it exposes.
-2. *Decide.* Resolve Q1–Q8; record in the design doc with reasoning.
-3. *Map.* Produce the full script→pillar→verb table.
+2. *Decide.* Resolve Q1–Q8 with reasoning — captured inline here, the
+   durable choices distilled to the story's =* Decisions=.
+3. *Map.* Produce the full script→pillar→verb table (in =* Notes= below).
 4. *Scaffold.* Create per-pillar migration tasks under the story, each
    carrying its slice of the mapping. The service-registry task is the
    pilot and gets its full plan written.
-5. *Commit + PR.* Docs only (design doc + scaffolded tasks).
+5. *Commit + PR.* Docs only (this task's filled-in design, the story's
+   Decisions, and the scaffolded migration tasks).
 
 * Notes
 
@@ -138,8 +148,10 @@ directly — it should call the compass verbs instead).
   the story's "compass today" section; source is
   =projects/ores.compass/src/compass.py= (=cmd_<pillar>(argv)= handlers,
   =_EPILOG=, short-circuit dispatch in =main()=).
-- Precedent: =doc/plans/2026-06-01-compass-cli-ux-taxonomy.org= (the UX
-  redesign's taxonomy doc) is the template to follow for this doc's shape.
+- Precedent for /content shape/ (pillars, taxonomy table, backward-compat
+  decisions): the UX redesign's taxonomy analysis. Note it was written to
+  =doc/plans/= at the time; this task instead keeps the design inline in
+  the task + story =* Decisions= per the current convention.
 - The compass-direction note in the absorbed service-registry task.
 
 * PRs

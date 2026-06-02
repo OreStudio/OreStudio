@@ -102,9 +102,10 @@ migrate; the single service registry's home (=projects/services.json=).
 
 * Acceptance
 
-- A taxonomy design document exists mapping every operational script to a
+- The operational-pillar taxonomy — every operational script mapped to a
   compass pillar + verb, with backward-compatibility and CI-migration
-  decisions (mirrors the compass CLI UX redesign's taxonomy doc).
+  decisions — is settled in the design task and distilled into this
+  story's =* Decisions= (kept inline, not in =doc/plans/=).
 - The operational pillars are implemented in =compass= and documented in
   =--help= and the compass recipes/knowledge docs.
 - Migrated scripts either become thin compatibility shims that call

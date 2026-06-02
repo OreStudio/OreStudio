@@ -98,8 +98,13 @@ Org file shape:
 
 * Review
 
+** Round 1 — 2026-06-02 (gemini)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =select_tables= used the prefix bullet parser → would collapse =- k=v, ...= bullets to ={"prefix": "k=v, ..."}= instead of restoring the dict | =projects/ores.codegen/src/codegen/org_loader.py= | Accepted | Fixed in =a995b49f4=. New =_service_registry_select_tables= splits on commas and reconstructs the {k: v} dict. No live data exercises it (all 17 services have =select_tables: []=); defensive against future entries. |
+| 2 | Skip top-level headings without =:psql_var:= | =projects/ores.codegen/src/codegen/org_loader.py= | Accepted | Fixed in =a995b49f4=. A future =Notes= / =References= heading in the doc won't be picked up as a service. |
+| 3 | Reuse =_SERVICE_REGISTRY_SCALARS= instead of duplicating the tuple inline | =projects/ores.codegen/src/codegen/org_loader.py= | Accepted | Fixed in =a995b49f4=. |
+| 4 | Empty =* PRs= / =* Review= sections must be present | =doc/agile/versions/v0/sprint_19/codegen_org_model_migration/task_migrate_service_registry_to_org.org= | Declined | Both sections are already present. =* PRs= carries the PR-#1009 row; =* Review= carries the standard column header. The compass scaffold emits both by default. |
 
 * Result

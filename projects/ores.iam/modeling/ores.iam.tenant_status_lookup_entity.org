@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 9A196BCB-05A5-4867-92DF-42F857EFF8C8
+:END:
+#+title: ores.iam.tenant_status
+#+description: Codegen lookup-entity model for tenant_statuses.
+#+type: ores.codegen.lookup_entity
+#+filetags: :codegen:lookup_entity:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+product: ores
+#+schema: public
+#+component: iam
+#+entity_singular: tenant_status
+#+entity_plural: tenant_statuses
+#+has_tenant_id: true
+#+system_tenant_validation: true
+#+has_display_order: true
+#+description: Tenant Statuses - Valid tenant lifecycle statuses
+
+Tenant Statuses - Valid tenant lifecycle statuses
+
+* Primary key
+:PROPERTIES:
+:column:  status
+:type:    text
+:is_text: true
+:END:
+
+* Columns
+
+** name
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** description
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:nullable: false
+:default:  0
+:END:
+
+* Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: F103CBED-1CEA-4307-A062-5249759BF970
+:END:
+#+title: ores.analytics.pricing_engine_type
+#+description: Codegen lookup-entity model for pricing_engine_types.
+#+type: ores.codegen.lookup_entity
+#+filetags: :codegen:lookup_entity:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+product: ores
+#+schema: public
+#+component: analytics
+#+component_include: analytics.api
+#+component_core: analytics.core
+#+entity_singular: pricing_engine_type
+#+entity_singular_upper: PRICING_ENGINE_TYPE
+#+entity_singular_short: type
+#+entity_singular_words: pricing engine type
+#+entity_plural: pricing_engine_types
+#+entity_plural_short: types
+#+entity_plural_words: pricing engine types
+#+entity_plural_words_cap: Pricing engine types
+#+entity_title: Pricing Engine Type
+#+entity_title_lower: pricing engine type
+#+has_tenant_id: true
+#+system_tenant_validation: true
+#+has_display_order: false
+#+description: Pricing Engine Types - Classification of products at the granularity needed by the pricing engine to select the correct model and numerical method (e.g. EuropeanSwaption, BermudanSwaption, CMS).
+
+Pricing Engine Types - Classification of products at the granularity needed by the pricing engine to select the correct model and numerical method (e.g. EuropeanSwaption, BermudanSwaption, CMS).
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:is_text:  true
+:cpp_type: std::string
+:END:
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** instrument_type_code
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+* Validations
+
+| column               | validation_function                                       |
+|----------------------+-----------------------------------------------------------|
+| change_reason_code   | ores_dq_validate_change_reason_fn                         |
+| instrument_type_code | ores_analytics_validate_pricing_engine_instrument_type_fn |

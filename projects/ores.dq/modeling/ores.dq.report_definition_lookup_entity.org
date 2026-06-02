@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 7CE834E6-4E85-4C8F-BCD0-549819D1F648
+:END:
+#+title: ores.dq.report_definition
+#+description: Codegen lookup-entity model for report_definitions.
+#+type: ores.codegen.lookup_entity
+#+filetags: :codegen:lookup_entity:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+product: ores
+#+schema: public
+#+component: dq
+#+entity_singular: report_definition
+#+entity_plural: report_definitions
+#+has_tenant_id: true
+#+has_coding_scheme: false
+#+has_image_id: false
+#+has_artefact_insert_fn: false
+#+description: Report Definition artefacts - default report templates for the ORE analytics bundle
+
+Report Definition artefacts - default report templates for the ORE analytics bundle
+
+* Primary key
+:PROPERTIES:
+:column:  id
+:type:    uuid
+:is_text: false
+:END:
+
+* Columns
+
+** name
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** description
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** report_type
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** schedule_expression
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** concurrency_policy
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:nullable: false
+:END:
+
+* Artefact indexes
+
+** name
+:PROPERTIES:
+:columns: name
+:END:
+
+** report_type
+:PROPERTIES:
+:columns: report_type
+:END:

@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 0DCC2BDD-5117-4350-A2EE-C69AF208684E
+:END:
+#+title: ores.trading.trade_type
+#+description: Codegen lookup-entity model for trade_types.
+#+type: ores.codegen.lookup_entity
+#+filetags: :codegen:lookup_entity:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+product: ores
+#+schema: public
+#+component: trading
+#+entity_singular: trade_type
+#+entity_plural: trade_types
+#+has_tenant_id: true
+#+system_tenant_validation: true
+#+has_display_order: false
+#+description: Trade Types - ORE instrument type codes (Swap, FxForward, CapFloor, Swaption, etc.)
+
+Trade Types - ORE instrument type codes (Swap, FxForward, CapFloor, Swaption, etc.)
+
+* Primary key
+:PROPERTIES:
+:column:  code
+:type:    text
+:is_text: true
+:END:
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** product_type
+:PROPERTIES:
+:type:     product_type_t
+:nullable: false
+:END:
+
+** has_options
+:PROPERTIES:
+:type:     boolean
+:nullable: false
+:default:  false
+:END:
+
+** has_extension
+:PROPERTIES:
+:type:     boolean
+:nullable: false
+:default:  false
+:END:
+
+* Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |

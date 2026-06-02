@@ -920,3 +920,101 @@ def load_org_table_model(path: Path | str) -> dict[str, Any]:
         t["indexes"] = []
 
     return {"table": t}
+
+
+# Scalars that ``load_org_lookup_entity_model`` lifts from frontmatter as
+# raw strings (preserve every entity_* / component_* string verbatim).
+_LOOKUP_ENTITY_STR_SCALARS = (
+    "product", "schema", "component", "component_include", "component_core",
+    "entity_singular", "entity_singular_upper", "entity_singular_short",
+    "entity_singular_words",
+    "entity_plural", "entity_plural_short",
+    "entity_plural_words", "entity_plural_words_cap",
+    "entity_title", "entity_title_lower",
+)
+# Scalars that should round-trip as booleans (Mustache treats truthy/falsy).
+_LOOKUP_ENTITY_BOOL_SCALARS = (
+    "has_tenant_id", "system_tenant_validation", "has_display_order",
+    "has_coding_scheme", "has_image_id", "has_artefact_insert_fn",
+)
+
+
+def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
+    """Load an org-mode lookup-entity model into the ``{entity: {...}}``
+    dict shape that ``sql_schema_table_create.mustache`` consumes via the
+    ``--profile sql`` model_types=["schema"] route.
+
+    Lookup entities share the bi-temporal DDL shape with table models
+    but route through codegen's "schema" model_type (JSON root key
+    ``entity``). The org file preserves all C++/Qt/protocol scalar
+    metadata (``entity_singular_upper``, ``entity_title``,
+    ``component_include``, ...) in the frontmatter so future profiles
+    don't need the JSON re-introduced."""
+    text = Path(path).read_text(encoding="utf-8")
+    doc = parse_org(text)
+    fm = doc.frontmatter
+
+    e: dict[str, Any] = {}
+    for key in _LOOKUP_ENTITY_STR_SCALARS:
+        if key in fm:
+            e[key] = fm[key]
+    for key in _LOOKUP_ENTITY_BOOL_SCALARS:
+        if key in fm:
+            e[key] = _parse_typed(fm[key])
+
+    body = _strip_body(doc.root)
+    if body:
+        e["description"] = body
+
+    pk_section = _section(doc.root, "Primary key")
+    if pk_section:
+        pk: dict[str, Any] = {}
+        for k, v in pk_section.properties.items():
+            key = k.lower()
+            if key == "cpp_type":
+                pk[key] = v  # raw string
+            else:
+                pk[key] = _parse_typed(v)
+        e["primary_key"] = pk
+
+    cols_section = _section(doc.root, "Columns")
+    columns: list[dict[str, Any]] = []
+    if cols_section:
+        for node in cols_section.children:
+            entry: dict[str, Any] = {"name": node.title}
+            for k, v in node.properties.items():
+                key = k.lower()
+                if key in ("default", "default_value"):
+                    entry[key] = v  # raw string; Mustache 0-falsy guard
+                else:
+                    entry[key] = _parse_typed(v)
+            columns.append(entry)
+    e["columns"] = columns
+
+    validations_section = _section(doc.root, "Validations")
+    if validations_section:
+        e["validations"] = _parse_org_table_rows(validations_section)
+
+    indexes_section = _section(doc.root, "Indexes")
+    if indexes_section:
+        indexes: list[dict[str, Any]] = []
+        for node in indexes_section.children:
+            entry = {"name": node.title}
+            for k, v in node.properties.items():
+                entry[k.lower()] = _parse_typed(v)
+            indexes.append(entry)
+        e["indexes"] = indexes
+    else:
+        e["indexes"] = []
+
+    artefact_section = _section(doc.root, "Artefact indexes")
+    if artefact_section:
+        artefact_indexes: list[dict[str, Any]] = []
+        for node in artefact_section.children:
+            entry = {"name": node.title}
+            for k, v in node.properties.items():
+                entry[k.lower()] = v  # keep columns string verbatim
+            artefact_indexes.append(entry)
+        e["artefact_indexes"] = artefact_indexes
+
+    return {"entity": e}

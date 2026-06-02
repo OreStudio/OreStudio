@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 2CED99E4-9F6F-445C-96C5-5895DF6A30D7
+:END:
+#+title: ores.trading.lifecycle_event
+#+description: Codegen lookup-entity model for lifecycle_events.
+#+type: ores.codegen.lookup_entity
+#+filetags: :codegen:lookup_entity:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+product: ores
+#+schema: public
+#+component: trading
+#+entity_singular: lifecycle_event
+#+entity_plural: lifecycle_events
+#+has_tenant_id: true
+#+system_tenant_validation: true
+#+has_display_order: false
+#+description: Trade Lifecycle Events - Valid lifecycle event types (New, Amendment, Novation, PartialTermination, FullTermination)
+
+Trade Lifecycle Events - Valid lifecycle event types (New, Amendment, Novation, PartialTermination, FullTermination)
+
+* Primary key
+:PROPERTIES:
+:column:  code
+:type:    text
+:is_text: true
+:END:
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** fsm_state_id
+:PROPERTIES:
+:type:     uuid
+:nullable: true
+:END:
+
+* Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |

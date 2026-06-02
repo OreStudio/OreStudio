@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 6D8510CF-B977-4126-9051-5BFA9DE929B3
+:END:
+#+title: ores.dq.artefact_type
+#+description: Codegen lookup-entity model for artefact_types.
+#+type: ores.codegen.lookup_entity
+#+filetags: :codegen:lookup_entity:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+product: ores
+#+schema: public
+#+component: dq
+#+entity_singular: artefact_type
+#+entity_plural: artefact_types
+#+has_tenant_id: true
+#+system_tenant_validation: true
+#+has_display_order: true
+#+description: Artefact Types - Maps artefact type codes to their NATS dispatch subjects
+
+Artefact Types - Maps artefact type codes to their NATS dispatch subjects
+
+* Primary key
+:PROPERTIES:
+:column:  code
+:type:    text
+:is_text: true
+:END:
+
+* Columns
+
+** name
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** description
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** artefact_table
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** target_table
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** target_subject
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:nullable: false
+:default:  0
+:END:
+
+* Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |

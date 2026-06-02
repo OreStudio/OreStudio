@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: A40EACF4-4E8D-48D5-8E68-CF399B9BB31F
+:END:
+#+title: ores.trading.party_role_type
+#+description: Codegen lookup-entity model for party_role_types.
+#+type: ores.codegen.lookup_entity
+#+filetags: :codegen:lookup_entity:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+product: ores
+#+schema: public
+#+component: trading
+#+entity_singular: party_role_type
+#+entity_plural: party_role_types
+#+has_tenant_id: true
+#+system_tenant_validation: true
+#+has_display_order: false
+#+description: Trade Party Role Types - FpML-aligned party role codes (Counterparty, CalculationAgent, ExecutingBroker, NovationTransferee)
+
+Trade Party Role Types - FpML-aligned party role codes (Counterparty, CalculationAgent, ExecutingBroker, NovationTransferee)
+
+* Primary key
+:PROPERTIES:
+:column:  code
+:type:    text
+:is_text: true
+:END:
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+* Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |

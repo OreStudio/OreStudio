@@ -206,13 +206,21 @@ def is_entity_schema_model(model_filename):
     """
     Check if a model file is an entity schema model.
 
+    Two forms are accepted:
+    - ``*_entity.json`` (legacy JSON model)
+    - ``*_lookup_entity.org`` (literate org-mode model — bi-temporal
+      lookup entities sharing the JSON-side ``entity`` root key)
+
     Args:
         model_filename (str): The model filename
 
     Returns:
         bool: True if this is an entity schema model
     """
-    return model_filename.endswith("_entity.json")
+    return (
+        model_filename.endswith("_entity.json")
+        or model_filename.endswith("_lookup_entity.org")
+    )
 
 
 def is_entity_data_model(model_filename):
@@ -250,14 +258,20 @@ def is_domain_entity_model(model_filename):
         bool: True if this is a domain entity model
     """
     basename = os.path.basename(model_filename)
-    _other_org_kinds = ("_field_group.org", "_junction.org", "_table.org")
+    _other_org_kinds = (
+        "_field_group.org", "_junction.org", "_table.org",
+        "_lookup_entity.org",
+    )
     if model_filename.endswith("_domain_entity.json"):
         return True
+    # Exclusions checked before the generic _entity.org / ores.*.org match,
+    # so kinds whose suffix overlaps with _entity.org (e.g. _lookup_entity.org)
+    # route to their own predicate.
+    if any(model_filename.endswith(s) for s in _other_org_kinds):
+        return False
     if model_filename.endswith("_entity.org"):
         return True
     if basename.startswith("ores.") and basename.endswith(".org"):
-        if any(basename.endswith(s) for s in _other_org_kinds):
-            return False
         return True
     return False
 
@@ -864,6 +878,7 @@ def load_model(model_path):
             load_org_field_group_model,
             load_org_junction_model,
             load_org_table_model,
+            load_org_lookup_entity_model,
         )
         if path_str.endswith('_field_group.org'):
             return load_org_field_group_model(model_path)
@@ -871,6 +886,8 @@ def load_model(model_path):
             return load_org_junction_model(model_path)
         if path_str.endswith('_table.org'):
             return load_org_table_model(model_path)
+        if path_str.endswith('_lookup_entity.org'):
+            return load_org_lookup_entity_model(model_path)
         return load_org_model(model_path)
     with open(model_path, 'r', encoding='utf-8') as f:
         return json.load(f)

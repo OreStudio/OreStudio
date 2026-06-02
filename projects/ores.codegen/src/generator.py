@@ -250,7 +250,7 @@ def is_domain_entity_model(model_filename):
         bool: True if this is a domain entity model
     """
     basename = os.path.basename(model_filename)
-    _other_org_kinds = ("_field_group.org", "_junction.org")
+    _other_org_kinds = ("_field_group.org", "_junction.org", "_table.org")
     if model_filename.endswith("_domain_entity.json"):
         return True
     if model_filename.endswith("_entity.org"):
@@ -352,7 +352,10 @@ def is_table_model(model_filename):
     Returns:
         bool: True if this is a table model
     """
-    return model_filename.endswith("_table.json")
+    return (
+        model_filename.endswith("_table.json")
+        or model_filename.endswith("_table.org")
+    )
 
 
 def get_model_type(model_filename):
@@ -860,11 +863,14 @@ def load_model(model_path):
             load_org_model,
             load_org_field_group_model,
             load_org_junction_model,
+            load_org_table_model,
         )
         if path_str.endswith('_field_group.org'):
             return load_org_field_group_model(model_path)
         if path_str.endswith('_junction.org'):
             return load_org_junction_model(model_path)
+        if path_str.endswith('_table.org'):
+            return load_org_table_model(model_path)
         return load_org_model(model_path)
     with open(model_path, 'r', encoding='utf-8') as f:
         return json.load(f)

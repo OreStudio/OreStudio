@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 694BFB41-222A-4BC7-BC74-D8B7C6C61644
+:END:
+#+title: How do I manage the .env format version with compass?
+#+description: Show and record the .env-format version with compass env version / version new; how the version log works, when to record a new version, and how an out-of-date checkout is caught before recreate_database.
+#+type: recipe
+#+level: cross
+#+filetags: :compass:env:provision:version:recipe:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+The =.env= has a /shape/ — the set of variables every service, the CLI,
+and the test suite expect. =ORES_ENV_VERSION= records which shape a given
+=.env= was generated against, so a checkout running an out-of-date =.env=
+is caught before it fails with a confusing missing-variable error. This
+recipe covers reading and recording that version with =compass env=, the
+Provision pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][developer toolkit]]. For the wider =compass env=
+command set (=init= / =diff= / =list=) see [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout
+environment with compass?]].
+
+* Question
+
+How do I see the current =.env= format version, and how do I record a new
+one when I make a change that alters the =.env=?
+
+* Answer
+
+** Show the current version — =compass env version=
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh env version
+#+end_src
+
+Prints the current (highest) version number. =compass env init= writes
+this same value into your =.env= as =ORES_ENV_VERSION=, and the
+pre-=recreate_database= check reads it back — one canonical source, no
+constant duplicated across the generator and the validator.
+
+** Record a new version — =compass env version new "<description>"=
+
+Run this whenever you make a change that alters the =.env='s shape:
+
+- add (or remove) a service in the [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][service registry]] — each service
+  contributes DB-credential variables;
+- add or rename a variable that =compass env init= writes.
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh env version new "added analytics service DB creds"
+#+end_src
+
+This computes the next version (current + 1) and appends a dated row to
+the [[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][environment format version log]]. It does *not* touch any =.env= —
+recording the version and regenerating the file are separate steps.
+
+** The full workflow
+
+1. Make the change (e.g. add a service, add a variable to =env_init=).
+2. =compass env version new "<what changed>"= — record the bump.
+3. =compass env init --preset <p> -y= — regenerate your own =.env=, which
+   now carries the new =ORES_ENV_VERSION=.
+4. Commit. Any other checkout still on the old version then fails the
+   pre-=recreate_database= check with a clear "re-run =compass env init="
+   message, instead of a later missing-password or missing-variable error.
+
+* Script
+
+=projects/ores.compass/compass.sh env version [new]= → =src/compass.py=
+(=cmd_env=) → =src/env_init.py= (=current_version= / =new_version=). The
+canonical log is the parseable org table in
+=doc/knowledge/architecture/env_format_version_log.org=; =env version new=
+appends a row to it. While =recreate_database= remains a shell script,
+=projects/ores.sql/utility/validate_env_version.sh= reads the version via
+=compass env version= (same source); it is deleted when that step becomes
+=compass db recreate=.
+
+* Tested by
+
+Manual. =env version new "..."= appends the next row; =env version= then
+reports it; a =.env= still on the prior version fails the
+pre-=recreate_database= check with the re-run message.
+
+* See also
+
+- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — the wider
+  =compass env= command set (=init= / =diff= / =list=).
+- [[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][Environment format version log]] — the canonical, parseable version table.
+- [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]] — the most common reason to record a
+  new version.
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the component model (pillars, structure).

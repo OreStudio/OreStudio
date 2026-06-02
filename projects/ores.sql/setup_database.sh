@@ -37,7 +37,7 @@
 #   ORES_DB_DDL_USER        DDL database user name (env-prefixed)
 #   ORES_DB_DDL_PASSWORD    Password for the DDL database user
 #   ORES_BUILD_ENVIRONMENT  Build environment label (default: local)
-#   (plus all service user names — see init-environment.sh)
+#   (plus all service user names — see compass env init)
 
 set -e
 set -o pipefail

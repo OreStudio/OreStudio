@@ -8,8 +8,8 @@
 #   --preset PRESET      CMake preset name (overrides ORES_PRESET from .env)
 #   --log-level LEVEL    Log level: trace|debug|info|warn|error (default: trace)
 #
-# The build preset defaults to ORES_PRESET in .env (set by init-environment.sh).
-# Use --preset to switch presets without re-running init-environment.sh.
+# The build preset defaults to ORES_PRESET in .env (set by compass env init).
+# Use --preset to switch presets without re-running compass env init.
 #
 # Start order: NATS → controller.
 # The controller reads service definitions from the DB and spawns all other
@@ -41,7 +41,7 @@ done
 ENV_FILE="$PROJECT_DIR/.env"
 if [[ ! -f "$ENV_FILE" ]]; then
     echo "error: .env not found at $ENV_FILE"
-    echo "       run: ./build/scripts/init-environment.sh --preset <preset>"
+    echo "       run: ./projects/ores.compass/compass.sh env init --preset <preset>"
     exit 1
 fi
 
@@ -60,7 +60,7 @@ source "$PROJECT_DIR/projects/ores.sql/utility/validate_env_version.sh"
 # --preset flag takes priority; fall back to ORES_PRESET from .env.
 PRESET="${PRESET_ARG:-${ORES_PRESET:-}}"
 if [[ -z "$PRESET" ]]; then
-    echo "error: no preset — pass --preset <preset> or set ORES_PRESET via init-environment.sh"
+    echo "error: no preset — pass --preset <preset> or set ORES_PRESET via compass env init"
     exit 1
 fi
 
@@ -68,7 +68,7 @@ fi
 # Mixing presets causes stop/status to look in the wrong directory.
 if [[ -n "$PRESET_ARG" && -n "${ORES_PRESET:-}" && "$ORES_PRESET" != "$PRESET_ARG" ]]; then
     echo "error: --preset '$PRESET_ARG' does not match ORES_PRESET='$ORES_PRESET' in .env" >&2
-    echo "       run: ./build/scripts/init-environment.sh --preset $PRESET_ARG" >&2
+    echo "       run: ./projects/ores.compass/compass.sh env init --preset $PRESET_ARG" >&2
     exit 1
 fi
 

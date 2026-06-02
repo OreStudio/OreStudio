@@ -9,7 +9,7 @@
 # template at build/config/nats.conf.template, creates the JetStream store
 # directory, and optionally starts nats-server and provisions streams.
 #
-# All settings are read from the .env file (written by init-environment.sh).
+# All settings are read from the .env file (written by compass env init).
 # The generated config is written to build/config/nats-<label>.conf and is
 # gitignored — it contains absolute paths specific to this checkout.
 #

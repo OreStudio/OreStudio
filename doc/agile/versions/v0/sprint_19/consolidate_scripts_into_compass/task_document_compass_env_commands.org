@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: D0442A4B-8BE6-48D1-8FFB-0CD9B9EA22F4
+:END:
+#+title: Task: Document the compass env commands
+#+description: Document compass env init/diff/list across all affected docs: update the recipes that referenced init-environment.sh, add a compass env recipe, and update the compass recipe index + pillar docs. Enumerate every document updated.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Document =compass env init/diff/list= and re-point every doc that
+referenced the deleted =init-environment.sh= / =diff-environment.sh= at
+the new commands. This task owns all documentation for the env port so
+the doc surface changes in one place and every touched file is accounted
+for.
+
+* Status
+
+| Field        | Value                                                |
+|--------------+------------------------------------------------------|
+| State        | STARTED                                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]         |
+| Now          | Docs written; shipping in the story PR.              |
+| Waiting on   | Nothing.                                             |
+| Next         | Ship in the story PR.                                |
+| Last touched | 2026-06-02                                           |
+
+* Acceptance
+
+- A new recipe documents =compass env init/diff/list= (flags,
+  behaviour-preservation guarantee, =--with-diff=, =--show-secrets=).
+- Every actionable doc that referenced the deleted scripts is updated to
+  the compass command; no live doc references =init-environment.sh= or
+  =diff-environment.sh=.
+- The compass recipe index lists the new Provision =env= verbs.
+- Historical records (=doc/agile/.../release_notes.org=, prior-sprint
+  task docs, =doc/plans/*=) are *left as-is* — they record what was true
+  at the time.
+- =validate_docs.sh= passes and the site builds.
+
+* Plan
+
+Documents to update (enumerated — keep current as work proceeds):
+
+| Document | Change |
+|----------+--------|
+| =doc/recipes/cmake/how_do_i_init_the_environment.org= | =init-environment.sh= → =compass env init=; mention =--with-diff= |
+| =doc/recipes/cmake/how_do_i_start_services.org= | Update env-bootstrap reference to =compass env init= |
+| =doc/recipes/new_service_checklist.org= | Replace =init-environment.sh= step with =compass env init= |
+| =doc/recipes/codegen/how_do_i_add_a_domain_service.org= | "Regenerate credentials" step: =init-environment.sh= → =compass env init= |
+| =doc/recipes/compass/how_do_i_manage_the_environment_with_compass.org= | *New* recipe: =env init/diff/list=, flags, masking, diff |
+| =doc/recipes/compass/compass.org= | Add the new env recipe to the index |
+
+Confirm the final list at close with
+=grep -rln 'init-environment\|diff-environment' doc/recipes doc/knowledge projects/modeling=
+— only historical records should remain.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Documents created / updated:
+
+| Document | Change |
+|----------+--------|
+| =doc/recipes/compass/how_do_i_manage_the_environment_with_compass.org= | *New* — detailed recipe for =env init/diff/list/version= (flags, behaviour-preservation guarantee, masking); version section trimmed to a pointer to the dedicated version recipe |
+| =doc/recipes/compass/how_do_i_manage_the_env_format_version_with_compass.org= | *New* — dedicated recipe for =env version= / =version new=: when to record a bump, the version log, how a stale checkout is caught |
+| =doc/recipes/compass/compass.org= | New *Provision* section linking both env recipes; intro notes operational pillars |
+| =doc/recipes/cmake/how_do_i_init_the_environment.org= | Rewritten as a concise pointer to the compass env recipe; commands → =compass env init= |
+| =doc/recipes/cmake/how_do_i_start_services.org= | Prereq reference → =compass env init= |
+| =doc/recipes/new_service_checklist.org= | Step 9 + the inline command → =compass env init= |
+| =doc/recipes/codegen/how_do_i_add_a_domain_service.org= | Registry source → org model =projects/modeling/service_registry.org= (was JSON); regen step → link to "How do I run codegen?"; credentials step + Script → =compass env init= |
+
+Verified: no live recipe/knowledge doc invokes the old scripts; the only
+remaining mentions are the two recipes that /describe/ what =compass env=
+replaced. Historical records (=doc/agile/*=, =doc/plans/*=) left as-is.

@@ -34,9 +34,9 @@ within this larger effort.
 |---------------+--------------------------------------------------|
 | State         | STARTED                                          |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                               |
-| Now           | Registry confirmed + documented as single source (D1: keep in codegen/models). |
+| Now           | Provision pillar live: compass env init/diff/list/version; scripts deleted, CI + dashboard cut over. env-init task shipped in PR. |
 | Waiting on    | Nothing.                                         |
-| Next          | Port init-environment to compass env init.       |
+| Next          | Document the compass env commands; then db/nats/Operate/Build/Generate migrations. |
 | Last touched  | 2026-06-02                                       |
 
 * Background: script inventory (2026-06-02)
@@ -121,11 +121,14 @@ migrate; the single service registry's home (=projects/services.json=).
 |------+-------+-------+-----+-------------|
 | [[id:A3CBBC36-AB3E-4046-817B-09A1B289BA98][T1: Design the operational compass pillar taxonomy]] | STARTED | 2026-06-02 | | System 2 design: 4 pillars + per-script mapping + Q1–Q8 decisions. Gates all migration tasks. |
 | [[id:9B8BB792-3562-4B52-B367-C94EF46BA100][Consolidate service registries into a single source of truth]] | DONE | 2026-06-02 | 2026-06-02 | Confirmed + documented the codegen registry as the one source (D1: keep in codegen/models); recipe added. |
-| [[id:5E5D286C-70E4-48B4-A5FE-A4A28DC8BE63][Port init-environment to compass env init]] | BACKLOG | | | Port the ~600-line init-environment.sh into compass env init (reads the registry); byte-identical .env; hard cutover. |
+| [[id:5E5D286C-70E4-48B4-A5FE-A4A28DC8BE63][Port init-environment to compass env init]] | DONE | 2026-06-02 | 2026-06-02 | Implement compass env init/diff/list (registry-backed, behaviour-preserving) + functional cutover (CI, dashboard, scripts; delete the scripts). |
+| [[id:D0442A4B-8BE6-48D1-8FFB-0CD9B9EA22F4][Document the compass env commands]] | BACKLOG | | | Update all recipes that referenced the env scripts + add a compass env recipe; enumerates every doc touched. |
+| [[id:AE2BCC66-983C-49E0-BC05-79100D388E8E][Add a command to record an env-version bump]] | BACKLOG | | | compass env bump: canonical version as data + changelog; init/validate read it. |
 | [[id:BAEB661D-2AB4-4796-B415-43B49BDCD3A6][Migrate db and nats setup into the Provision pillar]] | BACKLOG | | | compass db / compass nats verbs; delete scripts, update callers. |
 | [[id:333104A0-FFFE-4C20-9390-FA2ED732C2D5][Migrate the Operate pillar (services, client, logs)]] | BACKLOG | | | compass services {start,stop,status,clear-logs} + --delete-logs, compass client. |
 | [[id:D38238C9-702F-47AC-BE64-91D84A8EE716][Migrate the Build pillar (build, site)]] | BACKLOG | | | compass build, compass site serve. |
 | [[id:32DB538C-E2A6-493C-8CBA-6C73A7A10EC4][Add the Generate pillar (delegating gen verbs)]] | BACKLOG | | | compass gen verbs delegating to ores.codegen (keeps its own CLI). |
+| [[id:E65F42A6-0762-4F75-866F-25A428B3973F][Surface branch staleness vs main in compass Orient]] | BACKLOG | | | Compact ↑ahead/↓behind-origin/main indicator (no fetch) on where/status/fleet, escalating to a warning when too stale. |
 
 * Decisions
 

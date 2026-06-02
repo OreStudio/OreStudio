@@ -575,8 +575,8 @@ On other systems `setsid' is used when available, otherwise an error is raised."
             (let ((lbl label) (p preset) (r root) (db dash-buf))
               (lambda (_)
                 (ores/dashboard--compile lbl
-                 (format "%s -y --preset %s"
-                         (expand-file-name "build/scripts/init-environment.sh" r) p)
+                 (format "%s env init -y --preset %s"
+                         (expand-file-name "projects/ores.compass/compass.sh" r) p)
                  "init-environment" r db))))
            (ores/dashboard--mkitem
             "Edit environment" 'nerd-icons-faicon "nf-fa-edit"
@@ -595,7 +595,7 @@ On other systems `setsid' is used when available, otherwise an error is raised."
                       (cur (expand-file-name ".env" r)))
                   (if (file-exists-p old)
                       (ores/dashboard--display (diff-no-select old cur) db)
-                    (user-error "No .env.old — run init-environment.sh twice")))))))
+                    (user-error "No .env.old — run compass env init twice")))))))
           'ores/dashboard-group-env-face)))
 
 (defun ores/dashboard--db-group (env root dash-buf)

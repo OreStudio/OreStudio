@@ -1665,6 +1665,46 @@ def cmd_task(argv):
     if args.subcmd == "start":
         return _cmd_task_start(args.task)
 
+def cmd_env(argv):
+    """compass env — Provision pillar: environment setup."""
+    if argv and argv[0] == "init":
+        import env_init
+        return env_init.run(argv[1:], PROJECT_ROOT)
+    if argv and argv[0] == "diff":
+        import env_init
+        return env_init.diff(PROJECT_ROOT)
+    if argv and argv[0] == "list":
+        import env_init
+        lp = argparse.ArgumentParser(prog="compass env list",
+                                     description="List .env variables grouped; secrets masked.")
+        lp.add_argument("--show-secrets", action="store_true",
+                        help="Reveal secret values (passwords, JWT key) instead of masking them")
+        largs = lp.parse_args(argv[1:])
+        return env_init.list_env(PROJECT_ROOT, largs.show_secrets)
+    if argv and argv[0] == "version":
+        import env_init
+        # `version new "<desc>"` records a new version; bare `version` prints it.
+        if len(argv) >= 2 and argv[1] == "new":
+            np = argparse.ArgumentParser(prog="compass env version new",
+                                         description="Record a new .env-format version.")
+            np.add_argument("description",
+                            help="What changed in the .env (becomes the log row's description)")
+            nargs = np.parse_args(argv[2:])
+            return env_init.new_version(PROJECT_ROOT, nargs.description)
+        print(env_init.current_version(PROJECT_ROOT))
+        return 0
+    # No/unknown subcommand: render help (and error on unknown).
+    ap = argparse.ArgumentParser(prog="compass env",
+                                 description="Provision: checkout environment setup.")
+    sub = ap.add_subparsers(dest="subcmd", required=True)
+    sub.add_parser("init", help="Generate .env + NATS certs + IAM key "
+                                "(reuses existing secrets; --with-diff to show changes)")
+    sub.add_parser("diff", help="Unified diff of .env.old vs .env")
+    sub.add_parser("list", help="List .env vars grouped (secrets masked; --show-secrets to reveal)")
+    sub.add_parser("version", help="Show the .env-format version; 'version new <desc>' records a new one")
+    ap.parse_args(argv or ["--help"])
+    return 0
+
 def main():
     # `list` and `show` pass every remaining argument straight through to the
     # bundled doc tools (full flag compatibility, including their own --help).
@@ -1686,21 +1726,25 @@ def main():
         sys.exit(cmd_capture(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "journal":
         sys.exit(cmd_journal(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "env":
+        sys.exit(cmd_env(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
         sys.exit(cmd_backlog(sys.argv[1], sys.argv[2:]))
 
     _EPILOG = (
         "Pillars:\n"
-        "  Orient:   where, fleet\n"
-        "  Search:   search (find), list, show\n"
-        "  Scaffold: story, task, add\n"
-        "  Capture:  capture, inbox, next, deferred, discarded, backlog\n"
-        "  Journal:  journal\n"
+        "  Orient:    where, fleet\n"
+        "  Search:    search (find), list, show\n"
+        "  Scaffold:  story, task, add\n"
+        "  Capture:   capture, inbox, next, deferred, discarded, backlog\n"
+        "  Journal:   journal\n"
+        "  Provision: env\n"
         "\n"
         "Entity commands (sub-subcommands span pillars):\n"
         "  sprint:   status (orient)\n"
         "  story:    new (scaffold) | status (orient)\n"
         "  task:     new (scaffold)\n"
+        "  env:      init | diff | list | version [new] (provision)\n"
     )
     parser = argparse.ArgumentParser(
         description="Compass: developer toolkit for ORE Studio — orient, scaffold, capture, and search.",
@@ -1749,6 +1793,8 @@ def main():
                           help="Task-level operations: 'task new' to add task+branch to existing story; 'task --help'")
     subparsers.add_parser("journal",
                           help="Read/write the per-worktree session journal; 'journal --help' for subcommands")
+    subparsers.add_parser("env",
+                          help="Provision: 'env init' generates .env + certs + IAM key; 'env diff'; 'env --help'")
     subparsers.add_parser("inbox",     help="List captures in the product backlog inbox/")
     subparsers.add_parser("next",      help="List captures in the product backlog next/")
     subparsers.add_parser("deferred",  help="List captures in the product backlog deferred/")

@@ -61,7 +61,7 @@ Logs land in =build/output/<preset>/publish/log/=. Each service writes its own
 
 ** Prerequisites checklist
 
-- =.env= exists (run =init-environment.sh= if not — see [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]]).
+- =.env= exists (run =compass env init= if not — see [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]]).
 - Database initialised (=./projects/ores.sql/recreate_database.sh -y=).
 - Project built (=cmake --build --preset <preset>=).
 - =nats-server= on =PATH= or in =/usr/sbin=.

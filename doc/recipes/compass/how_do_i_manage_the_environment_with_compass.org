@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 13209197-CDBD-4807-A8F9-9653AFA96CBF
+:END:
+#+title: How do I manage the checkout environment with compass?
+#+description: Use compass env init/diff/list/version to generate and inspect the .env: behaviour-preserving credential generation, the .env.old diff, masked variable listing, and recording a new env-format version.
+#+type: recipe
+#+level: cross
+#+filetags: :compass:env:provision:credentials:recipe:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+=compass env= is the *Provision* pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][developer toolkit]]: it sets the
+checkout up so the system can run. It owns the =.env= at the checkout
+root — the file every service, the CLI, the shell, and the test suite
+read their database and NATS credentials from. =compass env= replaces the
+old =build/scripts/init-environment.sh= and =diff-environment.sh=, and is
+what CI now runs to provision its environment.
+
+* Question
+
+How do I generate the =.env= for a checkout, inspect what's in it, see
+what a regeneration changed, and record a new env-format version?
+
+* Answer
+
+** Generate or refresh the .env — =compass env init=
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh env init --preset linux-clang-debug-make -y
+#+end_src
+
+What it does, in one idempotent pass:
+
+- Derives the checkout identity (label, database name, NATS subject
+  prefix) and the per-environment ports from the checkout directory name.
+- Generates NATS mTLS certificates and the IAM RSA signing key if absent.
+- Reads the NATS domain-service list from the authored registry (see
+  [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]]) and writes each service's DB
+  credentials.
+- Writes the =ORES_ENV_VERSION= from the canonical version file (below).
+
+*Behaviour-preservation guarantee.* On a re-run, existing secrets are
+*never* changed — only missing variables are generated. Derived values
+(role/user names, ports, paths) are always recomputed from the label, so
+they track a moved or relabelled checkout. A backup of the previous file
+is written to =.env.old= before the new one is written.
+
+Flags:
+
+| Flag | Effect |
+|------+--------|
+| =--preset P= | Build preset (required locally; CI passes it / sets =CI=) |
+| =-y=, =--yes= | Skip the overwrite confirmation prompt |
+| =--with-diff= | After writing, print the =.env.old= → =.env= diff |
+| =--enable-logging [level]= | Add test-logging vars only (default level =debug=) |
+| =--disable-logging= | Remove the test-logging vars only |
+
+The postgres superuser password is taken from =$PGPASSWORD= if set, else
+reused from the existing =.env=, else prompted for.
+
+** See what a regeneration changed — =compass env diff=
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh env diff
+#+end_src
+
+Prints a unified diff of =.env.old= versus =.env= (exit 0 identical,
+1 differ). =compass env init --with-diff= runs this automatically after
+writing. Output contains secrets in plain text — do not share it.
+
+** Inspect the environment — =compass env list=
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh env list                 # secrets masked
+./projects/ores.compass/compass.sh env list --show-secrets   # reveal everything
+#+end_src
+
+Variables are grouped under the =.env='s own section headings; the
+per-service credential block is sub-grouped by service (=[iam]=,
+=[refdata]=, …) so it's easy to scan. Secret values (passwords, the JWT
+key, =PGPASSWORD=) are masked by default; =--show-secrets= reveals them.
+
+** Show / record the env-format version — =compass env version=
+
+The =.env='s shape is versioned by =ORES_ENV_VERSION=, checked before
+=recreate_database= runs. =compass env version= shows the current version
+and =compass env version new "<desc>"= records a bump:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh env version
+./projects/ores.compass/compass.sh env version new "added analytics service DB creds"
+#+end_src
+
+This is its own workflow — when to bump, the version log, and how an
+out-of-date checkout is caught — covered in [[id:694BFB41-222A-4BC7-BC74-D8B7C6C61644][How do I manage the .env
+format version with compass?]].
+
+* Script
+
+=projects/ores.compass/compass.sh env {init,diff,list,version}= →
+=src/compass.py= (=cmd_env=) → =src/env_init.py=. The canonical
+env-format version log is the org doc
+=doc/knowledge/architecture/env_format_version_log.org= (a parseable
+table); =compass env version new= appends to it.
+
+CI provisions with the same command, adding the =--no-deps= bootstrap
+flag — =compass.sh --no-deps env init -y= — so the venv is created
+without the =pip install= (=pystache= is only needed by =add=; =env init=
+is stdlib-only). =env init= also skips the =--preset= requirement when
+=$CI= is set.
+
+* Tested by
+
+Manual. =env init= against an existing =.env= changes no secret and no
+key set (verify with =compass env diff= or by diffing a backup); the
+generated =.env= round-trips through =recreate_database.sh=.
+
+* See also
+
+- [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]] — edit the registry that =env init=
+  reads, then =env version new= + re-init.
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the component model (pillars, structure).

@@ -141,7 +141,7 @@ jobs:
           ORES_DATABASE_NAME: ores_ci
           PGPASSWORD: ${{ steps.pg_password.outputs.admin_password }}
         run: |
-          ./build/scripts/init-environment.sh -y
+          ./projects/ores.compass/compass.sh --no-deps env init -y
           grep -v '^[[:space:]]*#' .env | grep -v '^[[:space:]]*$' \
             | grep -v 'ORES_IAM_SERVICE_JWT_PRIVATE_KEY' >> $GITHUB_ENV
 

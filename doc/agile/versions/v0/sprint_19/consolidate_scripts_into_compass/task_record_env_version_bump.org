@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: AE2BCC66-983C-49E0-BC05-79100D388E8E
+:END:
+#+title: Task: Add a command to record an env-version bump
+#+description: Give compass a command to record an env-format version bump — the workflow being: a user makes a change that affects the .env (new service, new/renamed var), then runs the command to increment the canonical ORES_ENV_VERSION and append a changelog entry, instead of hand-editing a source constant in two places.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give compass a command to *record* an env-format version bump. The
+workflow: a contributor makes a change that affects the =.env= (adds a
+service to the registry, adds or renames a variable), then runs one
+command to increment the canonical =ORES_ENV_VERSION= and record a
+changelog note — rather than hand-editing a version constant and keeping
+it in lockstep across the generator and the validator.
+
+Detection itself stays as today: =validate_env_version= compares the
+=.env='s =ORES_ENV_VERSION= against the canonical version and tells the
+user to re-run =compass env init= on mismatch. This task makes the *bump*
+a tooled, one-command action — not automated detection.
+
+* Status
+
+| Field        | Value                                                |
+|--------------+------------------------------------------------------|
+| State        | STARTED                                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]         |
+| Now          | Implemented: org version log + compass env version [new]; validator reads via compass env version. |
+| Waiting on   | Nothing.                                             |
+| Next         | Ship in the story PR.                                |
+| Last touched | 2026-06-02                                           |
+
+* Background
+
+=ENV_VERSION= is a hard-coded constant (=6=) duplicated in the generator
+(was =init-environment.sh=, now =compass env init=) and in
+=validate_env_version.sh=, with a hand-written changelog comment. Bumping
+it means editing source in two places and remembering the changelog —
+easy to forget when, for example, a new service adds variables to the
+=.env=. There is no command to record the bump.
+
+* Acceptance
+
+- =compass env version new "<description>"= appends a dated row to the
+  canonical version log and is the only supported way to record a version.
+- =compass env version= prints the current (highest) version.
+- =compass env init= writes that version as =ORES_ENV_VERSION=; the
+  version check reads the same source. No duplicated constant.
+- After recording a new version, a checkout with an older =.env= fails
+  the pre-=recreate_database= check with the existing "re-run =compass
+  env init=" guidance — so the recorded version is what surfaces the
+  staleness.
+- The version log is human-readable, org-roam linked, and parseable.
+
+* Plan (implemented)
+
+** Mechanism — canonical version as an org doc
+
+1. The version + descriptions live in an org-mode log,
+   =doc/knowledge/architecture/env_format_version_log.org= (scaffolded via
+   =compass add=, org-roam linked), as a parseable table
+   =| Version | Date | Description |=. The current version is the highest
+   row. No version constant in code.
+2. =compass env version= prints the current version; =compass env init=
+   reads it → writes =ORES_ENV_VERSION=.
+3. =compass env version new "<desc>"= computes next = current + 1, appends
+   a dated row.
+4. =validate_env_version.sh= reads the version via =compass env version=
+   (single source). It stays a thin shell guard /only/ while
+   =recreate_database= is shell; when that migrates to =compass db
+   recreate=, the check becomes an internal =env_init.current_version()=
+   call and =validate_env_version.sh= is deleted (coordinate with the
+   db/nats Provision task).
+
+** Verification done
+
+Change registry / record a version → =compass env version new "..."=
+appended row 7 → =compass env version= = 7 → a v6 =.env= fails the check
+with the re-run message → test row removed, restored to 6. Validator
+reads the version via =compass env version= (single source).
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

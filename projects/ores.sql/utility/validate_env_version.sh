@@ -8,25 +8,23 @@
 # so that it can read variables already loaded into the caller's environment.
 #
 # Fails with exit 1 and a clear explanation when ORES_ENV_VERSION is missing
-# or older than REQUIRED_ENV_VERSION.  Warns (no failure) when newer.
+# or older than the required version.  Warns (no failure) when newer.
 #
-# To bump the version:
-#   1. Increment REQUIRED_ENV_VERSION below.
-#   2. Add a comment line to the Changelog block below.
-#   3. Increment ENV_VERSION in build/scripts/init-environment.sh.
-#   4. Add the corresponding comment in init-environment.sh changelog too.
+# The required version + changelog are canonical in the org-mode log
+# doc/knowledge/architecture/env_format_version_log.org, read here via
+# `compass env version`.  Record a new version with:
+#   compass env new-version "what changed in .env"
+# then re-run `compass env init` to write the new ORES_ENV_VERSION.
+#
+# NOTE: this shell guard is transitional.  When recreate_database.sh moves
+# to `compass db recreate`, the check becomes an internal compass call
+# (env_init.current_version) and this script is deleted.
 
 set -euo pipefail
 
-REQUIRED_ENV_VERSION=6
-
-# Changelog:
-#   1: Initial env versioning; renamed ORES_COMPUTE_WRAPPER_USER -> ORES_DB_COMPUTE_WRAPPER_USER
-#   2: Removed ORES_WT_PORT; WT port is now owned by the controller via ORES_CONTROLLER_SERVICE_WT_PORT
-#   3: Added ORES_WORKSPACE_SERVICE_DB_* for new workspace service
-#   4: Added ORES_SITE_PORT for the local documentation site server
-#   5: Added org-roam knowledge graph integration to site build
-#   6: Added ORES_SHELL_NATS_* for ores.shell mTLS auto-connect support
+_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_COMPASS="${_SCRIPT_DIR}/../../ores.compass/compass.sh"
+REQUIRED_ENV_VERSION="$("${_COMPASS}" env version)"
 
 CURRENT_VERSION="${ORES_ENV_VERSION:-0}"
 
@@ -42,10 +40,10 @@ if [[ "${CURRENT_VERSION}" -lt "${REQUIRED_ENV_VERSION}" ]]; then
     echo "  Your .env:  version ${CURRENT_VERSION}" >&2
     echo "  Required:   version ${REQUIRED_ENV_VERSION}" >&2
     echo "" >&2
-    echo "See the Changelog in validate_env_version.sh for details." >&2
+    echo "See doc/knowledge/architecture/env_format_version_log.org for details." >&2
     echo "" >&2
-    echo "Fix: re-run init-environment.sh to regenerate .env:" >&2
-    echo "  ./build/scripts/init-environment.sh --preset ${ORES_PRESET:-<preset>} -y" >&2
+    echo "Fix: re-run 'compass env init' to regenerate .env:" >&2
+    echo "  ./projects/ores.compass/compass.sh env init --preset ${ORES_PRESET:-<preset>} -y" >&2
     echo "" >&2
     exit 1
 fi

@@ -10,8 +10,9 @@
 #+updated: 2026-05-24
 
 How to use =compass=, the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][developer toolkit]] for ORE Studio.
-One CLI (=projects/ores.compass/compass.sh=) covers five pillars:
-Orient, Search, Scaffold, Capture, and Journal.
+One CLI (=projects/ores.compass/compass.sh=) covers the doc/agile pillars
+— Orient, Search, Scaffold, Capture, Journal — and the operational
+pillars that fold in the standalone scripts, starting with Provision.
 
 * Orient
 
@@ -46,6 +47,15 @@ Orient, Search, Scaffold, Capture, and Journal.
 - [[id:7072D39C-9607-48F9-8EE6-50E8647DB8ED][How do I capture ideas from freeform text?]] — paste unstructured
   notes; LLM decomposes into well-structured captures in =inbox/=
   (=compass capture --note=).
+
+* Provision
+
+- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — generate,
+  diff, list, and version the =.env= (=env init= / =diff= / =list= /
+  =version [new]=).
+- [[id:694BFB41-222A-4BC7-BC74-D8B7C6C61644][How do I manage the .env format version with compass?]] — show and
+  record the env-format version, and how a stale checkout is caught
+  (=env version= / =version new=).
 
 * Navigating the doc graph
 

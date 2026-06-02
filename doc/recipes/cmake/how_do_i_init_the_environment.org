@@ -2,15 +2,15 @@
 :ID: 1794B513-877B-4B93-A818-53F080C55E47
 :END:
 #+title: How do I initialise the checkout environment?
-#+description: Generate the .env file, NATS certificates, and IAM keys for a local checkout using init-environment.sh.
+#+description: Generate the .env file, NATS certificates, and IAM keys for a local checkout using compass env init.
 #+type: recipe
 #+level: cross
 #+filetags: :cmake:build:environment:init:nats:recipe:
 #+created: 2026-05-31
-#+updated: 2026-05-31
+#+updated: 2026-06-02
 
 Run once per fresh checkout to generate the =.env= file, NATS TLS
-certificates, and IAM RSA signing key.  See [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] for preset names.
+certificates, and IAM RSA signing key. See [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] for preset names.
 
 * Question
 
@@ -18,67 +18,37 @@ How do I initialise the checkout environment on a fresh clone?
 
 * Answer
 
-Run =init-environment.sh= with the desired build preset and the postgres
-superuser password:
+Environment setup is owned by the compass *Provision* pillar:
 
 #+begin_src sh :results verbatim
 PGPASSWORD=<pg-superuser-password> \
-  ./build/scripts/init-environment.sh --preset linux-clang-debug-make -y
+  ./projects/ores.compass/compass.sh env init --preset linux-clang-debug-make -y
 #+end_src
 
-The script:
-- Generates =.env= at the repo root (existing passwords are preserved on
-  re-runs — only missing variables are added).
-- Creates NATS TLS certificates under =build/keys/nats/=.
-- Generates the IAM RSA-2048 signing key at =build/keys/iam-rsa-private.pem=.
-- Writes the NATS server config to =build/config/nats-<label>.conf=.
-- Creates the JetStream store directory.
+This generates =.env= at the repo root (reusing existing secrets, adding
+only missing variables), the NATS TLS certificates under
+=build/keys/nats/=, the IAM RSA signing key, the NATS server config, and
+the JetStream store directory — then prints the next steps (create the
+database, start NATS, set up SQL connections, start services).
 
-After initialisation, follow the printed next steps:
-
-1. Create the database (first time only):
-
-   #+begin_src sh :results verbatim
-   ./projects/ores.sql/recreate_database.sh -y
-   #+end_src
-
-2. Start NATS:
-
-   #+begin_src sh :results verbatim
-   nats-server --config build/config/nats-<label>.conf
-   #+end_src
-
-3. In Emacs, set up SQL connections:  =M-x ores-db/setup-connections=
-
-4. Start services via prodigy (they read =ORES_PRESET= and credentials
-   from =.env=).
-
-** Re-running safely
-
-Re-running the script preserves existing passwords and only fills in
-missing variables.  Use =--force= to regenerate NATS certificates.
-
-** Toggling test logging
-
-#+begin_src sh :results verbatim
-./build/scripts/init-environment.sh --enable-logging debug   # or trace/info/warn/error
-./build/scripts/init-environment.sh --disable-logging
-#+end_src
-
-Re-run =cmake --preset <preset>= after toggling logging.
+For the full command set — =env init= flags (=--with-diff=, logging
+toggles), =env diff=, =env list= (masked variable listing), and
+=env version [new]= (record an env-format version) — see the detailed recipe
+[[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]].
 
 * Script
 
-=build/scripts/init-environment.sh= — generates =.env=, NATS certs, and
-IAM key.  Delegates certificate generation to =build/scripts/init-nats.sh=.
+=projects/ores.compass/compass.sh env init= → =src/env_init.py= (replaced
+the former =build/scripts/init-environment.sh=).
 
 * Tested by
 
-Manual, once per fresh checkout.  CI uses pre-configured runners and
-does not exercise this path.
+Manual, once per fresh checkout.
 
 * See also
 
+- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — the full
+  =compass env= command set.
 - [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset menu and output directory layout.
 - [[id:49F7DA81-ADB7-44ED-BE7E-06DBFBB32A84][How do I set up a development environment?]] — full bootstrap including
   package installation and database initialisation.

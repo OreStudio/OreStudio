@@ -623,9 +623,12 @@ def branch_staleness(root):
         info["error"] = "no-remote"
         return info
 
-    for key, rev_range in (("ahead", "origin/main..HEAD"), ("behind", "HEAD..origin/main")):
-        val = _git_out("rev-list", "--count", rev_range, cwd=root)
-        info[key] = int(val) if val and val.isdigit() else 0
+    counts = _git_out("rev-list", "--left-right", "--count", "origin/main...HEAD", cwd=root)
+    if counts:
+        parts = counts.split()
+        if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
+            info["behind"] = int(parts[0])
+            info["ahead"]  = int(parts[1])
 
     base = _git_out("merge-base", "HEAD", "origin/main", cwd=root)
     if base:
@@ -633,12 +636,23 @@ def branch_staleness(root):
         if ts and ts.isdigit():
             info["base_age_s"] = time.time() - int(ts)
 
-    # FETCH_HEAD is written to the worktree-specific git dir (not the common
-    # dir) when git fetch is run from a secondary worktree, so use --git-dir.
-    gitdir = _git_out("rev-parse", "--git-dir", cwd=root)
+    # Resolve the worktree-specific git dir directly — avoids a subprocess.
+    # .git is a directory in the main checkout and a "gitdir: <path>" file in
+    # secondary worktrees; FETCH_HEAD lives in whichever dir git fetch writes to.
+    dot_git = Path(root) / ".git"
+    if dot_git.is_dir():
+        gitdir = dot_git
+    elif dot_git.is_file():
+        content = dot_git.read_text().strip()
+        if content.startswith("gitdir:"):
+            gp = Path(content.split(":", 1)[1].strip())
+            gitdir = gp if gp.is_absolute() else Path(root) / gp
+        else:
+            gitdir = None
+    else:
+        gitdir = None
     if gitdir:
-        fh = Path(gitdir) if Path(gitdir).is_absolute() else Path(root) / gitdir
-        fh = fh / "FETCH_HEAD"
+        fh = gitdir / "FETCH_HEAD"
         if fh.exists():
             info["fetch_age_s"] = time.time() - fh.stat().st_mtime
 

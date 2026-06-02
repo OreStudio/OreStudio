@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: C540506E-7129-4CF2-AE3E-6C8BB9C9417F
+:END:
+#+title: Milestones
+#+description: Catalogue of all ORE Studio milestones — the major release targets that bound each version series.
+#+type: knowledge
+#+level: cross
+#+filetags: :milestones:index:agile:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+* Summary
+
+A [[id:65B2F1A0-3C4D-4E7A-9B8D-1F2A3C4D5E6F][milestone]] is the named major release target that a [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]] series works towards — the
+major release that closes one series and opens the next. Milestones own
+the /what and why/: identity, theme, mission, and definition of done.
+Versions own the /how and when/: the release series, sprints, and
+in-progress builds. The two are distinct documents so neither
+duplicates the other.
+
+* Milestones vs versions
+
+#+ATTR_HTML: :class hug-leading
+| Concept   | Owns                                          | Example                    |
+|-----------+-----------------------------------------------+----------------------------|
+| Version   | Release series, sprints, in-progress builds   | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] (0.0.x builds) |
+| Milestone | Identity, theme, mission, DoD, time horizon   | [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0]]             |
+
+A version does not carry a mission statement of its own; it points to
+its target milestone instead. When the milestone's definition of done
+is met, the version closes and the software cuts the milestone release
+(e.g. 1.0.0). Work then moves to the next version series.
+
+* Catalogue
+
+#+ATTR_HTML: :class hug-leading
+| Milestone                                           | Theme          | Version series     | Time horizon | Status      |
+|-----------------------------------------------------+----------------+--------------------+--------------+-------------|
+| [[id:DDA02748-7054-463B-9238-CC196601403D][v1.0 — Static World]]  | Static world   | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] (0.x.x)  | ~6 months    | IN PROGRESS |
+| [[id:1651993D-F3E8-4A73-861C-0A0B03F12CF0][v2.0 — Dynamic World]] | Dynamic world  | Version 1 (1.x.x)  | ~18 months   | PLANNED     |
+
+* See also
+
+- [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] — the version series that do the work.
+- [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] — entry point to the agile information architecture.

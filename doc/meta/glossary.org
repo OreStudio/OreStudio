@@ -93,34 +93,52 @@ with [[id:6CA8B181-BD81-4EF4-AF27-64F5491D62F0][System 4]].
 | How to generate | See [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]] in the agile process — release notes,        |
 |                 | release cut, post-mortem are steps 2–4 of the closure sequence. |
 
+* Milestone
+:PROPERTIES:
+:ID: 65B2F1A0-3C4D-4E7A-9B8D-1F2A3C4D5E6F
+:END:
+
+The named major release target that a [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]] series works towards. A
+milestone owns the /what and why/: identity, theme, mission, definition
+of done, and time horizon. It does not contain sprints — that is the
+version's job. When the milestone's definition of done is met, the
+current version series closes and the software cuts the milestone
+release (e.g. 1.0.0). The next version series then begins.
+
+#+ATTR_HTML: :class hug-leading
+| Field           | Value                                          |
+|-----------------+------------------------------------------------|
+| Owner           | [[id:6CA8B181-BD81-4EF4-AF27-64F5491D62F0][System 4]]                                       |
+| Example         | [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]]                  |
+| Inventory       | [[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][Milestones]]                                     |
+
 * Version
 :PROPERTIES:
 :ID: CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82
 :END:
 
-A major release target (e.g. 1.0). A coherent set of sprints.
+A release series — a coherent set of [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprints]] producing incremental
+builds (e.g. 0.0.x, 1.0.x) as it works towards a target [[id:65B2F1A0-3C4D-4E7A-9B8D-1F2A3C4D5E6F][milestone]]. The
+version name matches the CMake =MAJOR= component: =v0= produces 0.x.x
+builds; =v1= produces 1.x.x builds. A version does not carry a mission
+statement of its own — that lives in its target milestone.
 
 #+ATTR_HTML: :class hug-leading
-| Field           | Value                            |
-|-----------------+----------------------------------|
-| Owner           | [[id:6CA8B181-BD81-4EF4-AF27-64F5491D62F0][System 4]]                         |
-| How to generate | [[id:8FC15EA1-AB30-47BE-993F-ED624A57F761][New version]] in the codegen recipe |
-| Example         | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                        |
-| Inventory       | [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]]                         |
+| Field           | Value                              |
+|-----------------+------------------------------------|
+| Owner           | [[id:6CA8B181-BD81-4EF4-AF27-64F5491D62F0][System 4]]                           |
+| How to generate | [[id:8FC15EA1-AB30-47BE-993F-ED624A57F761][New version]] in the codegen recipe   |
+| Example         | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] (targets [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0]])   |
+| Inventory       | [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]]                           |
 
 * Version identity
 :PROPERTIES:
 :ID: 83BC06E5-77DD-4ABA-87CB-48A10EC0208A
 :END:
 
-The mini-mission of a version: what it exists to deliver, what makes it
-distinct.
-
-#+ATTR_HTML: :class hug-leading
-| Field   | Value                                 |
-|---------+---------------------------------------|
-| Owner   | [[id:6CA8B181-BD81-4EF4-AF27-64F5491D62F0][System 4]]                              |
-| Example | the =* Identity= section of [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
+Deprecated. Identity now lives in the target [[id:65B2F1A0-3C4D-4E7A-9B8D-1F2A3C4D5E6F][milestone]] document, not
+in the version. See the =* Identity= section of [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0]] for the
+current example.
 
 * Product identity
 :PROPERTIES:

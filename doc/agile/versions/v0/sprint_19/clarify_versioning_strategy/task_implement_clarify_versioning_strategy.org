@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 450D52AB-8BD9-459E-9F77-6C0BD652FFAB
+:END:
+#+title: Task: Create milestones infrastructure
+#+description: Scaffold doc/agile/milestones/ with milestones.org catalogue, v1.org, and v2.org stub; add Milestone entry to glossary; update Version entry.
+#+type: task
+#+level: s1
+#+filetags: :clarify_versioning_strategy:sprint_19:v0:
+#+owner: marco
+#+branch: feature/clarify-versioning-strategy
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC20475A-E7B4-4DFB-8E55-4B8DA6B36202][Clarify versioning strategy]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create the =doc/agile/milestones/= infrastructure. This introduces the
+milestone concept as a first-class agile artefact: a =milestones.org=
+catalogue explaining milestones vs versions, plus individual docs
+=v1.org= (static world → v1.0) and =v2.org= (dynamic world → v2.0).
+Also add a =Milestone= entry to the glossary and correct the =Version=
+entry, which currently conflates the development series with the major
+release target.
+
+* Status
+
+| Field        | Value                                      |
+|--------------+--------------------------------------------|
+| State        | STARTED                                    |
+| Parent story | [[id:EC20475A-E7B4-4DFB-8E55-4B8DA6B36202][Clarify versioning strategy]]   |
+| Now          | Creating milestone docs and updating glossary. |
+| Waiting on   | Nothing.                                   |
+| Next         | Commit and open PR.                        |
+| Last touched | 2026-06-02                                 |
+
+* Acceptance
+
+- =doc/agile/milestones/= exists with =milestones.org=, =v1.org=, =v2.org=.
+- =milestones.org= has a catalogue table and explains the milestone/version distinction.
+- Each milestone doc carries: identity, theme, mission, DoD, time horizon, worked-towards-by, unlocks.
+- Glossary has a =Milestone= entry with org-roam links; =Version= entry updated.
+
+* Plan
+
+1. =compass add knowledge= for =milestones.org= (catalogue + explanation).
+2. =compass add knowledge= for =v1.org= and =v2.org= (individual milestone docs).
+3. Update glossary: add =Milestone=, correct =Version=, update =Version identity=.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

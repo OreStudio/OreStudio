@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 1651993D-F3E8-4A73-861C-0A0B03F12CF0
+:END:
+#+title: Milestone v2.0 — Dynamic World
+#+description: Market data ticks, trades change state, curve bootstrapping runs live. Marks graduation from the 1.x.x series to 2.0.0.
+#+type: knowledge
+#+level: cross
+#+filetags: :milestone:v2_0:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+* Identity
+
+Milestone v2.0 is the /dynamic world/ release. Time moves: market data
+ticks in real time, trades transition through their lifecycle states,
+and the system responds. ORE Studio supports live curve bootstrapping,
+pricing screens that update as data arrives, and trade change
+workflows. Where v1.0 proved correctness against a static snapshot,
+v2.0 proves correctness in a live environment.
+
+* Theme
+
+Dynamic world: ticking data, live pricing, trade lifecycle, curve
+bootstrapping.
+
+* Mission
+
+- Introduce real-time market data feeds.
+- Support trade state transitions and change workflows.
+- Implement live curve bootstrapping from market data.
+- Provide pricing screens that update on data change.
+- Extend the GUI to cover dynamic data operations.
+
+* Definition of done
+
+Market data ticks, trades change state, curves bootstrap from live
+data, and pricing screens reflect current valuations — all inside ORE
+Studio without manual intervention.
+
+* Time horizon
+
+~18 months after v1.0 is achieved.
+
+* Status
+
+| Field           | Value                                              |
+|-----------------+----------------------------------------------------|
+| State           | PLANNED                                            |
+| Worked towards  | Version 1 (1.x.x release series)                  |
+| Unlocks         | Version 2 (2.x.x release series)                  |
+| Last touched    | 2026-06-02                                         |
+
+* See also
+
+- [[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][Milestones]] — catalogue of all milestones.
+- [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0]] — the preceding milestone.
+- [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][Product vision]] — the durable statement of what ORE Studio is.

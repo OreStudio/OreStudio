@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: EC20475A-E7B4-4DFB-8E55-4B8DA6B36202
+:END:
+#+title: Story: Clarify versioning strategy
+#+description: Rename v0→v1 and introduce v2; rewrite version identities to match the static/dynamic product arc.
+#+type: story
+#+level: s2
+#+filetags: :agile:versions:docs:sprint_19:v0:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-02                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

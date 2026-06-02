@@ -71,9 +71,9 @@ def convert(model_path: Path, out_path: Path) -> Path:
     comp = model["component"]
     fid = str(uuid.uuid4()).upper()
     parts = [_frontmatter(comp, fid), ""]
-    description = comp.get("description", "").rstrip()
+    description = comp.get("description")
     if description:
-        parts += [description, ""]
+        parts += [description.rstrip(), ""]
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("\n".join(parts).rstrip() + "\n", encoding="utf-8")
     return out_path

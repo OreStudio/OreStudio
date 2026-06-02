@@ -1,6 +1,6 @@
 """
 Convert ``ores_services_service_registry.json`` to a literate
-``ores.services.service_registry.org`` file.
+``service_registry.org`` file.
 
 The service registry is the catalogue of ORE Studio backend
 services with their psql var, IAM role, DDL grant prefixes and
@@ -19,7 +19,7 @@ Usage::
 
     python3 projects/ores.codegen/src/codegen/migrate_service_registry_to_org.py \\
         --input projects/ores.codegen/models/services/ores_services_service_registry.json \\
-        --output projects/modeling/ores.services.service_registry.org
+        --output projects/modeling/service_registry.org
 """
 import argparse
 import json

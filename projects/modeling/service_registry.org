@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: DBB7FE01-0C33-4EF9-BB2A-039674E71AB1
 :END:
-#+title: ores.services.service_registry
+#+title: Service registry
 #+description: Codegen service-registry model — catalogue of ORE Studio backend services with their psql vars, IAM roles, and DDL grant prefixes.
 #+type: ores.codegen.service_registry
 #+filetags: :codegen:service_registry:literate:

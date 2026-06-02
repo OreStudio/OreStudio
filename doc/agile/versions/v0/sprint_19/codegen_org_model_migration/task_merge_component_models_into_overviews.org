@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: B08203B7-967F-4284-BC75-1412F69DC289
+:END:
+#+title: Task: Merge component models into component_overview.org
+#+description: Second-pass refactor: collapse the standalone *_component.org files landed by the JSON-to-org migration into the existing component_overview.org per component. Reflects the design preference recorded in the migrate_component_models_to_org task.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The first-pass component migration ([[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][Migrate component JSON models
+to org-mode]]) landed the standalone =*_component.org= shape — one
+file per component carrying only the four scalars (=name=,
+=full_name=, =brief=, =description=). This was option B in the
+original brainstorm and consistent with every other migration
+(=_table.org=, =_lookup_entity.org=, etc.), so suffix-routing
+discovery is uniform.
+
+The brainstorm preferred option A: collapse the codegen-side
+identity into the existing =component_overview.org= per component
+(no duplicated identity, single source of truth for both humans
+and codegen). This task does that second pass.
+
+Concretely:
+
+1. Add a property drawer + =#+brief:= to each
+   =projects/ores.<component>/modeling/component_overview.org=
+   so codegen can read the four scalars off the overview.
+2. Extend codegen to recognise =#+type: component= overviews as
+   component models (re-using the existing =load_org_component_model=
+   logic where possible, or a small variant).
+3. Delete the standalone =ores.<component>_component.org= files
+   landed by the first pass.
+4. Regen produces byte-identical output.
+
+Out of scope: the cross-link work (overview → entities,
+entity → overview, entity → schema) which is [[id:95031F88-44AB-4705-BA99-05A874800EC5][its own task]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-02                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -101,8 +101,12 @@ populated group folder.
 - =ctest= passes.
 - Codegen output paths: surveyed — no per-component path references in
   the profile manifest or templates, so nothing to change (Q4).
-- CI workflows, presets, and any path-bearing scripts updated: surveyed
-  — none carried per-component paths (Q5).
+- CI workflows and presets: surveyed — none carried per-component paths.
+  One path-bearing script was missed in the initial survey:
+  =build/scripts/init-environment.sh= globs =projects/ores.*.service= to
+  discover NATS services, which the regroup broke (CI "Setup Database"
+  failure). Fixed by reading the existing service registry instead;
+  full consolidation tracked by [[id:9B8BB792-3562-4B52-B367-C94EF46BA100][Consolidate service registries]].
 - Include paths made move-invariant (D4) rather than re-pointed to the
   new absolute layout, so future moves do not re-break them.
 
@@ -115,6 +119,7 @@ by the pilot are left in place for that story to populate.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D3D8DE56-3C8A-4B15-BE6A-B819BF97C050][Investigate target layout for component regrouping]] | DONE | 2026-06-01 | 2026-06-02 | Decided naming (short), qt under ores.qt/, host as application/, relative includes. Subsumed implementation — regroup done in one pass. |
+| [[id:9B8BB792-3562-4B52-B367-C94EF46BA100][Consolidate service registries into a single source of truth]] | BACKLOG | | | Inventory of service enumerations + plan to unify on one registry; port init-environment to Python. Surfaced by the regroup breaking the directory glob. |
 
 No per-group migration tasks were scaffolded: the regroup is a
 mechanical, atomic change and was carried out in a single pass under

@@ -83,11 +83,12 @@ What ORE Studio /is not/ — equally important to what it is.
 - A pricing or risk authority. Numbers come from ORE / QuantLib; ORE Studio is
   the surface through which they flow.
 
-* Relationship to versions
+* Relationship to versions and milestones
 
-The product identity is durable. [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] are not. [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][v0]] establishes the shape;
-=v1.0= and beyond will extend it. When something in this document changes, that
-is a re-identification — not a version bump.
+The product identity is durable. [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] and [[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][milestones]] are not. [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][v0]]
+establishes the shape; =v1.0= and beyond will extend it. When something in this
+document changes, that is a re-identification — not a version bump.
 
 See [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] for the running list of versions that have implemented this
-identity.
+identity, and [[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][Milestones]] for the major release targets bounding each version
+series.

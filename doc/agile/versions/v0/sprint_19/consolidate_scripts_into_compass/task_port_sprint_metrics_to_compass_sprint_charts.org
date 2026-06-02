@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 81DE1DC9-FB73-46DB-A8AB-E4BE8F78C591
+:END:
+#+title: Task: Port sprint_metrics.py to compass sprint charts
+#+description: Absorb scripts/sprint_metrics.py into compass as compass sprint charts; remove the standalone script; update recipes and any callers.
+#+type: task
+#+level: s1
+#+filetags: :compass:sprint:charts:scripts:consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch: feature/compass-sprint-charts
+#+pr: 1020
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Absorb =scripts/sprint_metrics.py= into compass as =compass sprint charts=
+— a new subcommand under the existing =sprint= pillar. The command
+generates the CSV data files that feed the sprint's gnuplot charts
+(=sprint_activity.csv=, =sprint_progress.csv=, =pr_cycle_times.csv=)
+and is invoked in place of the standalone script wherever it is called
+today. The standalone script is deleted on hard cutover.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                                |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
+| Now          | Implementing compass sprint charts in compass.py. |
+| Waiting on   | Nothing.                               |
+| Next         | Delete script; update recipe + runbook; PR. |
+| Last touched | 2026-06-02                               |
+
+* Acceptance
+
+- =compass sprint charts= is registered as a subcommand of =cmd_sprint=
+  in =compass.py= and appears in =compass sprint --help=.
+- Interface: =compass sprint charts [--sprint N] [--start-date YYYY-MM-DD]
+  [--end-date YYYY-MM-DD] [--output-dir PATH]=. Without =--sprint= the
+  command auto-detects the current sprint number from =compass where=
+  state (the same =_locate_sprint= lookup the rest of the sprint pillar
+  uses).
+- Output: =build/output/sprint_NN/sprint_activity.csv=,
+  =sprint_progress.csv=, =pr_cycle_times.csv= — identical to what the
+  standalone script produces today.
+- =scripts/sprint_metrics.py= is deleted and all callers (the sprint
+  health review recipe, any CI or Makefile references) are updated to
+  call =compass sprint charts=.
+- The "How do I update the sprint charts?" recipe (or the sprint health
+  review recipe, whichever documents this command) is updated to use the
+  new invocation.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1020][#1020]] | [compass] Add compass sprint charts; retire sprint_metrics.py |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Parsed start date discarded when end missing | =compass.py:_sc_get_sprint_range= | Fixed | Fallback to #+created: only when start is None — 600a5e86a |
+| 2 | Null JSON title causes AttributeError on [:60] | =compass.py:_sc_get_merged_prs= | Fixed | (pr.get("title") or "")[:60] — 600a5e86a |
+| 3 | Same regex run twice per table row | =compass.py:_sc_parse_sprint_stories= | Fixed | Cached match in m, reused m.group() — 600a5e86a |
+| 4 | Bad --start-date/--end-date raises traceback | =compass.py:cmd_sprint_charts= | Fixed | try/except + clean error + return 1 — 600a5e86a |
+
+* Result

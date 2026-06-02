@@ -11,13 +11,17 @@ Pillars:
 """
 
 import argparse
+import csv
+import datetime
 import json
 import os
 import re
+import shutil
 import sqlite3
 import subprocess
 import sys
 import time
+from collections import defaultdict
 from pathlib import Path
 
 # Make the bundled doc-graph modules importable whether compass.py is run as a
@@ -929,6 +933,247 @@ def _task_counts(story_dir):
             pass
     return done, total
 
+# --- Sprint charts helpers ---
+
+def _sc_parse_date(s):
+    parts = s.strip().split("-")
+    return datetime.date(int(parts[0]), int(parts[1]), int(parts[2]))
+
+
+def _sc_get_sprint_range(sprint):
+    sprint_file = PROJECT_ROOT / f"doc/agile/versions/v0/sprint_{sprint:02d}/sprint.org"
+    if not sprint_file.exists():
+        now = datetime.date.today()
+        return now - datetime.timedelta(days=14), now
+    text = sprint_file.read_text(encoding="utf-8")
+    start = end = None
+    for line in text.splitlines():
+        if line.startswith("| Start") and "|" in line:
+            m = re.search(r"\d{4}-\d{2}-\d{2}", line)
+            if m:
+                start = _sc_parse_date(m.group())
+        if (line.startswith("| End") or "End (expected)" in line) and "|" in line:
+            m = re.search(r"\d{4}-\d{2}-\d{2}", line)
+            if m:
+                end = _sc_parse_date(m.group())
+    if start and end:
+        return start, end
+    if start is None:
+        m = re.search(r"#\+created:\s*(\d{4}-\d{2}-\d{2})", text)
+        start = _sc_parse_date(m.group(1)) if m else (datetime.date.today() - datetime.timedelta(days=7))
+    end = end or (start + datetime.timedelta(days=7))
+    return start, end
+
+
+def _sc_collect_daily_metrics(start, end):
+    metrics = defaultdict(lambda: {"commits": 0, "merges": 0, "added": 0, "deleted": 0})
+    end_inc = end + datetime.timedelta(days=1)
+    log = subprocess.check_output([
+        "git", "log", f"--after={start}", f"--before={end_inc}",
+        "--format=COMMIT %ai", "--numstat", "--reverse", "origin/main",
+    ], text=True, cwd=PROJECT_ROOT).strip()
+    current_date = None
+    for line in log.splitlines():
+        if line.startswith("COMMIT "):
+            current_date = _sc_parse_date(line.split()[1])
+            if current_date:
+                metrics[current_date]["commits"] += 1
+        elif current_date and "\t" in line:
+            parts = line.split("\t")
+            if len(parts) == 3 and parts[0] not in ("-", ""):
+                try:
+                    metrics[current_date]["added"] += int(parts[0])
+                    metrics[current_date]["deleted"] += int(parts[1])
+                except ValueError:
+                    pass
+    log = subprocess.check_output([
+        "git", "log", "--merges", f"--after={start}", f"--before={end_inc}",
+        "--format=%ai", "--reverse", "origin/main",
+    ], text=True, cwd=PROJECT_ROOT).strip()
+    for line in log.splitlines():
+        if line.strip():
+            metrics[_sc_parse_date(line.split()[0])]["merges"] += 1
+    return metrics
+
+
+def _sc_get_merged_prs(start, end):
+    if not shutil.which("gh"):
+        print("Warning: gh CLI not found — skipping PR cycle time data", file=sys.stderr)
+        return []
+    try:
+        output = subprocess.check_output([
+            "gh", "pr", "list", "--state", "merged",
+            "--search", f"merged:>={start}",
+            "--json", "number,title,createdAt,mergedAt",
+            "--limit", "200",
+        ], text=True).strip()
+    except subprocess.CalledProcessError as e:
+        print(f"Warning: gh pr list failed: {e}", file=sys.stderr)
+        return []
+    prs = []
+    for pr in json.loads(output):
+        merged_str = pr.get("mergedAt", "")
+        if not merged_str:
+            continue
+        merged_dt = datetime.datetime.fromisoformat(merged_str.replace("Z", "+00:00"))
+        if merged_dt.date() > end:
+            continue
+        created_dt = datetime.datetime.fromisoformat(pr["createdAt"].replace("Z", "+00:00"))
+        cycle_hours = round((merged_dt - created_dt).total_seconds() / 3600, 1)
+        prs.append({
+            "number": pr["number"],
+            "title": (pr.get("title") or "")[:60],
+            "merged_day": merged_dt.date(),
+            "cycle_hours": cycle_hours,
+        })
+    return prs
+
+
+def _sc_parse_sprint_stories(sprint, start, end):
+    stories_file = PROJECT_ROOT / f"doc/agile/versions/v0/sprint_{sprint:02d}/sprint.org"
+    if not stories_file.exists():
+        return defaultdict(int)
+    text = stories_file.read_text(encoding="utf-8")
+    cumulative = defaultdict(int)
+    in_table = False
+    for line in text.splitlines():
+        if line.startswith("| Story"):
+            in_table = True
+            continue
+        if in_table and line.strip() == "":
+            in_table = False
+            continue
+        if in_table and "|" in line and line.count("|") >= 5:
+            parts = [p.strip() for p in line.split("|")]
+            if len(parts) >= 6:
+                state, end_str = parts[2], parts[4]
+                if state:
+                    m = re.search(r"\d{4}-\d{2}-\d{2}", end_str)
+                    if m:
+                        try:
+                            end_d = _sc_parse_date(m.group())
+                            if start <= end_d <= end:
+                                cumulative[end_d] += 1
+                        except Exception:
+                            pass
+    return cumulative
+
+
+def _sc_write_activity(metrics, output_dir):
+    path = output_dir / "sprint_activity.csv"
+    with open(path, "w", newline="") as f:
+        w = csv.writer(f, delimiter="\t")
+        w.writerow(["day", "merges", "commits", "added", "deleted"])
+        for d in sorted(metrics):
+            m = metrics[d]
+            w.writerow([d.isoformat(), m["merges"], m["commits"], m["added"], m["deleted"]])
+    print(f"Wrote {path}")
+
+
+def _sc_write_progress(cumulative, prs, output_dir):
+    path = output_dir / "sprint_progress.csv"
+    with open(path, "w", newline="") as f:
+        w = csv.writer(f, delimiter="\t")
+        w.writerow(["day", "cumulative_done"])
+        running = 0
+        for d in sorted(cumulative):
+            running += cumulative[d]
+            w.writerow([d.isoformat(), running])
+        if not cumulative:
+            w.writerow(["2000-01-01", 0])
+    print(f"Wrote {path}")
+    cycle_path = output_dir / "pr_cycle_times.csv"
+    meaningful = sorted(
+        [pr for pr in prs if pr["cycle_hours"] > 0],
+        key=lambda x: x["cycle_hours"], reverse=True,
+    )[:20]
+    with open(cycle_path, "w", newline="") as f:
+        w = csv.writer(f, delimiter="\t")
+        w.writerow(["pr_number", "title", "day", "cycle_hours"])
+        for pr in sorted(meaningful, key=lambda x: x["merged_day"]):
+            w.writerow([pr["number"], pr["title"], pr["merged_day"].isoformat(), pr["cycle_hours"]])
+    print(f"Wrote {cycle_path}")
+
+
+def _sc_sprint_number_from_doc(sprint_doc):
+    """Extract the integer sprint number from a sprint doc path (sprint_19 → 19)."""
+    m = re.search(r"sprint_(\d+)", sprint_doc.rel_path)
+    return int(m.group(1)) if m else None
+
+
+_SC_GNUPLOT_SCRIPTS = [
+    "sprint_prs_commits.gnuplot",
+    "sprint_line_churn.gnuplot",
+    "sprint_pr_cycle.gnuplot",
+    "sprint_stories_done.gnuplot",
+]
+
+
+def cmd_sprint_charts(args):
+    """Implement compass sprint charts."""
+    if not shutil.which("gnuplot"):
+        print("❌ gnuplot not found on PATH. Install gnuplot to render sprint charts.",
+              file=sys.stderr)
+        return 1
+
+    if args.sprint:
+        sprint = args.sprint
+    else:
+        _, current_sprint = current_version_sprint(doc_index.load_all())
+        if current_sprint is None:
+            print("❌ No current sprint found.", file=sys.stderr)
+            return 1
+        sprint = _sc_sprint_number_from_doc(current_sprint)
+        if sprint is None:
+            print("❌ Could not determine sprint number from path.", file=sys.stderr)
+            return 1
+        print(f"Auto-detected sprint: {sprint}")
+
+    start, end = _sc_get_sprint_range(sprint)
+    if args.start_date:
+        try:
+            start = _sc_parse_date(args.start_date)
+        except (ValueError, IndexError):
+            print(f"❌ Invalid --start-date: {args.start_date!r} (expected YYYY-MM-DD)", file=sys.stderr)
+            return 1
+    if args.end_date:
+        try:
+            end = _sc_parse_date(args.end_date)
+        except (ValueError, IndexError):
+            print(f"❌ Invalid --end-date: {args.end_date!r} (expected YYYY-MM-DD)", file=sys.stderr)
+            return 1
+
+    print(f"Sprint {sprint}: {start} → {end}")
+
+    output_dir = Path(args.output_dir) if args.output_dir else \
+        PROJECT_ROOT / f"build/output/sprint_{sprint:02d}"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    daily = _sc_collect_daily_metrics(start, end)
+    prs = _sc_get_merged_prs(start, end)
+    cumulative = _sc_parse_sprint_stories(sprint, start, end)
+
+    _sc_write_activity(daily, output_dir)
+    _sc_write_progress(cumulative, prs, output_dir)
+
+    print(f"Found {len(daily)} days of activity, {len(prs)} merged PRs, "
+          f"{sum(cumulative.values())} story transitions")
+
+    print("Rendering charts with gnuplot...")
+    for script in _SC_GNUPLOT_SCRIPTS:
+        script_path = PROJECT_ROOT / "scripts" / script
+        if not script_path.exists():
+            print(f"  ⚠️  skipping {script} (not found)", file=sys.stderr)
+            continue
+        subprocess.check_call(
+            ["gnuplot", "-e", f"sprint={sprint}", str(script_path)],
+            cwd=PROJECT_ROOT,
+        )
+        print(f"  Rendered {script}")
+
+    return 0
+
+
 def cmd_sprint(argv):
     """compass sprint — sprint-level operations."""
     ap = argparse.ArgumentParser(prog="compass sprint",
@@ -940,7 +1185,21 @@ def cmd_sprint(argv):
     st.add_argument("--uuids", action="store_true",
                     help="Show story UUIDs alongside titles for use with other commands")
 
+    ch = sub.add_parser("charts",
+                        help="Generate sprint metric CSVs for gnuplot chart rendering")
+    ch.add_argument("--sprint", type=int, default=None,
+                    help="Sprint number (default: auto-detect current sprint)")
+    ch.add_argument("--start-date", default=None,
+                    help="Override sprint start date (YYYY-MM-DD)")
+    ch.add_argument("--end-date", default=None,
+                    help="Override sprint end date (YYYY-MM-DD)")
+    ch.add_argument("--output-dir", default=None,
+                    help="Output directory (default: build/output/sprint_NN/)")
+
     args = ap.parse_args(argv)
+
+    if args.subcmd == "charts":
+        return cmd_sprint_charts(args)
 
     if args.subcmd == "status":
         _, current_sprint = current_version_sprint(doc_index.load_all())

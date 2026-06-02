@@ -361,12 +361,8 @@ add_custom_target(generate_protocol_docs
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(sprint_charts
-    COMMENT "Generating sprint health charts (requires python3 and gnuplot)" VERBATIM
-    COMMAND python3 ${CMAKE_SOURCE_DIR}/scripts/sprint_metrics.py --sprint ${SPRINT}
-    COMMAND gnuplot -e "sprint=${SPRINT}" scripts/sprint_prs_commits.gnuplot
-    COMMAND gnuplot -e "sprint=${SPRINT}" scripts/sprint_line_churn.gnuplot
-    COMMAND gnuplot -e "sprint=${SPRINT}" scripts/sprint_pr_cycle.gnuplot
-    COMMAND gnuplot -e "sprint=${SPRINT}" scripts/sprint_stories_done.gnuplot
+    COMMENT "Generating sprint health charts (requires gnuplot)" VERBATIM
+    COMMAND ${CMAKE_SOURCE_DIR}/projects/ores.compass/compass.sh sprint charts --sprint ${SPRINT}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 set(SPRINT 18 CACHE STRING "Sprint number for sprint_charts target")
 

@@ -129,6 +129,8 @@ migrate; the single service registry's home (=projects/services.json=).
 | [[id:D38238C9-702F-47AC-BE64-91D84A8EE716][Migrate the Build pillar (build, site)]] | BACKLOG | | | compass build, compass site serve. |
 | [[id:32DB538C-E2A6-493C-8CBA-6C73A7A10EC4][Add the Generate pillar (delegating gen verbs)]] | BACKLOG | | | compass gen verbs delegating to ores.codegen (keeps its own CLI). |
 | [[id:E65F42A6-0762-4F75-866F-25A428B3973F][Surface branch staleness vs main in compass Orient]] | BACKLOG | | | Compact ↑ahead/↓behind-origin/main indicator (no fetch) on where/status/fleet, escalating to a warning when too stale. |
+| [[id:81DE1DC9-FB73-46DB-A8AB-E4BE8F78C591][Port sprint_metrics.py to compass sprint charts]] | BACKLOG | | | compass sprint charts; auto-detects current sprint; deletes standalone script; updates recipes. |
+| [[id:196FE762-F1A6-49BC-A2FF-60F3FC08114D][Port parse_test_results.py to compass test results]] | BACKLOG | | | New test pillar; auto-resolves preset from .env; recipe for test run overview; deletes standalone script. |
 
 * Decisions
 

@@ -8,7 +8,7 @@
 #+filetags: :compass:test:results:scripts:recipe:consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
 #+branch: feature/compass-test-results
-#+pr:
+#+pr: 1023
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
@@ -75,7 +75,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1023][#1023]] | [compass] Add compass test results; retire parse_test_results.py/sh |
 
 * Review
 

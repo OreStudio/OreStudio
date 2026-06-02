@@ -1,0 +1,26 @@
+:PROPERTIES:
+:ID: 11111111-1111-4111-9111-111111111111
+:END:
+#+title: ores.sample_flat
+#+description: Sample flat component fixture used to validate the new-component scaffold flow.
+#+type: component
+#+level: cross
+#+filetags: :test:fixture:component:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: sample_flat
+#+full_name: ores.sample_flat
+#+brief: Sample flat component fixture.
+
+* Summary
+
+Test fixture for the component-scaffold verifier. Represents a flat component
+(no api/core/service subdivision) — equivalent in shape to =ores.nats=,
+=ores.storage=, or =ores.service=.
+
+Codegen running =--profile component= against this overview should produce:
+- =CMakeLists.txt= at the component root
+- =src/CMakeLists.txt= / =tests/CMakeLists.txt= / =modeling/CMakeLists.txt=
+- =include/<full_name>/export.hpp= and =<full_name>.hpp=
+- =include/<full_name>/domain/stub.hpp= and =src/domain/stub.cpp=
+- =tests/main.cpp= and =tests/stub_tests.cpp=

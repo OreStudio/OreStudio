@@ -18,8 +18,10 @@ sprints that compose a [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]]. The
   sprints, sizing tasks, cross-sprint continuations.
 - [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Sprint themes]] — definitions of the six themes and the epic convention used
   to group stories in sprint backlogs.
-- [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] — every version of the product, the sprints inside each, and the
+- [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] — every version series of the product, the sprints inside each, and the
   stories and tasks that compose those sprints.
+- [[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][Milestones]] — the named major release targets each version series works towards;
+  owns identity, theme, mission, and definition of done.
 - [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — pre-sprint ideas split into [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] (next-version candidates)
   and [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]] (longer-term wishlist).
 
@@ -32,9 +34,10 @@ state transitions generically — it is not agile-specific. Agile is the loop
 
 | Field           | Value     |
 |-----------------+-----------|
-| Current Version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][v0]]        |
-| Current Sprint  | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Next sprint     | Sprint 20 |
+| Current Version  | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][v0]]                            |
+| Current Sprint   | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                     |
+| Next sprint      | Sprint 20                     |
+| Target milestone | [[id:DDA02748-7054-463B-9238-CC196601403D][v1.0 — Static World]]           |
 
 * See also
 

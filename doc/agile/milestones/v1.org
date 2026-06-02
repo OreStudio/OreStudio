@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: DDA02748-7054-463B-9238-CC196601403D
+:END:
+#+title: Milestone v1.0 — Static World
+#+description: Every ORE sample loads, executes, and round-trips with zero diff. Marks graduation from the 0.x.x series to 1.0.0.
+#+type: knowledge
+#+level: cross
+#+filetags: :milestone:v1_0:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+* Identity
+
+Milestone v1.0 is the /static world/ release. Time stands still: market
+data does not tick, trades do not change state, and no live feeds are
+required. The world is a snapshot, and the goal is to reproduce it
+perfectly. ORE Studio can ingest any ORE sample, persist every input
+and output, execute the pipeline end-to-end, and produce results that
+are bit-for-bit identical to the ground-truth reference outputs. Every
+sample is green; nothing is deferred.
+
+* Theme
+
+Static world: zero diffs, full round-trips, complete ORE sample
+coverage. The correctness bar is the ORE reference implementation
+itself.
+
+* Mission
+
+- Model all ORE XML input types and make them importable.
+- Persist every ORE output type in the database.
+- Execute the full ORE pipeline end-to-end inside ORE Studio.
+- Achieve zero-diff round-trips for every ORE sample.
+- Provide GUI coverage for every data operation.
+- Establish the main architectural tiers (database, services, UI).
+
+* Definition of done
+
+Every ORE sample in the reference suite loads, executes, and
+round-trips with a zero diff against the ground-truth outputs. No
+sample is deferred or partially supported.
+
+* Time horizon
+
+~6 months from current sprint.
+
+* Status
+
+| Field           | Value                                              |
+|-----------------+----------------------------------------------------|
+| State           | IN PROGRESS                                        |
+| Worked towards  | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] (0.x.x release series)                |
+| Unlocks         | Version 1 (1.x.x release series)                  |
+| Last touched    | 2026-06-02                                         |
+
+* See also
+
+- [[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][Milestones]] — catalogue of all milestones.
+- [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][Product vision]] — the durable statement of what ORE Studio is.
+- [[id:1651993D-F3E8-4A73-861C-0A0B03F12CF0][Milestone v2.0]] — the next milestone after this one.

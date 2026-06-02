@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 1109067A-5BD1-4B8F-8B6D-DF671D9EE3BF
+:END:
+#+title: Task: Slim v0/version.org
+#+description: Remove identity/mission/DoD from v0/version.org; add pointer to the v1 milestone; keep only series metadata (0.x.x releases, sprints, status).
+#+type: task
+#+level: s1
+#+filetags: :clarify_versioning_strategy:sprint_19:v0:
+#+owner: marco
+#+branch: feature/clarify-versioning-strategy
+#+pr: 1000
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC20475A-E7B4-4DFB-8E55-4B8DA6B36202][Clarify versioning strategy]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Strip =Identity=, =Mission=, =Definition of done=, and =Release scope=
+sections from =doc/agile/versions/v0/version.org=. Those now live in
+[[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]]. Add a =Target milestone= row to the
+Status table and update the opening paragraph to point there.
+
+* Status
+
+| Field        | Value                               |
+|--------------+-------------------------------------|
+| State        | DONE                                |
+| Parent story | [[id:EC20475A-E7B4-4DFB-8E55-4B8DA6B36202][Clarify versioning strategy]]        |
+| Now          | Nothing.                            |
+| Waiting on   | Nothing.                            |
+| Next         | Merge PR #1000.                     |
+| Last touched | 2026-06-02                          |
+
+* Acceptance
+
+- =v0/version.org= has no =Identity=, =Mission=, =DoD=, or =Release scope= sections.
+- Status table has a =Target milestone= row linking to =[[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0]]=.
+- Opening paragraph redirects the reader to the milestone for identity.
+
+* PRs
+
+| PR   | Title                                              |
+|------+----------------------------------------------------|
+| 1000 | [agile] Introduce milestone concept; clarify versioning strategy |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=v0/version.org= reduced from 93 to ~35 lines. Identity content now
+lives exclusively in =doc/agile/milestones/v1.org=.

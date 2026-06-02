@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: EDAE4567-CA33-45A0-8FBF-6A8D062E3DC0
+:END:
+#+title: Task: Wire milestones into agile index docs
+#+description: Link milestones.org from agile.org and versions.org; add Next Milestone row to agile.org At a glance table; update version.org glossary entry example.
+#+type: task
+#+level: s1
+#+filetags: :clarify_versioning_strategy:sprint_19:v0:
+#+owner: marco
+#+branch: feature/clarify-versioning-strategy
+#+pr: 1000
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC20475A-E7B4-4DFB-8E55-4B8DA6B36202][Clarify versioning strategy]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Wire the new [[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][Milestones]] index into the agile information architecture.
+Add a Milestones bullet to =agile.org=, a =Target milestone= row to the
+=At a glance= table, and update =versions.org= to describe version
+series rather than missions, with a =See also= link to milestones.
+
+* Status
+
+| Field        | Value                               |
+|--------------+-------------------------------------|
+| State        | DONE                                |
+| Parent story | [[id:EC20475A-E7B4-4DFB-8E55-4B8DA6B36202][Clarify versioning strategy]]        |
+| Now          | Nothing.                            |
+| Waiting on   | Nothing.                            |
+| Next         | Merge PR #1000.                     |
+| Last touched | 2026-06-02                          |
+
+* Acceptance
+
+- =agile.org= index list includes a Milestones bullet with org-roam link.
+- =agile.org= At a glance table has a =Target milestone= row.
+- =versions.org= opening describes version as release series; links to milestones.
+- =versions.org= table has =Series= and =Target milestone= columns.
+
+* PRs
+
+| PR   | Title                                              |
+|------+----------------------------------------------------|
+| 1000 | [agile] Introduce milestone concept; clarify versioning strategy |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=agile.org= and =versions.org= now link into =doc/agile/milestones/=.
+The agile entry point is complete.

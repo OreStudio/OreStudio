@@ -79,14 +79,16 @@ Exception: pass= (already replaced with a visible =⚠️= warning).
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                                                                          |
+|------+--------------------------------------------------------------------------------|
+| 1013 | [compass] Add task start; fix journal resume gap; document journal commands     |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                    | File        | Decision | Notes                                   |
+|---+----------------------------------------------------+-------------+----------+-----------------------------------------|
+| 1 | d.id may be None, causes AttributeError on .lower()| compass.py  | Fixed    | Added d.id and guard (ec204c103)        |
+| 2 | Deduplicate candidates by rel_path not d.id        | compass.py  | Fixed    | Changed {d.id:d} to {d.rel_path:d}     |
+| 3 | Exact-string state match fragile to table spacing  | compass.py  | Fixed    | Replaced with re.subn pattern           |
 
 * Result

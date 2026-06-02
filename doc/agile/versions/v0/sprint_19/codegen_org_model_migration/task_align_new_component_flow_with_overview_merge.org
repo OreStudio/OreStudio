@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/new-component-flow-overview-driven
-#+pr:
+#+pr: 1016
 #+blocked_on:
 #+state: STARTED
 #+blocked_since:
@@ -94,7 +94,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1016][#1016]] | [codegen,doc] Align new-component flow with the overview-driven model |
 
 * Review
 

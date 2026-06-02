@@ -58,12 +58,12 @@ against an inadequate model format and migrating later.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | DONE                                   |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                              |
-| Now           | Task 1 (compass scaffold) in progress on =feature/codegen-org-migration=. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Finish Task 1, then Task 2 (co-locate the pilot org file). |
-| Last touched  | 2026-06-01                             |
+| Next          | n/a — slovaris was the last item and is being handled by [[id:5104ADAF-390D-4ADB-B005-CE726B553123][ores.seeder]]. |
+| Last touched  | 2026-06-02                             |
 
 * Acceptance
 
@@ -110,7 +110,7 @@ against an inadequate model format and migrating later.
 | [[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][Migrate component JSON models to org-mode]] | DONE | 2026-06-02 | 2026-06-02 | 31 files. New =#+type: ores.codegen.component= shape + loader + dispatch; loader returns byte-identical dict vs JSON for all 31. Standalone =_component.org= form (option B); overview-merge (option A) deferred to a follow-up task. |
 | [[id:B08203B7-967F-4284-BC75-1412F69DC289][Merge component models into component_overview.org]] | DONE | 2026-06-02 | 2026-06-02 | 26 PAIR overviews gained =#+name:=, =#+full_name:=, =#+brief:=; 5 group-level ORPHAN overviews created (compute, controller, reporting, trading, workflow); 31 standalone =*_component.org= deleted. Loader reads scalars from frontmatter. Regen drift on scaffolds left to the post-regroup validation task. |
 | [[id:762119E3-2835-44E2-83A0-CF083A21295E][Align new-component flow with the overview-merge model]] | STARTED | 2026-06-02 | | Reconcile doc_component template, =component-creator= + =component-model-creator= skills, runbook, recipe with the merged-overview pattern; prove end-to-end with flat + composite sample components. |
-| [[id:3B4C2C1F-2174-4A41-A838-991C6D5631B8][Migrate slovaris reference-data JSONs to org-mode]] | BACKLOG | | | 6 files. Reference-data taxonomy read as sibling data via =load_data=; needs a loader extension. |
+| [[id:3B4C2C1F-2174-4A41-A838-991C6D5631B8][Migrate slovaris reference-data JSONs to org-mode]] | ABANDONED | | 2026-06-02 | Superseded by [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component for database test-data generation]]. Brainstorm concluded bulk data doesn't benefit from literate org; the right move is a dedicated component, not a shape change. |
 | [[id:EE3A7822-C95F-48C8-8474-862209C446FE][Retire plantuml_er_model.json from models/]] | DONE | 2026-06-02 | 2026-06-02 | Moved to =build/output/codegen/= (already gitignored); plantuml_er_generate.sh updated. |
 | [[id:0BD89DB5-B7F7-4C18-8B00-D6C651264D71][Validate codegen after subcomponent regroup]] | BACKLOG | | | profiles.json still carries 12 stale =projects/ores.qt.{component}/...= outputs (and probably cli/http/nats too). Re-verify merged migrations end-to-end against the new layout. |
 | [[id:95031F88-44AB-4705-BA99-05A874800EC5][Cross-link entity / component overview / schema org docs]] | BACKLOG | | | Wire the four load-bearing edges: group overview → sub-components, group overview → entities, entity → group, entity → schema (lookup tables). Includes creating 11 missing top-level group overviews. |

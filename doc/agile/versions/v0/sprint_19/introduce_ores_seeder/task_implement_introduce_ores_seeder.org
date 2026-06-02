@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 04CE6125-EB48-4E9A-A986-8D2A73EEB547
+:END:
+#+title: Task: Scaffold ores.seeder component + relocate slovaris dataset
+#+description: Initial task for: Introduce ores.seeder component for database test-data generation
+#+type: task
+#+level: s1
+#+filetags: :introduce_ores_seeder:sprint_19:v0:
+#+owner: marco
+#+branch: feature/introduce-ores-seeder
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component for database test-data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Stand up the =ores.seeder= component scaffold and relocate the
+slovaris dataset from =ores.codegen/models/slovaris/= to
+=ores.seeder/datasets/slovaris/=. Update consumers
+(=generate_solvaris_refdata.sh= or its replacement) so the
+generated SQL artefacts are byte-identical to the pre-move
+output.
+
+Also closes out the original slovaris-to-org task ([[id:3B4C2C1F-2174-4A41-A838-991C6D5631B8][3B4C2C1F]]) as
+ABANDONED with a supersede note, and closes the parent migration
+story ([[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][D85E2B30]]) as DONE.
+
+Compass plumbing (=dataset_overview= subtype + mustache template)
+is part of this task; the per-dataset =dataset_overview.org= for
+slovaris is authored here too.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                                |
+| Parent story | [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component for database test-data generation]] |
+| Now          | Scaffolding + slovaris move; closing legacy docs. |
+| Waiting on   | Nothing.                               |
+| Next         | Tidy commits + PR.                     |
+| Last touched | 2026-06-02                             |
+
+* Acceptance
+
+- =projects/ores.seeder/= exists with: =seeder.sh=,
+  =modeling/component_overview.org=, =src/seeder.py=,
+  =datasets/slovaris/= containing the relocated JSONs +
+  =methodology.txt= + =dataset_overview.org=.
+- =projects/ores.codegen/models/slovaris/= no longer exists.
+- =generate_solvaris_refdata.sh= (relocated to
+  =projects/ores.seeder/= or replaced by =seeder.sh=) reads the
+  new path and produces the 9 slovaris SQL artefacts
+  byte-identically to HEAD.
+- New compass subtype =dataset_overview= scaffolds the per-
+  dataset doc; new mustache template
+  =projects/ores.codegen/library/templates/doc_dataset.org.mustache=
+  drives it.
+- Old slovaris task ([[id:3B4C2C1F-2174-4A41-A838-991C6D5631B8][3B4C2C1F]]) is ABANDONED with
+  =* Result= note pointing at the new story.
+- Old migration story ([[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][D85E2B30]]) is DONE; its slovaris
+  row in =* Tasks= reflects the supersede.
+- =ores.seeder= is added as a new section to
+  [[id:A3F8B2C1-9D4E-4F7A-B6C5-2E8D1A0F3B9C][System Model: Tooling Layer]].
+- Sprint =* Stories= table at
+  =doc/agile/versions/v0/sprint_19/sprint.org= carries the new
+  story row.
+
+* Plan
+
+Sequence:
+
+1. /Close legacy docs/. Mark slovaris task ABANDONED with
+   =* Result= supersede note; mark migration story DONE; update
+   the migration story's =* Tasks= row for slovaris.
+
+2. /Scaffold =ores.seeder= component/. Create the directory
+   skeleton; scaffold =modeling/component_overview.org= via
+   =compass add component= (the recent overview-merge work means
+   the scaffold already includes the codegen scalars).
+
+3. /Author =seeder.sh= and =src/seeder.py=/. Thin CLI that
+   imports =codegen.generator= and runs the dataset's
+   =model.json= the same way =generate_solvaris_refdata.sh= does
+   today.
+
+4. /Relocate slovaris/. =git mv= the 6 JSONs + =methodology.txt=
+   from =ores.codegen/models/slovaris/= to
+   =ores.seeder/datasets/slovaris/=. Remove the now-empty source
+   dir.
+
+5. /Author =datasets/slovaris/dataset_overview.org/=. Carry the
+   slovaris-specific metadata (name, description, methodology
+   pointer) — some of which lives in =manifest.json= today.
+
+6. /Update =generate_solvaris_refdata.sh/=. Repoint at the new
+   path. Possibly rename it to live under =ores.seeder/= as
+   =seeder.sh generate slovaris= or similar.
+
+7. /Add compass =dataset_overview= subtype/. Author
+   =projects/ores.codegen/library/templates/doc_dataset.org.mustache=
+   and wire it into =doc_generate.py= (new doc-type entry + CLI
+   handling).
+
+8. /Wire system model/. Add =ores.seeder= section to
+   =projects/modeling/system_model_tooling.org= and the
+   knowledge =* Tooling= index.
+
+9. /Wire sprint/. Add the story row to
+   =doc/agile/versions/v0/sprint_19/sprint.org= =* Stories=
+   table.
+
+10. /Verify byte-identity/. Run the relocated script; diff the 9
+    output SQL files against HEAD; commit byte-identical.
+
+11. /Tidy commits + PR/.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

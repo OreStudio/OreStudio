@@ -9,10 +9,11 @@
 #+owner: marco
 #+branch:
 #+pr:
+#+state: ABANDONED
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-06-02
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -25,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded by [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component for database test-data generation]]. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-01                               |
+| Next         | n/a                                    |
+| Last touched | 2026-06-02                             |
 
 * Acceptance
 
@@ -57,3 +58,27 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+ABANDONED — superseded by [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component for
+database test-data generation]].
+
+The original scope was to migrate the 6 slovaris JSONs to
+org-mode for uniformity with the other codegen-model migrations
+in the parent story. A brainstorm before implementation
+concluded:
+
+1. The slovaris files are *data*, not codegen *models*. The
+   prior migrations (entity, junction, table, lookup_entity,
+   field_group, component, service_registry) were all
+   source-code descriptors where literate org unlocked real
+   value (generator expressions, FK rationale, prose context).
+2. A 100-row org table for =country_currency.json= is just an
+   uglier JSON list — no value added.
+3. The right move is to keep JSON for bulk data but extract the
+   machinery into a dedicated component (=ores.seeder=) with
+   proper documentation, compass plumbing, and a roadmap toward
+   a synthesised (Faker-driven) flavour that *will* benefit from
+   the entity-model linkage the other migrations have built up
+   (=generator_expr= column hints).
+
+See [[id:5104ADAF-390D-4ADB-B005-CE726B553123][the seeder story]] for the new direction.

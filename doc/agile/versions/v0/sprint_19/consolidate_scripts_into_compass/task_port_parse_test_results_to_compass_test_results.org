@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 196FE762-F1A6-49BC-A2FF-60F3FC08114D
+:END:
+#+title: Task: Port parse_test_results.py to compass test results
+#+description: Absorb scripts/parse_test_results.py into compass as compass test results; introduce the test pillar; auto-resolve preset from .env; add how-do-I-see-an-overview-of-the-test-run recipe; remove standalone script.
+#+type: task
+#+level: s1
+#+filetags: :compass:test:results:scripts:recipe:consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Absorb =scripts/parse_test_results.py= into compass as =compass test results=
+— a new top-level =test= noun (pillar) alongside =sprint= and =story=.
+The command parses Catch2 XML test-result files from the last build,
+prints a human-readable overview (suite stats, failures, relevant log
+excerpts), and auto-resolves the build output directory from =.env= +
+=ORES_PRESET= so the user never has to type a path. A recipe documents
+the workflow for inspecting a test run. The standalone script is deleted
+on hard cutover.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-02                               |
+
+* Acceptance
+
+- =compass test results= is registered as a new top-level command
+  (=cmd_test(argv)= in =compass.py=) and appears in =compass --help=
+  under a =test= pillar entry.
+- Interface: =compass test results [--preset NAME]=. Without =--preset=
+  the command reads =ORES_PRESET= from =.env= (the same one-call
+  =_load_env()= helper the rest of compass uses or will use).
+  The XML directory is derived as
+  =build/output/<preset>/publish/bin/=.
+- Output behaviour matches the standalone script: per-suite stats,
+  failure details with exception text, relevant log snippets (ERROR/WARN)
+  from =build/output/<preset>/log/=; the "no logs" hint when logging is
+  disabled.
+- =compass test --help= lists the subcommand and describes the =--preset=
+  flag.
+- =scripts/parse_test_results.py= is deleted; any callers updated.
+- New recipe =doc/recipes/build/how_do_i_see_an_overview_of_the_test_run.org=
+  is scaffolded via =compass add recipe= and filled in:
+  Question = "How do I see an overview of the test run?",
+  Answer = run =compass test results= (optionally with =--preset=),
+  plus the how-to-enable-logging hint.
+- The recipe is wired into the build recipe index.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

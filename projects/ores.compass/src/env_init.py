@@ -28,9 +28,37 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-# .env format version — keep in lockstep with init-environment.sh's ENV_VERSION
-# and projects/ores.sql/utility/validate_env_version.sh.
-ENV_VERSION = 6
+# The canonical .env-format version is the highest row in the org-mode log
+# at doc/knowledge/architecture/env_format_version_log.org — read by both
+# `compass env init` (writes ORES_ENV_VERSION) and the version check.
+# `compass env new-version` appends a row; no version constant lives in code.
+def _env_version_doc(project_root: Path) -> Path:
+    return (project_root / "doc" / "knowledge" / "architecture" /
+            "env_format_version_log.org")
+
+
+def _parse_version_rows(doc: Path):
+    """Parse the version table: returns [(version:int, date:str, desc:str), ...]."""
+    rows = []
+    for line in doc.read_text().splitlines():
+        s = line.strip()
+        if not s.startswith("|"):
+            continue
+        cells = [c.strip() for c in s.strip("|").split("|")]
+        if cells and cells[0].isdigit():
+            rows.append((int(cells[0]),
+                         cells[1] if len(cells) > 1 else "",
+                         cells[2] if len(cells) > 2 else ""))
+    return rows
+
+
+def current_version(project_root: Path) -> int:
+    """Highest version in the log — the canonical .env-format version."""
+    rows = _parse_version_rows(_env_version_doc(project_root))
+    if not rows:
+        raise ValueError("no versions found in env_format_version_log.org")
+    return max(r[0] for r in rows)
+
 
 _PW_ALPHABET = string.ascii_letters + string.digits
 
@@ -104,6 +132,35 @@ def _logging_only(env_file: Path, op: str, level: str) -> int:
     env_file.write_text(out)
     env_file.chmod(0o600)
     print("Re-run 'cmake --preset <preset>' to pick up the change.")
+    return 0
+
+
+def new_version(project_root: Path, description: str) -> int:
+    """compass env new-version — append a new .env-format version row.
+
+    Computes the next version (current + 1), appends a dated row to the
+    version log table with the given description, and writes it back. Run
+    this after a change that alters the .env (a new service in the registry,
+    a new/renamed variable); then re-run 'compass env init' so existing
+    checkouts' version check flags the change.
+    """
+    doc = _env_version_doc(project_root)
+    if not doc.is_file():
+        print(f"Error: env version log not found: {doc}", file=sys.stderr)
+        return 1
+    lines = doc.read_text().splitlines()
+    table_idx = [i for i, ln in enumerate(lines) if ln.strip().startswith("|")]
+    if not table_idx:
+        print(f"Error: no version table found in {doc}", file=sys.stderr)
+        return 1
+    nxt = current_version(project_root) + 1
+    date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    row = f"| {nxt} | {date} | {description} |"
+    lines.insert(table_idx[-1] + 1, row)
+    doc.write_text("\n".join(lines) + "\n")
+    print(f"Recorded .env-format version {nxt} ({date}): {description}")
+    print("Now re-run 'compass env init --preset <preset> -y' to write the new "
+          "version into .env (older checkouts will then fail the version check).")
     return 0
 
 
@@ -361,6 +418,7 @@ def run(argv, project_root: Path) -> int:
         (env_file.parent / ".env.old").write_text(env_file.read_text())
         print("Backed up existing .env to .env.old")
 
+    env_version = current_version(checkout_root)
     print(f"Writing {env_file}...")
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     out = []
@@ -374,7 +432,7 @@ def run(argv, project_root: Path) -> int:
 # at the start of recreate_database.sh.  If this file is out of date, re-run:
 #   compass env init --preset <preset> -y
 # ---------------------------------------------------------------------------
-ORES_ENV_VERSION={ENV_VERSION}
+ORES_ENV_VERSION={env_version}
 
 # ---------------------------------------------------------------------------
 # Checkout identity

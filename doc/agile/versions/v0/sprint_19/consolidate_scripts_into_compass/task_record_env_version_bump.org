@@ -31,6 +31,17 @@ Detection itself stays as today: =validate_env_version= compares the
 user to re-run =compass env init= on mismatch. This task makes the *bump*
 a tooled, one-command action — not automated detection.
 
+* Status
+
+| Field        | Value                                                |
+|--------------+------------------------------------------------------|
+| State        | STARTED                                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]         |
+| Now          | Implemented: canonical version data file + compass env bump + validator reads it. |
+| Waiting on   | Nothing.                                             |
+| Next         | Ship in the story PR.                                |
+| Last touched | 2026-06-02                                           |
+
 * Background
 
 =ENV_VERSION= is a hard-coded constant (=6=) duplicated in the generator

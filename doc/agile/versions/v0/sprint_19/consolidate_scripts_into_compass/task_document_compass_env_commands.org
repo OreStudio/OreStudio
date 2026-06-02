@@ -29,11 +29,11 @@ for.
 
 | Field        | Value                                                |
 |--------------+------------------------------------------------------|
-| State        | BACKLOG                                              |
+| State        | STARTED                                              |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]         |
-| Now          | Not yet started.                                     |
-| Waiting on   | [[id:5E5D286C-70E4-48B4-A5FE-A4A28DC8BE63][Port init-environment to compass env init]] (commands must exist). |
-| Next         | Update the enumerated docs below.                    |
+| Now          | Docs written; shipping in the story PR.              |
+| Waiting on   | Nothing.                                             |
+| Next         | Ship in the story PR.                                |
 | Last touched | 2026-06-02                                           |
 
 * Acceptance
@@ -81,3 +81,18 @@ Confirm the final list at close with
 |   |                 |      |          |       |
 
 * Result
+
+Documents created / updated:
+
+| Document | Change |
+|----------+--------|
+| =doc/recipes/compass/how_do_i_manage_the_environment_with_compass.org= | *New* — detailed recipe for =env init/diff/list/bump= (flags, behaviour-preservation guarantee, masking, the version-bump workflow) |
+| =doc/recipes/compass/compass.org= | New *Provision* section linking the env recipe; intro notes operational pillars |
+| =doc/recipes/cmake/how_do_i_init_the_environment.org= | Rewritten as a concise pointer to the compass env recipe; commands → =compass env init= |
+| =doc/recipes/cmake/how_do_i_start_services.org= | Prereq reference → =compass env init= |
+| =doc/recipes/new_service_checklist.org= | Step 9 + the inline command → =compass env init= |
+| =doc/recipes/codegen/how_do_i_add_a_domain_service.org= | Credentials step + consumer table + Script → =compass env init= |
+
+Verified: no live recipe/knowledge doc invokes the old scripts; the only
+remaining mentions are the two recipes that /describe/ what =compass env=
+replaced. Historical records (=doc/agile/*=, =doc/plans/*=) left as-is.

@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD
+:END:
+#+title: Environment format version log
+#+description: Canonical, parseable log of .env-format versions and their descriptions. compass env init writes the current version as ORES_ENV_VERSION; compass env new-version appends a row; the version check reads it. The single source of truth for the .env schema version.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:environment:versioning:compass:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+* Summary
+
+This document is the single source of truth for the =.env= /format
+version/ — the integer written as =ORES_ENV_VERSION= in every generated
+=.env=. The *current version is the highest row* in the table below.
+=compass env init= reads it and stamps it into the =.env=; the version
+check (run before =recreate_database=) compares a checkout's
+=ORES_ENV_VERSION= against it and tells the user to re-run
+=compass env init= if the =.env= is older. Record a new version with
+=compass env new-version "<description>"=, which appends a dated row —
+do this whenever a change alters the =.env= shape (a new service in the
+[[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][service registry]], a new or renamed variable).
+
+* Versions
+
+The table is machine-parsed: each data row is =| <integer> | <date> |
+<description> |=. Do not edit it by hand — use =compass env new-version=.
+
+| Version | Date | Description |
+|---------+------+-------------|
+| 1 |            | Initial env versioning; renamed ORES_COMPUTE_WRAPPER_USER -> ORES_DB_COMPUTE_WRAPPER_USER so it matches setup_database.sh. |
+| 2 |            | Removed ORES_WT_PORT; the WT port is owned by the controller via ORES_CONTROLLER_SERVICE_WT_PORT. |
+| 3 |            | Added ORES_WORKSPACE_SERVICE_DB_* for the new workspace service. |
+| 4 |            | Added ORES_SITE_PORT for the local documentation site server. |
+| 5 |            | Added org-roam knowledge graph integration to site build. |
+| 6 |            | Added ORES_SHELL_NATS_* for ores.shell mTLS auto-connect support. |
+
+* See also
+
+- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — the
+  =compass env= commands that read and append to this log.
+- [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]] — the most common trigger for a new
+  version (a registry change adds per-service =.env= variables).
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the toolkit that owns env provisioning.

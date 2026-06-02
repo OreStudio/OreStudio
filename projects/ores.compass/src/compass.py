@@ -1679,6 +1679,18 @@ def cmd_env(argv):
                         help="Reveal secret values (passwords, JWT key) instead of masking them")
         largs = lp.parse_args(argv[1:])
         return env_init.list_env(PROJECT_ROOT, largs.show_secrets)
+    if argv and argv[0] == "version":
+        import env_init
+        # `version new "<desc>"` records a new version; bare `version` prints it.
+        if len(argv) >= 2 and argv[1] == "new":
+            np = argparse.ArgumentParser(prog="compass env version new",
+                                         description="Record a new .env-format version.")
+            np.add_argument("description",
+                            help="What changed in the .env (becomes the log row's description)")
+            nargs = np.parse_args(argv[2:])
+            return env_init.new_version(PROJECT_ROOT, nargs.description)
+        print(env_init.current_version(PROJECT_ROOT))
+        return 0
     # No/unknown subcommand: render help (and error on unknown).
     ap = argparse.ArgumentParser(prog="compass env",
                                  description="Provision: checkout environment setup.")
@@ -1687,6 +1699,7 @@ def cmd_env(argv):
                                 "(reuses existing secrets; --with-diff to show changes)")
     sub.add_parser("diff", help="Unified diff of .env.old vs .env")
     sub.add_parser("list", help="List .env vars grouped (secrets masked; --show-secrets to reveal)")
+    sub.add_parser("version", help="Show the .env-format version; 'version new <desc>' records a new one")
     ap.parse_args(argv or ["--help"])
     return 0
 
@@ -1729,7 +1742,7 @@ def main():
         "  sprint:   status (orient)\n"
         "  story:    new (scaffold) | status (orient)\n"
         "  task:     new (scaffold)\n"
-        "  env:      init | diff | list (provision)\n"
+        "  env:      init | diff | list | version [new] (provision)\n"
     )
     parser = argparse.ArgumentParser(
         description="Compass: developer toolkit for ORE Studio — orient, scaffold, capture, and search.",

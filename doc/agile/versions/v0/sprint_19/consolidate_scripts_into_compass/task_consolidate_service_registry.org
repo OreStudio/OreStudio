@@ -176,7 +176,7 @@ when this task is picked up.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1001][#1001]] | [agile] Promote service-registry task to scripts-into-compass story |
 
 * Review
 

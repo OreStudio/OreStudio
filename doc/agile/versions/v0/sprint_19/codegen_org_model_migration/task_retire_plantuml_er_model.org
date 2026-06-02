@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/retire-plantuml-er-model
-#+pr:
+#+pr: 996
 #+blocked_on:
 #+state: DONE
 #+blocked_since:
@@ -57,9 +57,9 @@ build-output path, gitignore it, delete the check-in.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title |
+|------+-------|
+| #996 | [codegen,agile] Retire plantuml_er_model.json from models/ |
 
 * Review
 

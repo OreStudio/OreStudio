@@ -34,6 +34,13 @@ Orient, Search, Scaffold, Capture, and Journal.
 - [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — fetch main, branch,
   scaffold a linked story+task (=story new= / =task new=).
 
+* Journal
+
+- [[id:F3373CC1-C2B3-4371-A63F-FBEC54297265][How do I know what I was working on?]] — restart recovery: read
+  the last entry and clock back on (=journal where= / =task start=).
+- [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]] — full journal reference:
+  clocking on, overlap detection, manual updates, entry format.
+
 * Captures
 
 - [[id:7072D39C-9607-48F9-8EE6-50E8647DB8ED][How do I capture ideas from freeform text?]] — paste unstructured

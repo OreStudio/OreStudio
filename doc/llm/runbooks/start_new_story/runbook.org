@@ -46,15 +46,26 @@ In execution order:
 
 2a. /Read all generated files before writing anything./ Immediately after scaffold, read every file compass created and note the =:ID:= property of each. Do this before writing any content to =story.org= or the task file. Failure to read first causes placeholder UUIDs to be written and then silently corrected — an error-prone pattern that breaks org-roam links.
 
-3. /Fill in the story content./ Open =story.org= and complete the =* Goal=, =* Acceptance=, =* Tasks=, and =* Out of scope= sections. Use the actual UUIDs from step 2a for any =[[id:UUID]]= references to compass-generated tasks. Use [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] as the entry-point skill. Every internal-doc reference uses an =[[id:UUID]]= link, never a relative path.
+3. /Clock on./ Run =compass task start= with the first task's slug to switch
+   branch, mark the task STARTED, and stamp the session journal:
 
-4. /Mark the story STARTED./ Update the =* Status= table: state → =STARTED=, fill =Now= and =Next=, set =#+owner:=, refresh =#+updated:=. Follow [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] step 3.
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh task start <first-task-slug>
+   #+end_src
 
-5. /Wire into the sprint./ Add a row to the parent sprint's =* Stories= table. Each row: =| [[id:UUID][Title]] | STARTED | date | | Theme |=.
+   This is the explicit "I am now working on this" signal. The journal entry
+   records the story, task, branch, and state so =compass where= and
+   =compass fleet= show context after a restart.
 
-6. /Commit the status change./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]]: =[agile] Mark <story> STARTED= with a =Co-Authored-By:= trailer.
+4. /Fill in the story content./ Open =story.org= and complete the =* Goal=, =* Acceptance=, =* Tasks=, and =* Out of scope= sections. Use the actual UUIDs from step 2a for any =[[id:UUID]]= references to compass-generated tasks. Use [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] as the entry-point skill. Every internal-doc reference uses an =[[id:UUID]]= link, never a relative path.
 
-7. /Push and open a PR./ Push with =git push -u origin <branch>=, then follow [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — title format =[COMPONENT] Description=, body sections Summary / Changes / Traceability (Markdown table with Artefact, Link, full UUID). Record the PR number in the task's =* PRs= table.
+5. /Mark the story STARTED./ Update the =* Status= table: state → =STARTED=, fill =Now= and =Next=, set =#+owner:=, refresh =#+updated:=. Follow [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] step 3.
+
+6. /Wire into the sprint./ Add a row to the parent sprint's =* Stories= table. Each row: =| [[id:UUID][Title]] | STARTED | date | | Theme |=.
+
+7. /Commit the status change./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]]: =[agile] Mark <story> STARTED= with a =Co-Authored-By:= trailer.
+
+8. /Push and open a PR./ Push with =git push -u origin <branch>=, then follow [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — title format =[COMPONENT] Description=, body sections Summary / Changes / Traceability (Markdown table with Artefact, Link, full UUID). Record the PR number in the task's =* PRs= table.
 
 * Postconditions
 

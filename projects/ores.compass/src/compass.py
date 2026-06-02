@@ -1444,22 +1444,11 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
     # 3. record branch on task so fleet/where can map this worktree
     _set_frontmatter_branch(task_path, branch)
 
-    # 4. update session journal — best-effort, never fails
-    try:
-        story_uuid = _read_org_id(Path(PROJECT_ROOT) / story_dir / "story.org")
-        task_uuid  = _read_org_id(task_path)
-        if story_uuid and task_uuid:
-            _journal_update(argparse.Namespace(
-                story=story_uuid, task=task_uuid, branch=branch,
-                state="STARTED", pr="none"))
-    except Exception:
-        pass
-
-    # 5. next steps
+    # 4. next steps
     print("\nNext steps:")
     if new_story:
         print(f"  - wire the story into {sprint_dir}/sprint.org (* Stories table)")
-    print(f"  - flip the {'story and task' if new_story else 'task'} State to STARTED when you begin")
+    print(f"  - compass task start {task_path.stem.removeprefix('task_')}   # clock on + stamp journal")
     print(f"  - git push -u origin {branch}   &&   open a PR")
     return 0
 
@@ -1541,6 +1530,84 @@ def cmd_story(argv):
         return 0
 
 
+def _cmd_task_start(task_ident):
+    """compass task start <slug-or-uuid> — clock on to an existing task."""
+    docs = doc_index.load_all()
+    il   = task_ident.lower()
+
+    # Resolve by UUID (exact or prefix), slug, or branch suffix.
+    tasks = [d for d in docs.values() if d.doctype == "task"]
+    exact  = [d for d in tasks if d.id and d.id.lower() == il]
+    prefix = [d for d in tasks if d.id and d.id.lower().startswith(il)]
+    slug   = [d for d in tasks if Path(d.rel_path).stem.lower() == f"task_{il}"
+                                or Path(d.rel_path).stem.lower() == il]
+    cands  = list({d.rel_path: d for d in (exact or prefix) + slug}.values())
+
+    if not cands:
+        print(f"❌ No task matching '{task_ident}'.", file=sys.stderr)
+        return 1
+    if len(cands) > 1:
+        print(f"❌ Ambiguous — {len(cands)} tasks match '{task_ident}':", file=sys.stderr)
+        for c in cands:
+            print(f"   {c.id}  {c.rel_path}", file=sys.stderr)
+        return 1
+
+    task_doc  = cands[0]
+    task_path = Path(PROJECT_ROOT) / task_doc.rel_path
+
+    # Read branch from #+branch: frontmatter.
+    branch = _read_frontmatter_field(task_path, "branch")
+    if not branch:
+        print(f"❌ Task has no #+branch: set. Run 'compass task new' first.", file=sys.stderr)
+        return 1
+
+    # Find the parent story (one directory up, story.org).
+    story_path = task_path.parent / "story.org"
+    story_uuid = _read_org_id(story_path) if story_path.exists() else None
+
+    # Switch to the task branch (create off origin/main if absent).
+    result = subprocess.run(["git", "switch", branch], capture_output=True, text=True,
+                            cwd=PROJECT_ROOT)
+    if result.returncode != 0:
+        result2 = subprocess.run(
+            ["git", "switch", "-c", branch, "origin/main"],
+            capture_output=True, text=True, cwd=PROJECT_ROOT)
+        if result2.returncode != 0:
+            print(f"❌ git switch failed:\n{result2.stderr.strip()}", file=sys.stderr)
+            return 1
+        print(f"✅ created and switched to {branch} (off origin/main)")
+    else:
+        print(f"✅ switched to {branch}")
+
+    # Flip BACKLOG → STARTED in the task file if needed.
+    text = task_path.read_text(encoding="utf-8")
+    new_text, n = re.subn(r'(\| State\s+\|) BACKLOG', r'\1 STARTED', text, count=1)
+    if n:
+        task_path.write_text(new_text, encoding="utf-8")
+        print(f"📝 state: BACKLOG → STARTED")
+
+    # Stamp the journal.
+    try:
+        task_uuid = _read_org_id(task_path)
+        if story_uuid and task_uuid:
+            _journal_update(argparse.Namespace(
+                story=story_uuid, task=task_uuid, branch=branch,
+                state="STARTED", pr="none"))
+    except Exception as e:
+        print(f"⚠️  journal update failed: {e}", file=sys.stderr)
+
+    return 0
+
+
+def _read_frontmatter_field(path, field):
+    """Return the value of #+<field>: from an org file, or empty string."""
+    prefix = f"#+{field}:"
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.lower().startswith(prefix.lower()):
+            return line[len(prefix):].strip()
+    return ""
+
+
 def cmd_task(argv):
     """compass task — task-level operations."""
     ap = argparse.ArgumentParser(prog="compass task",
@@ -1555,6 +1622,24 @@ def cmd_task(argv):
     new_p.add_argument("--base",      default="origin/main")
     new_p.add_argument("--kind",      default="feature", choices=["feature", "hotfix"])
     new_p.add_argument("--dry-run",   action="store_true")
+
+    start_p = sub.add_parser(
+        "start",
+        help="Clock on to a task: switch branch, flip to STARTED, stamp journal",
+        description=(
+            "Clock on to an existing task — covers all three use cases:\n"
+            "  1. new task just scaffolded (compass task new)\n"
+            "  2. BACKLOG task being picked up for the first time\n"
+            "  3. STARTED task being resumed after a restart\n\n"
+            "Switches to the task's branch, flips BACKLOG→STARTED if needed,\n"
+            "and appends a timestamped entry to .journal.org so 'compass journal\n"
+            "where' and 'compass fleet' show the current context.\n\n"
+            "This is the required first step in both the new-story and\n"
+            "work-task-to-merged-PR runbooks."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    start_p.add_argument("task", help="Task slug, UUID/prefix, or branch suffix")
 
     args = ap.parse_args(argv)
 
@@ -1574,6 +1659,9 @@ def cmd_task(argv):
             sprint_dir, story_dir, story_title, None,
             args.task_slug, args.title, task_desc,
             branch, args.base, args.dry_run, current_sprint)
+
+    if args.subcmd == "start":
+        return _cmd_task_start(args.task)
 
 def main():
     # `list` and `show` pass every remaining argument straight through to the

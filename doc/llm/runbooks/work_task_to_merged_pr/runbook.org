@@ -26,7 +26,17 @@ Take an existing task from =BACKLOG= through implementation, PR creation, review
 
 In execution order:
 
-1. /Pick up the task./ Read =task_<slug>.org=: understand the =* Goal=, =* Acceptance= criteria, and =* Notes=. Mark the task =STARTED= and set =#+branch:=, =#+pr:= (if known), and =#+owner:=.
+1. /Clock on./ Run =compass task start= with the task's slug to switch branch,
+   mark the task =STARTED=, and stamp the session journal:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh task start <task-slug>
+   #+end_src
+
+   This covers all three cases: new task on an existing story, resuming a
+   BACKLOG task, and restarting an already-STARTED task after a session reset.
+   Read =task_<slug>.org= after clocking on: understand the =* Goal=,
+   =* Acceptance= criteria, and =* Notes=. Set =#+owner:= and =#+pr:= once known.
 
 2. /Sync with main./ Fetch and rebase onto =origin/main=:
    #+begin_src sh

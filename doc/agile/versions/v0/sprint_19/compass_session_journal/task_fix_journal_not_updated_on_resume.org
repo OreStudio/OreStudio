@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: F088A0A7-2442-47BD-A73D-C431B14D88CA
+:END:
+#+title: Task: Fix journal not updated on session resume
+#+description: Journal is only written on compass story/task new. Resuming an existing task after restart never stamps the journal — the main recovery use case is unhandled.
+#+type: task
+#+level: s1
+#+filetags: :compass_session_journal:sprint_19:v0:
+#+owner: marco
+#+branch: feature/fix-journal-not-updated-on-resume
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Redesign the journal trigger model and fix a silent failure. Three use
+cases need coverage:
+
+1. *New story, new task* — =compass story new= scaffolds artefacts and
+   branch. The developer then calls =compass task start= to clock on.
+2. *Existing story, new task* — =compass task new= scaffolds the task
+   and branch. The developer then calls =compass task start= to clock on.
+3. *Existing story, existing task* — the common restart / resume case.
+   =compass task start= switches to the branch, flips state to STARTED
+   if BACKLOG, and stamps the journal.
+
+The key design decision: *remove the implicit journal stamp from
+=story new= and =task new=*. Creation ≠ starting work. The journal
+should record intent, not scaffolding noise. =compass task start= is
+the explicit "I am now working on this" signal and is a required step
+in the new-story and new-task runbooks.
+
+=compass task start <slug-or-uuid>= must:
+- Locate the task file (by slug, UUID, or branch name).
+- =git switch <branch>= (creates off =origin/main= if it does not exist yet).
+- Flip state from BACKLOG → STARTED if not already STARTED.
+- Stamp the journal with story UUID, task UUID, branch, and state.
+
+Also fix the *silent failure* introduced by the earlier =except
+Exception: pass= (already replaced with a visible =⚠️= warning).
+
+* Status
+
+| Field        | Value                                               |
+|--------------+-----------------------------------------------------|
+| State        | STARTED                                             |
+| Parent story | [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]]                             |
+| Now          | Silent-catch fixed; implementing task start + removing auto-stamp. |
+| Waiting on   | Nothing.                                            |
+| Next         | Implement, update runbooks, PR.                     |
+| Last touched | 2026-06-02                                          |
+
+* Acceptance
+
+- =compass task start <slug>= exists and stamps the journal for all
+  three use cases (new task, resume BACKLOG, resume STARTED).
+- =compass story new= and =compass task new= no longer auto-stamp
+  the journal — creation is decoupled from starting work.
+- The start-new-story and work-task-to-merged-PR runbooks include
+  =compass task start= as an explicit step.
+- =compass journal where= returns a meaningful entry after resuming
+  any existing task.
+- Journal failures print a visible =⚠️= warning rather than silently
+  disappearing.
+
+* Plan
+
+1. Remove =_journal_update= call from =story new= / =task new=.
+2. Implement =compass task start <slug-or-uuid>= subcommand.
+3. Update runbooks: =start_new_story= and =work_task_to_merged_pr=.
+
+* Notes
+
+* PRs
+
+| PR   | Title                                                                          |
+|------+--------------------------------------------------------------------------------|
+| 1013 | [compass] Add task start; fix journal resume gap; document journal commands     |
+
+* Review
+
+| # | Comment summary                                    | File        | Decision | Notes                                   |
+|---+----------------------------------------------------+-------------+----------+-----------------------------------------|
+| 1 | d.id may be None, causes AttributeError on .lower()| compass.py  | Fixed    | Added d.id and guard (ec204c103)        |
+| 2 | Deduplicate candidates by rel_path not d.id        | compass.py  | Fixed    | Changed {d.id:d} to {d.rel_path:d}     |
+| 3 | Exact-string state match fragile to table spacing  | compass.py  | Fixed    | Replaced with re.subn pattern           |
+
+* Result

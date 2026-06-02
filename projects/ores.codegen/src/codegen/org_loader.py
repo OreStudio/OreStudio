@@ -1018,3 +1018,78 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
         e["artefact_indexes"] = artefact_indexes
 
     return {"entity": e}
+
+
+_SERVICE_REGISTRY_SCALARS = (
+    "psql_var", "env_key", "iam_role", "description", "role", "email",
+)
+
+
+def _service_registry_prefix_bullets(node: OrgNode, section_title: str) -> list[dict[str, str]]:
+    """Read bullets under a ``** <section_title>`` sub-heading and
+    rewrap each as ``{"prefix": <bullet>}`` to match the JSON shape."""
+    sub = _section(node, section_title)
+    if not sub:
+        return []
+    out: list[dict[str, str]] = []
+    for group in sub.bullet_lists:
+        for line in group:
+            out.append({"prefix": line.strip()})
+    return out
+
+
+def _service_registry_select_tables(node: OrgNode) -> list[dict[str, str]]:
+    """Read bullets under ``** Select tables`` as ``- k1=v1, k2=v2``
+    pairs and reconstruct each entry as a dict. Mirrors the converter's
+    ``_select_table_bullet``: comma-joined ``key=value`` pairs round-trip
+    back into the original dict shape so a future select_tables entry
+    won't be flattened to a single-key ``{"prefix": ...}``."""
+    sub = _section(node, "Select tables")
+    if not sub:
+        return []
+    out: list[dict[str, str]] = []
+    for group in sub.bullet_lists:
+        for line in group:
+            item: dict[str, str] = {}
+            for part in line.split(","):
+                if "=" in part:
+                    k, v = part.split("=", 1)
+                    item[k.strip()] = v.strip()
+            if item:
+                out.append(item)
+    return out
+
+
+def load_org_service_registry_model(path: Path | str) -> dict[str, Any]:
+    """Load the org-mode service-registry model into the
+    ``{service_registry: {services: [...]}}`` dict consumed by the
+    ``service-registry`` profile (shell vars, IAM users, grants).
+
+    Each top-level ``* <service name>`` heading becomes one
+    ``services[]`` entry. The property drawer carries the scalars
+    (``:psql_var:``, ``:env_key:``, ``:iam_role:``, ``:description:``,
+    optional ``:role:``, ``:email:``); ``** DML prefixes`` /
+    ``** Select tables`` / ``** Select prefixes`` sub-headings carry
+    the per-service lists as org bullets."""
+    text = Path(path).read_text(encoding="utf-8")
+    doc = parse_org(text)
+
+    services: list[dict[str, Any]] = []
+    for node in doc.root.children:
+        # Defensive: skip top-level headings that aren't service entries
+        # (e.g. a future "Notes" or "References" section in the doc).
+        # Every real service carries :psql_var:.
+        if "psql_var" not in node.properties:
+            continue
+        # Match the JSON's stable key order (name → scalars in
+        # _SERVICE_REGISTRY_SCALARS order → lists).
+        ordered: dict[str, Any] = {"name": node.title}
+        for k in _SERVICE_REGISTRY_SCALARS:
+            if k in node.properties:
+                ordered[k] = node.properties[k]
+        ordered["dml_prefixes"] = _service_registry_prefix_bullets(node, "DML prefixes")
+        ordered["select_tables"] = _service_registry_select_tables(node)
+        ordered["select_prefixes"] = _service_registry_prefix_bullets(node, "Select prefixes")
+        services.append(ordered)
+
+    return {"service_registry": {"services": services}}

@@ -260,7 +260,7 @@ def is_domain_entity_model(model_filename):
     basename = os.path.basename(model_filename)
     _other_org_kinds = (
         "_field_group.org", "_junction.org", "_table.org",
-        "_lookup_entity.org",
+        "_lookup_entity.org", "service_registry.org",
     )
     if model_filename.endswith("_domain_entity.json"):
         return True
@@ -328,7 +328,10 @@ def is_service_registry_model(model_filename):
     Returns:
         bool: True if this is a service registry model
     """
-    return model_filename.endswith("_service_registry.json")
+    return (
+        model_filename.endswith("_service_registry.json")
+        or model_filename.endswith("service_registry.org")
+    )
 
 
 def is_field_group_model(model_filename):
@@ -879,6 +882,7 @@ def load_model(model_path):
             load_org_junction_model,
             load_org_table_model,
             load_org_lookup_entity_model,
+            load_org_service_registry_model,
         )
         if path_str.endswith('_field_group.org'):
             return load_org_field_group_model(model_path)
@@ -888,6 +892,8 @@ def load_model(model_path):
             return load_org_table_model(model_path)
         if path_str.endswith('_lookup_entity.org'):
             return load_org_lookup_entity_model(model_path)
+        if path_str.endswith('service_registry.org'):
+            return load_org_service_registry_model(model_path)
         return load_org_model(model_path)
     with open(model_path, 'r', encoding='utf-8') as f:
         return json.load(f)

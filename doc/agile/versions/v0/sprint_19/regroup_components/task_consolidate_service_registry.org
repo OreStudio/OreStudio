@@ -151,6 +151,27 @@ registry (#1) instead of globbing — identical service set, no Python
 rewrite, no file move. That stop-gap is the minimal step toward this
 task's end state and is tracked on the regroup PR.
 
+** Broader direction: fold these scripts into compass
+
+Rather than porting =init-environment.sh= to a new standalone Python
+script, we should probably absorb this functionality into =compass=.
+The project already has a proliferation of standalone scripts that each
+reimplement environment/registry plumbing — =init-environment.sh=,
+=recreate_database.sh=, =setup_database.sh=, =generate_nats_certs.sh=,
+=init-nats.sh=, and the codegen wrappers. =compass= is already the
+Python CLI we steer the project with (orient, search, scaffold), and it
+already reads the org/JSON information architecture; a service registry
+and environment bootstrap are a natural fit as =compass= subcommands
+(e.g. =compass env init=, =compass db recreate=).
+
+Benefits: one Python codebase instead of N shell scripts, native JSON
+parsing (no =jq=/=python3 -c= shims), shared registry-reading logic, and
+discoverable subcommands. The D2 decision (Python port of
+=init-environment=) should be reconsidered in this light — the target
+may be a =compass= subcommand rather than a new =init-environment.py=.
+This is a larger architectural direction worth its own story; capture it
+when this task is picked up.
+
 * PRs
 
 | PR | Title |

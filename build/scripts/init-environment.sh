@@ -12,7 +12,7 @@
 # variables are generated. Use --enable-logging / --disable-logging to toggle
 # test logging without touching any other variable.
 #
-# Dependencies: bash 3.2+, openssl
+# Dependencies: bash 3.2+, openssl, python3 (reads the JSON service registry)
 #
 # Usage:
 #   ./build/scripts/init-environment.sh --preset linux-clang-debug-make
@@ -303,22 +303,40 @@ get_or_gen_uuid() {
 }
 
 # ---------------------------------------------------------------------------
-# Discover NATS domain services from projects/ores.*.service directories
+# Read the NATS domain service list from the authored service registry.
+#
+# This used to glob projects/ores.*.service, but that inferred the service
+# set from the directory layout and broke when components were regrouped
+# under ores.<group>/service/.  The registry below is the same authored
+# source that generates projects/ores.sql/service_vars.sh, so init-environment
+# and recreate_database.sh now agree by construction.
+#
+# Full consolidation of the several service enumerations onto one registry
+# (and a Python port of this script) is tracked by the
+# "Consolidate service registries" task in the regroup_components story.
 # ---------------------------------------------------------------------------
+SERVICE_REGISTRY="${CHECKOUT_ROOT}/projects/ores.codegen/models/services/ores_services_service_registry.json"
+if [[ ! -f "${SERVICE_REGISTRY}" ]]; then
+    echo "Error: service registry not found: ${SERVICE_REGISTRY}" >&2
+    exit 1
+fi
+
 SERVICE_COMPONENTS=()
 NATS_ONLY_EXCLUDES=("wt")  # wt uses rw_role / ORES_WT_DB_* naming, not the service-role / *_service naming
-for svc_dir in "${CHECKOUT_ROOT}"/projects/ores.*.service; do
-    [[ -d "${svc_dir}" ]] || continue
-    dir_name="$(basename "${svc_dir}")"
-    component="${dir_name#ores.}"
-    component="${component%.service}"
+while IFS= read -r component; do
+    [[ -z "${component}" ]] && continue
     skip=false
     for ex in "${NATS_ONLY_EXCLUDES[@]}"; do
         [[ "$component" == "$ex" ]] && skip=true && break
     done
     $skip && continue
     SERVICE_COMPONENTS+=("${component}")
-done
+done < <(python3 -c "import json,sys; print('\n'.join(s['name'] for s in json.load(open(sys.argv[1]))['service_registry']['services']))" "${SERVICE_REGISTRY}")
+
+if [[ ${#SERVICE_COMPONENTS[@]} -eq 0 ]]; then
+    echo "Error: no services read from registry ${SERVICE_REGISTRY}" >&2
+    exit 1
+fi
 
 echo "Detected services: ${SERVICE_COMPONENTS[*]}"
 

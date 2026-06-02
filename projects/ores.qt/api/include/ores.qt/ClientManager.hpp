@@ -404,6 +404,20 @@ public:
     }
 
     /**
+     * @brief Export all trades and instruments under a taxonomy node.
+     *
+     * Concrete (non-template) wrapper around process_authenticated_request for
+     * export_portfolio_request. Implemented in ClientManagerExportPortfolio.cpp
+     * so that rfl::json::read<export_portfolio_response> is instantiated in a
+     * dedicated translation unit — avoiding MSVC C1202 in large callers such as
+     * BookMdiWindow.cpp whose accumulated template context would otherwise be
+     * pushed over the limit by trade_instrument's rfl field-name Literals.
+     */
+    std::expected<trading::messaging::export_portfolio_response, std::string>
+    exportPortfolio(trading::messaging::export_portfolio_request request,
+        std::chrono::milliseconds timeout = std::chrono::seconds(30));
+
+    /**
      * @brief List sessions for an account.
      */
     std::optional<SessionListResult> listSessions(

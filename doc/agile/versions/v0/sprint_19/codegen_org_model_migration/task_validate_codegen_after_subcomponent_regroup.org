@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 0BD89DB5-B7F7-4C18-8B00-D6C651264D71
+:END:
+#+title: Task: Validate codegen after subcomponent regroup
+#+description: Audit and fix codegen wiring (profiles.json output paths, manifest, scaffolds, scripts) for the post-regroup C++ subcomponent layout — ores.qt/, ores.cli/, ores.http/, ores.nats/ are now parent dirs with refdata/api/core/service/... underneath, not top-level ores.qt.refdata etc.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+PR #997 ([[id:164255805][Regroup C++ components under product-group parent
+directories]]) moved every per-facet subcomponent from a top-level
+=projects/ores.qt.refdata/= shape into the parent
+=projects/ores.qt/refdata/= shape (and the same for =ores.cli=,
+=ores.http=, =ores.nats=). Most of the codegen migrations done so
+far landed *after* that regroup, but the codegen pipeline still
+carries paths from the pre-regroup layout in a few places. This
+task audits and fixes every stale reference so the full =all-cpp=
+profile (and the per-facet profiles underneath it) writes to the
+correct locations again.
+
+Concrete known offenders (initial inventory; expand as the audit
+turns up more):
+
+- =projects/ores.codegen/library/profiles.json= — 12 Qt outputs
+  under =projects/ores.qt.{component}/include/ores.qt/...= and
+  =projects/ores.qt.{component}/src/...=. Should resolve to
+  =projects/ores.qt/{component}/...= per the new layout.
+- Likely the same shape exists for =ores.cli=, =ores.http=, and
+  =ores.nats= profile entries — confirm during the audit.
+
+What is *out of scope*: the SQL profile (writes to single
+=projects/ores.sql/=, unaffected), and =modeling_dir= entries in
+=manifest.py= (already point at the consolidated group folder
+e.g. =projects/ores.refdata/modeling=). The recently-migrated
+field_group / junction org files use the correct group-level
+=modeling/= dir already.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Audit profiles.json + grep the templates / scripts / scaffolds for residual =ores.<facet>.{component}= references. |
+| Last touched | 2026-06-02                               |
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-02                               |
+
+* Acceptance
+
+- Every Qt / Cli / Http / Nats output path in
+  =projects/ores.codegen/library/profiles.json= resolves to a
+  directory that *exists* in the post-regroup layout.
+- A grep across =projects/ores.codegen/= and the codegen
+  templates for =ores\.\(qt\|cli\|http\|nats\)\.[a-z]+= returns
+  no stale references (other than intentional ones, e.g. inside
+  =modeling/= prose).
+- =compass add entity-org= (and any other compass scaffolds that
+  emit codegen-relevant paths) produces post-regroup layout
+  paths.
+- A representative dry-run of =codegen.sh generate --profile
+  all-cpp --model <entity>= for a few entities (e.g. one from
+  refdata, one from compute, one from iam) names files inside
+  the consolidated group dirs (not stale =ores.qt.refdata/...=).
+- The previously-merged migrations (party / field_group /
+  junction) are re-verified end-to-end against the consolidated
+  layout: SQL byte-identity holds, no path resolution warnings.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: A10ACBA5-BABD-4B60-8CF3-79108BA9DA92
+:END:
+#+title: Task: Investigate and fix ClientManager template C1202 for complex response types
+#+description: process_authenticated_request<T> instantiates rfl::json::read<ResponseType> in the caller's TU; for ResponseTypes containing trade_instrument the accumulated MSVC context triggers C1202. Systematic fix needed.
+#+type: task
+#+level: s1
+#+filetags: :fix_rfl_complexity:sprint_19:v0:
+#+owner: marco
+#+branch: feature/fix-windows-macos-ci
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Understand why C1202 continues to appear after the swap-TU split (PR #985), and fix it
+systematically so no further MSVC C1202 errors appear in the Windows CI build.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | STARTED                                                          |
+| Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]  |
+| Now          | Investigation complete; fix in progress.                          |
+| Waiting on   | PR.                                                              |
+| Next         | Raise PR; verify CI green.                                       |
+| Last touched | 2026-06-02                                                       |
+
+* Acceptance
+
+- No MSVC C1202 in any file in =ores.qt.trading= or =ores.qt.api=.
+- Windows CI (MSVC debug + release) green.
+- Linux CI unaffected.
+
+* Investigation
+
+** Symptom
+
+After the swap-TU split (PR #985 in task 7), C1202 still fires in
+=BookMdiWindow.cpp= at step [4651/4936]:
+
+#+begin_example
+BookMdiWindow.cpp(476): see reference to function template instantiation
+  'std::expected<export_portfolio_response,std::string>
+   ores::qt::ClientManager::process_authenticated_request
+     <export_portfolio_request>(RequestType, std::chrono::milliseconds)'
+ClientManager.hpp(387): see reference to
+  'rfl::Result<export_portfolio_response>
+   rfl::json::read<ResponseType,>(const std::string_view, ...)'
+#+end_example
+
+** Root cause: template instantiation in the caller's TU
+
+=ClientManager.hpp= defines =process_authenticated_request<T>= as a function
+template. The body contains:
+
+#+begin_src cpp
+auto result = rfl::json::read<ResponseType>(raw);
+#+end_src
+
+Being a template, this instantiation happens in the CALLER's translation unit,
+not in =ClientManager.cpp=. So every =.cpp= file that calls
+=process_authenticated_request<export_portfolio_request>= injects
+=rfl::json::read<export_portfolio_response>= into its own template context.
+
+** Why export_portfolio_response is uniquely problematic
+
+=export_portfolio_response= contains =vector<trade_export_item>= where:
+- =trade_export_item.instrument= is =trade_instrument=
+- =trade_instrument= is =std::variant<9 alternatives>=, several of which are
+  =with_legs<..., swap_leg>= types
+- =swap_leg= has 19 fields
+
+Without =AddTagsToVariants=, rfl processes each variant alternative
+independently. The rfl =Literal= for =swap_leg= (19 fields) is created in the
+caller's TU. =BookMdiWindow.cpp= already has a saturated template dependency
+graph (step 4651/4936, large set of includes), so 19 more =StringLiteral<N>=
+types push it over MSVC's C1202 threshold.
+
+** Why this did not appear earlier
+
+- The original C1202 fix (PR #978) removed =AddTagsToVariants= from
+  =ClientManager.hpp=, which eliminated the 502-field combined =rfl::Literal=.
+- The remaining sub-problem — that rfl still processes =trade_instrument= variant
+  alternatives (including =swap_leg=) in the caller's TU — was not visible on
+  Linux (GCC has more permissive limits) and only surfaced on MSVC in
+  =BookMdiWindow.cpp= once the rest of CI noise was cleared.
+
+** Affected call sites
+
+The only call site known to trigger C1202 is:
+- =ores.qt.trading/src/BookMdiWindow.cpp:476= —
+  =process_authenticated_request<export_portfolio_request>=
+
+Other request/response types used in =process_authenticated_request= contain
+simpler domain structs (no =trade_instrument= variant) and do not trigger C1202.
+
+** Fix: concrete method in a dedicated TU
+
+The fix follows the same isolation pattern as =parse_swap_instruments.cpp=:
+
+1. Add a concrete (non-template) =ClientManager::exportPortfolio()= method to
+   =ClientManager.hpp= (declared, not defined inline).
+2. Implement it in a new =ClientManagerExportPortfolio.cpp= — a fresh TU where
+   =rfl::json::read<export_portfolio_response>= is the ONLY complex rfl
+   instantiation, so MSVC's dependency graph is clean.
+3. Update =BookMdiWindow.cpp:476= to call =exportPortfolio()= instead of the
+   template.
+
+** Broader pattern: when to use concrete methods
+
+Any =process_authenticated_request<T>= call where =T::response_type= contains
+=trade_instrument= (directly or via =trade_export_item=) must be moved to a
+concrete method in a dedicated TU. Currently only =export_portfolio_request=
+meets this criterion. If new request types with complex response types are added
+in future, the same pattern applies.
+
+* Plan
+
+1. Add =exportPortfolio()= declaration to =ClientManager.hpp= (following the
+   same signature as =process_authenticated_request= but concrete, not a
+   template).
+2. Create =projects/ores.qt.api/src/ClientManagerExportPortfolio.cpp= with the
+   implementation (=rfl::json::read<export_portfolio_response>= in isolation).
+3. Update =BookMdiWindow.cpp= to call =exportPortfolio()= at line 476.
+4. Commit, push, PR, review, merge.
+
+* Notes
+
+- The glob in =ores.qt.api/src/CMakeLists.txt= picks up new =*.cpp= files
+  automatically — no build system change needed.
+- The =ores.qt.trading= project does NOT have a glob; if a new file were needed
+  there, =CMakeLists.txt= would need updating. For this fix, all changes are in
+  =ores.qt.api= and =ores.qt.trading= (just =BookMdiWindow.cpp=).
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

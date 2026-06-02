@@ -633,10 +633,11 @@ def branch_staleness(root):
         if ts and ts.isdigit():
             info["base_age_s"] = time.time() - int(ts)
 
-    # FETCH_HEAD lives in the common git dir (shared by all worktrees)
-    common = _git_out("rev-parse", "--git-common-dir", cwd=root)
-    if common:
-        fh = Path(common) if Path(common).is_absolute() else Path(root) / common
+    # FETCH_HEAD is written to the worktree-specific git dir (not the common
+    # dir) when git fetch is run from a secondary worktree, so use --git-dir.
+    gitdir = _git_out("rev-parse", "--git-dir", cwd=root)
+    if gitdir:
+        fh = Path(gitdir) if Path(gitdir).is_absolute() else Path(root) / gitdir
         fh = fh / "FETCH_HEAD"
         if fh.exists():
             info["fetch_age_s"] = time.time() - fh.stat().st_mtime

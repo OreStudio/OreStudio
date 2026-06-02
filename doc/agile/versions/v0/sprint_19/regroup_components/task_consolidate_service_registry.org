@@ -31,10 +31,10 @@ names rather than reading an authored registry.
 
 | Field        | Value                                                       |
 |--------------+-------------------------------------------------------------|
-| State        | BACKLOG                                                     |
+| State        | DISCOVERED                                                  |
 | Parent story | [[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components under product-group parent directories]] |
-| Now          | Not yet started — inventory + plan captured below.          |
-| Waiting on   | Nothing.                                                    |
+| Now          | Deferred — inventory + plan captured; parent story is DONE. |
+| Waiting on   | Promotion to its own story.                                 |
 | Next         | Decide registry location (D1) and pick up implementation.   |
 | Last touched | 2026-06-02                                                  |
 

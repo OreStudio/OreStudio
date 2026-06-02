@@ -79,12 +79,20 @@ populated group folder.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
-| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Regroup implemented in one pass: all groups moved, short names, qt regrouped, CMake configures. Build verification in progress. |
-| Waiting on    | Build + ctest green. |
-| Next          | Confirm build/ctest, then PR. |
-| Last touched  | 2026-06-02                             |
+| State         | DONE                                            |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                              |
+| Now           | Nothing.                                        |
+| Waiting on    | Nothing.                                        |
+| Next          | Nothing.                                        |
+| Last touched  | 2026-06-02                                      |
+
+Regroup complete: all groups moved to =ores.<group>/<short>/=, Qt under
+=ores.qt/=, host as =ores.qt/application/=, move-invariant include paths;
+build configures, compiles, and services start and run clean. Shipped in
+PR #997 along with two pre-existing-breakage fixes surfaced by the clean
+build (the swap-parse TU and the init-environment service glob). The
+service-registry consolidation discovered here is deferred follow-up,
+captured in its own task (not a blocker for this story).
 
 * Acceptance
 
@@ -119,7 +127,7 @@ by the pilot are left in place for that story to populate.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D3D8DE56-3C8A-4B15-BE6A-B819BF97C050][Investigate target layout for component regrouping]] | DONE | 2026-06-01 | 2026-06-02 | Decided naming (short), qt under ores.qt/, host as application/, relative includes. Subsumed implementation — regroup done in one pass. |
-| [[id:9B8BB792-3562-4B52-B367-C94EF46BA100][Consolidate service registries into a single source of truth]] | BACKLOG | | | Inventory of service enumerations + plan to unify on one registry; port init-environment to Python. Surfaced by the regroup breaking the directory glob. |
+| [[id:9B8BB792-3562-4B52-B367-C94EF46BA100][Consolidate service registries into a single source of truth]] | DISCOVERED | | | Deferred follow-up (not part of this story's completion). Inventory + plan captured; to be promoted to its own story. Surfaced by the regroup breaking the directory glob; unblocked here by a stop-gap. |
 
 No per-group migration tasks were scaffolded: the regroup is a
 mechanical, atomic change and was carried out in a single pass under

@@ -119,7 +119,9 @@ def _org_table(rows, cols):
     widths = [len(c) for c in cols]
     rendered = []
     for row in rows:
-        cells = [str(row.get(c, "") or "") for c in cols]
+        # Explicit None check — `or ""` would clobber legitimate falsy
+        # values (0, False) by collapsing them to empty cells.
+        cells = [str(row.get(c)) if row.get(c) is not None else "" for c in cols]
         for i, cell in enumerate(cells):
             widths[i] = max(widths[i], len(cell))
         rendered.append(cells)

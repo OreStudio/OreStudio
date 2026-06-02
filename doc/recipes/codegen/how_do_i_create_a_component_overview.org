@@ -22,7 +22,7 @@ that is missing one?
 #+begin_src sh :results verbatim
 ./projects/ores.compass/compass.sh add component \
   --slug component_overview \
-  --parent-dir projects/<comp>/modeling \
+  --parent-dir projects/ores.<comp>/modeling \
   --title "ores.<comp>" \
   --description "<one-liner ≤ 120 chars>" \
   --brief "<short tagline that codegen reads from #+brief:>" \

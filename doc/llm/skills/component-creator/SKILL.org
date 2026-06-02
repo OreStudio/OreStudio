@@ -101,8 +101,8 @@ Full template list is in [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio C
 
 The codegen-side scaffold flow is exercised by
 =projects/ores.codegen/tests/component_scaffold/verify.py= — two
-fixture components (flat + composite) plus prior-art prior-art
-checks against =ores.nats= (flat) and =ores.controller= (composite
+fixture components (flat + composite) plus prior-art checks
+against =ores.nats= (flat) and =ores.controller= (composite
 group + 3 subs).
 
 * Reference

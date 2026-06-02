@@ -1444,7 +1444,7 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
     # 3. record branch on task so fleet/where can map this worktree
     _set_frontmatter_branch(task_path, branch)
 
-    # 4. update session journal — best-effort, never fails
+    # 4. update session journal
     try:
         story_uuid = _read_org_id(Path(PROJECT_ROOT) / story_dir / "story.org")
         task_uuid  = _read_org_id(task_path)
@@ -1452,8 +1452,8 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
             _journal_update(argparse.Namespace(
                 story=story_uuid, task=task_uuid, branch=branch,
                 state="STARTED", pr="none"))
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"⚠️  journal update failed: {e}", file=sys.stderr)
 
     # 5. next steps
     print("\nNext steps:")

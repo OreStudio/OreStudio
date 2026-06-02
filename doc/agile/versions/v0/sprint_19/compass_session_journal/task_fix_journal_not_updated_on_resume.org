@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: F088A0A7-2442-47BD-A73D-C431B14D88CA
+:END:
+#+title: Task: Fix journal not updated on session resume
+#+description: Journal is only written on compass story/task new. Resuming an existing task after restart never stamps the journal — the main recovery use case is unhandled.
+#+type: task
+#+level: s1
+#+filetags: :compass_session_journal:sprint_19:v0:
+#+owner: marco
+#+branch: feature/fix-journal-not-updated-on-resume
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix two gaps in journal reliability:
+
+1. *Resume gap* — =compass story new= and =compass task new= auto-stamp
+   the journal, but there is no trigger for resuming an existing task
+   after a restart. Environments that only work on existing branches
+   (the common case) never get a journal entry. Add a =compass story
+   resume= command (or wire =compass journal update= into the
+   semi-autonomous developer skill's startup flow) so a journal entry
+   is written whenever a Claude session picks up any task, new or
+   existing.
+
+2. *Silent failure* — the journal update call is wrapped in
+   =except Exception: pass=, swallowing errors invisibly. Replace with
+   =except Exception as e: print(f"⚠️  journal update failed: {e}")= so
+   failures are visible. (Already done as a quick fix in this task.)
+
+* Status
+
+| Field        | Value                                          |
+|--------------+------------------------------------------------|
+| State        | STARTED                                        |
+| Parent story | [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]]                        |
+| Now          | Silent-catch fix committed; resume gap pending.|
+| Waiting on   | Nothing.                                       |
+| Next         | Implement resume trigger in compass or skill.  |
+| Last touched | 2026-06-02                                     |
+
+* Acceptance
+
+- =compass journal where= returns a meaningful entry after a fresh
+  session picks up an *existing* task (not just a newly-created one).
+- All four local environments have a =.journal.org= after their next
+  session startup.
+- Journal update failures print a visible =⚠️= warning to stderr
+  instead of disappearing silently.
+
+* Plan
+
+1. Silent-catch fix: =except Exception as e: print(f"⚠️ ...")= — done.
+2. Add =compass story resume --story <slug-or-uuid>= (or extend
+   =compass story status= to optionally stamp the journal).
+3. Update the semi-autonomous developer skill to call
+   =compass journal update= at the top of every session, not just
+   when creating new tasks.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

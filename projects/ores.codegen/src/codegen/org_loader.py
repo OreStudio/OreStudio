@@ -1038,6 +1038,28 @@ def _service_registry_prefix_bullets(node: OrgNode, section_title: str) -> list[
     return out
 
 
+def _service_registry_select_tables(node: OrgNode) -> list[dict[str, str]]:
+    """Read bullets under ``** Select tables`` as ``- k1=v1, k2=v2``
+    pairs and reconstruct each entry as a dict. Mirrors the converter's
+    ``_select_table_bullet``: comma-joined ``key=value`` pairs round-trip
+    back into the original dict shape so a future select_tables entry
+    won't be flattened to a single-key ``{"prefix": ...}``."""
+    sub = _section(node, "Select tables")
+    if not sub:
+        return []
+    out: list[dict[str, str]] = []
+    for group in sub.bullet_lists:
+        for line in group:
+            item: dict[str, str] = {}
+            for part in line.split(","):
+                if "=" in part:
+                    k, v = part.split("=", 1)
+                    item[k.strip()] = v.strip()
+            if item:
+                out.append(item)
+    return out
+
+
 def load_org_service_registry_model(path: Path | str) -> dict[str, Any]:
     """Load the org-mode service-registry model into the
     ``{service_registry: {services: [...]}}`` dict consumed by the
@@ -1054,23 +1076,19 @@ def load_org_service_registry_model(path: Path | str) -> dict[str, Any]:
 
     services: list[dict[str, Any]] = []
     for node in doc.root.children:
-        svc: dict[str, Any] = {"name": node.title}
+        # Defensive: skip top-level headings that aren't service entries
+        # (e.g. a future "Notes" or "References" section in the doc).
+        # Every real service carries :psql_var:.
+        if "psql_var" not in node.properties:
+            continue
+        # Match the JSON's stable key order (name → scalars in
+        # _SERVICE_REGISTRY_SCALARS order → lists).
+        ordered: dict[str, Any] = {"name": node.title}
         for k in _SERVICE_REGISTRY_SCALARS:
             if k in node.properties:
-                svc[k] = node.properties[k]
-        # Match the JSON's stable key order (name → scalars in
-        # _SERVICE_REGISTRY_SCALARS order → lists). The drawer parse
-        # above already follows that order; the JSON emits keys in
-        # the order: name, psql_var, env_key, iam_role, description,
-        # email, role (where present), dml_prefixes, select_tables,
-        # select_prefixes — re-order to match exactly.
-        ordered: dict[str, Any] = {"name": svc["name"]}
-        for k in ("psql_var", "env_key", "iam_role", "description",
-                  "role", "email"):
-            if k in svc:
-                ordered[k] = svc[k]
+                ordered[k] = node.properties[k]
         ordered["dml_prefixes"] = _service_registry_prefix_bullets(node, "DML prefixes")
-        ordered["select_tables"] = _service_registry_prefix_bullets(node, "Select tables")
+        ordered["select_tables"] = _service_registry_select_tables(node)
         ordered["select_prefixes"] = _service_registry_prefix_bullets(node, "Select prefixes")
         services.append(ordered)
 

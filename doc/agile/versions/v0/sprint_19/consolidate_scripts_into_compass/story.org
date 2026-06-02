@@ -125,10 +125,6 @@ migrate; the single service registry's home (=projects/services.json=).
 Per-pillar migration tasks to be scaffolded by T1 once the taxonomy is
 settled.
 
-* Decisions
-
-(Populated by the design task.)
-
 * Out of scope
 
 - Rewriting the codegen engine itself (=ores.codegen=); at most its

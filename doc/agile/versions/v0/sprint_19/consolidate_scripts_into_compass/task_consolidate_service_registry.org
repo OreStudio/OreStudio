@@ -33,9 +33,9 @@ names rather than reading an authored registry.
 |--------------+-------------------------------------------------------------|
 | State        | DISCOVERED                                                  |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
-| Now          | Deferred — inventory + plan captured; parent story is DONE. |
-| Waiting on   | Promotion to its own story.                                 |
-| Next         | Decide registry location (D1) and pick up implementation.   |
+| Now          | Inventory + plan captured; sequenced as the first migration. |
+| Waiting on   | T1 (operational-pillar taxonomy design).                    |
+| Next         | Decide registry location (D1) per T1, then implement.       |
 | Last touched | 2026-06-02                                                  |
 
 * Acceptance
@@ -182,6 +182,7 @@ when this task is picked up.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Omit empty =* Decisions= placeholder section | story.org | Fixed — removed | Gemini round 1 |
+| 2 | Stale Now/Waiting fields after promotion | task_consolidate_service_registry.org | Fixed — Now/Waiting updated | Gemini round 1 |
 
 * Result

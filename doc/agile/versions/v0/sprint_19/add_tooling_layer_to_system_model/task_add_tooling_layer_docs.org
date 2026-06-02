@@ -38,7 +38,7 @@ All links are org-roam id-links.
 |--------------+------------------------------------------------------------------|
 | State        | DONE                                                             |
 | Parent story | [[id:D90A3E68-D331-4473-AFAB-C1CBC94BA0CD][Add tooling layer to system model]]                |
-| Now          | Implemented; PR pending.                                         |
+| Now          | Nothing.                                                         |
 | Waiting on   | PR.                                                              |
 | Next         | Raise PR; merge; close story.                                    |
 | Last touched | 2026-06-02                                                       |

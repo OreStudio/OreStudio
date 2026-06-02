@@ -958,8 +958,9 @@ def _sc_get_sprint_range(sprint):
                 end = _sc_parse_date(m.group())
     if start and end:
         return start, end
-    m = re.search(r"#\+created:\s*(\d{4}-\d{2}-\d{2})", text)
-    start = _sc_parse_date(m.group(1)) if m else (datetime.date.today() - datetime.timedelta(days=7))
+    if start is None:
+        m = re.search(r"#\+created:\s*(\d{4}-\d{2}-\d{2})", text)
+        start = _sc_parse_date(m.group(1)) if m else (datetime.date.today() - datetime.timedelta(days=7))
     end = end or (start + datetime.timedelta(days=7))
     return start, end
 
@@ -1021,7 +1022,7 @@ def _sc_get_merged_prs(start, end):
         cycle_hours = round((merged_dt - created_dt).total_seconds() / 3600, 1)
         prs.append({
             "number": pr["number"],
-            "title": pr["title"][:60],
+            "title": (pr.get("title") or "")[:60],
             "merged_day": merged_dt.date(),
             "cycle_hours": cycle_hours,
         })
@@ -1046,13 +1047,15 @@ def _sc_parse_sprint_stories(sprint, start, end):
             parts = [p.strip() for p in line.split("|")]
             if len(parts) >= 6:
                 state, end_str = parts[2], parts[4]
-                if state and re.search(r"\d{4}-\d{2}-\d{2}", end_str):
-                    try:
-                        end_d = _sc_parse_date(re.search(r"\d{4}-\d{2}-\d{2}", end_str).group())
-                        if start <= end_d <= end:
-                            cumulative[end_d] += 1
-                    except Exception:
-                        pass
+                if state:
+                    m = re.search(r"\d{4}-\d{2}-\d{2}", end_str)
+                    if m:
+                        try:
+                            end_d = _sc_parse_date(m.group())
+                            if start <= end_d <= end:
+                                cumulative[end_d] += 1
+                        except Exception:
+                            pass
     return cumulative
 
 
@@ -1115,9 +1118,17 @@ def cmd_sprint_charts(args):
 
     start, end = _sc_get_sprint_range(sprint)
     if args.start_date:
-        start = _sc_parse_date(args.start_date)
+        try:
+            start = _sc_parse_date(args.start_date)
+        except (ValueError, IndexError):
+            print(f"❌ Invalid --start-date: {args.start_date!r} (expected YYYY-MM-DD)", file=sys.stderr)
+            return 1
     if args.end_date:
-        end = _sc_parse_date(args.end_date)
+        try:
+            end = _sc_parse_date(args.end_date)
+        except (ValueError, IndexError):
+            print(f"❌ Invalid --end-date: {args.end_date!r} (expected YYYY-MM-DD)", file=sys.stderr)
+            return 1
 
     print(f"Sprint {sprint}: {start} → {end}")
 

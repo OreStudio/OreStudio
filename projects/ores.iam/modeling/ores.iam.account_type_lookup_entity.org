@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 02D5A4E3-4463-4F60-866A-27CD65535621
+:END:
+#+title: ores.iam.account_type
+#+description: Codegen lookup-entity model for account_types.
+#+type: ores.codegen.lookup_entity
+#+filetags: :codegen:lookup_entity:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+product: ores
+#+schema: public
+#+component: iam
+#+entity_singular: account_type
+#+entity_plural: account_types
+#+has_tenant_id: true
+#+system_tenant_validation: true
+#+has_display_order: true
+#+description: Account Types - Valid account type classifications
+
+Account Types - Valid account type classifications
+
+* Primary key
+:PROPERTIES:
+:column:  type
+:type:    text
+:is_text: true
+:END:
+
+* Columns
+
+** name
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** description
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:nullable: false
+:default:  0
+:END:
+
+* Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |

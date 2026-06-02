@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: C9B53884-25FA-4D13-AE8A-6469B1854474
+:END:
+#+title: ores.dq.lei_entity
+#+description: Codegen lookup-entity model for lei_entities.
+#+type: ores.codegen.lookup_entity
+#+filetags: :codegen:lookup_entity:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+product: ores
+#+schema: public
+#+component: dq
+#+entity_singular: lei_entity
+#+entity_plural: lei_entities
+#+has_tenant_id: true
+#+has_coding_scheme: false
+#+has_image_id: false
+#+has_artefact_insert_fn: true
+#+description: GLEIF LEI entity master data from LEI2 golden copy files
+
+GLEIF LEI entity master data from LEI2 golden copy files
+
+* Primary key
+:PROPERTIES:
+:column:  lei
+:type:    text
+:is_text: true
+:END:
+
+* Columns
+
+** entity_legal_name
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** entity_entity_category
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** entity_entity_sub_category
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** entity_entity_status
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** entity_legal_form_entity_legal_form_code
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** entity_legal_form_other_legal_form
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** entity_legal_jurisdiction
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** entity_legal_address_first_address_line
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** entity_legal_address_city
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** entity_legal_address_region
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** entity_legal_address_country
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** entity_legal_address_postal_code
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** entity_headquarters_address_first_address_line
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** entity_headquarters_address_city
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** entity_headquarters_address_region
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** entity_headquarters_address_country
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** entity_headquarters_address_postal_code
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** entity_entity_creation_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:nullable: true
+:END:
+
+** registration_initial_registration_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:nullable: true
+:END:
+
+** registration_last_update_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:nullable: true
+:END:
+
+** registration_next_renewal_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:nullable: true
+:END:
+
+** registration_registration_status
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** entity_transliterated_name_1
+:PROPERTIES:
+:type:     text
+:nullable: true
+:default:  null
+:END:
+
+** entity_transliterated_name_1_type
+:PROPERTIES:
+:type:     text
+:nullable: true
+:default:  null
+:END:
+
+* Artefact indexes
+
+** entity_legal_address_country
+:PROPERTIES:
+:columns: entity_legal_address_country
+:END:
+
+** entity_entity_category
+:PROPERTIES:
+:columns: entity_entity_category
+:END:

@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: B3776F91-B146-47DA-B76E-7C79FBD2E342
+:END:
+#+title: ores.dq.lei_relationship
+#+description: Codegen lookup-entity model for lei_relationships.
+#+type: ores.codegen.lookup_entity
+#+filetags: :codegen:lookup_entity:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+product: ores
+#+schema: public
+#+component: dq
+#+entity_singular: lei_relationship
+#+entity_plural: lei_relationships
+#+has_tenant_id: true
+#+has_coding_scheme: false
+#+has_image_id: false
+#+has_artefact_insert_fn: true
+#+description: GLEIF LEI corporate hierarchy relationships from RR golden copy files
+
+GLEIF LEI corporate hierarchy relationships from RR golden copy files
+
+* Primary key
+:PROPERTIES:
+:column:  relationship_start_node_node_id
+:type:    text
+:is_text: true
+:END:
+
+* Columns
+
+** relationship_start_node_node_id_type
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** relationship_end_node_node_id
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** relationship_end_node_node_id_type
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** relationship_relationship_type
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** relationship_relationship_status
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** relationship_period_1_start_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:nullable: true
+:END:
+
+** relationship_period_1_end_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:nullable: true
+:END:
+
+** registration_initial_registration_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:nullable: true
+:END:
+
+** registration_last_update_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:nullable: true
+:END:
+
+** registration_registration_status
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** registration_validation_sources
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+* Artefact indexes
+
+** relationship_end_node_node_id
+:PROPERTIES:
+:columns: relationship_end_node_node_id
+:END:
+
+** relationship_relationship_type
+:PROPERTIES:
+:columns: relationship_relationship_type
+:END:

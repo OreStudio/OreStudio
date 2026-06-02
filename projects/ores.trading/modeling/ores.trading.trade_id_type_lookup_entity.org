@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 2C3F4AAB-865A-444E-B977-A6B3A4DC553E
+:END:
+#+title: ores.trading.trade_id_type
+#+description: Codegen lookup-entity model for trade_id_types.
+#+type: ores.codegen.lookup_entity
+#+filetags: :codegen:lookup_entity:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+product: ores
+#+schema: public
+#+component: trading
+#+entity_singular: trade_id_type
+#+entity_plural: trade_id_types
+#+has_tenant_id: true
+#+system_tenant_validation: true
+#+has_display_order: false
+#+description: Trade Identifier Types - Identifier type codes for trade identifiers (UTI, USI, Internal)
+
+Trade Identifier Types - Identifier type codes for trade identifiers (UTI, USI, Internal)
+
+* Primary key
+:PROPERTIES:
+:column:  code
+:type:    text
+:is_text: true
+:END:
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+* Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |

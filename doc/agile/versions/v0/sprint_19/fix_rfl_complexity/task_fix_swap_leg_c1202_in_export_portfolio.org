@@ -1,0 +1,192 @@
+:PROPERTIES:
+:ID: C19E28EF-FA66-4A53-8958-7F3D7A093F46
+:END:
+#+title: Task: Fix C1202 in ClientManagerExportPortfolio.cpp (swap_leg 19-field Literal)
+#+description: no_duplicate_field_names fires on swap_leg's 19-field rfl::Literal even in the fresh ExportPortfolio TU; fix by decomposing swap_leg via rfl::Flatten or replacing rfl::json::read<export_portfolio_response> with a two-phase parse.
+#+type: task
+#+level: s1
+#+filetags: :fix_rfl_complexity:sprint_19:v0:
+#+owner: marco
+#+branch: feature/fix-windows-macos-ci
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ClientManagerExportPortfolio.cpp= — the dedicated, fresh TU created in task 8 (PR #1010)
+to isolate =rfl::json::read<export_portfolio_response>= — itself triggers MSVC C1202 in
+=rfl/internal/no_duplicate_field_names.hpp=. The struct =swap_leg= has 19 fields; its
+=rfl::Literal<f1,…,f19>= and the O(N²) constexpr equality scan push MSVC over its
+"recursive type or function dependency context too complex" limit even in a clean TU.
+
+Fix =swap_leg= so that no =rfl::Literal= in its reflection chain exceeds the MSVC
+threshold, and verify that Windows CI is green.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DISCOVERED                                                       |
+| Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]  |
+| Now          | New CI failure; investigation complete; fix not yet started.     |
+| Waiting on   | Nothing.                                                         |
+| Next         | Choose fix approach (Flatten vs two-phase); implement.           |
+| Last touched | 2026-06-02                                                       |
+
+* Acceptance
+
+- =ClientManagerExportPortfolio.cpp= compiles without C1202 on MSVC.
+- Windows CI (MSVC debug + release) green.
+- Linux / macOS CI unaffected.
+- The on-wire JSON format for =swap_leg= is unchanged (rfl::Flatten preserves field
+  layout if applied symmetrically to the domain struct).
+
+* Investigation
+
+** Symptom
+
+After PR #1010 (task 8), the Windows CI build fails at step =[1145/4938]=:
+
+#+begin_example
+FAILED: projects/ores.qt/api/src/CMakeFiles/ores.qt.api.lib.dir/ClientManagerExportPortfolio.cpp.obj
+…
+rfl\internal/no_duplicate_field_names.hpp(35): fatal error C1202:
+    recursive type or function dependency context too complex
+rfl\Literal.hpp(118): note: while evaluating constexpr function
+    'rfl::internal::no_duplicate_field_names'
+rfl\Literal.hpp(339): note: while evaluating constexpr function
+    'rfl::Literal<"version","tenant_id","id","instrument_id","leg_number",
+     "leg_type_code","day_count_fraction_code","business_day_convention_code",
+     "payment_frequency_code","floating_index_code","fixed_rate","spread",
+     "notional","currency","modified_by","performed_by","change_reason_code",
+     "change_commentary","recorded_at">'
+ClientManagerExportPortfolio.cpp(49): note: instantiation of
+    'rfl::Result<export_portfolio_response> rfl::json::read<ResponseType>(…)'
+#+end_example
+
+** Why this differs from the previous C1202 cascade
+
+All prior C1202 occurrences required *two* conditions:
+
+1. A caller TU with an already-saturated dependency graph (e.g. =BookMdiWindow.cpp= at
+   step 4651/4936, compiled late with many headers).
+2. A =ResponseType= containing =trade_instrument= / =swap_leg= to push it over the limit.
+
+This occurrence fires in a *clean* TU (step 1145/4938, early in the build, only two
+headers included). That means condition 1 is now irrelevant: =swap_leg= alone — 19 fields
+→ 361 constexpr string comparisons — saturates MSVC's internal graph budget by itself.
+
+The isolation TU approach was correct for the caller-saturation problem but does not help
+when the struct itself is the source of excess complexity.
+
+** Root cause
+
+=swap_leg= (=ores.trading.api/domain/swap_leg.hpp=) has 19 fields. =rfl='s
+=no_duplicate_field_names= builds an =rfl::Literal<f1,…,f19>= and then checks every pair
+for equality. With N=19 that is 171 constexpr comparisons, each comparing two
+=StringLiteral<Len>= arrays character-by-character at compile time. MSVC C1202 fires
+because the *template instantiation graph* for this check — not the constexpr depth — is
+too wide for its internal limit. The =/constexpr:depth100000 /constexpr:steps10000000=
+flags already present in the build have no effect on C1202.
+
+** Fix options
+
+*** Option A — rfl::Flatten decomposition (preferred)
+
+Split =swap_leg= into three POD sub-structs and compose them with =rfl::Flatten=:
+
+#+begin_src cpp
+struct swap_leg_identity {      // 5 fields
+    int version;
+    tenant_id tenant_id;
+    boost::uuids::uuid id;
+    boost::uuids::uuid instrument_id;
+    int leg_number;
+};
+
+struct swap_leg_terms {         // 9 fields
+    std::string leg_type_code;
+    std::string day_count_fraction_code;
+    std::string business_day_convention_code;
+    std::string payment_frequency_code;
+    std::string floating_index_code;
+    double fixed_rate;
+    double spread;
+    double notional;
+    std::string currency;
+};
+
+struct swap_leg_audit {         // 5 fields
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    std::chrono::system_clock::time_point recorded_at;
+};
+
+struct swap_leg {
+    rfl::Flatten<swap_leg_identity> identity;
+    rfl::Flatten<swap_leg_terms>   terms;
+    rfl::Flatten<swap_leg_audit>   audit;
+};
+#+end_src
+
+=rfl::Flatten= projects sub-struct fields directly onto the parent, so the on-wire JSON
+layout is identical. Both the client (=rfl::json::read=) and the server (=rfl::json::write=)
+must apply the same Flatten.
+
+*Scope*: =swap_leg.hpp= (domain), =swap_leg_entity.hpp= (repository), any mapper or
+test that constructs =swap_leg= by aggregate initialisation (needs updating to use
+=.identity.version=, etc., or to stay flat with designated initialisers if C++ allows).
+
+*** Option B — two-phase parse for export_portfolio_response
+
+Define a local surrogate struct in =ClientManagerExportPortfolio.cpp= that reads
+=export_portfolio_response= without the instrument field, then separately dispatch
+each item's instrument via =parse_trade_instrument=. Avoids touching the domain model
+but requires duplicating the response structure and complicates the export parser.
+
+** Recommended approach
+
+Option A (Flatten). It removes the problem at the source, follows the established
+sprint 18 pattern (=swaption_instr_outer=), and is transparent to the JSON wire format.
+The mapping layer changes are mechanical and bounded to the =swap_leg= usage sites.
+
+* Plan
+
+1. Add =swap_leg_identity=, =swap_leg_terms=, =swap_leg_audit= sub-structs to
+   =ores.trading.api/domain/swap_leg.hpp=; rewrite =swap_leg= using =rfl::Flatten=.
+2. Update =swap_leg_entity.hpp= (repository layer) consistently if it also uses rfl.
+3. Update all aggregate-initialisation sites (mappers, tests, SQL layer) to use the
+   nested accessor syntax.
+4. Verify =ClientManagerExportPortfolio.cpp= compiles cleanly on MSVC.
+5. Commit, push, PR, CI green.
+
+* Notes
+
+- Same =rfl::Flatten= pattern as =swaption_instr_outer= in sprint 18 (task
+  =d2e4921b=). Consult that task's Decisions section for prior art.
+- The glob in =ores.qt.api/src/CMakeLists.txt= picks up no new files; no build system
+  change needed.
+- =parse_swap_instruments.cpp= may also benefit if it reads =swap_leg= directly; audit
+  at fix time.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

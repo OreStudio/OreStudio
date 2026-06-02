@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-PR #997 ([[id:164255805][Regroup C++ components under product-group parent
+PR #997 ([[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components under product-group parent
 directories]]) moved every per-facet subcomponent from a top-level
 =projects/ores.qt.refdata/= shape into the parent
 =projects/ores.qt/refdata/= shape (and the same for =ores.cli=,

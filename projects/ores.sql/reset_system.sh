@@ -99,7 +99,7 @@ if [[ ${#MISSING_VARS[@]} -gt 0 ]]; then
         echo "  - ${v}" >&2
     done
     echo "" >&2
-    echo "Run ./build/scripts/init-environment.sh to generate a .env file." >&2
+    echo "Run ./projects/ores.compass/compass.sh env init to generate a .env file." >&2
     exit 1
 fi
 

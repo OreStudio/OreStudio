@@ -61,7 +61,7 @@ postgres prepended.  Falls back to an empty list if .env is missing."
 
 Creates one SQL connection per NATS service, named ores-<label>-<svc>-service.
 Call this once after starting Emacs; call again to refresh after re-running
-init-environment.sh."
+compass env init."
   (interactive)
   (let* ((pairs  (ores/load-dotenv))
          (label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" pairs)) "unknown"))
@@ -566,13 +566,13 @@ Runs recreate_database.sh with no -D flag, killing all connections first."
   "Known build presets for preset selection prompt.")
 
 (defun ores-db/init-environment ()
-  "Run build/scripts/init-environment.sh -y to regenerate the .env file.
+  "Run compass env init -y to regenerate the .env file.
 Reads ORES_PRESET from the existing .env if available; otherwise prompts."
   (interactive)
   (let* ((root (or ores-db/project-root
                    (when-let ((pr (project-current)))
                      (project-root pr))))
-         (script-path (expand-file-name "build/scripts/init-environment.sh" root)))
+         (script-path (expand-file-name "projects/ores.compass/compass.sh" root)))
     (unless root
       (user-error "Not in an OreStudio project"))
     (unless (file-executable-p script-path)
@@ -583,7 +583,7 @@ Reads ORES_PRESET from the existing .env if available; otherwise prompts."
                                     ores-db/presets nil nil nil nil default-preset))
            (default-directory root))
       (compilation-start
-       (format "%s -y --preset %s" script-path preset)
+       (format "%s env init -y --preset %s" script-path preset)
        nil
        (lambda (_) "*ores-db-init-environment*")))))
 
@@ -619,7 +619,7 @@ NATS to already be running)."
     (unless root
       (user-error "Not in an OreStudio project"))
     (unless (file-exists-p env-old)
-      (user-error "No .env.old found — run init-environment.sh at least twice"))
+      (user-error "No .env.old found — run compass env init at least twice"))
     (unless (file-exists-p env-file)
       (user-error "No .env found"))
     (diff env-old env-file)))

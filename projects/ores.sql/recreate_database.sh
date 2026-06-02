@@ -156,7 +156,7 @@ if [[ ${#MISSING_PASSWORDS[@]} -gt 0 ]]; then
         echo "  - ${pw}" >&2
     done
     echo "" >&2
-    echo "Run ./build/scripts/init-environment.sh to generate a .env file," >&2
+    echo "Run ./projects/ores.compass/compass.sh env init to generate a .env file," >&2
     echo "or set the variables directly in your CI environment." >&2
     exit 1
 fi

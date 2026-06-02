@@ -27,7 +27,7 @@ DOTENV="$PROJECT_DIR/.env"
 # --- Load environment ---
 if [[ ! -f "$DOTENV" ]]; then
     echo "error: .env not found at $DOTENV"
-    echo "       run: ./build/scripts/init-environment.sh --preset <preset>"
+    echo "       run: ./projects/ores.compass/compass.sh env init --preset <preset>"
     exit 1
 fi
 

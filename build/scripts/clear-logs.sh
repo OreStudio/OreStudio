@@ -7,9 +7,9 @@
 # Options:
 #   --preset PRESET   CMake preset name (overrides ORES_PRESET from .env)
 #
-# The build preset defaults to ORES_PRESET in .env (set by init-environment.sh).
+# The build preset defaults to ORES_PRESET in .env (set by compass env init).
 # Use --preset to clear a specific preset's logs without re-running
-# init-environment.sh.
+# compass env init.
 #
 # Removes every *.log and *.err file under
 # build/output/<preset>/publish/log/ so the next run starts from clean logs.
@@ -37,7 +37,7 @@ done
 ENV_FILE="$PROJECT_DIR/.env"
 if [[ ! -f "$ENV_FILE" ]]; then
     echo "error: .env not found at $ENV_FILE"
-    echo "       run: ./build/scripts/init-environment.sh --preset <preset>"
+    echo "       run: ./projects/ores.compass/compass.sh env init --preset <preset>"
     exit 1
 fi
 set -a
@@ -48,7 +48,7 @@ set +a
 # --preset flag takes priority; fall back to ORES_PRESET from .env.
 PRESET="${PRESET_ARG:-${ORES_PRESET:-}}"
 if [[ -z "$PRESET" ]]; then
-    echo "error: no preset — pass --preset <preset> or set ORES_PRESET via init-environment.sh"
+    echo "error: no preset — pass --preset <preset> or set ORES_PRESET via compass env init"
     exit 1
 fi
 

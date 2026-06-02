@@ -27,4 +27,3 @@ a single how-do-I question with executable steps.
 - [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I enable test logging?]]
 - [[id:E1A68ED5-20CB-426C-91C6-97984A692505][How do I investigate a test failure?]]
 - [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]]
-- [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][How do I generate sprint health charts?]]

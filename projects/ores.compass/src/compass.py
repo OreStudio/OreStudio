@@ -1101,8 +1101,21 @@ def _sc_sprint_number_from_doc(sprint_doc):
     return int(m.group(1)) if m else None
 
 
+_SC_GNUPLOT_SCRIPTS = [
+    "sprint_prs_commits.gnuplot",
+    "sprint_line_churn.gnuplot",
+    "sprint_pr_cycle.gnuplot",
+    "sprint_stories_done.gnuplot",
+]
+
+
 def cmd_sprint_charts(args):
     """Implement compass sprint charts."""
+    if not shutil.which("gnuplot"):
+        print("❌ gnuplot not found on PATH. Install gnuplot to render sprint charts.",
+              file=sys.stderr)
+        return 1
+
     if args.sprint:
         sprint = args.sprint
     else:
@@ -1145,6 +1158,19 @@ def cmd_sprint_charts(args):
 
     print(f"Found {len(daily)} days of activity, {len(prs)} merged PRs, "
           f"{sum(cumulative.values())} story transitions")
+
+    print("Rendering charts with gnuplot...")
+    for script in _SC_GNUPLOT_SCRIPTS:
+        script_path = PROJECT_ROOT / "scripts" / script
+        if not script_path.exists():
+            print(f"  ⚠️  skipping {script} (not found)", file=sys.stderr)
+            continue
+        subprocess.check_call(
+            ["gnuplot", "-e", f"sprint={sprint}", str(script_path)],
+            cwd=PROJECT_ROOT,
+        )
+        print(f"  Rendered {script}")
+
     return 0
 
 

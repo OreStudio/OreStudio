@@ -46,17 +46,11 @@ In execution order:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh sprint charts --sprint <N>
-   gnuplot -e "sprint=<N>" scripts/sprint_prs_commits.gnuplot
-   gnuplot -e "sprint=<N>" scripts/sprint_line_churn.gnuplot
-   gnuplot -e "sprint=<N>" scripts/sprint_pr_cycle.gnuplot
-   gnuplot -e "sprint=<N>" scripts/sprint_stories_done.gnuplot
    #+end_src
 
-   The =sprint_charts= CMake target wraps these same commands but pins
-   the sprint via a *configure-time* cache variable: =-DSPRINT= is
-   rejected when passed after =--build=. Either run the scripts directly
-   (above) or reconfigure first (=cmake --preset … -DSPRINT=<N>=). See
-   [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][How do I generate sprint health charts?]] for details.
+   One command extracts the data and renders all four PNGs. Requires
+   =gnuplot= on =PATH=. See [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][How do I generate sprint health charts?]] for
+   full details including the CMake target.
 
    Verify the charts rendered — check =doc/agile/versions/v0/sprint_<N>/=
    for =prs_commits.png=, =line_churn.png=, =pr_cycle.png=, and

@@ -10,18 +10,21 @@ log = logging.getLogger(__name__)
 _SAFE_PROFILES_FOR_ENTITY = frozenset({"sql"})
 
 # Filter for org files in a component's modeling/ dir: only files whose
-# frontmatter declares `#+type: ores.codegen.entity` are entity models.
-# Other org files (overviews, knowledge docs, plantuml source) are skipped.
+# frontmatter declares a codegen model type are picked up. Other org
+# files (overviews, knowledge docs, plantuml source) are skipped.
 _ORG_TYPE_RE = re.compile(r"^#\+type:\s*(\S+)\s*$", re.MULTILINE | re.IGNORECASE)
-_ENTITY_TYPE = "ores.codegen.entity"
+_CODEGEN_ORG_TYPES = frozenset({
+    "ores.codegen.entity",
+    "ores.codegen.field_group",
+})
 
 
 def _is_codegen_entity_org(path: Path) -> bool:
-    """True if the file's frontmatter declares it a codegen entity model."""
+    """True if the file's frontmatter declares it a codegen org-model."""
     with path.open(encoding="utf-8", errors="replace") as f:
         head = f.read(4096)
     match = _ORG_TYPE_RE.search(head)
-    return bool(match and match.group(1) == _ENTITY_TYPE)
+    return bool(match and match.group(1) in _CODEGEN_ORG_TYPES)
 
 
 def _import_generator(base_dir: Path) -> Any:
@@ -74,8 +77,14 @@ def _generate_single(
         return 1
 
     if str(model_path).endswith(".org"):
-        from codegen.org_loader import load_org_model
-        model_data = load_org_model(model_path)
+        from codegen.org_loader import (
+            load_org_model,
+            load_org_field_group_model,
+        )
+        if str(model_path).endswith("_field_group.org"):
+            model_data = load_org_field_group_model(model_path)
+        else:
+            model_data = load_org_model(model_path)
     else:
         with open(model_path, encoding="utf-8") as f:
             model_data = json.load(f)

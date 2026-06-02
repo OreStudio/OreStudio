@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 7F7456F7-DC80-4596-B375-CE026905E036
+:END:
+#+title: Task: Create system_model_tooling.org and update system model links
+#+description: Create system_model_tooling.org; add tooling blurb to system_model.org; add back-links from system_model_foundation.org to tooling page.
+#+type: task
+#+level: s1
+#+filetags: :add_tooling_layer_to_system_model:sprint_19:v0:
+#+owner: marco
+#+branch: feature/fix-windows-macos-ci
+#+pr: 1015
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D90A3E68-D331-4473-AFAB-C1CBC94BA0CD][Add tooling layer to system model]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Wire the tooling components into the system model so they are discoverable
+from the architecture documentation:
+
+1. Create =projects/modeling/system_model_tooling.org= with a component
+   inventory for the four tooling components (compass, codegen, lisp, sql).
+2. Add a Tooling bullet to =projects/modeling/system_model.org= with an
+   id-link to the new sub-page.
+3. Add back-links from =projects/modeling/system_model_foundation.org= to
+   the Tooling page at the =ores.sql= and =ores.codegen= sections and in
+   =* See also=.
+
+All links are org-roam id-links.
+
+* Status
+
+| Field        | Value                                                            |
+|--------------+------------------------------------------------------------------|
+| State        | DONE                                                             |
+| Parent story | [[id:D90A3E68-D331-4473-AFAB-C1CBC94BA0CD][Add tooling layer to system model]]                |
+| Now          | Nothing.                                                         |
+| Waiting on   | PR.                                                              |
+| Next         | Raise PR; merge; close story.                                    |
+| Last touched | 2026-06-02                                                       |
+
+* Acceptance
+
+- =projects/modeling/system_model_tooling.org= exists with component tables
+  for compass, codegen, lisp, and sql; links back to the system model index
+  and knowledge.org.
+- =projects/modeling/system_model.org= has a Tooling Layer bullet with
+  id-link to the new page, clearly noted as not a runtime layer.
+- =projects/modeling/system_model_foundation.org= has id-links to the Tooling
+  Layer page at the =ores.sql= section, the =ores.codegen= section, and in
+  =* See also=.
+- All links are org-roam =[[id:...][Title]]= links.
+
+* Notes
+
+- Existing tooling component overviews (compass, codegen, lisp, sql) are not
+  modified — this task only creates the system model index page and wires
+  back-links from the foundation layer.
+- =ores.sql= and =ores.codegen= appear in =system_model_foundation.org= for
+  historical reasons (they were listed there before the Tooling layer concept
+  was formalised). The back-links added here make it clear they also belong
+  in the Tooling layer documentation.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1015][#1015]] | [modeling] Add tooling layer to system model |
+
+* Review
+
+| # | Comment summary                                             | File                             | Decision | Notes           |
+|---+-------------------------------------------------------------+----------------------------------+----------+-----------------|
+| 1 | Now field must be Nothing. when task state is DONE          | task_add_tooling_layer_docs.org  | Accept   | Fixed aa09bd532 |
+
+* Result
+
+- =projects/modeling/system_model_tooling.org= created with four component sections.
+- =system_model.org= Tooling Layer bullet added.
+- =system_model_foundation.org= back-links added at ores.sql, ores.codegen, and See also.

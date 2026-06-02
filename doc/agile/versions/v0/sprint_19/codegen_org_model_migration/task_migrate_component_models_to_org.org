@@ -251,4 +251,11 @@ not here.)
 |---+-----------------+------+----------+-------|
 | 1 | Task missing =* PRs= / =* Review= sections (false-positive). | task_migrate_component_models_to_org.org:218 | Declined | PR #992 (brainstorm) round 1. Both sections already present at lines 219 / 225. |
 
+** Round 2 — 2026-06-02 (gemini, PR #1012)
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =comp.get("description", "")= unsafe if JSON has =null= | =projects/ores.codegen/src/codegen/migrate_component_to_org.py= | Accepted | Fixed in =148e291d5=. Switched to a truthiness check on the raw value; =.rstrip()= only runs when description is a non-empty string. Defensive — all 31 components have non-null descriptions today. |
+| 2 | Wrap conversion loop in try/except to avoid tracebacks | =projects/ores.codegen/src/codegen/migrate_component_to_org.py= | Declined | One-shot script; JSON inputs already deleted in this PR. Suggested early-return semantics would silently produce partial migrations — worse than the traceback for diagnostics. |
+
 * Result

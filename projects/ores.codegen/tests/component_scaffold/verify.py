@@ -28,8 +28,6 @@ Run::
 
 Exits 0 on success; non-zero on any check failure.
 """
-import json
-import os
 import sys
 from pathlib import Path
 
@@ -60,7 +58,8 @@ def _check_loader(label: str, path: Path, required_keys=("name", "full_name", "b
     missing = [k for k in required_keys if k not in model]
     if missing:
         return f"FAIL {label}: loader returned no {missing}; got {sorted(model.keys())}"
-    return f"OK   {label}: {model['full_name']} (brief={model['brief'][:50]}...)"
+    brief = model.get("brief") or ""
+    return f"OK   {label}: {model['full_name']} (brief={brief[:50]}...)"
 
 
 def _check_scaffold_paths(label: str, ov: Path, profile_outputs=SCAFFOLD_OUTPUTS_FLAT):

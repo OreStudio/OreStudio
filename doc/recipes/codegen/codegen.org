@@ -31,3 +31,6 @@ recipes]] under "Authoring documents".
 * Running codegen
 
 - [[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]]
+- [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]] — edit the single service registry
+  (a codegen model) and regenerate; it is the one source for
+  =service_vars.sh=, the SQL users/roles/grants, and the =.env= creds.

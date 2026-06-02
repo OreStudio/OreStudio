@@ -8,7 +8,7 @@
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
 #+branch: feature/fix-windows-macos-ci
-#+pr:
+#+pr: 1010
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-02
@@ -144,7 +144,7 @@ in future, the same pattern applies.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1010][#1010]] | [ores.qt.api,ores.qt.trading] Fix MSVC C1202 in BookMdiWindow via exportPortfolio() |
 
 * Review
 

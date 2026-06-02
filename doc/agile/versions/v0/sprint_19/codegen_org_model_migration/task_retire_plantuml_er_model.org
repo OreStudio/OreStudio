@@ -21,13 +21,16 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 =projects/ores.codegen/models/plantuml_er_model.json= is the
-intermediate artefact between =plantuml_er_parse_sql.py= (which
-writes it from the SQL schema) and =plantuml_er_generate.py= (which
-reads it to emit =ores_schema.puml=). It has no consumer outside
-that script, is regenerated on every run, and shouldn't live under
-=models/= — that directory is the *input* tree for codegen, not a
-scratch dir for intermediate output. Move the file to a
-build-output path, gitignore it, delete the check-in.
+intermediate artefact of the ER-diagram codegen pipeline, written by
+=plantuml_er_parse_sql.py= and read by =plantuml_er_generate.py= to
+emit =ores_schema.puml=. It belongs to the *automated codegen route*
+(see [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — Two codegen routes), where the model is derived from
+already-generated artefacts rather than authored by a human.
+=projects/ores.codegen/models/= is the authored-input tree; derived
+models go to =build/output/= so they stay out of source.
+
+Move the file to a build-output path, rely on the existing
+=build/output= gitignore entry, and delete the check-in.
 
 * Status
 

@@ -100,12 +100,18 @@ def _column_section(col):
         drawer_keys.append(("nullable", str(col["nullable"]).lower()))
     if "default" in col:
         drawer_keys.append(("default", col["default"]))
+    if "default_value" in col:
+        drawer_keys.append(("default_value", col["default_value"]))
     drawer = _drawer(drawer_keys)
     body = _description_detail(col)
+    gen = _generator_block(col)
     parts = [f"** {col['name']}", drawer]
     if body:
         parts.append("")
         parts.append(body)
+    if gen:
+        parts.append("")
+        parts.append(gen)
     return "\n".join(parts)
 
 

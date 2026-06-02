@@ -131,6 +131,6 @@ Sequence:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Duplicate BACKLOG * Status section below the STARTED table (scaffold artefact) | =introduce_ores_seeder/story.org= | Fixed | Removed in ba7498168 |
 
 * Result

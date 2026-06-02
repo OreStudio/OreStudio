@@ -1537,11 +1537,11 @@ def _cmd_task_start(task_ident):
 
     # Resolve by UUID (exact or prefix), slug, or branch suffix.
     tasks = [d for d in docs.values() if d.doctype == "task"]
-    exact  = [d for d in tasks if d.id.lower() == il]
-    prefix = [d for d in tasks if d.id.lower().startswith(il)]
+    exact  = [d for d in tasks if d.id and d.id.lower() == il]
+    prefix = [d for d in tasks if d.id and d.id.lower().startswith(il)]
     slug   = [d for d in tasks if Path(d.rel_path).stem.lower() == f"task_{il}"
                                 or Path(d.rel_path).stem.lower() == il]
-    cands  = list({d.id: d for d in (exact or prefix) + slug}.values())
+    cands  = list({d.rel_path: d for d in (exact or prefix) + slug}.values())
 
     if not cands:
         print(f"❌ No task matching '{task_ident}'.", file=sys.stderr)
@@ -1581,9 +1581,9 @@ def _cmd_task_start(task_ident):
 
     # Flip BACKLOG → STARTED in the task file if needed.
     text = task_path.read_text(encoding="utf-8")
-    if "| State        | BACKLOG" in text:
-        text = text.replace("| State        | BACKLOG", "| State        | STARTED", 1)
-        task_path.write_text(text, encoding="utf-8")
+    new_text, n = re.subn(r'(\| State\s+\|) BACKLOG', r'\1 STARTED', text, count=1)
+    if n:
+        task_path.write_text(new_text, encoding="utf-8")
         print(f"📝 state: BACKLOG → STARTED")
 
     # Stamp the journal.

@@ -30,30 +30,59 @@ facet placement, and CMake dependency chain.
 Codegen is *mandatory* for all boilerplate.  Do not hand-write
 CMakeLists or stub files.
 
+Since [[https://github.com/OreStudio/OreStudio/pull/1014][PR #1014]] the
+=component_overview.org= per component is the single source of
+truth for both humans and codegen — the standalone
+=*_component.json= and =*_component.org= models are retired.
+
 1. /Gather requirements/: component short name, parts needed
    (=.api=, =.core=, =.service=, or a subset), one-line brief, longer
    description.
 
-2. /Create a JSON model per part/ under
-   =projects/ores.codegen/models/COMPONENT/= using the schema in
-   [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]].  Name the files
-   =ores_COMPONENT_{api,core,service}_component.json=.
+2. /Scaffold the per-part overview/ via compass.  For each part
+   (=.api=, =.core=, =.service=) run:
+   #+begin_src sh
+   ./projects/ores.compass/compass.sh add component \
+     --slug component_overview \
+     --parent-dir projects/ores.COMPONENT/PART/modeling \
+     --title "ores.COMPONENT.PART" \
+     --description "<one-liner ≤ 120 chars>" \
+     --brief "<short tagline>"
+   #+end_src
+   The scaffold includes the codegen-readable keywords
+   (=#+name:=, =#+full_name:=, =#+brief:=) automatically.  Fill in
+   the =* Summary= and other sections per
+   [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component Documentation Guide]].
 
-3. /Run codegen/ for each part:
-   =cd projects/ores.codegen && ./run_generator.sh models/COMPONENT/ores_COMPONENT_api_component.json --profile component-api=
-   Repeat with =--profile component-core= and =--profile component-service= as needed.
+3. /Run codegen against each overview/ to scaffold the C++ + CMake
+   project:
+   #+begin_src sh
+   ./projects/ores.codegen/codegen.sh generate \
+     --model projects/ores.COMPONENT/api/modeling/component_overview.org \
+     --profile component-api
+   #+end_src
+   Repeat with =--profile component-core= and
+   =--profile component-service= as needed.
 
-4. /Register/ each part in =projects/CMakeLists.txt= in dependency
+4. /(Optional) Add a group-level overview/ at
+   =projects/ores.COMPONENT/modeling/component_overview.org=.
+   The group overview is navigation + group-level codegen scalars;
+   the directory layout =projects/ores.COMPONENT/{api,core,service}/=
+   is the composite declaration (no =:subcomponents:= keyword needed).
+
+5. /Register/ each part in =projects/CMakeLists.txt= in dependency
    order (=.api= → =.core= → =.service=).
 
-5. /Add a PlantUML stub/ (=modeling/ores.COMPONENT.PART.puml=) for each
+6. /Add a PlantUML stub/ (=modeling/ores.COMPONENT.PART.puml=) for each
    part — codegen does not yet produce this.  See
    [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][component-model-creator]] for the diagram conventions.
 
-6. /Build and verify/ the stub tests with [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]]:
+7. /Build and verify/ the stub tests with [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]]:
    =cmake --build --preset linux-clang-debug-ninja --target ores.COMPONENT.api.tests=
 
-7. /Document the architecture/ using [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][component-model-creator]].
+8. /Fill in the architecture sections/ of each overview using
+   [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][component-model-creator]] (Inputs, Outputs, Entry points,
+   Dependencies, See also, and the PlantUML diagram).
 
 * Templates
 
@@ -61,11 +90,20 @@ Scaffold profiles (each generates 9 files for =.api=/=.core=; 18 for =.service=)
 
 | Profile | Key templates |
 |---|---|
+| =--profile component= | Flat component (no =.api=/=.core=/=.service= split) — produces all 10 files including =stub.hpp= / =stub.cpp= |
 | =--profile component-api= | =cmake_component_root.mustache= + =cmake_component_api_src.mustache= + 7 others |
 | =--profile component-core= | =cmake_component_root.mustache= + =cmake_component_core_src.mustache= + 7 others |
 | =--profile component-service= | =cmake_component_root.mustache= + =cmake_component_service_src.mustache= + 16 others |
 
+All four profiles consume the same model type =component=, read
+from a =component_overview.org= via =load_org_component_overview_model=.
 Full template list is in [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]]§"Profile catalogue".
+
+The codegen-side scaffold flow is exercised by
+=projects/ores.codegen/tests/component_scaffold/verify.py= — two
+fixture components (flat + composite) plus prior-art checks
+against =ores.nats= (flat) and =ores.controller= (composite
+group + 3 subs).
 
 * Reference
 

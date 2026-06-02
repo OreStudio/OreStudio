@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: 44444444-4444-4444-9444-444444444444
+:END:
+#+title: ores.sample_composite.core
+#+description: Sample composite-core subcomponent fixture for the new-component scaffold flow.
+#+type: component
+#+level: cross
+#+filetags: :test:fixture:component:core:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: sample_composite.core
+#+full_name: ores.sample_composite.core
+#+brief: Sample composite .core subcomponent fixture.
+
+* Summary
+
+The =.core= layer of the =sample_composite= group — equivalent in shape to
+=ores.iam.core=, =ores.dq.core=, etc. Codegen running =--profile component-core=
+against this overview should produce the core implementation scaffold
+(CMakeLists, export.hpp, public header, stub header/impl, stub tests).

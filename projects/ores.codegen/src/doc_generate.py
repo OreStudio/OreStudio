@@ -248,6 +248,12 @@ def parse_args(argv=None):
                              "(refdata, trading, ...). Drives the output path "
                              "(projects/ores.<component>/modeling/) and the "
                              "ores.<component>.<slug> title.")
+    parser.add_argument("--brief", default="",
+                        help="For --type component: one-line tagline that "
+                             "codegen reads from the overview's #+brief: "
+                             "keyword. Mirrors the JSON 'brief' field that "
+                             "lived in the now-retired ores_*_component.json. "
+                             "Ignored for other types.")
     parser.add_argument("--force", action="store_true",
                         help="Overwrite the output file if it already exists.")
     return parser.parse_args(argv)
@@ -351,6 +357,21 @@ def main(argv=None):
         args.tags = f"{args.tags},{injected}" if args.tags else injected
         filetags = build_filetags(args.tags, ancestor_slugs)
 
+    # For --type component the doc template needs short-name + brief.
+    # name is derived from title by stripping the "ores." prefix
+    # (ores.iam.service -> iam.service); brief defaults to description when
+    # the user doesn't pass --brief, matching the pre-merge convention where
+    # short components conflated brief and description.
+    if args.type == "component":
+        component_name = (
+            args.title[len("ores."):] if args.title.startswith("ores.")
+            else args.title
+        )
+        component_brief = args.brief or args.description
+    else:
+        component_name = ""
+        component_brief = ""
+
     variables = {
         "id": new_id,
         "slug": args.slug,
@@ -367,6 +388,8 @@ def main(argv=None):
         "bucket": bucket,
         "memory_subtype": memory_subtype,
         "component": args.component,
+        "component_name": component_name,
+        "brief": component_brief,
     }
 
     template_path = TEMPLATE_DIR / TYPE_TO_TEMPLATE[args.type]

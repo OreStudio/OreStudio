@@ -22,14 +22,25 @@ that is missing one?
 #+begin_src sh :results verbatim
 ./projects/ores.compass/compass.sh add component \
   --slug component_overview \
-  --parent-dir projects/<comp>/modeling \
-  --title "<comp>" \
+  --parent-dir projects/ores.<comp>/modeling \
+  --title "ores.<comp>" \
   --description "<one-liner ≤ 120 chars>" \
+  --brief "<short tagline that codegen reads from #+brief:>" \
   --tags "qt,component"   # adjust tags to match the domain
 #+end_src
 
 The script writes =projects/<comp>/modeling/component_overview.org=
-with a fresh UUID, today's dates, and skeleton sections.
+with a fresh UUID, today's dates, skeleton sections, *and* the
+codegen-readable scalars in frontmatter (=#+name:= derived from
+=--title=, =#+full_name:= equal to =--title=, =#+brief:= from
+=--brief=). Codegen reads these to scaffold the C++ + CMake
+project under =projects/<full_name>/=; the overview is the single
+source of truth for both humans and the generator (the standalone
+=*_component.json= / =*_component.org= files were retired by
+[[https://github.com/OreStudio/OreStudio/pull/1014][PR #1014]]).
+
+The =--brief= flag defaults to =--description= when omitted, so
+short one-line components don't need to repeat themselves.
 
 Then fill in each section (values in parentheses are prompts, not
 literal content):

@@ -19,23 +19,37 @@ license: Complete terms in LICENSE.txt
 
 * When to use this skill
 
-When a component exists (scaffold is in place) but its architecture
-documentation is missing or out of date.  This skill produces the
-=component_overview.org= (the component model) and the =*.puml=
-class diagram under =projects/COMPONENT/modeling/=.  Run this after
-[[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][component-creator]] when adding a new component, or whenever the
-component's domain types or structure change significantly.
+When a component's architecture documentation needs to be created
+or refreshed.  Since [[https://github.com/OreStudio/OreStudio/pull/1014][PR
+#1014]] the =component_overview.org= is the *single source of
+truth* for both humans and codegen — it carries the architecture
+prose AND the codegen-readable identity scalars (=#+name:=,
+=#+full_name:=, =#+brief:=, =#+description:=).  Run this skill
+*before* [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][component-creator]] when
+scaffolding a brand-new component (codegen reads from the
+overview), and again whenever the architecture changes.
 
 * How to use this skill
 
-1. /Scaffold the org file/ using compass:
-   =./projects/ores.compass/compass.sh add component --slug component_overview --parent-dir projects/COMPONENT/modeling --title "ores.COMPONENT" --description "One-line summary."=
-   See [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] for the full walkthrough.
+1. /Scaffold the org file/ using compass.  The scaffold template
+   includes the codegen scalars automatically:
+   #+begin_src sh
+   ./projects/ores.compass/compass.sh add component \
+     --slug component_overview \
+     --parent-dir projects/ores.COMPONENT/modeling \
+     --title "ores.COMPONENT" \
+     --description "<one-line summary used by codegen + html>" \
+     --brief "<short tagline codegen emits as the C++ @brief>"
+   #+end_src
+   =--brief= defaults to =--description= when omitted.  See
+   [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] for the full walkthrough.
 
 2. /Fill in each section/ following [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component Documentation Guide]]:
    Summary, Inputs, Outputs, Entry points, Dependencies, See also.
    For a split component (=.api= / =.core= / =.service=) create one
-   =component_overview.org= per part.
+   =component_overview.org= per part under the matching subdir; a
+   group-level overview at =projects/ores.COMPONENT/modeling/= is
+   optional and used for navigation + group-level codegen scalars.
 
 3. /Create or update the PlantUML diagram/ (=modeling/COMPONENT.puml=).
    Use [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] for diagram conventions: domain classes

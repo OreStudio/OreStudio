@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 22222222-2222-4222-9222-222222222222
+:END:
+#+title: ores.sample_composite
+#+description: Sample composite (group-level) component fixture used to validate the new-component scaffold flow.
+#+type: component
+#+level: cross
+#+filetags: :test:fixture:component:composite:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: sample_composite
+#+full_name: ores.sample_composite
+#+brief: Sample composite component fixture (group-level).
+
+* Summary
+
+Test fixture for the component-scaffold verifier. Represents the
+*group-level* overview of a composite component — equivalent in shape to the
+group overviews created by PR #1014 for =ores.compute=, =ores.controller=,
+=ores.reporting=, =ores.trading=, =ores.workflow=, or to the implicit groups
+=ores.iam=, =ores.refdata=, =ores.dq= etc.
+
+The group has no =src/= or =CMakeLists.txt= of its own. Its subcomponents
+(this fixture's =api/= and =core/=) are the actual codegen-generated
+projects; this overview is for navigation + group-level codegen scalars.
+
+There is no explicit =:subcomponents:= declaration — the directory layout
+=projects/<this>/{api,core}/= is the composite declaration.

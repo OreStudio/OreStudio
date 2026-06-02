@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/port-init-environment-to-compass
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -19,28 +19,67 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Replace =build/scripts/init-environment.sh= with a =compass env init=
+subcommand — the first verb of the *Provision* pillar from the taxonomy
+design. The Python port reads the service registry natively (no
+=python3 -c= shim), reuses existing =.env= secrets idempotently, and
+produces the same =.env= the shell script does. Hard cutover: the shell
+script is deleted and every caller updated.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-02                               |
+| Field        | Value                                                |
+|--------------+------------------------------------------------------|
+| State        | STARTED                                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]         |
+| Now          | Porting init-environment.sh into compass env init.   |
+| Waiting on   | Nothing.                                             |
+| Next         | Verify .env parity; hard cutover of callers.         |
+| Last touched | 2026-06-02                                           |
 
-* Acceptance
+Scope: *implementation + functional cutover only*. All documentation
+(recipes, knowledge, compass docs) is owned by the sibling
+[[id:D0442A4B-8BE6-48D1-8FFB-0CD9B9EA22F4][documentation task]] so it can enumerate every doc touched. The
+env-format version stays an in-code constant here; tooling it via a bump
+command is [[id:AE2BCC66-983C-49E0-BC05-79100D388E8E][its own task]].
 
--
+- =compass env init [--preset P] [-y] [--enable-logging [lvl]]
+  [--disable-logging] [--with-diff]= reproduces init-environment.sh's
+  behaviour: label/port derivation, NATS cert + IAM key generation,
+  idempotent reuse of existing secrets, service creds from the registry,
+  and the logging-only mode.
+- =compass env diff= (ports diff-environment.sh) and =compass env list=
+  (=--show-secrets=, grouped by section, service block sub-grouped) are
+  implemented under the same Provision/env noun.
+- Regenerating an existing =.env= changes *no* secret and *no* key set —
+  verified by diff against the pre-port =.env= (only the generator
+  comment + timestamp differ).
+- =build/scripts/init-environment.sh= and =diff-environment.sh= are
+  *deleted*; functional callers updated: CI workflows
+  (=.github/workflows/*=), the ores.lisp dashboard (=ores-dashboard.el=,
+  =ores-env.el=), and script error-message references
+  (=recreate_database.sh=, =validate_env_version.sh=, …).
+- =env: init | diff | list= appears under the Provision pillar in
+  =compass --help=.
+- =recreate_database.sh= round-trips against the generated =.env=.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+1. Add a =cmd_env(argv)= handler + Provision pillar to =compass.py=
+   (=_EPILOG= section, short-circuit dispatch), with an =init=
+   sub-subcommand. Implementation in a dedicated module if it keeps
+   =compass.py= manageable.
+2. Port the bash logic faithfully: arg parsing, logging-only early exit,
+   identity/port derivation, cert + IAM key generation (shell out to the
+   not-yet-migrated =generate_nats_certs.sh= / =init-nats.sh= for now),
+   existing-value reuse, password/UUID generation, registry-driven
+   service creds, exact =.env= layout.
+3. Verify: copy current =.env=, run =compass env init=, diff — confirm
+   no secret/key changes.
+4. Cutover: delete =init-environment.sh=; update CI, dashboard, recipes.
+5. Commit + PR.
+
+* Notes
 
 * Notes
 

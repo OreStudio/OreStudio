@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: AE2BCC66-983C-49E0-BC05-79100D388E8E
+:END:
+#+title: Task: Add a command to record an env-version bump
+#+description: Give compass a command to record an env-format version bump — the workflow being: a user makes a change that affects the .env (new service, new/renamed var), then runs the command to increment the canonical ORES_ENV_VERSION and append a changelog entry, instead of hand-editing a source constant in two places.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give compass a command to *record* an env-format version bump. The
+workflow: a contributor makes a change that affects the =.env= (adds a
+service to the registry, adds or renames a variable), then runs one
+command to increment the canonical =ORES_ENV_VERSION= and record a
+changelog note — rather than hand-editing a version constant and keeping
+it in lockstep across the generator and the validator.
+
+Detection itself stays as today: =validate_env_version= compares the
+=.env='s =ORES_ENV_VERSION= against the canonical version and tells the
+user to re-run =compass env init= on mismatch. This task makes the *bump*
+a tooled, one-command action — not automated detection.
+
+* Background
+
+=ENV_VERSION= is a hard-coded constant (=6=) duplicated in the generator
+(was =init-environment.sh=, now =compass env init=) and in
+=validate_env_version.sh=, with a hand-written changelog comment. Bumping
+it means editing source in two places and remembering the changelog —
+easy to forget when, for example, a new service adds variables to the
+=.env=. There is no command to record the bump.
+
+* Acceptance
+
+- A command — e.g. =compass env bump --note "added X service"= —
+  increments the canonical env-format version and appends a dated
+  changelog entry, in one place.
+- =compass env init= writes that canonical version as =ORES_ENV_VERSION=;
+  the validator compares against the same canonical source. No duplicated
+  constant.
+- After a bump, a checkout with an older =.env= fails
+  =validate_env_version= with the existing "re-run =compass env init="
+  guidance — so the recorded bump is what surfaces the staleness.
+- The changelog is human-readable and lives with the canonical version.
+
+* Plan
+
+** Mechanism — canonical version as data + a bump verb
+
+1. Move the env-format version + changelog out of source constants into a
+   small data file (e.g. =build/config/env_version.json=: a =version=
+   integer plus a =changelog= list of ={version, date, note}=).
+2. =compass env init= reads =version= → writes =ORES_ENV_VERSION=
+   (replacing the in-code =ENV_VERSION= constant).
+3. =compass env validate= (the migrated =validate_env_version=) reads the
+   same file to compare.
+4. =compass env bump --note "..."= increments =version=, appends a
+   changelog entry, and is the only supported way to change it.
+
+Coordinate with the db/nats Provision task that migrates
+=validate_env_version.sh= → =compass env validate=.
+
+** Steps
+
+1. Introduce the canonical version data file; point =compass env init= at
+   it (replacing the in-code =ENV_VERSION= constant).
+2. Add =compass env bump=.
+3. Wire the validator to the same source.
+4. Test the workflow: change registry → =compass env bump --note= →
+   older =.env= now fails validation with the re-run message.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

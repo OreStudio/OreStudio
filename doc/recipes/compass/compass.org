@@ -42,6 +42,11 @@ pillars that fold in the standalone scripts, starting with Provision.
 - [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]] — full journal reference:
   clocking on, overlap detection, manual updates, entry format.
 
+* Sprint
+
+- [[id:1AF08218-EFBC-421B-BBF3-2FFD2332E426][How do I generate sprint charts with compass?]] — extract git/PR
+  metrics into CSVs for gnuplot rendering (=sprint charts=).
+
 * Captures
 
 - [[id:7072D39C-9607-48F9-8EE6-50E8647DB8ED][How do I capture ideas from freeform text?]] — paste unstructured

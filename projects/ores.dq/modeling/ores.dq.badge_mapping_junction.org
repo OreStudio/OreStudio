@@ -79,6 +79,10 @@ The badge definition to use for this mapping.
 
 References badge_definition.code (soft FK). Examples: 'active', 'fsm_draft'.
 
+#+begin_src cpp :name generator
+std::string(faker::word::adjective())
+#+end_src
+
 * SQL
 
 ** Flags

@@ -73,6 +73,10 @@ URI of the per-platform packaged bundle in object storage.
 One .tar.gz per (app_version, platform). Wrappers download the URI
 matching their own ORES_PLATFORM_TRIPLET at dispatch time.
 
+#+begin_src cpp :name generator
+std::string(faker::internet::url())
+#+end_src
+
 * SQL
 
 ** Flags

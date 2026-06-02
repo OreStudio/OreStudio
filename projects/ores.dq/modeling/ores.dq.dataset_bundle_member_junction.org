@@ -65,15 +65,20 @@ std::string(faker::word::noun()) + "." + std::string(faker::word::noun())
 
 ** display_order
 :PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 0
 :END:
 
 Order in which this dataset should be displayed or processed.
 
 Lower numbers appear first. Used for controlling installation order
 and UI presentation.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
 
 ** optional
 :PROPERTIES:
@@ -86,6 +91,10 @@ and UI presentation.
 Whether this dataset is optional in the bundle.
 
 Optional datasets are skipped if not available during bundle installation.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
 
 * SQL
 

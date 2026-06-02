@@ -33,7 +33,7 @@ database, start NATS, set up SQL connections, start services).
 
 For the full command set — =env init= flags (=--with-diff=, logging
 toggles), =env diff=, =env list= (masked variable listing), and
-=env bump= (record an env-format version bump) — see the detailed recipe
+=env version [new]= (record an env-format version) — see the detailed recipe
 [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]].
 
 * Script

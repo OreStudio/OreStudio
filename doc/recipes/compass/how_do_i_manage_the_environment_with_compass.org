@@ -2,7 +2,7 @@
 :ID: 13209197-CDBD-4807-A8F9-9653AFA96CBF
 :END:
 #+title: How do I manage the checkout environment with compass?
-#+description: Use compass env init/diff/list/bump to generate and inspect the .env: behaviour-preserving credential generation, the .env.old diff, masked variable listing, and recording an env-format version bump.
+#+description: Use compass env init/diff/list/version to generate and inspect the .env: behaviour-preserving credential generation, the .env.old diff, masked variable listing, and recording a new env-format version.
 #+type: recipe
 #+level: cross
 #+filetags: :compass:env:provision:credentials:recipe:
@@ -18,7 +18,7 @@ old =build/scripts/init-environment.sh= and =diff-environment.sh=.
 * Question
 
 How do I generate the =.env= for a checkout, inspect what's in it, see
-what a regeneration changed, and record an env-format version bump?
+what a regeneration changed, and record a new env-format version?
 
 * Answer
 
@@ -79,30 +79,36 @@ per-service credential block is sub-grouped by service (=[iam]=,
 =[refdata]=, …) so it's easy to scan. Secret values (passwords, the JWT
 key, =PGPASSWORD=) are masked by default; =--show-secrets= reveals them.
 
-** Record an env-format version bump — =compass env bump=
+** Show / record the env-format version — =compass env version=
 
-The =.env='s shape is versioned by =ORES_ENV_VERSION=, checked at the
-start of =recreate_database.sh=. When you make a change that alters the
-=.env= — add a service to the registry, add or rename a variable — record
-a bump:
+The =.env='s shape is versioned by =ORES_ENV_VERSION=, checked before
+=recreate_database= runs. Show the current canonical version:
 
 #+begin_src sh :results verbatim
-./projects/ores.compass/compass.sh env bump --note "added analytics service DB creds"
+./projects/ores.compass/compass.sh env version
 #+end_src
 
-This increments the canonical version and appends a dated changelog entry
-in =build/config/env_version.json= — the single source read by both
-=compass env init= (which writes =ORES_ENV_VERSION=) and the validator. Then
-re-run =compass env init= to write the new version into your =.env=. Any
-checkout still on the old version now fails =recreate_database='s
-validation with a clear "re-run =compass env init=" message, instead of a
-later missing-password error.
+When you make a change that alters the =.env= — add a service to the
+registry, add or rename a variable — record a new version:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh env version new "added analytics service DB creds"
+#+end_src
+
+This appends a dated row to the [[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][environment format version log]] — the
+single, parseable source read by both =compass env init= (which writes
+=ORES_ENV_VERSION=) and the version check. Then re-run =compass env init=
+to write the new version into your =.env=. Any checkout still on the old
+version then fails the pre-=recreate_database= check with a clear "re-run
+=compass env init=" message, instead of a later missing-password error.
 
 * Script
 
-=projects/ores.compass/compass.sh env {init,diff,list,bump}= →
+=projects/ores.compass/compass.sh env {init,diff,list,version}= →
 =src/compass.py= (=cmd_env=) → =src/env_init.py=. The canonical
-env-format version + changelog live in =build/config/env_version.json=.
+env-format version log is the org doc
+=doc/knowledge/architecture/env_format_version_log.org= (a parseable
+table); =compass env version new= appends to it.
 
 * Tested by
 
@@ -113,5 +119,5 @@ generated =.env= round-trips through =recreate_database.sh=.
 * See also
 
 - [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]] — edit the registry that =env init=
-  reads, then bump + re-init.
+  reads, then =env version new= + re-init.
 - [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the component model (pillars, structure).

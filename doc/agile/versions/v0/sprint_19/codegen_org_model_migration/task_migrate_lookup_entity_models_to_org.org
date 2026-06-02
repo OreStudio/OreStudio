@@ -104,8 +104,11 @@ Org file shape:
 
 * Review
 
+** Round 1 — 2026-06-02 (gemini)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Extend raw-string guard to =default_value= in columns loop | =projects/ores.codegen/src/codegen/org_loader.py= | Accepted | Fixed in =839aec9bf=. Mirrors the field_group / junction / table loaders. No current data exercises it; defensive against future numeric defaults. |
+| 2 | Explicit =None= check in =_org_table= cells | =projects/ores.codegen/src/codegen/migrate_lookup_entity_to_org.py= | Accepted | Fixed in =250ed007a=. =or ""= collapsed legitimate falsy values; explicit check preserves =0= and =False=. |
 
 * Result

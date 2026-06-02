@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 6CAA15F5-634E-46B4-ABA5-185095E9911D
+:END:
+#+title: ores.seeder
+#+description: Database-level synthetic test-data generation: emits SQL INSERT populate scripts at codegen time. Distinct from ores.synthetic (C++/runtime).
+#+type: component
+#+level: cross
+#+filetags: :tooling:seeder:testdata:codegen:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: seeder
+#+full_name: ores.seeder
+#+brief: Database test-data generator: SQL inserts from crafted JSON datasets.
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.seeder component diagram
+#+caption: ores.seeder
+[[file:ores.seeder.png][file:ores.seeder.png]]
+
+* Summary
+
+=ores.seeder= owns *database-level synthetic test-data generation*
+for ORE Studio. Its job is to emit SQL =INSERT= populate scripts
+that load hand-curated test rows into the schema at build time —
+so local development and CI start from a known, repeatable
+dataset without depending on real production data.
+
+The first inhabitant is *slovaris*, the "imaginary world" used to
+exercise the refdata schema (fake countries Aerilon and friends,
+fake currencies Ducat and friends). Future datasets follow the
+same convention under =datasets/<name>/=.
+
+* Distinct from siblings
+
+| Component       | Concern                                                              |
+|-----------------+----------------------------------------------------------------------|
+| [[id:702753E8-0E07-4690-AFAB-D75514ADE660][ores.synthetic.service]] | Synthetic data generated /at C++ runtime/, lives in-process    |
+| [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]   | Source-code generation: SQL DDL, C++ types, CMake recipes            |
+| =ores.seeder=   | Synthetic data generated /at build time/, emitted as SQL `.sql` files |
+
+The split keeps the two synthetic-data concerns evolving
+independently — runtime data ships in the binary; seeder output
+ships as populate scripts loaded at DB setup.
+
+* MVP today: crafted JSON datasets
+
+A *crafted dataset* is hand-curated content committed to disk
+under =datasets/<name>/=. Each dataset has:
+
+- One or more JSON files with the actual row data (e.g.
+  =country_currency.json= — 100 country/currency pairs).
+- A =model.json= "batch driver" listing each artefact as
+  =(template, output, source)= tuples.
+- A =dataset_overview.org= documenting the dataset
+  (name, version, methodology, contents, see-also).
+- Optional companion files (e.g. =methodology.txt= for slovaris).
+
+The seeder is thin: =seeder.sh= delegates to
+=ores.codegen.generator= which renders the mustache templates
+(=sql_catalog_populate.mustache=,
+=sql_country_populate.mustache=, ...) against each JSON. Templates
+*stay in =ores.codegen/library/templates/== — the seeder does
+not own them.
+
+* Roadmap: synthesised flavour (not built)
+
+The crafted form covers cases where rows are known and meaningful
+(slovaris's =Aerilon=Ducat= mapping carries narrative weight).
+But many test-data needs are *volume* needs: 10,000 synthetic
+parties, 1,000 random trades, etc., where the *shape* matters but
+the specific values don't.
+
+The codegen entity migrations have been preserving
+=generator_expr= column hints (=std::string(faker::internet::url())=
+etc.) on entities, junctions, lookup entities. The synthesised
+flavour will read an entity overview (e.g.
+[[https://github.com/OreStudio/OreStudio/tree/main/projects/ores.refdata/modeling][=ores.refdata.party.org=]]) and emit a Python+Faker script that
+produces N rows of SQL inserts. Same pipeline output (SQL
+populate), different source-of-truth (entity model + Faker
+hints, not hand-curated JSON).
+
+*Not built yet.* No active use case forces it; the entity-model
+=generator_expr= hints are already in place so the substrate is
+ready when a use case appears.
+
+* Inputs
+
+- =datasets/<name>/*.json= — crafted row data, dataset metadata.
+- =datasets/<name>/model.json= — per-dataset batch driver
+  (=template= → =output= → =source-json=).
+- =projects/ores.codegen/library/templates/sql_*populate*.mustache=
+  — the rendering templates (delegated, not owned).
+
+* Outputs
+
+- =projects/ores.sql/populate/<name>/*.sql= — populate scripts
+  that =psql= can run to seed the database.
+
+* Entry points
+
+- =seeder.sh generate <dataset>= — primary CLI; renders all
+  artefacts declared in the dataset's =model.json=.
+- =src/seeder.py= — thin shim that imports =codegen.generator=.
+
+* Dependencies
+
+- =ores.codegen= — the renderer, =load_data=, mustache
+  templates. =ores.seeder= delegates to it.
+
+* See also
+
+- [[id:702753E8-0E07-4690-AFAB-D75514ADE660][ores.synthetic.service]] — sibling concern (runtime, not file
+  output).
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the renderer that =ores.seeder= delegates to.
+- [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component for database test-data generation]] — the introduction story.

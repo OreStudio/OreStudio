@@ -81,6 +81,6 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | datetime not imported locally in _tr_suite_stats | =compass.py= | Declined | datetime is a global import added in PR #1020; no NameError possible |
 
 * Result

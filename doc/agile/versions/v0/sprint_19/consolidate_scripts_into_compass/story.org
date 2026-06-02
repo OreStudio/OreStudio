@@ -34,9 +34,9 @@ within this larger effort.
 |---------------+--------------------------------------------------|
 | State         | STARTED                                          |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                               |
-| Now           | Registry confirmed + documented as single source (D1: keep in codegen/models). |
+| Now           | Provision pillar live: compass env init/diff/list/version; scripts deleted, CI + dashboard cut over. |
 | Waiting on    | Nothing.                                         |
-| Next          | Port init-environment to compass env init.       |
+| Next          | Ship the env PR; then db/nats/Operate/Build/Generate migrations. |
 | Last touched  | 2026-06-02                                       |
 
 * Background: script inventory (2026-06-02)

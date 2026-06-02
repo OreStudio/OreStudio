@@ -13,7 +13,8 @@
 checkout up so the system can run. It owns the =.env= at the checkout
 root — the file every service, the CLI, the shell, and the test suite
 read their database and NATS credentials from. =compass env= replaces the
-old =build/scripts/init-environment.sh= and =diff-environment.sh=.
+old =build/scripts/init-environment.sh= and =diff-environment.sh=, and is
+what CI now runs to provision its environment.
 
 * Question
 
@@ -101,6 +102,12 @@ format version with compass?]].
 env-format version log is the org doc
 =doc/knowledge/architecture/env_format_version_log.org= (a parseable
 table); =compass env version new= appends to it.
+
+CI provisions with the same command, adding the =--no-deps= bootstrap
+flag — =compass.sh --no-deps env init -y= — so the venv is created
+without the =pip install= (=pystache= is only needed by =add=; =env init=
+is stdlib-only). =env init= also skips the =--preset= requirement when
+=$CI= is set.
 
 * Tested by
 

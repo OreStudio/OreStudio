@@ -32,9 +32,9 @@ script is deleted and every caller updated.
 |--------------+------------------------------------------------------|
 | State        | STARTED                                              |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]         |
-| Now          | Porting init-environment.sh into compass env init.   |
+| Now          | Port + cutover done: scripts deleted, all callers on compass env init/diff. |
 | Waiting on   | Nothing.                                             |
-| Next         | Verify .env parity; hard cutover of callers.         |
+| Next         | Ship in the story PR.                                |
 | Last touched | 2026-06-02                                           |
 
 Scope: *implementation + functional cutover only*. All documentation
@@ -81,7 +81,22 @@ command is [[id:AE2BCC66-983C-49E0-BC05-79100D388E8E][its own task]].
 
 * Notes
 
-* Notes
+** CI runs compass directly, with a stdlib-only bootstrap
+
+The cutover replaced =./build/scripts/init-environment.sh -y= with
+=./projects/ores.compass/compass.sh --no-deps env init -y= in all five
+workflows. Two points that came up:
+
+- /No CI-specific plumbing./ All GitHub-hosted runners (ubuntu, macOS,
+  windows) ship =python3=, so compass runs as-is; =env init= skips the
+  =--preset= requirement when =$CI= is set (GitHub sets =CI=true=). No
+  =setup-python= step was added.
+- /=--no-deps= flag added to =compass.sh=./ The wrapper bootstraps a venv
+  and =pip install=s =pystache=, but that is only needed by =add=; the
+  stdlib-only commands (=env=, =where=, =search=, …) never import it.
+  =--no-deps= creates the venv but skips the install, so CI bootstraps
+  with just =python3 -m venv= — offline, no network/pip failure surface.
+  Verified on a fresh venv: no pystache installed, =env init= runs.
 
 * PRs
 

@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: FE9BB4DA-FC98-4C08-B784-104DCF3A6687
+:END:
+#+title: Story: Move trade-instrument parsing out of ores.qt.api
+#+description: Extract the Qt-free trade-instrument parsing logic from ores.qt.api into a non-Qt component so the parse dispatch can be unit-tested by linking a real target, removing the hand-maintained source list in the test that broke when the swap TU was split out.
+#+type: story
+#+level: s2
+#+filetags: :refactor:cmake:trading:qt:testing:sprint_19:v0:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Move the trade-instrument parsing logic out of =ores.qt.api= and into a
+non-Qt component so that it can be unit-tested by linking a real library
+target, instead of the current stop-gap where the test target
+hand-enumerates the parse =.cpp= files and compiles them directly.
+
+The parsing logic is /already/ Qt-free — see Background. It lives in
+=ores.qt.api= only by historical accident. The test
+(=ores.qt.api.tests=) deliberately avoids linking =ores.qt.api.lib=
+(which pulls in Qt and needs a display), so it cherry-picks the parse
+source files into the test executable. That manual source list is
+fragile: when commit =78c68605d= split swap parsing into a dedicated
+TU (=parse_swap_instruments.cpp=), the list went stale and the test
+failed to link with an undefined reference to
+=ores::qt::internal::parse_swap_instrument=. A stop-gap (adding the TU
+to the list) is in place; this story removes the root cause.
+
+* Background
+
+The parsing path turns a JSON envelope from the server into a concrete
+instrument struct and hands it to a populator interface. The relevant
+files in =projects/ores.qt/api/= today:
+
+| File | Role |
+|------+------|
+| =include/ores.qt/IInstrumentFormPopulator.hpp= | Pure virtual interface; =populate(const trading::domain::X&)= overloads |
+| =include/ores.qt/parse_trade_instrument.hpp= | Public entry point declaration |
+| =src/parse_trade_instrument.cpp= | Envelope parse + dispatch by product/trade type |
+| =src/parse_swap_instruments.cpp= | Swap-family rfl instantiations (the split TU) |
+| =src/parse_swap_impl.hpp= | Shared internal declarations for the swap TU |
+
+Dependency audit (confirmed Qt-free): these files include only
+=rfl/json.hpp=, =ores.utility/rfl/reflectors.hpp=,
+=ores.trading.api/domain/*=, and =ores.logging=. No =Q*= types, no Qt
+headers. =IInstrumentFormPopulator= is a plain =struct= of virtual
+=populate()= overloads over =trading::domain= types — the Qt dialogs
+merely /implement/ it.
+
+* Goal layout
+
+Target home: =ores.trading.api= (it already owns the
+=trading::domain::*_instrument= types these functions parse into, and
+=ores.qt.api= already links =ores.trading.api.lib=).
+
+#+begin_example
+projects/ores.trading/api/
+├── include/ores.trading.api/
+│   ├── parse/instrument_form_populator.hpp   (was IInstrumentFormPopulator.hpp)
+│   └── parse/parse_trade_instrument.hpp
+└── src/parse/
+    ├── parse_trade_instrument.cpp
+    ├── parse_swap_instruments.cpp
+    └── parse_swap_impl.hpp
+#+end_example
+
+* Acceptance
+
+- =IInstrumentFormPopulator=, =parse_trade_instrument=, the swap TU, and
+  =parse_swap_impl.hpp= live in =ores.trading.api= (non-Qt), renamespaced
+  from =ores::qt= to =ores::trading= (or a neutral =ores::trading::parse=).
+- =ores.qt.api= consumes them by linking =ores.trading.api.lib=; the Qt
+  dialogs that implement the populator and call the parser are updated
+  for the new header paths / namespace.
+- =ores.qt.api.tests='s dispatch tests move to =ores.trading.api.tests=
+  (or stay, but link =ores.trading.api.lib= as a normal target). The
+  hand-maintained =parse_src= source list is *deleted* — no test
+  enumerates individual parse =.cpp= files.
+- The stop-gap note in =ores.qt/api/tests/CMakeLists.txt= is removed.
+- =cmake --build --preset linux-clang-debug-make= and =ctest= pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     | (Broken into tasks when picked up.) |
+
+* Decisions
+
+- Target component is =ores.trading.api=, not a new component: it already
+  owns the domain instrument types and is already a dependency of the
+  Qt layer, so no new CMake target or dependency edge is created.
+- Namespace: move from =ores::qt= to =ores::trading= (final spelling
+  decided at implementation; =ores::trading::parse= is a candidate to
+  keep the parse surface grouped).
+
+* Out of scope
+
+- Changing the parsing behaviour or the wire format.
+- Touching the Qt dialog UIs beyond the mechanical include/namespace
+  updates needed to keep them compiling.
+- The component regroup itself (separate story,
+  [[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components under product-group parent directories]]); this
+  story assumes the post-regroup layout (=ores.trading/api/=,
+  =ores.qt/api/=).
+
+* See also
+
+- [[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components under product-group parent directories]] — the
+  regroup that surfaced the stop-gap; this story is the follow-up
+  cleanup of the parse-source enumeration.

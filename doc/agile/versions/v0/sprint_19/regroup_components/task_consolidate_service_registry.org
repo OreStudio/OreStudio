@@ -1,0 +1,187 @@
+:PROPERTIES:
+:ID: 9B8BB792-3562-4B52-B367-C94EF46BA100
+:END:
+#+title: Task: Consolidate service registries into a single source of truth
+#+description: Inventory the multiple service enumerations (codegen registry JSON, generated service_vars.sh, init-environment.sh directory glob, prodigy .env-derived list) and consolidate onto one authoritative registry; port init-environment to Python reading that registry instead of globbing the projects/ directory layout.
+#+type: task
+#+level: s1
+#+filetags: :regroup_components:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components under product-group parent directories]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the list of NATS domain services a *single, first-class registry*
+that every consumer reads, eliminating the parallel enumerations that
+drift independently. Today there are two independent sources of the
+service list plus two downstream derivations; one of them
+(=init-environment.sh='s directory glob) silently broke during the
+component regroup because it inferred the service set from directory
+names rather than reading an authored registry.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | DISCOVERED                                                  |
+| Parent story | [[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components under product-group parent directories]] |
+| Now          | Deferred — inventory + plan captured; parent story is DONE. |
+| Waiting on   | Promotion to its own story.                                 |
+| Next         | Decide registry location (D1) and pick up implementation.   |
+| Last touched | 2026-06-02                                                  |
+
+* Acceptance
+
+- Exactly one authored registry file is the source of truth for the
+  domain-service list; every other artefact is generated from it or
+  reads it at runtime.
+- =init-environment= no longer globs =projects/ores.*.service= (or any
+  directory layout) to discover services; it reads the registry.
+- =service_vars.sh= continues to be generated from the registry
+  (unchanged consumer contract for =recreate_database.sh= /
+  =setup_database.sh=).
+- =ores-prodigy.el= and any other consumer derive from the registry
+  (directly, or transitively via =.env= as today) — no hand-kept list.
+- Adding or removing a service is a one-file edit + regen; no script
+  greps the filesystem layout to find services.
+- =cmake --build= + =ctest= and a local =init-environment= +
+  =recreate_database= round-trip pass.
+
+* Plan
+
+** Decision D1 — registry location
+
+User direction so far: promote the registry to =projects/services.json=
+as a product-level, first-class file. Today the authoritative registry
+already exists but lives under codegen models at
+=projects/ores.codegen/models/services/ores_services_service_registry.json=.
+Options:
+
+1. *Move* it to =projects/services.json= and update the codegen manifest
+   / =service-registry= profile input path. Most aligned with "first
+   class," but codegen no longer "owns" it.
+2. *Keep* it under codegen models (it is already the authored source that
+   generates =service_vars.sh=) and simply have =init-environment= read
+   it too. Smallest change; treats the service list as codegen model data.
+
+Resolve D1 before implementing. (User picked =projects/services.json= in
+discussion; confirm against option 2's lower churn.)
+
+** Decision D2 — init-environment language
+
+User direction: port =init-environment.sh= (~600 lines, bash) to Python
+so it can parse the JSON registry natively (no =jq= dependency). This is
+a faithful, security-sensitive rewrite — env/role/password generation,
+idempotent reuse of existing =.env= values, =.env= format must stay
+byte-compatible with the C++ =make_mapper= parsers and the other shell
+scripts that read it. Verify by diffing generated =.env= against the
+shell version's output for an unchanged checkout.
+
+** Steps
+
+1. Settle D1; if moving, relocate the registry and repoint the codegen
+   =service-registry= profile + manifest.
+2. Port =init-environment.sh= → =init-environment.py= (D2), reading the
+   registry for the service list instead of the glob. Keep a thin
+   =init-environment.sh= shim that execs the Python, or update all
+   callers (CI workflow =.github/workflows/canary-linux.yml=,
+   =continuous-*.yml=, docs, recipes).
+3. Confirm =service_vars.sh= regen is unchanged and still consumed by
+   =recreate_database.sh= / =setup_database.sh=.
+4. Point =ores-prodigy.el= at the registry (optional — it currently
+   derives from =.env=, which is downstream of init-environment, so it is
+   already consistent once step 2 lands).
+5. Round-trip test: =init-environment= → =recreate_database= →
+   build + =ctest=.
+
+* Notes
+
+** Inventory of service enumerations (findings, 2026-06-02)
+
+Discovered while fixing the regroup: the service list is enumerated in
+multiple places.
+
+| # | Artefact | Kind | Service set source | Consumers |
+|---+----------+------+--------------------+-----------|
+| 1 | =projects/ores.codegen/models/services/ores_services_service_registry.json= | *Authored registry* (codegen model) | hand-authored; rich fields per service | codegen =service-registry= profile |
+| 2 | =projects/ores.sql/service_vars.sh= | *Generated* (=shell_service_vars.mustache=) | generated from #1 | =recreate_database.sh=, =setup_database.sh= (=SERVICE_NAMES=) |
+| 3 | =build/scripts/init-environment.sh= | *Independent glob* of =projects/ores.*.service= | directory layout | writes =ORES_*_SERVICE_DB_*= into =.env= |
+| 4 | =projects/ores.lisp/src/ores-prodigy.el= (=ores/nats-domain-services=) | *Derived* | parses =ORES_*_SERVICE_DB_USER= from =.env= (downstream of #3) | prodigy launcher |
+| — | =build/config/nats.conf.template= | not a registry | — | (no per-service enumeration) |
+
+Registry #1 fields per service: =name=, =psql_var=, =env_key=,
+=iam_role=, =description=, =email=, =dml_prefixes=, =select_tables=,
+=select_prefixes=.
+
+** The drift / breakage
+
+- #1 and #3 are *independent* sources. They happened to agree, but #3
+  derives the set from directory names, so the component regroup
+  (=ores.<x>.service/= → =ores.<x>/service/=) made #3's glob match
+  nothing → no service passwords in =.env= → =recreate_database.sh=
+  failed with "Missing required password environment variables" in CI
+  (=linux-gcc-debug-ninja=, "Setup Database" step). This is the bug that
+  triggered this task.
+- #4 is *downstream* of #3 (reads =.env=), so it broke transitively too.
+
+** Verification done
+
+All three concrete enumerations are currently *identical* — 17 services:
+=analytics assets compute controller dq iam marketdata ore refdata
+reporting scheduler synthetic telemetry trading variability workflow
+workspace= (=wt= is intentionally excluded — it uses =rw_role= /
+=ORES_WT_DB_*= naming, not the service-role naming). The codegen registry
+(#1), the generated =service_vars.sh= (#2), and the post-regroup service
+directories all match exactly. So consolidating onto #1 is behaviour-
+preserving — no service is added or dropped.
+
+** Immediate stop-gap (separate from this task)
+
+To unblock the regroup PR's CI without the full consolidation, the
+quickest correct fix is to make =init-environment.sh= read the existing
+registry (#1) instead of globbing — identical service set, no Python
+rewrite, no file move. That stop-gap is the minimal step toward this
+task's end state and is tracked on the regroup PR.
+
+** Broader direction: fold these scripts into compass
+
+Rather than porting =init-environment.sh= to a new standalone Python
+script, we should probably absorb this functionality into =compass=.
+The project already has a proliferation of standalone scripts that each
+reimplement environment/registry plumbing — =init-environment.sh=,
+=recreate_database.sh=, =setup_database.sh=, =generate_nats_certs.sh=,
+=init-nats.sh=, and the codegen wrappers. =compass= is already the
+Python CLI we steer the project with (orient, search, scaffold), and it
+already reads the org/JSON information architecture; a service registry
+and environment bootstrap are a natural fit as =compass= subcommands
+(e.g. =compass env init=, =compass db recreate=).
+
+Benefits: one Python codebase instead of N shell scripts, native JSON
+parsing (no =jq=/=python3 -c= shims), shared registry-reading logic, and
+discoverable subcommands. The D2 decision (Python port of
+=init-environment=) should be reconsidered in this light — the target
+may be a =compass= subcommand rather than a new =init-environment.py=.
+This is a larger architectural direction worth its own story; capture it
+when this task is picked up.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -21,7 +21,7 @@ set(lib_target_name ${name}.lib)
 add_library(${lib_target_name} INTERFACE)
 
 target_include_directories(${lib_target_name} INTERFACE
-    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 target_link_libraries(${lib_target_name}
     INTERFACE

@@ -1,0 +1,78 @@
+# -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
+#
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+set(name "ores.trading.core")
+set(lib_binary_name ${name})
+set(lib_target_name ${name}.lib)
+
+set(files "")
+file(GLOB_RECURSE files RELATIVE
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
+set(lib_files ${files})
+# On Windows the DLL export table is capped at 65535 symbols. This library
+# instantiates enough rfl/Boost templates to exceed that limit, and it is
+# only consumed by executables, so no DLL boundary needs to be crossed.
+# Build it as a static library on Windows to avoid the limit.
+if(WIN32)
+    add_library(${lib_target_name} STATIC ${lib_files})
+else()
+    add_library(${lib_target_name} ${lib_files})
+endif()
+target_compile_definitions(${lib_target_name} PRIVATE ORES_TRADING_CORE_LIBRARY)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
+set_target_properties(${lib_target_name} PROPERTIES
+    OUTPUT_NAME ${lib_binary_name})
+if(NOT WIN32)
+    set_target_properties(${lib_target_name}
+        PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+endif()
+
+target_include_directories(${lib_target_name} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.trading.api.lib
+        ores.nats.lib
+    PRIVATE
+        ores.service.lib
+        ores.storage.lib
+        ores.database.lib
+        ores.dq.api.lib
+        ores.utility.lib
+        ores.security.lib
+        sqlgen::sqlgen
+        faker-cxx::faker-cxx
+        libfort::fort
+        Boost::boost)
+# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
+
+# On Windows ores.trading.core is a static archive (see above) whose Debug
+# build exceeds 2 GB — the WiX v3 single-file cabinet offset limit. The
+# archive is only consumed by our own executables at link time, so nothing
+# downstream needs to find it in the installer. Skip install on Windows.
+if(NOT WIN32)
+    install(TARGETS ${lib_target_name}
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+endif()

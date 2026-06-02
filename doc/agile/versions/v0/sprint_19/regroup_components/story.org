@@ -31,22 +31,30 @@ Today the layout is flat:
 ,└── ores.refdata/modeling/      ← orphaned; added by the org-mode pilot
 #+end_example
 
-The target layout groups by product:
+The target layout groups by product (decisions D1–D3 resolved the
+open choices — short child names, Qt under =ores.qt/=, no group-root
+CMakeLists):
 
 #+begin_example
 ,projects/
-,└── ores.refdata/
-,    ├── api/  (or ores.refdata.api/, TBD by Task 1)
-,    ├── core/
-,    ├── service/
-,    ├── qt/   (or ores.qt.refdata/, TBD by Task 1)
-,    ├── modeling/
-,    └── CMakeLists.txt   ← group root
+,├── ores.refdata/          ← domain group
+,│   ├── api/
+,│   ├── core/
+,│   ├── service/
+,│   └── modeling/          ← group models (separate story)
+,└── ores.qt/               ← Application-layer group
+,    ├── application/       ← the MDI host app
+,    ├── api/
+,    ├── refdata/           ← refdata Qt plugin
+,    ├── party/
+,    └── …                  ← every other Qt plugin
 #+end_example
 
 This makes the codegen "models belong to the group" property literally
-true on disk, makes IDE navigation match the conceptual layout, and
-lets the group root CMakeLists factor common settings.
+true on disk and makes IDE navigation match the conceptual layout. The
+Qt plugins group under =ores.qt/= because they are the Application
+layer projecting the Domain layer — a separate architectural band from
+the domain group they present (see D2).
 
 ** Why now
 
@@ -71,37 +79,60 @@ populated group folder.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
-| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Task 1 (investigate layout) drafted; investigation pending. |
-| Waiting on    | Nothing.                               |
-| Next          | Run Task 1, then draft per-group migration tasks against the decision. |
-| Last touched  | 2026-06-01                             |
+| State         | DONE                                            |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                              |
+| Now           | Nothing.                                        |
+| Waiting on    | Nothing.                                        |
+| Next          | Nothing.                                        |
+| Last touched  | 2026-06-02                                      |
+
+Regroup complete: all groups moved to =ores.<group>/<short>/=, Qt under
+=ores.qt/=, host as =ores.qt/application/=, move-invariant include paths;
+build configures, compiles, and services start and run clean. Shipped in
+PR #997 along with two pre-existing-breakage fixes surfaced by the clean
+build (the swap-parse TU and the init-environment service glob). The
+service-registry consolidation discovered here is deferred follow-up,
+captured in its own task (not a blocker for this story).
 
 * Acceptance
 
-- Every product group has a single parent directory at
-  =projects/ores.<group>/= containing all its sub-components and its
-  =modeling/= directory.
+- Every domain product group has a single parent directory at
+  =projects/ores.<group>/= containing its =api= / =core= / =service=
+  sub-components under short names.
+- All Qt UI components live under =projects/ores.qt/= (the host as
+  =application/=, each plugin as a short-named sibling); no Qt plugin
+  remains beside its domain group (D2/D3).
 - The flat =projects/ores.<group>.<role>/= and =projects/ores.qt.<group>/=
   directories no longer exist.
 - =cmake --build --preset linux-clang-debug-make= passes; the build
   output is functionally identical to pre-regroup.
 - =ctest= passes.
-- Codegen output paths (the =output:= patterns in the profile manifest
-  and any template-side path construction) point at the new layout.
-- CI workflows, presets, and any path-bearing scripts updated.
-- Tooling that walks =projects/*/= (compass listings, fleet, doc index)
-  continues to work — either by treating group dirs transparently or
-  by being taught the new layout.
+- Codegen output paths: surveyed — no per-component path references in
+  the profile manifest or templates, so nothing to change (Q4).
+- CI workflows and presets: surveyed — none carried per-component paths.
+  One path-bearing script was missed in the initial survey:
+  =build/scripts/init-environment.sh= globs =projects/ores.*.service= to
+  discover NATS services, which the regroup broke (CI "Setup Database"
+  failure). Fixed by reading the existing service registry instead;
+  full consolidation tracked by [[id:9B8BB792-3562-4B52-B367-C94EF46BA100][Consolidate service registries]].
+- Include paths made move-invariant (D4) rather than re-pointed to the
+  new absolute layout, so future moves do not re-break them.
+
+Note: the group =modeling/= directory is owned by the
+[[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]], not this one. Orphan =modeling/= dirs left
+by the pilot are left in place for that story to populate.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D3D8DE56-3C8A-4B15-BE6A-B819BF97C050][Investigate target layout for component regrouping]] | BACKLOG | | | Decide naming, qt/, root CMakeLists ownership, scope of file path changes. Output: written decision + the per-group migration tasks. |
+| [[id:D3D8DE56-3C8A-4B15-BE6A-B819BF97C050][Investigate target layout for component regrouping]] | DONE | 2026-06-01 | 2026-06-02 | Decided naming (short), qt under ores.qt/, host as application/, relative includes. Subsumed implementation — regroup done in one pass. |
+| [[id:9B8BB792-3562-4B52-B367-C94EF46BA100][Consolidate service registries into a single source of truth]] | DISCOVERED | | | Deferred follow-up (not part of this story's completion). Inventory + plan captured; to be promoted to its own story. Surfaced by the regroup breaking the directory glob; unblocked here by a stop-gap. |
 
-(Per-group migration tasks added after Task 1.)
+No per-group migration tasks were scaffolded: the regroup is a
+mechanical, atomic change and was carried out in a single pass under
+the investigation task. Splitting per group would have created merge
+churn for no benefit.
 
 * Notes
 
@@ -126,7 +157,70 @@ core-specific) still lives in the child component.
 
 * Decisions
 
-(Populated as Task 1 lands.)
+** D1. Child directory naming: short names
+
+Child component directories use *short names* — =api=, =core=,
+=service=, =client=, =server=, =wrapper=, =database= — under the group
+parent. Example: =projects/ores.refdata/api/=, not
+=projects/ores.refdata/ores.refdata.api/=. The group folder already
+disambiguates; the doubled prefix was judged excessive. CMake *target*
+names keep the fully-qualified form (=ores.refdata.api.lib=) for the
+compiler and linker; only the on-disk folder is shortened. C++ include
+prefixes are unaffected — they are set by the =include/ores.refdata.api/=
+tree inside each component, which moved intact.
+
+** D2. The Qt UI components live under =ores.qt/=, not the domain group
+
+All Qt UI components are grouped under =projects/ores.qt/= rather than
+beside the domain group they present. Rationale: the Qt plugins are the
+*Application layer* projecting the *Domain layer* — they are not a facet
+/of/ the domain, they are a separate layer /over/ it. The C++ namespace
+(=ores::qt::refdata=), the inter-plugin CMake dependencies (e.g. the
+scheduler plugin includes the compute plugin), and the precedent of
+=ores.wt.service= (a standalone UI, not buried in a domain group) all
+agree. Plugins keep their namespace-suffix short names:
+=ores.qt/refdata/=, =ores.qt/admin/=, =ores.qt/mktdata/=, =ores.qt/party/=,
+etc.
+
+** D3. The Qt host app is =ores.qt/application/=
+
+=ores.qt/= is a *pure group folder* — no component lives at its root.
+The MDI host application (formerly the =ores.qt= component at
+=projects/ores.qt/=) moves to =projects/ores.qt/application/= as a
+sibling of all the plugins. This avoids mixing levels (a component at
+the group root alongside child components) and keeps every child of
+=ores.qt/= a uniform component folder.
+
+** D4. Include paths: relative and move-invariant
+
+Self-include references in component =src/CMakeLists.txt= changed from
+the fragile absolute form
+=${CMAKE_SOURCE_DIR}/projects/<fq-name>/include= to the move-invariant
+=${CMAKE_CURRENT_SOURCE_DIR}/../include=. The =set(ORES_QT_*_DIR ...)=
+self directory variables likewise became =${CMAKE_CURRENT_SOURCE_DIR}/..=.
+Cross-component include references were repointed to the new group
+locations. This removes the class of breakage that the move itself
+exposed: a future relocation of any component no longer requires editing
+its own include paths.
+
+** D5. Group root CMakeLists (Q3)
+
+Not introduced. =projects/CMakeLists.txt= continues to =add_subdirectory=
+each leaf component directly (now at =ores.<group>/<role>=). A group-root
+CMakeLists that factors common settings was judged a separate concern;
+the build works without it and the regroup stays minimal.
+
+** Survey outcomes (Q4, Q5)
+
+- Codegen output paths: no =projects/ores.<group>.<role>= references
+  found in the =ores.codegen= manifests or templates — nothing to change.
+- CI / presets: =.github/workflows/= and =CMakePresets.json= carry no
+  per-component paths — nothing to change.
+- =projects/CMakeLists.txt= was the only file holding the component
+  =add_subdirectory= list; all 90+ leaf components updated there.
+- Component =src/CMakeLists.txt= include paths: ~90 references updated
+  (self → relative, cross → new location).
+- C++ =#include= directives: unaffected (include/ trees moved intact).
 
 * Out of scope
 

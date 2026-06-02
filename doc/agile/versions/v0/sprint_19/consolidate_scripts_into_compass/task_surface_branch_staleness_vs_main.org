@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/surface-branch-staleness-orient
+#+pr: 1021
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
@@ -35,12 +35,12 @@ fresh as the last =git fetch= — is made visible rather than hidden.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-02                               |
+| State        | STARTED                                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]         |
+| Now          | Implement =branch_staleness()= helper + chip renderer. |
+| Waiting on   | Nothing.                                             |
+| Next         | Wire chip into =where=, =status=, =fleet=.           |
+| Last touched | 2026-06-02                                           |
 
 * Acceptance
 
@@ -113,14 +113,17 @@ and in a detached HEAD it degrades without error.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                                                      |
+|------+------------------------------------------------------------|
+| 1021 | Surface branch staleness in compass Orient (where/fleet)   |
 
 * Review
 
+** Round 1 (gemini-code-assist bot)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| C1 | Combine two =rev-list= calls into one =--left-right --count= | =compass.py:644= | Accepted | Fewer subprocesses per worktree, especially for fleet |
+| C1 | Resolve =.git= dir directly instead of =git rev-parse --git-dir= | =compass.py:644= | Accepted | Eliminates one subprocess; direct file read is simpler |
 
 * Result

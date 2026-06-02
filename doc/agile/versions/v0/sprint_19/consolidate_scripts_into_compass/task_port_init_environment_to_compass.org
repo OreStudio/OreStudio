@@ -8,7 +8,7 @@
 #+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
 #+branch: feature/port-init-environment-to-compass
-#+pr:
+#+pr: 1019
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
@@ -102,9 +102,9 @@ workflows. Two points that came up:
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                                          |
+|------+------------------------------------------------|
+| 1019 | Port init-environment to compass env init      |
 
 * Review
 

@@ -1,0 +1,14 @@
+:PROPERTIES:
+:ID: 0D027A51-B5EA-4FC3-B901-FF7845193C67
+:END:
+#+title: ores.workflow.service
+#+description: Codegen component model for ores.workflow.service.
+#+type: ores.codegen.component
+#+filetags: :codegen:component:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: workflow.service
+#+full_name: ores.workflow.service
+#+brief: Workflow orchestration microservice
+
+Standalone NATS microservice hosting workflow saga handlers: party provisioning, compensation logic, and other long-running distributed operations.

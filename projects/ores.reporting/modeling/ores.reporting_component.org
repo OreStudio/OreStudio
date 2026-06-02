@@ -1,0 +1,14 @@
+:PROPERTIES:
+:ID: 22CECB4E-FEC0-480E-A55F-100FB13D6688
+:END:
+#+title: ores.reporting
+#+description: Codegen component model for ores.reporting.
+#+type: ores.codegen.component
+#+filetags: :codegen:component:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: reporting
+#+full_name: ores.reporting
+#+brief: Reporting domain component
+
+Provides domain types, repositories, services and protocol support for report management including report definitions, risk report configurations and report instances.

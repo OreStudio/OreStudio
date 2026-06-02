@@ -1,0 +1,14 @@
+:PROPERTIES:
+:ID: 92030C9D-3706-4715-ABDD-02D484F4356A
+:END:
+#+title: ores.storage
+#+description: Codegen component model for ores.storage.
+#+type: ores.codegen.component
+#+filetags: :codegen:component:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: storage
+#+full_name: ores.storage
+#+brief: Generic object storage API for ORE Studio.
+
+Provides bucket name constants and HTTP path helpers for the generic S3-like object storage API (PUT/GET/DELETE/HEAD /api/v1/storage/{bucket}/{key}). The storage layer replaces compute-specific HTTP endpoints with a reusable abstraction that can back ORE imports, compute artifacts, and any future binary payload transfer. The filesystem-backed HTTP implementation lives in ores.http.core.

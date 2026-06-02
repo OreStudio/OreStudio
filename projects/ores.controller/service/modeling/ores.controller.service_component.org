@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 1496C20C-FBE4-49F4-99C7-29B64A136876
+:END:
+#+title: ores.controller.service
+#+description: Codegen component model for ores.controller.service.
+#+type: ores.codegen.component
+#+filetags: :codegen:component:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: controller.service
+#+full_name: ores.controller.service
+#+brief: ORE Studio service controller binary.
+
+Executable entry point for the service lifecycle controller. Parses
+command-line arguments, connects to NATS and PostgreSQL, initialises
+ores.controller.core, and runs the supervisor loop that manages all
+registered ORE Studio backend services.

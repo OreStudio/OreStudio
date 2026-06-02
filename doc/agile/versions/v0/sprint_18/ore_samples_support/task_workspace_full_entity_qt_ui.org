@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: FF7AAAB1-9C6D-4304-A74C-62FA45188D45
+:ID: 21E7855C-832B-4672-B94A-C41B7563B369
 :END:
 #+title: Task: Workspace full entity: Qt UI
 #+description: Wire the generated workspace detail dialog and history view into the Qt client.

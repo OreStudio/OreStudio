@@ -250,7 +250,7 @@ def is_domain_entity_model(model_filename):
         bool: True if this is a domain entity model
     """
     basename = os.path.basename(model_filename)
-    _other_org_kinds = ("_field_group.org",)
+    _other_org_kinds = ("_field_group.org", "_junction.org")
     if model_filename.endswith("_domain_entity.json"):
         return True
     if model_filename.endswith("_entity.org"):
@@ -272,7 +272,10 @@ def is_junction_model(model_filename):
     Returns:
         bool: True if this is a junction table model
     """
-    return model_filename.endswith("_junction.json")
+    return (
+        model_filename.endswith("_junction.json")
+        or model_filename.endswith("_junction.org")
+    )
 
 
 def is_enum_model(model_filename):
@@ -856,9 +859,12 @@ def load_model(model_path):
         from codegen.org_loader import (
             load_org_model,
             load_org_field_group_model,
+            load_org_junction_model,
         )
         if path_str.endswith('_field_group.org'):
             return load_org_field_group_model(model_path)
+        if path_str.endswith('_junction.org'):
+            return load_org_junction_model(model_path)
         return load_org_model(model_path)
     with open(model_path, 'r', encoding='utf-8') as f:
         return json.load(f)

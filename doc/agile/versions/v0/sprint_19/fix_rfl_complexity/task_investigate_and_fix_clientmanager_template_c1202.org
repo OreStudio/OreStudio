@@ -148,8 +148,9 @@ in future, the same pattern applies.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                         | File                                       | Decision | Notes          |
+|---+-------------------------------------------------------------------------+--------------------------------------------+----------+----------------|
+| 1 | Leave #+blocked_on: empty rather than using placeholder 'none'          | task_investigate_and_fix_*.org             | Accept   | Fixed 326a5206d |
+| 2 | Use type-safe &ClientManager::sessionExpired overload of invokeMethod   | ClientManagerExportPortfolio.cpp           | Accept   | Fixed 326a5206d |
 
 * Result

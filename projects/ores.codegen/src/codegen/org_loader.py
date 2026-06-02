@@ -984,7 +984,7 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
             entry: dict[str, Any] = {"name": node.title}
             for k, v in node.properties.items():
                 key = k.lower()
-                if key == "default":
+                if key in ("default", "default_value"):
                     entry[key] = v  # raw string; Mustache 0-falsy guard
                 else:
                     entry[key] = _parse_typed(v)

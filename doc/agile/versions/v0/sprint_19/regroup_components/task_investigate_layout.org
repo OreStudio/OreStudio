@@ -153,7 +153,7 @@ follow-on tasks). One PR.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/997][#997]] | [build] Regroup C++ components under product-group parent directories |
 
 * Review
 

@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/migrate-component-models-org
+#+pr: 1012
 #+blocked_on:
+#+state: DONE
 #+blocked_since:
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-06-02
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,12 +33,29 @@ migration target is *one* org file per component, not two.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                   |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Design brainstorm captured below; needs sign-off before implementation. |
-| Waiting on   | Decision on the design questions in =* Design — brainstorm=. |
-| Next         | Settle the shape; implement. |
-| Last touched | 2026-06-01                             |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Second-pass merge into overviews tracked separately ([[id:B08203B7-967F-4284-BC75-1412F69DC289][Merge component models into component_overview.org]]). |
+| Last touched | 2026-06-02                             |
+
+* Decision
+
+Landed *option B* (standalone =ores.<full_name>_component.org=
+per component) rather than the originally-recommended option A
+(merge into =component_overview.org=). The hybrid path: ship the
+mechanical JSON-to-org migration now for uniformity with the
+other =_<kind>.org= migrations (table, junction, lookup_entity,
+field_group), defer the merge-into-overview refactor to a
+follow-on task ([[id:B08203B7-967F-4284-BC75-1412F69DC289][Merge component models into component_overview.org]]).
+
+Rationale: suffix-routing is now consistent across every
+migrated kind, so codegen discovery and the JSON-delete step
+follow the established pattern with zero special-casing. The
+overview-merge is a separate concern (avoid identity duplication,
+let the literate doc own the metadata) and can land independently
+once the migration plumbing is in place.
 
 * Design — brainstorm
 
@@ -191,21 +209,26 @@ So the work here is broader than "translate 32 JSON files":
 
 * Acceptance
 
-(Filled in once the brainstorm decisions land. The shape below is
-the option-A target.)
-
-- Each =projects/ores.<package>/modeling/component_overview.org= has
-  a property drawer carrying =name=, =full_name=, =brief= (or
-  =#+brief:=) so codegen can read the identity without a sibling
-  JSON.
-- =org_loader= gains a component reader; =manifest.py= and
-  =generate.py= discover component models under each component's
-  =modeling/= dir via the same dispatch path the entity migration
-  established.
-- All 32 =ores_*_component.json= files removed. =projects/ores.codegen/models/=
-  shrinks by 32.
-- Regenerating any consumer that pulls component identity produces
-  output unchanged from the JSON-driven path.
+- =migrate_component_to_org.py= one-shot converter committed.
+- 31 =ores.<full_name>_component.org= files placed under each
+  component's post-regroup =modeling/= directory (=projects/ores.X/modeling/=
+  or =projects/ores.X/Y/modeling/=); 31 JSON files removed.
+- =load_org_component_model= returns the JSON-equivalent
+  =/component= dict (verified end-to-end:
+  =json.load(... .json) == load_org_component_model(... .org)=
+  for all 31).
+- =is_component_model= accepts =_component.org= alongside
+  =_component.json=; =is_domain_entity_model= excludes the same
+  suffix; =_CODEGEN_ORG_TYPES= accepts =ores.codegen.component=.
+- Both =generator.load_model= and =codegen.generate._generate_single=
+  dispatch on =_component.org= to the new loader.
+- =codegen.sh generate --model X_component.org --profile component=
+  produces output byte-identical to the JSON path for all 31
+  components (7 files per component: =CMakeLists.txt= at root /
+  src / tests / modeling, =export.hpp=, component header,
+  stub_tests.cpp; the other three template outputs in the profile
+  don't have a HEAD baseline for every component but match where
+  they do).
 
 * Plan
 
@@ -220,12 +243,19 @@ not here.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1012][#1012]] | [codegen,components] Migrate 31 component models from JSON to org-mode |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Task missing =* PRs= / =* Review= sections (false-positive). | task_migrate_component_models_to_org.org:218 | Declined | PR #992 (brainstorm) round 1. Both sections already present at lines 219 / 225. |
+
+** Round 2 — 2026-06-02 (gemini, PR #1012)
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =comp.get("description", "")= unsafe if JSON has =null= | =projects/ores.codegen/src/codegen/migrate_component_to_org.py= | Accepted | Fixed in =148e291d5=. Switched to a truthiness check on the raw value; =.rstrip()= only runs when description is a non-empty string. Defensive — all 31 components have non-null descriptions today. |
+| 2 | Wrap conversion loop in try/except to avoid tracebacks | =projects/ores.codegen/src/codegen/migrate_component_to_org.py= | Declined | One-shot script; JSON inputs already deleted in this PR. Suggested early-return semantics would silently produce partial migrations — worse than the traceback for diagnostics. |
 
 * Result

@@ -1,0 +1,14 @@
+:PROPERTIES:
+:ID: E1B534FC-CC5A-4682-88A9-F9417E457F22
+:END:
+#+title: ores.telemetry.service
+#+description: Codegen component model for ores.telemetry.service.
+#+type: ores.codegen.component
+#+filetags: :codegen:component:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: telemetry.service
+#+full_name: ores.telemetry.service
+#+brief: Telemetry and metrics streaming service
+
+Standalone NATS microservice hosting telemetry handlers: system metrics collection, distributed tracing, and log record streaming to clients.

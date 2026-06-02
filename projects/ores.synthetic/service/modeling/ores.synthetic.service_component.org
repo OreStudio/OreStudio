@@ -1,0 +1,14 @@
+:PROPERTIES:
+:ID: F1F5DE7D-4191-4046-B6B4-CD513E0CB086
+:END:
+#+title: ores.synthetic.service
+#+description: Codegen component model for ores.synthetic.service.
+#+type: ores.codegen.component
+#+filetags: :codegen:component:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: synthetic.service
+#+full_name: ores.synthetic.service
+#+brief: Synthetic data generation service
+
+Standalone NATS microservice hosting synthetic data handlers: generation of realistic test data for development and QA purposes.

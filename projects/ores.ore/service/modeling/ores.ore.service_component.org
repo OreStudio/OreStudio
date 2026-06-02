@@ -1,0 +1,14 @@
+:PROPERTIES:
+:ID: C179C2FE-E266-43E9-9688-76D41F6313EE
+:END:
+#+title: ores.ore.service
+#+description: Codegen component model for ores.ore.service.
+#+type: ores.codegen.component
+#+filetags: :codegen:component:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: ore.service
+#+full_name: ores.ore.service
+#+brief: ORE import microservice
+
+Standalone NATS microservice that receives ORE import workflow requests, downloads and unpacks ORE directory tarballs from storage, plans the import using ore_import_planner, and orchestrates saga steps against refdata, trading, and marketdata services with full compensation support.

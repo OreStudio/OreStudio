@@ -1,0 +1,14 @@
+:PROPERTIES:
+:ID: BEFACB5D-784A-484E-8F8C-C120F0403069
+:END:
+#+title: ores.trading.service
+#+description: Codegen component model for ores.trading.service.
+#+type: ores.codegen.component
+#+filetags: :codegen:component:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: trading.service
+#+full_name: ores.trading.service
+#+brief: Trade booking and lifecycle service
+
+Standalone NATS microservice hosting trading handlers: trade booking, FSM-enforced status transitions, activity type taxonomy, and temporal versioning.

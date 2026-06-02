@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: DC4574E8-D399-4DC4-AF95-1CE2DD3FA197
+:END:
+#+title: ores.controller.core
+#+description: Codegen component model for ores.controller.core.
+#+type: ores.codegen.component
+#+filetags: :codegen:component:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: controller.core
+#+full_name: ores.controller.core
+#+brief: Core lifecycle management logic for the ORE Studio service controller.
+
+Contains the process supervisor, replica manager, restart policy engine,
+and NATS message handlers for the service controller. Reads service
+definitions from the database, spawns and monitors OS processes, writes
+service instance state and lifecycle events, and handles NATS commands
+for starting, stopping, and restarting individual service replicas.

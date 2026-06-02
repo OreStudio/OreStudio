@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 277352B0-70F5-4883-8920-F68205FE7CD6
+:END:
+#+title: ores.analytics.api
+#+description: Codegen component model for ores.analytics.api.
+#+type: ores.codegen.component
+#+filetags: :codegen:component:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: analytics.api
+#+full_name: ores.analytics.api
+#+brief: Public API types for ORE Studio analytics.
+
+Domain types, generators, messaging protocols and eventing for the
+analytics component. Defines pricing engine types, pricing model
+configurations, products and parameters as C++ domain types exchanged
+between the analytics service and other components.

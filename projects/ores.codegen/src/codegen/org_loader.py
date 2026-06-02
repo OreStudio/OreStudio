@@ -1093,3 +1093,25 @@ def load_org_service_registry_model(path: Path | str) -> dict[str, Any]:
         services.append(ordered)
 
     return {"service_registry": {"services": services}}
+
+
+def load_org_component_model(path: Path | str) -> dict[str, Any]:
+    """Load an org-mode component model into the
+    ``{component: {name, full_name, brief, description}}`` dict
+    consumed by the ``component`` profile (CMake scaffold + C++ stubs).
+
+    The three short scalars sit in frontmatter; the free-form
+    description is the document body."""
+    text = Path(path).read_text(encoding="utf-8")
+    doc = parse_org(text)
+    fm = doc.frontmatter
+
+    c: dict[str, Any] = {}
+    for k in ("name", "full_name", "brief"):
+        if k in fm:
+            c[k] = fm[k]
+    body = _strip_body(doc.root)
+    if body:
+        c["description"] = body
+
+    return {"component": c}

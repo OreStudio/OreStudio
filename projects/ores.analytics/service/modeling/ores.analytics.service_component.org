@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: 604ACD20-FEE2-4D57-BCFD-C339D15C43A7
+:END:
+#+title: ores.analytics.service
+#+description: Codegen component model for ores.analytics.service.
+#+type: ores.codegen.component
+#+filetags: :codegen:component:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: analytics.service
+#+full_name: ores.analytics.service
+#+brief: ORE Studio analytics service binary.
+
+Executable entry point for the analytics service. Parses command-line
+arguments, connects to NATS and PostgreSQL, initialises ores.analytics.core,
+and handles pricing model configuration requests from other services.

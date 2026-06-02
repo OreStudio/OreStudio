@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: 6CE3CA45-A6D2-4A29-815A-06393DD45F68
+:END:
+#+title: ores.dq.api
+#+description: Codegen component model for ores.dq.api.
+#+type: ores.codegen.component
+#+filetags: :codegen:component:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: dq.api
+#+full_name: ores.dq.api
+#+brief: Public API types for the data quality component.
+
+Defines the NATS messaging protocol and public domain types for the data
+quality component: request/response structs for change reasons, change
+reason categories, origin/nature/treatment dimensions, catalogs, datasets,
+methodologies, coding schemes, data domains, and subject areas.
+Has minimal dependencies and is safe to link from any other component.

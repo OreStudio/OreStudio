@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: B845780E-5DD2-41A6-A415-4E42284A0BC6
+:END:
+#+title: ores.controller.api
+#+description: Codegen component model for ores.controller.api.
+#+type: ores.codegen.component
+#+filetags: :codegen:component:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: controller.api
+#+full_name: ores.controller.api
+#+brief: NATS protocol types for the ORE Studio service controller.
+
+Defines the messaging protocol for the service lifecycle controller:
+requests, responses, and domain types exchanged over NATS between the
+controller service and other components (Qt client, HTTP gateway, etc.).
+Includes service definition, instance state, and event protocol types.

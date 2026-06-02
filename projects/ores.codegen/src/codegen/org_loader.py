@@ -1018,3 +1018,60 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
         e["artefact_indexes"] = artefact_indexes
 
     return {"entity": e}
+
+
+_SERVICE_REGISTRY_SCALARS = (
+    "psql_var", "env_key", "iam_role", "description", "role", "email",
+)
+
+
+def _service_registry_prefix_bullets(node: OrgNode, section_title: str) -> list[dict[str, str]]:
+    """Read bullets under a ``** <section_title>`` sub-heading and
+    rewrap each as ``{"prefix": <bullet>}`` to match the JSON shape."""
+    sub = _section(node, section_title)
+    if not sub:
+        return []
+    out: list[dict[str, str]] = []
+    for group in sub.bullet_lists:
+        for line in group:
+            out.append({"prefix": line.strip()})
+    return out
+
+
+def load_org_service_registry_model(path: Path | str) -> dict[str, Any]:
+    """Load the org-mode service-registry model into the
+    ``{service_registry: {services: [...]}}`` dict consumed by the
+    ``service-registry`` profile (shell vars, IAM users, grants).
+
+    Each top-level ``* <service name>`` heading becomes one
+    ``services[]`` entry. The property drawer carries the scalars
+    (``:psql_var:``, ``:env_key:``, ``:iam_role:``, ``:description:``,
+    optional ``:role:``, ``:email:``); ``** DML prefixes`` /
+    ``** Select tables`` / ``** Select prefixes`` sub-headings carry
+    the per-service lists as org bullets."""
+    text = Path(path).read_text(encoding="utf-8")
+    doc = parse_org(text)
+
+    services: list[dict[str, Any]] = []
+    for node in doc.root.children:
+        svc: dict[str, Any] = {"name": node.title}
+        for k in _SERVICE_REGISTRY_SCALARS:
+            if k in node.properties:
+                svc[k] = node.properties[k]
+        # Match the JSON's stable key order (name → scalars in
+        # _SERVICE_REGISTRY_SCALARS order → lists). The drawer parse
+        # above already follows that order; the JSON emits keys in
+        # the order: name, psql_var, env_key, iam_role, description,
+        # email, role (where present), dml_prefixes, select_tables,
+        # select_prefixes — re-order to match exactly.
+        ordered: dict[str, Any] = {"name": svc["name"]}
+        for k in ("psql_var", "env_key", "iam_role", "description",
+                  "role", "email"):
+            if k in svc:
+                ordered[k] = svc[k]
+        ordered["dml_prefixes"] = _service_registry_prefix_bullets(node, "DML prefixes")
+        ordered["select_tables"] = _service_registry_prefix_bullets(node, "Select tables")
+        ordered["select_prefixes"] = _service_registry_prefix_bullets(node, "Select prefixes")
+        services.append(ordered)
+
+    return {"service_registry": {"services": services}}

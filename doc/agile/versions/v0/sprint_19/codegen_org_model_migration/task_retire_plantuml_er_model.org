@@ -65,6 +65,7 @@ build-output path, gitignore it, delete the check-in.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =Now: Retired.= violates the "=Nothing.= reserved for DONE" convention. | task_retire_plantuml_er_model.org:38 | Accepted | PR #996 round 1. Fixed in =888b7bbcd=. |
+| 2 | Task missing =* PRs= / =* Review= sections (false-positive). | task_retire_plantuml_er_model.org:56 | Declined | PR #996 round 1. Both sections already present at lines 58 / 64 with the standard column shape. |
 
 * Result

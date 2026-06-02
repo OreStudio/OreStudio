@@ -35,7 +35,7 @@ build-output path, gitignore it, delete the check-in.
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Retired.                               |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | n/a                                    |
 | Last touched | 2026-06-02                             |

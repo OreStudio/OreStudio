@@ -56,7 +56,7 @@ ClientManager::exportPortfolio(trading::messaging::export_portfolio_request requ
     } catch (const ores::nats::service::nats_connect_error&) {
         throw;
     } catch (const ores::nats::service::session_expired_error& e) {
-        QMetaObject::invokeMethod(this, "sessionExpired", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, &ClientManager::sessionExpired, Qt::QueuedConnection);
         return std::unexpected(std::string(e.what()));
     } catch (const std::exception& e) {
         return std::unexpected(std::string(e.what()));

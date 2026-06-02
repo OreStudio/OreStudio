@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: BBB49AAA-E476-435B-88CF-CC252B76655C
+:END:
+#+title: ores.dq.badge_mapping
+#+description: Codegen junction model for badge_mappings.
+#+type: ores.codegen.junction
+#+component: dq
+#+filetags: :model:junction:dq:
+#+name: badge_mappings
+#+name_singular: badge_mapping
+#+name_title: Badge Mapping
+#+name_singular_words: badge mapping
+#+brief: Links a (code domain, entity code) pair to a badge definition.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+Universal mapping table that associates any (code_domain, entity_code)
+pair with a badge definition. This is the single join point between
+domain values and their visual presentation.
+
+Examples:
+- ('party_status', 'ACTIVE')  -> 'active'
+- ('party_status', 'FROZEN')  -> 'frozen'
+- ('fsm_state',    'DRAFT')   -> 'fsm_draft'
+- ('login_status', 'Online')  -> 'login_online'
+- ('dq_nature',    'Actual')  -> 'dq_actual'
+
+Populated via seed scripts; no management UI needed.
+
+* Left
+:PROPERTIES:
+:column:        code_domain_code
+:column_short:  code_domain
+:column_title:  Code Domain
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for looking up all mappings in a code domain
+:END:
+
+Code of the domain this mapping belongs to.
+
+References code_domain.code (soft FK). Examples: 'party_status', 'fsm_state'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_status"
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        entity_code
+:column_short:  entity
+:column_title:  Entity Code
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding the badge for a specific entity code
+:END:
+
+The domain value being mapped to a badge.
+
+Examples: 'ACTIVE', 'DRAFT', 'Online', 'Actual'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()).substr(0, 1)
+#+end_src
+
+* Columns
+
+** badge_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The badge definition to use for this mapping.
+
+References badge_definition.code (soft FK). Examples: 'active', 'fsm_draft'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_badge_mappings_tbl
+:END:
+
+* Repository
+:PROPERTIES:
+:name_singular_short: mapping
+:name_short:          mappings
+:name_singular_words: badge mapping
+:name_words:          badge mappings
+:order_column:        code_domain_code
+:END:
+
+* C++
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: bm
+:END:
+
+** Table display
+
+| column           | header      |
+|------------------+-------------|
+| code_domain_code | Code Domain |
+| entity_code      | Entity Code |
+| badge_code       | Badge       |
+| modified_by      | Modified By |
+| version          | Version     |

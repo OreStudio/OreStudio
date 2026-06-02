@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 73870A5E-9A27-4DAB-8E2A-E58E097C1218
+:END:
+#+title: ores.dq.dataset_bundle_member
+#+description: Codegen junction model for dataset_bundle_members.
+#+type: ores.codegen.junction
+#+component: dq
+#+filetags: :model:junction:dq:
+#+name: dataset_bundle_members
+#+name_singular: dataset_bundle_member
+#+name_title: Dataset Bundle Member
+#+name_singular_words: membership
+#+brief: Links a dataset to a bundle.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+Junction table linking bundles to their constituent datasets. Uses codes
+for loose coupling - allows declaring membership for datasets that may not
+yet exist in the system.
+
+Examples:
+- Bundle "slovaris" contains "slovaris.countries", "slovaris.currencies", etc.
+- Bundle "base" contains "iso.countries", "iso.currencies", all FpML datasets
+
+* Left
+:PROPERTIES:
+:column:        bundle_code
+:column_short:  bundle
+:column_title:  Bundle
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for looking up datasets in a bundle
+:END:
+
+Code of the bundle this membership belongs to.
+
+References dataset_bundle.code (soft FK).
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_bundle"
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        dataset_code
+:column_short:  dataset
+:column_title:  Dataset
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding bundles containing a dataset
+:END:
+
+Code of the dataset that is a member of the bundle.
+
+References dataset.code (soft FK).
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "." + std::string(faker::word::noun())
+#+end_src
+
+* Columns
+
+** display_order
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 0
+:END:
+
+Order in which this dataset should be displayed or processed.
+
+Lower numbers appear first. Used for controlling installation order
+and UI presentation.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+** optional
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether this dataset is optional in the bundle.
+
+Optional datasets are skipped if not available during bundle installation.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_dataset_bundle_members_tbl
+:END:
+
+* Repository
+:PROPERTIES:
+:name_singular_short: member
+:name_short:          members
+:name_singular_words: dataset bundle member
+:name_words:          dataset bundle members
+:order_column:        display_order
+:END:
+
+* C++
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: m
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| bundle_code   | Bundle      |
+| dataset_code  | Dataset     |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |

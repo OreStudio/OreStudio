@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: D96E6889-A53B-41AF-A7F5-A3497A188BA0
+:END:
+#+title: ores.iam.account_party
+#+description: Codegen junction model for account_parties.
+#+type: ores.codegen.junction
+#+component: iam
+#+filetags: :model:junction:iam:
+#+name: account_parties
+#+name_singular: account_party
+#+name_title: Account Party
+#+name_singular_words: account party association
+#+brief: Links an IAM account to a party.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+Junction table linking IAM accounts to parties. Each account can be
+associated with one or more parties, controlling which parties a user
+can act on behalf of.
+
+* Left
+:PROPERTIES:
+:column:        account_id
+:column_short:  account
+:column_title:  Account
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for looking up parties for an account
+:END:
+
+ID of the IAM account.
+
+References ores_iam_accounts_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        party_id
+:column_short:  party
+:column_title:  Party
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for finding accounts associated with a party
+:END:
+
+ID of the party this account is associated with.
+
+References ores_refdata_parties_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Columns
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_iam_account_parties_tbl
+:END:
+
+* Repository
+:PROPERTIES:
+:name_singular_short: account_party
+:name_short:          account_parties
+:name_singular_words: account party
+:name_words:          account parties
+:order_column:        party_id
+:END:
+
+* C++
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ap
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| account_id  | Account     |
+| party_id    | Party       |
+| modified_by | Modified By |
+| version     | Version     |

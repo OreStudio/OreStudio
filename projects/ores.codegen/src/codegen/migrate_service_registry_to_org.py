@@ -19,7 +19,7 @@ Usage::
 
     python3 projects/ores.codegen/src/codegen/migrate_service_registry_to_org.py \\
         --input projects/ores.codegen/models/services/ores_services_service_registry.json \\
-        --output projects/ores.services/modeling/ores.services.service_registry.org
+        --output projects/modeling/ores.services.service_registry.org
 """
 import argparse
 import json

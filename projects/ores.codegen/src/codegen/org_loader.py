@@ -654,3 +654,59 @@ def load_org_model(path: Path | str) -> dict[str, Any]:
             f"Validation errors in {path}:\n  " + "\n  ".join(errors)
         )
     return model
+
+
+def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
+    """Load an org-mode field-group model into the JSON-equivalent dict.
+
+    Produces a ``{"field_group": {...}}`` dict matching the shape
+    consumed by ``cpp_field_group.hpp.mustache``: frontmatter
+    scalars (component, component_include, entity_singular, brief,
+    description, ...), a ``cpp`` sub-dict with ``namespace`` +
+    ``includes`` (parsed from the named ``includes`` babel block under
+    ``* Includes``), and a ``fields`` list (parsed from ``** <name>``
+    sub-headings under ``* Fields``)."""
+    text = Path(path).read_text(encoding="utf-8")
+    doc = parse_org(text)
+    fm = doc.frontmatter
+
+    fg: dict[str, Any] = {}
+    for key in ("product", "component", "component_include",
+                "entity_singular", "brief"):
+        if key in fm:
+            fg[key] = fm[key]
+
+    body = _strip_body(doc.root)
+    if body:
+        fg["description"] = body
+
+    cpp: dict[str, Any] = {}
+    if "namespace" in fm:
+        cpp["namespace"] = fm["namespace"]
+    inc = _section(doc.root, "Includes")
+    if inc:
+        cpp["includes"] = _includes_from_named_block(inc)
+    if cpp:
+        fg["cpp"] = cpp
+
+    fields_section = _section(doc.root, "Fields")
+    fields: list[dict[str, Any]] = []
+    if fields_section:
+        for node in fields_section.children:
+            entry: dict[str, Any] = {"name": node.title}
+            for k, v in node.properties.items():
+                key = k.lower()
+                # Mustache treats numeric 0 as falsy, so {{#default_value}}
+                # would skip a "0" initializer. Keep default_value as the
+                # raw string (the template emits it verbatim via {{{...}}}).
+                if key == "default_value":
+                    entry[key] = v
+                else:
+                    entry[key] = _parse_typed(v)
+            description = _strip_body(node)
+            if description:
+                entry["description"] = description
+            fields.append(entry)
+    fg["fields"] = fields
+
+    return {"field_group": fg}

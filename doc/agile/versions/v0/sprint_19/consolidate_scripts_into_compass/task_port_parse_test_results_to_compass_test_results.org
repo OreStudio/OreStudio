@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :compass:test:results:scripts:recipe:consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/compass-test-results
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -32,11 +32,11 @@ on hard cutover.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
-| Now          | Not yet started.                       |
+| Now          | Implementing compass test results in compass.py. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Delete scripts; add recipe; PR.        |
 | Last touched | 2026-06-02                               |
 
 * Acceptance

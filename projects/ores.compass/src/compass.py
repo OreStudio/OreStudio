@@ -2110,6 +2110,268 @@ def cmd_env(argv):
     ap.parse_args(argv or ["--help"])
     return 0
 
+
+# --- Test pillar ---
+
+def _tr_read_preset() -> str:
+    """Read ORES_PRESET from .env; return empty string if not found."""
+    env_file = PROJECT_ROOT / ".env"
+    if not env_file.is_file():
+        return ""
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        if not line or line.lstrip().startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        if key.strip() == "ORES_PRESET":
+            return val.strip()
+    return ""
+
+
+def _tr_parse_xml(xml_file):
+    import xml.etree.ElementTree as ET
+    try:
+        tree = ET.parse(xml_file)
+        return tree.getroot(), None
+    except ET.ParseError as e:
+        return None, f"XML parse error: {e}"
+    except Exception as e:
+        return None, f"Unexpected error: {e}"
+
+
+def _tr_suite_stats(root, xml_file):
+    stats = {"name": root.get("name", "Unknown"),
+             "catch2_version": root.get("catch2-version", ""),
+             "rng_seed": root.get("rng-seed", ""),
+             "total": 0, "passed": 0, "failed": 0, "skipped": 0,
+             "duration": 0.0}
+    try:
+        import os
+        stats["mtime"] = datetime.datetime.fromtimestamp(
+            os.path.getmtime(xml_file)).strftime("%Y-%m-%d %H:%M:%S")
+    except OSError:
+        stats["mtime"] = "unknown"
+    for tc in root.findall(".//TestCase"):
+        r = tc.find("./OverallResult")
+        if r is None:
+            continue
+        stats["total"] += 1
+        if r.get("success") == "true":
+            stats["passed"] += 1
+        else:
+            stats["failed"] += 1
+        skips = r.get("skips", "0")
+        try:
+            stats["skipped"] += int(skips)
+        except ValueError:
+            pass
+        dur = r.get("durationInSeconds")
+        if dur:
+            try:
+                stats["duration"] += float(dur)
+            except ValueError:
+                pass
+    return stats
+
+
+def _tr_failed_tests(root):
+    failures = []
+    for tc in root.findall(".//TestCase"):
+        r = tc.find("./OverallResult")
+        if r is not None and r.get("success") == "false":
+            exc = tc.find("./Exception")
+            exc_text = ""
+            if exc is not None:
+                parts = []
+                if exc.get("filename") and exc.get("line"):
+                    parts.append(f"[{exc.get('filename')}:{exc.get('line')}]")
+                if exc.text:
+                    parts.append(exc.text.strip())
+                exc_text = " ".join(parts)
+            failures.append({
+                "name": tc.get("name", ""),
+                "tags": tc.get("tags", ""),
+                "filename": tc.get("filename", ""),
+                "line": tc.get("line", ""),
+                "duration": r.get("durationInSeconds"),
+                "exception": exc_text,
+            })
+    return failures
+
+
+def _tr_grep_log(log_path, patterns=("ERROR", "WARN")):
+    import os as _os
+    if not _os.path.exists(log_path):
+        return []
+    matches = []
+    try:
+        with open(log_path, encoding="utf-8", errors="ignore") as f:
+            for n, line in enumerate(f, 1):
+                if any(p in line for p in patterns):
+                    matches.append(f"Line {n}: {line.rstrip()}")
+    except OSError:
+        pass
+    return matches
+
+
+def _tr_find_suite_log(log_dir, project_name):
+    import os as _os
+    candidate = _os.path.join(log_dir, f"{project_name}.tests",
+                              f"{project_name}.tests.log")
+    if _os.path.exists(candidate):
+        return candidate
+    for root_d, _dirs, files in _os.walk(log_dir):
+        for f in files:
+            if f.endswith(".log") and project_name in f:
+                return _os.path.join(root_d, f)
+    return None
+
+
+def cmd_test(argv):
+    """compass test — test pillar: inspect build test results."""
+    ap = argparse.ArgumentParser(
+        prog="compass test",
+        description="Test pillar: parse and display Catch2 test results.")
+    sub = ap.add_subparsers(dest="subcmd", required=True)
+
+    rp = sub.add_parser("results",
+                        help="Parse test-results*.xml and show an overview of the last test run")
+    rp.add_argument("--preset", default="",
+                    help="CMake preset name (default: read ORES_PRESET from .env)")
+
+    args = ap.parse_args(argv)
+
+    if args.subcmd == "results":
+        return _cmd_test_results(args)
+
+
+def _cmd_test_results(args):
+    import glob as _glob
+    import re as _re
+    import os as _os
+
+    preset = args.preset or _tr_read_preset()
+    if not preset:
+        print("❌ No preset supplied and ORES_PRESET not set in .env.\n"
+              "   Pass --preset <name> or run compass env init.", file=sys.stderr)
+        return 1
+
+    bin_dir = PROJECT_ROOT / "build" / "output" / preset / "publish" / "bin"
+    if not bin_dir.exists():
+        print(f"❌ Build output not found: {bin_dir}", file=sys.stderr)
+        print(f"   Have you built and run tests?\n"
+              f"   cmake --build --preset {preset} --target rat", file=sys.stderr)
+        return 1
+
+    xml_files = sorted(_glob.glob(str(bin_dir / "test-results*.xml")))
+    if not xml_files:
+        print(f"❌ No test-results*.xml files found in {bin_dir}", file=sys.stderr)
+        print(f"   Have you run tests?\n"
+              f"   cmake --build --preset {preset} --target rat", file=sys.stderr)
+        return 1
+
+    # Locate log directory (try several candidates)
+    log_dir = None
+    for candidate in [
+        PROJECT_ROOT / "build" / "output" / preset / "log",
+        PROJECT_ROOT / "build" / "output" / "log",
+    ]:
+        if candidate.exists():
+            log_dir = str(candidate)
+            break
+
+    print(f"🧭 ores.compass — test results: preset={preset}\n")
+    print(f"Found {len(xml_files)} test-results file(s)  |  "
+          f"Logs: {log_dir or 'none (run with -DORES_TEST_LOG_LEVEL=debug to enable)'}\n")
+
+    if log_dir is None:
+        print("⚠️  No log directory found. To enable logging, reconfigure CMake:")
+        print(f"   cmake --preset {preset} -DORES_TEST_LOG_LEVEL=debug\n")
+
+    total_stats = {"total": 0, "passed": 0, "failed": 0,
+                   "skipped": 0, "duration": 0.0}
+    total_failures = 0
+
+    for xml_file in xml_files:
+        fname = _os.path.basename(xml_file)
+        print(f"{'='*72}")
+        print(f"  {fname}")
+        print(f"{'='*72}")
+
+        # Derive project name from filename: test-results-ores.foo.tests.xml → ores.foo
+        m = _re.match(r"test-results-(.+)\.tests\.xml$", fname)
+        project_name = m.group(1) if m else fname
+
+        root, err = _tr_parse_xml(xml_file)
+        suite_log = _tr_find_suite_log(log_dir, project_name) if log_dir else None
+
+        if root is None:
+            print(f"  ❌ Could not parse XML: {err}")
+            if suite_log:
+                print(f"  Suite log: {suite_log}")
+                with open(suite_log, encoding="utf-8", errors="ignore") as f:
+                    for line in f:
+                        print(f"    {line}", end="")
+            print()
+            continue
+
+        stats = _tr_suite_stats(root, xml_file)
+        print(f"  Suite:    {stats['name']}")
+        print(f"  Run at:   {stats['mtime']}")
+        print(f"  Catch2:   {stats['catch2_version'] or 'n/a'}  "
+              f"  seed={stats['rng_seed'] or 'n/a'}")
+        print(f"  Results:  {stats['total']} total  "
+              f"✓{stats['passed']} passed  "
+              f"✗{stats['failed']} failed  "
+              f"~{stats['skipped']} skipped  "
+              f"({stats['duration']:.2f}s)")
+
+        for k in ("total", "passed", "failed", "skipped"):
+            total_stats[k] += stats[k]
+        total_stats["duration"] += stats["duration"]
+
+        if suite_log:
+            matches = _tr_grep_log(suite_log)
+            if matches:
+                print(f"\n  ⚠️  Errors/warnings in suite log ({len(matches)} lines):")
+                for line in matches[:10]:
+                    print(f"    {line}")
+                if len(matches) > 10:
+                    print(f"    … and {len(matches) - 10} more")
+
+        failures = _tr_failed_tests(root)
+        if not failures:
+            print("  ✓ No failures.")
+        else:
+            print(f"\n  {len(failures)} failure(s):")
+            for i, f in enumerate(failures, 1):
+                total_failures += 1
+                print(f"\n  FAIL #{total_failures}: {f['name']}")
+                if f["tags"]:
+                    print(f"    Tags:     {f['tags']}")
+                if f["filename"]:
+                    print(f"    Location: {f['filename']}:{f['line']}")
+                if f["duration"]:
+                    print(f"    Duration: {f['duration']}s")
+                if f["exception"]:
+                    print(f"    Exception: {f['exception'][:300]}")
+        print()
+
+    print(f"{'='*72}")
+    print(f"SUMMARY  preset={preset}")
+    print(f"{'='*72}")
+    print(f"  Suites:   {len(xml_files)}")
+    print(f"  Total:    {total_stats['total']}  "
+          f"✓{total_stats['passed']} passed  "
+          f"✗{total_stats['failed']} failed  "
+          f"~{total_stats['skipped']} skipped")
+    if total_stats["total"] > 0:
+        pct = total_stats["passed"] / total_stats["total"] * 100
+        print(f"  Pass rate: {pct:.1f}%")
+    print(f"  Duration:  {total_stats['duration']:.2f}s")
+    print(f"  Failures:  {total_failures}")
+    return 0 if total_stats["failed"] == 0 else 1
+
+
 def main():
     # `list` and `show` pass every remaining argument straight through to the
     # bundled doc tools (full flag compatibility, including their own --help).
@@ -2133,6 +2395,8 @@ def main():
         sys.exit(cmd_journal(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "env":
         sys.exit(cmd_env(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "test":
+        sys.exit(cmd_test(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
         sys.exit(cmd_backlog(sys.argv[1], sys.argv[2:]))
 
@@ -2144,6 +2408,7 @@ def main():
         "  Capture:   capture, inbox, next, deferred, discarded, backlog\n"
         "  Journal:   journal\n"
         "  Provision: env\n"
+        "  Test:      test\n"
         "\n"
         "Entity commands (sub-subcommands span pillars):\n"
         "  sprint:   status (orient)\n"
@@ -2200,6 +2465,8 @@ def main():
                           help="Read/write the per-worktree session journal; 'journal --help' for subcommands")
     subparsers.add_parser("env",
                           help="Provision: 'env init' generates .env + certs + IAM key; 'env diff'; 'env --help'")
+    subparsers.add_parser("test",
+                          help="Test: 'test results' parses Catch2 XML and shows an overview; 'test --help'")
     subparsers.add_parser("inbox",     help="List captures in the product backlog inbox/")
     subparsers.add_parser("next",      help="List captures in the product backlog next/")
     subparsers.add_parser("deferred",  help="List captures in the product backlog deferred/")

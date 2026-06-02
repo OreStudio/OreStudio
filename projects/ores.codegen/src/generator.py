@@ -319,6 +319,7 @@ def is_component_model(model_filename):
     return (
         model_filename.endswith("_component.json")
         or model_filename.endswith("_component.org")
+        or model_filename.endswith("component_overview.org")
     )
 
 
@@ -888,6 +889,7 @@ def load_model(model_path):
             load_org_lookup_entity_model,
             load_org_service_registry_model,
             load_org_component_model,
+            load_org_component_overview_model,
         )
         if path_str.endswith('_field_group.org'):
             return load_org_field_group_model(model_path)
@@ -899,6 +901,8 @@ def load_model(model_path):
             return load_org_lookup_entity_model(model_path)
         if path_str.endswith('service_registry.org'):
             return load_org_service_registry_model(model_path)
+        if path_str.endswith('component_overview.org'):
+            return load_org_component_overview_model(model_path)
         if path_str.endswith('_component.org'):
             return load_org_component_model(model_path)
         return load_org_model(model_path)

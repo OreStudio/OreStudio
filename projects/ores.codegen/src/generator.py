@@ -1297,7 +1297,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             processed_item.setdefault('rounding_type', defaults['rounding_type'])
             processed_item.setdefault('rounding_precision', defaults['rounding_precision'])
             processed_item.setdefault('format', defaults['format'])
-            processed_item.setdefault('currency_type', defaults['currency_type'])
+            processed_item.setdefault('asset_class', defaults['asset_class'])
             
             # Add country specific defaults
             country_code = item.get('country_code', 'XX')

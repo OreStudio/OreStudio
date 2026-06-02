@@ -44,6 +44,31 @@ into a template, and every subsequent entity is generated. See
 |--------------+------------------------------------------------------------+-----------------|
 | [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] | SQL, C++, and org document generation from entity models   | Python, Mustache |
 
+** ores.seeder
+
+[[id:5104ADAF-390D-4ADB-B005-CE726B553123][ores.seeder]] is the database-level synthetic test-data generator: it
+emits SQL =INSERT= populate scripts at codegen time that load
+hand-curated test rows ("crafted" datasets) into the schema for
+local development and CI. =ores.seeder= is distinct from
+[[id:702753E8-0E07-4690-AFAB-D75514ADE660][ores.synthetic.service]] (and its sibling =api= / =core=), which
+generates synthetic data /inside/ the running C++ process at runtime; the seeder operates at build time
+and ships SQL files, not in-memory data.
+
+The first inhabitant is the slovaris "imaginary world" — fake
+countries (Aerilon and others) with fake currencies (Ducat, ...) —
+which exercises the refdata schema end-to-end without depending
+on real ISO data.
+
+A roadmap item, not built yet: a synthesised flavour that reads
+a codegen entity model + its column =generator_expr= hints
+(=faker::internet::url()= etc., already preserved by the codegen
+migrations) and emits a Python+Faker script that produces SQL
+inserts on demand.
+
+| Component   | Role                                                              | Language        |
+|-------------+-------------------------------------------------------------------+-----------------|
+| [[id:5104ADAF-390D-4ADB-B005-CE726B553123][ores.seeder]] | Database test-data generation: SQL inserts from crafted JSON      | Python, Mustache |
+
 ** ores.lisp
 
 [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] is the Emacs Lisp developer tooling layer: dashboard, database

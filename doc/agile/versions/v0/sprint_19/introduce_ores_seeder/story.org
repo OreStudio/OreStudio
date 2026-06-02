@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: 5104ADAF-390D-4ADB-B005-CE726B553123
+:END:
+#+title: Story: Introduce ores.seeder component for database test-data generation
+#+description: New tooling component that owns crafted synthetic test-data generation (database-level: emits SQL INSERT populate scripts). Distinct from ores.synthetic (C++ runtime). Slovaris becomes its first dataset; documented future ambition is synthesised data from codegen entity models + Faker.
+#+type: story
+#+level: s2
+#+filetags: :tooling:seeder:testdata:refdata:sprint_19:v0:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Introduce a new tooling component =ores.seeder= that owns
+*database-level synthetic test-data generation* — distinct from
+=ores.synthetic= which generates synthetic data inside the C++
+process at runtime. The seeder emits SQL =INSERT= populate
+scripts at codegen time; its first user is the existing slovaris
+"imaginary world" reference-data set.
+
+The story supersedes the [[id:3B4C2C1F-2174-4A41-A838-991C6D5631B8][slovaris-to-org migration task]] under
+the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][codegen org-mode migration story]]. The brainstorm concluded
+that bulk data (100 country/currency rows etc.) does not benefit
+from literate org-mode the way source-code descriptors do; the
+right move is to keep the JSON representation but extract the
+machinery into a dedicated component with proper documentation,
+compass plumbing, and a roadmap toward synthesised data.
+
+** Why now
+
+- Slovaris is the last unresolved item in the codegen migration
+  story; resolving it via this story closes that story out.
+- Promoting test-data generation to a first-class component
+  surfaces a sibling concern that was hiding inside
+  =ores.codegen='s =models/= dir.
+- The codegen entity migrations (refdata, junctions, etc.) have
+  been preserving =generator_expr= column hints. Those hints are
+  the seed of the documented-but-not-built future: a synthesised
+  flavour that reads an entity model + the Faker hints and emits
+  a Python-Faker script that produces SQL inserts. No use case
+  yet — the future is a roadmap, not scope.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                                |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Scaffolding the component + relocating slovaris. |
+| Waiting on    | Nothing.                               |
+| Next          | Land the scaffold PR; follow-on tasks for compass plumbing + dataset_overview support. |
+| Last touched  | 2026-06-02                             |
+
+* Acceptance
+
+- New component =projects/ores.seeder/= exists with the
+  standard ORE Studio component shape: =modeling/component_overview.org=,
+  =seeder.sh= CLI, =src/seeder.py= (thin shim importing
+  =codegen.generator=), =datasets/= dir.
+- Slovaris is the first inhabitant of =datasets/=. Six JSONs
+  (=manifest=, =model=, =catalogs=, =country_currency=,
+  =datasets=, =tags=) plus =methodology.txt= move from
+  =projects/ores.codegen/models/slovaris/= to
+  =projects/ores.seeder/datasets/slovaris/=. =models/slovaris/=
+  becomes empty and is removed.
+- Each dataset has its own =model.json= (batch driver) — slovaris
+  keeps its existing shape; new datasets follow the same
+  convention.
+- The =generate_solvaris_refdata.sh= script (or its successor)
+  reads the new path and produces the same SQL artefacts
+  byte-identically.
+- New compass subtype =dataset_overview= scaffolds
+  =projects/ores.seeder/datasets/<name>/dataset_overview.org=
+  with frontmatter (=name=, =version=, =dataset_type=,
+  =source_methodology=) + sections (=Summary=, =Contents=,
+  =Why this dataset=, =See also=). New mustache template
+  =doc_dataset.org.mustache= under
+  =projects/ores.codegen/library/templates/=.
+- =ores.seeder= is added to [[id:A3F8B2C1-9D4E-4F7A-B6C5-2E8D1A0F3B9C][System Model: Tooling Layer]].
+- Templates (=sql_catalog_populate.mustache=,
+  =sql_country_populate.mustache=, etc.) stay in
+  =ores.codegen/library/templates/=. =ores.seeder= is *thin* —
+  it delegates rendering to =ores.codegen.generator=.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:04CE6125-EB48-4E9A-A986-8D2A73EEB547][Scaffold ores.seeder component + relocate slovaris dataset]] | STARTED | 2026-06-02 | | Component scaffold + slovaris move + tooling-page wire-in + sprint table wire-in. |
+
+* Decisions
+
+** Database-level test data is a distinct concern
+
+=ores.synthetic= owns C++/in-process synthetic data; =ores.seeder=
+owns file-output (SQL inserts) database-level data. The split
+keeps the two concerns evolving independently — runtime synthetic
+data ships in the binary; seeder output ships as `.sql` populate
+scripts loaded at DB setup.
+
+** Crafted now, synthesised later
+
+The MVP supports only crafted JSON-driven datasets (the existing
+slovaris pattern). The future synthesised flavour — read a codegen
+entity model, use the column =generator_expr= hints, emit a
+Python+Faker script that produces SQL inserts — is documented in
+the component overview as a roadmap. Not built; no use case yet.
+
+The codegen entity migrations have already been preserving the
+=generator_expr= column on junctions, lookup entities, etc. Those
+hints are the substrate the synthesised flavour will consume.
+
+** Thin component delegating to ores.codegen
+
+=ores.seeder= owns the CLI, the dataset descriptors, and the
+per-dataset model.json. It does *not* own the renderer, the
+mustache templates, or =load_data=. Those stay in =ores.codegen=
+and =ores.seeder='s =seeder.py= is a thin shim that imports
+them. Reasoning: avoid duplicating the renderer; let
+=ores.codegen= keep evolving in one place.
+
+** No literate org for the data files
+
+The brainstorm explicitly considered migrating slovaris JSONs to
+org (the original task scope) and rejected it: bulk data does not
+benefit from literate org the way source-code descriptors do
+(generator expressions, FK relationships, domain rationale).
+A 100-row org table is just an uglier JSON list. The dataset-level
+documentation lives in =dataset_overview.org=; the rows
+themselves stay JSON.
+
+** Per-dataset model.json keeps the existing shape
+
+Each dataset has its own =model.json= declaring its
+(template, output, source) tuples. Slovaris keeps its existing
+file unchanged. Top-level registry would weaken per-dataset
+self-containment; deriving from =dataset_overview.org= would
+require the org route we declined for the data files.
+
+* Out of scope
+
+- Synthesised data flavour (Python+Faker scripts derived from
+  entity models). Roadmap only.
+- Self-contained =ores.seeder= templates. Templates stay in
+  =ores.codegen= for now; relocate if/when seeder evolves a
+  distinct templating model.
+- Test data for entities other than the existing slovaris
+  taxonomy. Future datasets follow the same convention but
+  aren't in this story's scope.

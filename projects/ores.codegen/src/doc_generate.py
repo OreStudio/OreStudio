@@ -47,6 +47,7 @@ TYPE_TO_TEMPLATE = {
     "investigation": "doc_investigation.org.mustache",
     "runbook": "doc_runbook.org.mustache",
     "entity_org": "doc_entity_org.org.mustache",
+    "dataset_overview": "doc_dataset.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {
@@ -65,6 +66,7 @@ DEFAULT_INITIAL_STATE = {
     "investigation": "",
     "runbook": "",
     "entity_org": "",
+    "dataset_overview": "",
 }
 
 # Composition: each type's direct parent type.
@@ -80,7 +82,7 @@ PARENT_OF_TYPE = {
 PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "skill", "product_identity",
     "capture", "memory", "release_notes", "investigation", "runbook",
-    "entity_org",
+    "entity_org", "dataset_overview",
 }
 
 
@@ -248,6 +250,20 @@ def parse_args(argv=None):
                              "(refdata, trading, ...). Drives the output path "
                              "(projects/ores.<component>/modeling/) and the "
                              "ores.<component>.<slug> title.")
+    parser.add_argument("--dataset", default="",
+                        help="For --type dataset_overview: dataset name "
+                             "(e.g. slovaris). Drives the output path "
+                             "(projects/ores.seeder/datasets/<name>/) and "
+                             "the #+dataset_name: keyword.")
+    parser.add_argument("--dataset-version", default="1.0",
+                        help="For --type dataset_overview: version string. "
+                             "Default: 1.0.")
+    parser.add_argument("--dataset-type", default="crafted",
+                        help="For --type dataset_overview: crafted or synthesised. "
+                             "Default: crafted.")
+    parser.add_argument("--source-methodology", default="",
+                        help="For --type dataset_overview: brief description of "
+                             "where the data came from.")
     parser.add_argument("--brief", default="",
                         help="For --type component: one-line tagline that "
                              "codegen reads from the overview's #+brief: "
@@ -262,11 +278,10 @@ def parse_args(argv=None):
 def main(argv=None):
     args = parse_args(argv)
 
-    # Type and slug and parent-dir are required for anything to happen.
+    # Type is required before any type-specific defaulting.
     args.type = fill_required("type", args.type,
                               prompt_label="Type",
                               choices=list(TYPE_TO_TEMPLATE))
-    args.slug = fill_required("slug", args.slug, prompt_label="Slug (snake_case)")
 
     # entity_org derives its parent dir from the component if not given.
     if args.type == "entity_org":
@@ -275,6 +290,21 @@ def main(argv=None):
             prompt_label="Component (refdata, trading, ...)")
         if not args.parent_dir:
             args.parent_dir = f"projects/ores.{args.component}/modeling"
+
+    # dataset_overview derives parent dir and slug defaults from the dataset name.
+    if args.type == "dataset_overview":
+        args.dataset = fill_required(
+            "dataset", args.dataset,
+            prompt_label="Dataset name (e.g. slovaris)")
+        if not args.parent_dir:
+            args.parent_dir = f"projects/ores.seeder/datasets/{args.dataset}"
+        if not args.slug:
+            args.slug = "dataset_overview"
+        if not args.title:
+            args.title = args.dataset
+
+    # slug fill runs after type-specific defaults so dataset_overview can set it.
+    args.slug = fill_required("slug", args.slug, prompt_label="Slug (snake_case)")
 
     args.parent_dir = fill_required("parent-dir", args.parent_dir,
                                     prompt_label="Parent directory")
@@ -372,6 +402,18 @@ def main(argv=None):
         component_name = ""
         component_brief = ""
 
+    # dataset_overview carries dataset-specific metadata keywords.
+    if args.type == "dataset_overview":
+        dataset_name = args.dataset
+        dataset_version = args.dataset_version
+        dataset_type = args.dataset_type
+        source_methodology = args.source_methodology
+    else:
+        dataset_name = ""
+        dataset_version = ""
+        dataset_type = ""
+        source_methodology = ""
+
     variables = {
         "id": new_id,
         "slug": args.slug,
@@ -390,6 +432,10 @@ def main(argv=None):
         "component": args.component,
         "component_name": component_name,
         "brief": component_brief,
+        "dataset_name": dataset_name,
+        "dataset_version": dataset_version,
+        "dataset_type": dataset_type,
+        "source_methodology": source_methodology,
     }
 
     template_path = TEMPLATE_DIR / TYPE_TO_TEMPLATE[args.type]
@@ -417,6 +463,9 @@ def main(argv=None):
     elif args.type == "entity_org":
         out_dir = parent_dir
         out_file = out_dir / f"ores.{args.component}.{args.slug}.org"
+    elif args.type == "dataset_overview":
+        out_dir = parent_dir
+        out_file = out_dir / "dataset_overview.org"
     elif args.type in ("component", "recipe", "knowledge", "product_identity",
                        "capture", "memory", "investigation"):
         # Captures live at agile/product_backlog/<bucket>/<slug>.org. The

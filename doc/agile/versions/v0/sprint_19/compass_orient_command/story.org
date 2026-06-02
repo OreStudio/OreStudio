@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 2E5F5DB5-7417-45B8-8D0B-C71650127D32
+:END:
+#+title: Story: Add compass bearings command for LLM on-boarding
+#+description: New compass subcommand (compass bearings, alias orient) that emits a concise orientation briefing for LLMs and new users: current sprint/task state, key recipes (where, journal, memory), and a cheat-sheet of the most useful compass commands.
+#+type: story
+#+level: s2
+#+filetags: :compass:tooling:llm:sprint_19:v0:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Add a =compass orient= (or =compass start-here=) subcommand that emits
+a concise, machine-readable orientation briefing the moment an LLM
+opens a session — without requiring the LLM to read the full documentation
+graph first.
+
+The command covers four things:
+
+1. *Where we are* — current version, sprint, in-flight stories and tasks
+   (equivalent to =compass where=, already exists; =orient= can call it).
+2. *Session history* — most recent journal entry so the LLM knows what
+   the last session was doing (equivalent to =compass journal where=).
+3. *Memory pointer* — the path to the project memory catalogue
+   (=doc/llm/memory/memory.org=) and a one-line summary of the
+   fastest way to query it.
+4. *Command cheat-sheet* — a short, printed table of the most useful
+   orientation and navigation commands (=where=, =journal log=,
+   =sprint status=, =find=, =list=, =show=) with a one-line description
+   each; enough for a new user or LLM to navigate without reading a
+   recipe.
+
+The primary consumer is an LLM at session start; the secondary consumer
+is a human developer new to the repository.
+
+** Why now
+
+Running =compass where= + =compass journal log= in every new session is
+the current pattern. The gap is that neither command prints the memory
+pointer or a cheat-sheet of "what to do next if I'm lost". Folding all
+four outputs into a single =orient= invocation reduces the cold-start
+friction from multiple commands and several doc reads to one command.
+
+The journal-based onboarding we validated in session (start with
+=compass where= + =compass journal log=) is good; this story encodes
+that pattern permanently.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-02                               |
+
+* Acceptance
+
+- =compass bearings= (alias: =orient=) runs without arguments and exits 0.
+- Output section 1 — *Where*: identical output to =compass where=
+  (version, sprint, in-flight items). May call =cmd_where= directly.
+- Output section 2 — *Last session*: identical output to
+  =compass journal where= (most recent journal entry, or a "no entries"
+  notice). May call =_journal_where= directly.
+- Output section 3 — *Memory*: prints the path to
+  =doc/llm/memory/memory.org= and a one-line hint
+  (e.g. "Run =compass find <keyword>= to search; open the catalogue for
+  the full index.").
+- Output section 4 — *Cheat-sheet*: a formatted table (or block) of
+  the ~8 most useful compass commands, one per line, with a short
+  description. Must include at minimum: =where=, =journal log=,
+  =journal update=, =sprint status=, =story status=, =find=,
+  =list --type=, =show=.
+- The command is registered as a top-level compass subcommand
+  (=subparsers.add_parser(...)=) and appears in =compass --help=.
+- A recipe =doc/recipes/compass/how_do_i_orient_a_new_session.org=
+  is authored explaining when and how to run =orient=.
+- The recipe is linked from the compass recipe index and from
+  =doc/llm/llm_instructions.org= (Orientation section or a new
+  "Session start" section).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+** Command name
+
+=compass bearings= — as in "find my bearings". A bearing is the angle
+you navigate by; taking your bearings means establishing your position
+from landmarks. The plural makes it idiomatic ("get/find your bearings")
+and it reads naturally as a noun subcommand.
+
+=orient= is kept as an alias for discoverability.
+
+* Out of scope
+
+- Interactive / TUI mode.
+- Colour output or rich-text formatting (plain text only; LLMs handle
+  plain text best).
+- Auto-running =orient= on shell startup or git hook — opt-in only.

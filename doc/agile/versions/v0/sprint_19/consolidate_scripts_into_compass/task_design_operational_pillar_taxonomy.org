@@ -38,11 +38,11 @@ this task; it produces the plan and scaffolds the migration tasks.
 
 | Field        | Value                                                |
 |--------------+------------------------------------------------------|
-| State        | BACKLOG                                              |
+| State        | STARTED                                              |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]         |
-| Now          | Not yet started.                                     |
-| Waiting on   | Nothing.                                             |
-| Next         | Begin the analysis.                                  |
+| Now          | Design complete: pillars, mapping, Q1–Q8 resolved; migration tasks scaffolded. |
+| Waiting on   | PR + merge.                                          |
+| Next         | Commit, push, open PR.                               |
 | Last touched | 2026-06-02                                           |
 
 * Acceptance
@@ -153,6 +153,120 @@ directly — it should call the compass verbs instead).
   =doc/plans/= at the time; this task instead keeps the design inline in
   the task + story =* Decisions= per the current convention.
 - The compass-direction note in the absorbed service-registry task.
+
+* Resolved design
+
+** Answers to the open questions
+
+- *Q1 — pillar set:* four operational pillars — *Provision* (set the
+  system up so it can run), *Operate* (run it), *Build* (compile and
+  preview), *Generate* (produce code/docs from models). They sit
+  alongside the five information-architecture pillars (Orient, Search,
+  Scaffold, Capture, Journal).
+- *Q2 — mapping:* full table below.
+- *Q3 — backward compatibility:* hard cutover. Migrated scripts are
+  *deleted* and every caller (CI workflows, the ores.lisp dashboard,
+  recipes, docs) is updated to call the compass verb. No shims.
+- *Q4 — CI:* workflows call =compass <pillar> <verb>= directly. CI
+  already bootstraps Python, so compass is available; the per-workflow
+  preset is passed via the existing =--preset=/=ORES_PRESET= mechanism
+  which compass reads once.
+- *Q5 — codegen:* =ores.codegen= stays its own CLI. The *Generate*
+  pillar provides thin =compass gen= verbs that /delegate/ to it; the
+  18 codegen scripts are not absorbed wholesale.
+- *Q6 — shared plumbing:* one compass-side helper resolves =.env= +
+  =ORES_PRESET= + =build/output/<preset>= once (replacing the
+  =set -a; source .env; set +a= idiom repeated across scripts). The
+  single service-registry source is =projects/services.json= (the
+  absorbed registry task).
+- *Q7 — grammar:* noun-first (=compass db recreate=), matching the
+  existing entity commands.
+- *Q8 — documentation:* =compass --help= / =_EPILOG= pillar sections,
+  a compass recipe per pillar under =doc/recipes/compass/=, and the
+  ores.lisp dashboard re-pointed from scripts to compass verbs.
+
+** Logs belong to =services= (not a separate noun)
+
+Log management lives under the =services= noun, because the dominant use
+is "clean run": clear logs, then start.
+
+- =compass services start --delete-logs= — clears logs as part of a
+  fresh start. Because services are down at that moment, this also avoids
+  the stale-inode problem (clearing while a process holds the file only
+  unlinks it; the process keeps writing to the detached inode).
+- =compass services clear-logs= — standalone clear (reclaim disk, tidy
+  before inspecting) without starting.
+
+No =logs= pillar/noun.
+
+** Pillar → noun → verb mapping
+
+*Provision* — env / db / nats setup:
+
+| Verb | Replaces |
+|------+----------|
+| =compass env init= | init-environment.sh |
+| =compass env diff= | diff-environment.sh |
+| =compass env recreate= | recreate_env.sh |
+| =compass env teardown= | teardown_env.sh |
+| =compass env validate= | utility/validate_env_version.sh |
+| =compass env packages= | install_debian_packages.sh |
+| =compass db recreate= | recreate_database.sh |
+| =compass db setup= | setup_database.sh |
+| =compass db teardown= | teardown_database.sh |
+| =compass db drop= | drop_database.sh |
+| =compass db reset= (=--system= / =--tenant=) | reset_system.sh, reset_tenant.sh |
+| =compass db sql= | run_sql.sh |
+| =compass db list= | utility/list_databases.sh |
+| =compass db roles= | utility/show_roles.sh |
+| =compass db version= | utility/dump_database_version.sh |
+| =compass db connections= (=--kill=) | utility/check_db_connections.sh, kill_db_connections.sh |
+| =compass db recreate-entity= | utility/recreate_entity.sh |
+| =compass db validate-schemas= | utility/validate_schemas.sh |
+| =compass db extensions= | setup_postgres_extensions.sh |
+| =compass db fix-conventions= | utility/fix_sql_conventions.py |
+| =compass nats init= | init-nats.sh |
+| =compass nats certs= | generate_nats_certs.sh |
+| =compass nats cli= | nats.sh |
+| (data, not a verb) | service_vars.sh → generated from projects/services.json |
+
+*Operate* — run the system:
+
+| Verb | Replaces |
+|------+----------|
+| =compass services start= (=--delete-logs=) | start-services.sh |
+| =compass services stop= | stop-services.sh |
+| =compass services status= | status-services.sh |
+| =compass services clear-logs= | clear-logs.sh |
+| =compass client= | start-client.sh |
+
+*Build* — compile and preview:
+
+| Verb | Replaces |
+|------+----------|
+| =compass build= | build.sh |
+| =compass site serve= | serve-site.sh |
+
+*Generate* — thin delegation to =ores.codegen= (codegen keeps its own CLI):
+
+| Verb | Delegates to |
+|------+--------------|
+| =compass gen schema= | generate_*_schema.sh family |
+| =compass gen refdata= | generate_*_refdata.sh family |
+| =compass gen entity= | run_generator.sh / codegen.sh |
+| =compass gen docs-validate= | validate_docs.sh |
+| =compass gen er-diagram= | plantuml_er_generate.sh |
+
+** Not migrated (stay as-is — out of this story's scope)
+
+- PR/CI tooling: =pr-watch.sh=, =pr_watch.py=, =append_pr_to_backlog.py=,
+  =ci_health.py= — a different domain (a future =compass pr= pillar could
+  absorb these, but not here).
+- Release tooling: =collect_release_pr_data.py=, =generate_release_notes.py=.
+- =set_ssh_agent.sh= — must be /sourced/ into the shell, can't be a
+  subprocess; stays a shell helper.
+- =generate_component_puml.py= — codegen-adjacent; stays with codegen.
+- =compass.sh= / =compass.py= / =doc_*.py= — compass itself.
 
 * PRs
 

@@ -32,11 +32,11 @@ within this larger effort.
 
 | Field         | Value                                            |
 |---------------+--------------------------------------------------|
-| State         | BACKLOG                                          |
+| State         | STARTED                                          |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                               |
-| Now           | Inventory + pillar analysis captured; awaiting design task. |
+| Now           | T1 design done: 4 pillars, full mapping, decisions distilled; 4 migration tasks scaffolded. |
 | Waiting on    | Nothing.                                         |
-| Next          | Run the taxonomy design task (T1).               |
+| Next          | Provision pilot (registry + compass env init).   |
 | Last touched  | 2026-06-02                                       |
 
 * Background: script inventory (2026-06-02)
@@ -108,9 +108,9 @@ migrate; the single service registry's home (=projects/services.json=).
   story's =* Decisions= (kept inline, not in =doc/plans/=).
 - The operational pillars are implemented in =compass= and documented in
   =--help= and the compass recipes/knowledge docs.
-- Migrated scripts either become thin compatibility shims that call
-  compass, or are removed with their callers (CI, docs, dashboard,
-  recipes) updated — no dangling references.
+- Migrated scripts are *removed* (hard cutover) with every caller — CI
+  workflows, the ores.lisp dashboard, recipes, docs — updated to call the
+  compass verb. No shims, no dangling references.
 - The service registry is consolidated to a single source (absorbs the
   prior task); =init-environment= functionality runs under compass.
 - =cmake --build= + =ctest= and a full =provision → run= round-trip pass.
@@ -119,11 +119,39 @@ migrate; the single service registry's home (=projects/services.json=).
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A3CBBC36-AB3E-4046-817B-09A1B289BA98][T1: Design the operational compass pillar taxonomy]] | BACKLOG | | | System 2 design: operational pillars + per-script mapping + backward-compat/CI/docs decisions. Gates all migration tasks. |
-| [[id:9B8BB792-3562-4B52-B367-C94EF46BA100][Consolidate service registries into a single source of truth]] | DISCOVERED | | | First concrete migration (registry + init-environment). Plan finalised by T1. |
+| [[id:A3CBBC36-AB3E-4046-817B-09A1B289BA98][T1: Design the operational compass pillar taxonomy]] | STARTED | 2026-06-02 | | System 2 design: 4 pillars + per-script mapping + Q1–Q8 decisions. Gates all migration tasks. |
+| [[id:9B8BB792-3562-4B52-B367-C94EF46BA100][Provision pilot: service registry + compass env init]] | DISCOVERED | | | First migration: single service registry (projects/services.json) + init-environment → compass env. |
+| [[id:BAEB661D-2AB4-4796-B415-43B49BDCD3A6][Migrate db and nats setup into the Provision pillar]] | BACKLOG | | | compass db / compass nats verbs; delete scripts, update callers. |
+| [[id:333104A0-FFFE-4C20-9390-FA2ED732C2D5][Migrate the Operate pillar (services, client, logs)]] | BACKLOG | | | compass services {start,stop,status,clear-logs} + --delete-logs, compass client. |
+| [[id:D38238C9-702F-47AC-BE64-91D84A8EE716][Migrate the Build pillar (build, site)]] | BACKLOG | | | compass build, compass site serve. |
+| [[id:32DB538C-E2A6-493C-8CBA-6C73A7A10EC4][Add the Generate pillar (delegating gen verbs)]] | BACKLOG | | | compass gen verbs delegating to ores.codegen (keeps its own CLI). |
 
-Per-pillar migration tasks to be scaffolded by T1 once the taxonomy is
-settled.
+* Decisions
+
+From the taxonomy design task (T1):
+
+- *Four operational pillars*: Provision (env/db/nats setup), Operate
+  (services lifecycle, client, logs), Build (compile, site), Generate
+  (codegen delegation) — alongside the five info-architecture pillars.
+- *Noun-first grammar*: =compass db recreate=, =compass services start=,
+  matching the existing =compass sprint status= / =compass story new=.
+- *Hard cutover*: migrated scripts are deleted and all callers (CI,
+  dashboard, recipes, docs) updated; no compatibility shims.
+- *Codegen stays its own CLI*: the Generate pillar adds thin =compass
+  gen= verbs that delegate to =ores.codegen=; the 18 codegen scripts are
+  not absorbed wholesale.
+- *Logs belong to =services=*: =compass services start --delete-logs=
+  for the clean-run case (clears while down → no stale inodes), plus a
+  standalone =compass services clear-logs=. No separate =logs= noun.
+- *Shared plumbing*: one compass-side helper resolves =.env= +
+  =ORES_PRESET= + =build/output/<preset>= once, replacing the
+  per-script =set -a; source .env; set +a= idiom. Single service
+  registry source: =projects/services.json=.
+- *Not migrated* (out of scope): PR/CI tooling (=pr_watch=, =ci_health=,
+  =append_pr_to_backlog=), release tooling, =set_ssh_agent.sh= (must be
+  sourced), and =ores.codegen='s own scripts.
+
+The full script → pillar → verb mapping lives in the [[id:A3CBBC36-AB3E-4046-817B-09A1B289BA98][T1 design task]].
 
 * Out of scope
 

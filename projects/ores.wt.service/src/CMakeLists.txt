@@ -33,7 +33,7 @@ set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 find_package(wt CONFIG REQUIRED)
 

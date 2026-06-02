@@ -30,12 +30,12 @@ This is investigation, not implementation. No files move in this task.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                   |
 | Parent story | [[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components under product-group parent directories]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin investigation.                   |
-| Last touched | 2026-06-01                             |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-02                             |
 
 * Acceptance
 
@@ -162,3 +162,29 @@ follow-on tasks). One PR.
 |   |                 |      |          |       |
 
 * Result
+
+The open questions were resolved and, rather than scaffolding one
+migration task per product group, the regroup was carried out in a
+single pass (the change is mechanical and atomic — splitting it per
+group would have created merge churn for no benefit). The decisions are
+recorded in the story's =* Decisions= section (D1–D5). Summary:
+
+- *D1* — child folders use short names (=api=, =core=, =service=, …);
+  CMake target names keep the FQ form.
+- *D2* — all Qt UI components live under =ores.qt/= (Application layer),
+  not beside their domain group.
+- *D3* — the Qt host app moved to =ores.qt/application/=; =ores.qt/= is
+  a pure group folder.
+- *D4* — include paths made relative / move-invariant
+  (=${CMAKE_CURRENT_SOURCE_DIR}/../include=).
+- *D5* — no group-root CMakeLists introduced; =projects/CMakeLists.txt=
+  still adds each leaf directly.
+
+Implementation: every =projects/ores.<group>.<role>/= and
+=projects/ores.qt.<group>/= moved under its group parent with =git mv=;
+=projects/CMakeLists.txt= and ~90 component =src/CMakeLists.txt= include
+paths updated; =cmake --preset linux-clang-debug-make= configures
+cleanly. Build + ctest verification carried out before merge.
+
+No per-group split tasks were created; this task subsumed both the
+investigation and the implementation.

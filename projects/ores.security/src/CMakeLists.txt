@@ -37,7 +37,7 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 find_package(jwt-cpp CONFIG REQUIRED)
 find_package(Boost REQUIRED COMPONENTS json)

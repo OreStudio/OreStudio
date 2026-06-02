@@ -315,7 +315,7 @@ get_or_gen_uuid() {
 # (and a Python port of this script) is tracked by the
 # "Consolidate service registries" task in the regroup_components story.
 # ---------------------------------------------------------------------------
-SERVICE_REGISTRY="${CHECKOUT_ROOT}/projects/ores.codegen/models/services/ores_services_service_registry.json"
+SERVICE_REGISTRY="${CHECKOUT_ROOT}/projects/ores.services/modeling/ores.services.service_registry.org"
 if [[ ! -f "${SERVICE_REGISTRY}" ]]; then
     echo "Error: service registry not found: ${SERVICE_REGISTRY}" >&2
     exit 1
@@ -331,7 +331,13 @@ while IFS= read -r component; do
     done
     $skip && continue
     SERVICE_COMPONENTS+=("${component}")
-done < <(python3 -c "import json,sys; print('\n'.join(s['name'] for s in json.load(open(sys.argv[1]))['service_registry']['services']))" "${SERVICE_REGISTRY}")
+done < <(python3 -c "
+import sys
+sys.path.insert(0, sys.argv[2])
+from codegen.org_loader import load_org_service_registry_model
+for s in load_org_service_registry_model(sys.argv[1])['service_registry']['services']:
+    print(s['name'])
+" "${SERVICE_REGISTRY}" "${CHECKOUT_ROOT}/projects/ores.codegen/src")
 
 if [[ ${#SERVICE_COMPONENTS[@]} -eq 0 ]]; then
     echo "Error: no services read from registry ${SERVICE_REGISTRY}" >&2

@@ -1,0 +1,237 @@
+:PROPERTIES:
+:ID: DBB7FE01-0C33-4EF9-BB2A-039674E71AB1
+:END:
+#+title: ores.services.service_registry
+#+description: Codegen service-registry model — catalogue of ORE Studio backend services with their psql vars, IAM roles, and DDL grant prefixes.
+#+type: ores.codegen.service_registry
+#+filetags: :codegen:service_registry:literate:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+* iam
+:PROPERTIES:
+:psql_var:    iam_service
+:env_key:     IAM_SERVICE
+:iam_role:    IamService
+:description: IAM
+:email:       iam_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_iam_
+
+* refdata
+:PROPERTIES:
+:psql_var:    refdata_service
+:env_key:     REFDATA_SERVICE
+:iam_role:    RefdataService
+:description: Reference Data
+:email:       refdata_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_refdata_
+
+* workspace
+:PROPERTIES:
+:psql_var:    workspace_service
+:env_key:     WORKSPACE_SERVICE
+:iam_role:    WorkspaceService
+:description: Workspace
+:email:       workspace_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_workspaces_
+- ores_workspace_
+
+* dq
+:PROPERTIES:
+:psql_var:    dq_service
+:env_key:     DQ_SERVICE
+:iam_role:    DqService
+:description: Data Quality
+:email:       dq_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_dq_
+
+* variability
+:PROPERTIES:
+:psql_var:    variability_service
+:env_key:     VARIABILITY_SERVICE
+:iam_role:    VariabilityService
+:description: Variability
+:email:       variability_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_variability_
+
+* assets
+:PROPERTIES:
+:psql_var:    assets_service
+:env_key:     ASSETS_SERVICE
+:iam_role:    AssetsService
+:description: Assets
+:email:       assets_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_assets_
+
+* scheduler
+:PROPERTIES:
+:psql_var:    scheduler_service
+:env_key:     SCHEDULER_SERVICE
+:iam_role:    SchedulerService
+:description: Scheduler
+:email:       scheduler_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_scheduler_
+
+* reporting
+:PROPERTIES:
+:psql_var:    reporting_service
+:env_key:     REPORTING_SERVICE
+:iam_role:    ReportingService
+:description: Reporting
+:email:       reporting_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_reporting_
+
+* telemetry
+:PROPERTIES:
+:psql_var:    telemetry_service
+:env_key:     TELEMETRY_SERVICE
+:iam_role:    TelemetryService
+:description: Telemetry
+:email:       telemetry_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_telemetry_
+
+* trading
+:PROPERTIES:
+:psql_var:    trading_service
+:env_key:     TRADING_SERVICE
+:iam_role:    TradingService
+:description: Trading
+:email:       trading_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_trading_
+
+* compute
+:PROPERTIES:
+:psql_var:    compute_service
+:env_key:     COMPUTE_SERVICE
+:iam_role:    ComputeService
+:description: Compute Grid
+:email:       compute_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_compute_
+
+* synthetic
+:PROPERTIES:
+:psql_var:    synthetic_service
+:env_key:     SYNTHETIC_SERVICE
+:iam_role:    SyntheticService
+:description: Synthetic
+:role:        tooling
+:email:       synthetic_service@system.ores
+:END:
+
+** Select prefixes
+
+- ores_iam_
+- ores_refdata_
+- ores_dq_
+- ores_trading_
+- ores_variability_
+- ores_assets_
+- ores_reporting_
+- ores_scheduler_
+- ores_compute_
+- ores_telemetry_
+
+* workflow
+:PROPERTIES:
+:psql_var:    workflow_service
+:env_key:     WORKFLOW_SERVICE
+:iam_role:    WorkflowService
+:description: Workflow Orchestration
+:email:       workflow_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_workflow_
+
+* ore
+:PROPERTIES:
+:psql_var:    ore_service
+:env_key:     ORE_SERVICE
+:iam_role:    OreService
+:description: ORE Import
+:email:       ore_service@system.ores
+:END:
+
+* marketdata
+:PROPERTIES:
+:psql_var:    marketdata_service
+:env_key:     MARKETDATA_SERVICE
+:iam_role:    MarketdataService
+:description: Market Data
+:email:       marketdata_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_marketdata_
+
+* controller
+:PROPERTIES:
+:psql_var:    controller_service
+:env_key:     CONTROLLER_SERVICE
+:iam_role:    ControllerService
+:description: Service Controller
+:email:       controller_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_controller_
+
+* analytics
+:PROPERTIES:
+:psql_var:    analytics_service
+:env_key:     ANALYTICS_SERVICE
+:iam_role:    AnalyticsService
+:description: Analytics
+:email:       analytics_service@system.ores
+:END:
+
+** DML prefixes
+
+- ores_analytics_

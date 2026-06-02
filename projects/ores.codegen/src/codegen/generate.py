@@ -17,6 +17,7 @@ _CODEGEN_ORG_TYPES = frozenset({
     "ores.codegen.entity",
     "ores.codegen.field_group",
     "ores.codegen.junction",
+    "ores.codegen.table",
 })
 
 
@@ -82,11 +83,14 @@ def _generate_single(
             load_org_model,
             load_org_field_group_model,
             load_org_junction_model,
+            load_org_table_model,
         )
         if str(model_path).endswith("_field_group.org"):
             model_data = load_org_field_group_model(model_path)
         elif str(model_path).endswith("_junction.org"):
             model_data = load_org_junction_model(model_path)
+        elif str(model_path).endswith("_table.org"):
+            model_data = load_org_table_model(model_path)
         else:
             model_data = load_org_model(model_path)
     else:

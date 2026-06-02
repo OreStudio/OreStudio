@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/merge-component-models-into-overviews
-#+pr:
+#+pr: 1014
 #+blocked_on:
 #+state: DONE
 #+blocked_since:
@@ -110,7 +110,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1014][#1014]] | [codegen,components] Merge component identity into component_overview.org |
 
 * Review
 

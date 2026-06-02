@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 1161B5B0-3D67-4215-A6A0-093618B2FE3E
+:END:
+#+title: Slovaris — imaginary-world reference-data dataset
+#+description: Crafted imaginary-world dataset seeding the ores.refdata schema: 100 country/currency pairs, catalogs, methodologies, datasets, tags, and flags for the Aerilon/Ducat fictional taxonomy.
+#+type: dataset_overview
+#+dataset_name: slovaris
+#+dataset_version: 1.0
+#+dataset_type: crafted
+#+source_methodology: Entirely hand-authored fictional taxonomy; see methodology.txt for the design rationale.
+#+filetags: :slovaris:refdata:seeder:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+* Summary
+
+Slovaris is a hand-crafted imaginary-world taxonomy used to seed the
+=ores.refdata= schema for local development and CI. It provides 100
+country/currency pairs drawn from the fictional =Aerilon/Ducat=
+universe, plus the catalog, dataset, tag, flag, and methodology rows
+that the refdata FK graph requires to be self-consistent.
+
+* Contents
+
+| File                   | Description                                                             |
+|------------------------+-------------------------------------------------------------------------|
+| =manifest.json=        | Per-catalog descriptor; drives =sql_methodology_populate.mustache=      |
+| =catalogs.json=        | Catalog index; drives =sql_catalog_populate.mustache=                   |
+| =datasets.json=        | Dataset rows + dependency edges; drives dataset + dependency templates  |
+| =tags.json=            | Tag rows; drives =sql_tag_populate.mustache=                            |
+| =country_currency.json=| 100 country/currency pairs; drives flag, currency, country templates    |
+| =model.json=           | Batch driver listing all (template, output, source) tuples              |
+| =methodology.txt=      | Prose design rationale for the imaginary-world taxonomy                 |
+
+* Why this dataset
+
+The refdata schema has deep FK chains: currencies belong to countries;
+countries and currencies belong to catalogs; catalogs belong to
+methodologies. A synthetic row-generator would need to respect this
+closure automatically. The slovaris dataset solves the problem with
+hand-authored rows whose relationships are meaningful and stable —
+each =Aerilon= country maps to exactly one =Ducat= currency, giving
+test queries a predictable answer set.
+
+The fictional framing also makes it immediately obvious in a log or
+query result that a row is test data, not a production import.
+
+* See also
+
+- [[id:6CAA15F5-634E-46B4-ABA5-185095E9911D][ores.seeder]] — the component that owns this dataset.
+- [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component for database test-data generation]] — the story that introduced this component.

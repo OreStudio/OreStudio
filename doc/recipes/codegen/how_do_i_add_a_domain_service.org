@@ -22,31 +22,22 @@ all created consistently?
 
 * Answer
 
-1. /Edit the registry/ — the one authored source:
+1. /Edit the registry/ — the one authored source, a literate org model:
 
    #+begin_src sh :results verbatim
-   $EDITOR projects/ores.codegen/models/services/ores_services_service_registry.json
+   $EDITOR projects/modeling/service_registry.org
    #+end_src
 
-   Add (or remove) a service object. Fields per service: =name=,
-   =psql_var=, =env_key=, =iam_role=, =description=, =email=,
-   =dml_prefixes= (the =ores_<name>_*= tables it owns), and the optional
-   =select_tables= / =select_prefixes= for cross-service reads.
+   Add (or remove) a service as a top-level heading (=* <name>=) with the
+   per-service properties (=psql_var=, =env_key=, =iam_role=,
+   =description=, =email=) and its =DML prefixes= (the =ores_<name>_*=
+   tables it owns); =Select prefixes= for cross-service reads.
 
 2. /Regenerate/ the artefacts the registry drives via the
-   =service-registry= codegen profile. Run from the repository root —
-   =run_generator.sh= changes to its own directory internally, and its
-   model path is relative to =projects/ores.codegen/=:
-
-   #+begin_src sh :results verbatim
-   ./projects/ores.codegen/run_generator.sh \
-       models/services/ores_services_service_registry.json \
-       --profile service-registry
-   #+end_src
-
-   This (re)writes =projects/ores.sql/service_vars.sh= (=SERVICE_NAMES=)
-   and the SQL for service users, accounts, roles, and DB grants. Staying
-   at the repository root keeps the relative paths in steps 3–4 valid.
+   =service-registry= codegen profile (see [[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]] for the
+   current invocation). This (re)writes =projects/ores.sql/service_vars.sh=
+   (=SERVICE_NAMES=) and the SQL for service users, accounts, roles, and
+   DB grants.
 
 3. /Regenerate credentials/ so the new service gets its =.env= entries
    (=ORES_<NAME>_SERVICE_DB_USER= / =_PASSWORD= / =_DATABASE=):

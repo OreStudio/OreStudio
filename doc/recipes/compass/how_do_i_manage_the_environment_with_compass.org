@@ -82,25 +82,17 @@ key, =PGPASSWORD=) are masked by default; =--show-secrets= reveals them.
 ** Show / record the env-format version — =compass env version=
 
 The =.env='s shape is versioned by =ORES_ENV_VERSION=, checked before
-=recreate_database= runs. Show the current canonical version:
+=recreate_database= runs. =compass env version= shows the current version
+and =compass env version new "<desc>"= records a bump:
 
 #+begin_src sh :results verbatim
 ./projects/ores.compass/compass.sh env version
-#+end_src
-
-When you make a change that alters the =.env= — add a service to the
-registry, add or rename a variable — record a new version:
-
-#+begin_src sh :results verbatim
 ./projects/ores.compass/compass.sh env version new "added analytics service DB creds"
 #+end_src
 
-This appends a dated row to the [[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][environment format version log]] — the
-single, parseable source read by both =compass env init= (which writes
-=ORES_ENV_VERSION=) and the version check. Then re-run =compass env init=
-to write the new version into your =.env=. Any checkout still on the old
-version then fails the pre-=recreate_database= check with a clear "re-run
-=compass env init=" message, instead of a later missing-password error.
+This is its own workflow — when to bump, the version log, and how an
+out-of-date checkout is caught — covered in [[id:694BFB41-222A-4BC7-BC74-D8B7C6C61644][How do I manage the .env
+format version with compass?]].
 
 * Script
 

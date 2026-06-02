@@ -61,8 +61,11 @@ release target.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                    | File                   | Decision | Notes                                        |
+|---+----------------------------------------------------+------------------------+----------+----------------------------------------------|
+| 1 | Story and task files committed in draft state      | story.org, task_*.org  | Fixed    | Filled goal, DONE state, PR refs             |
+| 2 | Sprint.org story description stale (old plan)      | sprint.org             | Fixed    | Updated to reflect actual work done          |
+| 3 | Branch fields on tasks 2+3 wrong; #+pr: empty      | task_rewrite_*.org     | Fixed    | Corrected to clarify-versioning-strategy     |
+| 4 | versions.org dropped MINOR=sprint CMake note       | versions.org           | Fixed    | Restored with updated phrasing               |
 
 * Result

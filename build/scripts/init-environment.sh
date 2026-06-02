@@ -315,7 +315,7 @@ get_or_gen_uuid() {
 # (and a Python port of this script) is tracked by the
 # "Consolidate service registries" task in the regroup_components story.
 # ---------------------------------------------------------------------------
-SERVICE_REGISTRY="${CHECKOUT_ROOT}/projects/ores.services/modeling/ores.services.service_registry.org"
+SERVICE_REGISTRY="${CHECKOUT_ROOT}/projects/modeling/ores.services.service_registry.org"
 if [[ ! -f "${SERVICE_REGISTRY}" ]]; then
     echo "Error: service registry not found: ${SERVICE_REGISTRY}" >&2
     exit 1

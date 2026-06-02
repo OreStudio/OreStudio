@@ -118,10 +118,11 @@ migrate; the single service registry's home (=projects/services.json=).
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:9B8BB792-3562-4B52-B367-C94EF46BA100][Consolidate service registries into a single source of truth]] | DISCOVERED | | | Absorbed from the regroup story; first concrete migration (the registry + init-environment). |
+| [[id:A3CBBC36-AB3E-4046-817B-09A1B289BA98][T1: Design the operational compass pillar taxonomy]] | BACKLOG | | | System 2 design: operational pillars + per-script mapping + backward-compat/CI/docs decisions. Gates all migration tasks. |
+| [[id:9B8BB792-3562-4B52-B367-C94EF46BA100][Consolidate service registries into a single source of truth]] | DISCOVERED | | | First concrete migration (registry + init-environment). Plan finalised by T1. |
 
-Design task (T1) and per-pillar migration tasks to be scaffolded once
-the taxonomy is settled.
+Per-pillar migration tasks to be scaffolded by T1 once the taxonomy is
+settled.
 
 * Decisions
 

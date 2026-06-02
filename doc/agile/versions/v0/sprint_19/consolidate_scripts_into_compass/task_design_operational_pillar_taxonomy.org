@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: A3CBBC36-AB3E-4046-817B-09A1B289BA98
+:END:
+#+title: Task: Design the operational compass pillar taxonomy
+#+description: System 2 analysis: define the operational compass pillars and the per-script mapping (pillar + verb) for all ~61 operational scripts, with backward-compatibility, CI-migration, and documentation decisions. Produces the design document that gates all per-pillar migration tasks.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch: feature/design-operational-pillar-taxonomy
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Conduct a System 2 analysis of the operational script surface and
+produce a *taxonomy design document* that all per-pillar migration tasks
+build from — the same design-first approach the [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]
+used before touching code. The document must answer the open questions
+below and map every operational script to a compass pillar + verb.
+
+This is design, not migration. No scripts are folded in or deleted in
+this task; it produces the plan and scaffolds the migration tasks.
+
+* Status
+
+| Field        | Value                                                |
+|--------------+------------------------------------------------------|
+| State        | BACKLOG                                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]         |
+| Now          | Not yet started.                                     |
+| Waiting on   | Nothing.                                             |
+| Next         | Begin the analysis.                                  |
+| Last touched | 2026-06-02                                           |
+
+* Acceptance
+
+- A design document at =doc/plans/YYYY-MM-DD-compass-operational-pillars.org=
+  records: the operational pillar set, the full per-script mapping
+  (script → pillar → =compass <pillar> <verb>=), and the
+  backward-compatibility / CI-migration / documentation decisions.
+- Every one of the ~61 operational scripts in the story inventory appears
+  in the mapping table with a target verb or an explicit "stays as-is"
+  rationale.
+- Each open question Q1–Q8 has a written answer with reasoning.
+- Per-pillar migration tasks are scaffolded under the story against the
+  agreed mapping (one task per pillar, or per sensible migration unit).
+- The first migration (service registry + =init-environment=) plan is
+  fully written before any implementation begins.
+
+* Open questions
+
+** Q1. What are the operational pillars?
+
+The five existing pillars (Orient, Search, Scaffold, Capture, Journal)
+serve the information architecture. Operational work (running/building
+the system) is a distinct concern. Candidate set from the story:
+=Provision= (env/db/nats/certs setup), =Operate= (services lifecycle,
+logs, nats CLI), =Build= (build, site), =Generate= (codegen wrappers).
+Decide the final set, names, and boundaries. Are these new top-level
+pillars, or one "Operate" pillar with sub-areas?
+
+** Q2. Per-script mapping
+
+Map each of the 61 inventoried scripts to a pillar + verb (noun-first to
+match the existing entity-command style, e.g. =compass db recreate=,
+=compass env init=, =compass services start=). Flag any script that
+should /not/ move (e.g. =install_debian_packages.sh= is a one-time
+bootstrap; =compass.sh= is the wrapper itself).
+
+** Q3. Backward compatibility
+
+For each migrated script: thin shim that execs the compass verb (keeps
+muscle memory + existing callers working), or hard delete with all
+callers updated? Likely a mix — shims for dev-facing scripts during a
+deprecation window, deletion for internal ones.
+
+** Q4. CI migration
+
+CI workflows (=.github/workflows/*=) call scripts directly
+(=recreate_database.sh=, =setup_postgres_extensions.sh=,
+=init-environment.sh=, ...). Decide whether CI calls =compass <verb>= or
+keeps calling shims. Account for the CI Python/venv bootstrap that
+compass needs.
+
+** Q5. Codegen — fold in or delegate?
+
+=ores.codegen= is already a Python tool, and =compass add= already
+delegates to it. Do the =generate_*_schema.sh= / =run_generator.sh=
+wrappers become =compass gen ...= verbs that delegate, or stay as
+codegen's own CLI? (18 of the 61 scripts are codegen.)
+
+** Q6. Shared plumbing
+
+Most =.sh= scripts re-implement =.env= sourcing + =ORES_PRESET=
+resolution + =build/output/<preset>= path construction. Define the
+single compass-side helper(s) that replace this idiom, and the single
+service-registry source (=projects/services.json= per the absorbed task).
+
+** Q7. Naming convention
+
+Confirm the verb grammar: noun-first (=compass db recreate=) vs
+verb-first (=compass recreate db=). The existing entity commands
+(=compass sprint status=, =compass story new=) are noun-first; follow
+that.
+
+** Q8. Documentation surface
+
+Where the operational pillars get documented: =compass --help= /
+=_EPILOG=, the compass recipes (=doc/recipes/compass/=), a knowledge doc,
+and the ores.lisp dashboard (which currently launches the scripts
+directly — it should call the compass verbs instead).
+
+* Plan
+
+1. *Survey.* Re-confirm the inventory against the repo; for each script
+   read its header + flags to capture the verb surface it exposes.
+2. *Decide.* Resolve Q1–Q8; record in the design doc with reasoning.
+3. *Map.* Produce the full script→pillar→verb table.
+4. *Scaffold.* Create per-pillar migration tasks under the story, each
+   carrying its slice of the mapping. The service-registry task is the
+   pilot and gets its full plan written.
+5. *Commit + PR.* Docs only (design doc + scaffolded tasks).
+
+* Notes
+
+** Inputs
+
+- Story inventory + proposed direction:
+  [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]].
+- Compass pillar model + subcommand-registration mechanism documented in
+  the story's "compass today" section; source is
+  =projects/ores.compass/src/compass.py= (=cmd_<pillar>(argv)= handlers,
+  =_EPILOG=, short-circuit dispatch in =main()=).
+- Precedent: =doc/plans/2026-06-01-compass-cli-ux-taxonomy.org= (the UX
+  redesign's taxonomy doc) is the template to follow for this doc's shape.
+- The compass-direction note in the absorbed service-registry task.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

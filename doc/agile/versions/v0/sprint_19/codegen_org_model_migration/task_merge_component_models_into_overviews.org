@@ -7,9 +7,10 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/merge-component-models-into-overviews
 #+pr:
 #+blocked_on:
+#+state: DONE
 #+blocked_since:
 #+created: 2026-06-02
 #+updated: 2026-06-02
@@ -51,16 +52,51 @@ entity → overview, entity → schema) which is [[id:95031F88-44AB-4705-BA99-05
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-02                               |
+| Next         | n/a                                    |
+| Last touched | 2026-06-02                             |
 
 * Acceptance
 
--
+- =load_org_component_overview_model= reads =#+name:=,
+  =#+full_name:=, =#+brief:=, =#+description:= from frontmatter
+  and returns the JSON-equivalent =/component= dict.
+- 26 existing =component_overview.org= files (the PAIRs that
+  had a sibling =*_component.org=) gain the three new
+  =#+name:=, =#+full_name:=, =#+brief:= keywords; their existing
+  =#+description:= becomes the codegen description.
+- 5 ORPHAN group-level overviews (=ores.compute=,
+  =ores.controller=, =ores.reporting=, =ores.trading=,
+  =ores.workflow=) are created with frontmatter scalars +
+  =* Summary= seeded from the JSON description.
+- All 31 standalone =*_component.org= files deleted.
+- =is_component_model= recognises =component_overview.org=;
+  =generator.load_model= and =codegen.generate._generate_single=
+  dispatch on that suffix to the new loader.
+
+* Note on regen drift
+
+The merged overviews' =#+description:= differs from what the
+original JSON descriptions said for the 26 PAIRs (the overviews
+already carried their own short tagline-shaped descriptions
+while the JSON descriptions were longer, separately-authored
+prose). Regen output would therefore drift on the
+=cpp_component_header.hpp= and similar generated files.
+
+This PR does *not* commit the regen drift because some of those
+generated files carry hand-edits in HEAD (e.g.
+=projects/ores.nats/include/ores.nats/ores.nats.hpp= has
+subject-naming-convention prose that's not in the org source).
+A clean regen would wipe those hand-edits — a separate
+concern, tracked by the [[id:0BD89DB5-B7F7-4C18-8B00-D6C651264D71][post-regroup codegen validation
+task]] which already needs to deal with stale generated paths
+and re-baseline the scaffolds.
+
+This task's scope is the source-of-truth refactor: the codegen
+description now flows from a single org file per component.
 
 * Plan
 

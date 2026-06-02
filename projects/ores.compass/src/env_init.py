@@ -104,9 +104,15 @@ def _upper(component: str) -> str:
 
 
 def _service_names(registry: Path, excludes=("wt",)) -> list:
-    data = json.loads(registry.read_text())
-    names = [s["name"] for s in data["service_registry"]["services"]]
-    return [n for n in names if n not in excludes]
+    """Service names from the org-mode service registry: each service is a
+    top-level heading (=* <name>=); level-2 headings (DML/Select prefixes)
+    are ignored."""
+    names = []
+    for line in registry.read_text().splitlines():
+        m = re.match(r"^\* (\S+)\s*$", line)
+        if m and m.group(1) not in excludes:
+            names.append(m.group(1))
+    return names
 
 
 def _logging_only(env_file: Path, op: str, level: str) -> int:
@@ -366,8 +372,8 @@ def run(argv, project_root: Path) -> int:
             print("Error: postgres password cannot be empty.", file=sys.stderr)
             return 1
 
-    registry = (checkout_root / "projects" / "ores.codegen" / "models" /
-                "services" / "ores_services_service_registry.json")
+    registry = (checkout_root / "projects" / "modeling" /
+                "service_registry.org")
     if not registry.is_file():
         print(f"Error: service registry not found: {registry}", file=sys.stderr)
         return 1

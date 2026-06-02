@@ -233,10 +233,14 @@ def parse_org(text: str) -> OrgDocument:
         else:
             close_table_if_open()
 
-        # Bullet item.
+        # Bullet item. Bullets are tracked both as a structured
+        # bullet_lists entry (for semantic uses) AND as raw body lines
+        # (so _strip_body preserves them inside description prose at
+        # their original position).
         bm = _BULLET_RE.match(line)
         if bm:
             accumulating_bullets.append(bm.group(1).strip())
+            current.body_lines.append(line)
             continue
         else:
             flush_bullets()
@@ -654,6 +658,105 @@ def load_org_model(path: Path | str) -> dict[str, Any]:
             f"Validation errors in {path}:\n  " + "\n  ".join(errors)
         )
     return model
+
+
+def _fk_side_from_section(node: OrgNode) -> dict[str, Any]:
+    """Read a junction ``* Left`` / ``* Right`` sub-section into a dict
+    matching the JSON-side shape (column, type, cpp_type, ..., plus
+    description / detail / generator_expr from the body)."""
+    out: dict[str, Any] = {}
+    for k, v in node.properties.items():
+        out[k.lower()] = _parse_typed(v)
+    description, detail = _description_and_detail(node)
+    if description:
+        out["description"] = description
+    if detail:
+        out["detail"] = detail
+    if "generator" in node.src_blocks:
+        out["generator_expr"] = node.src_blocks["generator"]
+    return out
+
+
+def load_org_junction_model(path: Path | str) -> dict[str, Any]:
+    """Load an org-mode junction model into the ``{junction: {...}}`` dict
+    shape that ``sql_schema_junction_create.mustache`` consumes."""
+    text = Path(path).read_text(encoding="utf-8")
+    doc = parse_org(text)
+    fm = doc.frontmatter
+
+    j: dict[str, Any] = {}
+    for key in ("product", "schema", "component", "name", "name_singular",
+                "name_title", "name_singular_words", "brief"):
+        if key in fm:
+            j[key] = fm[key]
+    if "has_tenant_id" in fm:
+        j["has_tenant_id"] = _parse_typed(fm["has_tenant_id"])
+
+    body = _strip_body(doc.root)
+    if body:
+        j["description"] = body
+
+    left = _section(doc.root, "Left")
+    if left:
+        j["left"] = _fk_side_from_section(left)
+    right = _section(doc.root, "Right")
+    if right:
+        j["right"] = _fk_side_from_section(right)
+
+    cols_section = _section(doc.root, "Columns")
+    columns: list[dict[str, Any]] = []
+    if cols_section:
+        for node in cols_section.children:
+            entry: dict[str, Any] = {"name": node.title}
+            for k, v in node.properties.items():
+                key = k.lower()
+                if key == "default":
+                    entry[key] = v  # keep raw string; Mustache 0-falsy
+                else:
+                    entry[key] = _parse_typed(v)
+            description, detail = _description_and_detail(node)
+            if description:
+                entry["description"] = description
+            if detail:
+                entry["detail"] = detail
+            columns.append(entry)
+    j["columns"] = columns
+
+    sql_section = _section(doc.root, "SQL")
+    if sql_section:
+        sql_flags = _section(sql_section, "Flags")
+        if sql_flags:
+            j["sql"] = {
+                k.lower(): _parse_typed(v) for k, v in sql_flags.properties.items()
+            }
+
+    repo = _section(doc.root, "Repository")
+    if repo:
+        j["repository"] = {
+            k.lower(): _parse_typed(v) for k, v in repo.properties.items()
+        }
+
+    cpp_section = _section(doc.root, "C++")
+    cpp_out: dict[str, Any] = {}
+    if cpp_section:
+        dom = _section(cpp_section, "Domain includes")
+        ent = _section(cpp_section, "Entity includes")
+        if dom or ent:
+            cpp_out["includes"] = {
+                "domain": _includes_from_named_block(dom) if dom else [],
+                "entity": _includes_from_named_block(ent) if ent else [],
+            }
+        conv = _section(cpp_section, "Conventions")
+        if conv:
+            for k, v in conv.properties.items():
+                cpp_out[k.lower()] = _parse_typed(v)
+        td = _section(cpp_section, "Table display")
+        if td:
+            cpp_out["table_display"] = _table_display(td)
+    if cpp_out:
+        j["cpp"] = cpp_out
+
+    return {"junction": j}
 
 
 def load_org_field_group_model(path: Path | str) -> dict[str, Any]:

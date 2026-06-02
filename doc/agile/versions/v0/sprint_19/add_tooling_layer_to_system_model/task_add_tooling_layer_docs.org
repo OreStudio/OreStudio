@@ -8,7 +8,7 @@
 #+filetags: :add_tooling_layer_to_system_model:sprint_19:v0:
 #+owner: marco
 #+branch: feature/fix-windows-macos-ci
-#+pr:
+#+pr: 1015
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
@@ -69,13 +69,13 @@ All links are org-roam id-links.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1015][#1015]] | [modeling] Add tooling layer to system model |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                             | File                             | Decision | Notes           |
+|---+-------------------------------------------------------------+----------------------------------+----------+-----------------|
+| 1 | Now field must be Nothing. when task state is DONE          | task_add_tooling_layer_docs.org  | Accept   | Fixed aa09bd532 |
 
 * Result
 

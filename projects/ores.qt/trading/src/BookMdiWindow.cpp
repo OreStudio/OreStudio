@@ -473,8 +473,7 @@ void BookMdiWindow::exportToXml() {
         trading::messaging::export_portfolio_request req;
         req.node_id = book_id;
 
-        auto r = self->clientManager_->process_authenticated_request(
-            std::move(req));
+        auto r = self->clientManager_->exportPortfolio(std::move(req));
         if (!r) {
             result.error = "Failed to communicate with server";
             return result;

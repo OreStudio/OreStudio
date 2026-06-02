@@ -33,10 +33,10 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 |---------------+-----------------------------------------------------------------------------------------------|
 | State         | STARTED                                                                                       |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                       |
-| Now           | Task 7: PR open for ClientManager AddTagsToVariants + archiver export; awaiting CI.           |
-| Waiting on    | CI green + review on task 7 PR.                                                               |
-| Next          | Merge task 7 PR; verify all CI green; close story.                                            |
-| Last touched  | 2026-06-01                                                                                    |
+| Now           | Task 8: investigating ClientManager template C1202 in BookMdiWindow.cpp.                      |
+| Waiting on    | Task 8 PR + CI green.                                                                         |
+| Next          | Merge task 8 PR; verify Windows CI fully green; close story.                                  |
+| Last touched  | 2026-06-02                                                                                    |
 
 * Acceptance
 
@@ -62,6 +62,7 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 | [[id:2991CE7B-48F3-489F-9792-1BCB529E85BB][Delete leftover get_trade_detail code and fix remaining AddTagsToVariants use]] | DONE    | 2026-05-31 | 2026-05-31 | Delete ClientManagerTradeDetail.cpp; remove getTradeDetail API; restore macOS/Windows CI.    |
 | [[id:D9E63BBA-82CE-4FD3-9354-47A0A12ED108][Fix missing Windows DLL export macros on service parser classes]]              | DONE    | 2026-06-01 | 2026-06-01 | Add ORES_*_SERVICE_EXPORT to 16 service parser.hpp files; restore Windows CI linker.          |
 | [[id:4BF920B2-CA2B-40EF-B463-DDC13D0C2516][Fix ClientManager AddTagsToVariants and archiver DLL export]]                  | STARTED | 2026-06-01 |            | Remove AddTagsToVariants from ClientManager reads; add ORES_COMPUTE_WRAPPER_EXPORT to archiver. |
+| [[id:A10ACBA5-BABD-4B60-8CF3-79108BA9DA92][Investigate and fix ClientManager template C1202 for complex response types]]  | STARTED | 2026-06-02 |            | process_authenticated_request<T> injects rfl in caller's TU; fix by concrete method for export_portfolio. |
 
 * Decisions
 
@@ -142,12 +143,107 @@ All parse branches must log at the correct level:
 - =error= on any deserialise failure, including the raw JSON fragment and the full rfl
   error message.
 
-** export_portfolio latent issue
+** The template instantiation leak pattern (root cause of repeated C1202)
 
-=export_portfolio_response= contains =vector<trade_export_item>= where each item has
-=trade_instrument instrument=. The generic =process_authenticated_request= template reads
-it with =AddTagsToVariants=. This path is not fixed by this story (it is Linux-only in
-practice today) but is a known latent issue for a future story.
+This is the underlying design issue that drove the recurring C1202 cascade. Understanding
+it is essential for preventing future occurrences.
+
+*** What the pattern is
+
+=ClientManager.hpp= defines =process_authenticated_request<T>= as a *function template*:
+
+#+begin_src cpp
+template <nats_request RequestType>
+auto process_authenticated_request(RequestType request, ...)
+    -> std::expected<typename RequestType::response_type, std::string> {
+    using ResponseType = typename RequestType::response_type;
+    // ...
+    auto result = rfl::json::read<ResponseType>(raw);  // <-- instantiated in CALLER'S TU
+    // ...
+}
+#+end_src
+
+Because the body is in the header, every =.cpp= that calls this template compiles
+=rfl::json::read<ResponseType>= into its own translation unit. MSVC tracks a "template
+dependency graph" per TU: all =rfl::StringLiteral<N>= field-name types from every
+=rfl::json::read<X>= instantiation accumulate in that graph.
+
+*** When it triggers C1202
+
+C1202 fires when *two conditions coincide*:
+
+1. *The caller TU already has a saturated dependency graph.* A file compiled late in the
+   build (e.g. =BookMdiWindow.cpp= at step 4651/4936) includes many headers. Each header's
+   templates — not just rfl — add nodes to MSVC's dependency graph. By the time compilation
+   reaches the =process_authenticated_request= call, the graph is already large.
+
+2. *The ResponseType contains =trade_instrument= (or another type whose rfl reflection
+   chain reaches =swap_leg= or another struct with 15+ fields).* Adding even 19 new
+   =StringLiteral<N>= nodes (one per =swap_leg= field) is enough to push the graph over
+   MSVC's internal limit.
+
+Neither condition alone is sufficient. The pattern is invisible on Linux (GCC has more
+permissive limits) and only surfaces on MSVC for callers that are large enough.
+
+*** Proactive audit: how to find at-risk call sites
+
+The rule: a call site is at risk if =RequestType::response_type= contains
+=trade_instrument= (directly or via =trade_export_item=) and the calling file is large
+enough to saturate MSVC's dependency graph.
+
+*Step 1* — find all response types containing =trade_instrument= or =trade_export_item=:
+
+#+begin_src sh
+grep -rn "trade_instrument\|trade_export_item" \
+    projects --include="*.hpp" | \
+    grep "struct\|vector\|instrument " | \
+    grep -v "build\|vcpkg\|//\|domain/"
+#+end_src
+
+*Step 2* — from those types, identify which are =response_type= aliases of a request type
+that is passed to =process_authenticated_request=:
+
+#+begin_src sh
+grep -rn "process_authenticated_request\|process_request" \
+    projects --include="*.cpp" | grep -v "build\|vcpkg\|test"
+#+end_src
+
+Then cross-reference the inferred request type at each call site with the request type's
+=response_type=.
+
+*Current audit result (2026-06-02):*
+
+| Call site | Request type | response_type | Contains trade_instrument? | Risk |
+|-----------+--------------+---------------+----------------------------+------|
+| =BookMdiWindow.cpp:476= | =export_portfolio_request= | =export_portfolio_response= → =trade_export_item= → =trade_instrument= | Yes | HIGH — fix in task 8 |
+| All other call sites | various (save, get, delete, list) | simple domain structs | No | Safe |
+
+Only =export_portfolio_request= is at risk. =get_trade_instrument_request= also carries
+=trade_instrument= in its =response_type=, but it is handled by =parse_trade_instrument()=
+directly and is never passed through =process_authenticated_request=.
+
+*** The fix rule
+
+For any =process_authenticated_request<T>= call site where =T::response_type= contains
+=trade_instrument=: replace it with a *concrete (non-template) method* on =ClientManager=,
+implemented in a dedicated =.cpp= file. This isolates the =rfl::json::read<ResponseType>=
+instantiation to a fresh TU where MSVC's dependency graph starts clean.
+
+Pattern used in this story: =parse_swap_instruments.cpp=, =ClientManagerExportPortfolio.cpp=.
+
+** Linear trace of C1202 errors and fixes
+
+This story produced a sequence of progressively deeper C1202 fixes, each exposing the
+next layer. The full sequence:
+
+| # | Error location | Fields / cause | Fix | PR |
+|---+----------------+----------------+-----+----|
+| 1 | =ClientManagerTradeDetail.cpp= | =trade_instrument= variant 502-field =rfl::Literal= via =AddTagsToVariants= | Delete file; rewrite as two-phase dispatch (tasks 2–5) | multiple |
+| 2 | =ClientManager.hpp= (=process_authenticated_request=) | =export_portfolio_response= → 502-field =AddTagsToVariants= Literal on Clang/MSVC | Remove =AddTagsToVariants= from all 4 =json::read= call sites | PR #978 |
+| 3 | =ores.compute.wrapper/filesystem/archiver.hpp= | Missing =ORES_COMPUTE_WRAPPER_EXPORT= on Windows Clang | Add export macro | PR #978 |
+| 4 | =parse_trade_instrument.cpp= | Combined =swaption_instrument= (18) + =swap_leg= (19) = 29-field Literal: two types in one =rfl::json::read= | Split each leg-based read into two passes (instrument + legs separately) | PR #982 |
+| 5 | =parse_trade_instrument.cpp= | Accumulated TU context: flat/FX/equity types fill MSVC's graph before swap types start; =swaption_instr_outer= (19 fields) pushes it over | Move all 9 swap types to =parse_swap_instruments.cpp= (fresh TU) | PR #985 |
+| 6 | =BookMdiWindow.cpp= | =process_authenticated_request<export_portfolio_request>= is a template → instantiates =rfl::json::read<export_portfolio_response>= in BookMdiWindow's already-saturated context; =swap_leg= (19 fields) triggers C1202 | Concrete =ClientManager::exportPortfolio()= in a dedicated TU | task 8 |
 
 * See also
 

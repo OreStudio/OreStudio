@@ -8,7 +8,7 @@
 #+filetags: :introduce_ores_seeder:sprint_19:v0:
 #+owner: marco
 #+branch: feature/introduce-ores-seeder
-#+pr:
+#+pr: 1018
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
@@ -125,7 +125,7 @@ Sequence:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1018][#1018]] | [seeder] Introduce ores.seeder component for database test-data generation |
 
 * Review
 

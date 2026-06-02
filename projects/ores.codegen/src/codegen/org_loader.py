@@ -877,7 +877,11 @@ def load_org_table_model(path: Path | str) -> dict[str, Any]:
     if vfn_section:
         vfn: dict[str, Any] = {}
         for k, v in vfn_section.properties.items():
-            vfn[k.lower()] = _parse_typed(v)
+            key = k.lower()
+            if key in ("default", "default_value"):
+                vfn[key] = v  # raw string; Mustache 0-falsy guard
+            else:
+                vfn[key] = _parse_typed(v)
         t["validation_fn"] = vfn
 
     insert_section = _section(doc.root, "Insert trigger")
@@ -892,6 +896,12 @@ def load_org_table_model(path: Path | str) -> dict[str, Any]:
         constraints: list[dict[str, Any]] = []
         for node in checks_section.children:
             entry: dict[str, Any] = {}
+            # The converter assigns auto-titles `check_N` to satisfy
+            # org's "headings host drawers" rule; those carry no
+            # semantic weight. A hand-authored title (anything else)
+            # is meaningful — preserve it as the constraint name.
+            if not node.title.startswith("check_"):
+                entry["name"] = node.title
             for k, v in node.properties.items():
                 entry[k.lower()] = v  # keep expression verbatim
             constraints.append(entry)

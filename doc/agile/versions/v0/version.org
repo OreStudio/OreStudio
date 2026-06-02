@@ -2,51 +2,30 @@
 :ID: E6FD30ED-963E-4705-B414-91BF471C23D0
 :END:
 #+title: Version 0
-#+description: The pre-1.0 alpha version. Establishes architecture, models all ORE inputs/outputs, and adds GUI for all data operations.
+#+description: The 0.x.x release series. Works towards Milestone v1.0 (Static World).
 #+type: version
 #+level: s4
-#+filetags: :v0:alpha:
+#+filetags: :v0:
 #+created: 2024-06-15
-#+updated: 2026-05-29
+#+updated: 2026-06-02
 #+todo: STARTED | RELEASED
 
-This page documents *v0* — the pre-1.0 alpha [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]] of ORE Studio. It
-captures v0's identity, mission, definition of done, current status,
-and the sprints that compose it. For the durable, version-independent
+This page documents *v0* — the 0.x.x [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]] series of ORE Studio. It
+captures the series status and the sprints that compose it. The
+identity, mission, and definition of done live in the target
+[[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]]. For the durable, version-independent
 statement of what ORE Studio is, see the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product vision]].
-
-* Identity
-
-Version 0 is the alpha line — the pre-1.0 effort that lays down the
-architectural foundations and brings every ORE input and output into a
-persistent, GUI-driven environment. It is not feature-complete; it is the
-version where the shape of ORE Studio is settled.
-
-What makes v0 distinct from v1.0: v0 is allowed to be incomplete and to
-break compatibility freely. The product identity (what we are building)
-is durable; the implementation in v0 is not — for the durable statement
-see [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][ORE Studio product vision]].
-
-* Mission
-
-- Establish the main architectural tiers (database, services, UI).
-- Model all ORE XML inputs and outputs.
-- Add GUI support for every data operation.
-
-* Definition of done
-
-V0 closes when a user can load any ORE sample, execute it, and view the
-results graphically inside ORE Studio.
 
 * Status
 
-| Field        | Value                                                       |
-|--------------+-------------------------------------------------------------|
-| State        | STARTED                                                     |
-| Now          | Sprint 19 open; entity health review and CI fix stories lined up. |
-| Waiting on   | Nothing.                                                    |
-| Next         | Work sprint 19 stories.                                     |
-| Last touched | 2026-05-29                                                  |
+| Field            | Value                                                             |
+|------------------+-------------------------------------------------------------------|
+| State            | STARTED                                                           |
+| Target milestone | [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]]                                     |
+| Now              | Sprint 19 open; entity health review and CI fix stories lined up. |
+| Waiting on       | Nothing.                                                          |
+| Next             | Work sprint 19 stories.                                           |
+| Last touched     | 2026-06-02                                                        |
 
 * Sprints
 
@@ -75,18 +54,3 @@ the current sprint; the rest are closed.
 | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] | 2026-04-18 |            | Windows/MSVC portability, symbol visibility, ORE conventions, workspace, DQ publish, service isolation, SQL codegen, Qt UI, v2 docs. |
 | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] | 2026-05-22 | 2026-05-29 | Compass CLI, LLM-first docs, agile artefact improvements; ORE pipeline deferred. |
 | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] | 2026-05-29 |            | Entity health review post-NATS; manual docs; evaluation tooling; CI fixes.       |
-
-* Release scope
-
-In scope for v0:
-
-- All ORE XML input types modelled and importable.
-- All ORE output types displayable in the GUI.
-- Persistent storage for every data operation.
-- A working Qt UI that exercises the end-to-end pipeline.
-
-Deferred to later versions:
-
-- Performance optimisation beyond "fast enough to demo".
-- Multi-user / multi-tenant features beyond the minimum scaffolding.
-- Cloud deployment.

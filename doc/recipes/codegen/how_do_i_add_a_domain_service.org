@@ -34,16 +34,19 @@ all created consistently?
    =select_tables= / =select_prefixes= for cross-service reads.
 
 2. /Regenerate/ the artefacts the registry drives via the
-   =service-registry= codegen profile:
+   =service-registry= codegen profile. Run from the repository root —
+   =run_generator.sh= changes to its own directory internally, and its
+   model path is relative to =projects/ores.codegen/=:
 
    #+begin_src sh :results verbatim
-   cd projects/ores.codegen
-   ./run_generator.sh models/services/ores_services_service_registry.json \
+   ./projects/ores.codegen/run_generator.sh \
+       models/services/ores_services_service_registry.json \
        --profile service-registry
    #+end_src
 
    This (re)writes =projects/ores.sql/service_vars.sh= (=SERVICE_NAMES=)
-   and the SQL for service users, accounts, roles, and DB grants.
+   and the SQL for service users, accounts, roles, and DB grants. Staying
+   at the repository root keeps the relative paths in steps 3–4 valid.
 
 3. /Regenerate credentials/ so the new service gets its =.env= entries
    (=ORES_<NAME>_SERVICE_DB_USER= / =_PASSWORD= / =_DATABASE=):

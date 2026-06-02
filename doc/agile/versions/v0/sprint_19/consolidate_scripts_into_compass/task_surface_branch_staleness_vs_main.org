@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: E65F42A6-0762-4F75-866F-25A428B3973F
+:END:
+#+title: Task: Surface branch staleness vs main in compass Orient
+#+description: Add a compass helper that reports how far the current branch is from origin/main (commits ahead/behind plus time since divergence and last-fetch age, no network) and surface it as an always-on compact indicator on the Orient commands (where/status/fleet), escalating to a warning when the branch is too stale — so the user is warned before acting on out-of-date story/sprint state.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make compass surface how far the current branch has drifted from
+=origin/main=, so a contributor is warned /before/ they act on stale
+state — e.g. scaffolding a task or reading =sprint status= against a
+=main= that has moved on under them. The Orient pillar exists to answer
+"where are we?"; this tells the user when that answer is itself out of
+date.
+
+The signal is computed with *no network* (reads cached =origin/main= and
+=.git/FETCH_HEAD=), so the hot Orient commands stay instant and work
+offline. The cost of that choice — the cached =origin/main= is only as
+fresh as the last =git fetch= — is made visible rather than hidden.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-02                               |
+
+* Acceptance
+
+- A reusable helper returns, with no network call: commits =ahead= and
+  =behind= =origin/main=, the age of the merge-base (time since the
+  branch diverged), and the age of the last fetch (=.git/FETCH_HEAD=).
+- =compass where=, =status=, and =fleet= always show a compact,
+  colour-coded indicator (e.g. =↑3 ↓41=); =fleet= adds a per-worktree
+  =behind= column.
+- When the branch is /too stale/ — past the behind threshold or the
+  fetch is too old — the indicator escalates to a one-line warning with
+  the remedy (=git fetch && rebase onto main=).
+- Degrades cleanly: on =main=, in detached HEAD, or with no
+  =origin/main=/no remote, it shows a sensible state and never errors.
+- Never fetches implicitly; staleness of the cached =origin/main= is
+  surfaced via the fetch-age, so the number is never silently wrong.
+
+* Plan
+
+** Signal — both commit-distance and time (no network)
+
+One helper, e.g. =branch_staleness(project_root)= in compass, shelling
+out to git against the *cached* =origin/main=:
+
+| Value | Command |
+|-------+---------|
+| =ahead= | =git rev-list --count origin/main..HEAD= |
+| =behind= | =git rev-list --count HEAD..origin/main= |
+| =base_age= | age of =git merge-base HEAD origin/main= (=%cr=) |
+| =fetch_age= | =now − mtime(.git/FETCH_HEAD)= |
+
+=behind= is the primary "how much have I missed" number; =base_age= is
+the secondary "how long adrift" cue; =fetch_age= is the confidence
+caveat. All read-only, all offline.
+
+** Severity from behind-count + fetch-age
+
+A small =severity()= maps the signal to ok / warn / stale (proposed
+defaults, hard-coded for now — YAGNI on config):
+
+| Level | Trigger |
+|-------+---------|
+| ok    | behind < 10 and fetch < 1 day |
+| warn  | behind 10–24, or fetch 1–2 days |
+| stale | behind ≥ 25, or fetch > 2 days |
+
+** Display — always-on compact chip, escalating
+
+- A shared renderer prints a one-line chip at the top of =where= /
+  =status= / =fleet=: =⎇ <branch>  ↑3 ↓41  (diverged 5d ago, fetched 2d ago)=,
+  colour-coded green/yellow/red by severity.
+- At =stale=, append the warning + remedy line.
+- =fleet= already lists branches per worktree → add a =↓behind= column
+  so the whole fleet's drift is visible at a glance.
+
+** Edge cases
+
+On =main= (no warning, or "on main, N behind origin/main — fetch"),
+detached HEAD, missing =origin/main= / no remote → show a neutral state,
+never raise. Detect via =git symbolic-ref= / =git rev-parse --verify
+origin/main=.
+
+** Verification
+
+Manual: on a deliberately-stale branch the chip shows red with the right
+behind-count and fetch-age; on a fresh branch it shows green; on =main=
+and in a detached HEAD it degrades without error.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

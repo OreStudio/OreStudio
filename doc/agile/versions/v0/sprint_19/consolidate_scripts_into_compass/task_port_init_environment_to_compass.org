@@ -108,9 +108,15 @@ workflows. Two points that came up:
 
 * Review
 
+** Round 1 (gemini-code-assist bot)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| C1 | Wrap =current_version= in =try/except= for clean error | =compass.py:1693= | Declined | Developer tool; corrupt version log is a dev error, not a user error |
+| C2 | Wrap =current_version= in =try/except= for clean error | =env_init.py:427= | Declined | Same as C1 |
+| C3 | Use =shutil.which= before subprocess (openssl/scripts) | =env_init.py:332= | Declined | =CalledProcessError= already caught; env assumed correctly provisioned |
+| C4 | Use =shutil.which= before subprocess (IAM key gen) | =env_init.py:350= | Declined | Same as C3 |
+| C5 | Use =shutil.which= before subprocess (NATS certs) | =env_init.py:603= | Declined | Same as C3 |
 
 * Result
 

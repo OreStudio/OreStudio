@@ -49,11 +49,11 @@ Exception: pass= (already replaced with a visible =⚠️= warning).
 
 | Field        | Value                                               |
 |--------------+-----------------------------------------------------|
-| State        | STARTED                                             |
+| State        | DONE                                                |
 | Parent story | [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]]                             |
-| Now          | Silent-catch fixed; implementing task start + removing auto-stamp. |
+| Now          | Nothing.                                            |
 | Waiting on   | Nothing.                                            |
-| Next         | Implement, update runbooks, PR.                     |
+| Next         | Nothing. PR #1013 merged.                           |
 | Last touched | 2026-06-02                                          |
 
 * Acceptance
@@ -92,3 +92,7 @@ Exception: pass= (already replaced with a visible =⚠️= warning).
 | 3 | Exact-string state match fragile to table spacing  | compass.py  | Fixed    | Replaced with re.subn pattern           |
 
 * Result
+
+=compass task start= introduced as the explicit clock-on command covering
+new tasks, BACKLOG resume, and post-restart resume. Auto-stamp removed from
+=story new= / =task new=. Runbooks and recipes updated. PR #1013 merged.

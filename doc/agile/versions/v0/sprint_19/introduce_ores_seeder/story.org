@@ -54,17 +54,6 @@ compass plumbing, and a roadmap toward synthesised data.
 | Next          | Land the scaffold PR; follow-on tasks for compass plumbing + dataset_overview support. |
 | Last touched  | 2026-06-02                             |
 
-* Status
-
-| Field         | Value                                  |
-|---------------+----------------------------------------|
-| State         | BACKLOG                              |
-| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-06-02                               |
-
 * Acceptance
 
 - New component =projects/ores.seeder/= exists with the

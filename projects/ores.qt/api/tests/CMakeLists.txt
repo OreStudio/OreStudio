@@ -28,8 +28,18 @@ file(GLOB_RECURSE files RELATIVE
 
 # parse_trade_instrument.cpp is compiled directly into the test target so that
 # the tests can exercise the dispatch logic without linking against ores.qt.api.lib
-# (which would pull in Qt and require a display environment).
-set(parse_src "${ORES_QT_API_DIR}/src/parse_trade_instrument.cpp")
+# (which would pull in Qt and require a display environment). The swap-type
+# parsing lives in a dedicated TU (parse_swap_instruments.cpp) that
+# parse_trade_instrument.cpp dispatches into, so it must be compiled in too.
+#
+# NOTE: enumerating these TUs by hand is a known stop-gap — it goes stale
+# whenever the parse implementation is split into another TU (which is how
+# the swap TU came to be missing). Tracked for a proper fix (move the
+# Qt-free parse logic into its own component) by story
+# move_trade_parse_out_of_qt.
+set(parse_src
+    "${ORES_QT_API_DIR}/src/parse_trade_instrument.cpp"
+    "${ORES_QT_API_DIR}/src/parse_swap_instruments.cpp")
 
 add_executable(${tests_target_name} ${files} ${parse_src})
 set_target_properties(${tests_target_name}

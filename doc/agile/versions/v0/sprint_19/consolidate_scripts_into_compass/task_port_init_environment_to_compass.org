@@ -13,6 +13,8 @@
 #+blocked_since:
 #+created: 2026-06-02
 #+updated: 2026-06-02
+#+start: 2026-06-02
+#+end: 2026-06-02
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,11 +32,11 @@ script is deleted and every caller updated.
 
 | Field        | Value                                                |
 |--------------+------------------------------------------------------|
-| State        | STARTED                                              |
+| State        | DONE                                                 |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]         |
-| Now          | Port + cutover done: scripts deleted, all callers on compass env init/diff. |
+| Now          | Nothing.                                             |
 | Waiting on   | Nothing.                                             |
-| Next         | Ship in the story PR.                                |
+| Next         | Nothing.                                             |
 | Last touched | 2026-06-02                                           |
 
 Scope: *implementation + functional cutover only*. All documentation
@@ -111,3 +113,16 @@ workflows. Two points that came up:
 |   |                 |      |          |       |
 
 * Result
+
+All acceptance criteria met:
+
+- =compass env init [--preset P] [-y] [--enable-logging] [--with-diff]= reproduces
+  =init-environment.sh= behaviour; verified byte-identical regeneration of =.env= (only
+  generator comment + timestamp differ).
+- =compass env diff= and =compass env list [--show-secrets]= implemented.
+- =--no-deps= flag added to =compass.sh= so CI bootstraps offline (no pip install needed
+  for stdlib-only commands).
+- =build/scripts/init-environment.sh= and =diff-environment.sh= deleted; all callers
+  updated: five CI workflows, =ores-dashboard.el=, =ores-env.el=, and script
+  error-message references.
+- =env: init | diff | list | version= appears under the Provision pillar in =compass --help=.

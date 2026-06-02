@@ -8,6 +8,9 @@
 #+filetags: :reporting:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: reporting.service
+#+full_name: ores.reporting.service
+#+brief: Reporting service
 
 * Diagram
 

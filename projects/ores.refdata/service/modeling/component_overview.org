@@ -8,6 +8,9 @@
 #+filetags: :refdata:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: refdata.service
+#+full_name: ores.refdata.service
+#+brief: Reference data service
 
 * Diagram
 

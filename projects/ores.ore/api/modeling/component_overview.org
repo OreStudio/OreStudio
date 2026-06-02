@@ -8,6 +8,9 @@
 #+filetags: :ore:api:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: ore.api
+#+full_name: ores.ore.api
+#+brief: ORE import API types and protocol
 
 * Diagram
 

@@ -8,6 +8,9 @@
 #+filetags: :scheduler:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: scheduler.service
+#+full_name: ores.scheduler.service
+#+brief: Scheduler service
 
 * Diagram
 

@@ -8,6 +8,9 @@
 #+filetags: :variability:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: variability.service
+#+full_name: ores.variability.service
+#+brief: Feature flags and runtime configuration service
 
 * Diagram
 

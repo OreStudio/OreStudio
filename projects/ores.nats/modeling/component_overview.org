@@ -8,6 +8,9 @@
 #+filetags: :nats:messaging:component:
 #+created: 2026-05-20
 #+updated: 2026-05-20
+#+name: nats
+#+full_name: ores.nats
+#+brief: NATS messaging foundation library
 
 * Diagram
 

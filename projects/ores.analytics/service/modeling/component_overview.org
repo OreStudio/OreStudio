@@ -8,6 +8,9 @@
 #+filetags: :analytics:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: analytics.service
+#+full_name: ores.analytics.service
+#+brief: ORE Studio analytics service binary.
 
 * Diagram
 

@@ -8,6 +8,9 @@
 #+filetags: :telemetry:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: telemetry.service
+#+full_name: ores.telemetry.service
+#+brief: Telemetry and metrics streaming service
 
 * Diagram
 

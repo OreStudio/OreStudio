@@ -8,6 +8,9 @@
 #+filetags: :workflow:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: workflow.service
+#+full_name: ores.workflow.service
+#+brief: Workflow orchestration microservice
 
 * Diagram
 

@@ -8,6 +8,9 @@
 #+filetags: :analytics:core:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: analytics.core
+#+full_name: ores.analytics.core
+#+brief: Core implementation for ORE Studio analytics.
 
 * Diagram
 

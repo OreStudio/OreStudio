@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: 7F4B91E2-3D86-4A57-B92C-08E146DA7359
+:END:
+#+title: ores.workflow
+#+description: Provides saga-pattern workflow orchestration for multi-step provisioning and other long-running distributed operations. Tracks workflow instances and their individual steps, supports compensation (rollback), and integrates with the NATS messaging layer for inter-service coordination.
+#+type: component
+#+level: cross
+#+filetags: :workflow:component:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+name: workflow
+#+full_name: ores.workflow
+#+brief: Workflow orchestration service component
+
+* Summary
+
+Provides saga-pattern workflow orchestration for multi-step provisioning and
+other long-running distributed operations. Tracks workflow instances and their
+individual steps, supports compensation (rollback), and integrates with the
+NATS messaging layer for inter-service coordination.

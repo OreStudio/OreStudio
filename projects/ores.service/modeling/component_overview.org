@@ -8,6 +8,9 @@
 #+filetags: :service:infrastructure:component:
 #+created: 2026-05-20
 #+updated: 2026-05-20
+#+name: service
+#+full_name: ores.service
+#+brief: Common infrastructure shared by all domain microservices
 
 * Diagram
 

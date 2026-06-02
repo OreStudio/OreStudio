@@ -20,6 +20,7 @@ _CODEGEN_ORG_TYPES = frozenset({
     "ores.codegen.table",
     "ores.codegen.lookup_entity",
     "ores.codegen.service_registry",
+    "ores.codegen.component",
 })
 
 
@@ -88,6 +89,7 @@ def _generate_single(
             load_org_table_model,
             load_org_lookup_entity_model,
             load_org_service_registry_model,
+            load_org_component_model,
         )
         if str(model_path).endswith("_field_group.org"):
             model_data = load_org_field_group_model(model_path)
@@ -99,6 +101,8 @@ def _generate_single(
             model_data = load_org_lookup_entity_model(model_path)
         elif str(model_path).endswith("service_registry.org"):
             model_data = load_org_service_registry_model(model_path)
+        elif str(model_path).endswith("_component.org"):
+            model_data = load_org_component_model(model_path)
         else:
             model_data = load_org_model(model_path)
     else:

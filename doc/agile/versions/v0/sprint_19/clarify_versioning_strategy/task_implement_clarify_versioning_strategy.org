@@ -8,7 +8,7 @@
 #+filetags: :clarify_versioning_strategy:sprint_19:v0:
 #+owner: marco
 #+branch: feature/clarify-versioning-strategy
-#+pr:
+#+pr: 1000
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
@@ -31,11 +31,11 @@ release target.
 
 | Field        | Value                                      |
 |--------------+--------------------------------------------|
-| State        | STARTED                                    |
+| State        | DONE                                       |
 | Parent story | [[id:EC20475A-E7B4-4DFB-8E55-4B8DA6B36202][Clarify versioning strategy]]   |
-| Now          | Creating milestone docs and updating glossary. |
+| Now          | Nothing.                                   |
 | Waiting on   | Nothing.                                   |
-| Next         | Commit and open PR.                        |
+| Next         | Merge PR #1000.                            |
 | Last touched | 2026-06-02                                 |
 
 * Acceptance

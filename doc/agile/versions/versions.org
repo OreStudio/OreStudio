@@ -12,8 +12,9 @@
 This is the index of ORE Studio /versions/. A [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]] is a release
 series — a coherent group of [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprints]] producing incremental builds
 (0.x.x, 1.x.x, …) as it works towards a target [[id:65B2F1A0-3C4D-4E7A-9B8D-1F2A3C4D5E6F][milestone]]. The version
-name matches CMake's =MAJOR= component; the milestone is what closes
-the version and cuts the major release. See [[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][Milestones]] for the targets.
+name matches CMake's =MAJOR= component; =MINOR= is the sprint number
+inside the version. The milestone is what closes the version and cuts
+the major release. See [[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][Milestones]] for the targets.
 
 * Versions
 

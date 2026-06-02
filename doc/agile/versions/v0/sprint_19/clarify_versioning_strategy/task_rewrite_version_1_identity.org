@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :clarify_versioning_strategy:sprint_19:v0:
 #+owner: marco
-#+branch: feature/rewrite-version-1-identity
-#+pr:
+#+branch: feature/clarify-versioning-strategy
+#+pr: 1000
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
@@ -19,36 +19,33 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Strip =Identity=, =Mission=, =Definition of done=, and =Release scope=
+sections from =doc/agile/versions/v0/version.org=. Those now live in
+[[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]]. Add a =Target milestone= row to the
+Status table and update the opening paragraph to point there.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:EC20475A-E7B4-4DFB-8E55-4B8DA6B36202][Clarify versioning strategy]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-02                               |
+| Field        | Value                               |
+|--------------+-------------------------------------|
+| State        | DONE                                |
+| Parent story | [[id:EC20475A-E7B4-4DFB-8E55-4B8DA6B36202][Clarify versioning strategy]]        |
+| Now          | Nothing.                            |
+| Waiting on   | Nothing.                            |
+| Next         | Merge PR #1000.                     |
+| Last touched | 2026-06-02                          |
 
 * Acceptance
 
--
-
-* Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
-* Notes
+- =v0/version.org= has no =Identity=, =Mission=, =DoD=, or =Release scope= sections.
+- Status table has a =Target milestone= row linking to =[[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0]]=.
+- Opening paragraph redirects the reader to the milestone for identity.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                                              |
+|------+----------------------------------------------------|
+| 1000 | [agile] Introduce milestone concept; clarify versioning strategy |
 
 * Review
 
@@ -57,3 +54,6 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+=v0/version.org= reduced from 93 to ~35 lines. Identity content now
+lives exclusively in =doc/agile/milestones/v1.org=.

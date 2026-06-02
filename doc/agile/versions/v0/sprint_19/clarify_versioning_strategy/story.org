@@ -2,7 +2,7 @@
 :ID: EC20475A-E7B4-4DFB-8E55-4B8DA6B36202
 :END:
 #+title: Story: Clarify versioning strategy
-#+description: Rename v0→v1 and introduce v2; rewrite version identities to match the static/dynamic product arc.
+#+description: Introduce milestones as a first-class agile concept; separate version identity from the release series.
 #+type: story
 #+level: s2
 #+filetags: :agile:versions:docs:sprint_19:v0:
@@ -14,31 +14,47 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Resolve the naming confusion between a version series (v0, v1 — the
+0.x.x / 1.x.x release containers) and a major release target (v1.0,
+v2.0 — what closes the series). Introduce [[id:65B2F1A0-3C4D-4E7A-9B8D-1F2A3C4D5E6F][milestone]] as the first-class
+concept that owns identity, theme, mission, and DoD. Versions become
+lean containers: release series, sprints, and a pointer to their target
+milestone.
 
 * Status
 
-| Field         | Value                                  |
-|---------------+----------------------------------------|
-| State         | BACKLOG                              |
-| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-06-02                               |
+| Field         | Value                                                      |
+|---------------+------------------------------------------------------------|
+| State         | DONE                                                       |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                  |
+| Now           | Nothing.                                                   |
+| Waiting on    | Nothing.                                                   |
+| Next          | Merge PR #1000.                                            |
+| Last touched  | 2026-06-02                                                 |
 
 * Acceptance
 
--
+- =doc/agile/milestones/= exists with =milestones.org=, =v1.org=, =v2.org=.
+- =milestones.org= explains the milestone/version distinction with a comparison table.
+- =v0/version.org= is lean: no identity/mission/DoD; points to Milestone v1.0.
+- =agile.org= and =versions.org= link to milestones.
+- Glossary has a =Milestone= entry; =Version= entry corrected.
 
 * Tasks
 
-| Task | State | Start | End | Description |
-|------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+#+ATTR_HTML: :class hug-leading
+| Task                                                            | State | Start      | End        | Description                                              |
+|-----------------------------------------------------------------+-------+------------+------------+----------------------------------------------------------|
+| [[id:450D52AB-8BD9-459E-9F77-6C0BD652FFAB][Create milestones infrastructure]]  | DONE  | 2026-06-02 | 2026-06-02 | Scaffold milestones dir, catalogue, v1.org, v2.org; update glossary. |
+| [[id:1109067A-5BD1-4B8F-8B6D-DF671D9EE3BF][Slim v0/version.org]]               | DONE  | 2026-06-02 | 2026-06-02 | Strip identity/mission/DoD; add milestone pointer.       |
+| [[id:EDAE4567-CA33-45A0-8FBF-6A8D062E3DC0][Wire milestones into index docs]]   | DONE  | 2026-06-02 | 2026-06-02 | Link from agile.org and versions.org; At a glance row.   |
 
 * Decisions
 
+- Milestone docs use =#+type: knowledge= for now; a dedicated =milestone= compass type is a future improvement.
+- Version 1 row in milestones catalogue is plain text (no org-roam link) until =v1/version.org= is created.
+
 * Out of scope
 
--
+- Renaming the =v0/= directory — the directory name correctly matches the 0.x.x release series.
+- Creating =v1/version.org= — deferred until v1 work begins.

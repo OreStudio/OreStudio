@@ -100,7 +100,7 @@ dedicated thread pool to prevent =QThreadPool= starvation.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]] | STARTED | 2026-05-29 | | Scaffold sprint 19, wire version manifest, bump version, PR. |
-| [[id:EC20475A-E7B4-4DFB-8E55-4B8DA6B36202][Clarify versioning strategy]] | STARTED | 2026-06-02 | | Rename v0→v1, rewrite version 1 identity (static/roundtrips/zero-diffs), scaffold version 2 doc (dynamic/time). |
+| [[id:EC20475A-E7B4-4DFB-8E55-4B8DA6B36202][Clarify versioning strategy]] | DONE | 2026-06-02 | 2026-06-02 | Introduce milestone concept; separate version identity from release series; scaffold v1.0 and v2.0 milestone docs. |
 | [[id:2A6F5FE2-8C50-494F-948F-6BA519075FA9][Sprint planning]] | DONE | 2026-05-29 | 2026-05-29 | Select stories from backlog, size tasks, confirm mission. |
 | [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] | STARTED | 2026-05-31 | | Periodic System 2 health checks: goal alignment, load, PR velocity, story/task balance, focus, verdict. |
 

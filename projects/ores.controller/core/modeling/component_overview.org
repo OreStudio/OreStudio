@@ -8,6 +8,9 @@
 #+filetags: :controller:core:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: controller.core
+#+full_name: ores.controller.core
+#+brief: Core lifecycle management logic for the ORE Studio service controller.
 
 * Diagram
 

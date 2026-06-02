@@ -8,6 +8,9 @@
 #+filetags: :dq:api:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: dq.api
+#+full_name: ores.dq.api
+#+brief: Public API types for the data quality component.
 
 * Diagram
 

@@ -8,6 +8,9 @@
 #+filetags: :storage:filesystem:component:
 #+created: 2026-05-20
 #+updated: 2026-05-20
+#+name: storage
+#+full_name: ores.storage
+#+brief: Generic object storage API for ORE Studio.
 
 * Diagram
 

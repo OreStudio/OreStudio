@@ -8,6 +8,9 @@
 #+filetags: :workflow:api:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: workflow.api
+#+full_name: ores.workflow.api
+#+brief: Workflow public API types and helpers
 
 * Diagram
 

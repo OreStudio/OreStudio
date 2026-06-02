@@ -1,15 +1,18 @@
 :PROPERTIES:
-:ID: 97D2036F-6DBB-4755-A50F-D025F750A344
+:ID: D2C5E91A-7864-4F32-A1B9-6E50D2B47A88
 :END:
 #+title: ores.controller
-#+description: Codegen component model for ores.controller.
-#+type: ores.codegen.component
-#+filetags: :codegen:component:literate:
+#+description: Tracks desired service configuration (definitions) and actual running state (instances) for all ORE Studio backend services. Supports multiple replicas, automatic restart policies, and a full historical event log for audit and diagnostics. Terminology follows Kubernetes conventions: ServiceDefinition (Deployment), ServiceInstance (Pod), ServiceEvent (Event).
+#+type: component
+#+level: cross
+#+filetags: :controller:component:
 #+created: 2026-06-02
 #+updated: 2026-06-02
 #+name: controller
 #+full_name: ores.controller
 #+brief: Service lifecycle management for ORE Studio backend services.
+
+* Summary
 
 Tracks desired service configuration (definitions) and actual running state
 (instances) for all ORE Studio backend services. Supports multiple replicas,

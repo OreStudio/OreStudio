@@ -8,6 +8,9 @@
 #+filetags: :controller:api:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: controller.api
+#+full_name: ores.controller.api
+#+brief: NATS protocol types for the ORE Studio service controller.
 
 * Diagram
 

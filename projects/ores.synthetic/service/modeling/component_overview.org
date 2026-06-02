@@ -8,6 +8,9 @@
 #+filetags: :synthetic:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: synthetic.service
+#+full_name: ores.synthetic.service
+#+brief: Synthetic data generation service
 
 * Diagram
 

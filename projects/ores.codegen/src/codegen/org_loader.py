@@ -1115,3 +1115,28 @@ def load_org_component_model(path: Path | str) -> dict[str, Any]:
         c["description"] = body
 
     return {"component": c}
+
+
+def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
+    """Load a ``component_overview.org`` into the
+    ``{component: {name, full_name, brief, description}}`` dict
+    consumed by the ``component`` profile.
+
+    Differs from ``load_org_component_model``: all four scalars sit
+    in frontmatter (``#+name:``, ``#+full_name:``, ``#+brief:``,
+    ``#+description:``). The literate body of the overview (Diagram,
+    Summary, Inputs, ...) is for humans and Emacs navigation — codegen
+    keys off the frontmatter ``#+description:`` as the JSON
+    ``description`` equivalent.
+
+    Replaces the standalone ``*_component.org`` shape with a single
+    source of truth per component."""
+    text = Path(path).read_text(encoding="utf-8")
+    doc = parse_org(text)
+    fm = doc.frontmatter
+
+    c: dict[str, Any] = {}
+    for k in ("name", "full_name", "brief", "description"):
+        if k in fm:
+            c[k] = fm[k]
+    return {"component": c}

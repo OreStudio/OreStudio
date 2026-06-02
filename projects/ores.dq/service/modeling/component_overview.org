@@ -8,6 +8,9 @@
 #+filetags: :dq:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: dq.service
+#+full_name: ores.dq.service
+#+brief: Data quality service
 
 * Diagram
 

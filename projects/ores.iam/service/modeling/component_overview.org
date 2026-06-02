@@ -8,6 +8,9 @@
 #+filetags: :iam:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: iam.service
+#+full_name: ores.iam.service
+#+brief: Identity and access management service
 
 * Diagram
 

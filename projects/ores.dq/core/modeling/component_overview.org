@@ -8,6 +8,9 @@
 #+filetags: :dq:core:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: dq.core
+#+full_name: ores.dq.core
+#+brief: Internal implementation of the data quality component.
 
 * Diagram
 

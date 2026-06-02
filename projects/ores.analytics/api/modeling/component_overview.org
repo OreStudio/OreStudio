@@ -8,6 +8,9 @@
 #+filetags: :analytics:api:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: analytics.api
+#+full_name: ores.analytics.api
+#+brief: Public API types for ORE Studio analytics.
 
 * Diagram
 

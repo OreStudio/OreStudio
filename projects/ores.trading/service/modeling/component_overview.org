@@ -8,6 +8,9 @@
 #+filetags: :trading:service:component:
 #+created: 2026-05-19
 #+updated: 2026-05-19
+#+name: trading.service
+#+full_name: ores.trading.service
+#+brief: Trade booking and lifecycle service
 
 * Diagram
 

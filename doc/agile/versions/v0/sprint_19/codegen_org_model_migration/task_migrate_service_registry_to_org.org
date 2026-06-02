@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch: feature/migrate-service-registry-org
-#+pr:
+#+pr: 1009
 #+blocked_on:
 #+state: DONE
 #+blocked_since:
@@ -94,7 +94,7 @@ Org file shape:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1009][#1009]] | [codegen,services] Migrate service_registry from JSON to org-mode |
 
 * Review
 

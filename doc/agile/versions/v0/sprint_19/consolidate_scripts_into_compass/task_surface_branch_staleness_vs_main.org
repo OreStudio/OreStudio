@@ -8,7 +8,7 @@
 #+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
 #+branch: feature/surface-branch-staleness-orient
-#+pr:
+#+pr: 1021
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
@@ -113,9 +113,9 @@ and in a detached HEAD it degrades without error.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                                                      |
+|------+------------------------------------------------------------|
+| 1021 | Surface branch staleness in compass Orient (where/fleet)   |
 
 * Review
 

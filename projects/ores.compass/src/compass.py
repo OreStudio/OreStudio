@@ -587,6 +587,127 @@ def current_version_sprint(docs):
     current_sprint = max(in_version or sprints, key=_seq_key)
     return current_version, current_sprint
 
+# --- Branch staleness helpers (Orient pillar) ---
+
+def _git_out(*cmd, cwd):
+    """Run a git command; return stripped stdout or None on failure."""
+    try:
+        p = subprocess.run(["git"] + list(cmd), capture_output=True, text=True,
+                           cwd=str(cwd), timeout=5)
+        return p.stdout.strip() if p.returncode == 0 else None
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+def branch_staleness(root):
+    """Compute how far the current branch has drifted from origin/main.
+
+    No network call — reads cached origin/main and .git/FETCH_HEAD only.
+    Returns a dict:
+      branch      - current branch name, or None (detached HEAD)
+      ahead       - commits ahead of origin/main
+      behind      - commits behind origin/main
+      base_age_s  - seconds since merge-base diverged (float), or None
+      fetch_age_s - seconds since last git fetch (float), or None
+      error       - None | "detached" | "no-remote"
+    """
+    info = {"branch": None, "ahead": 0, "behind": 0,
+            "base_age_s": None, "fetch_age_s": None, "error": None}
+
+    branch = _git_out("symbolic-ref", "--short", "HEAD", cwd=root)
+    if branch is None:
+        info["error"] = "detached"
+        return info
+    info["branch"] = branch
+
+    if _git_out("rev-parse", "--verify", "origin/main", cwd=root) is None:
+        info["error"] = "no-remote"
+        return info
+
+    for key, rev_range in (("ahead", "origin/main..HEAD"), ("behind", "HEAD..origin/main")):
+        val = _git_out("rev-list", "--count", rev_range, cwd=root)
+        info[key] = int(val) if val and val.isdigit() else 0
+
+    base = _git_out("merge-base", "HEAD", "origin/main", cwd=root)
+    if base:
+        ts = _git_out("log", "-1", "--format=%ct", base, cwd=root)
+        if ts and ts.isdigit():
+            info["base_age_s"] = time.time() - int(ts)
+
+    # FETCH_HEAD lives in the common git dir (shared by all worktrees)
+    common = _git_out("rev-parse", "--git-common-dir", cwd=root)
+    if common:
+        fh = Path(common) if Path(common).is_absolute() else Path(root) / common
+        fh = fh / "FETCH_HEAD"
+        if fh.exists():
+            info["fetch_age_s"] = time.time() - fh.stat().st_mtime
+
+    return info
+
+def _staleness_severity(info):
+    """Return 'ok', 'warn', or 'stale'."""
+    if info.get("error"):
+        return "ok"
+    behind     = info.get("behind", 0)
+    fetch_days = (info.get("fetch_age_s") or 0) / 86400
+    if behind >= 25 or fetch_days > 2:
+        return "stale"
+    if behind >= 10 or fetch_days > 1:
+        return "warn"
+    return "ok"
+
+def _age_human(seconds):
+    """Convert seconds to a compact label: 30m, 4h, 2d."""
+    if seconds is None:
+        return "?"
+    s = int(seconds)
+    if s < 3600:
+        return f"{s // 60}m"
+    if s < 86400:
+        return f"{s // 3600}h"
+    return f"{s // 86400}d"
+
+_C_GREEN  = "\033[32m"
+_C_YELLOW = "\033[33m"
+_C_RED    = "\033[31m"
+_C_RESET  = "\033[0m"
+_C_SEV    = {"ok": _C_GREEN, "warn": _C_YELLOW, "stale": _C_RED}
+
+def staleness_lines(info):
+    """Return (chip_line, warning_line_or_None) for a branch_staleness dict."""
+    error  = info.get("error")
+    branch = info.get("branch") or "(detached)"
+
+    if error == "detached":
+        return "⎇  (detached HEAD)", None
+    if error == "no-remote":
+        return f"⎇  {branch}  (no origin/main)", None
+
+    ahead      = info.get("ahead", 0)
+    behind     = info.get("behind", 0)
+    base_age   = _age_human(info.get("base_age_s"))
+    fetch_age  = _age_human(info.get("fetch_age_s"))
+    severity   = _staleness_severity(info)
+    col        = _C_SEV[severity]
+
+    if branch == "main":
+        if behind == 0:
+            chip = f"{col}⎇  main  (up to date, fetched {fetch_age} ago){_C_RESET}"
+        else:
+            chip = f"{col}⎇  main  ↓{behind}  (fetched {fetch_age} ago){_C_RESET}"
+        warning = (f"{_C_YELLOW}⚠  main is behind origin — run: git fetch{_C_RESET}"
+                   if behind > 0 else None)
+        return chip, warning
+
+    chip = (f"{col}⎇  {branch}  ↑{ahead} ↓{behind}"
+            f"  (diverged {base_age} ago, fetched {fetch_age} ago){_C_RESET}")
+    if severity == "stale":
+        warning = f"{_C_RED}⚠  Branch is stale — run: git fetch && git rebase origin/main{_C_RESET}"
+    elif severity == "warn":
+        warning = f"{_C_YELLOW}⚠  Branch is drifting — consider: git fetch && git rebase origin/main{_C_RESET}"
+    else:
+        warning = None
+    return chip, warning
+
 def cmd_where(args):
     docs = doc_index.load_all()
     current_version, current_sprint = current_version_sprint(docs)
@@ -647,6 +768,11 @@ def cmd_where(args):
         return
 
     print("🧭 ores.compass — where are we?\n")
+    chip, warning = staleness_lines(branch_staleness(PROJECT_ROOT))
+    print(chip)
+    if warning:
+        print(warning)
+    print()
     print(f"Version:  {current_version.title}  [{current_version.id.upper()}]")
     print(f"          {current_version.rel_path}")
     print(f"Sprint:   {current_sprint.title}  [{current_sprint.id.upper()}]")
@@ -1276,6 +1402,7 @@ def cmd_fleet(args):
             "journal": bool(journal),
             "pr": ({"number": pr["number"], "state": pr["state"], "url": pr["url"]}
                    if pr else None),
+            "staleness": branch_staleness(path),
         })
 
     if args.format == "json":
@@ -1286,7 +1413,11 @@ def cmd_fleet(args):
     for r in rows:
         mark = "→" if r["current"] else " "
         branch = r["branch"] or "(detached)"
+        chip, warning = staleness_lines(r["staleness"])
         print(f"{mark} {r['worktree']}   {branch}")
+        print(f"      {chip}")
+        if warning:
+            print(f"      {warning}")
         if r["task"] or r["story"]:
             state_suffix = f" [{r['task_state']}]" if r["task_state"] else ""
             source = "" if r["journal"] else " (from branch)"

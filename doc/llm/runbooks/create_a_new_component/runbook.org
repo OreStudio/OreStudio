@@ -22,17 +22,32 @@ Scaffold a new ORE Studio component following the [[id:F27E5DF7-6223-4B6F-80A5-C
 
 * Steps
 
-In execution order:
+In execution order. Since [[https://github.com/OreStudio/OreStudio/pull/1014][PR #1014]] the overview is the single
+source of truth for codegen — it must come *before* the C++ scaffold:
 
-1. /Scaffold the component./ Use [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][Component Creator]] skill to generate the api/core/service directory structure, headers, and CMake files.
+1. /Write the component overview(s)./ Follow [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a
+   component overview?]] to scaffold and fill in each part. The scaffold
+   template includes the codegen-readable keywords (=#+name:=,
+   =#+full_name:=, =#+brief:=) so codegen can read identity straight off
+   the overview. For a split component, create one overview per part
+   under =projects/ores.COMPONENT/{api,core,service}/modeling/=; a
+   group-level overview at =projects/ores.COMPONENT/modeling/= is
+   optional (used for navigation + group-level scalars).
 
-2. /Wire CMake./ Add the component to the top-level =projects/CMakeLists.txt= and configure dependencies per [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
+2. /Scaffold the C++ + CMake./ Use [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][Component Creator]] to run codegen
+   against each overview: =codegen.sh generate --model <overview> --profile component(-api|-core|-service)=.
 
-3. /Write the component overview./ Follow [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] to document the component's purpose, inputs, outputs, and dependencies.
+3. /Wire CMake./ Add the component to the top-level =projects/CMakeLists.txt=
+   and configure dependencies per [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 
-4. /Add stub tests./ Follow [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] to add a Catch2 test skeleton.
+4. /Add stub tests./ Follow [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] to add a Catch2
+   test skeleton (codegen already produces the test-main stub).
 
-5. /Build and verify./ Run =cmake --build --preset <preset>= and =ctest= to confirm the scaffold compiles and passes stub tests.
+5. /Build and verify./ Run =cmake --build --preset <preset>= and =ctest=
+   to confirm the scaffold compiles and passes stub tests. Verify the
+   codegen-side flow with =python3 projects/ores.codegen/tests/component_scaffold/verify.py=
+   which exercises the loader + scaffold-path resolution against fixtures
+   and prior art.
 
 6. /Commit and PR./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]] and [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][create a PR]].
 

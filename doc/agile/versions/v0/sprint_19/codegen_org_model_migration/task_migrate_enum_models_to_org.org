@@ -2,7 +2,7 @@
 :ID: 9DA26E86-E206-4DA1-8097-6E79CA4B86E9
 :END:
 #+title: Task: Migrate enum JSON models to org-mode
-#+description: Convert the 3 *_enum.json files (workflow_status_enum, comms/message_type_enum, comms/compression_type_enum) into ores.<package>.<enum>.org files under each owning component's modeling/ dir. Pure C++ enums — small shape, no Qt, no SQL DDL. Settle the enum org section layout, extend org_loader (or write a tiny enum-loader), extend migrate_json_to_org.py (or write a sibling converter), regen, delete JSON, build.
+#+description: All three enum JSON models in the inventory turned out to be orphans (no consumers anywhere). The two comms enums (message_type_enum, compression_type_enum) went with the comms decommission; workflow_status_enum is also orphan (no C++ references, no entity column uses it, never produced output because of a broken {component_include} path substitution) and the enum semantics were folded into reference data elsewhere. Task closes as retirement-only — no migration, no enum-org pipeline work.
 #+type: task
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
@@ -13,28 +13,39 @@
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-01
+#+state: DONE
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+All three enum JSON models in the original inventory turned out to
+be orphans — no live C++ consumers, no domain-entity columns using
+them, no committed output anywhere. The two comms enums went with
+the comms decommission; =workflow_status_enum= followed once it
+became clear nothing referenced it and the enum semantics had moved
+to reference data elsewhere. Task closes by *retirement* — no
+enum-org pipeline work, no converter, no loader extension.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Closed via retirement.                 |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-01                               |
+| Next         | n/a                                    |
+| Last touched | 2026-06-02                             |
 
 * Acceptance
 
--
+- =comms/message_type_enum.json= deleted (orphan, comms decom).
+- =comms/compression_type_enum.json= deleted (orphan, comms decom).
+- =workflow/workflow_status_enum.json= deleted (orphan; semantics
+  moved to reference data).
+- =enum= kind removed from the inventory's migrate set.
 
 * Plan
 

@@ -56,7 +56,7 @@ usage() {
     cat <<EOF
 Usage: $(basename "$0") [--compile] [--port PORT]
 
-  --compile   Rebuild the site (emacs -Q --script .build-site.el) before serving.
+  --compile   Rebuild the site (emacs -Q --script projects/ores.lisp/src/ores-build-site.el) before serving.
   --port      Port to serve on (overrides ORES_SITE_PORT in .env and PORT env var).
   -h, --help  Show this help.
 EOF
@@ -104,12 +104,12 @@ stop_site_server_if_running "${PORT}"
 
 if [[ $COMPILE -eq 1 ]]; then
     echo "Building site..."
-    (cd "$PROJECT_DIR" && emacs -Q --script .build-site.el)
+    (cd "$PROJECT_DIR" && emacs -Q --script projects/ores.lisp/src/ores-build-site.el)
 fi
 
 if [[ ! -d "$BUILD_DIR" ]]; then
     echo "Build directory not found: $BUILD_DIR" >&2
-    echo "Run with --compile, or build first via: emacs -Q --script .build-site.el" >&2
+    echo "Run with --compile, or build first via: emacs -Q --script projects/ores.lisp/src/ores-build-site.el" >&2
     exit 1
 fi
 

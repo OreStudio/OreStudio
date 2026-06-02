@@ -17,7 +17,8 @@ The ORE Studio user manual is a PDF produced by Emacs =ox-latex=
 =doc/manual/user_guide/user_manual.org=; output lands alongside it as
 =user_manual.pdf=. The layout uses the =tufte-book= LaTeX class for
 wide-margin typography. The =deploy_manual= CMake target runs the
-full pipeline in one step via =emacs -Q --script .build-manual.el=.
+full pipeline in one step via =emacs -Q --script
+projects/ores.lisp/src/ores-build-manual.el=.
 
 * Detail
 
@@ -27,8 +28,8 @@ full pipeline in one step via =emacs -Q --script .build-manual.el=.
 cmake --build --preset linux-clang-debug-ninja --target deploy_manual
 #+end_src
 
-This invokes =emacs -Q --script .build-manual.el=, which loads
-=ores-build-manual.el= and calls =org-latex-export-to-pdf= on
+This invokes =emacs -Q --script projects/ores.lisp/src/ores-build-manual.el=,
+which calls =org-latex-export-to-pdf= on
 =doc/manual/user_guide/user_manual.org=. LaTeX is run twice
 (=pdflatex= × 2) so that cross-references and the table of contents
 are fully resolved.

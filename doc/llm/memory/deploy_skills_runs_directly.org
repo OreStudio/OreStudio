@@ -11,8 +11,8 @@
 #+updated: 2026-05-22
 
 The =deploy_skills= cmake target only invokes Emacs in batch mode via
-=.build-skills.el=; it performs no C++ compilation. Claude can run it
-directly without asking the user.
+=projects/ores.lisp/src/ores-build-skills.el=; it performs no C++
+compilation. Claude can run it directly without asking the user.
 
 *Why:* Session on 2026-05-22 incorrectly deferred the command to the user by
 applying build-parallelism concerns (=-j $(nproc)= crash risk, build.sh

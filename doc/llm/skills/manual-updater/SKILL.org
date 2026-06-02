@@ -109,7 +109,7 @@ behaviour, even if the user did not explicitly ask for a manual update.
 - [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] — the root manual file.
 - =doc/manual/user_guide/= — the root file plus the flat =chapter_N_*.org=
   source files.
-- =deploy_manual= CMake target — builds the PDF via =.build-manual.el=.
+- =deploy_manual= CMake target — builds the PDF via =projects/ores.lisp/src/ores-build-manual.el=.
 
 * Artefacts                                                        :noexport:
 

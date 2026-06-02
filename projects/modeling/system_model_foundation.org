@@ -115,6 +115,7 @@ Related documents:
   cross-service access is controlled.
 - [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]] — conventions used to diagram the database
   schema.
+- [[id:A3F8B2C1-9D4E-4F7A-B6C5-2E8D1A0F3B9C][Tooling Layer]] — =ores.sql= in its developer-tooling context.
 
 ** ores.security
 
@@ -137,8 +138,11 @@ scaffolding. Also the engine behind the =compass= CLI tool.
 |---------------+------------------------------------------+--------------|
 | [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]  | Stencil-driven C++ and org-mode code gen | [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]] |
 
+- [[id:A3F8B2C1-9D4E-4F7A-B6C5-2E8D1A0F3B9C][Tooling Layer]] — =ores.codegen= and =ores.compass= in their developer-tooling context.
+
 * See also
 
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the index page with the four-layer architecture overview.
+- [[id:A3F8B2C1-9D4E-4F7A-B6C5-2E8D1A0F3B9C][Tooling Layer]] — full tooling component inventory (compass, codegen, lisp, sql).
 - [[id:6FF02DD3-0F3B-4BCB-87CA-3224030D00E8][System Model: Infrastructure Layer]] — the next layer up.
 - [[id:A1C3E5F7-92B4-4D6A-B8C2-3F1D7E9A0B5C][Shared Library Symbol Visibility]] — how symbols are exported across Foundation shared libraries.

@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: A3F8B2C1-9D4E-4F7A-B6C5-2E8D1A0F3B9C
+:END:
+#+title: System Model: Tooling Layer
+#+description: Component inventory for the Tooling layer: the developer tools and automation that support building, testing, and documenting ORE Studio.
+#+type: knowledge
+#+level: cross
+#+filetags: :modeling:architecture:tooling:system_model:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+
+This page is part of the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]]. Tooling is not a runtime layer — these
+components do not run in production and carry no dependency on the four
+runtime layers. They exist to support the human and LLM contributors who
+build, test, and document ORE Studio: code generation, repository navigation,
+database lifecycle management, and Emacs developer ergonomics.
+
+See [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] → =* Tooling= for the entry-point index to all tooling docs.
+
+* Detail
+
+** ores.compass
+
+[[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] is the Python repository compass: the primary quality-of-life
+tool for both human contributors and LLM agents. It provides temporal
+orientation in the sprint (where are we, what is in flight), semantic search
+over the org-roam knowledge graph, agile scaffolding (story, task, capture,
+memory), and fleet management for parallel Claude environments.
+
+| Component    | Role                                                                    | Language |
+|--------------+-------------------------------------------------------------------------+----------|
+| [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] | Temporal orientation, doc search, agile scaffolding, fleet management   | Python   |
+
+** ores.codegen
+
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] is the Python + Mustache code generator that produces SQL
+schemas, C++ domain types, and v2 org documents from per-entity model files.
+It embodies the MASD /back-out-from-reference-implementation/ strategy:
+entities are commissioned by hand first, the recurring pattern is extracted
+into a template, and every subsequent entity is generated. See
+[[id:EE6A643D-6C6C-41B8-88FD-2EA9351414CD][Document MASD and code generation principles]] for the design rationale.
+
+| Component    | Role                                                       | Language        |
+|--------------+------------------------------------------------------------+-----------------|
+| [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] | SQL, C++, and org document generation from entity models   | Python, Mustache |
+
+** ores.lisp
+
+[[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] is the Emacs Lisp developer tooling layer: dashboard, database
+browser, shell integration, and the org-roam export pipeline that converts
+the knowledge graph to the project site. It is the operational surface for
+contributors who work in Emacs.
+
+| Component  | Role                                                              | Language    |
+|------------+-------------------------------------------------------------------+-------------|
+| [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]]  | Emacs dashboard, DB browser, shell integration, org-roam export   | Emacs Lisp  |
+
+** ores.sql
+
+[[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] owns the PostgreSQL lifecycle: schema definitions, migration
+scripts, role provisioning, and database recreation. It is the authoritative
+source of the SQL schema and the scripts that set up a development or CI
+database from scratch. See the =* Scripts= section in the component overview
+for the full script inventory.
+
+| Component | Role                                                          | Language |
+|-----------+---------------------------------------------------------------+----------|
+| [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]]  | PostgreSQL schema, migrations, role provisioning, DB lifecycle | SQL, bash |
+
+* See Also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the broader knowledge graph entry point, including the full
+  =* Tooling= section with narrative descriptions and recipe links.
+- [[id:BA6F2BF1-E16E-4E80-A3D0-CACC30FA04DB][Developer scripts]] — inventory of standalone scripts in =scripts/=,
+  grouped by purpose.
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the top-level architecture index.

@@ -47,6 +47,9 @@ the system belongs to exactly one of these layers:
 - [[id:C9AD7DA5-D00E-4CA9-A978-E74F776E0F17][Application Layer]]: the surfaces. Depends on every layer below. Qt desktop, CLI,
   HTTP servers, Wt web frontend, and the compute engine. If a user touches it,
   it lives here.
+- [[id:A3F8B2C1-9D4E-4F7A-B6C5-2E8D1A0F3B9C][Tooling Layer]]: the instruments contributors reach for to build, test, and
+  document the system. Not a runtime layer — these components carry no production
+  dependency. [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]], [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]], [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]], and [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] live here.
 
 * See Also
 

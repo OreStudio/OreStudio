@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: D90A3E68-D331-4473-AFAB-C1CBC94BA0CD
+:END:
+#+title: Story: Add tooling layer to system model
+#+description: Create system_model_tooling.org sub-page; add tooling layer blurb to system_model.org; link foundation layer docs back to tooling layer via org-roam.
+#+type: story
+#+level: s2
+#+filetags: :modeling:architecture:tooling:system_model:documentation:sprint_19:v0:
+#+created: 2026-06-02
+#+updated: 2026-06-02
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] describes four runtime layers (Foundation, Infrastructure,
+Domain, Application) but does not document the Tooling layer — the
+developer tools that support the build, test, and documentation workflows.
+[[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] already has a =* Tooling= section listing =ores.compass=,
+=ores.codegen=, =ores.lisp=, and =ores.sql=, but the system model itself
+has no parallel entry point.
+
+This story adds that entry point:
+1. A new =system_model_tooling.org= sub-page following the same format as
+   the four existing per-layer pages.
+2. A Tooling entry in =system_model.org= with a short blurb and an org-roam
+   id-link to the sub-page.
+3. Id-links from =system_model_foundation.org= back to the Tooling page
+   where tooling components (compass, codegen, lisp, sql) are mentioned.
+
+* Status
+
+| Field         | Value                                                            |
+|---------------+------------------------------------------------------------------|
+| State         | STARTED                                                          |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                        |
+| Now           | Task 1 in progress.                                              |
+| Waiting on    | —                                                                |
+| Next          | Implement task; PR; merge.                                       |
+| Last touched  | 2026-06-02                                                       |
+
+* Acceptance
+
+- =projects/modeling/system_model_tooling.org= exists with a component
+  inventory for all four tooling components.
+- =projects/modeling/system_model.org= has a =* Tooling Layer= bullet with
+  an id-link to =system_model_tooling.org=.
+- =projects/modeling/system_model_foundation.org= links back to
+  =system_model_tooling.org= via org-roam id-links where tooling
+  components are cross-referenced.
+- Site builds clean.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7F7456F7-DC80-4596-B375-CE026905E036][Create system_model_tooling.org and update system model links]] | DONE | 2026-06-02 | 2026-06-02 | Create system_model_tooling.org; add tooling blurb to system_model.org; add back-links from foundation layer. |
+
+* Decisions
+
+- /Tooling is not a fifth runtime layer./ The four runtime layers describe
+  the dependency order of components that run in production. Tooling
+  components (compass, codegen, lisp, sql) are not part of that stack —
+  they support development. The system model entry is a sibling section,
+  not a fifth layer in the diagram.
+- /Existing tooling docs are not updated here./ The component overviews for
+  ores.compass, ores.codegen, ores.lisp, and ores.sql were written in
+  sprint 18 (Tooling documentation story). This story only wires them into
+  the system model index.
+
+* Out of scope
+
+- Updating the architecture PlantUML diagram to show a tooling tier.
+- Updating individual tooling component overviews.

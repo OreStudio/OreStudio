@@ -50,6 +50,7 @@ class BusinessDayConventionTypeController;
 class FloatingIndexTypeController;
 class PaymentFrequencyTypeController;
 class LegTypeController;
+class CurrencyMarketTierController;
 class MonetaryNatureController;
 class RoundingTypeController;
 class PurposeTypeController;
@@ -114,6 +115,7 @@ private:
     std::unique_ptr<FloatingIndexTypeController>           floatingIndexTypeController_;
     std::unique_ptr<PaymentFrequencyTypeController>        paymentFrequencyTypeController_;
     std::unique_ptr<LegTypeController>                     legTypeController_;
+    std::unique_ptr<CurrencyMarketTierController>          currencyMarketTierController_;
     std::unique_ptr<MonetaryNatureController>              monetaryNatureController_;
     std::unique_ptr<RoundingTypeController>                roundingTypeController_;
     std::unique_ptr<PurposeTypeController>                 purposeTypeController_;

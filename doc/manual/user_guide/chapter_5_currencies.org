@@ -11,7 +11,7 @@
 
 ** Overview
 
-Currencies are the foundational reference data entity. Every trade,
+@@latex:\lettrine[lines=2,nindent=0em]{C}{urrencies} \textsc{are the foundational reference data entity.}@@@@html:Currencies are the foundational reference data entity.@@ Every trade,
 cashflow, position, and P&L figure in the system is denominated in a
 currency; getting the currency record right is a prerequisite for
 everything else. This chapter covers the currency entity itself and

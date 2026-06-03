@@ -11,7 +11,7 @@
 
 ** What is Reference Data?
 
-Reference data is the static or slowly-changing master data that all
+@@latex:\lettrine[lines=2,nindent=0em]{R}{eference} \textsc{data is the static or slowly-changing}@@@@html:Reference data is the static or slowly-changing@@ master data that all
 financial activity depends on. It defines the vocabulary of the system
 — the currencies a trade is denominated in, the counterparty on the
 other side of a deal, the book it settles into, the country a legal
@@ -79,14 +79,15 @@ Every reference data record in OreStudio carries six standard
 provenance fields that together answer the "who, when, and why" of the
 last change:
 
-| Field         | UI Label      | Meaning                                                    |
-|---------------+---------------+------------------------------------------------------------|
-| =version=     | Version       | Increments from 1 on every save.                           |
-| =modified_by= | Modified By   | Account that submitted the change.                         |
+#+attr_latex: :environment tabularx :width \linewidth :align llX
+| Field         | UI Label      | Meaning                                                                          |
+|---------------+---------------+----------------------------------------------------------------------------------|
+| =version=     | Version       | Increments from 1 on every save.                                                 |
+| =modified_by= | Modified By   | Account that submitted the change.                                               |
 | =performed_by= | Performed By | Account on whose behalf the change was made (may differ in delegated workflows). |
-| =recorded_at= | Recorded At   | UTC timestamp when the row was written.                    |
-| =change_reason_code= | Change Reason | Structured reason code drawn from the change reasons table. |
-| =change_commentary= | Commentary  | Optional free-text note accompanying the change.           |
+| =recorded_at= | Recorded At   | UTC timestamp when the row was written.                                          |
+| =change_reason_code= | Change Reason | Structured reason code drawn from the change reasons table.               |
+| =change_commentary= | Commentary  | Optional free-text note accompanying the change.                                |
 
 These fields are displayed in the read-only *Provenance* tab of every
 detail dialog and are stored in the current record. In addition, the

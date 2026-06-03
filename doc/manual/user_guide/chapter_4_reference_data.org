@@ -261,9 +261,105 @@ Second, they make the audit trail machine-readable and regulatorily
 aligned. A compliance officer can query all records modified under
 =common.rectification= across an entire tenant in a single query,
 and the category structure maps directly to reporting obligations
-under MiFID II, FRTB, and BCBS 239. Some reason codes require a
-free-text commentary; others make it optional. The requirement is
-enforced at the application layer before the save is submitted.
+under MiFID II, FRTB, and BCBS 239.
+
+Each reason code has three properties that govern when it may be used
+and what it requires: whether it applies to new record creation, to
+amendments of existing records, or to deletions; and whether a
+free-text commentary is mandatory or optional. These constraints are
+enforced by the application layer before a save is submitted.
+
+**** The System Category
+
+System reasons are assigned automatically by the application and
+services. They are not presented to users in the change reason
+prompt and cannot be selected manually. They exist solely to
+provide traceability for machine-driven operations.
+
+#+latex: \begin{fullwidth}
+#+attr_latex: :environment tabularx :width \linewidth :align llX
+| Code                           | Applies to      | Description                                                                     |
+|--------------------------------+-----------------+---------------------------------------------------------------------------------|
+| =system.initial_load=          | Create          | Initial system bootstrap or database migration. Used once during deployment.    |
+| =system.new_record=            | Create          | Normal operational record creation by the application or a service.             |
+| =system.external_data_import=  | Amend           | Import from an external data source (ISO feed, GLEIF, vendor file). Commentary mandatory — data lineage must be recorded. |
+| =system.import=                | Create, Amend   | Data loaded via the CLI import command.                                         |
+| =system.test=                  | Create, Amend, Delete | Test data created by automated test suites.                               |
+| =system.tenant_terminated=     | Amend           | Applied when a tenant is marked as terminated.                                  |
+| =system.admin_reset=           | Amend           | Data reset by a system administrator during re-provisioning.                    |
+#+latex: \end{fullwidth}
+
+**** The Common Category
+
+Common reasons are the universal data quality reasons, aligned with
+BCBS 239 (Risk Data Aggregation) and FRTB standards. They apply
+across all entity types and all tenants. These are the reasons most
+frequently used by operators during day-to-day data maintenance.
+
+#+latex: \begin{fullwidth}
+#+attr_latex: :environment tabularx :width \linewidth :align llX
+| Code                           | Applies to    | Description                                                                      |
+|--------------------------------+---------------+----------------------------------------------------------------------------------|
+| =common.non_material_update=   | Amend         | A cosmetic or administrative change with no economic impact — a "touch" to refresh a timestamp or correct capitalisation. Commentary optional. |
+| =common.rectification=         | Amend, Delete | Correction of a user or booking error. The most commonly used reason for fixing a data-entry mistake. Commentary optional. |
+| =common.duplicate=             | Delete        | Removal of a duplicate record where an equivalent entry already exists.          |
+| =common.stale_data=            | Amend, Delete | Data that has not been updated within the required liquidity horizon, requiring a refresh or removal. Commentary optional. |
+| =common.outlier_correction=    | Amend, Delete | Manual override following a plausibility check failure — when a value falls outside acceptable bounds and is overridden by an operator. Commentary mandatory. |
+| =common.feed_failure=          | Amend, Delete | Correction caused by an upstream vendor or API data issue. Commentary mandatory — the failed feed must be identified. |
+| =common.mapping_error=         | Amend, Delete | Incorrect identifier translation — for example a wrong ISIN-to-FIGI mapping. Commentary mandatory. |
+| =common.judgmental_override=   | Amend, Delete | Expert judgment applied when market prices or reference values are unavailable and an operator must supply a value manually. Commentary mandatory. |
+| =common.regulatory=            | Amend, Delete | Mandatory compliance adjustment required by a regulatory obligation or instruction. Commentary mandatory. |
+| =common.other=                 | Amend, Delete | Exceptional changes that do not fit any other category. Commentary mandatory — the reason must be fully explained in the note. |
+#+latex: \end{fullwidth}
+
+**** The Trade Category
+
+Trade reasons are aligned with FINRA and MiFID II trade lifecycle
+reporting requirements. They apply specifically to changes driven by
+trade events or trade-processing workflows.
+
+#+latex: \begin{fullwidth}
+#+attr_latex: :environment tabularx :width \linewidth :align llX
+| Code                      | Applies to    | Description                                                                            |
+|---------------------------+---------------+----------------------------------------------------------------------------------------|
+| =trade.fat_finger=        | Amend, Delete | Erroneous execution — a trade entered with the wrong quantity, price, or instrument due to a keying error. Commentary optional. |
+| =trade.system_malfunction= | Amend, Delete | Change caused by a technical glitch or algorithmic error in an execution system. Commentary mandatory. |
+| =trade.corporate_action=  | Amend, Delete | Adjustment following a corporate action such as a stock split, dividend reinvestment, or merger. Commentary optional. |
+| =trade.allocation_swap=   | Amend, Delete | Reallocation between a house account and a client sub-account, or between sub-accounts. Commentary optional. |
+| =trade.re_booking=        | Amend, Delete | Correction of a wrong legal entity booking — a trade entered under the wrong counterparty or book. Commentary mandatory. |
+| =trade.other=             | Amend, Delete | Exceptional trade lifecycle changes that do not fit any other code. Commentary mandatory. |
+#+latex: \end{fullwidth}
+
+**** Extending Change Reasons
+
+Change reason categories and individual codes are stored as versioned
+reference data and can be added or modified through the same Qt UI
+and CLI tools used for other entities. In principle, a tenant
+administrator can create additional categories and codes to cover
+firm-specific workflows.
+
+In practice, extending the built-in taxonomy should be done
+cautiously and sparingly:
+
+- The standard codes are aligned with regulatory reporting
+  frameworks (BCBS 239, FRTB, MiFID II, FINRA). Adding non-standard
+  codes risks creating audit trail entries that do not map cleanly
+  to regulatory reports, complicating compliance submissions.
+- The =common= and =trade= categories are designed to cover the vast
+  majority of change scenarios. Before adding a new code, check
+  whether =common.other= or =trade.other= (with mandatory commentary)
+  would adequately document the change.
+- Custom codes cannot be distinguished from standard codes by the
+  system — there is no "built-in" flag — so any tenant that adds
+  codes must maintain its own record of which codes are standard and
+  which are custom.
+
+If you do add codes, use the =category.reason_name= naming convention,
+document the code's meaning and commentary requirements thoroughly,
+and treat it as a long-lived commitment: changing or removing a
+reason code after it has been used in the audit trail would leave
+historical records referencing a code whose meaning is no longer
+documented.
 
 ** See also
 

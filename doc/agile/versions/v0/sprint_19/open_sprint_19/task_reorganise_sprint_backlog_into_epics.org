@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_19:sprint_19:v0:
 #+owner: marco
 #+branch: feature/reorganise-sprint-backlog-into-epics
-#+pr:
+#+pr: https://github.com/OreStudio/OreStudio/pull/1028
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-03
@@ -60,7 +60,7 @@ Split the single 17-row Tooling table into:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1028][#1028]] | Reorganise sprint 19 Tooling section into named epics |
 
 * Review
 

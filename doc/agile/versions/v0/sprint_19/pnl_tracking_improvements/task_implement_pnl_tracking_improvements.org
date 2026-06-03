@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 55CFC3E0-1AAD-44CA-A0D6-1E358A6E1CFA
+:END:
+#+title: Task: Implement PnL tracking improvements
+#+description: Initial task for: PnL tracking improvements
+#+type: task
+#+level: s1
+#+filetags: :pnl_tracking_improvements:sprint_19:v0:
+#+owner: marco
+#+branch: feature/pnl-tracking-improvements
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F8E2AB1E-344B-4B04-BD0B-6EC96CDA5298][PnL tracking improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Design the PnL improvements described in the [[id:F8E2AB1E-344B-4B04-BD0B-6EC96CDA5298][PnL tracking
+improvements]] story: conduct a gap analysis of current OreStudio PnL
+tracking against the five areas identified in the [[id:42F22269-B875-489D-A3D7-7FEC456C69EA][Lightyear PnL
+tracking approach]] knowledge doc, then implement the agreed changes.
+
+* Status
+
+| Field        | Value                                          |
+|--------------+------------------------------------------------|
+| State        | DONE                                           |
+| Parent story | [[id:F8E2AB1E-344B-4B04-BD0B-6EC96CDA5298][PnL tracking improvements]]                      |
+| Now          | Nothing. — closed with story as knowledge capture. |
+| Waiting on   | Nothing.                                       |
+| Next         | Nothing.                                       |
+| Last touched | 2026-06-03                                     |
+
+* Acceptance
+
+- Gap analysis document produced covering all five Lightyear areas.
+- Implementation plan agreed with owner before coding begins.
+- Each implemented area has a passing automated test or a verifiable
+  manual check documented in =* Result=.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

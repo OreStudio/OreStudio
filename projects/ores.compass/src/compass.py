@@ -2374,12 +2374,9 @@ def _cmd_test_results(args):
 
 # --- Bearings: cold-start orientation ---
 
-_SEP = "─" * 66
-
-def _bearings_section(icon, title):
-    print(f"\n{_SEP}")
-    print(f"{icon}  {title}")
-    print(_SEP)
+def _bearings_section(icon, title, cmd=None):
+    suffix = f"  ({cmd})" if cmd else ""
+    print(f"\n{icon}  {title}{suffix}")
 
 
 def cmd_bearings(argv):
@@ -2387,57 +2384,31 @@ def cmd_bearings(argv):
     import argparse as _ap
     ap = _ap.ArgumentParser(
         prog="compass bearings",
-        description="Cold-start orientation: project identity, where we are, "
-                    "last session, key recipes, and project memories.")
+        description="Cold-start orientation: project identity, last session, "
+                    "key recipes, memories, and where we are.")
     ap.parse_args(argv)
 
     docs = doc_index.load_all()
 
+    print("🧭 ores.compass — bearings\n")
+
     # ── Section 0: What is ORE Studio? ──────────────────────────────────────
-    _bearings_section("🏢", "What is ORE Studio?")
+    _bearings_section("🏢", "What is ORE Studio?",
+                      "compass show 2F71292F-CDB0-4E2E-B50F-4F02E10597C4")
     identity_docs = [d for d in docs.values() if d.doctype == "product_identity"]
     if identity_docs:
         pi = identity_docs[0]
         print(f"  {pi.description}")
-        print(f"\n  compass show {pi.id.upper()}")
     else:
         print("  ❌ No product_identity document found.")
 
-    # ── Section 1: Where we are ─────────────────────────────────────────────
-    _bearings_section("📍", "Where we are")
-    current_version, current_sprint = current_version_sprint(docs)
-    if current_version is None or current_sprint is None:
-        print("  ❌ No version/sprint documents found.")
-    else:
-        chip, warning = staleness_lines(branch_staleness(PROJECT_ROOT))
-        print(f"  {chip}")
-        if warning:
-            print(f"  {warning}")
-        print()
-        print(f"  Version:  {current_version.title}  [{current_version.id.upper()}]")
-        print(f"  Sprint:   {current_sprint.title}  [{current_sprint.id.upper()}]")
-        sprint_dir = _parent_dir(current_sprint.rel_path)
-        in_flight = [
-            d for d in docs.values()
-            if d.doctype in ("story", "task")
-            and d.rel_path.startswith(sprint_dir + "/")
-            and read_state(d.path) == IN_FLIGHT_STATE
-        ]
-        in_flight.sort(key=lambda d: (d.doctype, d.rel_path))
-        print(f"\n  In flight ({IN_FLIGHT_STATE}):")
-        if not in_flight:
-            print("  (nothing in flight)")
-        else:
-            for d in in_flight:
-                print(f"    {d.doctype:<5}  {_strip_type_prefix(d.title)}")
-                print(f"           [{d.id.upper()}]")
-
-    # ── Section 2: Last session ──────────────────────────────────────────────
-    _bearings_section("📓", "Last session")
+    # ── Section 1: Last session ──────────────────────────────────────────────
+    _bearings_section("📓", "Last session", "compass journal where")
     _journal_where()
 
-    # ── Section 3: Key recipes ───────────────────────────────────────────────
-    _bearings_section("📖", "Key recipes")
+    # ── Section 2: Key recipes ───────────────────────────────────────────────
+    _bearings_section("📖", "Key recipes",
+                      "compass list --type recipe --tag bearings")
     recipes = sorted(
         [d for d in docs.values()
          if d.doctype == "recipe" and d.has_tag("bearings")],
@@ -2453,8 +2424,9 @@ def cmd_bearings(argv):
                 print(f"    {r.description}")
             print(f"    compass show {r.id.upper()}")
 
-    # ── Section 4: Memories ──────────────────────────────────────────────────
-    _bearings_section("🧠", "Memories")
+    # ── Section 3: Memories ──────────────────────────────────────────────────
+    _bearings_section("🧠", "Memories",
+                      "compass list --type memory --tag bearings")
     memories = sorted(
         [d for d in docs.values()
          if d.doctype == "memory" and d.has_tag("bearings")],
@@ -2470,7 +2442,38 @@ def cmd_bearings(argv):
                 print(f"    {m.description}")
             print(f"    compass show {m.id.upper()}")
 
-    print(f"\n{_SEP}\n")
+    # ── Section 4: Where we are (last — most verbose) ────────────────────────
+    _bearings_section("📍", "Where we are", "compass where")
+    current_version, current_sprint = current_version_sprint(docs)
+    if current_version is None or current_sprint is None:
+        print("  ❌ No version/sprint documents found.")
+    else:
+        chip, warning = staleness_lines(branch_staleness(PROJECT_ROOT))
+        print(f"  {chip}")
+        if warning:
+            print(f"  {warning}")
+        print()
+        print(f"  Version:  {current_version.title}")
+        print(f"            compass show {current_version.id.upper()}")
+        print(f"  Sprint:   {current_sprint.title}")
+        print(f"            compass show {current_sprint.id.upper()}")
+        sprint_dir = _parent_dir(current_sprint.rel_path)
+        in_flight = [
+            d for d in docs.values()
+            if d.doctype in ("story", "task")
+            and d.rel_path.startswith(sprint_dir + "/")
+            and read_state(d.path) == IN_FLIGHT_STATE
+        ]
+        in_flight.sort(key=lambda d: (d.doctype, d.rel_path))
+        print(f"\n  In flight ({IN_FLIGHT_STATE}):")
+        if not in_flight:
+            print("    (nothing in flight)")
+        else:
+            for d in in_flight:
+                print(f"    {d.doctype:<5}  {_strip_type_prefix(d.title)}")
+                print(f"           compass show {d.id.upper()}")
+
+    print()
     return 0
 
 

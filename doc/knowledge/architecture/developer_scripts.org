@@ -59,8 +59,7 @@ General-purpose helper scripts not tied to a specific workflow.
 
 * NATS certificate management
 
-Previously handled by =build/scripts/generate_nats_certs.sh= (deleted in sprint 19).
-Certificate generation is now a first-class compass command:
+NATS mTLS certificate generation is handled by =compass nats certs=:
 
 #+begin_src sh
 ./compass.sh nats certs              # idempotent; skips existing files
@@ -69,7 +68,7 @@ Certificate generation is now a first-class compass command:
 #+end_src
 
 The implementation lives in =projects/ores.compass/src/nats_certs.py= and is
-also called internally by =compass env init=.  To add a certificate for a new
+also called internally by =compass env init=. To add a certificate for a new
 service, add its name to the =_SERVICES= list in =nats_certs.py= and re-run
 =compass nats certs=.
 

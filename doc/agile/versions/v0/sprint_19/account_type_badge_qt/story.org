@@ -43,9 +43,9 @@ produced so future badges can be added without archaeology.
   =AccountItemDelegate=.
 - SQL population script contains a =account_type= code domain with
   one badge definition and badge mapping per account type value.
-- A recipe exists at =doc/recipes/qt/how_do_i_set_up_a_badge_in_qt.org=
-  covering the full process: SQL population, code domain, badge
-  definitions, badge mappings, delegate wiring, and =sizeHint=.
+- A knowledge doc exists at =doc/knowledge/architecture/badge_system_wiring.org=
+  covering the three-layer structure (=ores.dq=, =ores.sql=, =ores.qt.api=)
+  and a "how to add a new badge" section using =account_type= as the worked example.
 - No regressions to the =Status= or =Locked= badge columns.
 
 * Tasks
@@ -53,7 +53,7 @@ produced so future badges can be added without archaeology.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:5433FF26-FF0A-45A4-882A-4A9C41F51CB9][Implement account type badge in AccountItemDelegate]] | BACKLOG | | | Add account_type code domain + badge defs to SQL; wire Column::AccountType in delegate. |
-| [[id:36118737-9E05-48F0-889A-E800BA58825C][Write recipe: how to set up a badge in Qt]] | BACKLOG | | | Document end-to-end badge setup: SQL, code domain, definitions, mappings, delegate, sizeHint. |
+| [[id:36118737-9E05-48F0-889A-E800BA58825C][Write knowledge doc: badge system wiring]] | BACKLOG | | | Architectural knowledge doc covering ores.dq/ores.sql/ores.qt.api layers; account_type as worked example. |
 
 * Decisions
 

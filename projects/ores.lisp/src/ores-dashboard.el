@@ -138,7 +138,8 @@
 ;; ---------------------------------------------------------------------------
 
 (defconst ores/dashboard--key-alphabet
-  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+  ;; g and q are reserved for mode-level bindings (reload / quit-window).
+  "abcdefhijklmnoprstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 (defun ores/dashboard--alloc-key ()
   "Return the next shortcut character for a dashboard item, or nil when exhausted."
@@ -467,7 +468,7 @@ Background services survive the script's exit because pipes do not deliver
 SIGHUP on close — no setsid needed."
   (let* ((buf-name (format "*ores:%s:services*" label))
          (buf      (get-buffer-create buf-name)))
-    (when (get-buffer-process buf)
+    (when (process-live-p (get-buffer-process buf))
       (user-error "Services already running in %s" buf-name))
     (with-current-buffer buf
       (let ((inhibit-read-only t)) (erase-buffer))

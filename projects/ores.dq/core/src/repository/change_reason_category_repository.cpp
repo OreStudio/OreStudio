@@ -61,8 +61,9 @@ void change_reason_category_repository::write(
 std::vector<domain::change_reason_category>
 change_reason_category_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
-        where("valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
         order_by("code"_c);
 
     return execute_read_query<change_reason_category_entity,
@@ -79,8 +80,9 @@ change_reason_category_repository::read_latest(const std::string& code) {
                                << code;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
-        where("code"_c == code && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<change_reason_category_entity,
                               domain::change_reason_category>(ctx_, query,
@@ -97,8 +99,9 @@ change_reason_category_repository::read_latest(std::uint32_t offset,
                                << offset << " and limit: " << limit;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
-        where("valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
         order_by("code"_c) |
         sqlgen::offset(offset) |
         sqlgen::limit(limit);
@@ -120,9 +123,10 @@ std::uint32_t change_reason_category_repository::get_total_count() {
         long long count;
     };
 
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::select_from<change_reason_category_entity>(
         sqlgen::count().as<"count">()) |
-        where("valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
         sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
@@ -138,8 +142,9 @@ change_reason_category_repository::read_all(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all change_reason_category versions. Code: "
                                << code;
 
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
-        where("code"_c == code) |
+        where("tenant_id"_c == tid && "code"_c == code) |
         order_by("version"_c.desc());
 
     return execute_read_query<change_reason_category_entity,
@@ -156,16 +161,18 @@ void change_reason_category_repository::remove(const std::string& code) {
 
     // Delete the category - the database rule will close the temporal record
     // instead of actually deleting it (sets valid_to = current_timestamp)
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<change_reason_category_entity> |
-        where("code"_c == code);
+        where("tenant_id"_c == tid && "code"_c == code);
 
     execute_delete_query(ctx_, query, lg(),
         "removing change_reason_category from database");
 }
 
 void change_reason_category_repository::remove(const std::vector<std::string>& codes) {
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<change_reason_category_entity> |
-        where("code"_c.in(codes));
+        where("tenant_id"_c == tid && "code"_c.in(codes));
     execute_delete_query(ctx_, query, lg(), "batch removing change_reason_categories");
 }
 

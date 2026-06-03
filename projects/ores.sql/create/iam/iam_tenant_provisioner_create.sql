@@ -340,6 +340,40 @@ begin
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % currency market tiers', v_copied_count;
 
+    -- DQ change reason categories (system, common, trade taxonomy)
+    insert into ores_dq_change_reason_categories_tbl (
+        code, tenant_id, version, description,
+        modified_by, performed_by, change_commentary
+    )
+    select
+        t.code, v_tenant_id, 0, t.description,
+        v_actor, v_actor, 'Copied from system tenant during provisioning'
+    from ores_dq_change_reason_categories_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % change reason categories', v_copied_count;
+
+    -- DQ change reasons (full regulatory taxonomy)
+    insert into ores_dq_change_reasons_tbl (
+        code, tenant_id, version, description, category_code,
+        applies_to_new, applies_to_amend, applies_to_delete,
+        requires_commentary, display_order,
+        modified_by, performed_by, change_commentary
+    )
+    select
+        t.code, v_tenant_id, 0, t.description, t.category_code,
+        t.applies_to_new, t.applies_to_amend, t.applies_to_delete,
+        t.requires_commentary, t.display_order,
+        v_actor, v_actor, 'Copied from system tenant during provisioning'
+    from ores_dq_change_reasons_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % change reasons', v_copied_count;
+
     -- =========================================================================
     -- Create the system party for the new tenant
     -- =========================================================================

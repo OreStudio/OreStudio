@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 4CB61A14-83D7-44A6-A6E5-F0A553B93675
+:END:
+#+title: Task: Fix: compass test results missing after make rat
+#+description: make rat does not generate test-results*.xml because the custom test targets use only -r compact; compass test results always errors. Wire XML reporter into the rat targets.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch: feature/fix-test-results-not-generated-by-rat
+#+pr: 1026
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make =make rat= produce =test-results*.xml= files so that =compass test
+results= has data to parse after the standard developer test workflow.
+Today, the custom =test_<name>= targets (wired into =run_all_tests= →
+=rat=) run tests with =-r compact= only; the XML reporter is only
+invoked by =ctest=, which most developers do not run directly.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]                            |
+| Now          | Nothing.                                                               |
+| Waiting on   | Nothing.                                                               |
+| Next         | Nothing.                                                               |
+| Last touched | 2026-06-03                                                             |
+
+* Acceptance
+
+- =cmake --build --preset <P> --target rat= produces =test-results*.xml=
+  files alongside the compact output in =build/output/<P>/publish/bin/=.
+- =compass test results= (with no =ctest= invocation) displays the
+  results table immediately after a =rat= run.
+- No existing CTest behaviour is broken; XML is also still written on
+  =ctest= runs.
+
+* Plan
+
+Each component's =tests/CMakeLists.txt= has:
+
+#+begin_example
+add_custom_target(test_${tests_target_name}
+    COMMAND ${ORES_TEST_ENV_CMD} $<TARGET_FILE:${tests_binary_name}> ${ORES_CATCH2_ARGS}
+    ...)
+#+end_example
+
+=ORES_CATCH2_ARGS= contains =-r compact= but not the XML reporter.
+Catch2 supports multiple =-r= flags simultaneously. The fix is to append
+=-r xml::out=<path>= to the COMMAND in every =add_custom_target(test_...)=,
+matching the path already used by =add_test=:
+
+#+begin_example
+${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
+#+end_example
+
+Rather than editing every test CMakeLists individually, the cleaner fix
+is to extend =ORES_CATCH2_ARGS= in =projects/CMakeLists.txt= to include
+the XML reporter — but that would hard-code a path that isn't available
+at that scope. Instead, add a second COMMAND line to the custom target
+that re-runs the binary with the XML reporter only (silent, no compact
+output), or add the XML flag inline.
+
+Simplest approach: in each =add_custom_target(test_${tests_target_name})=,
+change COMMAND to run Catch2 with both reporters:
+
+#+begin_example
+COMMAND ${ORES_TEST_ENV_CMD} $<TARGET_FILE:${tests_binary_name}>
+        ${ORES_CATCH2_ARGS}
+        -r xml::out=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
+#+end_example
+
+This is a mechanical change across all test CMakeLists; verify with a
+grep after applying that no =add_custom_target(test_= is missing the XML
+flag.
+
+* Notes
+
+* PRs
+
+| PR   | Title                                                              |
+|------+--------------------------------------------------------------------|
+| 1026 | [cmake] Wire XML reporter into rat targets so compass test results works |
+
+* Review
+
+** Round 1 (gemini-code-assist bot)
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| C1 | Refactor =add_custom_target= into a shared CMake macro across 65 files | =analytics/tests/CMakeLists.txt:46= | Declined | Pre-existing duplication; this PR is a one-line bug fix; macro refactor is a separate story |
+
+* Result
+
+Root cause: =add_custom_target(test_${tests_target_name})= in every
+component's =tests/CMakeLists.txt= ran tests with =ORES_CATCH2_ARGS=
+(=-r compact= only). The XML reporter was only invoked by =add_test=
+definitions consumed by =ctest=; =make rat= never called =ctest=.
+
+Fix: appended =-r xml::out=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml=
+to the =COMMAND= line in all 65 =add_custom_target(test_...)= blocks.
+Catch2 supports multiple =-r= flags simultaneously; compact output to
+terminal is unchanged; XML is now also written on every =rat= run.
+=compass test results= will find the XML files after =make rat= without
+any =ctest= invocation.

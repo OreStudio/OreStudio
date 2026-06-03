@@ -139,8 +139,8 @@ To view the full change history, open the details dialog and click
 the history icon in the title bar, or right-click the row and choose
 *History*.
 
-#+caption[The Currency History dialog for AOA]: The History dialog for the Angolan Kwanza. The upper table lists every recorded version. The /Changes/ tab shows a field-by-field diff against the previous version; /Full Details/ shows the complete record at the selected version.
-[[../../../assets/images/currency_history.png]]
+#+caption[The Currency History dialog for AOA]: The History dialog for the Angolan Kwanza, showing three versions: the original ISO 4217 import (version 1), a test correction (version 2), and a final rectification (version 3, currently selected). The Changes tab shows that only the Name and Commentary fields changed between version 2 and version 3.
+[[../../../assets/images/currency_history_dialog.png]]
 
 Select a version to populate the detail panel. The *Changes* tab
 shows which fields changed between the selected version and its
@@ -162,6 +162,19 @@ Rounding types specify the algorithm used to round currency amounts
 in financial calculations. The values match the =roundingType=
 enumeration in ORE's XML schema, ensuring consistency with any ORE
 configuration files loaded into the system.
+
+Open the Rounding Types window from /Reference Data → Currency Codes/
+or from the toolbar within the Currency Detail dialog.
+
+#+caption[The Rounding Types window]: The Rounding Types list window showing the five standard rounding methods with their display order, version, and provenance.
+[[../../../assets/images/rounding_types_main_window.png]]
+
+Double-clicking a row opens the detail dialog, which shows the code,
+name, and a description that includes numeric examples at two decimal
+places.
+
+#+caption[Rounding Type detail — Up]: The detail dialog for the =Up= rounding type, showing the code, human-readable name, and a description with concrete examples.
+[[../../../assets/images/rounding_types_details.png]]
 
 There are five standard values:
 
@@ -222,6 +235,14 @@ Market tiers classify currencies by liquidity profile and market
 accessibility. The classification feeds into margin calculations,
 settlement conventions, and risk limits in downstream analytics.
 
+Open the Currency Market Tiers window from /Reference Data → Classifications/.
+
+#+caption[The Currency Market Tiers window]: The Currency Market Tiers list showing all five standard tiers — historical, g10, frontier, exotic, and emerging — with their display order and provenance.
+[[../../../assets/images/currency_market_tiers_main_window.png]]
+
+#+caption[Currency Market Tier detail — Historical]: The detail dialog for the =historical= tier, showing the code, name, and description.
+[[../../../assets/images/currency_market_tier_details.png]]
+
 There are five standard tiers:
 
 **** G10 / Majors
@@ -272,6 +293,14 @@ Monetary nature classifies currencies by the underlying economic
 mechanism that gives them value. The classification matters for
 collateral eligibility, regulatory capital treatment, and the
 applicability of pricing models.
+
+Open the Monetary Natures window from /Reference Data → Classifications/.
+
+#+caption[The Monetary Natures window]: The Monetary Natures list showing all four standard values — synthetic, supranational, fiat, and commodity — with their display order and provenance.
+[[../../../assets/images/monetary_natures_main_window.png]]
+
+#+caption[Monetary Nature detail — Synthetic]: The detail dialog for the =synthetic= monetary nature, showing the code, name, and description.
+[[../../../assets/images/monetary_natures_details.png]]
 
 There are four standard values:
 

@@ -94,9 +94,11 @@ flag.
 
 * Review
 
+** Round 1 (gemini-code-assist bot)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| C1 | Refactor =add_custom_target= into a shared CMake macro across 65 files | =analytics/tests/CMakeLists.txt:46= | Declined | Pre-existing duplication; this PR is a one-line bug fix; macro refactor is a separate story |
 
 * Result
 

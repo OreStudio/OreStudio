@@ -118,44 +118,55 @@ The most important architectural property of OreStudio's reference
 data layer is its use of /bitemporality/ — the recording of two
 independent time dimensions for every stored fact.
 
-The first dimension is *transaction time*: when was this version of the
-record written to the database? This is the =recorded_at= timestamp set
-by the database trigger at the moment of the write. Transaction time
-answers the question "what did the system believe at a given moment?"
+The first dimension is *valid time*, recorded in =valid_from= and
+=valid_to= columns on every row. Together they form an open interval
+=[valid_from, valid_to)= bounding the period during which this version
+of the record is authoritative. The live (current) row carries
+=valid_to = 9999-12-31 23:59:59= — a sentinel meaning "no known
+expiry". When an update is saved, the database trigger closes the
+existing row by setting =valid_to= to the current time, and inserts a
+new row with =valid_from = now= and =valid_to = sentinel=. The
+application never writes =valid_from= or =valid_to= directly — the
+trigger owns both columns. This pattern means the table always contains
+the complete history of every entity: no rows are ever deleted or
+overwritten.
 
-The second dimension is *validity time*: over what period is this
-version of the record considered current? Validity time is managed
-through =valid_from= and =valid_to= columns on every record. The live
-(current) record carries =valid_to = infinity= (represented internally
-as a far-future sentinel timestamp). When an update is saved, the
-existing row's =valid_to= is set to the current time, and a new row is
-inserted with =valid_from = now= and =valid_to = infinity=. This
-pattern means the table always contains the complete history of every
-entity — no rows are ever deleted or overwritten.
+The second dimension is *transaction time*, surfaced to the application
+as the =recorded_at= field. It records when this version was written to
+the database — independently of what period the version is valid for.
+Transaction time answers the question "what did the system believe at
+a given moment?"
+
+All timestamps in OreStudio are stored and processed as UTC. The
+database session enforces UTC on every connection; C++ domain types
+use =std::chrono::system_clock::time_point= which is UTC by definition.
+The Qt UI converts to local time only for display — the *Recorded At*
+field in the Provenance tab will show the time in your local timezone,
+but the underlying value is always UTC.
 
 The combination of the two time dimensions allows OreStudio to answer
-questions that neither dimension alone could answer:
+questions that neither alone could answer:
 
-- /What is the current record for USD?/ — query =valid_to = infinity=.
-- /What did the USD record look like on a specific past date?/ — query
-  =valid_from ≤ date < valid_to=.
-- /When did we first record the current name for the Angolan Kwanza?/ —
+- /What is the current record for USD?/ — the live row has
+  =valid_to = sentinel=.
+- /What did the USD record look like on a specific past date t?/ —
+  find the row where =valid_from ≤ t < valid_to=.
+- /When did we first record the current name for a currency?/ —
   inspect the =recorded_at= of the version where the name field
   changed.
-- /Revert to an earlier version/ — insert a new row copied from the
-  historical version, creating a new current record with its own
-  transaction time.
+- /Revert to an earlier version/ — the revert operation inserts a new
+  row copied from the historical version, creating a new current record
+  with its own transaction time and leaving all intermediate versions
+  intact.
 
 Bitemporality is particularly important for *calculation
 reproducibility*. Financial valuations depend on reference data — a
 holiday calendar, a rounding convention, a market tier — that can
-change after the fact. Being able to reconstruct the exact state of
-all reference data as it existed on a past valuation date is a
-prerequisite for explaining why a historical calculation produced the
-result it did, for regulatory back-testing, and for resolving disputes.
-OreStudio implements bitemporality in application code rather than
-relying on database-level temporal table syntax, giving full
-portability across PostgreSQL versions.
+change after the fact. Being able to reconstruct the exact state of all
+reference data as it existed on a past valuation date is a prerequisite
+for explaining why a historical calculation produced the result it did,
+for regulatory back-testing, and for resolving disputes about
+previously reported figures.
 
 *** Versioning and Immutable History
 
@@ -189,18 +200,19 @@ the history rather than removing subsequent entries.
 *** Provenance
 
 Every version of every reference data record carries six standard
-provenance fields, set automatically by the application and database
-layers on each save:
+provenance fields. Some are written by the application at the time of
+the save request; others are written by the database trigger and are
+never set by the application:
 
-#+attr_latex: :environment tabularx :width \linewidth :align llX
-| Field                | UI Label      | Meaning                                                                          |
-|----------------------+---------------+----------------------------------------------------------------------------------|
-| =version=            | Version       | Monotonically increasing integer; starts at 1, incremented on each update.       |
-| =modified_by=        | Modified By   | Username of the account that submitted the change request.                       |
-| =performed_by=       | Performed By  | Username on whose behalf the change was performed; may differ from =modified_by= in delegated workflows. |
-| =recorded_at=        | Recorded At   | UTC wall-clock timestamp written by the database trigger at the moment of the save. |
-| =change_reason_code= | Change Reason | Structured code drawn from the change reasons table explaining the business justification. |
-| =change_commentary=  | Commentary    | Optional free-text note accompanying the change, displayed in the UI and stored in the history. |
+#+attr_latex: :environment tabularx :width \linewidth :align lllX
+| Field                | UI Label      | Set by       | Meaning                                                                          |
+|----------------------+---------------+--------------+----------------------------------------------------------------------------------|
+| =version=            | Version       | DB trigger   | Monotonically increasing integer; starts at 1, incremented on each update.       |
+| =modified_by=        | Modified By   | Application  | Username of the account that submitted the change request.                       |
+| =performed_by=       | Performed By  | Application  | Username on whose behalf the change was performed; may differ from =modified_by= in delegated workflows. |
+| =recorded_at=        | Recorded At   | DB trigger   | UTC wall-clock timestamp at the moment the row was written; displayed in local time in the UI. |
+| =change_reason_code= | Change Reason | Application  | Structured code drawn from the change reasons table explaining the business justification. |
+| =change_commentary=  | Commentary    | Application  | Optional free-text note accompanying the change.                                 |
 
 These fields are displayed read-only in the *Provenance* tab of every
 entity detail dialog. The tab is disabled (greyed out, not hidden) in
@@ -211,7 +223,8 @@ The distinction between =modified_by= and =performed_by= matters in
 automated workflows where a service account submits a change on behalf
 of a human user. In those cases =modified_by= identifies the service
 and =performed_by= identifies the human, preserving accountability at
-both layers.
+both layers. The =recorded_at= timestamp is always in UTC at the
+storage layer; the Qt UI converts it to local time for display only.
 
 *** Change Reasons
 
@@ -257,6 +270,9 @@ enforced at the application layer before the save is submitted.
   framework.
 - [[https://en.wikipedia.org/wiki/Temporal_database][Temporal database]] — background on transaction time, valid time,
   and the bitemporal model.
+- [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] — the internal
+  architecture document covering the bitemporal model, UTC standard,
+  the infinity sentinel, and the C++ / PostgreSQL type chain.
 - [[https://www.bis.org/bcbs/publ/d239.htm][BCBS 239]] — Basel Committee principles for effective risk data
   aggregation and risk reporting; the regulatory foundation for the
   =common= change reason category.

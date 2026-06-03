@@ -45,7 +45,9 @@ produced so future badges can be added without archaeology.
   one badge definition and badge mapping per account type value.
 - A knowledge doc exists at =doc/knowledge/architecture/badge_system_wiring.org=
   covering the three-layer structure (=ores.dq=, =ores.sql=, =ores.qt.api=)
-  and a "how to add a new badge" section using =account_type= as the worked example.
+  with =account_type= as the worked example.
+- A thin recipe at =doc/recipes/qt/how_do_i_add_a_badge_in_qt.org=
+  checklists the four steps and links to the knowledge doc.
 - No regressions to the =Status= or =Locked= badge columns.
 
 * Tasks

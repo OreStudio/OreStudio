@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: FE388774-0714-4D93-AEB0-D6221314D4F9
+:END:
+#+title: How do I orient a new session?
+#+description: Run compass bearings at the start of any session to get a full cold-start briefing: what the project is, where we are, the last session, key recipes, and project memories.
+#+type: recipe
+#+level: cross
+#+filetags: :compass:bearings:llm:orient:recipe:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+
+Part of the [[id:95A33EA9-DFF9-4937-8A3F-AD82E42A68D3][Compass recipes]] collection.
+
+* Question
+
+How do I get a full cold-start briefing at the start of a new session?
+
+* Answer
+
+Run =compass bearings= with no arguments:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh bearings
+#+end_src
+
+This prints five sections in order:
+
+1. *What is ORE Studio?* — one-line product identity + how to read the full doc.
+2. *Where we are* — current version, sprint, and all in-flight stories and tasks
+   (equivalent to =compass where=).
+3. *Last session* — most recent journal entry so you know what was last being
+   worked on (equivalent to =compass journal where=).
+4. *Key recipes* — the recipes tagged =:bearings:= with title, description, and
+   the =compass show <UUID>= command to open each one.
+5. *Memories* — the project memories tagged =:bearings:= in the same format.
+
+=compass orient= is an alias for =compass bearings=.
+
+* Script
+
+=compass bearings= lives in =projects/ores.compass/src/compass.py= (=cmd_bearings=).
+Recipes and memories appear dynamically — tag any doc with =:bearings:= to include
+it; remove the tag to exclude it.
+
+* Tested by
+
+Manual: run =compass bearings= and verify all five sections appear with correct
+content.
+
+* See also
+
+- [[id:95A33EA9-DFF9-4937-8A3F-AD82E42A68D3][Compass recipes]] — full recipe index.
+- [[id:41E5F9A8-1C2B-4ECA-8EA0-1ABBAB0B6A31][How do I see where we are?]] — the orient section in detail.

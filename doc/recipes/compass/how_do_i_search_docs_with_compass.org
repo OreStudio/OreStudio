@@ -5,7 +5,7 @@
 #+description: Use compass search to full-text search the org-roam doc graph, with pretty/line/json output.
 #+type: recipe
 #+level: cross
-#+filetags: :compass:search:docs:recipe:
+#+filetags: :compass:search:docs:recipe:bearings:
 #+created: 2026-05-24
 #+updated: 2026-05-24
 

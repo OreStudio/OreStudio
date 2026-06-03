@@ -16,6 +16,8 @@ pillars that fold in the standalone scripts, starting with Provision.
 
 * Orient
 
+- [[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]] — full cold-start briefing: product
+  identity, where, last session, key recipes, memories (=bearings=).
 - [[id:41E5F9A8-1C2B-4ECA-8EA0-1ABBAB0B6A31][How do I see where we are?]] — current version, sprint, and in-flight
   stories/tasks (=where= / =status=).
 - [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][How do I see what every worktree is doing?]] — branch / story / task /

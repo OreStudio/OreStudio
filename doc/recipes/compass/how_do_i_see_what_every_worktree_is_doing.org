@@ -5,7 +5,7 @@
 #+description: Use compass fleet to list each git worktree's branch, story, task and open PR.
 #+type: recipe
 #+level: cross
-#+filetags: :compass:worktrees:coordination:recipe:
+#+filetags: :compass:worktrees:coordination:recipe:bearings:
 #+created: 2026-05-25
 #+updated: 2026-05-25
 

@@ -684,6 +684,8 @@ def _age_human(seconds):
 _C_GREEN  = "\033[32m"
 _C_YELLOW = "\033[33m"
 _C_RED    = "\033[31m"
+_C_CYAN   = "\033[36m"
+_C_BOLD   = "\033[1m"
 _C_RESET  = "\033[0m"
 _C_SEV    = {"ok": _C_GREEN, "warn": _C_YELLOW, "stale": _C_RED}
 
@@ -788,17 +790,17 @@ def cmd_where(args):
     if warning:
         print(warning)
     print()
-    print(f"Version:  {current_version.title}  [{current_version.id.upper()}]")
-    print(f"          {current_version.rel_path}")
-    print(f"Sprint:   {current_sprint.title}  [{current_sprint.id.upper()}]")
-    print(f"          {current_sprint.rel_path}")
+    print(f"Version:  {current_version.title}")
+    print(f"          {_ycmd(f'compass show {current_version.id.upper()}')}")
+    print(f"Sprint:   {current_sprint.title}")
+    print(f"          {_ycmd(f'compass show {current_sprint.id.upper()}')}")
     print(f"\nIn flight ({IN_FLIGHT_STATE}):")
     if not in_flight:
         print("  (nothing in flight)")
     else:
         for d, state in in_flight:
-            print(f"  {d.doctype:<5} {_strip_type_prefix(d.title)}")
-            print(f"        [{d.id.upper()}]  {d.rel_path}")
+            print(f"  {d.doctype:<5} {_strip_type_prefix(d.title or '')}")
+            print(f"        {_ycmd(f'compass show {d.id.upper()}')}")
 
     if getattr(args, "prs", False):
         print(f"\nPRs (sprint {current_sprint.title}):")
@@ -863,14 +865,20 @@ def _print_entry(entry):
     """Print one journal entry in the standard fleet-style format."""
     sl = entry["story_link"]
     sm = _ORG_LINK_RE.match(sl)
-    story_display = f"{sm.group(2)} ({sm.group(1)[:8]})" if sm else sl
+    story_title = sm.group(2) if sm else sl
+    story_uuid  = sm.group(1).upper() if sm else None
 
     tl = entry.get("task") or ""
     tm = _ORG_LINK_RE.match(tl)
-    task_display = f"{tm.group(2)} ({tm.group(1)[:8]})" if tm else (tl or "—")
+    task_title = tm.group(2) if tm else (tl or "—")
+    task_uuid  = tm.group(1).upper() if tm else None
 
-    print(f"  ● {entry['timestamp']} — {story_display}")
-    print(f"    Task:   {task_display} — {entry.get('state') or '?'}")
+    print(f"  ● {entry['timestamp']} — {story_title}")
+    if story_uuid:
+        print(f"    {_ycmd(f'compass show {story_uuid}')}")
+    print(f"    Task:   {task_title} — {entry.get('state') or '?'}")
+    if task_uuid:
+        print(f"            {_ycmd(f'compass show {task_uuid}')}")
     print(f"    Branch: {entry.get('branch') or '—'}")
     print(f"    PR:     {entry.get('pr') or 'none'}")
 
@@ -1374,8 +1382,10 @@ def cmd_sprint(argv):
                 current_state = s["state"]
                 print(f"  {current_state}")
             tasks = f"{s['tasks_done']}/{s['tasks_total']}" if s["tasks_total"] else "—"
-            uuid_suffix = f"  [{s['uuid']}]" if args.uuids and s["uuid"] else ""
-            print(f"    [{tasks}] {s['title']}{uuid_suffix}")
+            print(f"    [{tasks}] {s['title']}")
+            if s["uuid"]:
+                _u = s["uuid"].upper()
+                print(f"           {_ycmd(f'compass show {_u}')}")
         return 0
 
 def _org_link_text(link_str):
@@ -1392,15 +1402,22 @@ def cmd_fleet(args):
     pr_map = open_prs_by_branch()
 
     rows = []
+    def _org_link_uuid(link_str):
+        m = _ORG_LINK_RE.match(link_str or "")
+        return m.group(1).upper() if m else None
+
     for path, branch in worktrees:
         journal = _journal_last_entry(path)
         if journal:
             story_title = _org_link_text(journal.get("story_link"))
+            story_uuid  = _org_link_uuid(journal.get("story_link"))
             task_title  = _org_link_text(journal.get("task"))
+            task_uuid   = _org_link_uuid(journal.get("task"))
             task_state  = journal.get("state")
             journal_branch = journal.get("branch")
         else:
             task_title = story_title = task_state = journal_branch = None
+            story_uuid = task_uuid = None
             if branch:
                 task_title, story_title = task_for_branch(path, branch)
 
@@ -1411,7 +1428,9 @@ def cmd_fleet(args):
             "current": os.path.realpath(path) == os.path.realpath(here),
             "branch": branch,
             "story": story_title,
+            "story_uuid": story_uuid,
             "task": task_title,
+            "task_uuid": task_uuid,
             "task_state": task_state,
             "journal_branch": journal_branch,
             "journal": bool(journal),
@@ -1437,7 +1456,13 @@ def cmd_fleet(args):
             state_suffix = f" [{r['task_state']}]" if r["task_state"] else ""
             source = "" if r["journal"] else " (from branch)"
             print(f"      story: {r['story'] or '—'}{source}")
+            if r.get("story_uuid"):
+                _su = r["story_uuid"]
+                print(f"             {_ycmd(f'compass show {_su}')}")
             print(f"      task:  {r['task'] or '—'}{state_suffix}")
+            if r.get("task_uuid"):
+                _tu = r["task_uuid"]
+                print(f"             {_ycmd(f'compass show {_tu}')}")
         elif r["branch"] and r["branch"] != "main":
             print("      (no journal or task records this branch)")
         if r["pr"]:
@@ -1930,10 +1955,14 @@ def cmd_story(argv):
             if t["state"] != current_state:
                 current_state = t["state"]
                 print(f"  {current_state}")
-            uuid_suffix   = f"  [{t['uuid']}]" if args.uuids and t["uuid"] else ""
-            branch_info   = f"  {t['branch']}" if t["branch"] else ""
-            pr_info       = f"  PR:{t['pr']}" if t["pr"] and t["pr"] != "none" else ""
-            print(f"    {t['title']}{uuid_suffix}{branch_info}{pr_info}")
+            print(f"    {t['title']}")
+            if t["uuid"]:
+                _u = t["uuid"].upper()
+                print(f"           {_ycmd(f'compass show {_u}')}")
+            if t["branch"]:
+                print(f"           branch: {t['branch']}")
+            if t["pr"] and t["pr"] != "none":
+                print(f"           PR: {t['pr']}")
         return 0
 
 
@@ -2372,6 +2401,151 @@ def _cmd_test_results(args):
     return 0 if total_stats["failed"] == 0 else 1
 
 
+# --- Command suggestion (Levenshtein) ---
+
+def _levenshtein(a, b):
+    """Compute edit distance between two strings."""
+    m, n = len(a), len(b)
+    dp = list(range(n + 1))
+    for i in range(1, m + 1):
+        prev, dp[0] = dp[0], i
+        for j in range(1, n + 1):
+            temp = dp[j]
+            dp[j] = prev if a[i - 1] == b[j - 1] else 1 + min(prev, dp[j], dp[j - 1])
+            prev = temp
+    return dp[n]
+
+
+def _closest_command(given, known, max_dist=2):
+    """Return the closest known command within max_dist edits, or None."""
+    given = given.lower()
+    best, best_dist = None, max_dist + 1
+    for cmd in known:
+        d = _levenshtein(given, cmd)
+        if d < best_dist:
+            best, best_dist = cmd, d
+    return best if best_dist <= max_dist else None
+
+
+# --- Bearings: cold-start orientation ---
+
+def _ycmd(cmd):
+    """Render a compass command in yellow."""
+    return f"{_C_YELLOW}{cmd}{_C_RESET}"
+
+
+def _bearings_section(icon, title, cmd=None):
+    print(f"\n{_C_BOLD}{_C_CYAN}{icon}  {title}{_C_RESET}")
+    if cmd:
+        print(f"    {_C_YELLOW}{cmd}{_C_RESET}")
+
+
+def cmd_bearings(argv):
+    """compass bearings — cold-start orientation for LLMs and new contributors."""
+    import types as _types
+    ap = argparse.ArgumentParser(
+        prog="compass bearings",
+        description="Cold-start orientation: project identity, last session, "
+                    "key recipes, memories, and where we are.")
+    ap.parse_args(argv)
+    docs = doc_index.load_all()
+
+    print("🧭 ores.compass — bearings\n")
+
+    # ── LLM entry point ─────────────────────────────────────────────────────
+    _bearings_section("🤖", "If you are an LLM, read this first",
+                      "compass show F9AD7932-8E11-433C-A812-B57DBC9BF5D8")
+    print("  LLM instructions: rules, architecture links, build, code style,")
+    print("  documentation conventions, git/PR conventions, and project memory.")
+
+    # ── What is ORE Studio? ──────────────────────────────────────────────────
+    _bearings_section("🏢", "What is ORE Studio?",
+                      "compass show 2F71292F-CDB0-4E2E-B50F-4F02E10597C4")
+    identity_docs = [d for d in docs.values() if d.doctype == "product_identity"]
+    if identity_docs:
+        print(f"  {identity_docs[0].description}")
+    else:
+        print("  ❌ No product_identity document found.")
+
+    # ── Where have we been? ──────────────────────────────────────────────────
+    _bearings_section("📓", "Where have we been?", "compass journal where")
+    _journal_where()
+
+    # ── What can we do next? ─────────────────────────────────────────────────
+    _bearings_section("📖", "What can we do next?",
+                      "compass list --type recipe --tag bearings")
+    recipes = sorted(
+        [d for d in docs.values()
+         if d.doctype == "recipe" and d.has_tag("bearings")],
+        key=lambda d: d.title or "",
+    )
+    if not recipes:
+        print("  ❌ No bearings-tagged recipes found — configuration error.")
+        print("     Tag any recipe with :bearings: to include it here.")
+    else:
+        for r in recipes:
+            print(f"\n  • {r.title}")
+            if r.description:
+                print(f"    {r.description}")
+            print(f"    {_ycmd(f'compass show {r.id.upper()}')}")
+
+    # ── Important things to remember ─────────────────────────────────────────
+    _bearings_section("🧠", "Important things to remember",
+                      "compass list --type memory --tag bearings")
+    memories = sorted(
+        [d for d in docs.values()
+         if d.doctype == "memory" and d.has_tag("bearings")],
+        key=lambda d: d.title or "",
+    )
+    if not memories:
+        print("  ❌ No bearings-tagged memories found — configuration error.")
+        print("     Tag any memory with :bearings: to include it here.")
+    else:
+        for m in memories:
+            print(f"\n  • {m.title}")
+            if m.description:
+                print(f"    {m.description}")
+            print(f"    {_ycmd(f'compass show {m.id.upper()}')}")
+
+    # ── Where is everyone? ───────────────────────────────────────────────────
+    _bearings_section("👥", "Where is everyone?", "compass fleet")
+    cmd_fleet(_types.SimpleNamespace(format="pretty"))
+
+    # ── What is going on? ────────────────────────────────────────────────────
+    _bearings_section("📍", "What is going on?", "compass where")
+    current_version, current_sprint = current_version_sprint(docs)
+    if current_version is None or current_sprint is None:
+        print("  ❌ No version/sprint documents found.")
+    else:
+        chip, warning = staleness_lines(branch_staleness(PROJECT_ROOT))
+        print(f"  {chip}")
+        if warning:
+            print(f"  {warning}")
+        print()
+        print(f"  Version:  {current_version.title}")
+        print(f"            compass show {current_version.id.upper()}")
+        print(f"  Sprint:   {current_sprint.title}")
+        print(f"            compass show {current_sprint.id.upper()}")
+        sprint_dir = _parent_dir(current_sprint.rel_path)
+        in_flight = [
+            d for d in docs.values()
+            if d.doctype in ("story", "task")
+            and d.rel_path.startswith(sprint_dir + "/")
+            and read_state(d.path) == IN_FLIGHT_STATE
+        ]
+        in_flight.sort(key=lambda d: (d.doctype, d.rel_path))
+        print(f"\n  In flight ({IN_FLIGHT_STATE}):")
+        if not in_flight:
+            print("    (nothing in flight)")
+        else:
+            for d in in_flight:
+                print(f"    {d.doctype:<5}  {_strip_type_prefix(d.title or '')}")
+                print(f"           {_ycmd(f'compass show {d.id.upper()}')}")
+
+    print()
+    return 0
+
+
 def main():
     # `list` and `show` pass every remaining argument straight through to the
     # bundled doc tools (full flag compatibility, including their own --help).
@@ -2397,8 +2571,28 @@ def main():
         sys.exit(cmd_env(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "test":
         sys.exit(cmd_test(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] in ("bearings", "orient"):
+        sys.exit(cmd_bearings(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
         sys.exit(cmd_backlog(sys.argv[1], sys.argv[2:]))
+
+    # Unknown command — suggest closest match before handing off to argparse.
+    if len(sys.argv) >= 2 and not sys.argv[1].startswith("-"):
+        _KNOWN_COMMANDS = [
+            "index", "search", "find", "debug", "where", "status", "fleet",
+            "list", "show", "add", "sprint", "story", "task", "journal",
+            "env", "test", "bearings", "orient", "capture",
+            "inbox", "next", "deferred", "discarded", "backlog",
+        ]
+        cmd_given = sys.argv[1]
+        if cmd_given not in _KNOWN_COMMANDS:
+            suggestion = _closest_command(cmd_given, _KNOWN_COMMANDS)
+            if suggestion:
+                print(f"❌  Unknown command: '{cmd_given}'. "
+                      f"Did you mean: compass {suggestion}?", file=sys.stderr)
+            else:
+                print(f"❌  Unknown command: '{cmd_given}'.", file=sys.stderr)
+            sys.exit(1)
 
     _EPILOG = (
         "Pillars:\n"
@@ -2409,6 +2603,7 @@ def main():
         "  Journal:   journal\n"
         "  Provision: env\n"
         "  Test:      test\n"
+        "  Bearings:  bearings (alias: orient)\n"
         "\n"
         "Entity commands (sub-subcommands span pillars):\n"
         "  sprint:   status (orient)\n"
@@ -2467,6 +2662,10 @@ def main():
                           help="Provision: 'env init' generates .env + certs + IAM key; 'env diff'; 'env --help'")
     subparsers.add_parser("test",
                           help="Test: 'test results' parses Catch2 XML and shows an overview; 'test --help'")
+    subparsers.add_parser("bearings",
+                          help="Cold-start orientation: identity, where, last session, recipes, memories")
+    subparsers.add_parser("orient",
+                          help="Alias for bearings")
     subparsers.add_parser("inbox",     help="List captures in the product backlog inbox/")
     subparsers.add_parser("next",      help="List captures in the product backlog next/")
     subparsers.add_parser("deferred",  help="List captures in the product backlog deferred/")

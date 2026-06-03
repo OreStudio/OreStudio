@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 7F0A5D2F-F8DA-432F-A14D-1BD6A6D43A3F
+:END:
+#+title: Task: Implement compass bearings
+#+description: Implement compass bearings command: product identity, where, last session, bearings-tagged recipes and memories. Tag source docs. Add recipe.
+#+type: task
+#+level: s1
+#+filetags: :compass:bearings:llm:orient:compass_orient_command:sprint_19:v0:
+#+owner: marco
+#+branch: feature/compass-bearings
+#+pr: 1024
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2E5F5DB5-7417-45B8-8D0B-C71650127D32][Add compass bearings command for LLM on-boarding]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                                |
+| Parent story | [[id:2E5F5DB5-7417-45B8-8D0B-C71650127D32][Add compass bearings command for LLM on-boarding]] |
+| Now          | Implementing compass bearings.         |
+| Waiting on   | Nothing.                               |
+| Next         | Tag docs; add recipe; PR.              |
+| Last touched | 2026-06-03                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1024][#1024]] | [compass] Add compass bearings command for LLM cold-start orientation |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Redundant local import argparse inside cmd_bearings | =compass.py= | Fixed | Use global import — 23e14f3a3 |
+| 2 | _strip_type_prefix(d.title) can AttributeError if title is None | =compass.py= | Fixed | Guarded with d.title or "" — 23e14f3a3 |
+| 3 | Recipe sort key TypeError if d.title is None | =compass.py= | Fixed | key=lambda d: d.title or "" — 23e14f3a3 |
+| 4 | Memory sort key TypeError if d.title is None | =compass.py= | Fixed | key=lambda d: d.title or "" — 23e14f3a3 |
+
+* Result

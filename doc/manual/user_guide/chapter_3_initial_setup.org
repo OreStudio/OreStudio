@@ -100,16 +100,29 @@ own data.
 *** The provisioning sequence
 
 A freshly installed ORE Studio backend goes through a fixed sequence
-before it is ready for normal use:
+before it is ready for normal use. Each step requires a specific login
+identity:
 
-1. *System provisioning* — the first platform administrator account is
-   created and the system tenant is initialised. Until this step
-   completes, the backend runs in /provisioning mode/ and accepts no
-   normal user logins.
-2. *Tenant provisioning* — one or more tenants are created by the
-   platform administrator.
-3. *Party provisioning* — within each tenant, the operational party
-   hierarchy is established by the tenant administrator.
+1. *System provisioning* — no login is needed; the backend is in
+   /provisioning mode/ and the System Provisioner wizard launches
+   automatically the first time any client connects. This step creates
+   the platform administrator account and provisions the first tenant
+   and its tenant administrator. Until it completes, no normal user
+   logins are accepted.
+
+2. *Tenant provisioning* — log out of the system administrator session
+   (or simply connect as a new user) and *log in as the tenant
+   administrator* created in step 1. OreStudio detects that this
+   account has never logged in before and launches the Tenant
+   Provisioner automatically. This step seeds the tenant with reference
+   data and creates the house party hierarchy.
+
+3. *Party provisioning* — *log in to a specific house party* using the
+   tenant administrator account, or any operational account that holds
+   party setup permissions for that party. OreStudio detects that the
+   party has not yet been provisioned and launches the Party Setup
+   wizard. Repeat this step for each party in the hierarchy that needs
+   its own counterparties, books, and reports.
 
 Each step has a corresponding wizard in the ORE Studio UI. The
 following sections walk through each one.

@@ -52,7 +52,7 @@ The manual chapter is the highest-priority item; it is entirely absent.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1035][#1035]] | [doc,compass] Add manual chapters 4-5 (reference data, currencies); expand chapter 3 |
 
 * Review
 

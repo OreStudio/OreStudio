@@ -2,32 +2,21 @@
 :ID: FD54D29E-9309-4AFE-AFE2-50DA9F7BA354
 :END:
 #+title: Reference Data
-#+description: Reference data management in ORE Studio: currencies, countries, counterparties, books, business units, and all other slowly-changing financial master data entities.
+#+description: Introduction to reference data in OreStudio: what it is, how it differs from market data and trades, and how OreStudio ensures its quality through versioning, provenance, and change management.
 #+type: manual
 #+level: cross
 #+filetags: :knowledge:manual:reference_data:refdata:user_guide:
 #+created: 2026-06-03
 #+updated: 2026-06-03
 
-** Overview
-
-Reference data is the static or slowly-changing master data that all
-financial activity depends on. OreStudio manages it centrally: every
-entity is versioned, change-reason-tracked, and tenant-scoped, so you
-always have a full audit trail of what changed, when, and why. This
-chapter covers all the key reference data entity types — currencies,
-countries, counterparties, books, business units, portfolios, and more.
-Each entity type gets its own section following the same structure: a
-brief introduction, a walkthrough of the Qt UI, and the equivalent
-shell and CLI commands. Currencies are covered first.
-
 ** What is Reference Data?
 
-Reference data is the vocabulary of a financial system. It defines the
-things that financial activity refers to — the currencies a trade is
-denominated in, the counterparty on the other side of a deal, the book
-it settles into, the country a legal entity is incorporated in. Without
-it, nothing else can be described precisely.
+Reference data is the static or slowly-changing master data that all
+financial activity depends on. It defines the vocabulary of the system
+— the currencies a trade is denominated in, the counterparty on the
+other side of a deal, the book it settles into, the country a legal
+entity is incorporated in. Without it, nothing else can be described
+precisely.
 
 Examples of reference data in OreStudio include:
 
@@ -43,254 +32,90 @@ in the system:
 
 - *Market data* — prices, FX rates, yield curves, and volatility
   surfaces that update continuously throughout the trading day.
-  Market data is time-stamped and immutable once recorded; it
-  does not belong to a single owner.
-- *Trades* — specific financial transactions between parties, with
+  Market data is time-stamped and immutable once recorded; a
+  new observation does not overwrite an old one.
+- *Trades* — specific financial transactions between parties with
   defined cashflows, valuation models, and lifecycle states. Trades
-  reference data (they need a currency, a counterparty, a book) but
-  they are not reference data themselves.
+  reference the reference data (they need a currency, a counterparty,
+  a book) but they are not reference data themselves.
 
 The key property of reference data is that it changes slowly and
 deliberately. A currency's rounding convention is not something that
-shifts intraday — it is corrected through a controlled, audited process.
-OreStudio enforces this by requiring a /change reason/ for every
-modification and recording a full version history for every entity.
+shifts intraday — it is corrected through a controlled, audited
+process. OreStudio enforces this by requiring a /change reason/ for
+every modification and recording a full version history for every
+entity.
 
-** Currencies
+** Data Quality
 
-Currencies are the foundational reference data entity. Every trade,
-cashflow, position, and P&L figure in the system is denominated in a
-currency; getting the currency record right is a prerequisite for
-everything else.
+Financial calculations are only as good as the data they consume. A
+misspelled currency name is a cosmetic nuisance; an incorrect rounding
+rule or a wrong counterparty legal entity identifier can propagate
+into risk figures, margin calls, or regulatory reports. OreStudio's
+reference data layer is built around six industry-standard data quality
+dimensions, codified by ISO 8000 and DAMA:
 
-*** ISO 4217 and its limitations
+- *Accuracy* — values match their authoritative source. OreStudio
+  seeds currencies, countries, and counterparty identifiers from
+  ISO 4217, ISO 3166, and the GLEIF LEI registry respectively.
+- *Completeness* — all mandatory attributes are present. The service
+  layer rejects saves that omit required fields; the Qt UI marks them
+  visually.
+- *Consistency* — no contradictions across entities. Foreign-key
+  constraints in the database enforce that a currency's rounding type
+  and market tier are drawn from valid classification tables.
+- *Timeliness* — data is available when calculations need it. The
+  tenant provisioner imports standard catalogues at setup time so that
+  currencies and countries are ready before any trading activity.
+- *Validity* — values conform to business rules and formats. ISO code
+  lengths, numeric code ranges, and format strings are validated at
+  save time.
+- *Uniqueness* — no duplicate records for the same entity. Primary key
+  constraints prevent duplicates at the database level.
 
-The international standard for currency codes is ISO 4217. It defines a
-three-letter alphabetic code (=USD=, =EUR=, =GBP=), a three-digit numeric
-code (=840=, =978=, =826=), a currency name, and the number of decimal places
-(=minor unit=) — for example, USD has 2 minor units, meaning amounts are
-expressed to the nearest cent.
+*** Provenance
 
-ISO 4217 is widely adopted and OreStudio uses it as its primary
-identifier. However, the standard has gaps that matter in practice:
+Every reference data record in OreStudio carries six standard
+provenance fields that together answer the "who, when, and why" of the
+last change:
 
-- It does not classify currencies by *market tier* — the distinction
-  between major G10 currencies and emerging-market currencies is
-  economically important (different liquidity, different settlement
-  conventions) but absent from the standard.
-- It does not cover *digital assets*. Cryptocurrencies such as Bitcoin
-  or Ethereum are increasingly relevant in financial systems but have
-  no ISO 4217 code.
-- It says nothing about *display formatting* — whether a symbol
-  precedes or follows the amount, what the thousands and decimal
-  separators are, or how the fractional unit is labelled.
-- It does not specify *rounding conventions* — whether a calculation
-  result should be rounded up, down, or to the nearest unit.
+| Field         | UI Label      | Meaning                                                    |
+|---------------+---------------+------------------------------------------------------------|
+| =version=     | Version       | Increments from 1 on every save.                           |
+| =modified_by= | Modified By   | Account that submitted the change.                         |
+| =performed_by= | Performed By | Account on whose behalf the change was made (may differ in delegated workflows). |
+| =recorded_at= | Recorded At   | UTC timestamp when the row was written.                    |
+| =change_reason_code= | Change Reason | Structured reason code drawn from the change reasons table. |
+| =change_commentary= | Commentary  | Optional free-text note accompanying the change.           |
 
-OreStudio extends the ISO 4217 model with additional fields to cover
-these gaps: asset class, market tier, currency symbol, fraction symbol,
-a printf-style format string, and configurable rounding rules. The
-standard fields remain primary; the extensions are supplementary.
+These fields are displayed in the read-only *Provenance* tab of every
+detail dialog and are stored in the current record. In addition, the
+database writes a copy of every version into a companion history table
+so that the full audit trail — including the values of all fields at
+every past version — is always recoverable.
 
-*** The Currencies window
+*** Versioning and History
 
-Open the Currencies window from the /Reference Data/ menu. It lists all
-currencies defined in the tenant, with one row per currency.
+Saves never overwrite data. Each change creates a new row in the
+history table and increments the version counter on the live record.
+The history dialog for any entity shows the complete version list,
+allows field-by-field comparison between any two versions, and
+provides a revert button that reinstates any past version as a new
+current version — preserving the audit chain rather than rolling it
+back.
 
-#+caption[The Currencies window]: The Currencies window, showing the full list of currencies in the tenant. Each row shows the ISO code, name, numeric code, symbol, version number, the identity of the last modifier, and when the record was last recorded. The status bar at the bottom shows the current page and total record count.
-[[../../../assets/images/currencies_main_dialog.png]]
+*** Change Reasons
 
-The toolbar buttons reload the list and adjust the display. The list is
-paginated; use the page controls at the bottom right to navigate. The
-/Page size/ control lets you increase the number of rows shown per page.
-
-Double-clicking a row opens the *Currency Details* dialog for that
-currency.
-
-*** Currency Details
-
-The Currency Details dialog has four tabs: *General*, *Formatting*,
-*Rounding*, and *Provenance*. The three action buttons at the bottom —
-*Delete*, *Close*, and *Save* — apply to the currency as a whole.
-
-**** General
-
-#+caption[Currency Details — General tab]: The General tab for the Angolan Kwanza (AOA). It shows the ISO code, full name, numeric code, asset class, market tier, and the country flag icon associated with the currency.
-[[../../../assets/images/currency_details_general.png]]
-
-The General tab carries the core identity of the currency:
-
-- *ISO Code* — the three-letter ISO 4217 alphabetic code. This is the
-  primary key and cannot be changed after creation.
-- *Name* — the full English name of the currency (e.g. /Angolan Kwanza/).
-- *Numeric Code* — the ISO 4217 numeric code (e.g. =973= for AOA).
-- *Asset Class* — classifies the currency as =fiat= (a government-issued
-  currency) or =crypto.major= (a major digital asset such as Bitcoin or
-  Ethereum). Asset class drives eligibility rules in downstream
-  components.
-- *Market Tier* — classifies the currency's liquidity profile: =g10= for
-  the ten most liquid global currencies, =emerging= for others. This
-  feeds into margin and settlement logic.
-- *Icon* — the country flag associated with the currency's issuing
-  nation, displayed as a small image. Flags are populated automatically
-  from the system's image dataset when currencies are imported.
-
-**** Formatting
-
-#+caption[Currency Details — Formatting tab]: The Formatting tab for AOA, showing the currency symbol (Kz), the fractional unit symbol (c for centavo), fractions per unit (100), and the display format string.
-[[../../../assets/images/currency_details_formatting.png]]
-
-The Formatting tab controls how currency amounts are displayed in the
-UI and in reports:
-
-- *Symbol* — the currency symbol used in display, e.g. =Kz= for the
-  Kwanza or =$= for the US Dollar.
-- *Fraction Symbol* — the symbol for the fractional unit, e.g. =c= for
-  centavo.
-- *Fractions Per Unit* — the number of fractional units in one whole
-  unit. Most fiat currencies use =100= (100 cents per dollar); some, such
-  as the Kuwaiti Dinar, use =1000=. Currencies with no fractional unit
-  (e.g. the Japanese Yen) use =0= or =1=. Cryptocurrencies typically use
-  =100000000= (one hundred million satoshis per Bitcoin).
-- *Format* — a printf-style format string controlling how amounts are
-  rendered. For example, =Kz#,##0.00= produces =Kz1,234.56=.
-
-**** Rounding
-
-The Rounding tab controls how calculated amounts in this currency are
-rounded before storage and display:
-
-- *Rounding Type* — the rounding algorithm: =Closest= (round half to
-  nearest even), =Up= (always round up), =Down= (always round down), or
-  =Nearest= (round half away from zero). Most fiat currencies use
-  =Closest=.
-- *Rounding Precision* — the number of decimal places to round to.
-  Typically =2= for most fiat currencies and =8= for cryptocurrencies.
-
-**** Provenance
-
-#+caption[Currency Details — Provenance tab]: The Provenance tab showing record metadata: version number, the service that last modified the record, who performed the operation, when it was recorded, the change reason code, and a free-text commentary.
-[[../../../assets/images/currency_details_provenance.png]]
-
-The Provenance tab is read-only and shows the audit metadata for the
-current version of the record:
-
-- *Version* — an incrementing integer starting at =1=. Every save
-  creates a new version.
-- *Modified By* — the service or user account that submitted the change.
-- *Performed By* — the authenticated identity under which the change was
-  performed (may differ from Modified By when a service acts on behalf
-  of a user).
-- *Recorded At* — the UTC timestamp when this version was written to the
-  database.
-- *Change Reason* — the structured reason code selected at save time
-  (see below).
-- *Commentary* — the free-text note entered alongside the change reason.
-
-*** Editing a currency
-
-To edit a currency, open it in the Currency Details dialog, make your
-changes, and click *Save*. Before the record is written, OreStudio
-prompts you to supply a change reason.
-
-#+caption[The Change Reason Required dialog]: The Change Reason Required dialog, which appears before every save. A reason code must be selected; commentary is optional for some reason codes and required for others.
-[[../../../assets/images/currency_details_change_reason.png]]
-
-Select a *Reason* from the drop-down. The reasons are organised into
-categories — for example, =common.rectification= falls under the
-/User/Booking Error/ category and is appropriate when correcting a data
-entry mistake. Add a *Commentary* note if the reason requires further
-context or if you want to leave a record for future auditors. Click
-*Save* to confirm.
-
-Every save is permanent and creates a new version. The previous version
-is never overwritten; it remains accessible via the history dialog.
-
-*** Currency history
-
-To view the full change history for a currency, open its details dialog
-and click the history icon in the title bar, or right-click the row in
-the list window and choose *History*.
-
-#+caption[The Currency History dialog for AOA]: The Currency History dialog for the Angolan Kwanza. The upper table lists every recorded version; selecting a version populates the lower panel. The /Changes/ tab shows a field-by-field diff against the previous version; /Full Details/ shows the complete record for the selected version.
-[[../../../assets/images/currency_history.png]]
-
-The upper table lists every version of the record in reverse
-chronological order. Each row shows the version number, when it was
-recorded, who modified it, the change reason, and any commentary.
-Selecting a row populates the detail panel below.
-
-The detail panel has two tabs:
-
-- *Changes* — a diff view showing which fields changed between the
-  selected version and its predecessor, with old and new values
-  side-by-side. This is the fastest way to see what a particular edit
-  did.
-- *Full Details* — the complete record as it existed at the selected
-  version, useful for reconstructing the state of a currency at any
-  point in history.
-
-The *Revert* toolbar button reinstates the selected historical version
-as a new version, preserving the full audit chain.
-
-*** Shell commands
-
-The ORE Studio interactive shell (=ores.shell=) provides a quick way to
-query and modify currencies without opening the Qt UI. Connect and log
-in, then use the =currencies= command group:
-
-#+begin_example
-# List all currencies (paginated)
-currencies get
-
-# Add a new currency: <iso_code> <name> <numeric_code> <symbol> <fractions_per_unit>
-currencies add XTS "Test Currency" 963 T$ 100
-
-# Delete a currency by ISO code
-currencies delete XTS
-
-# Show history for a currency
-currencies history USD
-#+end_example
-
-The shell displays results as formatted tables and reports success or
-failure inline. It is particularly useful for scripting bulk operations
-or for quickly checking a value during a trading session without
-switching to the full UI.
-
-*** CLI commands
-
-The =ores.cli= command-line tool provides a richer interface suitable for
-automation and integration. All currency commands live under
-=ores.cli refdata currencies=:
-
-#+begin_example
-# List all currencies as a table
-ores.cli refdata currencies list --format table
-
-# List a specific currency as JSON
-ores.cli refdata currencies list --format json --key EUR
-
-# Add a new currency
-ores.cli refdata currencies add \
-  --iso-code XTS --name "Test Currency" \
-  --numeric-code 963 --modified-by operator \
-  --currency-type fiat
-
-# Delete a currency by ISO code
-ores.cli refdata currencies delete --iso-code XTS
-
-# Export all currencies to a file
-ores.cli refdata currencies export --output currencies.json
-#+end_example
-
-The =--format json= output matches the schema used by the REST API and
-is suitable for piping into =jq= for filtering or transformation.
+Before every save, OreStudio prompts for a /change reason/ — a
+structured code drawn from a configurable table (for example,
+=common.rectification= for a data-entry correction, or
+=system.external_data_import= for an automated import). Change
+reasons make the audit trail machine-readable: a compliance officer
+can filter the history of all records modified under
+=common.rectification= across an entire tenant. Some reason codes
+require a free-text commentary; others make it optional.
 
 ** See also
 
-- [[https://www.iso.org/iso-4217-currency-codes.html][ISO 4217 Currency Codes]] — the international standard for currency
-  identification.
-- [[https://www.six-group.com/en/products-services/financial-information/data-standards.html][SIX Financial Information — Currency data]] — the official ISO 4217
-  maintenance agency; publishes the current list of active and
-  historical codes.
+- [[https://en.wikipedia.org/wiki/ISO_8000][ISO 8000]] — international standard for data quality.
+- [[https://www.dama.org/cpages/body-of-knowledge][DAMA-DMBOK]] — data management body of knowledge.

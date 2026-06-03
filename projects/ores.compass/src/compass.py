@@ -791,16 +791,16 @@ def cmd_where(args):
         print(warning)
     print()
     print(f"Version:  {current_version.title}")
-    print(f"          compass show {current_version.id.upper()}")
+    print(f"          {_ycmd(f'compass show {current_version.id.upper()}')}")
     print(f"Sprint:   {current_sprint.title}")
-    print(f"          compass show {current_sprint.id.upper()}")
+    print(f"          {_ycmd(f'compass show {current_sprint.id.upper()}')}")
     print(f"\nIn flight ({IN_FLIGHT_STATE}):")
     if not in_flight:
         print("  (nothing in flight)")
     else:
         for d, state in in_flight:
             print(f"  {d.doctype:<5} {_strip_type_prefix(d.title)}")
-            print(f"        compass show {d.id.upper()}")
+            print(f"        {_ycmd(f'compass show {d.id.upper()}')}")
 
     if getattr(args, "prs", False):
         print(f"\nPRs (sprint {current_sprint.title}):")
@@ -875,10 +875,10 @@ def _print_entry(entry):
 
     print(f"  ● {entry['timestamp']} — {story_title}")
     if story_uuid:
-        print(f"    compass show {story_uuid}")
+        print(f"    {_ycmd(f'compass show {story_uuid}')}")
     print(f"    Task:   {task_title} — {entry.get('state') or '?'}")
     if task_uuid:
-        print(f"            compass show {task_uuid}")
+        print(f"            {_ycmd(f'compass show {task_uuid}')}")
     print(f"    Branch: {entry.get('branch') or '—'}")
     print(f"    PR:     {entry.get('pr') or 'none'}")
 
@@ -1384,7 +1384,8 @@ def cmd_sprint(argv):
             tasks = f"{s['tasks_done']}/{s['tasks_total']}" if s["tasks_total"] else "—"
             print(f"    [{tasks}] {s['title']}")
             if s["uuid"]:
-                print(f"           compass show {s['uuid'].upper()}")
+                _u = s["uuid"].upper()
+                print(f"           {_ycmd(f'compass show {_u}')}")
         return 0
 
 def _org_link_text(link_str):
@@ -1456,10 +1457,12 @@ def cmd_fleet(args):
             source = "" if r["journal"] else " (from branch)"
             print(f"      story: {r['story'] or '—'}{source}")
             if r.get("story_uuid"):
-                print(f"             compass show {r['story_uuid']}")
+                _su = r["story_uuid"]
+                print(f"             {_ycmd(f'compass show {_su}')}")
             print(f"      task:  {r['task'] or '—'}{state_suffix}")
             if r.get("task_uuid"):
-                print(f"             compass show {r['task_uuid']}")
+                _tu = r["task_uuid"]
+                print(f"             {_ycmd(f'compass show {_tu}')}")
         elif r["branch"] and r["branch"] != "main":
             print("      (no journal or task records this branch)")
         if r["pr"]:
@@ -1954,7 +1957,8 @@ def cmd_story(argv):
                 print(f"  {current_state}")
             print(f"    {t['title']}")
             if t["uuid"]:
-                print(f"           compass show {t['uuid'].upper()}")
+                _u = t["uuid"].upper()
+                print(f"           {_ycmd(f'compass show {_u}')}")
             if t["branch"]:
                 print(f"           branch: {t['branch']}")
             if t["pr"] and t["pr"] != "none":
@@ -2425,10 +2429,15 @@ def _closest_command(given, known, max_dist=2):
 
 # --- Bearings: cold-start orientation ---
 
+def _ycmd(cmd):
+    """Render a compass command in yellow."""
+    return f"{_C_YELLOW}{cmd}{_C_RESET}"
+
+
 def _bearings_section(icon, title, cmd=None):
     print(f"\n{_C_BOLD}{_C_CYAN}{icon}  {title}{_C_RESET}")
     if cmd:
-        print(f"    {cmd}")
+        print(f"    {_C_YELLOW}{cmd}{_C_RESET}")
 
 
 def cmd_bearings(argv):
@@ -2440,26 +2449,26 @@ def cmd_bearings(argv):
                     "key recipes, memories, and where we are.")
     ap.parse_args(argv)
 
+    import types as _types
     docs = doc_index.load_all()
 
     print("🧭 ores.compass — bearings\n")
 
-    # ── Section 0: What is ORE Studio? ──────────────────────────────────────
+    # ── What is ORE Studio? ──────────────────────────────────────────────────
     _bearings_section("🏢", "What is ORE Studio?",
                       "compass show 2F71292F-CDB0-4E2E-B50F-4F02E10597C4")
     identity_docs = [d for d in docs.values() if d.doctype == "product_identity"]
     if identity_docs:
-        pi = identity_docs[0]
-        print(f"  {pi.description}")
+        print(f"  {identity_docs[0].description}")
     else:
         print("  ❌ No product_identity document found.")
 
-    # ── Section 1: Last session ──────────────────────────────────────────────
-    _bearings_section("📓", "Last session", "compass journal where")
+    # ── Where have we been? ──────────────────────────────────────────────────
+    _bearings_section("📓", "Where have we been?", "compass journal where")
     _journal_where()
 
-    # ── Section 2: Key recipes ───────────────────────────────────────────────
-    _bearings_section("📖", "Key recipes",
+    # ── What can we do next? ─────────────────────────────────────────────────
+    _bearings_section("📖", "What can we do next?",
                       "compass list --type recipe --tag bearings")
     recipes = sorted(
         [d for d in docs.values()
@@ -2474,10 +2483,10 @@ def cmd_bearings(argv):
             print(f"\n  • {r.title}")
             if r.description:
                 print(f"    {r.description}")
-            print(f"    compass show {r.id.upper()}")
+            print(f"    {_ycmd(f'compass show {r.id.upper()}')}")
 
-    # ── Section 3: Memories ──────────────────────────────────────────────────
-    _bearings_section("🧠", "Memories",
+    # ── Important things to remember ─────────────────────────────────────────
+    _bearings_section("🧠", "Important things to remember",
                       "compass list --type memory --tag bearings")
     memories = sorted(
         [d for d in docs.values()
@@ -2492,10 +2501,14 @@ def cmd_bearings(argv):
             print(f"\n  • {m.title}")
             if m.description:
                 print(f"    {m.description}")
-            print(f"    compass show {m.id.upper()}")
+            print(f"    {_ycmd(f'compass show {m.id.upper()}')}")
 
-    # ── Section 4: Where we are (last — most verbose) ────────────────────────
-    _bearings_section("📍", "Where we are", "compass where")
+    # ── Where is everyone? ───────────────────────────────────────────────────
+    _bearings_section("👥", "Where is everyone?", "compass fleet")
+    cmd_fleet(_types.SimpleNamespace(format="pretty"))
+
+    # ── What is going on? ────────────────────────────────────────────────────
+    _bearings_section("📍", "What is going on?", "compass where")
     current_version, current_sprint = current_version_sprint(docs)
     if current_version is None or current_sprint is None:
         print("  ❌ No version/sprint documents found.")
@@ -2523,7 +2536,7 @@ def cmd_bearings(argv):
         else:
             for d in in_flight:
                 print(f"    {d.doctype:<5}  {_strip_type_prefix(d.title)}")
-                print(f"           compass show {d.id.upper()}")
+                print(f"           {_ycmd(f'compass show {d.id.upper()}')}")
 
     print()
     return 0

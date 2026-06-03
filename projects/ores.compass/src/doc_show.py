@@ -43,13 +43,16 @@ def _h(text):
 def show_link_row(uuid: str, docs, anchors) -> str:
     target = docs.get(uuid)
     if target is not None:
-        return f"  {target.title}\n  compass show {uuid.upper()}"
+        cmd = f"{_C_YELLOW}compass show {uuid.upper()}{_C_RESET}"
+        return f"  {target.title}\n  {cmd}"
     anchor = anchors.get(uuid)
     if anchor is not None:
         parent = docs.get(anchor.parent_id)
         parent_label = parent.title if parent else anchor.rel_path
-        return f"  {anchor.heading}  (in '{parent_label}')\n  compass show {uuid.upper()}"
-    return f"  [BROKEN — not in doc graph]\n  compass show {uuid.upper()}"
+        cmd = f"{_C_YELLOW}compass show {uuid.upper()}{_C_RESET}"
+        return f"  {anchor.heading}  (in '{parent_label}')\n  {cmd}"
+    cmd = f"{_C_YELLOW}compass show {uuid.upper()}{_C_RESET}"
+    return f"  [BROKEN — not in doc graph]\n  {cmd}"
 
 
 def show_anchor(anchor, docs, inbound_idx, anchors) -> None:
@@ -58,7 +61,7 @@ def show_anchor(anchor, docs, inbound_idx, anchors) -> None:
     print(f"    In doc:  {parent.title if parent else '(unknown)'}")
     print(f"    Path:    {anchor.rel_path}")
     if parent:
-        print(f"    compass show {anchor.parent_id.upper()}")
+        print(f"    {_C_YELLOW}compass show {anchor.parent_id.upper()}{_C_RESET}")
     print()
     print(_h("📝  Section"))
     print(anchor.body if anchor.body else "  (empty)")

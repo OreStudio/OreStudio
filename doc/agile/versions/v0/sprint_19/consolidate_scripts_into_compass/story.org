@@ -34,9 +34,9 @@ within this larger effort.
 |---------------+--------------------------------------------------|
 | State         | STARTED                                          |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                               |
-| Now           | compass test results, sprint charts, branch staleness, bearings all shipped. rat now generates XML for compass test results. |
+| Now           | compass test results, sprint charts, branch staleness, bearings all shipped. rat now generates XML for compass test results. Windows env init bug scaffolded. |
 | Waiting on    | Nothing.                                         |
-| Next          | Document the compass env commands; then db/nats/Operate/Build/Generate migrations. |
+| Next          | Fix Windows venv activation path; document the compass env commands; then db/nats/Operate/Build/Generate migrations. |
 | Last touched  | 2026-06-03                                       |
 
 * Background: script inventory (2026-06-02)
@@ -132,6 +132,7 @@ migrate; the single service registry's home (=projects/services.json=).
 | [[id:81DE1DC9-FB73-46DB-A8AB-E4BE8F78C591][Port sprint_metrics.py to compass sprint charts]] | BACKLOG | | | compass sprint charts; auto-detects current sprint; deletes standalone script; updates recipes. |
 | [[id:196FE762-F1A6-49BC-A2FF-60F3FC08114D][Port parse_test_results.py to compass test results]] | BACKLOG | | | New test pillar; auto-resolves preset from .env; recipe for test run overview; deletes standalone script. |
 | [[id:4CB61A14-83D7-44A6-A6E5-F0A553B93675][Fix: compass test results missing after make rat]] | DONE | 2026-06-03 | 2026-06-03 | Wire XML reporter into rat custom targets so compass test results has data after the standard dev workflow. |
+| [[id:813B6AB7-5B5A-461C-92AF-C9C60C710F66][Fix compass env init venv activation path on Windows]] | STARTED | 2026-06-03 | | compass.sh sources venv/bin/activate on all platforms; Windows Git Bash needs venv/Scripts/activate. Detected from CI failure on PR #1031. |
 
 * Decisions
 

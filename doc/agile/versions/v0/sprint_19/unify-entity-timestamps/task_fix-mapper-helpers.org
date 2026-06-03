@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :unify-entity-timestamps:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/unify-entity-timestamps
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,7 +25,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields: replace optional<db_timestamp> with std::string]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

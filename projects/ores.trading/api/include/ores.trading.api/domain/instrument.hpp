@@ -21,6 +21,7 @@
 #define ORES_TRADING_DOMAIN_INSTRUMENT_HPP
 
 #include <concepts>
+#include <type_traits>
 #include <vector>
 #include <variant>
 #include <boost/uuid/uuid.hpp>
@@ -69,8 +70,12 @@ void stamp_ids(with_legs<T, Leg>& data,
                boost::uuids::uuid instrument_id,
                boost::uuids::uuid trade_id) {
     stamp_ids(data.instrument, instrument_id, trade_id);
-    for (auto& leg : data.legs)
-        leg.instrument_id = instrument_id;
+    for (auto& leg : data.legs) {
+        if constexpr (std::is_same_v<Leg, swap_leg>)
+            leg.identity.get().instrument_id = instrument_id;
+        else
+            leg.instrument_id = instrument_id;
+    }
 }
 
 } // namespace ores::trading::domain

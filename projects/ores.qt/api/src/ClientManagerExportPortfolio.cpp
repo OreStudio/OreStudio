@@ -22,13 +22,14 @@
 //
 // export_portfolio_response carries vector<trade_export_item> where each item
 // contains trade_instrument — a std::variant with 9 alternatives including
-// with_legs<..., swap_leg> types. rfl::json::read<export_portfolio_response>
-// instantiates rfl::StringLiteral<N> types for swap_leg's 19 fields.
+// with_legs<..., swap_leg> types.
 //
-// Because process_authenticated_request<T> is a header template, calling it
-// with export_portfolio_request in a large TU (BookMdiWindow.cpp, step 4651/4936)
-// injects those Literals into an already-saturated MSVC dependency graph, triggering
-// C1202. This concrete method keeps the instantiation in a dedicated, fresh TU.
+// swap_leg is decomposed via rfl::Flatten into three sub-structs (≤9 fields
+// each), so rfl::internal::no_duplicate_field_names never sees more than 9
+// field names at once and stays below MSVC's C1202 template-graph limit.
+//
+// This TU also prevents the rfl instantiation from leaking into caller TUs via
+// the process_authenticated_request<T> header template.
 
 #include "ores.qt/ClientManager.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.

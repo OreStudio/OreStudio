@@ -286,7 +286,7 @@ TEST_CASE("import_portfolio_with_context_swap_has_instrument", tags) {
     CHECK(item.trade.classification.product_type == ores::trading::domain::product_type::swap);
     CHECK(!r.legs.empty());
     for (const auto& leg : r.legs)
-        CHECK(leg.instrument_id == instr_id);
+        CHECK(leg.identity.get().instrument_id == instr_id);
 
     BOOST_LOG_SEV(lg, info) << "Swap instrument mapped. Legs: " << r.legs.size();
 }

@@ -262,36 +262,39 @@ currencyCode parse_currency_code(const std::string& s) {
 
 swap_leg swap_instrument_mapper::map_leg(const legData& ld, int leg_number) {
     swap_leg sl;
-    sl.leg_number = leg_number;
-    sl.leg_type_code = to_string(ld.LegType);
+    auto& id = sl.identity.get();
+    auto& tm = sl.terms.get();
+    auto& au = sl.audit.get();
+    id.leg_number = leg_number;
+    tm.leg_type_code = to_string(ld.LegType);
 
     if (ld.Currency)
-        sl.currency = std::string(*ld.Currency);
-    sl.day_count_fraction_code = day_counter_string(ld.DayCounter);
-    sl.business_day_convention_code = bdc_string(ld.PaymentConvention);
-    sl.payment_frequency_code = first_tenor(ld.ScheduleData);
+        tm.currency = std::string(*ld.Currency);
+    tm.day_count_fraction_code = day_counter_string(ld.DayCounter);
+    tm.business_day_convention_code = bdc_string(ld.PaymentConvention);
+    tm.payment_frequency_code = first_tenor(ld.ScheduleData);
 
     if (ld.Notionals)
-        sl.notional = static_cast<double>(first_notional(*ld.Notionals));
+        tm.notional = static_cast<double>(first_notional(*ld.Notionals));
 
     if (ld.legDataType) {
         const auto& ldt = *ld.legDataType;
         if (ldt.FixedLegData && !ldt.FixedLegData->Rates.Rate.empty())
-            sl.fixed_rate = static_cast<double>(
+            tm.fixed_rate = static_cast<double>(
                 ldt.FixedLegData->Rates.Rate.front());
         if (ldt.FloatingLegData) {
-            sl.floating_index_code = std::string(ldt.FloatingLegData->Index);
+            tm.floating_index_code = std::string(ldt.FloatingLegData->Index);
             if (ldt.FloatingLegData->Spreads &&
                     !ldt.FloatingLegData->Spreads->Spread.empty())
-                sl.spread = static_cast<double>(
+                tm.spread = static_cast<double>(
                     ldt.FloatingLegData->Spreads->Spread.front());
         }
     }
 
-    sl.modified_by = "ores";
-    sl.performed_by = "ores";
-    sl.change_reason_code = "system.external_data_import";
-    sl.change_commentary = "Imported from ORE XML";
+    au.modified_by = "ores";
+    au.performed_by = "ores";
+    au.change_reason_code = "system.external_data_import";
+    au.change_commentary = "Imported from ORE XML";
     return sl;
 }
 
@@ -403,16 +406,18 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
     fi.long_short = "Long";
 
     swap_leg sl;
-    sl.leg_number = 1;
-    sl.leg_type_code = "Fixed";
-    sl.currency = to_string(fra.Currency);
-    sl.floating_index_code = std::string(fra.Index);
-    sl.fixed_rate = static_cast<double>(fra.Strike);
-    sl.notional = static_cast<double>(fra.Notional);
-    sl.modified_by = "ores";
-    sl.performed_by = "ores";
-    sl.change_reason_code = "system.external_data_import";
-    sl.change_commentary = "Imported from ORE XML";
+    sl.identity.get().leg_number = 1;
+    auto& tm = sl.terms.get();
+    tm.leg_type_code = "Fixed";
+    tm.currency = to_string(fra.Currency);
+    tm.floating_index_code = std::string(fra.Index);
+    tm.fixed_rate = static_cast<double>(fra.Strike);
+    tm.notional = static_cast<double>(fra.Notional);
+    auto& au = sl.audit.get();
+    au.modified_by = "ores";
+    au.performed_by = "ores";
+    au.change_reason_code = "system.external_data_import";
+    au.change_commentary = "Imported from ORE XML";
     result.legs.push_back(std::move(sl));
 
     return result;
@@ -444,29 +449,31 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
     ci.maturity_date = end_date_from_schedule(cf.LegData.ScheduleData);
 
     swap_leg sl;
-    sl.leg_number = 1;
-    sl.leg_type_code = to_string(cf.LegData.LegType);
-    sl.currency = to_string(cf.LegData.Currency);
-    sl.day_count_fraction_code = to_string(cf.LegData.DayCounter);
-    sl.business_day_convention_code = bdc_string(cf.LegData.PaymentConvention);
-    sl.payment_frequency_code = first_tenor(cf.LegData.ScheduleData);
+    sl.identity.get().leg_number = 1;
+    auto& tm = sl.terms.get();
+    tm.leg_type_code = to_string(cf.LegData.LegType);
+    tm.currency = to_string(cf.LegData.Currency);
+    tm.day_count_fraction_code = to_string(cf.LegData.DayCounter);
+    tm.business_day_convention_code = bdc_string(cf.LegData.PaymentConvention);
+    tm.payment_frequency_code = first_tenor(cf.LegData.ScheduleData);
 
     if (!cf.LegData.Notionals.Notional.empty())
-        sl.notional = static_cast<double>(cf.LegData.Notionals.Notional.front());
+        tm.notional = static_cast<double>(cf.LegData.Notionals.Notional.front());
 
     if (cf.LegData.legDataType.FloatingLegData) {
-        sl.floating_index_code = std::string(
+        tm.floating_index_code = std::string(
             cf.LegData.legDataType.FloatingLegData->Index);
         if (cf.LegData.legDataType.FloatingLegData->Spreads &&
                 !cf.LegData.legDataType.FloatingLegData->Spreads->Spread.empty())
-            sl.spread = static_cast<double>(
+            tm.spread = static_cast<double>(
                 cf.LegData.legDataType.FloatingLegData->Spreads->Spread.front());
     }
 
-    sl.modified_by = "ores";
-    sl.performed_by = "ores";
-    sl.change_reason_code = "system.external_data_import";
-    sl.change_commentary = "Imported from ORE XML";
+    auto& au = sl.audit.get();
+    au.modified_by = "ores";
+    au.performed_by = "ores";
+    au.change_reason_code = "system.external_data_import";
+    au.change_commentary = "Imported from ORE XML";
     result.legs.push_back(std::move(sl));
 
     return result;
@@ -482,34 +489,35 @@ legData swap_instrument_mapper::reverse_leg(
         const swap_leg& sl) {
     legData ld;
 
-    const auto leg_type = leg_type_from_string(sl.leg_type_code);
+    const auto& tm = sl.terms.get();
+    const auto leg_type = leg_type_from_string(tm.leg_type_code);
     if (!leg_type)
         throw std::runtime_error(
-            "reverse_leg: unrecognised leg type '" + sl.leg_type_code +
+            "reverse_leg: unrecognised leg type '" + tm.leg_type_code +
             "' — cannot produce valid ORE XML");
     ld.LegType = *leg_type;
-    ld.Currency = sl.currency;
+    ld.Currency = tm.currency;
 
-    if (sl.notional != 0.0)
-        ld.Notionals = make_notionals(sl.notional);
+    if (tm.notional != 0.0)
+        ld.Notionals = make_notionals(tm.notional);
 
     ld.ScheduleData = make_schedule(start_date, maturity_date,
-                                    sl.payment_frequency_code);
+                                    tm.payment_frequency_code);
 
     legDataType_group_t ldt;
-    if (ld.LegType == legType::Fixed && sl.fixed_rate != 0.0) {
+    if (ld.LegType == legType::Fixed && tm.fixed_rate != 0.0) {
         _FixedLegData_t fld;
         _FixedLegData_t_Rates_t_Rate_t rate;
-        static_cast<float&>(rate) = static_cast<float>(sl.fixed_rate);
+        static_cast<float&>(rate) = static_cast<float>(tm.fixed_rate);
         fld.Rates.Rate.push_back(rate);
         ldt.FixedLegData = std::move(fld);
     } else if (ld.LegType == legType::Floating) {
         _FloatingLegData_t fld;
-        fld.Index = sl.floating_index_code;
-        if (sl.spread != 0.0) {
+        fld.Index = tm.floating_index_code;
+        if (tm.spread != 0.0) {
             spreads sp;
             floatWithAttribute sv;
-            static_cast<float&>(sv) = static_cast<float>(sl.spread);
+            static_cast<float&>(sv) = static_cast<float>(tm.spread);
             sp.Spread.push_back(sv);
             fld.Spreads = std::move(sp);
         }
@@ -568,8 +576,9 @@ trade swap_instrument_mapper::reverse_fra(
     fra.Notional = static_cast<float>(instr.notional);
 
     if (!legs.empty()) {
-        static_cast<std::string&>(fra.Index) = legs.front().floating_index_code;
-        fra.Strike = static_cast<float>(legs.front().fixed_rate);
+        const auto& tm = legs.front().terms.get();
+        static_cast<std::string&>(fra.Index) = tm.floating_index_code;
+        fra.Strike = static_cast<float>(tm.fixed_rate);
         fra.LongShort = longShort::Long;
     }
 
@@ -595,28 +604,29 @@ trade swap_instrument_mapper::reverse_capfloor(
     if (!legs.empty()) {
         const auto& sl = legs.front();
 
-        cf.LegData.LegType = leg_type_from_string(sl.leg_type_code)
+        const auto& tm = sl.terms.get();
+        cf.LegData.LegType = leg_type_from_string(tm.leg_type_code)
                                  .value_or(legType::Floating);
 
-        cf.LegData.Currency = parse_currency_code(sl.currency);
+        cf.LegData.Currency = parse_currency_code(tm.currency);
 
         cf.LegData.DayCounter = dayCounter::ACT_365;
         cf.LegData.ScheduleData = make_schedule(instr.start_date,
                                                 instr.maturity_date,
-                                                sl.payment_frequency_code);
-        if (sl.notional != 0.0) {
+                                                tm.payment_frequency_code);
+        if (tm.notional != 0.0) {
             legData_capfloor_Notionals_t_Notional_t nv;
-            static_cast<float&>(nv) = static_cast<float>(sl.notional);
+            static_cast<float&>(nv) = static_cast<float>(tm.notional);
             cf.LegData.Notionals.Notional.push_back(nv);
         }
 
         if (cf.LegData.LegType == legType::Floating) {
             _FloatingLegData_t fld;
-            fld.Index = sl.floating_index_code;
-            if (sl.spread != 0.0) {
+            fld.Index = tm.floating_index_code;
+            if (tm.spread != 0.0) {
                 spreads sp;
                 floatWithAttribute sv;
-                static_cast<float&>(sv) = static_cast<float>(sl.spread);
+                static_cast<float&>(sv) = static_cast<float>(tm.spread);
                 sp.Spread.push_back(sv);
                 fld.Spreads = std::move(sp);
             }

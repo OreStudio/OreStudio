@@ -190,7 +190,7 @@ private:
             if (!all_swap.empty()) {
                 service::fra_instrument_service fra_svc(ctx);
                 for (auto& leg : fra_svc.get_swap_legs_batch(all_swap))
-                    legs_map[boost::uuids::to_string(leg.instrument_id)].push_back(
+                    legs_map[boost::uuids::to_string(leg.identity.get().instrument_id)].push_back(
                         std::move(leg));
             }
         }

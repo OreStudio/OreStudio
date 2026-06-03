@@ -34,30 +34,31 @@ domain::swap_leg generate_synthetic_swap_leg(
         std::string(generation_keys::modified_by), "system");
 
     domain::swap_leg r;
-    r.version = 1;
-    r.id = boost::uuids::random_generator()();
-    r.instrument_id = instrument_id;
-    r.leg_number = leg_number;
-    r.notional = 1000000.0;
-    r.currency = "USD";
-    r.day_count_fraction_code = "A365F";
-    r.business_day_convention_code = "MODFOLLOWING";
-    r.payment_frequency_code = "Annual";
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
+    auto& id = r.identity.get();
+    auto& tm = r.terms.get();
+    auto& au = r.audit.get();
+    id.version = 1;
+    id.id = boost::uuids::random_generator()();
+    id.instrument_id = instrument_id;
+    id.leg_number = leg_number;
+    tm.notional = 1000000.0;
+    tm.currency = "USD";
+    tm.day_count_fraction_code = "A365F";
+    tm.business_day_convention_code = "MODFOLLOWING";
+    tm.payment_frequency_code = "Annual";
+    au.modified_by = modified_by;
+    au.performed_by = modified_by;
+    au.change_reason_code = "system.test";
+    au.change_commentary = "Synthetic test data";
+    au.recorded_at = ctx.past_timepoint();
 
     if (leg_number == 1) {
-        // Fixed leg
-        r.leg_type_code = "Fixed";
-        r.fixed_rate = 0.05;
+        tm.leg_type_code = "Fixed";
+        tm.fixed_rate = 0.05;
     } else {
-        // Floating leg
-        r.leg_type_code = "Floating";
-        r.floating_index_code = "EURIBOR6M";
-        r.spread = 0.0;
+        tm.leg_type_code = "Floating";
+        tm.floating_index_code = "EURIBOR6M";
+        tm.spread = 0.0;
     }
     return r;
 }

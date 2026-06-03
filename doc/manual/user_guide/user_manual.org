@@ -45,7 +45,7 @@
 #+latex_header: \titleformat{\section}[hang]{\normalfont\Large\itshape\color{oreaccent}}{\thesection}{1em}{}[]
 #+latex_header: \titleformat{\subsection}[hang]{\normalfont\large\itshape\color{oreaccent}}{\thesubsection}{1em}{}[]
 #+latex_header: \makeatletter
-#+latex_header: \titleformat{\chapter}[display]{\relax\ifthenelse{\NOT\boolean{@tufte@symmetric}}{\begin{fullwidth}}{}}{\itshape\huge\color{oreaccent}\thechapter}{0pt}{\huge\rmfamily\itshape\color{oreaccent}}[\ifthenelse{\NOT\boolean{@tufte@symmetric}}{\end{fullwidth}}{}]
+#+latex_header: \titleformat{\chapter}[display]{\relax\ifthenelse{\NOT\boolean{@tufte@symmetric}}{\begin{fullwidth}}{}}{\raggedleft\fontsize{90}{90}\selectfont\color{oreaccent!25}\thechapter}{-12pt}{\huge\rmfamily\itshape\color{oreaccent}}[\ifthenelse{\NOT\boolean{@tufte@symmetric}}{\end{fullwidth}}{}]
 #+latex_header: \makeatother
 
 #+html: <script>document.title = "ORE Studio User Manual";</script>

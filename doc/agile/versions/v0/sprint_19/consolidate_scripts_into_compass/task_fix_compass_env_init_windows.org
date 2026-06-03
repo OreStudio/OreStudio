@@ -37,10 +37,10 @@ init -y=" exits 1.
 |--------------+--------------------------------------------------------------------|
 | State        | STARTED                                                            |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]                        |
-| Now          | Scaffolded; root cause confirmed; fix not yet implemented.         |
-| Waiting on   | Nothing.                                                           |
-| Next         | Patch compass.sh activate path detection; verify on Linux + CI.   |
-| Last touched | 2026-06-03                                                         |
+| Now          | Fix implemented in compass.sh; Linux smoke-test passes; awaiting CI. |
+| Waiting on   | Windows CI green on PR #1032.                                        |
+| Next         | Merge once CI is green.                                              |
+| Last touched | 2026-06-03                                                           |
 
 * Acceptance
 

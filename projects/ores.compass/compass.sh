@@ -10,6 +10,13 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_PATH="$SCRIPT_DIR/venv"
 
+# On Windows (Git Bash / MSYS2) the venv layout uses Scripts/ not bin/.
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+    VENV_BIN="$VENV_PATH/Scripts"
+else
+    VENV_BIN="$VENV_PATH/bin"
+fi
+
 # --- Optional leading flag: --no-deps ---
 # Bootstrap the venv but skip the pip install. The only dependency
 # (pystache) is needed solely by the `add`/scaffold command; the stdlib-only
@@ -38,15 +45,15 @@ if [ ! -d "$VENV_PATH" ]; then
         echo "ℹ️  --no-deps: skipping dependency install (stdlib-only use)."
     elif [ -f "$SCRIPT_DIR/requirements.txt" ]; then
         echo "📦 Installing dependencies from requirements.txt..."
-        "$VENV_PATH/bin/pip" install --upgrade pip -q
-        "$VENV_PATH/bin/pip" install -r "$SCRIPT_DIR/requirements.txt" -q
+        "$VENV_BIN/pip" install --upgrade pip -q
+        "$VENV_BIN/pip" install -r "$SCRIPT_DIR/requirements.txt" -q
     else
         echo "ℹ️  No requirements.txt found. Using standard library only."
     fi
     echo "✅ Virtual environment ready."
 fi
 
-source "$VENV_PATH/bin/activate"
+source "$VENV_BIN/activate"
 
 # Change to the repository root so that relative paths (e.g. --parent-dir
 # doc/agile/...) resolve correctly. Use git rev-parse for robustness;

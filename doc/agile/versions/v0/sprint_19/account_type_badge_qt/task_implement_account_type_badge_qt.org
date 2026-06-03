@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 5433FF26-FF0A-45A4-882A-4A9C41F51CB9
+:END:
+#+title: Task: Implement account type badge in AccountItemDelegate
+#+description: Add account_type code domain + badge definitions + mappings to SQL population; wire Column::AccountType in AccountItemDelegate to resolve via BadgeCache.
+#+type: task
+#+level: s1
+#+filetags: :account_type_badge_qt:sprint_19:v0:
+#+owner: marco
+#+branch: feature/account-type-badge-qt
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:814D4E79-8EB9-4B2B-8A87-DB72F145044D][Display account type as badge in Qt accounts list]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Wire the =Type= column in the accounts MDI list as a DB-driven pill
+badge. Currently =Column::AccountType= falls through to the default
+text renderer in =AccountItemDelegate=; it should resolve via
+=BadgeCache= (code domain =account_type=) exactly as =login_status=
+and =account_locked= do.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:814D4E79-8EB9-4B2B-8A87-DB72F145044D][Display account type as badge in Qt accounts list]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-04                             |
+
+* Acceptance
+
+- =dq_badge_system_populate.sql= contains an =account_type= code
+  domain, four badge definitions (user, service, algorithm, llm),
+  and four badge mappings.
+- =AccountItemDelegate::paint= handles =Column::AccountType= in the
+  badge branch; =sizeHint= covers it too.
+- No hardcoded hex colours in the delegate; all resolved via
+  =BadgeCache=.
+- Existing =Status= and =Locked= badge columns are unaffected.
+
+* Plan
+
+1. Add to =dq_badge_system_populate.sql=:
+   - Code domain: =account_type=, "Account Type", display_order next in sequence.
+   - Badge definitions: one per type value (user → primary/info, service → secondary,
+     algorithm → warning, llm → success — exact colours TBD).
+   - Badge mappings: map each =account_type= value to its definition.
+2. In =AccountItemDelegate.cpp=:
+   - Add =Column::AccountType= to the badge column guard in =paint()=.
+   - Resolve via =badgeCache_->resolve("account_type", text.toStdString())=.
+   - Fall back to default gray if cache miss (same pattern as existing badges).
+   - Add =Column::AccountType= to =sizeHint()= badge check.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

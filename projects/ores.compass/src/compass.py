@@ -799,7 +799,7 @@ def cmd_where(args):
         print("  (nothing in flight)")
     else:
         for d, state in in_flight:
-            print(f"  {d.doctype:<5} {_strip_type_prefix(d.title)}")
+            print(f"  {d.doctype:<5} {_strip_type_prefix(d.title or '')}")
             print(f"        {_ycmd(f'compass show {d.id.upper()}')}")
 
     if getattr(args, "prs", False):
@@ -2442,14 +2442,12 @@ def _bearings_section(icon, title, cmd=None):
 
 def cmd_bearings(argv):
     """compass bearings — cold-start orientation for LLMs and new contributors."""
-    import argparse as _ap
-    ap = _ap.ArgumentParser(
+    import types as _types
+    ap = argparse.ArgumentParser(
         prog="compass bearings",
         description="Cold-start orientation: project identity, last session, "
                     "key recipes, memories, and where we are.")
     ap.parse_args(argv)
-
-    import types as _types
     docs = doc_index.load_all()
 
     print("🧭 ores.compass — bearings\n")
@@ -2473,7 +2471,7 @@ def cmd_bearings(argv):
     recipes = sorted(
         [d for d in docs.values()
          if d.doctype == "recipe" and d.has_tag("bearings")],
-        key=lambda d: d.title,
+        key=lambda d: d.title or "",
     )
     if not recipes:
         print("  ❌ No bearings-tagged recipes found — configuration error.")
@@ -2491,7 +2489,7 @@ def cmd_bearings(argv):
     memories = sorted(
         [d for d in docs.values()
          if d.doctype == "memory" and d.has_tag("bearings")],
-        key=lambda d: d.title,
+        key=lambda d: d.title or "",
     )
     if not memories:
         print("  ❌ No bearings-tagged memories found — configuration error.")
@@ -2535,7 +2533,7 @@ def cmd_bearings(argv):
             print("    (nothing in flight)")
         else:
             for d in in_flight:
-                print(f"    {d.doctype:<5}  {_strip_type_prefix(d.title)}")
+                print(f"    {d.doctype:<5}  {_strip_type_prefix(d.title or '')}")
                 print(f"           {_ycmd(f'compass show {d.id.upper()}')}")
 
     print()

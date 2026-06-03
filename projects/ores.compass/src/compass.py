@@ -2005,8 +2005,12 @@ def _cmd_task_start(task_ident, branch_arg=""):
     if not branch:
         if branch_arg:
             text = task_path.read_text(encoding="utf-8")
-            new_text = re.sub(r'^(#\+branch:)[ \t]*$', f'\\1 {branch_arg}',
-                               text, count=1, flags=re.MULTILINE)
+            new_text, count = re.subn(r'^(#\+branch:)[ \t]*\r?$', f'\\1 {branch_arg}',
+                                      text, count=1, flags=re.MULTILINE)
+            if count == 0:
+                print(f"❌ Could not find empty '#+branch:' line in {task_path.name}",
+                      file=sys.stderr)
+                return 1
             task_path.write_text(new_text, encoding="utf-8")
             branch = branch_arg
             print(f"📝 #+branch: set to {branch}")

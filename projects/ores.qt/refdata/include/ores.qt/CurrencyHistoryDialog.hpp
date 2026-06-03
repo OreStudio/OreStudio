@@ -32,6 +32,8 @@
 #include "ores.refdata.api/domain/currency_version.hpp"
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
+
+class QCloseEvent;
 #include "ui_CurrencyHistoryDialog.h"
 
 namespace Ui {

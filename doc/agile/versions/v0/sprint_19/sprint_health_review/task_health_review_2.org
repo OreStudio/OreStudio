@@ -27,11 +27,11 @@ Run the second System 2 health review of sprint 19 using the
 
 | Field        | Value                                                        |
 |--------------+--------------------------------------------------------------|
-| State        | STARTED                                                      |
+| State        | DONE                                                         |
 | Parent story | [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]]                     |
-| Now          | Run sprint-reviewer skill; write findings to sprint.org.     |
+| Now          | Nothing.                                                     |
 | Waiting on   | Nothing.                                                     |
-| Next         | Open PR with findings.                                       |
+| Next         | Nothing.                                                     |
 | Last touched | 2026-06-03                                                   |
 
 * Acceptance
@@ -61,3 +61,115 @@ Run =/sprint-reviewer= skill against sprint 19.
 |   |                 |      |          |       |
 
 * Result
+
+** Review on 2026-06-03 (day 5 of 7)
+
+*** Goal alignment
+
+Sprint mission: /Verify all entity functionality post-NATS migration, document entities in the manual, create entity evaluation tooling, and fix Windows/macOS CI builds./
+
+| Goal | Coverage | Stories (DONE/STARTED/BACKLOG) | Verdict |
+|------+----------+--------------------------------+---------|
+| Verify entities post-NATS migration | Commission: currency only | 0/1/13 | RED |
+| Document entities in manual | None started | 0/0/1 | RED |
+| Entity evaluation tooling | Not started | 0/0/1 | RED |
+| Fix Windows/macOS CI builds | fix_rfl_complexity in progress | 5 of 9 tasks DONE | AMBER |
+
+Three of four sprint goals are unaddressed after five days. Only the CI goal has
+meaningful progress. The primary product goal — commissioning 14 refdata entities —
+is at 1 story in flight, zero complete; 13 entities remain untouched. Review 1 raised
+the same concern at day 3; it has not been resolved. The tooling stories (org-mode
+migration, compass consolidation, compass CLI redesign) are high-quality work but are
+off-mission relative to the sprint statement.
+
+*** Sprint load
+
+| Metric | Value | Target | Status |
+|--------+-------+--------+--------|
+| Commits (days 1–5) | 645 | ≤ 300 total | RED |
+| Days elapsed | 5 of 7 | 7 | — |
+| Commits/day | 129 | 43 | RED |
+| Projected at day 7 | ~903 | ≤ 300 | RED |
+| PRs merged | 106 | — | — |
+| Commits per PR | ~6 | — | healthy |
+
+Commit volume exceeds the sprint target threefold. The quality signal is reassuring —
+~6 commits per PR and 0 open PRs indicate disciplined work, not churn. The overrun
+reflects a sprint scope far beyond its stated mission: org-mode model migration,
+compass CLI redesign, script consolidation, UI responsiveness, component regroup,
+versioning strategy, seeder introduction, and more. Per-commit quality is not the
+problem; scope is.
+
+*** PR velocity
+
+| Metric | Value | Notes |
+|--------+-------+-------|
+| PRs merged (days 1–5) | 106 | 21.2/day |
+| Open PRs | 0 | all branches clear |
+| WIP accumulation | None | no long-open branches |
+
+Exceptional. Zero open PRs at day 5 indicates a healthy review loop with no blocking
+reviews. This is the strongest dimension of the sprint.
+
+*** Story and task balance
+
+| Story | State | Tasks DONE/Total | Age | Notes |
+|-------+-------+------------------+-----+-------|
+| Commission: currency | STARTED | 4/7 | no start date | shell + Qt + docs still open |
+| Consolidate scripts into compass | STARTED | 2/12 | 1d | 6 tasks STARTED simultaneously |
+| Fix rfl complexity (CI) | STARTED | 5/9 | 4d | 3 STARTED + 1 DISCOVERED |
+| Add tooling layer to system model | STARTED | 1/1 | 1d | task done; story not closed |
+| Introduce ores.seeder | STARTED | 0/1 | 1d | not yet started in practice |
+| Add compass bearings | STARTED | 0/1 | — | not yet started |
+| Open sprint 19 | STARTED | 1/2 | 5d | should be closed |
+
+Overall story ratio: 10 DONE of 40 total = 0.25 — RED (threshold < 0.30).
+
+Commission: currency has 3 tasks remaining with 2 days left; achievable but tight.
+"Add tooling layer to system model" has its sole task DONE but the story is not closed.
+"Open sprint 19" has been STARTED for 5 days — paperwork debt.
+
+*** Focus signal
+
+| Metric | Value | Verdict |
+|--------+-------+---------|
+| Simultaneously STARTED stories | 8 | RED (threshold: ≥ 6) |
+| Primary goal stories STARTED | 1 | concerning |
+| Tooling stories STARTED | 3 | off-mission |
+| Near-done stories still STARTED | 3 | paperwork debt |
+
+Eight STARTED stories is a focus problem. Three (add tooling layer, open sprint 19,
+introduce seeder) are either done-in-practice or not-yet-started — they inflate the
+count without contributing. Closing paperwork-done stories immediately reduces the
+real active count to a more manageable three (commission currency, consolidate scripts,
+fix rfl CI).
+
+*** Overall verdict
+
+| Dimension | Verdict |
+|-----------+---------|
+| Goal alignment | RED |
+| Sprint load | RED (metric) / AMBER (quality-adjusted) |
+| PR velocity | GREEN |
+| Story/task balance | RED |
+| Focus signal | RED |
+| Overall | RED |
+
+Sprint 19 is executing at high technical quality — 106 PRs merged in 5 days, zero WIP
+accumulation, disciplined commits — but against the wrong goals. The sprint was
+declared as entity commissioning; it has delivered primarily tooling infrastructure.
+With two days remaining, the most valuable intervention is to close all
+paperwork-done stories (add tooling layer, open sprint 19), stop opening new tooling
+stories, and concentrate the remaining capacity on Commission: currency (3 tasks) and
+Fix rfl complexity (4 tasks). The 13 remaining commission entities, entity manual
+documentation, and eval tooling will carry into sprint 20 as its primary mission.
+
+** Actions recommended
+
+1. Close =Open sprint 19= — verify task 2 and close the story.
+2. Close =Add tooling layer to system model= — task is DONE; story should be DONE.
+3. Decide on =Introduce ores.seeder= — 0/1 tasks done; defer to sprint 20 or close.
+4. Complete =Commission: currency= (3 tasks: shell, Qt, docs).
+5. Drive =Fix rfl complexity= to closure (4 tasks remaining, 1 DISCOVERED).
+6. Sprint 20 planning note: primary mission should be entity commissioning; tooling
+   work should be time-boxed or in a dedicated tooling sprint.

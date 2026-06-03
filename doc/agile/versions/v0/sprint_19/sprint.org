@@ -105,7 +105,7 @@ dedicated thread pool to prevent =QThreadPool= starvation.
 | [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]] | STARTED | 2026-05-29 | | Scaffold sprint 19, wire version manifest, bump version, PR. |
 | [[id:EC20475A-E7B4-4DFB-8E55-4B8DA6B36202][Clarify versioning strategy]] | DONE | 2026-06-02 | 2026-06-02 | Introduce milestone concept; separate version identity from release series; scaffold v1.0 and v2.0 milestone docs. |
 | [[id:2A6F5FE2-8C50-494F-948F-6BA519075FA9][Sprint planning]] | DONE | 2026-05-29 | 2026-05-29 | Select stories from backlog, size tasks, confirm mission. |
-| [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] | STARTED | 2026-05-31 | | Periodic System 2 health checks: goal alignment, load, PR velocity, story/task balance, focus, verdict. |
+| [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] | DONE | 2026-05-31 | 2026-06-03 | Periodic System 2 health checks: goal alignment, load, PR velocity, story/task balance, focus, verdict. |
 
 ** LLMs
 
@@ -121,7 +121,7 @@ dedicated thread pool to prevent =QThreadPool= starvation.
 |-------+-------+-------+-----+-------------|
 | [[id:40B50055-EB09-4B5B-B26C-24F0F9CD1C5B][Entity manual: add shell documentation per chapter]] | BACKLOG | | | Each entity chapter in the manual covers Qt UI and shell usage side by side.             |
 | [[id:F3CB848E-72C1-4F81-AAE4-1265F41D47C1][Fix knowledge graph issues]]                         | DONE    | 2026-05-30 | 2026-05-31 | Fix knowledge graph: images not displaying and left-panel controls missing. |
-| [[id:D90A3E68-D331-4473-AFAB-C1CBC94BA0CD][Add tooling layer to system model]]                  | STARTED | 2026-06-02 | | Add system_model_tooling.org; tooling blurb in system_model.org; foundation layer back-links. |
+| [[id:D90A3E68-D331-4473-AFAB-C1CBC94BA0CD][Add tooling layer to system model]]                  | DONE    | 2026-06-02 | 2026-06-03 | Add system_model_tooling.org; tooling blurb in system_model.org; foundation layer back-links. |
 
 ** Infrastructure
 
@@ -136,7 +136,8 @@ dedicated thread pool to prevent =QThreadPool= starvation.
 
 | # | Date       | Day   | Overall | Task                                                              |
 |---+------------+-------+---------+------------------------------------------------------------------|
-| 1 | 2026-05-31 | day 3 | AMBER   | [[id:362F5EFF-26BD-4F26-82EB-0B00FB272E3C][Health review 1 — sprint 19 mid-sprint analysis]] |
+| 1 | 2026-05-31 | day 3 | AMBER | [[id:362F5EFF-26BD-4F26-82EB-0B00FB272E3C][Health review 1 — sprint 19 mid-sprint analysis]] |
+| 2 | 2026-06-03 | day 5 | RED   | [[id:7CCC7A02-4880-4B87-9C8A-2A7E1C02AA66][Health review 2 — sprint 19 late-sprint analysis]] |
 
 * Charts
 

@@ -26,11 +26,11 @@ whether the team is focused — rather than merely summarising status.
 
 | Field         | Value                                                                   |
 |---------------+-------------------------------------------------------------------------|
-| State         | STARTED                                                                 |
+| State         | DONE                                                                    |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                               |
-| Now           | Health review 2 in progress (late-sprint).                              |
+| Now           | Nothing.                                                                |
 | Waiting on    | Nothing.                                                                |
-| Next          | Complete review 2; close story at sprint end.                           |
+| Next          | Nothing.                                                                |
 | Last touched  | 2026-06-03                                                              |
 
 * Acceptance

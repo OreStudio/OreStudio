@@ -50,7 +50,7 @@ second session via NATS eventing. Fix any regressions found inline or file as ca
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1027][#1027]] | [ores.qt,ores.refdata] Commission currency Qt: fix plugin placement, icons, timestamps |
 
 * Review
 

@@ -205,6 +205,7 @@ provenance fields. Some are written by the application at the time of
 the save request; others are written by the database trigger and are
 never set by the application:
 
+#+latex: \begin{fullwidth}
 #+attr_latex: :environment tabularx :width \linewidth :align lllX
 | Field                | UI Label      | Set by       | Meaning                                                                          |
 |----------------------+---------------+--------------+----------------------------------------------------------------------------------|
@@ -214,6 +215,7 @@ never set by the application:
 | =recorded_at=        | Recorded At   | DB trigger   | UTC wall-clock timestamp at the moment the row was written (displayed in local time, like all UI timestamps). |
 | =change_reason_code= | Change Reason | Application  | Structured code drawn from the change reasons table explaining the business justification. |
 | =change_commentary=  | Commentary    | Application  | Optional free-text note accompanying the change.                                 |
+#+latex: \end{fullwidth}
 
 These fields are displayed read-only in the *Provenance* tab of every
 entity detail dialog. The tab is disabled (greyed out, not hidden) in

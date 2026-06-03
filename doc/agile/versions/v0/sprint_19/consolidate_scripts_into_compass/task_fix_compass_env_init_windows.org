@@ -65,8 +65,8 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                         | File            | Decision | Notes           |
+|---+-------------------------------------------------------------------------+-----------------+----------+-----------------|
+| 1 | Gemini: wrap temp file creation + openssl in single try/finally to prevent leaks if write fails | nats_certs.py | Accept   | Fixed a82edc832 |
 
 * Result

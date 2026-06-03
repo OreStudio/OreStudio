@@ -2398,8 +2398,9 @@ def _cmd_test_results(args):
 # --- Bearings: cold-start orientation ---
 
 def _bearings_section(icon, title, cmd=None):
-    suffix = f"  ({cmd})" if cmd else ""
-    print(f"\n{icon}  {title}{suffix}")
+    print(f"\n{icon}  {title}")
+    if cmd:
+        print(f"    {cmd}")
 
 
 def cmd_bearings(argv):

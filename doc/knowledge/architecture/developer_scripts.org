@@ -57,6 +57,22 @@ General-purpose helper scripts not tied to a specific workflow.
 |--------+---------+-------|
 | =convert_to_unix.sh= | Converts text files in a given project root from DOS to Unix line endings using =dos2unix=. | Accepts an optional path argument; defaults to =.=. Excludes =vcpkg/= and =output/=. |
 
+* NATS certificate management
+
+Previously handled by =build/scripts/generate_nats_certs.sh= (deleted in sprint 19).
+Certificate generation is now a first-class compass command:
+
+#+begin_src sh
+./compass.sh nats certs              # idempotent; skips existing files
+./compass.sh nats certs --force      # regenerate all (CI / rotation)
+./compass.sh nats certs --hostname h # add extra SAN hostname
+#+end_src
+
+The implementation lives in =projects/ores.compass/src/nats_certs.py= and is
+also called internally by =compass env init=.  To add a certificate for a new
+service, add its name to the =_SERVICES= list in =nats_certs.py= and re-run
+=compass nats certs=.
+
 * See also
 
 - [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — repository compass tool with its own script family (=compass.sh=, =compass.py=), documented in the component overview.

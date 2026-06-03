@@ -2287,6 +2287,16 @@ def _tr_find_suite_log(log_dir, project_name):
     return None
 
 
+def cmd_nats(argv):
+    """compass nats — NATS pillar: certificate management."""
+    if argv and argv[0] == "certs":
+        import nats_certs
+        return nats_certs.run(argv[1:], PROJECT_ROOT)
+    print("Usage: compass nats <subcommand>", file=sys.stderr)
+    print("Subcommands: certs", file=sys.stderr)
+    return 1
+
+
 def cmd_test(argv):
     """compass test — test pillar: inspect build test results."""
     ap = argparse.ArgumentParser(
@@ -2601,6 +2611,8 @@ def main():
         sys.exit(cmd_journal(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "env":
         sys.exit(cmd_env(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "nats":
+        sys.exit(cmd_nats(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "test":
         sys.exit(cmd_test(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ("bearings", "orient"):
@@ -2613,7 +2625,7 @@ def main():
         _KNOWN_COMMANDS = [
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
-            "env", "test", "bearings", "orient", "capture",
+            "env", "nats", "test", "bearings", "orient", "capture",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
         cmd_given = sys.argv[1]
@@ -2633,7 +2645,7 @@ def main():
         "  Scaffold:  story, task, add\n"
         "  Capture:   capture, inbox, next, deferred, discarded, backlog\n"
         "  Journal:   journal\n"
-        "  Provision: env\n"
+        "  Provision: env, nats\n"
         "  Test:      test\n"
         "  Bearings:  bearings (alias: orient)\n"
         "\n"

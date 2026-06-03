@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 42F22269-B875-489D-A3D7-7FEC456C69EA
+:END:
+#+title: Lightyear PnL tracking approach
+#+description: How Lightyear calculates and displays PnL in their retail investment platform, including FX locking, cost basis methods, and timeframe alignment.
+#+type: knowledge
+#+level: cross
+#+filetags: :pnl:fx:cost_basis:external:knowledge:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+
+* Source
+
+Karolina Laas-Dobreva, "Improvements to How Lightyear Shows PnL",
+Lightyear Blog, 20 May 2026.
+URL: https://lightyear.com/en-eu/blog/improvements-to-pnl
+
+* Summary
+
+Lightyear defines portfolio PnL as /current value minus total cash
+in plus total cash out/. A May 2026 update introduced five
+improvements: locking FX rates at deposit/withdrawal time,
+timeframe-aligned PnL charts, a dual-chart toggle separating
+portfolio value from investment-only performance, average-cost
+sell-order calculation with same-day estimation, and user-selectable
+cost basis methods (weighted average or FIFO). The changes are
+relevant to ORE Studio's own P&L attribution and commission tracking
+work because they illustrate a clean retail-grade separation of
+concerns that we should evaluate against our approach.
+
+* Detail
+
+** Definition of PnL
+
+Lightyear's core formula is simple and user-facing:
+
+#+begin_quote
+PnL = current portfolio value − total deposits + total withdrawals
+#+end_quote
+
+This is equivalent to the money-weighted approach without compounding:
+it measures how much better (or worse) off the investor is relative
+to the cash they committed.
+
+** Five improvements (May 2026)
+
+*** 1. FX rate locking
+
+Each deposit or withdrawal fixes the exchange rate at the moment the
+cash movement occurs. Subsequent FX moves do not distort historical
+cost basis. This is the correct approach for multi-currency
+portfolios: floating rates on historical transactions create phantom
+gains and losses that confuse users and auditors alike.
+
+*** 2. Timeframe alignment
+
+Portfolio PnL is scoped to the selected chart window (1 day, 1
+month, YTD, all-time, etc.). Earlier versions apparently showed
+all-time PnL regardless of the selected range, which made short-term
+views meaningless.
+
+*** 3. Dual portfolio charts
+
+Two independent chart views:
+
+- /Portfolio value/ — total value including uninvested cash and
+  all movements (deposits, withdrawals, transfers).
+- /PnL chart/ — strips out cash movements to show pure investment
+  performance. This is what most institutional P&L reports call
+  "trading P&L" or "investment return".
+
+The toggle gives retail users a concept that institutional systems
+take for granted: separating wealth evolution from investment alpha.
+
+*** 4. Sell-order calculation
+
+On sale, the app:
+
+1. Computes realised gain using weighted average cost, consistent
+   with their Capital Gains Statements (tax reporting).
+2. For same-day sales, shows an /estimated/ gain using 5-minute FX
+   rates immediately.
+3. Updates to final figures using end-of-day FX rates once
+   settlement closes.
+
+The two-phase display (estimated → final) is honest UX that matches
+the operational reality of T+1/T+2 settlement.
+
+*** 5. Selectable cost basis methods
+
+Users can choose via account settings:
+
+- *Weighted Average Cost* (default) — each lot blended into a
+  running average; simpler and stable across re-purchases.
+- *First In, First Out (FIFO)* — oldest lots sold first; often
+  preferable for tax optimisation in certain jurisdictions.
+
+Lightyear exposes this as a user preference rather than a regulatory
+default, which implies they operate in jurisdictions where either
+method is acceptable.
+
+** Relevance to ORE Studio
+
+| Lightyear concept         | OreStudio relevance                                              |
+|---------------------------+------------------------------------------------------------------|
+| FX locking at cash event  | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story; cost basis in multi-CCY positions   |
+| Timeframe-scoped PnL      | P&L attribution windowing; dashboard chart scoping               |
+| Investment-only PnL chart | Separating fee/commission P&L from trading P&L in reports        |
+| Two-phase estimated/final | Intraday vs EOD valuation; settlement-aware P&L                  |
+| FIFO vs WAVG toggle       | Cost basis method selection per account; tax reporting module     |
+
+* See also
+
+- [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][pl_attribution]] — internal domain knowledge on P&L attribution.
+- [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] — in-flight story dealing with multi-currency
+  cost basis, directly related to Lightyear's FX locking approach.

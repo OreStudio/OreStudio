@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: F8E2AB1E-344B-4B04-BD0B-6EC96CDA5298
+:END:
+#+title: Story: PnL tracking improvements
+#+description: Implement PnL tracking improvements inspired by Lightyear's approach: FX rate locking at cash events, timeframe-scoped PnL, investment-only vs total-value chart split, and cost basis method selection.
+#+type: story
+#+level: s2
+#+filetags: :pnl:fx:cost_basis:commission:sprint_19:v0:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Improve OreStudio's PnL tracking to match the standard set by
+leading retail platforms. Drawing on the [[id:42F22269-B875-489D-A3D7-7FEC456C69EA][Lightyear PnL tracking
+approach]], this story introduces: FX rate locking at cash-event time
+(deposits and withdrawals fix their exchange rate permanently),
+timeframe-scoped PnL so charts reflect the selected window,
+a clean split between total-portfolio-value and investment-only PnL
+views, two-phase sell-order calculations (intraday estimate → EOD
+final), and user-selectable cost basis methods (weighted average or
+FIFO).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                                |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                              |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start with design + gap analysis task. |
+| Last touched  | 2026-06-03                             |
+
+* Acceptance
+
+- FX rates are locked at the moment each deposit or withdrawal is
+  recorded; subsequent FX moves do not alter historical cost basis.
+- PnL figures respect the selected chart timeframe (1D, 1M, YTD,
+  all-time).
+- The UI offers two chart modes: total portfolio value (including
+  uninvested cash) and investment-only PnL (excluding cash
+  movements).
+- Sell-order P&L shows an intraday estimate immediately and updates
+  to EOD-rate final figures once settlement closes.
+- Accounts can be configured to use either weighted average cost or
+  FIFO cost basis; the method is reflected consistently in P&L
+  display and in Capital Gains Statements.
+
+* Tasks
+
+| Task                                                                              | State   | Start      | End | Description                                 |
+|-----------------------------------------------------------------------------------+---------+------------+-----+---------------------------------------------|
+| [[id:55CFC3E0-1AAD-44CA-A0D6-1E358A6E1CFA][Implement PnL tracking improvements]] | BACKLOG | 2026-06-03 |     | Design, gap-analysis, and initial implement |
+
+* Decisions
+
+- Approach informed by [[id:42F22269-B875-489D-A3D7-7FEC456C69EA][Lightyear PnL tracking approach]] (external
+  knowledge doc with full source attribution).
+
+* Out of scope
+
+- Tax reporting integration (tracked separately).
+- Performance attribution beyond the simple money-weighted formula.

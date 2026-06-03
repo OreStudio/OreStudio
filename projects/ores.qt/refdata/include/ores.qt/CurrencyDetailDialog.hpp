@@ -119,9 +119,6 @@ signals:
     void currencyCreated(const QString& iso_code);
     void currencyDeleted(const QString& iso_code);
     void isDirtyChanged(bool isDirty);
-    void showRoundingTypesRequested();
-    void showMonetaryNaturesRequested();
-    void showMarketTiersRequested();
 
     /**
      * @brief Emitted when user requests to revert to the displayed historical version.

@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 6A6EF96D-0709-4512-914B-774C9E38AF6E
+:END:
+#+title: Task: Reorganise sprint 19 Tooling section into named epics
+#+description: The Tooling section in sprint.org has 17+ stories in a flat table. Group them under named sub-epics (Compass, Codegen, etc.) so the sprint backlog is readable at a glance.
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_19:sprint_19:v0:
+#+owner: marco
+#+branch: feature/reorganise-sprint-backlog-into-epics
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make =sprint.org= scannable at a glance by introducing =*** Epic:=
+sub-headings inside =** Tooling=, matching the structure the =** Product=
+section already uses. The 17-story flat Tooling table is unreadable;
+grouping by theme (Compass, Codegen, C++ Components) lets reviewers find
+relevant stories without scrolling through unrelated entries.
+
+* Status
+
+| Field        | Value                                                      |
+|--------------+------------------------------------------------------------|
+| State        | DONE                                                       |
+| Parent story | [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]]                                             |
+| Now          | Nothing.                                                   |
+| Waiting on   | Nothing.                                                   |
+| Next         | Nothing.                                                   |
+| Last touched | 2026-06-03                                                 |
+
+* Acceptance
+
+- =** Tooling= contains three =*** Epic:= sub-sections, each with its
+  own story table: Compass, Codegen, C++ Components.
+- No stories are added, removed, or have their state changed.
+- The resulting structure mirrors =** Product= (which already uses
+  =*** Epic:= sub-headings).
+
+* Plan
+
+Split the single 17-row Tooling table into:
+
+| Epic | Stories |
+|------+---------|
+| Compass | session journal, CLI UX redesign, consolidate scripts, bearings |
+| Codegen | SQL refactor, C++ refactor, org-mode migration, seeder, MASD doc, decommission scripts, safety guardrails, Phase 1/2/3, CI zero-diff |
+| C++ Components | regroup, move trade-instrument parsing |
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Split the 17-story flat =** Tooling= table in =sprint.org= into three
+=*** Epic:= sub-sections matching the =** Product= structure:
+
+- =*** Epic: Compass= (4 stories) — session journal, CLI UX redesign,
+  consolidate scripts, bearings
+- =*** Epic: Codegen= (11 stories) — SQL refactor, MASD doc, org-mode
+  migration, seeder, C++ refactor (BLOCKED), decommission scripts,
+  safety guardrails, Phase 1/2/3, CI zero-diff
+- =*** Epic: C++ Components= (2 stories) — regroup, move trade-instrument
+  parsing
+
+No story states changed; no stories added or removed.

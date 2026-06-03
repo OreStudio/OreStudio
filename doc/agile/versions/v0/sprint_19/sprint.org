@@ -76,26 +76,46 @@ dedicated thread pool to prevent =QThreadPool= starvation.
 
 ** Tooling
 
+*** Epic: Compass
+
+Developer toolkit consolidation: fold operational scripts into compass, extend Orient with staleness and bearings, redesign CLI taxonomy.
+
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]] | DONE | 2026-05-31 | 2026-05-31 | Per-machine .journal.org (gitignored) recording each Claude environment's story/task journey; compass journal commands; compass fleet refactor. |
 | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] | DONE | 2026-05-31 | 2026-06-01 | Noun-based command taxonomy; fix tool description; --help by pillar; compass sprint/story status commands; audit recipes and skills. |
-| [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] | DONE | 2026-05-29 | 2026-05-30 | Unified SQL template + model format + codegen.py CLI replacing all generate_*_schema.sh scripts. |
-| [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] | BLOCKED | | | Audit and resolve all drift between C++ templates and production files. Blocked on [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]] — the pilot exposed that the JSON model format cannot express custom methods cleanly. |
-| [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] | STARTED | 2026-06-01 | | Migrate every entity model from JSON to a literate org-mode file per entity, co-located with the component. Supersedes the unified-JSON Phase 2 story. |
-| [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component for database test-data generation]] | STARTED | 2026-06-02 | | New tooling component owning SQL INSERT populate scripts. Slovaris is its first dataset; closes out the codegen org-mode migration story. |
-| [[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components under product-group parent directories]] | DONE | 2026-06-01 | 2026-06-02 | Move each =projects/ores.<group>.<role>/= (api, core, service) and =projects/ores.qt.<group>/= under a single =projects/ores.<group>/= parent so the group owns its modeling/ dir, root CMakeLists, and child layout. Blocks per-group org-migration tasks beyond refdata. |
-| [[id:FE9BB4DA-FC98-4C08-B784-104DCF3A6687][Move trade-instrument parsing out of ores.qt.api]] | BACKLOG | | | Extract the Qt-free parse logic into ores.trading.api so the dispatch test links a real target instead of hand-listing source files. Removes the stop-gap from the regroup story. |
 | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] | STARTED | 2026-06-02 | | Inventory the ~61 operational scripts; design operational compass pillars; fold scripts into documented compass subcommands. Absorbs the service-registry consolidation. |
 | [[id:2E5F5DB5-7417-45B8-8D0B-C71650127D32][Add compass bearings command for LLM on-boarding]] | BACKLOG | | | Single-command LLM orientation (compass bearings): where, last session, memory pointer, and command cheat-sheet. |
-| [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy ores.codegen bash scripts]] | BACKLOG | | | Replace all direct bash script invocations of ores.codegen with ores.compass or codegen.py; remove legacy scripts starting with generate_doc.sh. |
+
+*** Epic: Codegen
+
+Unify the code generation model: migrate entity models from JSON to literate org-mode, refactor SQL and C++ generators, add safety guardrails and CI invariant.
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] | DONE | 2026-05-29 | 2026-05-30 | Unified SQL template + model format + codegen.py CLI replacing all generate_*_schema.sh scripts. |
 | [[id:EE6A643D-6C6C-41B8-88FD-2EA9351414CD][Document MASD and code generation principles]] | DONE | 2026-06-01 | 2026-06-01 | Technical knowledge document weaving MDE/MASD theory with ores.codegen practice and the reference-implementation backout strategy. |
+| [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] | STARTED | 2026-06-01 | | Migrate every entity model from JSON to a literate org-mode file per entity, co-located with the component. Supersedes the unified-JSON Phase 2 story. |
+| [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component for database test-data generation]] | STARTED | 2026-06-02 | | New tooling component owning SQL INSERT populate scripts. Slovaris is its first dataset; closes out the codegen org-mode migration story. |
+| [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] | BLOCKED | | | Audit and resolve all drift between C++ templates and production files. Blocked on [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]] — the pilot exposed that the JSON model format cannot express custom methods cleanly. |
+| [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy ores.codegen bash scripts]] | BACKLOG | | | Replace all direct bash script invocations of ores.codegen with ores.compass or codegen.py; remove legacy scripts starting with generate_doc.sh. |
 | [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] | BACKLOG | | | Runtime guards for missing component fields; block dual-template SQL; document all-cpp limitations. Prerequisite for C++ audit. |
 | [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model — Phase 1: Qt field derivation]] | BACKLOG | | | Derive Qt protocol class names from naming conventions; remove transcribed fields from all 75 models. |
 | [[id:88113E9B-DBD4-4E08-8CD9-49B8A709B871][Codegen unified model — Phase 2: single model file per entity]] | ABANDONED | | | Superseded by [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]] which goes further than unified-JSON: literate org-mode with custom methods inline. |
 | [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal/non-temporal templates]] | BACKLOG | | | Merge parallel temporal and non-temporal template families via is_temporal flag. |
 | [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] | BACKLOG | | | CI job that regenerates all components and fails if any output differs from HEAD. |
+
+*** Epic: C++ Components
+
+Regroup and refactor the C++ component layout to align with the product-group model.
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components under product-group parent directories]] | DONE | 2026-06-01 | 2026-06-02 | Move each =projects/ores.<group>.<role>/= (api, core, service) and =projects/ores.qt.<group>/= under a single =projects/ores.<group>/= parent so the group owns its modeling/ dir, root CMakeLists, and child layout. Blocks per-group org-migration tasks beyond refdata. |
+| [[id:FE9BB4DA-FC98-4C08-B784-104DCF3A6687][Move trade-instrument parsing out of ores.qt.api]] | BACKLOG | | | Extract the Qt-free parse logic into ores.trading.api so the dispatch test links a real target instead of hand-listing source files. Removes the stop-gap from the regroup story. |
 
 ** Agile
 

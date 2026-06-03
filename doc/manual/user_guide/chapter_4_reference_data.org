@@ -151,7 +151,7 @@ questions that neither alone could answer:
 - /What is the current record for USD?/ — the live row has
   =valid_to = sentinel=.
 - /What did the USD record look like on a specific past date t?/ —
-  find the row where =valid_from ≤ t < valid_to=.
+  find the row where =valid_from <= t < valid_to=.
 - /When did we first record the current name for a currency?/ —
   inspect the =recorded_at= of the version where the name field
   changed.

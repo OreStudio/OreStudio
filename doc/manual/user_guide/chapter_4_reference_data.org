@@ -137,12 +137,13 @@ the database — independently of what period the version is valid for.
 Transaction time answers the question "what did the system believe at
 a given moment?"
 
-All timestamps in OreStudio are stored and processed as UTC. The
-database session enforces UTC on every connection; C++ domain types
-use =std::chrono::system_clock::time_point= which is UTC by definition.
-The Qt UI converts to local time only for display — the *Recorded At*
-field in the Provenance tab will show the time in your local timezone,
-but the underlying value is always UTC.
+All timestamps in OreStudio are stored and processed as UTC throughout
+— the database, the service layer, and the NATS protocol all use UTC
+exclusively. The Qt UI converts timestamps to your local timezone for
+display only; no local-time arithmetic is performed anywhere in the
+system. Every timestamp you see in the application — in list windows,
+detail dialogs, history dialogs, and the Provenance tab — is a
+local-time rendering of a UTC value stored in the database.
 
 The combination of the two time dimensions allows OreStudio to answer
 questions that neither alone could answer:
@@ -210,7 +211,7 @@ never set by the application:
 | =version=            | Version       | DB trigger   | Monotonically increasing integer; starts at 1, incremented on each update.       |
 | =modified_by=        | Modified By   | Application  | Username of the account that submitted the change request.                       |
 | =performed_by=       | Performed By  | Application  | Username on whose behalf the change was performed; may differ from =modified_by= in delegated workflows. |
-| =recorded_at=        | Recorded At   | DB trigger   | UTC wall-clock timestamp at the moment the row was written; displayed in local time in the UI. |
+| =recorded_at=        | Recorded At   | DB trigger   | UTC wall-clock timestamp at the moment the row was written (displayed in local time, like all UI timestamps). |
 | =change_reason_code= | Change Reason | Application  | Structured code drawn from the change reasons table explaining the business justification. |
 | =change_commentary=  | Commentary    | Application  | Optional free-text note accompanying the change.                                 |
 
@@ -223,8 +224,7 @@ The distinction between =modified_by= and =performed_by= matters in
 automated workflows where a service account submits a change on behalf
 of a human user. In those cases =modified_by= identifies the service
 and =performed_by= identifies the human, preserving accountability at
-both layers. The =recorded_at= timestamp is always in UTC at the
-storage layer; the Qt UI converts it to local time for display only.
+both layers.
 
 *** Change Reasons
 

@@ -6,7 +6,7 @@
 #+type: memory
 #+memory_subtype: reference
 #+level: cross
-#+filetags: :memory:reference:
+#+filetags: :memory:reference:bearings:
 #+created: 2026-05-28
 #+updated: 2026-05-28
 

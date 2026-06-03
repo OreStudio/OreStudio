@@ -53,11 +53,11 @@ that pattern permanently.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                                |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Not yet started.                       |
+| Now           | Implementing compass bearings.         |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Land PR; update llm_instructions.org.  |
 | Last touched  | 2026-06-02                               |
 
 * Acceptance
@@ -89,7 +89,7 @@ that pattern permanently.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:7F0A5D2F-F8DA-432F-A14D-1BD6A6D43A3F][Implement compass bearings]] | STARTED | 2026-06-03 | | bearings command + tag source docs + recipe. |
 
 * Decisions
 

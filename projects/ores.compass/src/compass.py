@@ -2372,6 +2372,108 @@ def _cmd_test_results(args):
     return 0 if total_stats["failed"] == 0 else 1
 
 
+# --- Bearings: cold-start orientation ---
+
+_SEP = "─" * 66
+
+def _bearings_section(icon, title):
+    print(f"\n{_SEP}")
+    print(f"{icon}  {title}")
+    print(_SEP)
+
+
+def cmd_bearings(argv):
+    """compass bearings — cold-start orientation for LLMs and new contributors."""
+    import argparse as _ap
+    ap = _ap.ArgumentParser(
+        prog="compass bearings",
+        description="Cold-start orientation: project identity, where we are, "
+                    "last session, key recipes, and project memories.")
+    ap.parse_args(argv)
+
+    docs = doc_index.load_all()
+
+    # ── Section 0: What is ORE Studio? ──────────────────────────────────────
+    _bearings_section("🏢", "What is ORE Studio?")
+    identity_docs = [d for d in docs.values() if d.doctype == "product_identity"]
+    if identity_docs:
+        pi = identity_docs[0]
+        print(f"  {pi.description}")
+        print(f"\n  compass show {pi.id.upper()}")
+    else:
+        print("  ❌ No product_identity document found.")
+
+    # ── Section 1: Where we are ─────────────────────────────────────────────
+    _bearings_section("📍", "Where we are")
+    current_version, current_sprint = current_version_sprint(docs)
+    if current_version is None or current_sprint is None:
+        print("  ❌ No version/sprint documents found.")
+    else:
+        chip, warning = staleness_lines(branch_staleness(PROJECT_ROOT))
+        print(f"  {chip}")
+        if warning:
+            print(f"  {warning}")
+        print()
+        print(f"  Version:  {current_version.title}  [{current_version.id.upper()}]")
+        print(f"  Sprint:   {current_sprint.title}  [{current_sprint.id.upper()}]")
+        sprint_dir = _parent_dir(current_sprint.rel_path)
+        in_flight = [
+            d for d in docs.values()
+            if d.doctype in ("story", "task")
+            and d.rel_path.startswith(sprint_dir + "/")
+            and read_state(d.path) == IN_FLIGHT_STATE
+        ]
+        in_flight.sort(key=lambda d: (d.doctype, d.rel_path))
+        print(f"\n  In flight ({IN_FLIGHT_STATE}):")
+        if not in_flight:
+            print("  (nothing in flight)")
+        else:
+            for d in in_flight:
+                print(f"    {d.doctype:<5}  {_strip_type_prefix(d.title)}")
+                print(f"           [{d.id.upper()}]")
+
+    # ── Section 2: Last session ──────────────────────────────────────────────
+    _bearings_section("📓", "Last session")
+    _journal_where()
+
+    # ── Section 3: Key recipes ───────────────────────────────────────────────
+    _bearings_section("📖", "Key recipes")
+    recipes = sorted(
+        [d for d in docs.values()
+         if d.doctype == "recipe" and d.has_tag("bearings")],
+        key=lambda d: d.title,
+    )
+    if not recipes:
+        print("  ❌ No bearings-tagged recipes found — configuration error.")
+        print("     Tag any recipe with :bearings: to include it here.")
+    else:
+        for r in recipes:
+            print(f"\n  • {r.title}")
+            if r.description:
+                print(f"    {r.description}")
+            print(f"    compass show {r.id.upper()}")
+
+    # ── Section 4: Memories ──────────────────────────────────────────────────
+    _bearings_section("🧠", "Memories")
+    memories = sorted(
+        [d for d in docs.values()
+         if d.doctype == "memory" and d.has_tag("bearings")],
+        key=lambda d: d.title,
+    )
+    if not memories:
+        print("  ❌ No bearings-tagged memories found — configuration error.")
+        print("     Tag any memory with :bearings: to include it here.")
+    else:
+        for m in memories:
+            print(f"\n  • {m.title}")
+            if m.description:
+                print(f"    {m.description}")
+            print(f"    compass show {m.id.upper()}")
+
+    print(f"\n{_SEP}\n")
+    return 0
+
+
 def main():
     # `list` and `show` pass every remaining argument straight through to the
     # bundled doc tools (full flag compatibility, including their own --help).
@@ -2397,6 +2499,8 @@ def main():
         sys.exit(cmd_env(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "test":
         sys.exit(cmd_test(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] in ("bearings", "orient"):
+        sys.exit(cmd_bearings(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
         sys.exit(cmd_backlog(sys.argv[1], sys.argv[2:]))
 
@@ -2409,6 +2513,7 @@ def main():
         "  Journal:   journal\n"
         "  Provision: env\n"
         "  Test:      test\n"
+        "  Bearings:  bearings (alias: orient)\n"
         "\n"
         "Entity commands (sub-subcommands span pillars):\n"
         "  sprint:   status (orient)\n"
@@ -2467,6 +2572,10 @@ def main():
                           help="Provision: 'env init' generates .env + certs + IAM key; 'env diff'; 'env --help'")
     subparsers.add_parser("test",
                           help="Test: 'test results' parses Catch2 XML and shows an overview; 'test --help'")
+    subparsers.add_parser("bearings",
+                          help="Cold-start orientation: identity, where, last session, recipes, memories")
+    subparsers.add_parser("orient",
+                          help="Alias for bearings")
     subparsers.add_parser("inbox",     help="List captures in the product backlog inbox/")
     subparsers.add_parser("next",      help="List captures in the product backlog next/")
     subparsers.add_parser("deferred",  help="List captures in the product backlog deferred/")

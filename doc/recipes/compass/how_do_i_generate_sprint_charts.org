@@ -5,7 +5,7 @@
 #+description: Use compass sprint charts to extract git/PR metrics and render all four sprint health PNGs in one step.
 #+type: recipe
 #+level: cross
-#+filetags: :sprint:charts:compass:gnuplot:recipe:
+#+filetags: :sprint:charts:compass:gnuplot:recipe:bearings:
 #+created: 2026-05-26
 #+updated: 2026-06-02
 

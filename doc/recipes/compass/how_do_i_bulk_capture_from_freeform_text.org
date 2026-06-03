@@ -5,7 +5,7 @@
 #+description: Write a paragraph of unstructured notes and ask the LLM to decompose it into well-structured captures filed in inbox/.
 #+type: recipe
 #+level: cross
-#+filetags: :compass:capture:llm:recipe:
+#+filetags: :compass:capture:llm:recipe:bearings:
 #+created: 2026-05-27
 #+updated: 2026-05-27
 

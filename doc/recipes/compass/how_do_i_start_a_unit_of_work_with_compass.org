@@ -5,7 +5,7 @@
 #+description: Use compass story new or compass task new to fetch main, create a feature branch, and scaffold a linked story and task in one step.
 #+type: recipe
 #+level: cross
-#+filetags: :compass:workflow:agile:recipe:
+#+filetags: :compass:workflow:agile:recipe:bearings:
 #+created: 2026-05-25
 #+updated: 2026-06-01
 

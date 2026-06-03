@@ -2,7 +2,7 @@
 :ID: 2F71292F-CDB0-4E2E-B50F-4F02E10597C4
 :END:
 #+title: Product Identity
-#+description: The durable statement of what ORE Studio is and is not. Versions (v0, v1.0, ...) come and go; this identity does not.
+#+description: C++ application built on QuantLib and Acadia's Open Source Risk Engine (ORE), providing persistent database storage, a Qt GUI for data generation and exploration, and ORE execution orchestration.
 #+type: product_identity
 #+level: s5
 #+filetags: :identity:vision:

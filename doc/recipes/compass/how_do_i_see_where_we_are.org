@@ -5,7 +5,7 @@
 #+description: Use compass where/status to report the current version, sprint, and in-flight stories and tasks.
 #+type: recipe
 #+level: cross
-#+filetags: :compass:agile:orientation:recipe:
+#+filetags: :compass:agile:orientation:recipe:bearings:
 #+created: 2026-05-24
 #+updated: 2026-05-24
 

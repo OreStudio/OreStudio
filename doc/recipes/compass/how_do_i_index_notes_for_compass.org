@@ -5,7 +5,7 @@
 #+description: Use compass index to build/update the local FTS cache from org-roam.db before searching.
 #+type: recipe
 #+level: cross
-#+filetags: :compass:search:index:recipe:
+#+filetags: :compass:search:index:recipe:bearings:
 #+created: 2026-05-24
 #+updated: 2026-05-24
 

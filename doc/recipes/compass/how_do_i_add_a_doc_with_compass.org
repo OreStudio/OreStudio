@@ -5,7 +5,7 @@
 #+description: Use compass add to create a doc (story/task/sprint/recipe/...) via ores.codegen, with parent-dir defaulted from where we are.
 #+type: recipe
 #+level: cross
-#+filetags: :compass:codegen:agile:recipe:
+#+filetags: :compass:codegen:agile:recipe:bearings:
 #+created: 2026-05-24
 #+updated: 2026-05-24
 

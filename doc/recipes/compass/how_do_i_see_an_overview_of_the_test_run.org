@@ -5,7 +5,7 @@
 #+description: Use compass test results to parse Catch2 XML output and display per-suite stats, failures, and log excerpts for the last test run.
 #+type: recipe
 #+level: cross
-#+filetags: :compass:test:results:catch2:
+#+filetags: :compass:test:results:catch2:bearings:
 #+created: 2026-06-03
 #+updated: 2026-06-03
 

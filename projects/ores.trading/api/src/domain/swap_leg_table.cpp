@@ -34,14 +34,16 @@ std::string convert_to_table(const std::vector<swap_leg>& v) {
           << fort::endr;
 
     for (const auto& t : v) {
-        table << boost::uuids::to_string(t.id)
-              << t.leg_number
-              << t.leg_type_code
-              << t.floating_index_code
-              << t.fixed_rate
-              << t.spread
-              << t.notional
-              << t.currency
+        const auto& id = t.identity.get();
+        const auto& tm = t.terms.get();
+        table << boost::uuids::to_string(id.id)
+              << id.leg_number
+              << tm.leg_type_code
+              << tm.floating_index_code
+              << tm.fixed_rate
+              << tm.spread
+              << tm.notional
+              << tm.currency
               << fort::endr;
     }
     return table.to_string();

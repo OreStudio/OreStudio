@@ -8,11 +8,11 @@
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
 #+branch: feature/fix-windows-macos-ci
-#+pr:
+#+pr: 1031
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-06-03
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,12 +32,12 @@ threshold, and verify that Windows CI is green.
 
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
-| State        | DISCOVERED                                                       |
+| State        | STARTED                                                          |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]  |
-| Now          | New CI failure; investigation complete; fix not yet started.     |
-| Waiting on   | Nothing.                                                         |
-| Next         | Choose fix approach (Flatten vs two-phase); implement.           |
-| Last touched | 2026-06-02                                                       |
+| Now          | Flatten fix implemented and committed; awaiting CI green.        |
+| Waiting on   | Windows CI (PR push).                                            |
+| Next         | Push to PR and verify CI passes.                                 |
+| Last touched | 2026-06-03                                                       |
 
 * Acceptance
 
@@ -179,14 +179,26 @@ The mapping layer changes are mechanical and bounded to the =swap_leg= usage sit
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                                          | Title                                                                          |
+|-----------------------------------------------------------------------------+--------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/1031][#1031]] | [swap_leg] Decompose into sub-structs via rfl::Flatten to fix MSVC C1202 |
+
+* Decisions
+
+- Chose Option A (rfl::Flatten decomposition) as planned.
+- swap_leg_entity.hpp (repository layer) was not changed — it has its own flat
+  entity struct and the mapper bridges them; no rfl exposure there.
+- parse_swap_instruments.cpp audited: reads swap_leg via swap_legs_outer surrogate
+  struct, not directly — no change needed.
+- instrument.hpp stamp_ids template patched with if constexpr to dispatch
+  differently for swap_leg (nested) vs composite_leg (flat).
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                      | File | Decision | Notes          |
+|---+------------------------------------------------------+------+----------+----------------|
+| — | Gemini: agile docs only; no review comments provided |  —   | N/A      | PR #1022 round 1 |
 
 * Result
+
+Linux debug build clean (exit 0) with commit =c3ffa4533=. Awaiting CI push.

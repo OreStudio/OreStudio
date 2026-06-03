@@ -77,12 +77,12 @@ TEST_CASE("mapper_roundtrip_swaption_european_forward", tags) {
     CHECK(instr.maturity_date == "2043-02-21");
     REQUIRE(result.legs.size() == 2u);
     // leg 0: floating (EUR-EURIBOR-3M)
-    CHECK(result.legs[0].leg_type_code == "Floating");
-    CHECK(result.legs[0].currency == "EUR");
-    CHECK(result.legs[0].floating_index_code == "EUR-EURIBOR-3M");
+    CHECK(result.legs[0].terms.get().leg_type_code == "Floating");
+    CHECK(result.legs[0].terms.get().currency == "EUR");
+    CHECK(result.legs[0].terms.get().floating_index_code == "EUR-EURIBOR-3M");
     // leg 1: fixed (2%)
-    CHECK(result.legs[1].leg_type_code == "Fixed");
-    CHECK(result.legs[1].fixed_rate == Approx(0.02).epsilon(0.0001));
+    CHECK(result.legs[1].terms.get().leg_type_code == "Fixed");
+    CHECK(result.legs[1].terms.get().fixed_rate == Approx(0.02).epsilon(0.0001));
     BOOST_LOG_SEV(lg, info) << "Swaption European forward-mapper test passed";
 }
 

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-06-03
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ systematically so no further MSVC C1202 errors appear in the Windows CI build.
 
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
-| State        | STARTED                                                          |
+| State        | DONE                                                             |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]  |
-| Now          | Investigation complete; fix in progress.                          |
-| Waiting on   | PR.                                                              |
-| Next         | Raise PR; verify CI green.                                       |
-| Last touched | 2026-06-02                                                       |
+| Now          | Nothing.                                                         |
+| Waiting on   | Nothing.                                                         |
+| Next         | Nothing.                                                         |
+| Last touched | 2026-06-03                                                       |
 
 * Acceptance
 

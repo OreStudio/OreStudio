@@ -28,10 +28,10 @@ same checklist applies.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Shell task DONE (PR #959 merged); Qt verification next. |
-| Waiting on    | Nothing.                              |
-| Next          | Start task_verify_qt.                |
-| Last touched  | 2026-06-03                           |
+| Now           | Qt verification in progress; history timestamps blocked on timestamp unification story. |
+| Waiting on    | [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields]] — currency history shows epoch until fixed. |
+| Next          | Resume task_verify_qt once timestamp story is DONE.   |
+| Last touched  | 2026-06-03                                            |
 
 * Acceptance
 

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 6F234DBB-887C-4352-B719-9F9D58F55416
+:END:
+#+title: Task: Fix mapper read sites: optional dereference → direct string_view call
+#+description: Update all ~111 timestamp_to_timepoint(*v.field) and timestamp_to_timepoint(v.field) (db_timestamp overload) call sites in mapper .cpp files to call timestamp_to_timepoint(v.field) using the string_view overload.
+#+type: task
+#+level: s1
+#+filetags: :unify-entity-timestamps:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields: replace optional<db_timestamp> with std::string]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields: replace optional<db_timestamp> with std::string]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-03                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

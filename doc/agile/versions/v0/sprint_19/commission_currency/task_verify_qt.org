@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch: feature/commission-currency
 #+pr:
-#+blocked_on: none
+#+blocked_on: 71116F94-09A7-43FD-BD56-4B5B25BEAC80
 #+blocked_since:
 #+created: 2026-05-29
 #+updated: 2026-06-03
@@ -28,11 +28,11 @@ second session via NATS eventing. Fix any regressions found inline or file as ca
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BLOCKED                                |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Code review done; one bug fixed; manual run-through needed. |
-| Waiting on   | Manual test session against live service.              |
-| Next         | Start services; open Qt app; run through checklist.    |
+| Now          | Code review done; blocked on timestamp unification.    |
+| Waiting on   | [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields]] — history shows epoch.  |
+| Next         | Resume manual checklist once timestamp story is DONE.  |
 | Last touched | 2026-06-03                                             |
 
 * Acceptance

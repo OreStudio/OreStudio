@@ -8,11 +8,11 @@
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
 #+branch: feature/fix-windows-macos-ci
-#+pr:
+#+pr: 1022
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-06-03
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -185,8 +185,8 @@ The mapping layer changes are mechanical and bounded to the =swap_leg= usage sit
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                      | File | Decision | Notes          |
+|---+------------------------------------------------------+------+----------+----------------|
+| — | Gemini: agile docs only; no review comments provided |  —   | N/A      | PR #1022 round 1 |
 
 * Result

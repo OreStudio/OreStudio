@@ -744,6 +744,17 @@ identity.
   =\section= in the PDF build.
 - How to create :: =compass add manual --slug chapter_N_<topic> --title "..." --description "..."=
   (=--parent-dir= defaults to =doc/manual/user_guide/=).
+- Links ::
+  - *Within the manual*: =[[id:UUID]]= links to other manual chapter
+    IDs are fine — the PDF exporter resolves them as internal
+    cross-references and hyperref renders them as clickable jumps.
+  - *Outside the manual*: org-roam =[[id:UUID]]= links to knowledge
+    docs, recipes, or any document outside =doc/manual/= must not be
+    used. The PDF cannot follow them; they either break the export or
+    produce unresolvable hyperref anchors. Use a plain HTTP URL
+    (=[[https://...][label]]=) or a plain text citation instead.
+  - =[[file:...]]= links to images are fine; they resolve to the asset
+    path at export time.
 - Required sections ::
   - =** Overview= — one or two sentences orienting the reader.
   - =** See also= — optional; for cross-references and external links.

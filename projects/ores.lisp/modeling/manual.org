@@ -70,6 +70,34 @@ natural pixel width when it is smaller than =0.6\linewidth=, and
 from overflowing the text column while letting small crops render at
 their natural size.
 
+** Link conventions
+
+The manual is exported to both PDF (=pdflatex=) and HTML (via the site
+pipeline). The two exporters handle links differently, so authors must
+follow these rules:
+
+- *Internal links (within the manual)*: =[[id:UUID]]= org-roam links
+  between manual chapter files are permitted. The exporter resolves
+  them as =\hyperref= internal cross-references in the PDF and as
+  anchor links in the HTML. Both work correctly.
+
+- *External links (outside the manual)*: =[[id:UUID]]= links to any
+  document outside =doc/manual/= — knowledge docs, recipes, agile
+  artefacts — must *not* be used in chapter files. The =deploy_manual=
+  pipeline scans only the manual's own org-id index; an unresolvable
+  ID aborts the export with an error. Use a plain HTTP URL
+  (=[[https://example.com][label]]=) or a plain text citation instead.
+  If the target document has a canonical public URL (e.g. an ISO
+  standard or a Wikipedia article) use that. If there is no public URL,
+  use italic prose: =/Document Title/ (=path/to/file.org=)=.
+
+- *Image links*: =[[file:../../../assets/images/foo.png]]= links are
+  fine; they resolve to the asset path at export time.
+
+- *Site-only files* (=user_manual_site.org=, =manuals.org=): these are
+  not included in the PDF export and may freely use =[[id:UUID]]= links
+  for site navigation.
+
 ** Version stamping
 
 The cover page version number is read at export time from

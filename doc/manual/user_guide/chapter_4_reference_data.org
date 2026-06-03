@@ -2,7 +2,7 @@
 :ID: FD54D29E-9309-4AFE-AFE2-50DA9F7BA354
 :END:
 #+title: Reference Data
-#+description: Reference data management in ORE Studio: currencies, countries, and other slowly-changing financial master data.
+#+description: Reference data management in ORE Studio: currencies, countries, counterparties, books, business units, and all other slowly-changing financial master data entities.
 #+type: manual
 #+level: cross
 #+filetags: :knowledge:manual:reference_data:refdata:user_guide:
@@ -15,9 +15,11 @@ Reference data is the static or slowly-changing master data that all
 financial activity depends on. OreStudio manages it centrally: every
 entity is versioned, change-reason-tracked, and tenant-scoped, so you
 always have a full audit trail of what changed, when, and why. This
-chapter introduces the reference data model and walks through currency
-management in detail. Subsequent chapters cover counterparties, books,
-and the remaining entity types.
+chapter covers all the key reference data entity types — currencies,
+countries, counterparties, books, business units, portfolios, and more.
+Each entity type gets its own section following the same structure: a
+brief introduction, a walkthrough of the Qt UI, and the equivalent
+shell and CLI commands. Currencies are covered first.
 
 ** What is Reference Data?
 

@@ -2452,6 +2452,12 @@ def cmd_bearings(argv):
 
     print("🧭 ores.compass — bearings\n")
 
+    # ── LLM entry point ─────────────────────────────────────────────────────
+    _bearings_section("🤖", "If you are an LLM, read this first",
+                      "compass show F9AD7932-8E11-433C-A812-B57DBC9BF5D8")
+    print("  LLM instructions: rules, architecture links, build, code style,")
+    print("  documentation conventions, git/PR conventions, and project memory.")
+
     # ── What is ORE Studio? ──────────────────────────────────────────────────
     _bearings_section("🏢", "What is ORE Studio?",
                       "compass show 2F71292F-CDB0-4E2E-B50F-4F02E10597C4")

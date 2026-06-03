@@ -97,19 +97,25 @@ timestamp_to_timepoint(std::string_view timestamp_str) {
 /**
  * @brief Converts a db_timestamp to a std::chrono::system_clock::time_point.
  *
- * The db_timestamp holds the time in the DB session's timezone. Since all
- * DB sessions are forced to UTC, its internal std::tm fields are already UTC.
- * Convert directly via to_time_point_utc — no string round-trip needed.
+ * Formats the timestamp back to a string and passes it through from_iso8601_utc
+ * so that both overloads use the same parsing path. The "+00" suffix is appended
+ * explicitly because db_timestamp::str() (strftime) does not emit a timezone
+ * designator, but from_iso8601_utc requires one to confirm UTC intent.
+ *
+ * Throws std::invalid_argument if the timestamp represents an invalid date
+ * (e.g. a zero-initialised db_timestamp), making failures visible rather than
+ * silently returning epoch.
  *
  * @param ts The db_timestamp to convert
  * @return A system_clock::time_point representing the UTC instant
+ * @throws std::invalid_argument if parsing fails
  *
  * @example
  * auto tp = timestamp_to_timepoint(entity.last_login);
  */
 inline std::chrono::system_clock::time_point
 timestamp_to_timepoint(const db_timestamp& ts) {
-    return platform::time::time_utils::to_time_point_utc(ts.tm());
+    return platform::time::datetime::from_iso8601_utc(ts.str() + "+00");
 }
 
 /**

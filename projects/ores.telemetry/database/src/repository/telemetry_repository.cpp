@@ -37,6 +37,7 @@ using namespace sqlgen;
 using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 std::string telemetry_repository::sql() {
     return generate_create_table_sql<telemetry_entity>(lg());
@@ -307,8 +308,8 @@ telemetry_repository::read_by_account(context ctx,
                                << boost::uuids::to_string(account_id);
 
     const auto account_str = boost::lexical_cast<std::string>(account_id);
-    const auto start_ts = timepoint_to_timestamp(start, lg());
-    const auto end_ts = timepoint_to_timestamp(end, lg());
+    const auto start_ts = db_timestamp{datetime::to_db_string(start)};
+    const auto end_ts = db_timestamp{datetime::to_db_string(end)};
 
     const auto query = sqlgen::read<std::vector<telemetry_entity>> |
         where("account_id"_c == account_str &&
@@ -422,8 +423,8 @@ telemetry_repository::get_summary(context ctx, std::uint32_t hours) {
     summary.end_time = std::chrono::system_clock::now();
     summary.start_time = summary.end_time - std::chrono::hours(hours);
 
-    const auto start_ts = timepoint_to_timestamp(summary.start_time, lg());
-    const auto end_ts = timepoint_to_timestamp(summary.end_time, lg());
+    const auto start_ts = db_timestamp{datetime::to_db_string(summary.start_time)};
+    const auto end_ts = db_timestamp{datetime::to_db_string(summary.end_time)};
 
     struct count_result {
         long long count;
@@ -475,8 +476,8 @@ std::uint64_t telemetry_repository::count_errors(context ctx,
 
     const auto end_time = std::chrono::system_clock::now();
     const auto start_time = end_time - std::chrono::hours(hours);
-    const auto start_ts = timepoint_to_timestamp(start_time, lg());
-    const auto end_ts = timepoint_to_timestamp(end_time, lg());
+    const auto start_ts = db_timestamp{datetime::to_db_string(start_time)};
+    const auto end_ts = db_timestamp{datetime::to_db_string(end_time)};
 
     struct count_result {
         long long count;
@@ -501,7 +502,7 @@ std::uint64_t telemetry_repository::delete_old_logs(context ctx,
 
     BOOST_LOG_SEV(lg(), info) << "Deleting telemetry logs older than cutoff";
 
-    const auto older_ts = timepoint_to_timestamp(older_than, lg());
+    const auto older_ts = db_timestamp{datetime::to_db_string(older_than)};
     const auto query = sqlgen::delete_from<telemetry_entity> |
         where("timestamp"_c < older_ts);
 
@@ -555,8 +556,8 @@ telemetry_repository::query_server_samples(context ctx,
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Querying NATS server samples";
 
-    const auto start_ts = timepoint_to_timestamp(q.start_time, lg());
-    const auto end_ts = timepoint_to_timestamp(q.end_time, lg());
+    const auto start_ts = db_timestamp{datetime::to_db_string(q.start_time)};
+    const auto end_ts = db_timestamp{datetime::to_db_string(q.end_time)};
 
     const auto qry = sqlgen::read<std::vector<nats_server_sample_entity>> |
         where("sampled_at"_c >= start_ts && "sampled_at"_c < end_ts) |
@@ -584,8 +585,8 @@ telemetry_repository::query_stream_samples(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Querying NATS stream samples for: "
                                << q.stream_name;
 
-    const auto start_ts = timepoint_to_timestamp(q.start_time, lg());
-    const auto end_ts = timepoint_to_timestamp(q.end_time, lg());
+    const auto start_ts = db_timestamp{datetime::to_db_string(q.start_time)};
+    const auto end_ts = db_timestamp{datetime::to_db_string(q.end_time)};
 
     const auto qry = sqlgen::read<std::vector<nats_stream_sample_entity>> |
         where("sampled_at"_c >= start_ts && "sampled_at"_c < end_ts &&
@@ -631,7 +632,7 @@ telemetry_repository::list_service_samples(context ctx) {
     // This avoids a DISTINCT ON which sqlgen doesn't model directly.
     const auto cutoff = std::chrono::system_clock::now()
         - std::chrono::minutes(5);
-    const auto cutoff_ts = timepoint_to_timestamp(cutoff, lg());
+    const auto cutoff_ts = db_timestamp{datetime::to_db_string(cutoff)};
 
     const auto qry = sqlgen::read<std::vector<service_sample_entity>> |
         where("sampled_at"_c >= cutoff_ts) |

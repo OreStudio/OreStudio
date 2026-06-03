@@ -27,6 +27,7 @@ namespace ores::controller::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 api::domain::service_event
 service_event_mapper::map(const service_event_entity& v) {
@@ -51,7 +52,7 @@ service_event_mapper::map(const api::domain::service_event& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity.";
 
     service_event_entity r;
-    r.occurred_at = timepoint_to_timestamp(v.occurred_at, lg());
+    r.occurred_at = datetime::to_db_string(v.occurred_at);
     r.event_id = boost::uuids::to_string(v.event_id);
     r.service_name = v.service_name;
     if (v.instance_id)

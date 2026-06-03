@@ -76,10 +76,8 @@ struct risk_report_config_entity {
     std::string change_reason_code;
     std::string change_commentary;
 
-    std::optional<db_timestamp> valid_from =
-        "9999-12-31 23:59:59";
-    std::optional<db_timestamp> valid_to =
-        "9999-12-31 23:59:59";
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 }

@@ -28,6 +28,7 @@ namespace ores::workflow::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 domain::workflow_instance
 workflow_instance_mapper::map(const workflow_instance_entity& v) {
@@ -88,10 +89,10 @@ workflow_instance_mapper::to_entity(const domain::workflow_instance& v) {
     r.step_count = v.step_count;
     r.materialised_steps_json = v.materialised_steps_json;
     if (v.completed_at)
-        r.completed_at = timepoint_to_timestamp(*v.completed_at, lg());
+        r.completed_at = datetime::to_db_string(*v.completed_at);
     if (v.last_event_at)
-        r.last_event_at = timepoint_to_timestamp(*v.last_event_at, lg());
-    r.created_at = timepoint_to_timestamp(v.created_at, lg());
+        r.last_event_at = datetime::to_db_string(*v.last_event_at);
+    r.created_at = datetime::to_db_string(v.created_at);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain object to entity.";
     return r;

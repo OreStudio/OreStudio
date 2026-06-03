@@ -28,6 +28,7 @@ namespace ores::compute::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 domain::result
 result_mapper::map(const result_entity& v) {
@@ -49,9 +50,7 @@ result_mapper::map(const result_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    if (!v.valid_from)
-        throw std::logic_error("Cannot map entity with null valid_from to domain object.");
-    r.recorded_at = timestamp_to_timepoint(*v.valid_from);
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -72,7 +71,7 @@ result_mapper::map(const domain::result& v) {
     r.outcome = v.outcome == 0 ? std::nullopt : std::optional(v.outcome);
     r.output_uri = v.output_uri.empty() ? std::nullopt : std::optional(v.output_uri);
     r.error_message = v.error_message.empty() ? std::nullopt : std::optional(v.error_message);
-    r.received_at = (v.received_at == std::chrono::system_clock::time_point{}) ? std::nullopt : std::optional(timepoint_to_timestamp(v.received_at, lg()));
+    r.received_at = (v.received_at == std::chrono::system_clock::time_point{}) ? std::nullopt : std::optional(datetime::to_db_string(v.received_at));
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

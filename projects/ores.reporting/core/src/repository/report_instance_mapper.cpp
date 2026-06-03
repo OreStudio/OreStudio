@@ -28,6 +28,7 @@ namespace ores::reporting::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 domain::report_instance
 report_instance_mapper::map(const report_instance_entity& v) {
@@ -50,9 +51,7 @@ report_instance_mapper::map(const report_instance_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    if (!v.valid_from)
-        throw std::logic_error("Cannot map entity with null valid_from to domain object.");
-    r.recorded_at = timestamp_to_timepoint(*v.valid_from);
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -73,8 +72,8 @@ report_instance_mapper::map(const domain::report_instance& v) {
     r.fsm_state_id = v.fsm_state_id.has_value() ? std::optional(boost::uuids::to_string(*v.fsm_state_id)) : std::nullopt;
     r.trigger_run_id = v.trigger_run_id;
     r.output_message = v.output_message;
-    r.started_at = v.started_at.has_value() ? std::optional(timepoint_to_timestamp(*v.started_at, lg())) : std::nullopt;
-    r.completed_at = v.completed_at.has_value() ? std::optional(timepoint_to_timestamp(*v.completed_at, lg())) : std::nullopt;
+    r.started_at = v.started_at.has_value() ? std::optional(datetime::to_db_string(*v.started_at)) : std::nullopt;
+    r.completed_at = v.completed_at.has_value() ? std::optional(datetime::to_db_string(*v.completed_at)) : std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

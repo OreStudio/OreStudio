@@ -28,6 +28,7 @@ namespace ores::workflow::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 domain::workflow_step
 workflow_step_mapper::map(const workflow_step_entity& v) {
@@ -89,15 +90,15 @@ workflow_step_mapper::to_entity(const domain::workflow_step& v) {
     r.command_subject = v.command_subject;
     r.command_json = v.command_json;
     if (v.command_published_at)
-        r.command_published_at = timepoint_to_timestamp(*v.command_published_at, lg());
+        r.command_published_at = datetime::to_db_string(*v.command_published_at);
     r.idempotency_key = v.idempotency_key;
     r.compensation_subject = v.compensation_subject;
     r.compensation_json = v.compensation_json;
     if (v.started_at)
-        r.started_at = timepoint_to_timestamp(*v.started_at, lg());
+        r.started_at = datetime::to_db_string(*v.started_at);
     if (v.completed_at)
-        r.completed_at = timepoint_to_timestamp(*v.completed_at, lg());
-    r.created_at = timepoint_to_timestamp(v.created_at, lg());
+        r.completed_at = datetime::to_db_string(*v.completed_at);
+    r.created_at = datetime::to_db_string(v.created_at);
     r.step_log_json = v.step_log_json.empty()
         ? std::nullopt : std::optional<std::string>(v.step_log_json);
 

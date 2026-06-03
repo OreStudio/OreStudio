@@ -30,6 +30,7 @@ namespace ores::iam::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 auth_event_repository::auth_event_repository(context ctx)
     : ctx_(std::move(ctx)) {}
@@ -50,7 +51,7 @@ void auth_event_repository::insert(const std::string& event_type,
 
     auth_event_entity entity;
     entity.id = id_str;
-    entity.event_time = timepoint_to_timestamp(event_time, lg());
+    entity.event_time = datetime::to_db_string(event_time);
     entity.tenant_id = tenant_id;
     entity.account_id = account_id;
     entity.event_type = event_type;

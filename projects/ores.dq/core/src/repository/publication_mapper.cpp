@@ -27,6 +27,7 @@ namespace ores::dq::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 std::ostream& operator<<(std::ostream& s, const publication_entity& v) {
     s << "publication_entity{id=" << v.id.value()
@@ -82,7 +83,7 @@ publication_entity publication_mapper::to_entity(const domain::publication& doma
     entity.records_skipped = static_cast<std::int64_t>(domain.records_skipped);
     entity.records_deleted = static_cast<std::int64_t>(domain.records_deleted);
     entity.published_by = domain.published_by;
-    entity.published_at = timepoint_to_timestamp(domain.published_at, lg());
+    entity.published_at = datetime::to_db_string(domain.published_at);
 
     return entity;
 }

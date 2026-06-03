@@ -32,6 +32,7 @@ namespace ores::telemetry::database::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 namespace {
 
@@ -63,7 +64,7 @@ telemetry_entity telemetry_mapper::to_entity(
 
     r.id = boost::lexical_cast<std::string>(entry.id);
     r.tenant_id = tenant_id;
-    r.timestamp = timepoint_to_timestamp(entry.timestamp, lg());
+    r.timestamp = datetime::to_db_string(entry.timestamp);
     r.source = std::string(domain::to_string(entry.source));
     r.source_name = entry.source_name;
     r.session_id = entry.session_id
@@ -76,7 +77,7 @@ telemetry_entity telemetry_mapper::to_entity(
     r.component = entry.component;
     r.message = entry.message;
     r.tag = entry.tag;
-    r.recorded_at = timepoint_to_timestamp(entry.recorded_at, lg());
+    r.recorded_at = datetime::to_db_string(entry.recorded_at);
 
     return r;
 }
@@ -151,7 +152,7 @@ nats_server_sample_entity telemetry_mapper::to_entity(
     const domain::nats_server_sample& sample,
     const std::string& tenant_id) {
     nats_server_sample_entity r;
-    r.sampled_at = timepoint_to_timestamp(sample.sampled_at, lg());
+    r.sampled_at = datetime::to_db_string(sample.sampled_at);
     r.tenant_id = tenant_id;
     r.in_msgs = static_cast<std::int64_t>(sample.in_msgs);
     r.out_msgs = static_cast<std::int64_t>(sample.out_msgs);
@@ -181,7 +182,7 @@ nats_stream_sample_entity telemetry_mapper::to_entity(
     const domain::nats_stream_sample& sample,
     const std::string& tenant_id) {
     nats_stream_sample_entity r;
-    r.sampled_at = timepoint_to_timestamp(sample.sampled_at, lg());
+    r.sampled_at = datetime::to_db_string(sample.sampled_at);
     r.tenant_id = tenant_id;
     r.stream_name = sample.stream_name;
     r.messages = static_cast<std::int64_t>(sample.messages);
@@ -204,7 +205,7 @@ domain::nats_stream_sample telemetry_mapper::to_domain(
 service_sample_entity telemetry_mapper::to_entity(
     const domain::service_sample& sample) {
     service_sample_entity r;
-    r.sampled_at = timepoint_to_timestamp(sample.sampled_at, lg());
+    r.sampled_at = datetime::to_db_string(sample.sampled_at);
     r.service_name = sample.service_name;
     r.instance_id = sample.instance_id;
     r.version = sample.version;

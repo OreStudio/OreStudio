@@ -43,9 +43,7 @@ market_fixing_mapper::map(const market_fixing_entity& v) {
     r.fixing_date = ores::platform::time::time_utils::parse_date(v.fixing_date);
     r.value = v.value;
     r.source = v.source;
-    if (!v.valid_from)
-        throw std::logic_error("Cannot map entity with null valid_from to domain object.");
-    r.recorded_at = timestamp_to_timepoint(*v.valid_from);
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;

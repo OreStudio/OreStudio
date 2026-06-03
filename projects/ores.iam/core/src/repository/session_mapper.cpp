@@ -30,6 +30,7 @@ namespace ores::iam::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 namespace {
 
@@ -84,7 +85,7 @@ session_entity session_mapper::map(const domain::session& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.id = boost::lexical_cast<std::string>(v.id);
     r.account_id = boost::lexical_cast<std::string>(v.account_id);
-    r.start_time = timepoint_to_timestamp(v.start_time, lg());
+    r.start_time = datetime::to_db_string(v.start_time);
     r.end_time = v.end_time ? format_timestamp(*v.end_time) : "";
     r.client_ip = v.client_ip.to_string();
     r.client_identifier = v.client_identifier;

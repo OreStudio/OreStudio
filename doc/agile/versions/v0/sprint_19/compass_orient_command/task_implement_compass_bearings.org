@@ -54,6 +54,9 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Redundant local import argparse inside cmd_bearings | =compass.py= | Fixed | Use global import — 23e14f3a3 |
+| 2 | _strip_type_prefix(d.title) can AttributeError if title is None | =compass.py= | Fixed | Guarded with d.title or "" — 23e14f3a3 |
+| 3 | Recipe sort key TypeError if d.title is None | =compass.py= | Fixed | key=lambda d: d.title or "" — 23e14f3a3 |
+| 4 | Memory sort key TypeError if d.title is None | =compass.py= | Fixed | key=lambda d: d.title or "" — 23e14f3a3 |
 
 * Result

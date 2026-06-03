@@ -94,10 +94,11 @@ def generate(checkout_root: Path, *, force: bool = False, hostname: str = "local
         # Write the SAN extension to a temp file so the path is always a real
         # filesystem path (process substitution via <(...) is not portable).
         san = f"subjectAltName=DNS:localhost,DNS:{hostname},IP:127.0.0.1"
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".cnf", delete=False) as tf:
-            tf.write(san + "\n")
-            san_file = Path(tf.name)
+        san_file = None
         try:
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".cnf", delete=False) as tf:
+                tf.write(san + "\n")
+                san_file = Path(tf.name)
             _openssl("x509", "-req",
                      "-in", str(server_csr),
                      "-CA", str(ca_crt),
@@ -107,7 +108,8 @@ def generate(checkout_root: Path, *, force: bool = False, hostname: str = "local
                      "-days", str(_LEAF_DAYS),
                      "-extfile", str(san_file))
         finally:
-            san_file.unlink(missing_ok=True)
+            if san_file is not None:
+                san_file.unlink(missing_ok=True)
             server_csr.unlink(missing_ok=True)
         print(f"  Generated: {server_crt} (SAN: localhost, {hostname})")
 

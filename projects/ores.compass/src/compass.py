@@ -788,17 +788,17 @@ def cmd_where(args):
     if warning:
         print(warning)
     print()
-    print(f"Version:  {current_version.title}  [{current_version.id.upper()}]")
-    print(f"          {current_version.rel_path}")
-    print(f"Sprint:   {current_sprint.title}  [{current_sprint.id.upper()}]")
-    print(f"          {current_sprint.rel_path}")
+    print(f"Version:  {current_version.title}")
+    print(f"          compass show {current_version.id.upper()}")
+    print(f"Sprint:   {current_sprint.title}")
+    print(f"          compass show {current_sprint.id.upper()}")
     print(f"\nIn flight ({IN_FLIGHT_STATE}):")
     if not in_flight:
         print("  (nothing in flight)")
     else:
         for d, state in in_flight:
             print(f"  {d.doctype:<5} {_strip_type_prefix(d.title)}")
-            print(f"        [{d.id.upper()}]  {d.rel_path}")
+            print(f"        compass show {d.id.upper()}")
 
     if getattr(args, "prs", False):
         print(f"\nPRs (sprint {current_sprint.title}):")
@@ -863,14 +863,20 @@ def _print_entry(entry):
     """Print one journal entry in the standard fleet-style format."""
     sl = entry["story_link"]
     sm = _ORG_LINK_RE.match(sl)
-    story_display = f"{sm.group(2)} ({sm.group(1)[:8]})" if sm else sl
+    story_title = sm.group(2) if sm else sl
+    story_uuid  = sm.group(1).upper() if sm else None
 
     tl = entry.get("task") or ""
     tm = _ORG_LINK_RE.match(tl)
-    task_display = f"{tm.group(2)} ({tm.group(1)[:8]})" if tm else (tl or "—")
+    task_title = tm.group(2) if tm else (tl or "—")
+    task_uuid  = tm.group(1).upper() if tm else None
 
-    print(f"  ● {entry['timestamp']} — {story_display}")
-    print(f"    Task:   {task_display} — {entry.get('state') or '?'}")
+    print(f"  ● {entry['timestamp']} — {story_title}")
+    if story_uuid:
+        print(f"    compass show {story_uuid}")
+    print(f"    Task:   {task_title} — {entry.get('state') or '?'}")
+    if task_uuid:
+        print(f"            compass show {task_uuid}")
     print(f"    Branch: {entry.get('branch') or '—'}")
     print(f"    PR:     {entry.get('pr') or 'none'}")
 
@@ -1374,8 +1380,9 @@ def cmd_sprint(argv):
                 current_state = s["state"]
                 print(f"  {current_state}")
             tasks = f"{s['tasks_done']}/{s['tasks_total']}" if s["tasks_total"] else "—"
-            uuid_suffix = f"  [{s['uuid']}]" if args.uuids and s["uuid"] else ""
-            print(f"    [{tasks}] {s['title']}{uuid_suffix}")
+            print(f"    [{tasks}] {s['title']}")
+            if s["uuid"]:
+                print(f"           compass show {s['uuid'].upper()}")
         return 0
 
 def _org_link_text(link_str):
@@ -1392,15 +1399,22 @@ def cmd_fleet(args):
     pr_map = open_prs_by_branch()
 
     rows = []
+    def _org_link_uuid(link_str):
+        m = _ORG_LINK_RE.match(link_str or "")
+        return m.group(1).upper() if m else None
+
     for path, branch in worktrees:
         journal = _journal_last_entry(path)
         if journal:
             story_title = _org_link_text(journal.get("story_link"))
+            story_uuid  = _org_link_uuid(journal.get("story_link"))
             task_title  = _org_link_text(journal.get("task"))
+            task_uuid   = _org_link_uuid(journal.get("task"))
             task_state  = journal.get("state")
             journal_branch = journal.get("branch")
         else:
             task_title = story_title = task_state = journal_branch = None
+            story_uuid = task_uuid = None
             if branch:
                 task_title, story_title = task_for_branch(path, branch)
 
@@ -1411,7 +1425,9 @@ def cmd_fleet(args):
             "current": os.path.realpath(path) == os.path.realpath(here),
             "branch": branch,
             "story": story_title,
+            "story_uuid": story_uuid,
             "task": task_title,
+            "task_uuid": task_uuid,
             "task_state": task_state,
             "journal_branch": journal_branch,
             "journal": bool(journal),
@@ -1437,7 +1453,11 @@ def cmd_fleet(args):
             state_suffix = f" [{r['task_state']}]" if r["task_state"] else ""
             source = "" if r["journal"] else " (from branch)"
             print(f"      story: {r['story'] or '—'}{source}")
+            if r.get("story_uuid"):
+                print(f"             compass show {r['story_uuid']}")
             print(f"      task:  {r['task'] or '—'}{state_suffix}")
+            if r.get("task_uuid"):
+                print(f"             compass show {r['task_uuid']}")
         elif r["branch"] and r["branch"] != "main":
             print("      (no journal or task records this branch)")
         if r["pr"]:
@@ -1930,10 +1950,13 @@ def cmd_story(argv):
             if t["state"] != current_state:
                 current_state = t["state"]
                 print(f"  {current_state}")
-            uuid_suffix   = f"  [{t['uuid']}]" if args.uuids and t["uuid"] else ""
-            branch_info   = f"  {t['branch']}" if t["branch"] else ""
-            pr_info       = f"  PR:{t['pr']}" if t["pr"] and t["pr"] != "none" else ""
-            print(f"    {t['title']}{uuid_suffix}{branch_info}{pr_info}")
+            print(f"    {t['title']}")
+            if t["uuid"]:
+                print(f"           compass show {t['uuid'].upper()}")
+            if t["branch"]:
+                print(f"           branch: {t['branch']}")
+            if t["pr"] and t["pr"] != "none":
+                print(f"           PR: {t['pr']}")
         return 0
 
 

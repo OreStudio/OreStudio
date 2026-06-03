@@ -35,38 +35,34 @@ from doc_index import (
 def show_link_row(uuid: str, docs, anchors) -> str:
     target = docs.get(uuid)
     if target is not None:
-        type_label = target.doctype or "?"
-        return f"  {uuid}  | {type_label:<12} | {target.title}   ({target.rel_path})"
+        return f"  {target.title}\n  compass show {uuid.upper()}"
     anchor = anchors.get(uuid)
     if anchor is not None:
         parent = docs.get(anchor.parent_id)
         parent_label = parent.title if parent else anchor.rel_path
-        return f"  {uuid}  | anchor       | {anchor.heading}  (in '{parent_label}')"
-    return f"  {uuid}  [BROKEN — not in doc graph]"
+        return f"  {anchor.heading}  (in '{parent_label}')\n  compass show {uuid.upper()}"
+    return f"  [BROKEN — not in doc graph]\n  compass show {uuid.upper()}"
 
 
 def show_anchor(anchor, docs, inbound_idx, anchors) -> None:
     parent = docs.get(anchor.parent_id)
-    print(f"Anchor (heading-level :ID:) inside a parent doc.")
-    print()
-    print(f"Heading:  {anchor.heading}")
-    print(f"In doc:   {parent.title if parent else '(unknown)'}")
-    print(f"Path:     {anchor.rel_path}")
+    print(f"⚓  {anchor.heading}  (heading-level anchor)")
+    print(f"    In doc:  {parent.title if parent else '(unknown)'}")
+    print(f"    Path:    {anchor.rel_path}")
     if parent:
-        print(f"Parent:   {anchor.parent_id}")
+        print(f"    compass show {anchor.parent_id.upper()}")
     print()
-    print("Section")
-    print("-------")
-    print(anchor.body if anchor.body else "(empty)")
+    print("📝  Section")
+    print(anchor.body if anchor.body else "  (empty)")
     print()
     inbound = inbound_idx.get(anchor.id, [])
-    print(f"Incoming links ({len(inbound)})")
-    print("---------------")
+    print(f"🔗  Incoming links ({len(inbound)})")
     if not inbound:
         print("  (none)")
     else:
         for uuid in inbound:
             print(show_link_row(uuid, docs, anchors))
+            print()
 
 
 def main(argv=None) -> int:
@@ -97,39 +93,37 @@ def main(argv=None) -> int:
 
     anchors_all = load_anchors(docs)
 
-    print(f"Title:    {doc.title}")
-    print(f"Type:     {doc.doctype or '(none)'}")
-    print(f"Path:     {doc.rel_path}")
+    print(f"📄  {doc.title}")
+    print(f"    Type:    {doc.doctype or '(none)'}")
+    print(f"    Path:    {doc.rel_path}")
     if doc.tags:
-        print(f"Tags:     {', '.join(doc.tags)}")
+        print(f"    Tags:    {', '.join(doc.tags)}")
     if doc.updated:
-        print(f"Updated:  {doc.updated}")
+        print(f"    Updated: {doc.updated}")
     if doc.description:
-        print(f"Desc:     {doc.description}")
+        print(f"    Desc:    {doc.description}")
     print()
 
-    print("Blurb")
-    print("-----")
-    print(doc.blurb if doc.blurb else "(no blurb)")
+    print("📝  Blurb")
+    print(doc.blurb if doc.blurb else "  (no blurb)")
     print()
 
-    print(f"Outgoing links ({len(doc.outbound)})")
-    print("---------------")
+    print(f"🔗  Outgoing links ({len(doc.outbound)})")
     if not doc.outbound:
         print("  (none)")
     else:
         for uuid in doc.outbound:
             print(show_link_row(uuid, docs, anchors_all))
-    print()
+            print()
 
     inbound = inbound_idx.get(doc.id, [])
-    print(f"Incoming links ({len(inbound)})")
-    print("---------------")
+    print(f"🔗  Incoming links ({len(inbound)})")
     if not inbound:
         print("  (none)")
     else:
         for uuid in inbound:
             print(show_link_row(uuid, docs, anchors_all))
+            print()
 
     return 0
 

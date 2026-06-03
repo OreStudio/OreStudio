@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: F5C8D615-E4B7-4E51-B3C4-7BDE932AA820
+:END:
+#+title: Task: Reduce NOTIFY listener max_backoff from 30s to 5s; document thread-starvation risk
+#+description: In postgres_listener_service.cpp set max_backoff to 5s. Add a code comment explaining the thread-starvation scenario: under a heavy bulk import many rapid NOTIFY events can block the 100ms poll loop via mutex contention, causing apparent notification delays. Document in the PostgreSQL architecture doc.
+#+type: task
+#+level: s1
+#+filetags: :sprint_19:v0:onboarding:database:symmetric-onboarding-flags:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2BC9C1E-4AAA-42FC-A62F-CE4E5C4FA160][Symmetric onboarding flags for provisioner wizards]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C2BC9C1E-4AAA-42FC-A62F-CE4E5C4FA160][Symmetric onboarding flags for provisioner wizards]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-03                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

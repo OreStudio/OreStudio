@@ -66,17 +66,32 @@ when the tenant is provisioned. The system party is the administrative
 home for tenant administrator accounts. It is not a business entity
 and should not be used for trading activity.
 
-Business parties — the entities that actually own trades,
-counterparties, and analytics results — are *operational parties*.
-You create these after the tenant is provisioned, using the Party
-Provisioner.
+Business parties — the entities that actually own trades, books,
+and analytics results — are *operational parties*. You create these
+after the tenant is provisioned, using the Party Provisioner.
+
+In financial industry usage, the set of operational parties
+representing your own organisation is called /the house/. The house
+hierarchy models your corporate structure: the root party is your
+top-level legal entity; its children are subsidiaries, branches, or
+regional offices; their children are individual trading desks or
+booking centres. Trades, positions, and risk reports all belong to a
+specific party within the house.
+
+Distinct from the house are /counterparties/ — the external legal
+entities your house trades with (banks, broker-dealers, corporates,
+funds). Counterparties are reference data: they are attached to trade
+tickets to identify the facing entity, but they do not own books or
+belong to the party hierarchy. The house versus counterparty
+distinction appears throughout OreStudio's UI and data model; keeping
+it clear is important when working with trades and risk reports.
 
 # Diagram source: assets/images/party_hierarchy_diagram.puml
 # Regenerate the PNG with: plantuml assets/images/party_hierarchy_diagram.puml
-#+caption[A simple party hierarchy]: A simple party hierarchy: the system party at the top, the root operational party (Acme Group) below it, and two child operational parties (Acme London, Acme New York). Arrows point from parent to child.
+#+caption[A simple party hierarchy]: A simple party hierarchy showing the house: the system party at the top, the root operational party (Acme Group) below it, and two child operational parties (Acme London, Acme New York).
 [[../../../assets/images/party_hierarchy_diagram.png]]
 
-A user logs in to a specific party within a tenant. Their data
+A user logs in to a specific party within the house. Their data
 visibility is determined by their position in the hierarchy: a user
 logged in at "Acme Group" sees data from both "Acme London" and
 "Acme New York"; a user logged in at "Acme London" sees only their
@@ -348,9 +363,12 @@ configured later from the application menus).
 #+caption[The Party Setup welcome page]: The Party Setup welcome page, listing its steps: counterparty import, report definitions, and execute.
 [[../../../assets/images/party_provisioner_setup.png]]
 
-The welcome page explains that the party hierarchy already exists and
-that this wizard imports counterparties and configures the
-organisational structure. Click *Next*.
+By this point the house hierarchy — the party nodes representing your
+organisation's legal entities — already exists. This wizard populates
+one specific party within that hierarchy: it attaches the external
+counterparties that this party trades with, creates the internal
+organisational structure (business units, portfolios, and books), and
+defines the risk reports that will run on its data. Click *Next*.
 
 *** Counterparty import
 

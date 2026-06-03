@@ -11,9 +11,9 @@ build/scripts/init-environment.sh; behaviour is preserved:
   (projects/ores.codegen/models/services/ores_services_service_registry.json),
   the same source that generates projects/ores.sql/service_vars.sh.
 
-Dependencies: python3, openssl, and the sibling shell helpers
-generate_nats_certs.sh / init-nats.sh (invoked for cert + NATS setup; these
-move under `compass nats` in a later migration task).
+Dependencies: python3, openssl.  NATS cert generation is handled by the
+nats_certs module (compass nats certs).  init-nats.sh is still invoked for
+per-environment NATS server config + JetStream store setup.
 """
 
 import argparse
@@ -327,9 +327,10 @@ def run(argv, project_root: Path) -> int:
     nats_store_dir = checkout_root / "build" / "nats" / label / "jetstream"
     nats_certs_dir = checkout_root / "build" / "keys" / "nats"
 
-    # NATS mTLS certificates (idempotent; the script preserves existing files).
+    # NATS mTLS certificates (idempotent; skips files that already exist).
     print("--- NATS certificates ---")
-    subprocess.run([str(script_dir / "generate_nats_certs.sh")], check=True)
+    import nats_certs
+    nats_certs.generate(checkout_root)
 
     nats_tls_ca = nats_tls_cert = nats_tls_key = ""
     if (nats_certs_dir / "ca.crt").is_file():
@@ -465,7 +466,7 @@ ORES_NATS_MONITOR_URL={nats_monitor_url}
 ORES_NATS_SUBJECT_PREFIX={nats_prefix}
 ORES_NATS_STORE_DIR={nats_store_dir}
 # mTLS: auto-enabled when certificates exist in build/keys/nats/.
-# Run build/scripts/generate_nats_certs.sh to generate them.
+# Run `compass nats certs` to generate them.
 # ORES_NATS_TLS_CERT/KEY are used by the Qt desktop client.
 ORES_NATS_TLS_CA={nats_tls_ca}
 ORES_NATS_TLS_CERT={nats_tls_cert}

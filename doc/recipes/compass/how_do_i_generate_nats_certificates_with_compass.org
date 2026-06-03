@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 280432C1-EE5D-4409-9DC6-372CCD3E2789
+:END:
+#+title: How do I generate NATS certificates with compass?
+#+description: Use compass nats certs to generate the CA and per-service mTLS certificates for NATS: idempotent by default, --force to regenerate all, --hostname for extra SANs.
+#+type: recipe
+#+level: cross
+#+filetags: :compass:nats:certs:provision:recipe:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+
+=compass nats certs= is part of the *Provision* pillar. It generates the
+internal CA, the NATS server certificate, and one mTLS client certificate per
+service, all written to =build/keys/nats/=. It is called automatically by
+[[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][compass env init]] and can also be run standalone.
+
+* Question
+
+How do I generate (or regenerate) the NATS mTLS certificates for a checkout?
+
+* Answer
+
+** First-time or idempotent run
+
+Skips any file that already exists:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh nats certs
+#+end_src
+
+** Force-regenerate all certificates
+
+Use in CI (ephemeral keys) or when rotating:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh nats certs --force
+#+end_src
+
+** Add an extra hostname to the NATS server SAN
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh nats certs --hostname myhost.example.com
+#+end_src
+
+** Adding a certificate for a new service
+
+Add the service name to the =_SERVICES= list in
+=projects/ores.compass/src/nats_certs.py=, then re-run:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh nats certs
+#+end_src
+
+* Script
+
+=projects/ores.compass/src/nats_certs.py= — called directly by
+=compass env init= and exposed standalone as =compass nats certs=.
+Requires =openssl= in =PATH=.
+
+* Tested by
+
+=compass env init= calls =nats_certs.generate()= on every CI run;
+certificate presence is verified by the NATS mTLS handshake at service
+startup.
+
+* See also
+
+- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — =compass env init= calls this automatically.
+- [[id:DBB7FE01-0C33-4EF9-BB2A-039674E71AB1][Service registry]] — authoritative list of services; drives =_SERVICES= in =nats_certs.py=.

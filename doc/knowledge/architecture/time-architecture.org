@@ -218,6 +218,54 @@ This parser is invoked automatically when rfl serialises or deserialises
 any struct containing a =time_point= field (NATS request/response types,
 domain JSON I/O).
 
+* The Infinity Sentinel
+
+The sentinel value ="9999-12-31 23:59:59"= represents "this record is
+currently valid, with no known expiry date".  It is used in =valid_to=
+for all live bitemporal records.
+
+*This value must be referenced via its canonical constant or function in
+each layer.  Never hard-code the literal string directly.*
+
+** PostgreSQL: =ores_utility_infinity_timestamp_fn()=
+
+#+begin_src sql
+-- ores.sql/create/utility/utility_functions_create.sql
+CREATE OR REPLACE FUNCTION ores_utility_infinity_timestamp_fn()
+RETURNS timestamptz AS $$
+    SELECT '9999-12-31 23:59:59'::timestamptz;
+$$ LANGUAGE sql IMMUTABLE;
+#+end_src
+
+Every SQL file that references the sentinel — triggers, stored
+procedures, populate scripts, WHERE clauses in raw SQL strings — must
+call =ores_utility_infinity_timestamp_fn()=.  Grep to audit:
+
+#+begin_src sh
+# Any remaining literal usage in SQL is a bug:
+grep -rn "'9999-12-31" projects/ores.sql --include="*.sql" | grep -v build
+#+end_src
+
+** C++: =MAX_TIMESTAMP= constant
+
+#+begin_src cpp
+// ores.database/repository/helpers.hpp
+inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59";
+#+end_src
+
+Every C++ repository file that must compare against the sentinel (sqlgen
+WHERE clauses, =make_timestamp= calls) must use =MAX_TIMESTAMP=.  The
+default values in entity structs also use this string:
+
+#+begin_src cpp
+db_timestamp valid_from = "9999-12-31 23:59:59";  // matches MAX_TIMESTAMP
+db_timestamp valid_to   = "9999-12-31 23:59:59";  // matches MAX_TIMESTAMP
+#+end_src
+
+These two constants are the *only* authorised representations of the
+sentinel.  They both resolve to the same value; the split exists because
+PostgreSQL and C++ each have their own canonicalisation mechanism.
+
 * Repository WHERE Clauses
 
 Queries that filter on =valid_to= or =valid_from= compare
@@ -237,12 +285,6 @@ where("valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) | ...
 parsing fails.  sqlgen compares the column (=db_timestamp=) with the
 value (=db_timestamp=) using rfl's type machinery.  This is
 type-safe and consistent.
-
-=MAX_TIMESTAMP= is defined in =ores.database/repository/helpers.hpp=:
-
-#+begin_src cpp
-inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59";
-#+end_src
 
 * Current State vs Target State
 
@@ -290,8 +332,13 @@ The target state for the =unify-entity-timestamps= story is:
 * See also
 
 - [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] — links to all architectural entry points.
+- [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] — the only current PostgreSQL
+  architecture document; covers RLS, tenant isolation, and role
+  assignment. A broader PostgreSQL conventions document does not yet
+  exist; it should be created and linked here once written.
 - =ores.database/repository/db_types.hpp= — =db_timestamp= typedef.
 - =ores.database/repository/mapper_helpers.hpp= — =timestamp_to_timepoint= overloads.
 - =ores.database/repository/helpers.hpp= — =make_timestamp=, =MAX_TIMESTAMP=.
+- =ores.sql/create/utility/utility_functions_create.sql= — =ores_utility_infinity_timestamp_fn()= definition.
 - =ores.platform/time/datetime.hpp= — =from_iso8601_utc=, =to_db_string=, =to_iso8601_utc=.
 - =ores.utility/rfl/time_point_parser.hpp= — JSON/NATS serialisation of =time_point=.

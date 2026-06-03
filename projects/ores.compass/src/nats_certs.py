@@ -1,7 +1,5 @@
 """compass nats certs — Generate CA + per-service mTLS certificates for NATS.
 
-Python port of the former build/scripts/generate_nats_certs.sh.
-
 Creates build/keys/nats/ with:
     ca.key, ca.crt              — Internal CA (1 year validity)
     nats-server.key/crt         — NATS broker cert (SAN: localhost + <hostname>)

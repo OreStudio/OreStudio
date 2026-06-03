@@ -34,11 +34,11 @@
 #+latex_header: \definecolor{orenote}{rgb}{0.60,0.30,0.24}
 #+latex_header: \hypersetup{colorlinks=true,allcolors=oreaccent}
 # Note box for #+begin_note ... #+end_note:
-# Rendered as an unnumbered Tufte margin note in the orenote brick colour,
-# no border rules. Content is collected into a savebox then placed with
-# \marginnote so it floats into the margin alongside the surrounding text.
-#+latex_header: \newsavebox{\oresnotebox}
-#+latex_header: \newenvironment{note}{\begin{lrbox}{\oresnotebox}\begin{minipage}{\marginparwidth}\color{orenote}\small\raggedright\setlength{\parskip}{0.4ex}}{\end{minipage}\end{lrbox}\marginnote{\usebox{\oresnotebox}}}
+# Inline left-border callout in the orenote brick colour. No top/bottom
+# rules. Stays in the text column so it cannot collide with Tufte margin
+# figures or sidenotes. Uses tcolorbox with only a left rule.
+#+latex_header: \usepackage[most]{tcolorbox}
+#+latex_header: \newtcolorbox{note}{colback=white, colframe=orenote, coltext=orenote, boxrule=0pt, leftrule=2pt, sharp corners, left=6pt, right=0pt, top=1mm, bottom=1mm, fontupper=\small, enhanced}
 #+latex_header: \AtBeginDocument{\renewcommand{\plaintitle}{ORE Studio User Manual}}
 # Include subsections (level *** in the chapters) in the table of contents.
 #+latex_header: \setcounter{tocdepth}{2}

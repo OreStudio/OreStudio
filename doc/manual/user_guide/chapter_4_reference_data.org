@@ -115,17 +115,17 @@ answers the question "what did the system believe at a given moment?"
 The second dimension is *validity time*: over what period is this
 version of the record considered current? Validity time is managed
 through =valid_from= and =valid_to= columns on every record. The live
-(current) record carries =valid_to = ∞= (represented internally as a
-far-future sentinel timestamp). When an update is saved, the existing
+(current) record carries =valid_to = infinity= (represented internally
+as a far-future sentinel timestamp). When an update is saved, the existing
 row's =valid_to= is set to the current time, and a new row is inserted
-with =valid_from = now= and =valid_to = ∞=. This pattern means the
+with =valid_from = now= and =valid_to = infinity=. This pattern means the
 table always contains the complete history of every entity — no rows
 are ever deleted or overwritten.
 
 The combination of the two time dimensions allows OreStudio to answer
 questions that neither dimension alone could answer:
 
-- /What is the current record for USD?/ — query =valid_to = ∞=.
+- /What is the current record for USD?/ — query =valid_to = infinity=.
 - /What did the USD record look like on a specific past date?/ — query
   =valid_from ≤ date < valid_to=.
 - /When did we first record the current name for the Angolan Kwanza?/ —

@@ -28,10 +28,10 @@ whether the team is focused — rather than merely summarising status.
 |---------------+-------------------------------------------------------------------------|
 | State         | STARTED                                                                 |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                               |
-| Now           | Health review 1 complete (AMBER, day 3); further reviews as sprint progresses. |
+| Now           | Health review 2 in progress (late-sprint).                              |
 | Waiting on    | Nothing.                                                                |
-| Next          | Run health review 2 mid-to-late sprint; close review at sprint end.     |
-| Last touched  | 2026-05-31                                                              |
+| Next          | Complete review 2; close story at sprint end.                           |
+| Last touched  | 2026-06-03                                                              |
 
 * Acceptance
 
@@ -55,6 +55,7 @@ whether the team is focused — rather than merely summarising status.
 | Task                                                                                                                                               | State   | Start      | End | Description                                                                                          |
 |----------------------------------------------------------------------------------------------------------------------------------------------------+---------+------------+-----+------------------------------------------------------------------------------------------------------|
 | [[id:362F5EFF-26BD-4F26-82EB-0B00FB272E3C][Health review 1 — sprint 19 mid-sprint analysis]]                                                  | DONE    | 2026-05-31 | 2026-05-31 | First System 2 health review: AMBER. Off-mission codegen/tooling crowding out the refdata commissioning goal. |
+| [[id:7CCC7A02-4880-4B87-9C8A-2A7E1C02AA66][Health review 2 — sprint 19 late-sprint analysis]]                                                 | STARTED | 2026-06-03 |            | Second System 2 health review: late-sprint analysis against sprint goals. |
 
 * Decisions
 

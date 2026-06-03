@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 7CCC7A02-4880-4B87-9C8A-2A7E1C02AA66
+:END:
+#+title: Task: Health review 2 — sprint 19 late-sprint analysis
+#+description: Second System 2 health review for sprint 19: goal alignment, load, PR velocity, story/task balance, focus signal, and overall verdict.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_19:v0:
+#+owner: marco
+#+branch: feature/health-review-2
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run the second System 2 health review of sprint 19 using the
+=sprint-reviewer= skill; write the findings into =sprint.org= under
+=* Health Review=; record the full review content in =* Result= below.
+
+* Status
+
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | STARTED                                                      |
+| Parent story | [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]]                     |
+| Now          | Run sprint-reviewer skill; write findings to sprint.org.     |
+| Waiting on   | Nothing.                                                     |
+| Next         | Open PR with findings.                                       |
+| Last touched | 2026-06-03                                                   |
+
+* Acceptance
+
+- =* Health Review= section written into sprint 19 =sprint.org=.
+- All six dimensions covered: goal alignment, sprint load, PR velocity,
+  story/task balance, focus signal, overall verdict.
+- Concrete recommendations included for each AMBER or RED dimension.
+- Full findings recorded in =* Result= below.
+
+* Plan
+
+Run =/sprint-reviewer= skill against sprint 19.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

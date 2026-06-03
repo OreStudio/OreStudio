@@ -121,7 +121,7 @@ storage and display:
 [[../../../assets/images/currency_details_provenance.png]]
 
 The Provenance tab is read-only and shows the audit metadata for the
-current version. See the [[file:chapter_4_reference_data.org::*Provenance][Reference Data — Provenance]] section for a full
+current version. See the [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data — Provenance]] section for a full
 description of the provenance fields common to all reference data entities.
 
 ** Editing a currency

@@ -35,7 +35,7 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                       |
 | Now           | Nothing.                                                                                      |
 | Waiting on    | Nothing.                                                                                      |
-| Next          | Implement rfl::Flatten decomposition of swap_leg; raise PR; verify Windows CI green.         |
+| Next          | N/A.                                                                                          |
 | Last touched  | 2026-06-02                                                                                    |
 
 * Acceptance

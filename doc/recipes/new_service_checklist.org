@@ -11,23 +11,21 @@ from the service registry.
 
 * 1. Service Registry (manual)
 
-Add an entry to
-~projects/ores.codegen/models/services/ores_services_service_registry.json~:
+Add an entry to the [[id:DBB7FE01-0C33-4EF9-BB2A-039674E71AB1][Service registry]] (=projects/modeling/service_registry.org=):
 
-#+begin_src json
-{
-  "name": "<name>",
-  "psql_var": "<name>_service",
-  "env_key": "<NAME>_SERVICE",
-  "iam_role": "<Name>Service",
-  "description": "<Human-readable description>",
-  "email": "<name>_service@system.ores",
-  "dml_prefixes": [
-    {"prefix": "ores_<name>_"}
-  ],
-  "select_tables": [],
-  "select_prefixes": []
-}
+#+begin_src org
+,* <name>
+:PROPERTIES:
+:psql_var:    <name>_service
+:env_key:     <NAME>_SERVICE
+:iam_role:    <Name>Service
+:description: <Human-readable description>
+:email:       <name>_service@system.ores
+:END:
+
+,** DML prefixes
+
+- ores_<name>_
 #+end_src
 
 This is the source of truth that drives the four auto-generated files below.

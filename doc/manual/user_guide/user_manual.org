@@ -55,6 +55,10 @@
 #+latex: \clearpage
 #+latex: \listoffigures
 
+#+latex: \part{Getting Started}
+#+latex: \bigskip
+#+latex: \noindent\textit{Everything you need to go from a fresh installation to a fully provisioned, operational OreStudio deployment: what the application is, how to connect to a backend, and how to bootstrap the system for first use.}
+
 * Introduction
 
 #+include: "chapter_1_introduction.org" :minlevel 2

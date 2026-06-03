@@ -56,7 +56,7 @@ second session via NATS eventing. Fix any regressions found inline or file as ca
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | DONE story status fields: Now/Waiting on/Next must all be Nothing./N/A. | fix_rfl_complexity/story.org | Accept | Linter fixed Now+Waiting on; cleared Next to N/A. Fixed 7a3d7c96d |
 
 * Result
 

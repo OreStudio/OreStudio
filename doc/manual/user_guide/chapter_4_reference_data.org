@@ -288,7 +288,7 @@ provide traceability for machine-driven operations.
 #+attr_latex: :environment tabularx :width \linewidth :align llX
 | Code                           | Applies to      | Description                                                                     |
 |--------------------------------+-----------------+---------------------------------------------------------------------------------|
-| =system.initial_load=          | Create          | Initial system bootstrap or database migration. Used once during deployment.    |
+| =system.initial_load=          | Create          | Initial system provisioning or database migration. Used once during deployment. |
 | =system.new_record=            | Create          | Normal operational record creation by the application or a service.             |
 | =system.external_data_import=  | Amend           | Import from an external data source (ISO feed, GLEIF, vendor file). Commentary mandatory — data lineage must be recorded. |
 | =system.import=                | Create, Amend   | Data loaded via the CLI import command.                                         |

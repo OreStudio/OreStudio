@@ -8,7 +8,7 @@
 #+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
 #+branch: feature/fix-test-results-not-generated-by-rat
-#+pr:
+#+pr: 1026
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-03
@@ -88,9 +88,9 @@ flag.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                                                              |
+|------+--------------------------------------------------------------------|
+| 1026 | [cmake] Wire XML reporter into rat targets so compass test results works |
 
 * Review
 

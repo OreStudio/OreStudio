@@ -34,10 +34,10 @@ within this larger effort.
 |---------------+--------------------------------------------------|
 | State         | STARTED                                          |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                               |
-| Now           | Provision pillar live: compass env init/diff/list/version; scripts deleted, CI + dashboard cut over. env-init task shipped in PR. |
+| Now           | compass test results, sprint charts, branch staleness, bearings all shipped. rat now generates XML for compass test results. |
 | Waiting on    | Nothing.                                         |
 | Next          | Document the compass env commands; then db/nats/Operate/Build/Generate migrations. |
-| Last touched  | 2026-06-02                                       |
+| Last touched  | 2026-06-03                                       |
 
 * Background: script inventory (2026-06-02)
 

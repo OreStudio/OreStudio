@@ -206,6 +206,7 @@ the save request; others are written by the database trigger and are
 never set by the application:
 
 #+latex: \begin{fullwidth}
+#+caption: Record provenance fields carried by every reference data entity
 #+attr_latex: :environment tabularx :width \linewidth :align lllX
 | Field                | UI Label      | Set by       | Meaning                                                                          |
 |----------------------+---------------+--------------+----------------------------------------------------------------------------------|
@@ -283,6 +284,7 @@ prompt and cannot be selected manually. They exist solely to
 provide traceability for machine-driven operations.
 
 #+latex: \begin{fullwidth}
+#+caption: System change reason codes (auto-assigned, not user-selectable)
 #+attr_latex: :environment tabularx :width \linewidth :align llX
 | Code                           | Applies to      | Description                                                                     |
 |--------------------------------+-----------------+---------------------------------------------------------------------------------|
@@ -303,6 +305,7 @@ across all entity types and all tenants. These are the reasons most
 frequently used by operators during day-to-day data maintenance.
 
 #+latex: \begin{fullwidth}
+#+caption: Common change reason codes (BCBS 239 / FRTB aligned)
 #+attr_latex: :environment tabularx :width \linewidth :align llX
 | Code                           | Applies to    | Description                                                                      |
 |--------------------------------+---------------+----------------------------------------------------------------------------------|
@@ -325,6 +328,7 @@ reporting requirements. They apply specifically to changes driven by
 trade events or trade-processing workflows.
 
 #+latex: \begin{fullwidth}
+#+caption: Trade change reason codes (FINRA / MiFID II aligned)
 #+attr_latex: :environment tabularx :width \linewidth :align llX
 | Code                      | Applies to    | Description                                                                            |
 |---------------------------+---------------+----------------------------------------------------------------------------------------|

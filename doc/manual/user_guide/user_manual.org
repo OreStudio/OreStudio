@@ -51,9 +51,11 @@
 #+html: <script>document.title = "ORE Studio User Manual";</script>
 #+HTML: <p><a href="user_manual.pdf">Download PDF</a></p>
 
-# List of figures (PDF only) — the LaTeX primitive, placed after the TOC.
+# List of figures and tables (PDF only) — LaTeX primitives, placed after the TOC.
 #+latex: \clearpage
 #+latex: \listoffigures
+#+latex: \clearpage
+#+latex: \listoftables
 
 #+latex: \part{Getting Started}
 #+latex: \bigskip

@@ -684,6 +684,8 @@ def _age_human(seconds):
 _C_GREEN  = "\033[32m"
 _C_YELLOW = "\033[33m"
 _C_RED    = "\033[31m"
+_C_CYAN   = "\033[36m"
+_C_BOLD   = "\033[1m"
 _C_RESET  = "\033[0m"
 _C_SEV    = {"ok": _C_GREEN, "warn": _C_YELLOW, "stale": _C_RED}
 
@@ -2395,10 +2397,36 @@ def _cmd_test_results(args):
     return 0 if total_stats["failed"] == 0 else 1
 
 
+# --- Command suggestion (Levenshtein) ---
+
+def _levenshtein(a, b):
+    """Compute edit distance between two strings."""
+    m, n = len(a), len(b)
+    dp = list(range(n + 1))
+    for i in range(1, m + 1):
+        prev, dp[0] = dp[0], i
+        for j in range(1, n + 1):
+            temp = dp[j]
+            dp[j] = prev if a[i - 1] == b[j - 1] else 1 + min(prev, dp[j], dp[j - 1])
+            prev = temp
+    return dp[n]
+
+
+def _closest_command(given, known, max_dist=2):
+    """Return the closest known command within max_dist edits, or None."""
+    given = given.lower()
+    best, best_dist = None, max_dist + 1
+    for cmd in known:
+        d = _levenshtein(given, cmd)
+        if d < best_dist:
+            best, best_dist = cmd, d
+    return best if best_dist <= max_dist else None
+
+
 # --- Bearings: cold-start orientation ---
 
 def _bearings_section(icon, title, cmd=None):
-    print(f"\n{icon}  {title}")
+    print(f"\n{_C_BOLD}{_C_CYAN}{icon}  {title}{_C_RESET}")
     if cmd:
         print(f"    {cmd}")
 
@@ -2530,6 +2558,24 @@ def main():
         sys.exit(cmd_bearings(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
         sys.exit(cmd_backlog(sys.argv[1], sys.argv[2:]))
+
+    # Unknown command — suggest closest match before handing off to argparse.
+    if len(sys.argv) >= 2 and not sys.argv[1].startswith("-"):
+        _KNOWN_COMMANDS = [
+            "index", "search", "find", "debug", "where", "status", "fleet",
+            "list", "show", "add", "sprint", "story", "task", "journal",
+            "env", "test", "bearings", "orient", "capture",
+            "inbox", "next", "deferred", "discarded", "backlog",
+        ]
+        cmd_given = sys.argv[1]
+        if cmd_given not in _KNOWN_COMMANDS:
+            suggestion = _closest_command(cmd_given, _KNOWN_COMMANDS)
+            if suggestion:
+                print(f"❌  Unknown command: '{cmd_given}'. "
+                      f"Did you mean: compass {suggestion}?", file=sys.stderr)
+            else:
+                print(f"❌  Unknown command: '{cmd_given}'.", file=sys.stderr)
+            sys.exit(1)
 
     _EPILOG = (
         "Pillars:\n"

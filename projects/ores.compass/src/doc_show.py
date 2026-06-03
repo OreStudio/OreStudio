@@ -31,6 +31,14 @@ from doc_index import (
     resolve_id, resolve_anchor, find_ambiguous,
 )
 
+_C_BOLD  = "\033[1m"
+_C_CYAN  = "\033[36m"
+_C_RESET = "\033[0m"
+
+def _h(text):
+    """Wrap text in bold cyan for section headings."""
+    return f"{_C_BOLD}{_C_CYAN}{text}{_C_RESET}"
+
 
 def show_link_row(uuid: str, docs, anchors) -> str:
     target = docs.get(uuid)
@@ -46,17 +54,17 @@ def show_link_row(uuid: str, docs, anchors) -> str:
 
 def show_anchor(anchor, docs, inbound_idx, anchors) -> None:
     parent = docs.get(anchor.parent_id)
-    print(f"⚓  {anchor.heading}  (heading-level anchor)")
+    print(_h(f"⚓  {anchor.heading}  (heading-level anchor)"))
     print(f"    In doc:  {parent.title if parent else '(unknown)'}")
     print(f"    Path:    {anchor.rel_path}")
     if parent:
         print(f"    compass show {anchor.parent_id.upper()}")
     print()
-    print("📝  Section")
+    print(_h("📝  Section"))
     print(anchor.body if anchor.body else "  (empty)")
     print()
     inbound = inbound_idx.get(anchor.id, [])
-    print(f"🔗  Incoming links ({len(inbound)})")
+    print(_h(f"🔗  Incoming links ({len(inbound)})"))
     if not inbound:
         print("  (none)")
     else:
@@ -93,7 +101,7 @@ def main(argv=None) -> int:
 
     anchors_all = load_anchors(docs)
 
-    print(f"📄  {doc.title}")
+    print(f"{_h('📄  ' + doc.title)}")
     print(f"    Type:    {doc.doctype or '(none)'}")
     print(f"    Path:    {doc.rel_path}")
     if doc.tags:
@@ -104,11 +112,11 @@ def main(argv=None) -> int:
         print(f"    Desc:    {doc.description}")
     print()
 
-    print("📝  Blurb")
+    print(_h("📝  Blurb"))
     print(doc.blurb if doc.blurb else "  (no blurb)")
     print()
 
-    print(f"🔗  Outgoing links ({len(doc.outbound)})")
+    print(_h(f"🔗  Outgoing links ({len(doc.outbound)})"))
     if not doc.outbound:
         print("  (none)")
     else:
@@ -117,7 +125,7 @@ def main(argv=None) -> int:
             print()
 
     inbound = inbound_idx.get(doc.id, [])
-    print(f"🔗  Incoming links ({len(inbound)})")
+    print(_h(f"🔗  Incoming links ({len(inbound)})"))
     if not inbound:
         print("  (none)")
     else:

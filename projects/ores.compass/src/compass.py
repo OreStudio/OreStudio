@@ -1972,7 +1972,8 @@ def _cmd_task_start(task_ident):
     il   = task_ident.lower()
 
     # Resolve by UUID (exact or prefix), slug, or branch suffix.
-    tasks = [d for d in docs.values() if d.doctype == "task"]
+    # When a slug is ambiguous across sprints, prefer the current sprint.
+    tasks  = [d for d in docs.values() if d.doctype == "task"]
     exact  = [d for d in tasks if d.id and d.id.lower() == il]
     prefix = [d for d in tasks if d.id and d.id.lower().startswith(il)]
     slug   = [d for d in tasks if Path(d.rel_path).stem.lower() == f"task_{il}"
@@ -1983,10 +1984,18 @@ def _cmd_task_start(task_ident):
         print(f"❌ No task matching '{task_ident}'.", file=sys.stderr)
         return 1
     if len(cands) > 1:
-        print(f"❌ Ambiguous — {len(cands)} tasks match '{task_ident}':", file=sys.stderr)
-        for c in cands:
-            print(f"   {c.id}  {c.rel_path}", file=sys.stderr)
-        return 1
+        # Prefer tasks in the current sprint to resolve slug ambiguity.
+        _, current_sprint = current_version_sprint(docs)
+        if current_sprint:
+            sprint_dir = _parent_dir(current_sprint.rel_path)
+            sprint_cands = [d for d in cands if d.rel_path.startswith(sprint_dir + "/")]
+            if len(sprint_cands) == 1:
+                cands = sprint_cands
+        if len(cands) > 1:
+            print(f"❌ Ambiguous — {len(cands)} tasks match '{task_ident}':", file=sys.stderr)
+            for c in cands:
+                print(f"   {c.id}  {c.rel_path}", file=sys.stderr)
+            return 1
 
     task_doc  = cands[0]
     task_path = Path(PROJECT_ROOT) / task_doc.rel_path
@@ -2001,19 +2010,24 @@ def _cmd_task_start(task_ident):
     story_path = task_path.parent / "story.org"
     story_uuid = _read_org_id(story_path) if story_path.exists() else None
 
-    # Switch to the task branch (create off origin/main if absent).
-    result = subprocess.run(["git", "switch", branch], capture_output=True, text=True,
-                            cwd=PROJECT_ROOT)
-    if result.returncode != 0:
-        result2 = subprocess.run(
-            ["git", "switch", "-c", branch, "origin/main"],
-            capture_output=True, text=True, cwd=PROJECT_ROOT)
-        if result2.returncode != 0:
-            print(f"❌ git switch failed:\n{result2.stderr.strip()}", file=sys.stderr)
-            return 1
-        print(f"✅ created and switched to {branch} (off origin/main)")
+    # Switch to the task branch. Skip if already on it (git switch errors in
+    # some worktree configurations when the branch is already current).
+    current_branch = _git_out("symbolic-ref", "--short", "HEAD", cwd=PROJECT_ROOT)
+    if current_branch == branch:
+        print(f"✅ already on {branch}")
     else:
-        print(f"✅ switched to {branch}")
+        result = subprocess.run(["git", "switch", branch], capture_output=True, text=True,
+                                cwd=PROJECT_ROOT)
+        if result.returncode != 0:
+            result2 = subprocess.run(
+                ["git", "switch", "-c", branch, "origin/main"],
+                capture_output=True, text=True, cwd=PROJECT_ROOT)
+            if result2.returncode != 0:
+                print(f"❌ git switch failed:\n{result2.stderr.strip()}", file=sys.stderr)
+                return 1
+            print(f"✅ created and switched to {branch} (off origin/main)")
+        else:
+            print(f"✅ switched to {branch}")
 
     # Flip BACKLOG → STARTED in the task file if needed.
     text = task_path.read_text(encoding="utf-8")
